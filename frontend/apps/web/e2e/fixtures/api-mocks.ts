@@ -5,138 +5,138 @@ import type { Page, Route } from "@playwright/test";
  */
 export const mockProjects = [
 	{
+		createdAt: new Date().toISOString(),
+		description: "Desktop App + Website for traceability management",
 		id: "1",
 		name: "TraceRTM Frontend",
-		description: "Desktop App + Website for traceability management",
 		status: "active",
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	},
 	{
+		createdAt: new Date().toISOString(),
+		description: "Demo project for testing",
 		id: "2",
 		name: "Pokemon Go Demo",
-		description: "Demo project for testing",
 		status: "active",
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	},
 	{
+		createdAt: new Date().toISOString(),
+		description: "Online shopping application",
 		id: "3",
 		name: "E-Commerce Platform",
-		description: "Online shopping application",
 		status: "active",
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	},
 ];
 
 export const mockItems = [
 	{
-		id: "item-1",
-		title: "User Authentication",
+		createdAt: new Date().toISOString(),
 		description: "Implement user login and registration",
-		type: "requirement",
-		status: "in_progress",
+		id: "item-1",
 		priority: "high",
 		projectId: "1",
-		view: "Feature",
-		version: 1,
-		createdAt: new Date().toISOString(),
+		status: "in_progress",
+		title: "User Authentication",
+		type: "requirement",
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "Feature",
 	},
 	{
-		id: "item-2",
-		title: "Dashboard View",
+		createdAt: new Date().toISOString(),
 		description: "Create main dashboard with metrics",
-		type: "feature",
-		status: "todo",
+		id: "item-2",
 		priority: "medium",
 		projectId: "1",
-		view: "Feature",
-		version: 1,
-		createdAt: new Date().toISOString(),
+		status: "todo",
+		title: "Dashboard View",
+		type: "feature",
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "Feature",
 	},
 	{
-		id: "item-3",
-		title: "API Integration",
+		createdAt: new Date().toISOString(),
 		description: "Connect to backend services",
-		type: "requirement",
-		status: "done",
+		id: "item-3",
 		priority: "high",
 		projectId: "1",
-		view: "Code",
-		version: 1,
-		createdAt: new Date().toISOString(),
+		status: "done",
+		title: "API Integration",
+		type: "requirement",
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "Code",
 	},
 	{
-		id: "item-4",
-		title: "Unit Tests",
+		createdAt: new Date().toISOString(),
 		description: "Write comprehensive unit tests",
-		type: "test",
-		status: "in_progress",
+		id: "item-4",
 		priority: "medium",
 		projectId: "1",
-		view: "Test",
-		version: 1,
-		createdAt: new Date().toISOString(),
+		status: "in_progress",
+		title: "Unit Tests",
+		type: "test",
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "Test",
 	},
 ];
 
 export const mockAgents = [
 	{
-		id: "agent-1",
-		name: "Sync Agent",
-		type: "sync",
-		status: "active",
 		capabilities: ["sync", "dependency-check"],
-		tasksCompleted: 24,
+		id: "agent-1",
 		lastRun: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+		name: "Sync Agent",
+		status: "active",
+		tasksCompleted: 24,
+		type: "sync",
 	},
 	{
-		id: "agent-2",
-		name: "Validation Agent",
-		type: "validator",
-		status: "idle",
 		capabilities: ["validation", "quality-checks"],
-		tasksCompleted: 12,
+		id: "agent-2",
 		lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+		name: "Validation Agent",
+		status: "idle",
+		tasksCompleted: 12,
+		type: "validator",
 	},
 	{
-		id: "agent-3",
-		name: "Coverage Agent",
-		type: "coverage",
-		status: "running",
 		capabilities: ["coverage-report", "test-execution"],
-		tasksCompleted: 7,
+		id: "agent-3",
 		lastRun: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+		name: "Coverage Agent",
+		status: "running",
+		tasksCompleted: 7,
+		type: "coverage",
 	},
 ];
 
 export const mockLinks = [
 	{
+		createdAt: new Date().toISOString(),
 		id: "link-1",
 		sourceId: "item-1",
 		targetId: "item-2",
 		type: "depends_on",
-		createdAt: new Date().toISOString(),
 	},
 	{
+		createdAt: new Date().toISOString(),
 		id: "link-2",
 		sourceId: "item-3",
 		targetId: "item-4",
 		type: "tests",
-		createdAt: new Date().toISOString(),
 	},
 ];
 
 export const mockSystemStatus = {
-	status: "healthy",
-	uptime: 99.9,
 	activeAgents: 2,
 	queuedJobs: 5,
+	status: "healthy",
+	uptime: 99.9,
 };
 
 /**
@@ -159,9 +159,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		// Health endpoint
 		if (pathname === "/health" || pathname === "/api/v1/health") {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({ status: "healthy" }),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
@@ -169,9 +169,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		// CSRF token
 		if (pathname === "/api/v1/csrf-token") {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({ token: "csrf-test-token" }),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
@@ -179,29 +179,35 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		// Auth endpoints
 		if (pathname === "/api/v1/auth/login" && method === "POST") {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({
-					user: { id: "test-user", email: "test@example.com", name: "Test User" },
+					user: {
+						id: "test-user",
+						email: "test@example.com",
+						name: "Test User",
+					},
 					access_token: "test-token",
 				}),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
 		if (pathname === "/api/v1/auth/logout" && method === "POST") {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({ status: "ok" }),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
 		if (pathname === "/api/v1/auth/me" && method === "GET") {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({
-					user: { id: "test-user", email: "test@example.com", name: "Test User" },
+					user: {
+						id: "test-user",
+						email: "test@example.com",
+						name: "Test User",
+					},
 					account: {
 						id: "test-account",
 						name: "Test Account",
@@ -210,6 +216,8 @@ export async function setupApiMocks(page: Page): Promise<void> {
 					},
 					accounts: [],
 				}),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
@@ -217,21 +225,21 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		// MCP endpoints
 		if (pathname === "/api/v1/mcp/health") {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({ service: "mcp", status: "ok" }),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
 		if (pathname === "/api/v1/mcp/config") {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({
 					mcp_base_url: "http://localhost:4000/api/v1/mcp",
 					auth_mode: "oauth",
 					requires_auth: true,
 				}),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
@@ -247,16 +255,16 @@ export async function setupApiMocks(page: Page): Promise<void> {
 					const projectId = pathname.split("/projects/")[1]?.split("/")[0];
 					const project = mockProjects.find((p) => p.id === projectId);
 					await route.fulfill({
-						status: project ? 200 : 404,
-						contentType: "application/json",
 						body: JSON.stringify(project || { error: "Not found" }),
+						contentType: "application/json",
+						status: project ? 200 : 404,
 					});
 				} else {
 					// List projects
 					await route.fulfill({
-						status: 200,
-						contentType: "application/json",
 						body: JSON.stringify(mockProjects),
+						contentType: "application/json",
+						status: 200,
 					});
 				}
 			} else if (method === "POST") {
@@ -268,15 +276,15 @@ export async function setupApiMocks(page: Page): Promise<void> {
 					updatedAt: new Date().toISOString(),
 				};
 				await route.fulfill({
-					status: 201,
-					contentType: "application/json",
 					body: JSON.stringify(newProject),
+					contentType: "application/json",
+					status: 201,
 				});
 			} else {
 				await route.fulfill({
-					status: 200,
-					contentType: "application/json",
 					body: JSON.stringify({}),
+					contentType: "application/json",
+					status: 200,
 				});
 			}
 			return;
@@ -290,9 +298,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
 					const itemId = pathname.split("/items/")[1]?.split("/")[0];
 					const item = mockItems.find((i) => i.id === itemId);
 					await route.fulfill({
-						status: item ? 200 : 404,
-						contentType: "application/json",
 						body: JSON.stringify(item || { error: "Not found" }),
+						contentType: "application/json",
+						status: item ? 200 : 404,
 					});
 				} else {
 					// List items with optional filtering
@@ -303,9 +311,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
 						items = mockItems.filter((i) => i.projectId === projectId);
 					}
 					await route.fulfill({
-						status: 200,
-						contentType: "application/json",
 						body: JSON.stringify({ items, total: items.length }),
+						contentType: "application/json",
+						status: 200,
 					});
 				}
 			} else if (method === "POST") {
@@ -317,15 +325,15 @@ export async function setupApiMocks(page: Page): Promise<void> {
 					updatedAt: new Date().toISOString(),
 				};
 				await route.fulfill({
-					status: 201,
-					contentType: "application/json",
 					body: JSON.stringify(newItem),
+					contentType: "application/json",
+					status: 201,
 				});
 			} else {
 				await route.fulfill({
-					status: 200,
-					contentType: "application/json",
 					body: JSON.stringify({}),
+					contentType: "application/json",
+					status: 200,
 				});
 			}
 			return;
@@ -335,15 +343,18 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		if (pathname.startsWith("/api/v1/agents")) {
 			if (method === "GET") {
 				await route.fulfill({
-					status: 200,
+					body: JSON.stringify({
+						agents: mockAgents,
+						total: mockAgents.length,
+					}),
 					contentType: "application/json",
-					body: JSON.stringify({ agents: mockAgents, total: mockAgents.length }),
+					status: 200,
 				});
 			} else {
 				await route.fulfill({
-					status: 200,
-					contentType: "application/json",
 					body: JSON.stringify({}),
+					contentType: "application/json",
+					status: 200,
 				});
 			}
 			return;
@@ -353,15 +364,15 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		if (pathname.startsWith("/api/v1/links")) {
 			if (method === "GET") {
 				await route.fulfill({
-					status: 200,
-					contentType: "application/json",
 					body: JSON.stringify(mockLinks),
+					contentType: "application/json",
+					status: 200,
 				});
 			} else {
 				await route.fulfill({
-					status: 200,
-					contentType: "application/json",
 					body: JSON.stringify({}),
+					contentType: "application/json",
+					status: 200,
 				});
 			}
 			return;
@@ -370,8 +381,6 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		// Graph endpoints
 		if (pathname.startsWith("/api/v1/graph")) {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({
 					nodes: mockItems.map((item) => ({
 						id: item.id,
@@ -386,6 +395,8 @@ export async function setupApiMocks(page: Page): Promise<void> {
 						type: link.type,
 					})),
 				}),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
@@ -393,9 +404,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		// System status
 		if (pathname.startsWith("/api/v1/system")) {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify(mockSystemStatus),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
@@ -412,9 +423,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
 			);
 
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({ results, total: results.length }),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
@@ -422,8 +433,6 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		// Events endpoint
 		if (pathname.startsWith("/api/v1/events")) {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify([
 					{
 						id: "event-1",
@@ -432,6 +441,8 @@ export async function setupApiMocks(page: Page): Promise<void> {
 						timestamp: new Date().toISOString(),
 					},
 				]),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
@@ -442,9 +453,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
 			pathname === "/api/v1/notifications/"
 		) {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify([]),
+				contentType: "application/json",
+				status: 200,
 			});
 			return;
 		}
@@ -452,9 +463,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		// Default fallback for unhandled API routes
 		console.log(`Unhandled API route: ${method} ${url}`);
 		await route.fulfill({
-			status: 200,
-			contentType: "application/json",
 			body: JSON.stringify({}),
+			contentType: "application/json",
+			status: 200,
 		});
 	};
 

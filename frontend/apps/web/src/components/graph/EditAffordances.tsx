@@ -26,26 +26,26 @@ interface EditAffordanceData {
 }
 
 const EDIT_TYPE_CONFIG: Record<EditType, EditAffordanceData> = {
-	instant: {
-		editType: "instant",
-		label: "Instant Edit",
-		description: "Changes apply immediately via automation",
-		icon: <Zap className="w-4 h-4" />,
-		color: "#3b82f6", // blue
-	},
 	agent_required: {
-		editType: "agent_required",
-		label: "Agent-Assisted Edit",
+		color: "#8b5cf6",
 		description: "An AI agent will help implement changes",
+		editType: "agent_required",
 		icon: <Bot className="w-4 h-4" />,
-		color: "#8b5cf6", // violet
+		label: "Agent-Assisted Edit", // violet
+	},
+	instant: {
+		color: "#3b82f6",
+		description: "Changes apply immediately via automation",
+		editType: "instant",
+		icon: <Zap className="w-4 h-4" />,
+		label: "Instant Edit", // blue
 	},
 	manual: {
-		editType: "manual",
-		label: "Manual Edit",
+		color: "#f59e0b",
 		description: "Edit manually in the full editor",
+		editType: "manual",
 		icon: <Edit3 className="w-4 h-4" />,
-		color: "#f59e0b", // amber
+		label: "Manual Edit", // amber
 	},
 };
 

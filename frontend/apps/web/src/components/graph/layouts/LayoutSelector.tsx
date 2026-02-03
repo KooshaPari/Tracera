@@ -26,18 +26,19 @@ import {
 	Minimize2,
 	Network,
 } from "lucide-react";
-import { LAYOUT_CONFIGS, type LayoutType } from "./useDAGLayout";
+import { LAYOUT_CONFIGS } from "./useDAGLayout";
+import type { LayoutType } from "./useDAGLayout";
 
 // Map icon names to components
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 	ArrowDown,
 	ArrowRight,
-	GitBranch,
-	Network,
-	CircleDot,
-	LayoutGrid,
 	Circle,
+	CircleDot,
+	GitBranch,
+	LayoutGrid,
 	Minimize2,
+	Network,
 };
 
 interface LayoutSelectorProps {
@@ -128,7 +129,12 @@ export function LayoutSelector({
 	// Default: select dropdown (single icon via SelectValue only)
 	return (
 		<Select value={value} onValueChange={(v) => onChange(v as LayoutType)}>
-			<SelectTrigger className={cn("min-w-0 w-full max-w-[180px] sm:max-w-[200px] h-7 sm:h-9 text-xs sm:text-sm [&>span]:truncate [&>span]:min-w-0", className)}>
+			<SelectTrigger
+				className={cn(
+					"min-w-0 w-full max-w-[180px] sm:max-w-[200px] h-7 sm:h-9 text-xs sm:text-sm [&>span]:truncate [&>span]:min-w-0",
+					className,
+				)}
+			>
 				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>
@@ -139,7 +145,9 @@ export function LayoutSelector({
 							<div className="flex items-center gap-2 min-w-0">
 								<Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
 								<div className="min-w-0 flex-1">
-									<span className="block truncate text-xs sm:text-sm">{config.label}</span>
+									<span className="block truncate text-xs sm:text-sm">
+										{config.label}
+									</span>
 									<span className="block text-[9px] sm:text-[10px] text-muted-foreground truncate">
 										{config.description}
 									</span>
@@ -155,14 +163,14 @@ export function LayoutSelector({
 
 // Recommended layouts for different perspectives
 export const PERSPECTIVE_RECOMMENDED_LAYOUTS: Record<string, LayoutType> = {
-	traceability: "flow-chart",
-	ui: "tree",
-	"page-flow": "timeline",
+	all: "organic-network",
 	components: "tree",
+	"page-flow": "timeline",
 	product: "flow-chart",
 	technical: "tree",
 	test: "tree",
-	all: "organic-network",
+	traceability: "flow-chart",
+	ui: "tree",
 };
 
 export function getRecommendedLayout(perspective: string): LayoutType {

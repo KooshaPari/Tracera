@@ -10,7 +10,5 @@ export const Route = createFileRoute(
 	"/projects/$projectId/views/coverage" as any,
 )({
 	component: CoverageViewRoute,
-	loader: async () => {
-		return {};
-	},
+	loader: async () => ({}),
 });

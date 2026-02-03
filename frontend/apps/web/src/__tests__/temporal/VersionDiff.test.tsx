@@ -9,10 +9,6 @@ import { describe, expect, it, vi } from "vitest";
 import VersionDiff from "@/components/temporal/VersionDiff";
 
 const mockDiff: VersionDiffType = {
-	versionA: "v1",
-	versionB: "v2",
-	versionANumber: 1,
-	versionBNumber: 2,
 	added: [
 		{
 			itemId: "item3",
@@ -29,15 +25,7 @@ const mockDiff: VersionDiffType = {
 			significance: "minor",
 		},
 	],
-	removed: [
-		{
-			itemId: "item2",
-			type: "bug",
-			title: "Legacy Bug Report",
-			changeType: "removed",
-			significance: "minor",
-		},
-	],
+	computedAt: new Date().toISOString(),
 	modified: [
 		{
 			itemId: "item1",
@@ -67,7 +55,15 @@ const mockDiff: VersionDiffType = {
 			],
 		},
 	],
-	unchanged: 15,
+	removed: [
+		{
+			itemId: "item2",
+			type: "bug",
+			title: "Legacy Bug Report",
+			changeType: "removed",
+			significance: "minor",
+		},
+	],
 	stats: {
 		totalChanges: 4,
 		addedCount: 2,
@@ -75,7 +71,11 @@ const mockDiff: VersionDiffType = {
 		modifiedCount: 1,
 		unchangedCount: 15,
 	},
-	computedAt: new Date().toISOString(),
+	unchanged: 15,
+	versionA: "v1",
+	versionANumber: 1,
+	versionB: "v2",
+	versionBNumber: 2,
 };
 
 describe("VersionDiff Component", () => {
@@ -334,7 +334,7 @@ describe("VersionDiff Component", () => {
 		});
 
 		it("should show loading state", () => {
-			render(<VersionDiff diff={null} isLoading={true} />);
+			render(<VersionDiff diff={null} isLoading />);
 			const spinner = document.querySelector("div[class*='animate-spin']");
 			expect(spinner).toBeInTheDocument();
 		});

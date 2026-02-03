@@ -7,15 +7,12 @@
  * - Update .trace/.meta/designs.yaml
  */
 
-import * as fs from "fs/promises";
-import * as path from "path";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import * as yaml from "yaml";
 import type { ComponentDefinition } from "./code-to-design";
-import {
-	createFigmaClient,
-	type FigmaClient,
-	type Variables,
-} from "./figma-api-client";
+import { createFigmaClient } from './figma-api-client';
+import type { FigmaClient, Variables } from './figma-api-client';
 import { FigmaGenerator } from "./generate-figma";
 
 export interface SyncConfig {
@@ -72,13 +69,13 @@ export class DesignSync {
 	async sync(
 		direction: "push" | "pull" | "both" = "both",
 	): Promise<SyncResult> {
-		console.log("🔄 Starting design sync...");
+		
 
 		const result: SyncResult = {
-			pushed: 0,
-			pulled: 0,
 			conflicts: [],
 			errors: [],
+			pulled: 0,
+			pushed: 0,
 		};
 
 		try {
@@ -98,13 +95,11 @@ export class DesignSync {
 			// Save updated metadata
 			await this.saveMetadata();
 
-			console.log(
-				`✅ Sync complete: ${result.pushed} pushed, ${result.pulled} pulled`,
-			);
+			
 		} catch (error) {
 			const errorMsg = error instanceof Error ? error.message : "Unknown error";
 			result.errors.push(errorMsg);
-			console.error("❌ Sync failed:", errorMsg);
+			
 		}
 
 		return result;
@@ -114,14 +109,14 @@ export class DesignSync {
 	 * Push local component changes to Figma
 	 */
 	private async pushToFigma(): Promise<number> {
-		console.log("⬆️  Pushing changes to Figma...");
+		
 
 		// Generate components
 		const generator = new FigmaGenerator({
 			componentPaths: this.config.componentPaths,
+			figmaFileKey: this.config.figmaFileKey,
 			outputDir: this.config.outputDir,
 			outputFormat: "plugin",
-			figmaFileKey: this.config.figmaFileKey,
 		});
 
 		await generator.generate();
@@ -134,7 +129,7 @@ export class DesignSync {
 			await this.updateComponentMetadata(component);
 		}
 
-		console.log(`   Pushed ${components.length} components`);
+		
 		return components.length;
 	}
 
@@ -142,7 +137,7 @@ export class DesignSync {
 	 * Pull design updates from Figma
 	 */
 	private async pullFromFigma(): Promise<number> {
-		console.log("⬇️  Pulling updates from Figma...");
+		
 
 		// Get Figma file data
 		const _file = await this.client.getFile(this.config.figmaFileKey);
@@ -173,22 +168,22 @@ export class DesignSync {
 			if (localComponent) {
 				// Update existing component metadata
 				localComponent.syncStatus = "synced";
-				pulledCount++;
+				pulledCount += 1;
 			} else {
 				// New component from Figma
 				this.metadata.components.push({
-					name: figmaComponent.name,
 					componentId: this.generateComponentId(figmaComponent.name),
 					figmaNodeId: figmaComponent.id,
 					filePath: "",
 					lastModified: new Date().toISOString(),
+					name: figmaComponent.name,
 					syncStatus: "new",
 				});
-				pulledCount++;
+				pulledCount += 1;
 			}
 		}
 
-		console.log(`   Pulled ${pulledCount} updates`);
+		
 		return pulledCount;
 	}
 
@@ -227,14 +222,14 @@ export class DesignSync {
 
 		const stats = await fs.stat(component.filePath);
 		const metadata: ComponentMetadata = {
-			name: component.name,
 			componentId: this.generateComponentId(component.name),
 			filePath: component.filePath,
 			lastModified: stats.mtime.toISOString(),
+			name: component.name,
 			syncStatus: "synced",
 		};
 
-		if (existingIndex >= 0) {
+		if (existingIndex !== -1) {
 			this.metadata.components[existingIndex] = metadata;
 		} else {
 			this.metadata.components.push(metadata);
@@ -246,12 +241,12 @@ export class DesignSync {
 	 */
 	private async loadMetadata(): Promise<void> {
 		try {
-			const content = await fs.readFile(this.config.metaFilePath, "utf-8");
+			const content = await fs.readFile(this.config.metaFilePath, "utf8");
 			this.metadata = yaml.parse(content) as DesignMetadata;
-			console.log(`📄 Loaded metadata from ${this.config.metaFilePath}`);
+			
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-				console.log("📄 No existing metadata found, creating new");
+				
 				this.metadata = this.createEmptyMetadata();
 			} else {
 				throw error;
@@ -263,12 +258,12 @@ export class DesignSync {
 	 * Save metadata to YAML file
 	 */
 	private async saveMetadata(): Promise<void> {
-		if (!this.metadata) return;
+		if (!this.metadata) {return;}
 
 		const content = yaml.stringify(this.metadata);
 		await fs.mkdir(path.dirname(this.config.metaFilePath), { recursive: true });
-		await fs.writeFile(this.config.metaFilePath, content, "utf-8");
-		console.log(`💾 Saved metadata to ${this.config.metaFilePath}`);
+		await fs.writeFile(this.config.metaFilePath, content, "utf8");
+		
 	}
 
 	/**
@@ -276,17 +271,17 @@ export class DesignSync {
 	 */
 	private createEmptyMetadata(): DesignMetadata {
 		return {
-			version: "1.0.0",
-			lastSync: new Date().toISOString(),
-			figmaFileKey: this.config.figmaFileKey,
 			components: [],
+			figmaFileKey: this.config.figmaFileKey,
+			lastSync: new Date().toISOString(),
 			tokens: {
-				colors: {},
-				typography: {},
-				spacing: {},
 				borderRadius: {},
+				colors: {},
 				shadows: {},
+				spacing: {},
+				typography: {},
 			},
+			version: "1.0.0",
 		};
 	}
 
@@ -294,7 +289,7 @@ export class DesignSync {
 	 * Generate component ID from name
 	 */
 	private generateComponentId(name: string): string {
-		return name.toLowerCase().replace(/[^a-z0-9]/g, "-");
+		return name.toLowerCase().replaceAll(/[^a-z0-9]/g, "-");
 	}
 
 	/**
@@ -313,7 +308,7 @@ export class DesignSync {
 		);
 
 		for (const component of this.metadata?.components || []) {
-			if (!component.figmaNodeId) continue;
+			if (!component.figmaNodeId) {continue;}
 
 			const figmaComponent = figmaComponents.find(
 				(c) => c.id === component.figmaNodeId,
@@ -354,7 +349,7 @@ export class DesignSync {
 		const tokenCode = this.generateTokenCode(variables);
 		await fs.writeFile(outputPath, tokenCode);
 
-		console.log(`📝 Exported design tokens to ${outputPath}`);
+		
 	}
 
 	/**
@@ -390,43 +385,43 @@ export type ShadowToken = keyof typeof shadows;
 	 */
 	async uploadToStoryToDesign(): Promise<void> {
 		if (!this.config.storyToDesignUrl) {
-			console.log("⚠️  story.to.design URL not configured");
+			
 			return;
 		}
 
-		console.log("📤 Uploading to story.to.design...");
+		
 
 		// Generate story.to.design output
 		const generator = new FigmaGenerator({
 			componentPaths: this.config.componentPaths,
+			figmaFileKey: this.config.figmaFileKey,
 			outputDir: this.config.outputDir,
 			outputFormat: "story-to-design",
-			figmaFileKey: this.config.figmaFileKey,
 		});
 
 		await generator.generate();
 
 		// Read generated output
 		const outputPath = path.join(this.config.outputDir, "story-to-design.json");
-		const output = await fs.readFile(outputPath, "utf-8");
+		const output = await fs.readFile(outputPath, "utf8");
 
 		// Upload to story.to.design API
 		try {
 			const response = await fetch(this.config.storyToDesignUrl, {
-				method: "POST",
+				body: output,
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: output,
+				method: "POST",
 			});
 
 			if (!response.ok) {
 				throw new Error(`Upload failed: ${response.statusText}`);
 			}
 
-			console.log("✅ Successfully uploaded to story.to.design");
+			
 		} catch (error) {
-			console.error("❌ Upload failed:", error);
+			
 			throw error;
 		}
 	}
@@ -444,15 +439,15 @@ async function loadConfig(): Promise<SyncConfig> {
 	}
 
 	return {
-		figmaAccessToken,
-		figmaFileKey,
-		storyToDesignUrl: process.env.STORY_TO_DESIGN_URL,
 		componentPaths: [
 			"packages/ui/src/components/**/*.tsx",
 			"apps/*/src/components/**/*.tsx",
 		],
+		figmaAccessToken,
+		figmaFileKey,
 		metaFilePath: ".trace/.meta/designs.yaml",
 		outputDir: ".figma-output",
+		storyToDesignUrl: process.env.STORY_TO_DESIGN_URL,
 	};
 }
 
@@ -467,28 +462,31 @@ async function main(): Promise<void> {
 	const sync = new DesignSync(config);
 
 	switch (command) {
-		case "push":
+		case "push": {
 			await sync.sync("push");
 			break;
+		}
 
-		case "pull":
+		case "pull": {
 			await sync.sync("pull");
 			break;
+		}
 
-		case "sync":
+		case "sync": {
 			await sync.sync("both");
 			break;
+		}
 
 		case "conflicts": {
 			const conflicts = await sync.detectConflicts();
 			if (conflicts.length > 0) {
-				console.log("⚠️  Conflicts detected:");
+				
 				for (const conflict of conflicts) {
-					console.log(`   - ${conflict}`);
+					
 				}
 				process.exit(1);
 			} else {
-				console.log("✅ No conflicts detected");
+				
 			}
 			break;
 		}
@@ -499,23 +497,25 @@ async function main(): Promise<void> {
 			break;
 		}
 
-		case "upload":
+		case "upload": {
 			await sync.uploadToStoryToDesign();
 			break;
+		}
 
-		default:
+		default: {
 			console.log(`Unknown command: ${command}`);
 			console.log(
 				"Available commands: push, pull, sync, conflicts, export-tokens, upload",
 			);
 			process.exit(1);
+		}
 	}
 }
 
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
 	main().catch((error) => {
-		console.error("Error:", error);
+		
 		process.exit(1);
 	});
 }

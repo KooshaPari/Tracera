@@ -12,28 +12,28 @@ function makeNode(
 	}> = {},
 ): EnhancedNodeData {
 	const item: Item = {
-		id: overrides.id ?? "item-1",
-		projectId: "proj-1",
-		view: "technical",
-		type: (overrides.type as Item["type"]) ?? "feature",
-		title: overrides.label ?? "Button Component",
-		description: "",
-		status: overrides.status ?? "todo",
-		priority: "medium",
-		version: 1,
 		createdAt: new Date().toISOString(),
+		description: "",
+		id: overrides.id ?? "item-1",
+		priority: "medium",
+		projectId: "proj-1",
+		status: overrides.status ?? "todo",
+		title: overrides.label ?? "Button Component",
+		type: (overrides.type as Item["type"]) ?? "feature",
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "technical",
 	};
 	return {
-		id: item.id,
-		item,
-		type: overrides.type ?? "component",
-		status: overrides.status ?? "todo",
-		label: overrides.label ?? "Button Component",
-		perspective: ["technical"],
-		connections: { incoming: 0, outgoing: 0, total: 0, byType: {} },
+		connections: { byType: {}, incoming: 0, outgoing: 0, total: 0 },
 		depth: 0,
 		hasChildren: false,
+		id: item.id,
+		item,
+		label: overrides.label ?? "Button Component",
+		perspective: ["technical"],
+		status: overrides.status ?? "todo",
+		type: overrides.type ?? "component",
 	};
 }
 
@@ -44,25 +44,25 @@ const stateNode = makeNode({ label: "Loading", type: "state" });
 const eventNode = makeNode({ label: "onClick", type: "event" });
 
 const meta: Meta<typeof GraphNodePill> = {
-	title: "Components/Graph/GraphNodePill",
+	argTypes: {
+		isHighlighted: { control: "boolean" },
+		isSelected: { control: "boolean" },
+		onExpand: { action: "expand" },
+		onSelect: { action: "select" },
+		showPreview: { control: "boolean" },
+	},
 	component: GraphNodePill,
-	tags: ["autodocs"],
 	parameters: {
 		chromatic: {
+			delay: 200,
 			modes: {
 				light: { query: "[data-theme='light']" },
 				dark: { query: "[data-theme='dark']" },
 			},
-			delay: 200,
 		},
 	},
-	argTypes: {
-		onSelect: { action: "select" },
-		onExpand: { action: "expand" },
-		isSelected: { control: "boolean" },
-		isHighlighted: { control: "boolean" },
-		showPreview: { control: "boolean" },
-	},
+	tags: ["autodocs"],
+	title: "Components/Graph/GraphNodePill",
 };
 
 export default meta;
@@ -73,11 +73,11 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
 	args: {
-		node: defaultNode,
-		isSelected: false,
 		isHighlighted: false,
-		onSelect: () => {},
+		isSelected: false,
+		node: defaultNode,
 		onExpand: () => {},
+		onSelect: () => {},
 		showPreview: false,
 	},
 };
@@ -87,11 +87,11 @@ export const Default: Story = {
  */
 export const Selected: Story = {
 	args: {
-		node: defaultNode,
-		isSelected: true,
 		isHighlighted: false,
-		onSelect: () => {},
+		isSelected: true,
+		node: defaultNode,
 		onExpand: () => {},
+		onSelect: () => {},
 		showPreview: false,
 	},
 };
@@ -101,11 +101,11 @@ export const Selected: Story = {
  */
 export const Highlighted: Story = {
 	args: {
-		node: defaultNode,
-		isSelected: false,
 		isHighlighted: true,
-		onSelect: () => {},
+		isSelected: false,
+		node: defaultNode,
 		onExpand: () => {},
+		onSelect: () => {},
 		showPreview: false,
 	},
 };
@@ -115,11 +115,11 @@ export const Highlighted: Story = {
  */
 export const ViewVariant: Story = {
 	args: {
-		node: viewNode,
-		isSelected: false,
 		isHighlighted: false,
-		onSelect: () => {},
+		isSelected: false,
+		node: viewNode,
 		onExpand: () => {},
+		onSelect: () => {},
 		showPreview: false,
 	},
 };
@@ -129,11 +129,11 @@ export const ViewVariant: Story = {
  */
 export const RouteVariant: Story = {
 	args: {
-		node: routeNode,
-		isSelected: false,
 		isHighlighted: false,
-		onSelect: () => {},
+		isSelected: false,
+		node: routeNode,
 		onExpand: () => {},
+		onSelect: () => {},
 		showPreview: false,
 	},
 };
@@ -143,11 +143,11 @@ export const RouteVariant: Story = {
  */
 export const StateVariant: Story = {
 	args: {
-		node: stateNode,
-		isSelected: false,
 		isHighlighted: false,
-		onSelect: () => {},
+		isSelected: false,
+		node: stateNode,
 		onExpand: () => {},
+		onSelect: () => {},
 		showPreview: false,
 	},
 };
@@ -157,11 +157,11 @@ export const StateVariant: Story = {
  */
 export const EventVariant: Story = {
 	args: {
-		node: eventNode,
-		isSelected: false,
 		isHighlighted: false,
-		onSelect: () => {},
+		isSelected: false,
+		node: eventNode,
 		onExpand: () => {},
+		onSelect: () => {},
 		showPreview: false,
 	},
 };
@@ -171,11 +171,11 @@ export const EventVariant: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		node: defaultNode,
-		isSelected: false,
 		isHighlighted: false,
-		onSelect: () => {},
+		isSelected: false,
+		node: defaultNode,
 		onExpand: () => {},
+		onSelect: () => {},
 		showPreview: false,
 	},
 	decorators: [

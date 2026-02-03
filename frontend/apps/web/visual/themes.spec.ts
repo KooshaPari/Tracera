@@ -15,7 +15,7 @@ test.describe("Theme Switching Visual Tests", () => {
 		});
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background p-8 space-y-8">
           <header class="border-b pb-4">
@@ -100,7 +100,7 @@ test.describe("Theme Switching Visual Tests", () => {
 		});
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background p-8 space-y-8">
           <header class="border-b pb-4">
@@ -180,7 +180,7 @@ test.describe("Theme Switching Visual Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background p-8 flex items-center justify-center">
           <div class="rounded-xl border bg-card text-card-foreground shadow-lg p-8 space-y-6 max-w-md">
@@ -210,8 +210,8 @@ test.describe("Theme Switching Visual Tests", () => {
       `;
 
 			// Add theme toggle functionality
-			const toggleBtn = document.getElementById("theme-toggle")!;
-			const themeName = document.getElementById("theme-name")!;
+			const toggleBtn = document.querySelector("#theme-toggle")!;
+			const themeName = document.querySelector("#theme-name")!;
 
 			toggleBtn.addEventListener("click", () => {
 				const isDark = document.documentElement.classList.toggle("dark");
@@ -240,15 +240,11 @@ test.describe("Theme Switching Visual Tests", () => {
 
 		for (const theme of ["light", "dark"]) {
 			await page.evaluate((t) => {
-				if (t === "dark") {
-					document.documentElement.classList.add("dark");
-				} else {
-					document.documentElement.classList.remove("dark");
-				}
+				document.documentElement.classList.toggle("dark", t === "dark");
 			}, theme);
 
 			await page.evaluate(() => {
-				const root = document.getElementById("root")!;
+				const root = document.querySelector("#root")!;
 				root.innerHTML = `
           <div class="bg-background p-8 space-y-8">
             <h1 class="text-3xl font-bold text-foreground">Color Palette</h1>
@@ -331,7 +327,7 @@ test.describe("Accessibility in Themes", () => {
 
 		await page.evaluate(() => {
 			document.documentElement.classList.remove("dark");
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="bg-background p-8 space-y-6">
           <h1 class="text-2xl font-bold">Focus States - Light</h1>
@@ -366,7 +362,7 @@ test.describe("Accessibility in Themes", () => {
 
 		await page.evaluate(() => {
 			document.documentElement.classList.add("dark");
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="bg-background p-8 space-y-6">
           <h1 class="text-2xl font-bold">Focus States - Dark</h1>

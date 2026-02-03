@@ -212,7 +212,7 @@ const FEATURE_FLAGS = {
 	ENABLE_REALTIME_SYNC: true,
 } as const;
 
-export {
+const constants = {
 	ALLOWED_FILE_TYPES,
 	API_BASE_URL,
 	API_TIMEOUT,
@@ -220,8 +220,8 @@ export {
 	APP_VERSION,
 	AUTH_ROUTES,
 	AUTOSAVE_DELAY,
-	DATETIME_FORMAT,
 	DATE_FORMAT,
+	DATETIME_FORMAT,
 	DEBOUNCE_DELAY,
 	DEFAULT_PAGE_SIZE,
 	FEATURE_FLAGS,
@@ -246,4 +246,7 @@ export {
 	VIEW_CONFIG,
 	VIEW_TYPES,
 	WS_BASE_URL,
-};
+} as const;
+
+// eslint-disable-next-line import/no-default-export
+export default constants;

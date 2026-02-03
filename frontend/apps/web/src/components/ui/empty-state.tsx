@@ -6,13 +6,8 @@
  */
 
 import { motion } from "framer-motion";
-import {
-	AlertCircle,
-	FilterX,
-	Inbox,
-	type LucideIcon,
-	SearchX,
-} from "lucide-react";
+import { AlertCircle, FilterX, Inbox, SearchX } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -72,9 +67,9 @@ export interface EmptyStateAction {
 }
 
 const iconSizeMap = {
-	sm: "h-12 w-12",
-	md: "h-16 w-16",
 	lg: "h-24 w-24",
+	md: "h-16 w-16",
+	sm: "h-12 w-12",
 };
 
 /**
@@ -114,8 +109,8 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 			visible: {
 				opacity: 1,
 				transition: {
-					staggerChildren: 0.1,
 					delayChildren: 0.2,
+					staggerChildren: 0.1,
 				},
 			},
 		};
@@ -124,14 +119,14 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 			hidden: { opacity: 0, y: 16 },
 			visible: {
 				opacity: 1,
+				transition: { damping: 24, stiffness: 300, type: "spring" },
 				y: 0,
-				transition: { type: "spring", stiffness: 300, damping: 24 },
 			},
 		};
 
 		const variantClasses = {
-			default: "py-12 px-4",
 			compact: "py-8 px-4",
+			default: "py-12 px-4",
 			full: "py-20 px-6",
 		};
 
@@ -240,10 +235,10 @@ const EmptyStateButton: React.FC<{
 	const variantClasses = {
 		default:
 			"px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors",
-		outline:
-			"px-4 py-2 border border-input bg-background hover:bg-accent rounded-md text-sm font-medium transition-colors",
 		ghost:
 			"px-4 py-2 hover:bg-muted rounded-md text-sm font-medium transition-colors",
+		outline:
+			"px-4 py-2 border border-input bg-background hover:bg-accent rounded-md text-sm font-medium transition-colors",
 	};
 
 	return (
@@ -280,18 +275,16 @@ export interface NoItemsEmptyStateProps
 export const NoItemsEmptyState = React.forwardRef<
 	HTMLDivElement,
 	NoItemsEmptyStateProps
->(({ itemType = "items", actions, ...props }, ref) => {
-	return (
-		<EmptyState
-			ref={ref}
-			icon={Inbox}
-			title={`No ${itemType} yet`}
-			description={`Create your first ${itemType.toLowerCase()} to get started`}
-			actions={actions}
-			{...props}
-		/>
-	);
-});
+>(({ itemType = "items", actions, ...props }, ref) => (
+	<EmptyState
+		ref={ref}
+		icon={Inbox}
+		title={`No ${itemType} yet`}
+		description={`Create your first ${itemType.toLowerCase()} to get started`}
+		actions={actions}
+		{...props}
+	/>
+));
 
 NoItemsEmptyState.displayName = "NoItemsEmptyState";
 
@@ -304,17 +297,15 @@ export interface NoSearchResultsEmptyStateProps
 export const NoSearchResultsEmptyState = React.forwardRef<
 	HTMLDivElement,
 	NoSearchResultsEmptyStateProps
->(({ query, ...props }, ref) => {
-	return (
-		<EmptyState
-			ref={ref}
-			icon={SearchX}
-			title="No results found"
-			description={`We couldn't find any matches for "${query}". Try adjusting your search terms.`}
-			{...props}
-		/>
-	);
-});
+>(({ query, ...props }, ref) => (
+	<EmptyState
+		ref={ref}
+		icon={SearchX}
+		title="No results found"
+		description={`We couldn't find any matches for "${query}". Try adjusting your search terms.`}
+		{...props}
+	/>
+));
 
 NoSearchResultsEmptyState.displayName = "NoSearchResultsEmptyState";
 
@@ -327,17 +318,15 @@ export interface FilteredEmptyStateProps
 export const FilteredEmptyState = React.forwardRef<
 	HTMLDivElement,
 	FilteredEmptyStateProps
->(({ filters, ...props }, ref) => {
-	return (
-		<EmptyState
-			ref={ref}
-			icon={FilterX}
-			title="No items match your filters"
-			description={`No results found for: ${filters.join(", ")}. Try removing or adjusting your filters.`}
-			{...props}
-		/>
-	);
-});
+>(({ filters, ...props }, ref) => (
+	<EmptyState
+		ref={ref}
+		icon={FilterX}
+		title="No items match your filters"
+		description={`No results found for: ${filters.join(", ")}. Try removing or adjusting your filters.`}
+		{...props}
+	/>
+));
 
 FilteredEmptyState.displayName = "FilteredEmptyState";
 
@@ -350,17 +339,15 @@ export interface ErrorEmptyStateProps
 export const ErrorEmptyState = React.forwardRef<
 	HTMLDivElement,
 	ErrorEmptyStateProps
->(({ error, ...props }, ref) => {
-	return (
-		<EmptyState
-			ref={ref}
-			icon={AlertCircle}
-			title="Something went wrong"
-			description={error}
-			{...props}
-		/>
-	);
-});
+>(({ error, ...props }, ref) => (
+	<EmptyState
+		ref={ref}
+		icon={AlertCircle}
+		title="Something went wrong"
+		description={error}
+		{...props}
+	/>
+));
 
 ErrorEmptyState.displayName = "ErrorEmptyState";
 

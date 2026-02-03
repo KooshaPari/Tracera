@@ -5,7 +5,7 @@ interface PageHeaderProps {
 	description?: string;
 	icon?: ReactNode;
 	actions?: ReactNode;
-	breadcrumbs?: Array<{ label: string; href?: string }>;
+	breadcrumbs?: { label: string; href?: string }[];
 }
 
 export function PageHeader({

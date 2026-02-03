@@ -1,7 +1,8 @@
 /// <reference lib="dom" />
 /// <reference lib="es2015" />
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { authenticateAndNavigate } from "./critical-path-helpers";
 
 /**
@@ -42,43 +43,45 @@ interface MemoryMetrics {
  */
 async function measureFrameRate(
 	page: Page,
-	duration: number = 1000,
+	duration = 1000,
 ): Promise<PerformanceMetrics> {
-	return page.evaluate((measureDuration) => {
-		return new Promise<PerformanceMetrics>((resolve) => {
-			const frameTimings: number[] = [];
-			let lastFrameTime = performance.now();
-			const startTime = performance.now();
+	return page.evaluate(
+		(measureDuration) =>
+			new Promise<PerformanceMetrics>((resolve) => {
+				const frameTimings: number[] = [];
+				let lastFrameTime = performance.now();
+				const startTime = performance.now();
 
-			const measureFrames = () => {
-				const now = performance.now();
-				const frameTime = now - lastFrameTime;
-				frameTimings.push(frameTime);
-				lastFrameTime = now;
+				const measureFrames = () => {
+					const now = performance.now();
+					const frameTime = now - lastFrameTime;
+					frameTimings.push(frameTime);
+					lastFrameTime = now;
 
-				if (now - startTime < measureDuration) {
-					requestAnimationFrame(measureFrames);
-				} else {
-					// Calculate metrics
-					const avgFrameTime =
-						frameTimings.reduce((a, b) => a + b, 0) / frameTimings.length;
-					const maxFrameTime = Math.max(...frameTimings);
-					const jankFrames = frameTimings.filter((t) => t > 50).length;
-					const fps = 1000 / avgFrameTime;
+					if (now - startTime < measureDuration) {
+						requestAnimationFrame(measureFrames);
+					} else {
+						// Calculate metrics
+						const avgFrameTime =
+							frameTimings.reduce((a, b) => a + b, 0) / frameTimings.length;
+						const maxFrameTime = Math.max(...frameTimings);
+						const jankFrames = frameTimings.filter((t) => t > 50).length;
+						const fps = 1000 / avgFrameTime;
 
-					resolve({
-						fps,
-						avgFrameTime,
-						maxFrameTime,
-						jankFrames,
-						jankPercentage: (jankFrames / frameTimings.length) * 100,
-					});
-				}
-			};
+						resolve({
+							avgFrameTime,
+							fps,
+							jankFrames,
+							jankPercentage: (jankFrames / frameTimings.length) * 100,
+							maxFrameTime,
+						});
+					}
+				};
 
-			requestAnimationFrame(measureFrames);
-		});
-	}, duration);
+				requestAnimationFrame(measureFrames);
+			}),
+		duration,
+	);
 }
 
 /** Chrome non-standard performance.memory (optional) */
@@ -95,12 +98,14 @@ async function getMemoryUsage(page: Page): Promise<MemoryMetrics | null> {
 	return page.evaluate(() => {
 		const memory = (performance as Performance & { memory?: PerformanceMemory })
 			.memory;
-		if (memory == null) return null;
+		if (memory == null) {
+			return null;
+		}
 
 		return {
-			usedJSHeapSize: memory.usedJSHeapSize,
-			totalJSHeapSize: memory.totalJSHeapSize,
 			jsHeapSizeLimit: memory.jsHeapSizeLimit,
+			totalJSHeapSize: memory.totalJSHeapSize,
+			usedJSHeapSize: memory.usedJSHeapSize,
 		};
 	});
 }
@@ -115,7 +120,7 @@ interface WindowWithGC extends Window {
  */
 async function forceGC(page: Page): Promise<void> {
 	await page.evaluate(() => {
-		const w = window as WindowWithGC;
+		const w = globalThis as WindowWithGC;
 		if (typeof w.gc === "function") {
 			w.gc!();
 		}
@@ -127,10 +132,10 @@ async function forceGC(page: Page): Promise<void> {
  */
 async function waitForGraphReady(page: Page): Promise<void> {
 	// Wait for ReactFlow to be initialized
-	await page.waitForSelector(".react-flow", { timeout: 10000 });
+	await page.waitForSelector(".react-flow", { timeout: 10_000 });
 
 	// Wait for nodes to be rendered
-	await page.waitForSelector(".react-flow__node", { timeout: 10000 });
+	await page.waitForSelector(".react-flow__node", { timeout: 10_000 });
 
 	// Give it a moment to stabilize
 	await page.waitForTimeout(1000);
@@ -186,7 +191,7 @@ test.describe("Graph Performance - 500 Node Load", () => {
 	test.beforeEach(async ({ page }) => {
 		// Enable performance memory API (gc exposed by Node --expose-gc in Playwright)
 		await page.addInitScript(() => {
-			const w = window as WindowWithGC;
+			const w = globalThis as WindowWithGC;
 			w.gc = w.gc ?? (() => {});
 		});
 
@@ -451,32 +456,39 @@ test.describe("Graph Performance - Edge Rendering", () => {
 		const graphPane = page.locator(".react-flow__pane");
 
 		// Measure stability during panning
-		const _visualStability = await page.evaluate(() => {
-			return new Promise<{ flickerCount: number }>((resolve) => {
-				let flickerCount = 0;
-				const edgeElements = document.querySelectorAll(".react-flow__edge");
+		const _visualStability = await page.evaluate(
+			() =>
+				new Promise<{ flickerCount: number }>((resolve) => {
+					let flickerCount = 0;
+					const edgeElements = document.querySelectorAll(".react-flow__edge");
 
-				// Monitor edge visibility
-				const observer = new MutationObserver((mutations) => {
-					mutations.forEach((mutation) => {
-						if (mutation.type === "attributes" && mutation.attributeName === "style") {
-							// Count potential flickers (visibility changes)
-							flickerCount++;
-						}
+					// Monitor edge visibility
+					const observer = new MutationObserver((mutations) => {
+						mutations.forEach((mutation) => {
+							if (
+								mutation.type === "attributes" &&
+								mutation.attributeName === "style"
+							) {
+								// Count potential flickers (visibility changes)
+								flickerCount++;
+							}
+						});
 					});
-				});
 
-				edgeElements.forEach((edge) => {
-					observer.observe(edge, { attributes: true, attributeFilter: ["style"] });
-				});
+					edgeElements.forEach((edge) => {
+						observer.observe(edge, {
+							attributeFilter: ["style"],
+							attributes: true,
+						});
+					});
 
-				// Pan and observe
-				setTimeout(() => {
-					observer.disconnect();
-					resolve({ flickerCount });
-				}, 2000);
-			});
-		});
+					// Pan and observe
+					setTimeout(() => {
+						observer.disconnect();
+						resolve({ flickerCount });
+					}, 2000);
+				}),
+		);
 
 		// Start panning
 		await graphPane.hover();
@@ -607,8 +619,8 @@ test.describe("Graph Performance - LOD Transitions", () => {
 		page,
 	}) => {
 		// Check that node labels remain readable at different zoom levels
-		const checkLabels = async () => {
-			return await page.evaluate(() => {
+		const checkLabels = async () =>
+			await page.evaluate(() => {
 				const nodes = document.querySelectorAll(".react-flow__node");
 				let readableCount = 0;
 
@@ -619,9 +631,8 @@ test.describe("Graph Performance - LOD Transitions", () => {
 					}
 				});
 
-				return { total: nodes.length, readable: readableCount };
+				return { readable: readableCount, total: nodes.length };
 			});
-		};
 
 		const initialLabels = await checkLabels();
 		expect(initialLabels.readable).toBeGreaterThan(0);
@@ -643,7 +654,7 @@ test.describe("Graph Performance - Large Graph (1000+ Nodes)", () => {
 	test.beforeEach(async ({ page }) => {
 		// Enable performance monitoring
 		await page.addInitScript(() => {
-			(window as any).gc = (window as any).gc || (() => {});
+			(globalThis as any).gc = (globalThis as any).gc || (() => {});
 		});
 
 		await authenticateAndNavigate(page, "/graph");
@@ -653,7 +664,7 @@ test.describe("Graph Performance - Large Graph (1000+ Nodes)", () => {
 		const startTime = Date.now();
 
 		// Wait for initial render
-		await page.waitForSelector(".react-flow", { timeout: 15000 });
+		await page.waitForSelector(".react-flow", { timeout: 15_000 });
 
 		const initialLoadTime = Date.now() - startTime;
 
@@ -675,10 +686,10 @@ test.describe("Graph Performance - Large Graph (1000+ Nodes)", () => {
 		// Get initial visible node count
 		const visibleNodes = await page.evaluate(() => {
 			const viewport = {
+				height: window.innerHeight,
+				width: window.innerWidth,
 				x: 0,
 				y: 0,
-				width: window.innerWidth,
-				height: window.innerHeight,
 			};
 
 			const nodes = document.querySelectorAll(".react-flow__node");
@@ -760,9 +771,7 @@ test.describe("Graph Performance - Large Graph (1000+ Nodes)", () => {
 		expect(zoomDuration).toBeLessThan(3000);
 	});
 
-	test("should not exceed memory limits with large graph", async ({
-		page,
-	}) => {
+	test("should not exceed memory limits with large graph", async ({ page }) => {
 		await waitForGraphReady(page);
 
 		// Force GC before measurement
@@ -790,7 +799,8 @@ test.describe("Graph Performance - Large Graph (1000+ Nodes)", () => {
 			const finalMemory = await getMemoryUsage(page);
 
 			if (finalMemory) {
-				const memoryIncrease = finalMemory.usedJSHeapSize - initialMemory.usedJSHeapSize;
+				const memoryIncrease =
+					finalMemory.usedJSHeapSize - initialMemory.usedJSHeapSize;
 
 				// Memory increase should be reasonable (less than 50MB)
 				expect(memoryIncrease).toBeLessThan(50 * 1024 * 1024);
@@ -807,7 +817,7 @@ test.describe("Graph Performance - Large Graph (1000+ Nodes)", () => {
 test.describe("Graph Performance - Memory Management", () => {
 	test.beforeEach(async ({ page }) => {
 		await page.addInitScript(() => {
-			(window as any).gc = (window as any).gc || (() => {});
+			(globalThis as any).gc = (globalThis as any).gc || (() => {});
 		});
 
 		await authenticateAndNavigate(page, "/graph");
@@ -852,7 +862,8 @@ test.describe("Graph Performance - Memory Management", () => {
 			const finalMemory = await getMemoryUsage(page);
 
 			if (finalMemory) {
-				const memoryIncrease = finalMemory.usedJSHeapSize - initialMemory.usedJSHeapSize;
+				const memoryIncrease =
+					finalMemory.usedJSHeapSize - initialMemory.usedJSHeapSize;
 
 				// Should not accumulate excessive memory
 				expect(memoryIncrease).toBeLessThan(20 * 1024 * 1024);
@@ -914,7 +925,7 @@ test.describe("Graph Performance - Network Requests", () => {
 		page.on("request", (request) => {
 			const url = request.url();
 			if (url.includes("/api/graph") || url.includes("/api/nodes")) {
-				requests.push({ url, timestamp: Date.now() });
+				requests.push({ timestamp: Date.now(), url });
 			}
 		});
 
@@ -971,9 +982,9 @@ test.describe("Graph Performance - Interaction Responsiveness", () => {
 
 	test("should respond to keyboard shortcuts quickly", async ({ page }) => {
 		const shortcuts = [
-			{ key: "f", description: "fit view" },
-			{ key: "+", description: "zoom in" },
-			{ key: "-", description: "zoom out" },
+			{ description: "fit view", key: "f" },
+			{ description: "zoom in", key: "+" },
+			{ description: "zoom out", key: "-" },
 		];
 
 		for (const shortcut of shortcuts) {
@@ -1004,10 +1015,15 @@ test.describe("Graph Performance - Interaction Responsiveness", () => {
 	});
 
 	test("should update layout controls without lag", async ({ page }) => {
-		const layoutSelector = page.locator("button").filter({ hasText: /layout/i });
+		const layoutSelector = page
+			.locator("button")
+			.filter({ hasText: /layout/i });
 
 		if (
-			await layoutSelector.first().isVisible({ timeout: 2000 }).catch(() => false)
+			await layoutSelector
+				.first()
+				.isVisible({ timeout: 2000 })
+				.catch(() => false)
 		) {
 			const responseTime = await measureInteractionTime(page, async () => {
 				await layoutSelector.first().click();
@@ -1030,9 +1046,9 @@ test.describe("Graph Performance - Rendering Optimization", () => {
 		// This test verifies that the graph uses RAF properly
 		const rafUsage = await page.evaluate(() => {
 			let rafCalls = 0;
-			const originalRAF = window.requestAnimationFrame;
+			const originalRAF = globalThis.requestAnimationFrame;
 
-			window.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+			globalThis.requestAnimationFrame = ((callback: FrameRequestCallback) => {
 				rafCalls++;
 				return originalRAF(callback);
 			}) as typeof requestAnimationFrame;
@@ -1068,23 +1084,24 @@ test.describe("Graph Performance - Rendering Optimization", () => {
 	});
 
 	test("should minimize layout thrashing", async ({ page }) => {
-		const layoutTime = await page.evaluate(() => {
-			return new Promise<number>((resolve) => {
-				const start = performance.now();
+		const layoutTime = await page.evaluate(
+			() =>
+				new Promise<number>((resolve) => {
+					const start = performance.now();
 
-				// Potentially thrashing operations
-				const nodes = document.querySelectorAll(".react-flow__node");
-				nodes.forEach((node) => {
-					const height = node.clientHeight; // Read
-					(node as HTMLElement).style.height = `${height}px`; // Write
-				});
+					// Potentially thrashing operations
+					const nodes = document.querySelectorAll(".react-flow__node");
+					nodes.forEach((node) => {
+						const height = node.clientHeight; // Read
+						(node as HTMLElement).style.height = `${height}px`; // Write
+					});
 
-				requestAnimationFrame(() => {
-					const end = performance.now();
-					resolve(end - start);
-				});
-			});
-		});
+					requestAnimationFrame(() => {
+						const end = performance.now();
+						resolve(end - start);
+					});
+				}),
+		);
 
 		// Should complete layout operations efficiently
 		expect(layoutTime).toBeLessThan(50);

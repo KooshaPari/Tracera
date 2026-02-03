@@ -26,25 +26,25 @@ const moscowConfig: Record<
 	MoSCoWPriority,
 	{ label: string; color: string; description: string }
 > = {
-	must: {
-		label: "Must Have",
-		color: "bg-red-500",
-		description: "Critical requirements that must be implemented",
-	},
-	should: {
-		label: "Should Have",
-		color: "bg-orange-500",
-		description: "Important features with high value",
-	},
 	could: {
-		label: "Could Have",
 		color: "bg-yellow-500",
 		description: "Desirable features if time permits",
+		label: "Could Have",
+	},
+	must: {
+		color: "bg-red-500",
+		description: "Critical requirements that must be implemented",
+		label: "Must Have",
+	},
+	should: {
+		color: "bg-orange-500",
+		description: "Important features with high value",
+		label: "Should Have",
 	},
 	wont: {
-		label: "Won't Have",
 		color: "bg-gray-400",
 		description: "Features explicitly excluded this time",
+		label: "Won't Have",
 	},
 };
 
@@ -57,7 +57,9 @@ export function PriorityMatrix({
 	const grouped = items.reduce(
 		(acc, item) => {
 			const priority = item.priority || "could";
-			if (!acc[priority]) acc[priority] = [];
+			if (!acc[priority]) {
+				acc[priority] = [];
+			}
 			acc[priority].push(item);
 			return acc;
 		},
@@ -137,14 +139,14 @@ export function ValueEffortMatrix({
 
 	// Categorize into quadrants
 	const quadrants = {
-		quickWins: validItems.filter(
-			(i) => (i.value ?? 0) >= 50 && (i.effort ?? 0) < 50,
-		),
 		bigBets: validItems.filter(
 			(i) => (i.value ?? 0) >= 50 && (i.effort ?? 0) >= 50,
 		),
 		fillIns: validItems.filter(
 			(i) => (i.value ?? 0) < 50 && (i.effort ?? 0) < 50,
+		),
+		quickWins: validItems.filter(
+			(i) => (i.value ?? 0) >= 50 && (i.effort ?? 0) < 50,
 		),
 		thankless: validItems.filter(
 			(i) => (i.value ?? 0) < 50 && (i.effort ?? 0) >= 50,
@@ -152,25 +154,25 @@ export function ValueEffortMatrix({
 	};
 
 	const quadrantConfig = {
-		quickWins: {
-			label: "Quick Wins",
-			color: "bg-green-100 border-green-300",
-			description: "High Value, Low Effort",
-		},
 		bigBets: {
-			label: "Big Bets",
 			color: "bg-blue-100 border-blue-300",
 			description: "High Value, High Effort",
+			label: "Big Bets",
 		},
 		fillIns: {
-			label: "Fill-Ins",
 			color: "bg-yellow-100 border-yellow-300",
 			description: "Low Value, Low Effort",
+			label: "Fill-Ins",
+		},
+		quickWins: {
+			color: "bg-green-100 border-green-300",
+			description: "High Value, Low Effort",
+			label: "Quick Wins",
 		},
 		thankless: {
-			label: "Thankless Tasks",
 			color: "bg-red-100 border-red-300",
 			description: "Low Value, High Effort",
+			label: "Thankless Tasks",
 		},
 	};
 

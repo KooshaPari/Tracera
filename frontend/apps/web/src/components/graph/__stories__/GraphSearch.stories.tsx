@@ -2,23 +2,23 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { GraphSearch } from "../GraphSearch";
 
 const meta: Meta<typeof GraphSearch> = {
-	title: "Components/Graph/GraphSearch",
+	argTypes: {
+		compact: { control: "boolean" },
+		onHighlight: { action: "highlight" },
+		onSearch: { action: "search performed" },
+	},
 	component: GraphSearch,
-	tags: ["autodocs"],
 	parameters: {
 		chromatic: {
+			delay: 300,
 			modes: {
 				light: { query: "[data-theme='light']" },
 				dark: { query: "[data-theme='dark']" },
 			},
-			delay: 300,
 		},
 	},
-	argTypes: {
-		onSearch: { action: "search performed" },
-		onHighlight: { action: "highlight" },
-		compact: { control: "boolean" },
-	},
+	tags: ["autodocs"],
+	title: "Components/Graph/GraphSearch",
 };
 
 export default meta;
@@ -29,10 +29,10 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
 	args: {
-		items: [],
-		onSearch: () => {},
-		onHighlight: () => {},
 		compact: false,
+		items: [],
+		onHighlight: () => {},
+		onSearch: () => {},
 	},
 };
 
@@ -41,10 +41,10 @@ export const Default: Story = {
  */
 export const WithQuery: Story = {
 	args: {
-		items: [],
-		onSearch: () => {},
-		onHighlight: () => {},
 		compact: false,
+		items: [],
+		onHighlight: () => {},
+		onSearch: () => {},
 	},
 	play: async ({ canvasElement }) => {
 		const input = canvasElement.querySelector("input");
@@ -60,10 +60,10 @@ export const WithQuery: Story = {
  */
 export const Compact: Story = {
 	args: {
-		items: [],
-		onSearch: () => {},
-		onHighlight: () => {},
 		compact: true,
+		items: [],
+		onHighlight: () => {},
+		onSearch: () => {},
 	},
 };
 
@@ -72,10 +72,10 @@ export const Compact: Story = {
  */
 export const Tablet: Story = {
 	args: {
-		items: [],
-		onSearch: () => {},
-		onHighlight: () => {},
 		compact: false,
+		items: [],
+		onHighlight: () => {},
+		onSearch: () => {},
 	},
 	parameters: {
 		viewport: {
@@ -89,10 +89,10 @@ export const Tablet: Story = {
  */
 export const Mobile: Story = {
 	args: {
-		items: [],
-		onSearch: () => {},
-		onHighlight: () => {},
 		compact: false,
+		items: [],
+		onHighlight: () => {},
+		onSearch: () => {},
 	},
 	parameters: {
 		viewport: {
@@ -106,10 +106,10 @@ export const Mobile: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		items: [],
-		onSearch: () => {},
-		onHighlight: () => {},
 		compact: false,
+		items: [],
+		onHighlight: () => {},
+		onSearch: () => {},
 	},
 	decorators: [
 		(Story) => (
@@ -132,10 +132,10 @@ export const DarkMode: Story = {
  */
 export const Focused: Story = {
 	args: {
-		items: [],
-		onSearch: () => {},
-		onHighlight: () => {},
 		compact: false,
+		items: [],
+		onHighlight: () => {},
+		onSearch: () => {},
 	},
 	play: async ({ canvasElement }) => {
 		const input = canvasElement.querySelector("input");

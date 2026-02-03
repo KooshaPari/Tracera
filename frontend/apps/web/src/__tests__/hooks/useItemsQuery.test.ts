@@ -67,8 +67,8 @@ describe("useItemsQuery Hook", () => {
 		});
 
 		it("should have default staleTime of 30 seconds", () => {
-			const staleTime = 30000;
-			expect(staleTime).toBe(30000);
+			const staleTime = 30_000;
+			expect(staleTime).toBe(30_000);
 		});
 
 		it("should be enabled by default", () => {
@@ -110,7 +110,7 @@ describe("useItemsQuery Hook", () => {
 		});
 
 		it("should accept UpdateItemInput", () => {
-			const updateInput = { id: "item-1", data: { title: "Updated" } };
+			const updateInput = { data: { title: "Updated" }, id: "item-1" };
 			expect(updateInput).toHaveProperty("id");
 			expect(updateInput).toHaveProperty("data");
 		});

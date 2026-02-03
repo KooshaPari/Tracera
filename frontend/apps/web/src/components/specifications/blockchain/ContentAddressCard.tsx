@@ -68,7 +68,7 @@ export function ContentAddressCard({
 								<span>🔏</span>
 								Signed & Valid
 							</span>
-						) : signatureValid === false ? (
+						) : (signatureValid === false ? (
 							<span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-md font-medium flex items-center gap-1">
 								<span>⚠</span>
 								Invalid Signature
@@ -78,7 +78,7 @@ export function ContentAddressCard({
 								<span>🔏</span>
 								Signed
 							</span>
-						)}
+						))}
 					</div>
 				)}
 			</div>

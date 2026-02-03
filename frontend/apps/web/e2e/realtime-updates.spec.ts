@@ -29,13 +29,13 @@ test.describe("Real-time Updates", () => {
 		const response = await page.request.post(
 			"http://localhost:8080/api/v1/items",
 			{
-				headers: {
-					"Content-Type": "application/json",
-				},
 				data: {
 					title: "Real-time Test Item",
 					project_id: "test-project",
 					type: "requirement",
+				},
+				headers: {
+					"Content-Type": "application/json",
 				},
 			},
 		);
@@ -56,13 +56,13 @@ test.describe("Real-time Updates", () => {
 		const createResponse = await page.request.post(
 			"http://localhost:8080/api/v1/items",
 			{
-				headers: {
-					"Content-Type": "application/json",
-				},
 				data: {
 					title: "Original Title",
 					project_id: "test-project",
 					type: "requirement",
+				},
+				headers: {
+					"Content-Type": "application/json",
 				},
 			},
 		);
@@ -77,11 +77,11 @@ test.describe("Real-time Updates", () => {
 
 		// Update item via API
 		await page.request.put(`http://localhost:8080/api/v1/items/${itemId}`, {
-			headers: {
-				"Content-Type": "application/json",
-			},
 			data: {
 				title: "Updated Title via WebSocket",
+			},
+			headers: {
+				"Content-Type": "application/json",
 			},
 		});
 
@@ -100,12 +100,12 @@ test.describe("Real-time Updates", () => {
 		const item1Response = await page.request.post(
 			"http://localhost:8080/api/v1/items",
 			{
-				headers: { "Content-Type": "application/json" },
 				data: {
 					title: "Source Item",
 					project_id: "test-project",
 					type: "requirement",
 				},
+				headers: { "Content-Type": "application/json" },
 			},
 		);
 		const item1 = (await item1Response.json()) as { id: string };
@@ -113,25 +113,25 @@ test.describe("Real-time Updates", () => {
 		const item2Response = await page.request.post(
 			"http://localhost:8080/api/v1/items",
 			{
-				headers: { "Content-Type": "application/json" },
 				data: {
 					title: "Target Item",
 					project_id: "test-project",
 					type: "feature",
 				},
+				headers: { "Content-Type": "application/json" },
 			},
 		);
 		const item2 = (await item2Response.json()) as { id: string };
 
 		// Create link via API
 		await page.request.post("http://localhost:8080/api/v1/links", {
-			headers: { "Content-Type": "application/json" },
 			data: {
 				source_id: item1.id,
 				target_id: item2.id,
 				link_type: "implements",
 				project_id: "test-project",
 			},
+			headers: { "Content-Type": "application/json" },
 		});
 
 		// Verify link appears in UI (via WebSocket)
@@ -146,12 +146,12 @@ test.describe("Real-time Updates", () => {
 
 		// Create item via API
 		await page.request.post("http://localhost:8080/api/v1/items", {
-			headers: { "Content-Type": "application/json" },
 			data: {
 				title: "Toast Test Item",
 				project_id: "test-project",
 				type: "requirement",
 			},
+			headers: { "Content-Type": "application/json" },
 		});
 
 		// Wait for toast notification
@@ -178,17 +178,17 @@ test.describe("Real-time Updates", () => {
 
 		// Create item - should work after reconnection
 		await page.request.post("http://localhost:8080/api/v1/items", {
-			headers: { "Content-Type": "application/json" },
 			data: {
 				title: "Reconnection Test Item",
 				project_id: "test-project",
 				type: "requirement",
 			},
+			headers: { "Content-Type": "application/json" },
 		});
 
 		// Verify item appears after reconnection
 		await expect(page.getByText("Reconnection Test Item")).toBeVisible({
-			timeout: 10000,
+			timeout: 10_000,
 		});
 	});
 
@@ -198,12 +198,12 @@ test.describe("Real-time Updates", () => {
 
 		// Create item in project B (should NOT appear)
 		await page.request.post("http://localhost:8080/api/v1/items", {
-			headers: { "Content-Type": "application/json" },
 			data: {
 				title: "Project B Item",
 				project_id: "project-b",
 				type: "requirement",
 			},
+			headers: { "Content-Type": "application/json" },
 		});
 
 		// Item should NOT appear
@@ -212,12 +212,12 @@ test.describe("Real-time Updates", () => {
 
 		// Create item in project A (should appear)
 		await page.request.post("http://localhost:8080/api/v1/items", {
-			headers: { "Content-Type": "application/json" },
 			data: {
 				title: "Project A Item",
 				project_id: "project-a",
 				type: "requirement",
 			},
+			headers: { "Content-Type": "application/json" },
 		});
 
 		// Item SHOULD appear
@@ -235,16 +235,16 @@ test.describe("Real-time Updates", () => {
 			// Simulate receiving NATS event via WebSocket
 			const event = new CustomEvent("nats_event", {
 				detail: {
-					event_type: "ai.analysis.complete",
-					project_id: "test-project",
-					entity_id: "spec-123",
 					data: {
 						spec_id: "spec-123",
 						analysis: "Complete",
 					},
+					entity_id: "spec-123",
+					event_type: "ai.analysis.complete",
+					project_id: "test-project",
 				},
 			});
-			window.dispatchEvent(event);
+			globalThis.dispatchEvent(event);
 		});
 
 		// Wait for toast notification

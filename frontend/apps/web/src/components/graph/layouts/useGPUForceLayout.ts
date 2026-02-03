@@ -11,10 +11,10 @@
 import type { Edge, Node } from "@xyflow/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
+	ForceLayoutError,
+	ForceLayoutProgress,
 	ForceLayoutRequest,
 	ForceLayoutResponse,
-	ForceLayoutProgress,
-	ForceLayoutError,
 } from "./gpuForceLayout.worker";
 import type { ForceSimulationConfig } from "./gpuForceLayout";
 import { getGPUForceLayout } from "./gpuForceLayout";
@@ -24,7 +24,7 @@ import { getGPUForceLayout } from "./gpuForceLayout";
 // ============================================================================
 
 const WORKER_THRESHOLD = 1000; // Use worker for graphs with >1000 nodes
-const ANIMATION_DURATION = 800; // ms for layout transition animation
+const ANIMATION_DURATION = 800; // Ms for layout transition animation
 
 // ============================================================================
 // TYPES
@@ -62,10 +62,10 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 
 	const [layoutedNodes, setLayoutedNodes] = useState<Node<T>[]>(nodes);
 	const [state, setState] = useState<GPUForceLayoutState>({
-		isComputing: false,
-		progress: 0,
 		duration: null,
 		error: null,
+		isComputing: false,
+		progress: 0,
 	});
 
 	const workerRef = useRef<Worker | null>(null);
@@ -73,8 +73,8 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 	const prevSignatureRef = useRef<string>("");
 
 	// Cleanup worker on unmount
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			if (workerRef.current) {
 				workerRef.current.terminate();
 				workerRef.current = null;
@@ -82,8 +82,9 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 			if (animationFrameRef.current) {
 				cancelAnimationFrame(animationFrameRef.current);
 			}
-		};
-	}, []);
+		},
+		[],
+	);
 
 	/**
 	 * Animate transition from old positions to new positions
@@ -93,8 +94,8 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 			oldNodes: Node<T>[],
 			newNodes: Node<T>[],
 			duration: number,
-		): Promise<void> => {
-			return new Promise((resolve) => {
+		): Promise<void> =>
+			new Promise((resolve) => {
 				if (!animateTransitions) {
 					setLayoutedNodes(newNodes);
 					resolve();
@@ -102,12 +103,8 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 				}
 
 				const startTime = performance.now();
-				const oldPosMap = new Map(
-					oldNodes.map((n) => [n.id, n.position]),
-				);
-				const newPosMap = new Map(
-					newNodes.map((n) => [n.id, n.position]),
-				);
+				const oldPosMap = new Map(oldNodes.map((n) => [n.id, n.position]));
+				const newPosMap = new Map(newNodes.map((n) => [n.id, n.position]));
 
 				const animate = (currentTime: number) => {
 					const elapsed = currentTime - startTime;
@@ -139,8 +136,7 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 				};
 
 				animationFrameRef.current = requestAnimationFrame(animate);
-			});
-		},
+			}),
 		[animateTransitions],
 	);
 
@@ -148,8 +144,8 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 	 * Run layout in Web Worker
 	 */
 	const runInWorker = useCallback(
-		(inputNodes: Node<T>[], inputEdges: Edge[]): Promise<Node<T>[]> => {
-			return new Promise((resolve, reject) => {
+		(inputNodes: Node<T>[], inputEdges: Edge[]): Promise<Node<T>[]> =>
+			new Promise((resolve, reject) => {
 				if (typeof Worker === "undefined") {
 					reject(new Error("Web Workers not supported"));
 					return;
@@ -226,19 +222,18 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 
 				// Send request
 				const request: ForceLayoutRequest = {
-					type: "simulate",
-					nodes: inputNodes.map((n) => ({ id: n.id })),
+					config,
 					edges: inputEdges.map((e) => ({
 						id: e.id,
 						source: e.source,
 						target: e.target,
 					})),
-					config,
+					nodes: inputNodes.map((n) => ({ id: n.id })),
+					type: "simulate",
 				};
 
 				worker.postMessage(request, worker.location.origin);
-			});
-		},
+			}),
 		[config],
 	);
 
@@ -279,10 +274,10 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 			}
 
 			setState({
-				isComputing: true,
-				progress: 0,
 				duration: null,
 				error: null,
+				isComputing: true,
+				progress: 0,
 			});
 
 			try {
@@ -293,12 +288,12 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 						: await runOnMainThread(inputNodes, inputEdges);
 
 				return result;
-			} catch (err) {
-				console.error("GPU force layout failed:", err);
+			} catch (error) {
+				console.error("GPU force layout failed:", error);
 
 				setState((prev) => ({
 					...prev,
-					error: err instanceof Error ? err.message : String(err),
+					error: error instanceof Error ? error.message : String(error),
 					isComputing: false,
 				}));
 
@@ -337,13 +332,7 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 		// Calculate new layout
 		const oldNodes = layoutedNodes.length > 0 ? layoutedNodes : nodes;
 
-		void calculateLayout(nodes, edges).then((newNodes) => {
-			if (animateTransitions && oldNodes.length === newNodes.length) {
-				void animateLayout(oldNodes, newNodes, animationDuration);
-			} else {
-				setLayoutedNodes(newNodes);
-			}
-		});
+		undefined;
 	}, [
 		enabled,
 		nodes,

@@ -7,16 +7,14 @@ import {
 	Background,
 	BackgroundVariant,
 	Controls,
-	type Edge,
 	MarkerType,
-	type Node,
-	type NodeTypes,
 	Panel,
 	ReactFlow,
 	useEdgesState,
 	useNodesState,
 	useReactFlow,
 } from "@xyflow/react";
+import type { Edge, Node, NodeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
 	Activity,
@@ -29,15 +27,15 @@ import {
 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useGraphWorker } from "./hooks/useGraphWorker";
-import {
-	type NodePosition,
-	useVirtualization,
-} from "./hooks/useVirtualization";
+import { useVirtualization } from "./hooks/useVirtualization";
+import type { NodePosition } from "./hooks/useVirtualization";
 import { LayoutSelector } from "./layouts/LayoutSelector";
-import { type LayoutType, useDAGLayout } from "./layouts/useDAGLayout";
+import { useDAGLayout } from "./layouts/useDAGLayout";
+import type { LayoutType } from "./layouts/useDAGLayout";
 import { NodeDetailPanel } from "./NodeDetailPanel";
 import { QAEnhancedNode } from "./nodes/QAEnhancedNode";
-import { type RichNodeData, RichNodePill } from "./RichNodePill";
+import { RichNodePill } from "./RichNodePill";
+import type { RichNodeData } from "./RichNodePill";
 import type { EnhancedNodeData, GraphPerspective } from "./types";
 import {
 	ENHANCED_TYPE_COLORS,
@@ -56,8 +54,8 @@ function SimplifiedNodePill({ data }: { data: { id: string; type: string } }) {
 				backgroundColor: `${color}20`,
 				borderColor: color,
 				color: color,
-				width: 80,
 				height: 40,
+				width: 80,
 			}}
 		>
 			{data.id.slice(0, 4)}
@@ -79,8 +77,8 @@ function MediumNodePill({
 				backgroundColor: `${color}20`,
 				borderColor: color,
 				color: color,
-				width: 120,
 				height: 60,
+				width: 120,
 			}}
 		>
 			<div className="font-bold">{data.id.slice(0, 6)}</div>
@@ -94,10 +92,10 @@ function MediumNodePill({
 }
 
 const customNodeTypes = {
-	richPill: RichNodePill,
-	simplifiedPill: SimplifiedNodePill,
 	mediumPill: MediumNodePill,
 	qaEnhanced: QAEnhancedNode,
+	richPill: RichNodePill,
+	simplifiedPill: SimplifiedNodePill,
 } as const satisfies NodeTypes;
 
 interface VirtualizedGraphViewProps {
@@ -137,10 +135,10 @@ function VirtualizedGraphViewComponent({
 
 	// Virtualization state
 	const [viewport, setViewport] = useState({
+		height: 600,
+		width: 1000,
 		x: 0,
 		y: 0,
-		width: 1000,
-		height: 600,
 		zoom: 1,
 	});
 
@@ -187,36 +185,36 @@ function VirtualizedGraphViewComponent({
 			let depth = 0;
 			let currentId = item.parentId;
 			while (currentId && depth < 10) {
-				depth++;
+				depth += 1;
 				const parent = itemMap.get(currentId);
 				currentId = parent?.parentId;
 			}
 
 			return {
-				id: item.id,
-				item,
-				type: itemType,
-				status: item.status,
-				label: item.title || "Untitled",
-				perspective: perspectives,
 				connections: {
+					byType:
+						connectionsByType.get(item.id) || ({} as Record<LinkType, number>),
 					incoming,
 					outgoing,
 					total: incoming + outgoing,
-					byType:
-						connectionsByType.get(item.id) || ({} as Record<LinkType, number>),
 				},
 				depth,
 				hasChildren,
+				id: item.id,
+				item,
+				label: item.title || "Untitled",
 				parentId: item.parentId,
+				perspective: perspectives,
+				status: item.status,
+				type: itemType,
 				uiPreview: item.metadata?.screenshotUrl
 					? {
-							screenshotUrl: item.metadata.screenshotUrl as string,
-							thumbnailUrl: item.metadata.thumbnailUrl as string | undefined,
+							componentCode: item.metadata.code as string | undefined,
 							interactiveWidgetUrl: item.metadata.interactiveUrl as
 								| string
 								| undefined,
-							componentCode: item.metadata.code as string | undefined,
+							screenshotUrl: item.metadata.screenshotUrl as string,
+							thumbnailUrl: item.metadata.thumbnailUrl as string | undefined,
 						}
 					: undefined,
 			} as EnhancedNodeData;
@@ -225,10 +223,14 @@ function VirtualizedGraphViewComponent({
 
 	// Filter nodes by perspective
 	const filteredNodes = useMemo(() => {
-		if (perspective === "all") return enhancedNodes;
+		if (perspective === "all") {
+			return enhancedNodes;
+		}
 
 		const config = PERSPECTIVE_CONFIGS.find((c) => c.id === perspective);
-		if (!config || config.includeTypes.length === 0) return enhancedNodes;
+		if (!config || config.includeTypes.length === 0) {
+			return enhancedNodes;
+		}
 
 		return enhancedNodes.filter((node) => {
 			const nodeType = node.type.toLowerCase();
@@ -251,17 +253,12 @@ function VirtualizedGraphViewComponent({
 	// Create node data
 	const createNodeData = useCallback(
 		(node: EnhancedNodeData): RichNodeData => ({
-			id: node.id,
-			item: node.item,
-			type: node.type,
-			status: node.status,
-			label: node.label,
-			description: node.item.description ?? undefined,
-			uiPreview: node.uiPreview ?? undefined,
 			connections: node.connections,
+			description: node.item.description ?? undefined,
+			id: node.id,
 			isExpanded: expandedNodes.has(node.id),
-			showPreview: perspective === "ui",
-			onSelect: setSelectedNodeId,
+			item: node.item,
+			label: node.label,
 			onExpand: (id) => {
 				setExpandedNodes((prev) => {
 					const next = new Set(prev);
@@ -271,19 +268,26 @@ function VirtualizedGraphViewComponent({
 				});
 			},
 			onNavigate: onNavigateToItem ?? undefined,
+			onSelect: setSelectedNodeId,
+			showPreview: perspective === "ui",
+			status: node.status,
+			type: node.type,
+			uiPreview: node.uiPreview ?? undefined,
 		}),
 		[expandedNodes, perspective, onNavigateToItem],
 	);
 
 	// Nodes for layout
-	const nodesForLayout = useMemo((): Node<RichNodeData>[] => {
-		return filteredNodes.map((node) => ({
-			id: node.id,
-			type: "richPill",
-			position: { x: 0, y: 0 },
-			data: createNodeData(node),
-		}));
-	}, [filteredNodes, createNodeData]);
+	const nodesForLayout = useMemo(
+		(): Node<RichNodeData>[] =>
+			filteredNodes.map((node) => ({
+				data: createNodeData(node),
+				id: node.id,
+				position: { x: 0, y: 0 },
+				type: "richPill",
+			})),
+		[filteredNodes, createNodeData],
+	);
 
 	// Use DAG layout
 	const { nodes: dagreLaidoutNodes } = useDAGLayout<RichNodeData>(
@@ -295,12 +299,12 @@ function VirtualizedGraphViewComponent({
 		})),
 		layout,
 		{
-			nodeWidth: 200,
-			nodeHeight: 120,
-			rankSep: 100,
-			nodeSep: 60,
 			marginX: 40,
 			marginY: 40,
+			nodeHeight: 120,
+			nodeSep: 60,
+			nodeWidth: 200,
+			rankSep: 100,
 		},
 	);
 
@@ -308,11 +312,11 @@ function VirtualizedGraphViewComponent({
 	const nodePositions: NodePosition[] = useMemo(
 		() =>
 			dagreLaidoutNodes.map((node) => ({
+				height: 120,
 				id: node.id,
+				width: 200,
 				x: node.position.x,
 				y: node.position.y,
-				width: 200,
-				height: 120,
 			})),
 		[dagreLaidoutNodes],
 	);
@@ -322,8 +326,8 @@ function VirtualizedGraphViewComponent({
 		viewport,
 		{
 			enableLOD: enableVirtualization,
-			nodeWidth: 200,
 			nodeHeight: 120,
+			nodeWidth: 200,
 			padding: 300,
 		},
 	);
@@ -336,49 +340,50 @@ function VirtualizedGraphViewComponent({
 
 		return dagreLaidoutNodes
 			.filter((node) => visibleNodeIds.has(node.id))
-			.map((node) => ({
-				...node,
-				type:
-					lodLevel === "high"
-						? "richPill"
-						: lodLevel === "medium"
-							? "mediumPill"
-							: "simplifiedPill",
-			}));
+			.map((node) =>
+				Object.assign(node, {
+					type:
+						lodLevel === `high`
+							? `richPill`
+							: (lodLevel === `medium`
+								? `mediumPill`
+								: `simplifiedPill`),
+				}),
+			);
 	}, [dagreLaidoutNodes, visibleNodeIds, enableVirtualization, lodLevel]);
 
 	const initialEdges = useMemo((): Edge[] => {
 		if (!enableVirtualization) {
-			const defaultStyle = { color: "#64748b", dashed: true, arrow: false };
+			const defaultStyle = { arrow: false, color: "#64748b", dashed: true };
 			return filteredLinks.map((link) => {
 				const linkStyle = LINK_STYLES[link.type] ?? defaultStyle;
 				return {
-					id: link.id,
-					source: link.sourceId,
-					target: link.targetId,
-					type: "smoothstep",
 					animated: link.type === "depends_on" || link.type === "blocks",
+					id: link.id,
+					label: link.type.replace(/_/g, " "),
+					labelBgPadding: [4, 2] as [number, number],
+					labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
+					labelStyle: { fill: linkStyle.color, fontSize: 10 },
+					markerEnd: linkStyle.arrow
+						? {
+								color: linkStyle.color,
+								type: MarkerType.ArrowClosed,
+							}
+						: undefined,
+					source: link.sourceId,
 					style: {
 						stroke: linkStyle.color,
 						strokeWidth: 2,
 						...(linkStyle.dashed && { strokeDasharray: "5,5" }),
 					},
-					label: link.type.replace(/_/g, " "),
-					labelStyle: { fontSize: 10, fill: linkStyle.color },
-					labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
-					labelBgPadding: [4, 2] as [number, number],
-					markerEnd: linkStyle.arrow
-						? {
-								type: MarkerType.ArrowClosed,
-								color: linkStyle.color,
-							}
-						: undefined,
+					target: link.targetId,
+					type: "smoothstep",
 				} as Edge;
 			});
 		}
 
 		// For virtualized view, only show edges between visible nodes
-		const defaultStyle = { color: "#64748b", dashed: true, arrow: false };
+		const defaultStyle = { arrow: false, color: "#64748b", dashed: true };
 		return filteredLinks
 			.filter(
 				(link) =>
@@ -400,8 +405,8 @@ function VirtualizedGraphViewComponent({
 					},
 					markerEnd: linkStyle.arrow
 						? {
-								type: MarkerType.ArrowClosed,
 								color: linkStyle.color,
+								type: MarkerType.ArrowClosed,
 							}
 						: undefined,
 				} as Edge;
@@ -424,11 +429,11 @@ function VirtualizedGraphViewComponent({
 	useEffect(() => {
 		if (autoFit && nodes.length > 0) {
 			const timer = setTimeout(() => {
-				void fitView({ padding: 0.2, duration: 300 });
+				undefined;
 			}, 100);
 			return () => clearTimeout(timer);
 		}
-		return undefined;
+		return;
 	}, [autoFit, fitView, nodes.length]);
 
 	// Update viewport on move/zoom
@@ -445,7 +450,9 @@ function VirtualizedGraphViewComponent({
 
 	// Selected node data
 	const selectedNode = useMemo(() => {
-		if (!selectedNodeId) return null;
+		if (!selectedNodeId) {
+			return null;
+		}
 		return filteredNodes.find((n) => n.id === selectedNodeId) || null;
 	}, [filteredNodes, selectedNodeId]);
 
@@ -470,7 +477,7 @@ function VirtualizedGraphViewComponent({
 	}, [selectedNodeId, links, items]);
 
 	// Handlers
-	const handleFit = () => void fitView({ padding: 0.2, duration: 300 });
+	const handleFit = () => undefined;
 	const handleReset = () => {
 		setPerspective("all");
 		setLayout("flow-chart");
@@ -482,7 +489,7 @@ function VirtualizedGraphViewComponent({
 		setSelectedNodeId(nodeId);
 		const node = nodes.find((n) => n.id === nodeId);
 		if (node) {
-			void fitView({ nodes: [node], padding: 0.5, duration: 300 });
+			undefined;
 		}
 	};
 
@@ -606,7 +613,7 @@ function VirtualizedGraphViewComponent({
 												style={{ backgroundColor: color }}
 											/>
 											<span className="capitalize">
-												{type.replace(/_/g, " ")}
+												{type.replaceAll(/_/g, " ")}
 											</span>
 										</div>
 									))}

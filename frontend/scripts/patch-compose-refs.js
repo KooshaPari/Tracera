@@ -3,9 +3,9 @@
  * Patch @radix-ui/react-compose-refs to defer function ref invocation to queueMicrotask.
  * Fixes "Maximum update depth exceeded" when a composed ref callback calls setState during React commit (e.g. React 19 + Radix TabsTrigger/CollapsibleTrigger).
  */
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -67,7 +67,7 @@ function patch(filePath) {
 	}
 	content = content.replace(ORIGINAL, PATCHED);
 	fs.writeFileSync(filePath, content);
-	console.log("  patched: @radix-ui/react-compose-refs (defer function ref)");
+	
 }
 
 const pathToPatch = fs.existsSync(targetPath) ? targetPath : altPath;

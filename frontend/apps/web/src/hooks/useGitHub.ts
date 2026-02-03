@@ -4,7 +4,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-	type CreateRepoRequest,
 	createGitHubRepo,
 	deleteGitHubAppInstallation,
 	getGitHubAppInstallUrl,
@@ -12,15 +11,16 @@ import {
 	listGitHubAppInstallations,
 	listGitHubRepos,
 } from "../api/github";
+import type { CreateRepoRequest } from "../api/github";
 
 /**
  * Get GitHub App installation URL.
  */
 export function useGitHubAppInstallUrl(accountId: string | undefined) {
 	return useQuery({
-		queryKey: ["github", "app", "install-url", accountId],
-		queryFn: () => getGitHubAppInstallUrl(accountId!),
 		enabled: !!accountId,
+		queryFn: () => getGitHubAppInstallUrl(accountId!),
+		queryKey: ["github", "app", "install-url", accountId],
 	});
 }
 
@@ -29,9 +29,9 @@ export function useGitHubAppInstallUrl(accountId: string | undefined) {
  */
 export function useGitHubAppInstallations(accountId: string | undefined) {
 	return useQuery({
-		queryKey: ["github", "app", "installations", accountId],
-		queryFn: () => listGitHubAppInstallations(accountId!),
 		enabled: !!accountId,
+		queryFn: () => listGitHubAppInstallations(accountId!),
+		queryKey: ["github", "app", "installations", accountId],
 	});
 }
 
@@ -49,9 +49,7 @@ export function useLinkGitHubAppInstallation() {
 			accountId: string;
 		}) => linkGitHubAppInstallation(installationId, accountId),
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({
-				queryKey: ["github", "app", "installations", variables.accountId],
-			});
+			undefined;
 		},
 	});
 }
@@ -64,9 +62,7 @@ export function useDeleteGitHubAppInstallation() {
 	return useMutation({
 		mutationFn: deleteGitHubAppInstallation,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ["github", "app", "installations"],
-			});
+			undefined;
 		},
 	});
 }
@@ -83,9 +79,9 @@ export function useGitHubRepos(params: {
 	page?: number;
 }) {
 	return useQuery({
-		queryKey: ["github", "repos", params],
-		queryFn: () => listGitHubRepos(params),
 		enabled: !!(params.installationId || params.credentialId),
+		queryFn: () => listGitHubRepos(params),
+		queryKey: ["github", "repos", params],
 	});
 }
 
@@ -97,13 +93,7 @@ export function useCreateGitHubRepo() {
 	return useMutation({
 		mutationFn: (data: CreateRepoRequest) => createGitHubRepo(data),
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({
-				queryKey: [
-					"github",
-					"repos",
-					{ installationId: variables.installation_id },
-				],
-			});
+			undefined;
 		},
 	});
 }

@@ -81,15 +81,15 @@ export function CreateDefectItemForm({
 		control,
 		formState: { errors, isSubmitting },
 	} = useForm<DefectItemFormData>({
-		resolver: zodResolver(defectItemSchema),
 		defaultValues: {
-			status: "todo",
-			priority: "high",
-			severity: "medium",
-			reproduction_steps: [{ value: "" }],
 			affected_versions: [{ value: "" }],
+			priority: "high",
+			reproduction_steps: [{ value: "" }],
+			severity: "medium",
+			status: "todo",
 		},
 		mode: "onBlur",
+		resolver: zodResolver(defectItemSchema),
 	});
 
 	// Field arrays for reproduction steps and affected versions
@@ -234,7 +234,7 @@ export function CreateDefectItemForm({
 								placeholder="Enter defect title"
 								aria-describedby={errors.title ? "title-error" : "title-help"}
 								aria-required="true"
-								aria-invalid={!!errors.title}
+								aria-invalid={Boolean(errors.title)}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							/>
 							{errors.title ? (
@@ -404,9 +404,9 @@ export function CreateDefectItemForm({
 														? `step-${index}-error`
 														: undefined
 												}
-												aria-invalid={
-													!!errors.reproduction_steps?.[index]?.value
-												}
+												aria-invalid={Boolean(
+													errors.reproduction_steps?.[index]?.value,
+												)}
 												className="w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 											/>
 											{errors.reproduction_steps?.[index]?.value && (

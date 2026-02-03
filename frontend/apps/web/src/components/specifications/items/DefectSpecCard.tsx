@@ -38,35 +38,35 @@ interface DefectSpecCardProps {
 }
 
 const severityStyles = {
-	critical: { bg: "bg-red-500", text: "text-white", icon: AlertCircle },
-	major: { bg: "bg-orange-500", text: "text-white", icon: AlertTriangle },
-	minor: { bg: "bg-yellow-500", text: "text-white", icon: Bug },
-	trivial: { bg: "bg-blue-500", text: "text-white", icon: Circle },
+	critical: { bg: "bg-red-500", icon: AlertCircle, text: "text-white" },
+	major: { bg: "bg-orange-500", icon: AlertTriangle, text: "text-white" },
+	minor: { bg: "bg-yellow-500", icon: Bug, text: "text-white" },
+	trivial: { bg: "bg-blue-500", icon: Circle, text: "text-white" },
 };
 
 const statusStyles = {
-	new: { bg: "bg-blue-500/10", text: "text-blue-600", icon: Circle },
-	assigned: { bg: "bg-purple-500/10", text: "text-purple-600", icon: User },
-	in_progress: { bg: "bg-yellow-500/10", text: "text-yellow-600", icon: Play },
+	assigned: { bg: "bg-purple-500/10", icon: User, text: "text-purple-600" },
+	closed: { bg: "bg-muted", icon: CheckCircle2, text: "text-muted-foreground" },
+	in_progress: { bg: "bg-yellow-500/10", icon: Play, text: "text-yellow-600" },
+	new: { bg: "bg-blue-500/10", icon: Circle, text: "text-blue-600" },
+	reopened: { bg: "bg-red-500/10", icon: RefreshCw, text: "text-red-600" },
 	resolved: {
 		bg: "bg-green-500/10",
-		text: "text-green-600",
 		icon: CheckCircle2,
+		text: "text-green-600",
 	},
 	verified: {
 		bg: "bg-green-500/10",
-		text: "text-green-700",
 		icon: CheckCircle2,
+		text: "text-green-700",
 	},
-	closed: { bg: "bg-muted", text: "text-muted-foreground", icon: CheckCircle2 },
-	reopened: { bg: "bg-red-500/10", text: "text-red-600", icon: RefreshCw },
 };
 
 const regressionRiskStyles = {
 	critical: "bg-red-500 text-white",
 	high: "bg-orange-500 text-white",
-	medium: "bg-yellow-500 text-white",
 	low: "bg-green-500 text-white",
+	medium: "bg-yellow-500 text-white",
 	minimal: "bg-blue-500 text-white",
 };
 

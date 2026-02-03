@@ -7,10 +7,6 @@ import { describe, expect, it } from "vitest";
 import { exportDiff } from "@/lib/diff-export";
 
 const mockDiff: VersionDiff = {
-	versionA: "v1",
-	versionB: "v2",
-	versionANumber: 1,
-	versionBNumber: 2,
 	added: [
 		{
 			itemId: "item3",
@@ -20,15 +16,7 @@ const mockDiff: VersionDiff = {
 			significance: "major",
 		},
 	],
-	removed: [
-		{
-			itemId: "item2",
-			type: "bug",
-			title: "Old Bug",
-			changeType: "removed",
-			significance: "minor",
-		},
-	],
+	computedAt: new Date().toISOString(),
 	modified: [
 		{
 			itemId: "item1",
@@ -52,7 +40,15 @@ const mockDiff: VersionDiff = {
 			],
 		},
 	],
-	unchanged: 5,
+	removed: [
+		{
+			itemId: "item2",
+			type: "bug",
+			title: "Old Bug",
+			changeType: "removed",
+			significance: "minor",
+		},
+	],
 	stats: {
 		totalChanges: 3,
 		addedCount: 1,
@@ -60,16 +56,20 @@ const mockDiff: VersionDiff = {
 		modifiedCount: 1,
 		unchangedCount: 5,
 	},
-	computedAt: new Date().toISOString(),
+	unchanged: 5,
+	versionA: "v1",
+	versionANumber: 1,
+	versionB: "v2",
+	versionBNumber: 2,
 };
 
-describe("exportDiff", () => {
+describe(exportDiff, () => {
 	describe("JSON export", () => {
 		it("should export diff as JSON", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "json",
-				includeUnchanged: false,
 				includeFieldChanges: true,
+				includeUnchanged: false,
 			});
 
 			expect(result.mimeType).toBe("application/json");
@@ -87,8 +87,8 @@ describe("exportDiff", () => {
 		it("should include field changes in JSON export when requested", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "json",
-				includeUnchanged: false,
 				includeFieldChanges: true,
+				includeUnchanged: false,
 			});
 
 			const data = JSON.parse(result.content as string);
@@ -102,8 +102,8 @@ describe("exportDiff", () => {
 		it("should export diff as CSV", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "csv",
-				includeUnchanged: false,
 				includeFieldChanges: false,
+				includeUnchanged: false,
 			});
 
 			expect(result.mimeType).toBe("text/csv");
@@ -118,19 +118,19 @@ describe("exportDiff", () => {
 				...mockDiff,
 				added: [
 					{
-						itemId: "item1",
-						type: "feature",
-						title: 'Feature with "quotes" and, commas',
 						changeType: "added",
+						itemId: "item1",
 						significance: "major",
+						title: 'Feature with "quotes" and, commas',
+						type: "feature",
 					},
 				],
 			};
 
 			const result = await exportDiff(diffWithCommas, {
 				format: "csv",
-				includeUnchanged: false,
 				includeFieldChanges: false,
+				includeUnchanged: false,
 			});
 
 			const content = result.content as string;
@@ -142,8 +142,8 @@ describe("exportDiff", () => {
 		it("should export diff as Markdown", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "markdown",
-				includeUnchanged: false,
 				includeFieldChanges: true,
+				includeUnchanged: false,
 			});
 
 			expect(result.mimeType).toBe("text/markdown");
@@ -157,8 +157,8 @@ describe("exportDiff", () => {
 		it("should include statistics in Markdown", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "markdown",
-				includeUnchanged: false,
 				includeFieldChanges: false,
+				includeUnchanged: false,
 			});
 
 			const content = result.content as string;
@@ -171,8 +171,8 @@ describe("exportDiff", () => {
 		it("should include field changes in Markdown when requested", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "markdown",
-				includeUnchanged: false,
 				includeFieldChanges: true,
+				includeUnchanged: false,
 			});
 
 			const content = result.content as string;
@@ -186,8 +186,8 @@ describe("exportDiff", () => {
 		it("should export diff as HTML", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "html",
-				includeUnchanged: false,
 				includeFieldChanges: true,
+				includeUnchanged: false,
 			});
 
 			expect(result.mimeType).toBe("text/html");
@@ -199,8 +199,8 @@ describe("exportDiff", () => {
 		it("should include statistics in HTML", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "html",
-				includeUnchanged: false,
 				includeFieldChanges: false,
+				includeUnchanged: false,
 			});
 
 			const content = result.content as string;
@@ -212,8 +212,8 @@ describe("exportDiff", () => {
 		it("should format tables properly in HTML", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "html",
-				includeUnchanged: false,
 				includeFieldChanges: false,
+				includeUnchanged: false,
 			});
 
 			const content = result.content as string;
@@ -227,8 +227,8 @@ describe("exportDiff", () => {
 		it("should generate correct filename with date", async () => {
 			const result = await exportDiff(mockDiff, {
 				format: "json",
-				includeUnchanged: false,
 				includeFieldChanges: false,
+				includeUnchanged: false,
 			});
 
 			expect(result.filename).toMatch(/diff-v1-v2-\d{4}-\d{2}-\d{2}\.json/);
@@ -240,8 +240,8 @@ describe("exportDiff", () => {
 			await expect(
 				exportDiff(mockDiff, {
 					format: "xml" as any,
-					includeUnchanged: false,
 					includeFieldChanges: false,
+					includeUnchanged: false,
 				}),
 			).rejects.toThrow("Unsupported export format");
 		});
@@ -256,18 +256,18 @@ describe("exportDiff", () => {
 				modified: [],
 				unchanged: 10,
 				stats: {
-					totalChanges: 0,
 					addedCount: 0,
-					removedCount: 0,
 					modifiedCount: 0,
+					removedCount: 0,
+					totalChanges: 0,
 					unchangedCount: 10,
 				},
 			};
 
 			const result = await exportDiff(emptyDiff, {
 				format: "json",
-				includeUnchanged: false,
 				includeFieldChanges: false,
+				includeUnchanged: false,
 			});
 
 			const data = JSON.parse(result.content as string);
@@ -278,29 +278,29 @@ describe("exportDiff", () => {
 	describe("Large dataset handling", () => {
 		it("should handle large diff efficiently", async () => {
 			const largeItems = Array.from({ length: 1000 }, (_, i) => ({
-				itemId: `item${i}`,
-				type: "feature",
-				title: `Feature ${i}`,
 				changeType: "added" as const,
+				itemId: `item${i}`,
 				significance: "minor" as const,
+				title: `Feature ${i}`,
+				type: "feature",
 			}));
 
 			const largeDiff: VersionDiff = {
 				...mockDiff,
 				added: largeItems,
 				stats: {
-					totalChanges: 1000,
 					addedCount: 1000,
-					removedCount: 0,
 					modifiedCount: 0,
+					removedCount: 0,
+					totalChanges: 1000,
 					unchangedCount: 0,
 				},
 			};
 
 			const result = await exportDiff(largeDiff, {
 				format: "json",
-				includeUnchanged: false,
 				includeFieldChanges: false,
+				includeUnchanged: false,
 			});
 
 			expect(result.content).toBeTruthy();
@@ -315,16 +315,12 @@ describe("exportDiff", () => {
 				...mockDiff,
 				modified: [
 					{
-						itemId: "item1",
-						type: "config",
-						title: "Configuration",
 						changeType: "modified",
-						significance: "major",
 						fieldChanges: [
 							{
 								field: "settings",
 								oldValue: { timeout: 5000, retries: 3 },
-								newValue: { timeout: 10000, retries: 5 },
+								newValue: { timeout: 10_000, retries: 5 },
 								changeType: "modified",
 							},
 							{
@@ -334,14 +330,18 @@ describe("exportDiff", () => {
 								changeType: "modified",
 							},
 						],
+						itemId: "item1",
+						significance: "major",
+						title: "Configuration",
+						type: "config",
 					},
 				],
 			};
 
 			const result = await exportDiff(diffWithComplexValues, {
 				format: "json",
-				includeUnchanged: false,
 				includeFieldChanges: true,
+				includeUnchanged: false,
 			});
 
 			const data = JSON.parse(result.content as string);

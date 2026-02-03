@@ -8,9 +8,9 @@ export const Route = createFileRoute("/projects/$projectId/contracts")({
 
 		// Then redirect
 		throw redirect({
-			to: "/projects/$projectId/specifications",
 			params,
 			search: { tab: "contracts" },
+			to: "/projects/$projectId/specifications",
 		});
 	},
 	component: ContractsPage,

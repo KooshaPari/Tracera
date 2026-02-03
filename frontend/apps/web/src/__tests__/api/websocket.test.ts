@@ -5,23 +5,21 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	WebSocketManager,
 	connectWebSocket,
 	disconnectWebSocket,
 	getWebSocketManager,
 	subscribeToChannel,
-	WebSocketManager,
 } from "@/api/websocket";
 
 // Mock window for browser environment
 const mockWindow = {
-	location: { protocol: "http:" },
-	setInterval: vi.fn((_fn: () => void, _delay: number) => {
-		return 123 as any; // Return mock interval ID
-	}),
 	clearInterval: vi.fn(),
+	location: { protocol: "http:" },
+	setInterval: vi.fn((_fn: () => void, _delay: number) => 123 as any),
 };
 
-global.window = mockWindow as any;
+globalThis.window = mockWindow as any;
 globalThis.window = mockWindow as any;
 
 // Mock WebSocket (intentionally uses on* properties to mirror WebSocket API)
@@ -62,28 +60,46 @@ class MockWebSocket {
 	}
 
 	addEventListener(event: string, handler: EventListener) {
-		if (event === "open") this.onopen = handler;
-		if (event === "close") this.onclose = handler;
-		if (event === "error") this.onerror = handler;
-		if (event === "message") this.onmessage = handler;
+		if (event === "open") {
+			this.onopen = handler;
+		}
+		if (event === "close") {
+			this.onclose = handler;
+		}
+		if (event === "error") {
+			this.onerror = handler;
+		}
+		if (event === "message") {
+			this.onmessage = handler;
+		}
 	}
 
 	removeEventListener(event: string, handler: EventListener) {
-		if (event === "open" && this.onopen === handler) this.onopen = null;
-		if (event === "close" && this.onclose === handler) this.onclose = null;
-		if (event === "error" && this.onerror === handler) this.onerror = null;
-		if (event === "message" && this.onmessage === handler)
+		if (event === "open" && this.onopen === handler) {
+			this.onopen = null;
+		}
+		if (event === "close" && this.onclose === handler) {
+			this.onclose = null;
+		}
+		if (event === "error" && this.onerror === handler) {
+			this.onerror = null;
+		}
+		if (event === "message" && this.onmessage === handler) {
 			this.onmessage = null;
+		}
 	}
 }
 /* eslint-enable unicorn/prefer-add-event-listener */
 
 // Replace global WebSocket
-global.WebSocket = MockWebSocket as any;
+globalThis.WebSocket = MockWebSocket as any;
 
 // Mock API_BASE_URL
 vi.mock("@/api/client", () => ({
-	API_BASE_URL: "http://localhost:4000",
+	__esModule: true,
+	default: {
+		API_BASE_URL: "http://localhost:4000",
+	},
 }));
 
 describe("WebSocket API", () => {
@@ -108,7 +124,7 @@ describe("WebSocket API", () => {
 		vi.clearAllTimers();
 	});
 
-	describe("WebSocketManager", () => {
+	describe(WebSocketManager, () => {
 		it("should create a WebSocketManager instance", () => {
 			const manager = getWebSocketManager();
 			expect(manager).toBeInstanceOf(WebSocketManager);
@@ -121,7 +137,7 @@ describe("WebSocket API", () => {
 		});
 	});
 
-	describe("connectWebSocket", () => {
+	describe(connectWebSocket, () => {
 		it("should connect to WebSocket", () => {
 			connectWebSocket();
 			const manager = getWebSocketManager();
@@ -134,7 +150,7 @@ describe("WebSocket API", () => {
 		});
 	});
 
-	describe("disconnectWebSocket", () => {
+	describe(disconnectWebSocket, () => {
 		it("should disconnect WebSocket", () => {
 			connectWebSocket();
 			expect(() => disconnectWebSocket()).not.toThrow();
@@ -145,7 +161,7 @@ describe("WebSocket API", () => {
 		});
 	});
 
-	describe("subscribeToChannel", () => {
+	describe(subscribeToChannel, () => {
 		it("should subscribe to a channel", () => {
 			connectWebSocket();
 			const unsubscribe = subscribeToChannel("test-channel", vi.fn());
@@ -165,11 +181,11 @@ describe("WebSocket API", () => {
 			if ((manager as any).ws?.onmessage) {
 				const mockEvent = new MessageEvent("message", {
 					data: JSON.stringify({
-						type: "created",
-						table: "items",
-						schema: "public",
 						record: { id: "1" },
+						schema: "public",
+						table: "items",
 						timestamp: Date.now(),
+						type: "created",
 					}),
 				});
 				(manager as any).ws.onmessage(mockEvent);
@@ -233,11 +249,11 @@ describe("WebSocket API", () => {
 			if ((manager as any).ws?.onmessage) {
 				const mockEvent = new MessageEvent("message", {
 					data: JSON.stringify({
-						type: "created",
-						table: "items",
-						schema: "public",
 						record: { id: "1" },
+						schema: "public",
+						table: "items",
 						timestamp: Date.now(),
+						type: "created",
 					}),
 				});
 				(manager as any).ws.onmessage(mockEvent);
@@ -310,12 +326,12 @@ describe("WebSocket API", () => {
 
 	describe("edge cases", () => {
 		it("should handle WebSocket not available", () => {
-			const originalWebSocket = global.WebSocket;
-			delete (global as any).WebSocket;
+			const originalWebSocket = globalThis.WebSocket;
+			delete (globalThis as any).WebSocket;
 
 			expect(() => getWebSocketManager()).not.toThrow();
 
-			global.WebSocket = originalWebSocket;
+			globalThis.WebSocket = originalWebSocket;
 		});
 
 		it("should handle connection when already connected", () => {
@@ -337,11 +353,11 @@ describe("WebSocket API", () => {
 			if ((manager as any).ws?.onmessage) {
 				const mockEvent = new MessageEvent("message", {
 					data: JSON.stringify({
-						type: "created",
-						table: "items",
-						schema: "public",
 						record: { id: "1" },
+						schema: "public",
+						table: "items",
 						timestamp: Date.now(),
+						type: "created",
 					}),
 				});
 				expect(() => {

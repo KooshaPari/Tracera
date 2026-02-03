@@ -7,14 +7,14 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { useAuth, useIsAuthenticated, useUser } from "../../hooks/useAuth";
 import { useAuthStore } from "../../stores/authStore";
 
-describe("useAuth", () => {
+describe(useAuth, () => {
 	beforeEach(() => {
 		const { logout } = useAuthStore.getState();
 		logout();
 		localStorage.clear();
 	});
 
-	describe("useAuth", () => {
+	describe(useAuth, () => {
 		it("should return auth state and methods", () => {
 			const { result } = renderHook(() => useAuth());
 
@@ -55,7 +55,7 @@ describe("useAuth", () => {
 		});
 	});
 
-	describe("useUser", () => {
+	describe(useUser, () => {
 		it("should return user when authenticated", async () => {
 			const { result: authResult } = renderHook(() => useAuth());
 
@@ -76,7 +76,7 @@ describe("useAuth", () => {
 		});
 	});
 
-	describe("useIsAuthenticated", () => {
+	describe(useIsAuthenticated, () => {
 		it("should return true when authenticated", async () => {
 			const { result: authResult } = renderHook(() => useAuth());
 

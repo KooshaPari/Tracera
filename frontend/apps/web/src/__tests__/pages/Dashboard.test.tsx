@@ -5,9 +5,9 @@
 
 import { QueryClient } from "@tanstack/react-query";
 import {
+	RouterProvider,
 	createMemoryHistory,
 	createRouter,
-	RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -35,8 +35,8 @@ describe("Dashboard Page", () => {
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false, gcTime: 0 },
 				mutations: { retry: false },
+				queries: { retry: false, gcTime: 0 },
 			},
 		});
 
@@ -45,9 +45,9 @@ describe("Dashboard Page", () => {
 		});
 
 		router = createRouter({
-			routeTree,
-			history,
 			context: { queryClient },
+			history,
+			routeTree,
 		});
 
 		vi.clearAllMocks();
@@ -66,16 +66,16 @@ describe("Dashboard Page", () => {
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [
 					{
+						created_at: "2024-01-01",
 						id: "1",
 						name: "Project Alpha",
 						status: "active",
-						created_at: "2024-01-01",
 					},
 					{
+						created_at: "2024-01-02",
 						id: "2",
 						name: "Project Beta",
 						status: "active",
-						created_at: "2024-01-02",
 					},
 				],
 				total: 2,
@@ -83,16 +83,16 @@ describe("Dashboard Page", () => {
 
 			vi.mocked(fetchRecentItems).mockResolvedValue({
 				data: [
-					{ id: "i1", title: "Item 1", type: "feature", status: "active" },
-					{ id: "i2", title: "Item 2", type: "bug", status: "resolved" },
+					{ id: "i1", status: "active", title: "Item 1", type: "feature" },
+					{ id: "i2", status: "resolved", title: "Item 2", type: "bug" },
 				],
 				total: 2,
 			});
 
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
+				queuedJobs: 12,
 				status: "healthy",
 				uptime: 99.9,
-				queuedJobs: 12,
 			});
 
 			render(<RouterProvider router={router} />);
@@ -116,9 +116,9 @@ describe("Dashboard Page", () => {
 			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
 			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
+				queuedJobs: 150,
 				status: "healthy",
 				uptime: 99.9,
-				queuedJobs: 150,
 			});
 
 			render(<RouterProvider router={router} />);
@@ -204,8 +204,8 @@ describe("Dashboard Page", () => {
 
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [
-					{ id: "1", name: "Project 1", itemCount: 50, linkCount: 100 },
-					{ id: "2", name: "Project 2", itemCount: 30, linkCount: 60 },
+					{ id: "1", itemCount: 50, linkCount: 100, name: "Project 1" },
+					{ id: "2", itemCount: 30, linkCount: 60, name: "Project 2" },
 				],
 				total: 2,
 				totalItems: 80,
@@ -508,9 +508,9 @@ describe("Dashboard Page", () => {
 				data: [
 					{
 						id: "item-456",
+						projectId: "proj-123",
 						title: "Recent Item",
 						type: "feature",
-						projectId: "proj-123",
 					},
 				],
 				total: 1,
@@ -586,7 +586,7 @@ describe("Dashboard Page", () => {
 			});
 
 			// Advance timer by refetch interval (e.g., 30 seconds)
-			vi.advanceTimersByTime(30000);
+			vi.advanceTimersByTime(30_000);
 
 			await waitFor(() => {
 				expect(screen.getByText(/Project 2/i)).toBeInTheDocument();
@@ -705,7 +705,7 @@ describe("Dashboard Page", () => {
 			const event = new CustomEvent("item:created", {
 				detail: { id: "new-item", title: "New Feature" },
 			});
-			window.dispatchEvent(event);
+			globalThis.dispatchEvent(event);
 
 			await waitFor(() => {
 				expect(screen.getByText(/new feature created/i)).toBeInTheDocument();
@@ -827,8 +827,8 @@ describe("Dashboard Page", () => {
 
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [
-					{ id: "1", name: "Older Project", created_at: "2024-01-01" },
-					{ id: "2", name: "Newer Project", created_at: "2024-02-01" },
+					{ created_at: "2024-01-01", id: "1", name: "Older Project" },
+					{ created_at: "2024-02-01", id: "2", name: "Newer Project" },
 				],
 				total: 2,
 			});

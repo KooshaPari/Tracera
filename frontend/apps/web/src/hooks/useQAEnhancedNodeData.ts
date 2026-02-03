@@ -28,7 +28,9 @@ export function useQAEnhancedNodeData({
 
 	// Calculate metrics from executions
 	const metrics: QANodeMetrics | undefined = (() => {
-		if (itemExecutions.length === 0) return undefined;
+		if (itemExecutions.length === 0) {
+			return undefined;
+		}
 
 		const completed = itemExecutions.filter(
 			(e) => e.status === "passed" || e.status === "failed",
@@ -51,8 +53,11 @@ export function useQAEnhancedNodeData({
 				: undefined;
 
 		// Get latest execution for lastRunAt
-		const latest = [...completed].sort(
-			(a: { completed_at?: string; created_at: string }, b: { completed_at?: string; created_at: string }) =>
+		const latest = [...completed].toSorted(
+			(
+				a: { completed_at?: string; created_at: string },
+				b: { completed_at?: string; created_at: string },
+			) =>
 				new Date(b.completed_at || b.created_at).getTime() -
 				new Date(a.completed_at || a.created_at).getTime(),
 		)[0];
@@ -70,7 +75,7 @@ export function useQAEnhancedNodeData({
 	})();
 
 	// Get artifacts from latest execution
-	const latestExecution = [...itemExecutions].sort(
+	const latestExecution = [...itemExecutions].toSorted(
 		(a: { created_at: string }, b: { created_at: string }) =>
 			new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
 	)[0];
@@ -78,26 +83,31 @@ export function useQAEnhancedNodeData({
 	const { data: artifactsData } = useExecutionArtifacts(
 		projectId,
 		latestExecution?.id || "",
-		undefined,
 	);
 
 	// Transform artifacts
 	const artifacts: QANodeArtifact[] | undefined =
-		artifactsData?.artifacts.map((a) => ({
-			id: a.id,
-			type: a.artifact_type as QANodeArtifact["type"],
-			url:
-				a.url ||
-				`/api/v1/projects/${projectId}/executions/${a.execution_id}/artifacts/${a.id}/download`,
-			...(a.thumbnail_url || a.thumbnail_path
-				? { thumbnailUrl: a.thumbnail_url || a.thumbnail_path }
-				: {}),
-			capturedAt: a.captured_at,
-		})) || undefined;
+		artifactsData?.artifacts.map((a) =>
+			Object.assign(
+				{
+					id: a.id,
+					type: a.artifact_type as QANodeArtifact[`type`],
+					url:
+						a.url ||
+						`/api/v1/projects/${projectId}/executions/${a.execution_id}/artifacts/${a.id}/download`,
+				},
+				a.thumbnail_url || a.thumbnail_path
+					? { thumbnailUrl: a.thumbnail_url || a.thumbnail_path }
+					: {},
+				{ capturedAt: a.captured_at },
+			),
+		) || undefined;
 
 	// Build preview from latest artifact
 	const preview: QANodePreview | undefined = (() => {
-		if (!artifacts || artifacts.length === 0) return undefined;
+		if (!artifacts || artifacts.length === 0) {
+			return undefined;
+		}
 
 		const screenshot = artifacts.find((a) => a.type === "screenshot");
 		const gif = artifacts.find((a) => a.type === "gif");
@@ -110,15 +120,15 @@ export function useQAEnhancedNodeData({
 			...(screenshot?.url ? { screenshotUrl: screenshot.url } : {}),
 			...(gif?.url ? { gifUrl: gif.url } : {}),
 			...(video?.url ? { videoUrl: video.url } : {}),
-			hasLiveDemo: !!gif || !!video,
+			hasLiveDemo: Boolean(gif) || Boolean(video),
 		} as QANodePreview;
 	})();
 
 	return {
-		metrics,
-		preview,
 		artifacts,
 		executions: itemExecutions,
 		isLoading: false,
+		metrics,
+		preview,
 	};
 }

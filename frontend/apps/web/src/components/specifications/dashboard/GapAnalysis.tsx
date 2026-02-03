@@ -34,11 +34,11 @@ interface GapItem {
 	affectedItems?: number;
 	impact?: string;
 	suggestion?: string;
-	linkedResources?: Array<{
+	linkedResources?: {
 		type: "test_case" | "adr" | "contract";
 		id: string;
 		label: string;
-	}>;
+	}[];
 }
 
 interface GapAnalysisProps {
@@ -49,58 +49,58 @@ interface GapAnalysisProps {
 }
 
 const GAP_TYPE_CONFIG = {
-	no_tests: {
-		icon: AlertCircle,
-		label: "No Test Coverage",
-		color: "text-red-600",
-		bg: "bg-red-50 dark:bg-red-900/20",
-	},
 	no_adr: {
+		bg: "bg-amber-50 dark:bg-amber-900/20",
+		color: "text-amber-600",
 		icon: FileText,
 		label: "No ADR Link",
-		color: "text-amber-600",
-		bg: "bg-amber-50 dark:bg-amber-900/20",
 	},
 	no_contract: {
+		bg: "bg-blue-50 dark:bg-blue-900/20",
+		color: "text-blue-600",
 		icon: Shield,
 		label: "No Contract",
-		color: "text-blue-600",
-		bg: "bg-blue-50 dark:bg-blue-900/20",
+	},
+	no_tests: {
+		bg: "bg-red-50 dark:bg-red-900/20",
+		color: "text-red-600",
+		icon: AlertCircle,
+		label: "No Test Coverage",
 	},
 	orphaned: {
+		bg: "bg-purple-50 dark:bg-purple-900/20",
+		color: "text-purple-600",
 		icon: AlertTriangle,
 		label: "Orphaned Item",
-		color: "text-purple-600",
-		bg: "bg-purple-50 dark:bg-purple-900/20",
 	},
 };
 
 const PRIORITY_CONFIG = {
 	critical: {
+		badge: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200",
+		color: "text-red-600",
 		icon: AlertCircle,
 		label: "Critical",
-		color: "text-red-600",
-		badge: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200",
 	},
 	high: {
-		icon: AlertTriangle,
-		label: "High",
-		color: "text-orange-600",
 		badge:
 			"bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200",
-	},
-	medium: {
+		color: "text-orange-600",
 		icon: AlertTriangle,
-		label: "Medium",
-		color: "text-yellow-600",
-		badge:
-			"bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200",
+		label: "High",
 	},
 	low: {
+		badge: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200",
+		color: "text-blue-600",
 		icon: CheckCircle2,
 		label: "Low",
-		color: "text-blue-600",
-		badge: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200",
+	},
+	medium: {
+		badge:
+			"bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200",
+		color: "text-yellow-600",
+		icon: AlertTriangle,
+		label: "Medium",
 	},
 };
 
@@ -120,31 +120,31 @@ export function GapAnalysis({
 			filtered = items.filter((item) => item.gapType === selectedGapType);
 		}
 
-		return [...filtered].sort((a: GapItem, b: GapItem) => {
+		return [...filtered].toSorted((a: GapItem, b: GapItem) => {
 			if (sortBy === "priority") {
 				const priorityOrder = {
 					critical: 0,
 					high: 1,
-					medium: 2,
 					low: 3,
+					medium: 2,
 				};
 				return priorityOrder[a.priority] - priorityOrder[b.priority];
-			} else {
-				return (b.affectedItems || 0) - (a.affectedItems || 0);
 			}
+			return (b.affectedItems || 0) - (a.affectedItems || 0);
 		});
 	}, [items, sortBy, selectedGapType]);
 
-	const stats = useMemo(() => {
-		return {
-			totalGaps: items.length,
+	const stats = useMemo(
+		() => ({
 			critical: items.filter((i) => i.priority === "critical").length,
 			highPriority: items.filter((i) => i.priority === "high").length,
-			noTests: items.filter((i) => i.gapType === "no_tests").length,
 			noAdr: items.filter((i) => i.gapType === "no_adr").length,
 			noContract: items.filter((i) => i.gapType === "no_contract").length,
-		};
-	}, [items]);
+			noTests: items.filter((i) => i.gapType === "no_tests").length,
+			totalGaps: items.length,
+		}),
+		[items],
+	);
 
 	return (
 		<motion.div
@@ -399,8 +399,8 @@ function GapCard({ item, onClick, onCreateLink }: GapCardProps) {
 				borderLeftColor: {
 					critical: "#dc2626",
 					high: "#ea580c",
-					medium: "#eab308",
 					low: "#0284c7",
+					medium: "#eab308",
 				}[item.priority],
 			}}
 			onClick={onClick}

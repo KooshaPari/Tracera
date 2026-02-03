@@ -4,7 +4,11 @@
 
 import client from "./client";
 
-const { apiClient, handleApiResponse, safeApiCall } = client;
+const apiClient = client.apiClient;
+const handleApiResponse = client.handleApiResponse;
+const safeApiCall = client.safeApiCall;
+const get = apiClient.GET.bind(apiClient);
+const post = apiClient.POST.bind(apiClient);
 
 /**
  * Input data for Codex agent tasks
@@ -56,9 +60,6 @@ interface CodexAuthStatus {
 	authenticated: boolean;
 	status: string;
 }
-
-const get = apiClient.GET.bind(apiClient);
-const post = apiClient.POST.bind(apiClient);
 
 const codexApi = {
 	getAuthStatus: (projectId: string): Promise<CodexAuthStatus> =>
@@ -117,4 +118,9 @@ const codexApi = {
 		),
 };
 
-export { codexApi, type CodexAuthStatus, type CodexAgentTask, type CodexReviewRequest };
+export {
+	codexApi,
+	type CodexAuthStatus,
+	type CodexAgentTask,
+	type CodexReviewRequest,
+};

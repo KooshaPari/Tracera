@@ -32,7 +32,9 @@ interface FeatureListViewProps {
 
 export function FeatureListView({ projectId }: FeatureListViewProps) {
 	const navigate = useNavigate();
-	const searchParams = useSearch({ strict: false }) as { status?: string } | undefined;
+	const searchParams = useSearch({ strict: false }) as
+		| { status?: string }
+		| undefined;
 
 	const { data: featuresData, isLoading } = useFeatures({ projectId });
 	const features = featuresData?.features ?? [];
@@ -47,33 +49,42 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 	const [newStatus, setNewStatus] = useState<FeatureStatus>("draft");
 	const [newDescription, setNewDescription] = useState("");
 
-	const filteredFeatures = useMemo(() => features.filter((feature: Feature) => {
-			const matchesStatus =
-				statusFilter === "all" || feature.status === statusFilter;
-			const matchesQuery =
-				feature.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				feature.featureNumber
-					.toLowerCase()
-					.includes(searchQuery.toLowerCase()) ||
-				(feature.description
-					?.toLowerCase()
-					.includes(searchQuery.toLowerCase()) ??
-					false);
+	const filteredFeatures = useMemo(
+		() =>
+			features.filter((feature: Feature) => {
+				const matchesStatus =
+					statusFilter === "all" || feature.status === statusFilter;
+				const matchesQuery =
+					feature.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					feature.featureNumber
+						.toLowerCase()
+						.includes(searchQuery.toLowerCase()) ||
+					(feature.description
+						?.toLowerCase()
+						.includes(searchQuery.toLowerCase()) ??
+						false);
 
-			return matchesStatus && matchesQuery;
-		}), [features, statusFilter, searchQuery]);
+				return matchesStatus && matchesQuery;
+			}),
+		[features, statusFilter, searchQuery],
+	);
 
-	const statusCounts = useMemo(() => ({
+	const statusCounts = useMemo(
+		() => ({
 			active: features.filter((f: Feature) => f.status === "active").length,
 			all: features.length,
 			archived: features.filter((f: Feature) => f.status === "archived").length,
 			deprecated: features.filter((f: Feature) => f.status === "deprecated")
 				.length,
 			draft: features.filter((f: Feature) => f.status === "draft").length,
-		}), [features]);
+		}),
+		[features],
+	);
 
 	const overallPassRate = useMemo(() => {
-		if (features.length === 0) {return 0;}
+		if (features.length === 0) {
+			return 0;
+		}
 		const totalScenarios = features.reduce(
 			(sum: number, f: Feature) => sum + (f.scenarioCount || 0),
 			0,
@@ -121,8 +132,8 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 			setNewDescription("");
 			setNewStatus("draft");
 			setShowCreateModal(false);
-        } catch {
-            toast.error("Failed to create feature");
+		} catch {
+			toast.error("Failed to create feature");
 		}
 	};
 

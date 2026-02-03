@@ -101,7 +101,9 @@ test.describe("Bulk Item Selection", () => {
 			await expect(checkbox2).toBeChecked();
 
 			// Bulk action bar should show "2 selected"
-			const selectedCount = page.locator("text=/2\\s+selected|2\\s+items/i");
+			const selectedCount = page.locator(
+				String.raw`text=/2\s+selected|2\s+items/i`,
+			);
 			await expect(selectedCount)
 				.toBeVisible({ timeout: 2000 })
 				.catch(() => console.log("Selection count indicator not found"));
@@ -167,7 +169,7 @@ test.describe("Bulk Item Selection", () => {
 			await expect(checkbox2).toBeChecked();
 
 			// Should show "1 selected"
-			const selectedCount = page.locator("text=/1\\s+selected/i");
+			const selectedCount = page.locator(String.raw`text=/1\s+selected/i`);
 			await expect(selectedCount)
 				.toBeVisible({ timeout: 2000 })
 				.catch(() =>
@@ -753,7 +755,7 @@ test.describe("Bulk Operations UI", () => {
 			await page.waitForTimeout(300);
 
 			// Look for counter showing "2 selected" or similar
-			const counter = page.locator("text=/\\d+\\s+(selected|items)/i");
+			const counter = page.locator(String.raw`text=/\d+\s+(selected|items)/i`);
 
 			await expect(counter)
 				.toBeVisible({ timeout: 2000 })

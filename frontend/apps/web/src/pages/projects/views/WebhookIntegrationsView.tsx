@@ -49,7 +49,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
-	type CreateWebhookData,
 	useCreateWebhook,
 	useDeleteWebhook,
 	useRegenerateWebhookSecret,
@@ -57,35 +56,36 @@ import {
 	useWebhookStats,
 	useWebhooks,
 } from "@/hooks/useWebhooks";
+import type { CreateWebhookData } from "@/hooks/useWebhooks";
 
 interface WebhookIntegrationsViewProps {
 	projectId: string;
 }
 
 const providerLabels: Record<WebhookProvider, string> = {
+	azure_devops: "Azure DevOps",
+	circleci: "CircleCI",
+	custom: "Custom",
 	github_actions: "GitHub Actions",
 	gitlab_ci: "GitLab CI",
 	jenkins: "Jenkins",
-	azure_devops: "Azure DevOps",
-	circleci: "CircleCI",
 	travis_ci: "Travis CI",
-	custom: "Custom",
 };
 
 const statusColors: Record<WebhookStatus, string> = {
 	active: "bg-green-500/10 text-green-600 border-green-500/30",
-	paused: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
 	disabled: "bg-red-500/10 text-red-600 border-red-500/30",
+	paused: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
 };
 
 const statusIcons: Record<WebhookStatus, React.ReactNode> = {
 	active: <CheckCircle2 className="h-4 w-4" />,
-	paused: <PauseCircle className="h-4 w-4" />,
 	disabled: <XCircle className="h-4 w-4" />,
+	paused: <PauseCircle className="h-4 w-4" />,
 };
 
 function copyToClipboard(text: string): void {
-	void navigator.clipboard.writeText(text);
+	undefined;
 }
 
 export function WebhookIntegrationsView({
@@ -103,8 +103,8 @@ export function WebhookIntegrationsView({
 
 	const { data, isLoading, error } = useWebhooks({
 		projectId,
-		status: statusFilter !== "all" ? statusFilter : undefined,
 		provider: (providerFilter !== "all" ? providerFilter : undefined) as any,
+		status: statusFilter !== "all" ? statusFilter : undefined,
 	});
 
 	const { data: stats } = useWebhookStats(projectId);
@@ -115,39 +115,43 @@ export function WebhookIntegrationsView({
 
 	// Create form state
 	const [formData, setFormData] = useState({
-		name: "",
-		description: "" as string | undefined,
-		provider: "custom" as WebhookProvider,
-		callbackUrl: "" as string | undefined,
-		rateLimitPerMinute: 60,
-		autoCreateRun: true,
 		autoCompleteRun: true,
+		autoCreateRun: true,
+		callbackUrl: "" as string | undefined,
+		description: "" as string | undefined,
+		name: "",
+		provider: "custom" as WebhookProvider,
+		rateLimitPerMinute: 60,
 		verifySignatures: true,
 	});
 
 	const handleCreate = async () => {
 		const payload: CreateWebhookData = {
-			projectId,
+			autoCompleteRun: formData.autoCompleteRun,
+			autoCreateRun: formData.autoCreateRun,
 			name: formData.name,
+			projectId,
 			provider: formData.provider,
 			rateLimitPerMinute: formData.rateLimitPerMinute,
-			autoCreateRun: formData.autoCreateRun,
-			autoCompleteRun: formData.autoCompleteRun,
 			verifySignatures: formData.verifySignatures,
 		};
-		if (formData.description) payload.description = formData.description;
-		if (formData.callbackUrl) payload.callbackUrl = formData.callbackUrl;
+		if (formData.description) {
+			payload.description = formData.description;
+		}
+		if (formData.callbackUrl) {
+			payload.callbackUrl = formData.callbackUrl;
+		}
 
 		await createMutation.mutateAsync(payload);
 		setShowCreateDialog(false);
 		setFormData({
-			name: "",
-			description: "",
-			provider: "custom",
-			callbackUrl: "",
-			rateLimitPerMinute: 60,
-			autoCreateRun: true,
 			autoCompleteRun: true,
+			autoCreateRun: true,
+			callbackUrl: "",
+			description: "",
+			name: "",
+			provider: "custom",
+			rateLimitPerMinute: 60,
 			verifySignatures: true,
 		});
 	};
@@ -276,7 +280,8 @@ export function WebhookIntegrationsView({
 									onChange={(e) =>
 										setFormData((prev) => ({
 											...prev,
-											rateLimitPerMinute: parseInt(e.target.value, 10) || 60,
+											rateLimitPerMinute:
+												Number.parseInt(e.target.value, 10) || 60,
 										}))
 									}
 								/>
@@ -459,7 +464,7 @@ export function WebhookIntegrationsView({
 								<Skeleton key={i} className="h-16 w-full" />
 							))}
 						</div>
-					) : filteredWebhooks.length === 0 ? (
+					) : (filteredWebhooks.length === 0 ? (
 						<div className="text-center py-12">
 							<Webhook className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
 							<h3 className="text-lg font-semibold">No webhooks found</h3>
@@ -614,7 +619,7 @@ export function WebhookIntegrationsView({
 								))}
 							</TableBody>
 						</Table>
-					)}
+					))}
 				</CardContent>
 			</Card>
 		</div>

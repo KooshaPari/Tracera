@@ -26,7 +26,7 @@ function downloadOpenApiJSON(data: unknown): void {
 	const a = document.createElement("a");
 	a.href = url;
 	a.download = "openapi-spec.json";
-	document.body.appendChild(a);
+	document.body.append(a);
 	a.click();
 	document.body.removeChild(a);
 	URL.revokeObjectURL(url);
@@ -51,7 +51,7 @@ export function SwaggerUIWrapper({
 		// Check for dark mode preference
 		const isDark =
 			document.documentElement.classList.contains("dark") ||
-			window.matchMedia("(prefers-color-scheme: dark)").matches;
+			globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
 		setDarkMode(isDark);
 
 		// Load spec if URL is provided and no spec object
@@ -59,7 +59,7 @@ export function SwaggerUIWrapper({
 			fetch(specUrl)
 				.then((res) => res.json())
 				.then((data) => setSpecData(data))
-				.catch((err) => logger.error("Failed to load OpenAPI spec:", err));
+				.catch((error) => logger.error("Failed to load OpenAPI spec:", error));
 		} else if (spec) {
 			setSpecData(spec);
 		}
@@ -84,15 +84,14 @@ export function SwaggerUIWrapper({
 	};
 
 	const copySpecUrl = () => {
-		const fullUrl = window.location.origin + specUrl;
-		void navigator.clipboard.writeText(fullUrl).then(() => {
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-		});
+		const fullUrl = globalThis.location.origin + specUrl;
+		undefined;
 	};
 
 	// Default request interceptor to add authentication (SSR-safe)
-	const defaultRequestInterceptor = (req: Request): Promise<Request> | Request => {
+	const defaultRequestInterceptor = (
+		req: Request,
+	): Promise<Request> | Request => {
 		// Check for stored token (SSR-safe)
 		const isStorageAvailable =
 			typeof localStorage !== "undefined" &&
@@ -111,11 +110,13 @@ export function SwaggerUIWrapper({
 	};
 
 	// Default response interceptor for logging
-	const defaultResponseInterceptor = (res: Response): Promise<Response> | Response => {
+	const defaultResponseInterceptor = (
+		res: Response,
+	): Promise<Response> | Response => {
 		// Log response for debugging
 		logger.info("API Response:", {
-			url: res.url,
 			status: res.status,
+			url: res.url,
 		});
 
 		return responseInterceptor ? responseInterceptor(res) : res;

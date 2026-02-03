@@ -4,7 +4,7 @@
  */
 
 import type { LinkType } from "@tracertm/types";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import {
 	type EdgeBase,
 	type EdgeSamplingConfig,
@@ -47,7 +47,7 @@ export function generateTestNodes(count: number): Node[] {
 export function generateTestEdges(
 	nodeCount: number,
 	edgeCount: number,
-	distribution: "random" | "clustered" | "parallel" = "random"
+	distribution: "random" | "clustered" | "parallel" = "random",
 ): EdgeBase[] {
 	const edges: EdgeBase[] = [];
 	const linkTypes: LinkType[] = [
@@ -84,8 +84,12 @@ export function generateTestEdges(
 				const clusterStart = cluster * 50;
 				const clusterEnd = Math.min(clusterStart + 50, nodeCount);
 
-				const source = clusterStart + Math.floor(Math.random() * (clusterEnd - clusterStart));
-				const target = clusterStart + Math.floor(Math.random() * (clusterEnd - clusterStart));
+				const source =
+					clusterStart +
+					Math.floor(Math.random() * (clusterEnd - clusterStart));
+				const target =
+					clusterStart +
+					Math.floor(Math.random() * (clusterEnd - clusterStart));
 				if (source === target) continue;
 
 				edges.push({
@@ -140,7 +144,7 @@ export function runEdgeBenchmark(
 	name: string,
 	edges: EdgeBase[],
 	nodes: Node[],
-	config?: EdgeSamplingConfig
+	config?: EdgeSamplingConfig,
 ): BenchmarkResult {
 	const actualConfig = config || createDefaultSamplingConfig(edges.length);
 	const filterConfig = createDefaultFilterConfig();
@@ -155,7 +159,7 @@ export function runEdgeBenchmark(
 		edges,
 		nodes,
 		actualConfig,
-		filterConfig
+		filterConfig,
 	);
 
 	const endTime = performance.now();
@@ -204,11 +208,19 @@ export function runBenchmarkSuite(): BenchmarkResult[] {
 
 	// Test 5: Clustered distribution
 	const edges_100k_clustered = generateTestEdges(1000, 100000, "clustered");
-	results.push(runEdgeBenchmark("100K edges (clustered)", edges_100k_clustered, nodes_100k));
+	results.push(
+		runEdgeBenchmark(
+			"100K edges (clustered)",
+			edges_100k_clustered,
+			nodes_100k,
+		),
+	);
 
 	// Test 6: Parallel edges
 	const edges_100k_parallel = generateTestEdges(1000, 100000, "parallel");
-	results.push(runEdgeBenchmark("100K edges (parallel)", edges_100k_parallel, nodes_100k));
+	results.push(
+		runEdgeBenchmark("100K edges (parallel)", edges_100k_parallel, nodes_100k),
+	);
 
 	return results;
 }
@@ -238,7 +250,7 @@ export function formatBenchmarkResults(results: BenchmarkResult[]): string {
 			r.aggregatedEdges,
 			r.canvasClusters,
 			r.memoryEstimate.toFixed(2),
-		].join("\t")
+		].join("\t"),
 	);
 
 	return [header, ...rows].join("\n");
@@ -268,7 +280,7 @@ export function runAndLogBenchmark(): void {
 	if (millionEdgeTest) {
 		const hitTarget = millionEdgeTest.visibleEdges <= 100;
 		logger.info(
-			`\n🎯 Target (1M → <100 edges): ${hitTarget ? "✅ ACHIEVED" : "❌ MISSED"}`
+			`\n🎯 Target (1M → <100 edges): ${hitTarget ? "✅ ACHIEVED" : "❌ MISSED"}`,
 		);
 		logger.info(`   Actual: ${millionEdgeTest.visibleEdges} visible edges`);
 	}
@@ -285,7 +297,7 @@ export function runCustomBenchmark(
 	nodeCount: number,
 	edgeCount: number,
 	distribution: "random" | "clustered" | "parallel" = "random",
-	customConfig?: Partial<EdgeSamplingConfig>
+	customConfig?: Partial<EdgeSamplingConfig>,
 ): BenchmarkResult {
 	const nodes = generateTestNodes(nodeCount);
 	const edges = generateTestEdges(nodeCount, edgeCount, distribution);
@@ -298,7 +310,7 @@ export function runCustomBenchmark(
 		`Custom: ${edgeCount} edges (${distribution})`,
 		edges,
 		nodes,
-		config
+		config,
 	);
 }
 

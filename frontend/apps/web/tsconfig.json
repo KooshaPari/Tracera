@@ -40,7 +40,6 @@
 
 		"noUncheckedSideEffectImports": true,
 
-		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./src/*"],
 			"@atoms/types": ["../../packages/types/src/index.ts"],

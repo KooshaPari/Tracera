@@ -4,9 +4,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DropdownMenuContent } from "@tracertm/ui";
 
 const meta: Meta<typeof DropdownMenuContent> = {
-	title: "Components/DropdownMenuContent",
 	component: DropdownMenuContent,
 	tags: ["autodocs"],
+	title: "Components/DropdownMenuContent",
 };
 
 export default meta;

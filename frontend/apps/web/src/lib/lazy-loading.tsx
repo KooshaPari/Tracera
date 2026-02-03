@@ -151,7 +151,8 @@ export function CardErrorFallback({
 	className?: string;
 }) {
 	const displayMessage =
-		message ?? (error?.message || "An unexpected error occurred. Please try again.");
+		message ??
+		(error?.message || "An unexpected error occurred. Please try again.");
 	return (
 		<div
 			className={
@@ -161,7 +162,9 @@ export function CardErrorFallback({
 			role="alert"
 		>
 			<p className="text-sm font-semibold text-destructive">{title}</p>
-			<p className="text-xs text-muted-foreground mt-1 max-w-sm">{displayMessage}</p>
+			<p className="text-xs text-muted-foreground mt-1 max-w-sm">
+				{displayMessage}
+			</p>
 			{retry && (
 				<button
 					type="button"

@@ -25,7 +25,7 @@ function createEdge(
 	id: string,
 	source: string,
 	target: string,
-	type: LinkType = "implements"
+	type: LinkType = "implements",
 ): EdgeBase {
 	return { id, source, target, type };
 }
@@ -79,7 +79,7 @@ describe("Edge Aggregation", () => {
 
 		it("should set correct stroke width for aggregated edges", () => {
 			const edges = Array.from({ length: 10 }, (_, i) =>
-				createEdge(`e${i}`, "A", "B", "implements")
+				createEdge(`e${i}`, "A", "B", "implements"),
 			);
 
 			const result = aggregateParallelEdges(edges, 2);
@@ -100,7 +100,7 @@ describe("Edge Aggregation", () => {
 
 			// Create 15 edges in same area (should exceed threshold of 10)
 			const edges = Array.from({ length: 15 }, (_, i) =>
-				createEdge(`e${i}`, "A", "B", "implements")
+				createEdge(`e${i}`, "A", "B", "implements"),
 			);
 
 			const clusters = detectEdgeClusters(edges, nodes, 10);
@@ -110,10 +110,7 @@ describe("Edge Aggregation", () => {
 		});
 
 		it("should not detect clusters below threshold", () => {
-			const nodes = [
-				createNode("A", 0, 0),
-				createNode("B", 10, 10),
-			];
+			const nodes = [createNode("A", 0, 0), createNode("B", 10, 10)];
 
 			const edges = [createEdge("e1", "A", "B", "implements")];
 
@@ -126,7 +123,7 @@ describe("Edge Aggregation", () => {
 	describe("sampleEdgesStatistically", () => {
 		it("should sample edges at specified ratio", () => {
 			const edges = Array.from({ length: 1000 }, (_, i) =>
-				createEdge(`e${i}`, "A", "B", "implements")
+				createEdge(`e${i}`, "A", "B", "implements"),
 			);
 
 			const result = sampleEdgesStatistically(edges, 0.1);
@@ -138,7 +135,7 @@ describe("Edge Aggregation", () => {
 
 		it("should be deterministic (same results each call)", () => {
 			const edges = Array.from({ length: 100 }, (_, i) =>
-				createEdge(`e${i}`, "A", "B", "implements")
+				createEdge(`e${i}`, "A", "B", "implements"),
 			);
 
 			const result1 = sampleEdgesStatistically(edges, 0.1);
@@ -153,17 +150,19 @@ describe("Edge Aggregation", () => {
 		it("should prioritize important edge types", () => {
 			const edges = [
 				...Array.from({ length: 50 }, (_, i) =>
-					createEdge(`priority${i}`, "A", "B", "implements")
+					createEdge(`priority${i}`, "A", "B", "implements"),
 				),
 				...Array.from({ length: 50 }, (_, i) =>
-					createEdge(`normal${i}`, "A", "B", "related_to")
+					createEdge(`normal${i}`, "A", "B", "related_to"),
 				),
 			];
 
 			const result = sampleEdgesByImportance(edges, 60, ["implements"]);
 
 			// Should include more priority edges
-			const priorityCount = result.filter((e) => e.type === "implements").length;
+			const priorityCount = result.filter(
+				(e) => e.type === "implements",
+			).length;
 			const normalCount = result.filter((e) => e.type === "related_to").length;
 
 			expect(priorityCount).toBeGreaterThan(normalCount);
@@ -171,7 +170,7 @@ describe("Edge Aggregation", () => {
 
 		it("should respect max edge limit", () => {
 			const edges = Array.from({ length: 1000 }, (_, i) =>
-				createEdge(`e${i}`, "A", "B", "implements")
+				createEdge(`e${i}`, "A", "B", "implements"),
 			);
 
 			const result = sampleEdgesByImportance(edges, 100, ["implements"]);
@@ -197,9 +196,9 @@ describe("Edge Aggregation", () => {
 			const result = filterEdgesByType(edges, config);
 
 			expect(result).toHaveLength(2);
-			expect(result.every((e) => ["implements", "tests"].includes(e.type))).toBe(
-				true
-			);
+			expect(
+				result.every((e) => ["implements", "tests"].includes(e.type)),
+			).toBe(true);
 		});
 
 		it("should return all edges when no filter", () => {
@@ -239,7 +238,7 @@ describe("Edge Aggregation", () => {
 
 		it("should respect max edge limit", () => {
 			const edges = Array.from({ length: 200 }, (_, i) =>
-				createEdge(`e${i}`, "A", "B", "implements")
+				createEdge(`e${i}`, "A", "B", "implements"),
 			);
 
 			const selectedNodes = new Set(["A"]);
@@ -251,14 +250,11 @@ describe("Edge Aggregation", () => {
 
 	describe("detectCanvasFallbackAreas", () => {
 		it("should detect ultra-dense areas", () => {
-			const nodes = [
-				createNode("A", 0, 0),
-				createNode("B", 10, 10),
-			];
+			const nodes = [createNode("A", 0, 0), createNode("B", 10, 10)];
 
 			// Create 1000 edges in small area to ensure high density
 			const edges = Array.from({ length: 1000 }, (_, i) =>
-				createEdge(`e${i}`, "A", "B", "implements")
+				createEdge(`e${i}`, "A", "B", "implements"),
 			);
 
 			const clusters = detectCanvasFallbackAreas(edges, nodes, 50);
@@ -268,10 +264,7 @@ describe("Edge Aggregation", () => {
 		});
 
 		it("should not flag low-density areas", () => {
-			const nodes = [
-				createNode("A", 0, 0),
-				createNode("B", 1000, 1000),
-			];
+			const nodes = [createNode("A", 0, 0), createNode("B", 1000, 1000)];
 
 			const edges = [createEdge("e1", "A", "B", "implements")];
 
@@ -284,7 +277,7 @@ describe("Edge Aggregation", () => {
 	describe("applyLazyEdgeRendering", () => {
 		it("should reduce 10K edges to <300 visible edges", () => {
 			const nodes = Array.from({ length: 100 }, (_, i) =>
-				createNode(`n${i}`, i * 100, i * 100)
+				createNode(`n${i}`, i * 100, i * 100),
 			);
 
 			const edges = Array.from({ length: 10000 }, (_, i) => {
@@ -296,12 +289,7 @@ describe("Edge Aggregation", () => {
 			const config = createDefaultSamplingConfig(edges.length);
 			const filterConfig = createDefaultFilterConfig();
 
-			const result = applyLazyEdgeRendering(
-				edges,
-				nodes,
-				config,
-				filterConfig
-			);
+			const result = applyLazyEdgeRendering(edges, nodes, config, filterConfig);
 
 			expect(result.visibleEdges.length).toBeLessThan(300);
 			expect(result.stats.renderRatio).toBeLessThan(5);
@@ -309,7 +297,7 @@ describe("Edge Aggregation", () => {
 
 		it("should handle 1M edge target", () => {
 			const nodes = Array.from({ length: 1000 }, (_, i) =>
-				createNode(`n${i}`, i * 100, i * 100)
+				createNode(`n${i}`, i * 100, i * 100),
 			);
 
 			// Create subset of 1000 edges to avoid test timeout
@@ -323,12 +311,7 @@ describe("Edge Aggregation", () => {
 			const config = createDefaultSamplingConfig(1000000); // Configure for 1M
 			const filterConfig = createDefaultFilterConfig();
 
-			const result = applyLazyEdgeRendering(
-				edges,
-				nodes,
-				config,
-				filterConfig
-			);
+			const result = applyLazyEdgeRendering(edges, nodes, config, filterConfig);
 
 			// Should use very aggressive config (maxVisibleEdges = 100)
 			// With 1000 input edges, should still respect the small input size
@@ -338,7 +321,7 @@ describe("Edge Aggregation", () => {
 		it("should provide stats about reduction", () => {
 			const nodes = [createNode("A", 0, 0), createNode("B", 100, 100)];
 			const edges = Array.from({ length: 100 }, (_, i) =>
-				createEdge(`e${i}`, "A", "B", "implements")
+				createEdge(`e${i}`, "A", "B", "implements"),
 			);
 
 			const config = createDefaultSamplingConfig(edges.length);

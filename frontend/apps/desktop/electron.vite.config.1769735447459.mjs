@@ -1,31 +1,24 @@
-// electron.vite.config.ts
+// Electron.vite.config.ts
 import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
-import path from "path";
+import path from "node:path";
 
-var __electron_vite_injected_dirname =
+const __electron_vite_injected_dirname =
 	"/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/desktop";
-var electron_vite_config_default = defineConfig({
+const electron_vite_config_default = defineConfig({
 	main: {
-		plugins: [externalizeDepsPlugin()],
 		build: {
 			outDir: "dist/main",
 		},
+		plugins: [externalizeDepsPlugin()],
 	},
 	preload: {
-		plugins: [externalizeDepsPlugin()],
 		build: {
 			outDir: "dist/preload",
 		},
+		plugins: [externalizeDepsPlugin()],
 	},
 	renderer: {
-		plugins: [react()],
-		root: "../web",
-		resolve: {
-			alias: {
-				"@": path.resolve(__electron_vite_injected_dirname, "../web/src"),
-			},
-		},
 		build: {
 			outDir: path.resolve(__electron_vite_injected_dirname, "dist/renderer"),
 			rollupOptions: {
@@ -35,6 +28,13 @@ var electron_vite_config_default = defineConfig({
 				),
 			},
 		},
+		plugins: [react()],
+		resolve: {
+			alias: {
+				"@": path.resolve(__electron_vite_injected_dirname, "../web/src"),
+			},
+		},
+		root: "../web",
 	},
 });
 export { electron_vite_config_default as default };

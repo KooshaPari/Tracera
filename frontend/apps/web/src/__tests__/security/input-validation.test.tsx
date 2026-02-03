@@ -78,15 +78,15 @@ describe("Input Validation Security Tests", () => {
 
 		it("should handle optional fields correctly", () => {
 			const schema = z.object({
-				required: z.string(),
 				optional: z.string().optional(),
+				required: z.string(),
 			});
 
 			expect(() => schema.parse({ required: "test" })).not.toThrow();
 			expect(() =>
 				schema.parse({
-					required: "test",
 					optional: "value",
+					required: "test",
 				}),
 			).not.toThrow();
 			expect(() => schema.parse({})).toThrow();
@@ -157,25 +157,25 @@ describe("Input Validation Security Tests", () => {
 		it("should validate object structure against schema", () => {
 			const schema = z
 				.object({
-					username: z.string(),
 					age: z.number(),
+					username: z.string(),
 				})
 				.strict(); // Reject extra properties
 
 			// Valid input
 			expect(() =>
 				schema.parse({
-					username: "test",
 					age: 25,
+					username: "test",
 				}),
 			).not.toThrow();
 
 			// Invalid: extra properties
 			expect(() =>
 				schema.parse({
-					username: "test",
-					age: 25,
 					$where: "malicious",
+					age: 25,
+					username: "test",
 				}),
 			).toThrow();
 		});
@@ -220,11 +220,8 @@ describe("Input Validation Security Tests", () => {
 
 	describe("Path Traversal Prevention", () => {
 		it("should reject directory traversal attempts", () => {
-			const hasPathTraversal = (path: string): boolean => {
-				return (
-					path.includes("..") || path.includes("//") || path.startsWith("/")
-				);
-			};
+			const hasPathTraversal = (path: string): boolean =>
+				path.includes("..") || path.includes("//") || path.startsWith("/");
 
 			expect(hasPathTraversal("../../../etc/passwd")).toBe(true);
 			expect(hasPathTraversal("../../secret.txt")).toBe(true);
@@ -235,13 +232,17 @@ describe("Input Validation Security Tests", () => {
 		it("should normalize and validate file paths", () => {
 			const normalizePath = (path: string): string | null => {
 				// Remove directory traversal
-				const cleaned = path.replace(/\.\./g, "").replace(/\/+/g, "/");
+				const cleaned = path.replaceAll(/\.\./g, "").replaceAll(/\/+/g, "/");
 
 				// Must not start with /
-				if (cleaned.startsWith("/")) return null;
+				if (cleaned.startsWith("/")) {
+					return null;
+				}
 
 				// Must not be empty
-				if (cleaned.trim().length === 0) return null;
+				if (cleaned.trim().length === 0) {
+					return null;
+				}
 
 				return cleaned;
 			};
@@ -275,7 +276,7 @@ describe("Input Validation Security Tests", () => {
 		it("should reject NaN and Infinity", () => {
 			const schema = z.number().finite();
 
-			expect(() => schema.parse(NaN)).toThrow();
+			expect(() => schema.parse(Number.NaN)).toThrow();
 			expect(() => schema.parse(Infinity)).toThrow();
 			expect(() => schema.parse(-Infinity)).toThrow();
 			expect(() => schema.parse(42)).not.toThrow();
@@ -305,12 +306,14 @@ describe("Input Validation Security Tests", () => {
 			const MAX_LENGTH = 1000;
 
 			const validateSafely = (input: string, pattern: RegExp): boolean => {
-				if (input.length > MAX_LENGTH) return false;
+				if (input.length > MAX_LENGTH) {
+					return false;
+				}
 				return pattern.test(input);
 			};
 
 			const safeInput = "a".repeat(100);
-			const unsafeInput = "a".repeat(10000);
+			const unsafeInput = "a".repeat(10_000);
 
 			expect(validateSafely(safeInput, /^[a]+$/)).toBe(true);
 			expect(validateSafely(unsafeInput, /^[a]+$/)).toBe(false);
@@ -319,11 +322,11 @@ describe("Input Validation Security Tests", () => {
 
 	describe("File Upload Validation", () => {
 		it("should validate file extensions", () => {
-			const allowedExtensions = [".jpg", ".png", ".pdf", ".txt"];
+			const allowedExtensions = new Set([".jpg", ".png", ".pdf", ".txt"]);
 
 			const isAllowedFile = (filename: string): boolean => {
 				const ext = filename.substring(filename.lastIndexOf(".")).toLowerCase();
-				return allowedExtensions.includes(ext);
+				return allowedExtensions.has(ext);
 			};
 
 			expect(isAllowedFile("document.pdf")).toBe(true);
@@ -335,9 +338,8 @@ describe("Input Validation Security Tests", () => {
 		it("should validate file size limits", () => {
 			const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
-			const isValidFileSize = (size: number): boolean => {
-				return size > 0 && size <= MAX_FILE_SIZE;
-			};
+			const isValidFileSize = (size: number): boolean =>
+				size > 0 && size <= MAX_FILE_SIZE;
 
 			expect(isValidFileSize(5 * 1024 * 1024)).toBe(true); // 5 MB
 			expect(isValidFileSize(20 * 1024 * 1024)).toBe(false); // 20 MB
@@ -346,15 +348,15 @@ describe("Input Validation Security Tests", () => {
 		});
 
 		it("should validate MIME types", () => {
-			const allowedMimeTypes = [
+			const allowedMimeTypes = new Set([
 				"image/jpeg",
 				"image/png",
 				"application/pdf",
 				"text/plain",
-			];
+			]);
 
 			const isAllowedMimeType = (mimeType: string): boolean => {
-				return allowedMimeTypes.includes(mimeType);
+				return allowedMimeTypes.has(mimeType);
 			};
 
 			expect(isAllowedMimeType("image/jpeg")).toBe(true);
@@ -385,14 +387,14 @@ describe("Input Validation Security Tests", () => {
 	describe("Form Validation Edge Cases", () => {
 		it("should handle null and undefined inputs", () => {
 			const schema = z.object({
-				name: z.string(),
 				age: z.number(),
+				name: z.string(),
 			});
 
-			expect(() => schema.parse({ name: null, age: 25 })).toThrow();
-			expect(() => schema.parse({ name: "test", age: undefined })).toThrow();
+			expect(() => schema.parse({ age: 25, name: null })).toThrow();
+			expect(() => schema.parse({ age: undefined, name: "test" })).toThrow();
 			expect(() => schema.parse(null)).toThrow();
-			expect(() => schema.parse(undefined)).toThrow();
+			expect(() => schema.parse()).toThrow();
 		});
 
 		it("should trim whitespace from string inputs", () => {
@@ -488,13 +490,11 @@ describe("Input Validation Security Tests", () => {
 		});
 
 		it("should normalize Unicode for comparison", () => {
-			const normalize = (text: string): string => {
-				return text.normalize("NFC");
-			};
+			const normalize = (text: string): string => text.normalize("NFC");
 
 			// These should be equal after normalization
 			const composed = "é"; // Single character
-			const decomposed = "é"; // e + combining acute accent
+			const decomposed = "é"; // E + combining acute accent
 
 			expect(normalize(composed)).toBe(normalize(decomposed));
 		});
@@ -533,21 +533,21 @@ describe("Input Validation Security Tests", () => {
 		it("should validate date ranges", () => {
 			const schema = z
 				.object({
-					startDate: z.date(),
 					endDate: z.date(),
+					startDate: z.date(),
 				})
 				.refine((data) => data.endDate >= data.startDate, {
 					message: "End date must be after start date",
 				});
 
 			const validDates = {
-				startDate: new Date("2024-01-01"),
 				endDate: new Date("2024-12-31"),
+				startDate: new Date("2024-01-01"),
 			};
 
 			const invalidDates = {
-				startDate: new Date("2024-12-31"),
 				endDate: new Date("2024-01-01"),
+				startDate: new Date("2024-12-31"),
 			};
 
 			expect(() => schema.parse(validDates)).not.toThrow();

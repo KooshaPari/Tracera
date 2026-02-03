@@ -66,7 +66,7 @@ export function createRetryFetch(
 		input: RequestInfo | URL,
 		init?: RequestInit,
 	): Promise<Response> {
-// 		const _url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+		// 		const _url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
 		let lastError: unknown;
 		let lastResponse: Response | undefined;
 
@@ -104,10 +104,13 @@ export function createRetryFetch(
 				lastError = e;
 				const isAbort = e instanceof DOMException && e.name === "AbortError";
 				const isNetwork =
-					e instanceof TypeError && (e.message === "Failed to fetch" || e.message?.includes("network"));
+					e instanceof TypeError &&
+					(e.message === "Failed to fetch" || e.message?.includes("network"));
 				if (
 					attempt < maxRetries - 1 &&
-					(isAbort || isNetwork || (e instanceof Error && e.message?.includes("fetch")))
+					(isAbort ||
+						isNetwork ||
+						(e instanceof Error && e.message?.includes("fetch")))
 				) {
 					const waitMs = Math.min(
 						initialDelayMs * Math.pow(backoffMultiplier, attempt),

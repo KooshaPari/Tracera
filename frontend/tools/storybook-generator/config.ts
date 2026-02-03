@@ -26,22 +26,22 @@ export interface GeneratorConfig {
 
 export const defaultConfig: GeneratorConfig = {
 	componentsDir: ["packages/ui/src/components", "apps/web/src/components"],
-	storiesDir: "apps/storybook/src/stories",
-	includePatterns: [/\.tsx$/],
+	designMetadataPath: ".trace/.meta/designs.yaml",
 	excludePatterns: [
 		/\.test\.tsx$/,
 		/\.spec\.tsx$/,
 		/\.stories\.tsx$/,
 		/index\.tsx$/,
 	],
-	designMetadataPath: ".trace/.meta/designs.yaml",
-	importPathMapping: {
-		"packages/ui/src/components": "@tracertm/ui",
-		"apps/web/src/components": "@tracertm/web/components",
-	},
-	generateVariants: true,
 	generateShowcase: true,
+	generateVariants: true,
+	importPathMapping: {
+		"apps/web/src/components": "@tracertm/web/components",
+		"packages/ui/src/components": "@tracertm/ui",
+	},
+	includePatterns: [/\.tsx$/],
 	overwriteExisting: false,
+	storiesDir: "apps/storybook/src/stories",
 };
 
 /**

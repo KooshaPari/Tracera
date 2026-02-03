@@ -7,29 +7,34 @@ import { fetchEvent, fetchEvents } from "@/api/events";
 
 // Mock the client
 vi.mock("@/api/client", () => ({
-	apiClient: {
-		GET: vi.fn(),
+	__esModule: true,
+	default: {
+		apiClient: {
+			GET: vi.fn(),
+		},
+		handleApiResponse: vi.fn(),
+		safeApiCall: vi.fn(),
 	},
-	safeApiCall: vi.fn(),
-	handleApiResponse: vi.fn(),
 }));
 
-import { apiClient, handleApiResponse, safeApiCall } from "@/api/client";
+import client from "@/api/client";
+
+const { apiClient, handleApiResponse, safeApiCall } = client;
 
 describe("Events API", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchEvents", () => {
+	describe(fetchEvents, () => {
 		it("should fetch events without params", async () => {
 			const mockEvents = [
 				{
 					id: "1",
-					type: "item_created",
 					payload: {},
-					timestamp: "2024-01-01",
 					projectId: "proj-1",
+					timestamp: "2024-01-01",
+					type: "item_created",
 				},
 			];
 			vi.mocked(apiClient.GET).mockResolvedValue({
@@ -84,13 +89,13 @@ describe("Events API", () => {
 		});
 	});
 
-	describe("fetchEvent", () => {
+	describe(fetchEvent, () => {
 		it("should fetch a single event by id", async () => {
 			const mockEvent = {
 				id: "1",
-				type: "item_created",
 				payload: {},
 				timestamp: "2024-01-01",
+				type: "item_created",
 			};
 			vi.mocked(apiClient.GET).mockResolvedValue({
 				data: mockEvent,

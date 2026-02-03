@@ -5,18 +5,22 @@ import { Button } from "@tracertm/ui/components/Button";
 import { _Badge } from "@tracertm/ui/components/Badge";
 import { Alert } from "@tracertm/ui/components/Alert";
 import {
-	_Download,
 	FileImage,
 	FileJson,
 	FileSpreadsheet,
 	FileText,
-	X,
 	Loader2,
+	X,
+	_Download,
 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useReactFlow, _getNodesBounds, _getViewportForBounds } from "@xyflow/react";
+import {
+	_getNodesBounds,
+	_getViewportForBounds,
+	useReactFlow,
+} from "@xyflow/react";
 import { toPng, toSvg } from "html-to-image";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 interface ExportControlsProps {
 	onExport?: (format: "png" | "svg" | "json" | "csv") => void;
@@ -50,8 +54,8 @@ export function ExportControls({
 
 			const dataUrl = await toPng(element, {
 				backgroundColor: "#1a1a2e",
-				quality: 1.0,
 				pixelRatio: 2,
+				quality: 1.0,
 			});
 
 			// Download
@@ -113,24 +117,24 @@ export function ExportControls({
 			const edges = getEdges();
 
 			const data = {
-				nodes: nodes.map((node) => ({
-					id: node.id,
-					type: node.type,
-					position: node.position,
-					data: node.data,
-				})),
 				edges: edges.map((edge) => ({
 					id: edge.id,
+					label: edge.label,
 					source: edge.source,
 					target: edge.target,
 					type: edge.type,
-					label: edge.label,
 				})),
 				metadata: {
+					edgeCount: edges.length,
 					exportDate: new Date().toISOString(),
 					nodeCount: nodes.length,
-					edgeCount: edges.length,
 				},
+				nodes: nodes.map((node) => ({
+					data: node.data,
+					id: node.id,
+					position: node.position,
+					type: node.type,
+				})),
 			};
 
 			const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -189,15 +193,16 @@ export function ExportControls({
 			const edgeCSV = [
 				edgeHeaders.join(","),
 				...edgeRows.map((row) =>
-				row
-					.map((cell) => {
-						const s =
-							typeof cell === "object" && cell !== null
-								? JSON.stringify(cell)
-								: String(cell);
-						return `"${s}"`;
-					})
-					.join(",")),
+					row
+						.map((cell) => {
+							const s =
+								typeof cell === "object" && cell !== null
+									? JSON.stringify(cell)
+									: String(cell);
+							return `"${s}"`;
+						})
+						.join(","),
+				),
 			].join("\n");
 
 			// Combine both CSVs

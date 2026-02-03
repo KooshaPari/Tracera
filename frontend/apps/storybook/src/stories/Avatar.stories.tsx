@@ -4,9 +4,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Avatar } from "@tracertm/ui";
 
 const meta: Meta<typeof Avatar> = {
-	title: "Components/Avatar",
 	component: Avatar,
 	tags: ["autodocs"],
+	title: "Components/Avatar",
 };
 
 export default meta;

@@ -61,7 +61,7 @@ export function WorkflowRunsView({ projectId }: WorkflowRunsViewProps) {
 					<div className="animate-pulse text-sm text-gray-500">
 						Loading schedules...
 					</div>
-				) : schedules.length === 0 ? (
+				) : (schedules.length === 0 ? (
 					<div className="text-sm text-gray-500">
 						No schedules configured for this project.
 					</div>
@@ -77,7 +77,7 @@ export function WorkflowRunsView({ projectId }: WorkflowRunsViewProps) {
 							/>
 						))}
 					</div>
-				)}
+				))}
 			</div>
 
 			<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
@@ -99,7 +99,7 @@ export function WorkflowRunsView({ projectId }: WorkflowRunsViewProps) {
 					<div className="animate-pulse text-sm text-gray-500">
 						Loading runs...
 					</div>
-				) : runs.length === 0 ? (
+				) : (runs.length === 0 ? (
 					<div className="text-sm text-gray-500">No workflow runs yet.</div>
 				) : (
 					<div className="space-y-2">
@@ -107,7 +107,7 @@ export function WorkflowRunsView({ projectId }: WorkflowRunsViewProps) {
 							<RunRow key={run.id} run={run} />
 						))}
 					</div>
-				)}
+				))}
 			</div>
 		</div>
 	);
@@ -168,7 +168,7 @@ function ScheduleRow({
 			<div>
 				<button
 					type="button"
-					onClick={() => onDelete({ projectId, cronId })}
+					onClick={() => onDelete({ cronId, projectId })}
 					disabled={!cronId || isDeleting}
 					className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-60"
 				>

@@ -60,9 +60,8 @@ describe("Content Security Policy Tests", () => {
 		});
 
 		it("should reject inline script tags", () => {
-			const hasInlineScript = (html: string): boolean => {
-				return /<script[^>]*>[\s\S]*?<\/script>/i.test(html);
-			};
+			const hasInlineScript = (html: string): boolean =>
+				/<script[^>]*>[\s\S]*?<\/script>/i.test(html);
 
 			const maliciousHTML = '<div><script>alert("XSS")</script></div>';
 			expect(hasInlineScript(maliciousHTML)).toBe(true);
@@ -75,7 +74,7 @@ describe("Content Security Policy Tests", () => {
 			const generateNonce = (): string => {
 				const array = new Uint8Array(16);
 				crypto.getRandomValues(array);
-				return btoa(String.fromCharCode(...array));
+				return btoa(String.fromCodePoint(...array));
 			};
 
 			const nonce = generateNonce();
@@ -168,9 +167,8 @@ describe("Content Security Policy Tests", () => {
 
 	describe("Subresource Integrity (SRI)", () => {
 		it("should validate script integrity hashes", () => {
-			const hasValidSRI = (scriptTag: string): boolean => {
-				return /integrity\s*=\s*["']sha\d+-[A-Za-z0-9+/=]+["']/.test(scriptTag);
-			};
+			const hasValidSRI = (scriptTag: string): boolean =>
+				/integrity\s*=\s*["']sha\d+-[A-Za-z0-9+/=]+["']/.test(scriptTag);
 
 			const scriptWithSRI =
 				'<script src="..." integrity="sha384-abc123def456ghi789jkl012mno345pqr678=" crossorigin="anonymous"></script>';
@@ -186,8 +184,8 @@ describe("Content Security Policy Tests", () => {
 				const encoder = new TextEncoder();
 				const data = encoder.encode(content);
 				const hashBuffer = await crypto.subtle.digest("SHA-384", data);
-				const hashArray = Array.from(new Uint8Array(hashBuffer));
-				const hashBase64 = btoa(String.fromCharCode(...hashArray));
+				const hashArray = [...new Uint8Array(hashBuffer)];
+				const hashBase64 = btoa(String.fromCodePoint(...hashArray));
 				return `sha384-${hashBase64}`;
 			};
 
@@ -208,12 +206,12 @@ describe("Content Security Policy Tests", () => {
 		it("should validate CSP violation report structure", () => {
 			const sampleReport = {
 				"csp-report": {
+					"blocked-uri": "https://evil.com/malicious.js",
 					"document-uri": "https://app.tracertm.com",
-					"violated-directive": "script-src",
 					"effective-directive": "script-src",
 					"original-policy": "default-src 'self'",
-					"blocked-uri": "https://evil.com/malicious.js",
 					"status-code": 200,
+					"violated-directive": "script-src",
 				},
 			};
 
@@ -225,12 +223,12 @@ describe("Content Security Policy Tests", () => {
 	describe("CSP in Different Environments", () => {
 		it("should have strict CSP in production", () => {
 			const productionCSP = {
+				"connect-src": ["'self'"],
 				"default-src": ["'self'"],
+				"frame-ancestors": ["'none'"],
+				"img-src": ["'self'", "data:", "https:"],
 				"script-src": ["'self'"],
 				"style-src": ["'self'"],
-				"img-src": ["'self'", "data:", "https:"],
-				"connect-src": ["'self'"],
-				"frame-ancestors": ["'none'"],
 			};
 
 			expect(productionCSP["script-src"]).not.toContain("'unsafe-eval'");
@@ -252,7 +250,8 @@ describe("Content Security Policy Tests", () => {
 		it("should use Trusted Types when available", () => {
 			// Check if Trusted Types is supported
 			const supportsTrustedTypes =
-				typeof window !== "undefined" && "trustedTypes" in window;
+				typeof globalThis.window !== "undefined" &&
+				"trustedTypes" in globalThis;
 
 			// Test is informational about browser support
 			expect(typeof supportsTrustedTypes).toBe("boolean");
@@ -260,12 +259,13 @@ describe("Content Security Policy Tests", () => {
 
 		it("should create trusted HTML policy", () => {
 			const createTrustedHTMLPolicy = () => {
-				if (typeof window !== "undefined" && "trustedTypes" in window) {
-					return (window as any).trustedTypes.createPolicy("default", {
-						createHTML: (input: string) => {
-							// Sanitize input
-							return input.replace(/<script/gi, "&lt;script");
-						},
+				if (
+					typeof globalThis.window !== "undefined" &&
+					"trustedTypes" in globalThis
+				) {
+					return (globalThis as any).trustedTypes.createPolicy("default", {
+						createHTML: (input: string) =>
+							input.replace(/<script/gi, "&lt;script"),
 					});
 				}
 				return null;
@@ -279,9 +279,8 @@ describe("Content Security Policy Tests", () => {
 
 	describe("Script Loading Strategy", () => {
 		it("should use async or defer for external scripts", () => {
-			const isAsyncOrDefer = (scriptTag: string): boolean => {
-				return /\s(async|defer)(\s|>)/.test(scriptTag);
-			};
+			const isAsyncOrDefer = (scriptTag: string): boolean =>
+				/\s(async|defer)(\s|>)/.test(scriptTag);
 
 			const goodScript = '<script src="app.js" defer></script>';
 			expect(isAsyncOrDefer(goodScript)).toBe(true);
@@ -321,22 +320,21 @@ describe("Content Security Policy Tests", () => {
 
 	describe("WebSocket Security", () => {
 		it("should only allow secure WebSocket connections", () => {
-			const isSecureWebSocket = (url: string): boolean => {
-				return url.startsWith("wss://");
-			};
+			const isSecureWebSocket = (url: string): boolean =>
+				url.startsWith("wss://");
 
 			expect(isSecureWebSocket("wss://ws.tracertm.com")).toBe(true);
 			expect(isSecureWebSocket("ws://insecure.com")).toBe(false);
 		});
 
 		it("should validate WebSocket origin", () => {
-			const allowedOrigins = [
+			const allowedOrigins = new Set([
 				"https://app.tracertm.com",
 				"https://tracertm.com",
-			];
+			]);
 
 			const isAllowedWebSocketOrigin = (origin: string): boolean => {
-				return allowedOrigins.includes(origin);
+				return allowedOrigins.has(origin);
 			};
 
 			expect(isAllowedWebSocketOrigin("https://app.tracertm.com")).toBe(true);
@@ -354,46 +352,46 @@ describe("CSP Violation Handling", () => {
 			violationEvent: SecurityPolicyViolationEvent,
 		) => {
 			mockLogger({
-				directive: violationEvent.violatedDirective,
 				blockedURI: violationEvent.blockedURI,
-				sourceFile: violationEvent.sourceFile,
+				directive: violationEvent.violatedDirective,
 				lineNumber: violationEvent.lineNumber,
+				sourceFile: violationEvent.sourceFile,
 			});
 		};
 
 		// Simulate violation
 		const mockViolation = {
-			violatedDirective: "script-src",
 			blockedURI: "https://evil.com/malicious.js",
-			sourceFile: "https://app.tracertm.com",
 			lineNumber: 42,
+			sourceFile: "https://app.tracertm.com",
+			violatedDirective: "script-src",
 		} as SecurityPolicyViolationEvent;
 
 		handleCSPViolation(mockViolation);
 
 		expect(mockLogger).toHaveBeenCalledWith({
-			directive: "script-src",
 			blockedURI: "https://evil.com/malicious.js",
-			sourceFile: "https://app.tracertm.com",
+			directive: "script-src",
 			lineNumber: 42,
+			sourceFile: "https://app.tracertm.com",
 		});
 	});
 
 	async function reportCSPViolation(violation: SecurityPolicyViolationEvent) {
 		await fetch("/api/security/csp-report", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(violation),
+			headers: { "Content-Type": "application/json" },
+			method: "POST",
 		});
 	}
 
 	it("should report CSP violations to server", async () => {
 		const mockFetch = vi.fn().mockResolvedValue({ ok: true });
-		global.fetch = mockFetch;
+		globalThis.fetch = mockFetch;
 
 		const violation = {
-			directive: "script-src",
 			blockedURI: "https://malicious.com/script.js",
+			directive: "script-src",
 		};
 
 		await reportCSPViolation(violation);
@@ -401,8 +399,8 @@ describe("CSP Violation Handling", () => {
 		expect(mockFetch).toHaveBeenCalledWith(
 			"/api/security/csp-report",
 			expect.objectContaining({
-				method: "POST",
 				body: JSON.stringify(violation),
+				method: "POST",
 			}),
 		);
 	});

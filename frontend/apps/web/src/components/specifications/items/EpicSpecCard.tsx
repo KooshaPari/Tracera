@@ -40,25 +40,25 @@ interface EpicSpecCardProps {
 }
 
 const statusStyles = {
-	backlog: { bg: "bg-muted", text: "text-muted-foreground", icon: Clock },
-	in_progress: {
-		bg: "bg-blue-500/10",
-		text: "text-blue-600",
-		icon: TrendingUp,
-	},
+	archived: { bg: "bg-gray-500/10", icon: FileText, text: "text-gray-600" },
+	backlog: { bg: "bg-muted", icon: Clock, text: "text-muted-foreground" },
 	completed: {
 		bg: "bg-green-500/10",
-		text: "text-green-600",
 		icon: CheckCircle2,
+		text: "text-green-600",
 	},
-	archived: { bg: "bg-gray-500/10", text: "text-gray-600", icon: FileText },
+	in_progress: {
+		bg: "bg-blue-500/10",
+		icon: TrendingUp,
+		text: "text-blue-600",
+	},
 };
 
 const riskImpactStyles = {
 	critical: "bg-red-500 text-white",
 	high: "bg-orange-500 text-white",
-	medium: "bg-yellow-500 text-white",
 	low: "bg-green-500 text-white",
+	medium: "bg-yellow-500 text-white",
 	minimal: "bg-blue-500 text-white",
 };
 
@@ -217,9 +217,9 @@ export function EpicSpecCard({
 											"text-[10px] font-medium",
 											daysRemaining < 0
 												? "text-red-500"
-												: daysRemaining < 7
+												: (daysRemaining < 7
 													? "text-orange-500"
-													: "text-muted-foreground",
+													: "text-muted-foreground"),
 										)}
 									>
 										{daysRemaining < 0

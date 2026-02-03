@@ -12,13 +12,13 @@ export function formatDate(
 	const options: Intl.DateTimeFormatOptions =
 		format === "long"
 			? {
-					year: "numeric",
-					month: "long",
 					day: "numeric",
 					hour: "2-digit",
 					minute: "2-digit",
+					month: "long",
+					year: "numeric",
 				}
-			: { year: "numeric", month: "short", day: "numeric" };
+			: { day: "numeric", month: "short", year: "numeric" };
 
 	return d.toLocaleDateString("en-US", options);
 }
@@ -27,13 +27,21 @@ export function formatRelativeTime(date: Date): string {
 	const now = new Date();
 	const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-	if (diffInSeconds < 60) return "just now";
-	if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-	if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-	if (diffInSeconds < 604800)
+	if (diffInSeconds < 60) {
+		return "just now";
+	}
+	if (diffInSeconds < 3600) {
+		return `${Math.floor(diffInSeconds / 60)}m ago`;
+	}
+	if (diffInSeconds < 86_400) {
+		return `${Math.floor(diffInSeconds / 3600)}h ago`;
+	}
+	if (diffInSeconds < 604_800) {
 		return `${Math.floor(diffInSeconds / 86400)}d ago`;
-	if (diffInSeconds < 2592000)
+	}
+	if (diffInSeconds < 2_592_000) {
 		return `${Math.floor(diffInSeconds / 604800)}w ago`;
+	}
 
 	return formatDate(date, "short");
 }
@@ -54,30 +62,32 @@ export function formatNumber(
 export function formatPercentage(
 	value: number,
 	total: number,
-	decimals: number = 0,
+	decimals = 0,
 ): string {
-	if (total === 0) return "0%";
+	if (total === 0) {
+		return "0%";
+	}
 	const percentage = (value / total) * 100;
 	return `${percentage.toFixed(decimals)}%`;
 }
 
-export function formatBytes(bytes: number, decimals: number = 2): string {
-	if (bytes === 0) return "0 Bytes";
+export function formatBytes(bytes: number, decimals = 2): string {
+	if (bytes === 0) {
+		return "0 Bytes";
+	}
 
 	const k = 1024;
 	const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
 	const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-	return `${parseFloat((bytes / k ** i).toFixed(decimals))} ${sizes[i]}`;
+	return `${Number.parseFloat((bytes / k ** i).toFixed(decimals))} ${sizes[i]}`;
 }
 
 // String formatting utilities
-export function truncate(
-	text: string,
-	length: number,
-	suffix: string = "...",
-): string {
-	if (text.length <= length) return text;
+export function truncate(text: string, length: number, suffix = "..."): string {
+	if (text.length <= length) {
+		return text;
+	}
 	return text.slice(0, length - suffix.length) + suffix;
 }
 
@@ -95,14 +105,14 @@ export function titleCase(text: string): string {
 export function kebabCase(text: string): string {
 	return text
 		.toLowerCase()
-		.replace(/\s+/g, "-")
-		.replace(/[^\w-]/g, "");
+		.replaceAll(/\s+/g, "-")
+		.replaceAll(/[^\w-]/g, "");
 }
 
 export function camelCase(text: string): string {
 	return text
 		.toLowerCase()
-		.replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
+		.replaceAll(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
 }
 
 // Status formatting
@@ -118,8 +128,8 @@ export function getPriorityColor(priority: string): string {
 	const colors: Record<string, string> = {
 		critical: "red",
 		high: "orange",
-		medium: "yellow",
 		low: "green",
+		medium: "yellow",
 	};
 	return colors[priority.toLowerCase()] || "gray";
 }
@@ -127,19 +137,23 @@ export function getPriorityColor(priority: string): string {
 // Status formatting with colors
 export function getStatusColor(status: string): string {
 	const colors: Record<string, string> = {
-		todo: "gray",
-		in_progress: "blue",
-		done: "green",
 		blocked: "red",
 		cancelled: "gray",
+		done: "green",
+		in_progress: "blue",
+		todo: "gray",
 	};
 	return colors[status.toLowerCase()] || "gray";
 }
 
 // Duration formatting
 export function formatDuration(seconds: number): string {
-	if (seconds < 60) return `${seconds}s`;
-	if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+	if (seconds < 60) {
+		return `${seconds}s`;
+	}
+	if (seconds < 3600) {
+		return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+	}
 
 	const hours = Math.floor(seconds / 3600);
 	const minutes = Math.floor((seconds % 3600) / 60);

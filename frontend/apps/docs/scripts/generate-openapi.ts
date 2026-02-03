@@ -12,7 +12,7 @@
  *   BACKEND_URL - Backend API URL (default: http://localhost:8000)
  */
 
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import yaml from 'js-yaml';
 
@@ -33,7 +33,7 @@ interface OpenAPISpec {
 }
 
 async function fetchOpenAPISpec(): Promise<OpenAPISpec> {
-  console.log(`📡 Fetching OpenAPI spec from ${OPENAPI_ENDPOINT}...`);
+  
 
   try {
     const response = await fetch(OPENAPI_ENDPOINT);
@@ -49,18 +49,18 @@ async function fetchOpenAPISpec(): Promise<OpenAPISpec> {
       throw new Error('Invalid OpenAPI spec: missing required fields');
     }
 
-    console.log(`✅ Fetched OpenAPI ${spec.openapi} spec: ${spec.info.title} v${spec.info.version}`);
-    console.log(`   Endpoints: ${Object.keys(spec.paths).length}`);
+    
+    
 
     return spec;
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
-        console.error(`\n❌ Failed to connect to backend at ${BACKEND_URL}`);
-        console.error('   Make sure the backend is running:');
-        console.error('   $ uvicorn tracertm.api.main:app --reload\n');
+        
+        
+        
       } else {
-        console.error(`\n❌ Error fetching OpenAPI spec: ${error.message}\n`);
+        
       }
     }
     throw error;
@@ -68,7 +68,7 @@ async function fetchOpenAPISpec(): Promise<OpenAPISpec> {
 }
 
 function convertToYAML(spec: OpenAPISpec): string {
-  console.log('🔄 Converting JSON to YAML...');
+  
 
   try {
     const yamlContent = yaml.dump(spec, {
@@ -78,49 +78,49 @@ function convertToYAML(spec: OpenAPISpec): string {
       sortKeys: false,
     });
 
-    console.log(`✅ Converted to YAML (${yamlContent.length} bytes)`);
+    
     return yamlContent;
   } catch (error) {
     if (error instanceof Error) {
-      console.error(`\n❌ Error converting to YAML: ${error.message}\n`);
+      
     }
     throw error;
   }
 }
 
 function saveToFile(content: string): void {
-  console.log(`💾 Saving to ${OUTPUT_FILE}...`);
+  
 
   try {
     // Ensure output directory exists
     mkdirSync(OUTPUT_DIR, { recursive: true });
 
     // Write YAML file
-    writeFileSync(OUTPUT_FILE, content, 'utf-8');
+    writeFileSync(OUTPUT_FILE, content, 'utf8');
 
-    console.log(`✅ OpenAPI spec saved successfully\n`);
-    console.log(`📄 Output: ${OUTPUT_FILE}`);
-    console.log(`📊 Size: ${(content.length / 1024).toFixed(2)} KB\n`);
+    
+    
+    
   } catch (error) {
     if (error instanceof Error) {
-      console.error(`\n❌ Error saving file: ${error.message}\n`);
+      
     }
     throw error;
   }
 }
 
 async function main() {
-  console.log('\n🚀 OpenAPI Spec Generator\n');
+  
 
   try {
     const spec = await fetchOpenAPISpec();
     const yamlContent = convertToYAML(spec);
     saveToFile(yamlContent);
 
-    console.log('✨ Done! API documentation is ready to build.\n');
+    
     process.exit(0);
   } catch {
-    console.error('💥 Generation failed\n');
+    
     process.exit(1);
   }
 }

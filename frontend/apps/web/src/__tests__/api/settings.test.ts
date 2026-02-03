@@ -27,22 +27,22 @@ describe("Settings API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchSettings", () => {
+	describe(fetchSettings, () => {
 		it("should fetch settings from API", async () => {
 			const mockSettings: Settings = {
 				general: {
-					theme: "dark",
 					language: "en",
+					theme: "dark",
 					timezone: "UTC",
 				},
 				notifications: {
 					email: true,
-					push: false,
 					inApp: true,
+					push: false,
 				},
 				security: {
-					twoFactor: true,
 					sessionTimeout: 60,
+					twoFactor: true,
 				},
 			};
 
@@ -66,17 +66,17 @@ describe("Settings API", () => {
 
 			expect(result).toEqual({
 				general: {
-					theme: "system",
 					language: "en",
+					theme: "system",
 				},
 				notifications: {
 					email: true,
-					push: true,
 					inApp: true,
+					push: true,
 				},
 				security: {
-					twoFactor: false,
 					sessionTimeout: 30,
+					twoFactor: false,
 				},
 			});
 		});
@@ -97,8 +97,8 @@ describe("Settings API", () => {
 		it("should include general settings", async () => {
 			const mockSettings: Settings = {
 				general: {
-					theme: "light",
 					language: "es",
+					theme: "light",
 					timezone: "EST",
 				},
 			};
@@ -121,8 +121,8 @@ describe("Settings API", () => {
 				general: {},
 				notifications: {
 					email: false,
-					push: true,
 					inApp: false,
+					push: true,
 				},
 			};
 
@@ -143,8 +143,8 @@ describe("Settings API", () => {
 			const mockSettings: Settings = {
 				general: {},
 				security: {
-					twoFactor: true,
 					sessionTimeout: 120,
+					twoFactor: true,
 				},
 			};
 
@@ -176,7 +176,7 @@ describe("Settings API", () => {
 		});
 
 		it("should support all theme options", async () => {
-			const themes: Array<"light" | "dark" | "system"> = [
+			const themes: ("light" | "dark" | "system")[] = [
 				"light",
 				"dark",
 				"system",
@@ -213,12 +213,12 @@ describe("Settings API", () => {
 		});
 	});
 
-	describe("updateSettings", () => {
+	describe(updateSettings, () => {
 		it("should update general settings", async () => {
 			const updatedSettings: Settings = {
 				general: {
-					theme: "dark",
 					language: "fr",
+					theme: "dark",
 				},
 			};
 
@@ -229,7 +229,7 @@ describe("Settings API", () => {
 			});
 
 			const result = await updateSettings({
-				general: { theme: "dark", language: "fr" },
+				general: { language: "fr", theme: "dark" },
 			});
 
 			expect(result.general.theme).toBe("dark");
@@ -241,8 +241,8 @@ describe("Settings API", () => {
 				general: {},
 				notifications: {
 					email: false,
-					push: false,
 					inApp: true,
+					push: false,
 				},
 			};
 
@@ -253,7 +253,7 @@ describe("Settings API", () => {
 			});
 
 			const result = await updateSettings({
-				notifications: { email: false, push: false, inApp: true },
+				notifications: { email: false, inApp: true, push: false },
 			});
 
 			expect(result.notifications?.email).toBe(false);
@@ -263,8 +263,8 @@ describe("Settings API", () => {
 			const updatedSettings: Settings = {
 				general: {},
 				security: {
-					twoFactor: true,
 					sessionTimeout: 90,
+					twoFactor: true,
 				},
 			};
 
@@ -275,7 +275,7 @@ describe("Settings API", () => {
 			});
 
 			const result = await updateSettings({
-				security: { twoFactor: true, sessionTimeout: 90 },
+				security: { sessionTimeout: 90, twoFactor: true },
 			});
 
 			expect(result.security?.twoFactor).toBe(true);
@@ -386,7 +386,7 @@ describe("Settings API", () => {
 
 		it("should handle multiple setting updates", async () => {
 			const updates = {
-				general: { theme: "dark", language: "es" },
+				general: { language: "es", theme: "dark" },
 				notifications: { email: false },
 				security: { twoFactor: true },
 			};
@@ -422,9 +422,9 @@ describe("Settings API", () => {
 
 		it("should preserve existing settings during update", async () => {
 			const completeSettings: Settings = {
-				general: { theme: "dark", language: "en", timezone: "UTC" },
-				notifications: { email: true, push: false, inApp: true },
-				security: { twoFactor: false, sessionTimeout: 30 },
+				general: { language: "en", theme: "dark", timezone: "UTC" },
+				notifications: { email: true, inApp: true, push: false },
+				security: { sessionTimeout: 30, twoFactor: false },
 			};
 
 			vi.mocked(apiClient.PUT).mockResolvedValue({
@@ -491,7 +491,7 @@ describe("Settings API", () => {
 			const settings: Settings = {
 				general: {},
 				security: {
-					sessionTimeout: 10080, // 7 days in minutes
+					sessionTimeout: 10_080, // 7 days in minutes
 				},
 			};
 
@@ -503,7 +503,7 @@ describe("Settings API", () => {
 
 			const result = await fetchSettings();
 
-			expect(result.security?.sessionTimeout).toBe(10080);
+			expect(result.security?.sessionTimeout).toBe(10_080);
 		});
 
 		it("should handle zero session timeout", async () => {

@@ -88,25 +88,35 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 
 	// Compute derived values (hooks must be called unconditionally)
 	const safetyLevel = useMemo(() => {
-		if (testSpec?.is_quarantined) {return "quarantined";}
+		if (testSpec?.is_quarantined) {
+			return "quarantined";
+		}
 		return "safe";
 	}, [testSpec?.is_quarantined]);
 
 	const flakinessScore = testSpec?.flakiness_score ?? 0;
 	const isFlakyTest = flakinessScore > 30;
 	const flakinessColor = useMemo(() => {
-		if (flakinessScore > 30) {return "text-red-600";}
-		if (flakinessScore > 10) {return "text-yellow-600";}
+		if (flakinessScore > 30) {
+			return "text-red-600";
+		}
+		if (flakinessScore > 10) {
+			return "text-yellow-600";
+		}
 		return "text-green-600";
 	}, [flakinessScore]);
 
 	const coveragePercent = useMemo(() => {
-		if (!testSpec) {return 0;}
+		if (!testSpec) {
+			return 0;
+		}
 		return testSpec.line_coverage ?? 0;
 	}, [testSpec]);
 
 	const passRate = useMemo(() => {
-		if (!testSpec || testSpec.total_runs === 0) {return 0;}
+		if (!testSpec || testSpec.total_runs === 0) {
+			return 0;
+		}
 		return Math.round((testSpec.pass_count / testSpec.total_runs) * 100);
 	}, [testSpec]);
 
@@ -295,8 +305,9 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 												Coverage Type
 											</p>
 											<p className="text-sm font-medium">
-												{(testSpec.spec_metadata?.["coverage_type"] as string) ||
-													"Not specified"}
+												{(testSpec.spec_metadata?.[
+													"coverage_type"
+												] as string) || "Not specified"}
 											</p>
 										</div>
 										<div>

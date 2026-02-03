@@ -2,15 +2,15 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import type { Version } from "../TemporalNavigator";
 import { TimelineView } from "../TimelineView";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 const meta = {
-	title: "Temporal/TimelineView",
 	component: TimelineView,
 	parameters: {
 		layout: "centered",
 	},
 	tags: ["autodocs"],
+	title: "Temporal/TimelineView",
 } satisfies Meta<typeof TimelineView>;
 
 export default meta;
@@ -18,96 +18,96 @@ type Story = StoryObj<typeof meta>;
 
 const mockVersions: Version[] = [
 	{
-		id: "v1.0.0",
+		author: "Alice",
 		branchId: "main",
-		title: "v1.0.0 - Initial Release",
+		description: "First stable release with core features",
+		id: "v1.0.0",
+		status: "published",
 		tag: "1.0.0",
 		timestamp: new Date("2024-01-01"),
-		author: "Alice",
-		status: "published",
-		description: "First stable release with core features",
+		title: "v1.0.0 - Initial Release",
 	},
 	{
-		id: "v1.0.1",
+		author: "Bob",
 		branchId: "main",
-		title: "v1.0.1 - Bugfix",
+		description: "Critical security patches",
+		id: "v1.0.1",
+		status: "published",
 		tag: "1.0.1",
 		timestamp: new Date("2024-01-05"),
-		author: "Bob",
-		status: "published",
-		description: "Critical security patches",
+		title: "v1.0.1 - Bugfix",
 	},
 	{
-		id: "v1.1.0",
+		author: "Charlie",
 		branchId: "main",
-		title: "v1.1.0 - New Features",
+		description: "Authentication and user management",
+		id: "v1.1.0",
+		status: "published",
 		tag: "1.1.0",
 		timestamp: new Date("2024-01-12"),
-		author: "Charlie",
-		status: "published",
-		description: "Authentication and user management",
+		title: "v1.1.0 - New Features",
 	},
 	{
-		id: "v1.2.0-beta",
+		author: "Alice",
 		branchId: "main",
-		title: "v1.2.0-beta - Beta Release",
+		description: "Next version in development",
+		id: "v1.2.0-beta",
+		status: "draft",
 		tag: "1.2.0-beta",
 		timestamp: new Date("2024-01-19"),
-		author: "Alice",
-		status: "draft",
-		description: "Next version in development",
+		title: "v1.2.0-beta - Beta Release",
 	},
 ];
 
 export const Default: Story = {
 	args: {
-		versions: mockVersions,
 		currentVersionId: "v1.1.0",
 		onVersionChange: (versionId) =>
 			logger.info("Version changed to:", versionId),
+		versions: mockVersions,
 	},
 };
 
 export const SingleVersion: Story = {
 	args: {
-		versions: [mockVersions[0]],
 		currentVersionId: "v1.0.0",
 		onVersionChange: (versionId) =>
 			logger.info("Version changed to:", versionId),
+		versions: [mockVersions[0]],
 	},
 };
 
 export const ManyVersions: Story = {
 	args: {
+		currentVersionId: "v10",
+		onVersionChange: (versionId) =>
+			logger.info("Version changed to:", versionId),
 		versions: Array.from({ length: 20 }, (_, i) => ({
 			...mockVersions[i % mockVersions.length],
 			id: `v${i}`,
 			title: `Version ${i}`,
 			timestamp: new Date(new Date("2024-01-01").getTime() + i * 86400000),
 		})),
-		currentVersionId: "v10",
-		onVersionChange: (versionId) =>
-			logger.info("Version changed to:", versionId),
 	},
 };
 
 export const EmptyTimeline: Story = {
 	args: {
-		versions: [],
 		currentVersionId: "",
 		onVersionChange: (versionId) =>
 			logger.info("Version changed to:", versionId),
+		versions: [],
 	},
 };
 
 export const DraftVersions: Story = {
 	args: {
+		currentVersionId: mockVersions[0].id,
+		onVersionChange: (versionId) =>
+			logger.info("Version changed to:", versionId),
 		versions: mockVersions.map((v) => ({
 			...v,
 			status: "draft" as const,
 		})),
-		currentVersionId: mockVersions[0].id,
-		onVersionChange: (versionId) =>
-			logger.info("Version changed to:", versionId),
 	},
 };

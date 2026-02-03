@@ -42,8 +42,8 @@ function MockKeyboardShortcuts({
 			}
 		};
 
-		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
+		globalThis.addEventListener("keydown", handleKeyDown);
+		return () => globalThis.removeEventListener("keydown", handleKeyDown);
 	}, [onShortcut]);
 
 	return (
@@ -83,7 +83,7 @@ function MockKeyboardShortcuts({
 
 // Mock Undo/Redo Manager
 class UndoRedoManager {
-	private history: Array<any> = [];
+	private history: any[] = [];
 	private currentIndex = -1;
 
 	push(state: any) {
@@ -180,14 +180,14 @@ function MockUndoRedoEditor({
 // Mock Bulk Selection Component
 function MockBulkSelection({
 	items = [
-		{ id: "1", name: "Item 1", completed: false },
-		{ id: "2", name: "Item 2", completed: false },
-		{ id: "3", name: "Item 3", completed: false },
+		{ completed: false, id: "1", name: "Item 1" },
+		{ completed: false, id: "2", name: "Item 2" },
+		{ completed: false, id: "3", name: "Item 3" },
 	],
 	onSelectChange = vi.fn(),
 	onBulkAction = vi.fn(),
 }: {
-	items?: Array<{ id: string; name: string; completed: boolean }>;
+	items?: { id: string; name: string; completed: boolean }[];
 	onSelectChange?: (selectedIds: string[]) => void;
 	onBulkAction?: (action: string, selectedIds: string[]) => void;
 }) {
@@ -310,7 +310,6 @@ describe("Keyboard Shortcuts - Command Palette", () => {
 	});
 
 	it("should be accessible to keyboard-only users", async () => {
-
 		render(<MockKeyboardShortcuts />);
 
 		// Should be able to tab through and use keyboard
@@ -391,7 +390,6 @@ describe("Undo/Redo Functionality", () => {
 	});
 
 	it("should disable redo when at latest state", async () => {
-
 		render(<MockUndoRedoEditor />);
 
 		const textarea = screen.getByPlaceholderText("Type here...");
@@ -402,7 +400,6 @@ describe("Undo/Redo Functionality", () => {
 	});
 
 	it("should clear redo history when new change made after undo", async () => {
-
 		render(<MockUndoRedoEditor />);
 
 		const textarea = screen.getByPlaceholderText("Type here...");
@@ -423,7 +420,6 @@ describe("Undo/Redo Functionality", () => {
 	});
 
 	it("should support keyboard shortcuts for undo/redo", async () => {
-
 		render(<MockUndoRedoEditor />);
 
 		const textarea = screen.getByPlaceholderText("Type here...");
@@ -483,7 +479,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should show bulk action buttons when items selected", async () => {
-
 		render(<MockBulkSelection />);
 
 		const item1Checkbox = screen.getByLabelText("Select Item 1");
@@ -529,7 +524,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should update selection count", async () => {
-
 		render(<MockBulkSelection />);
 
 		// Initially shows 0/3
@@ -543,7 +537,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should clear selection after bulk action", async () => {
-
 		render(<MockBulkSelection />);
 
 		const item1Checkbox = screen.getByLabelText("Select Item 1");
@@ -558,7 +551,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should support keyboard selection (Shift + Click)", async () => {
-
 		render(<MockBulkSelection />);
 
 		const item1 = screen.getByLabelText("Select Item 1");
@@ -573,7 +565,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should support keyboard Ctrl + Click for multi-select", async () => {
-
 		render(<MockBulkSelection />);
 
 		const item1 = screen.getByLabelText("Select Item 1");
@@ -645,7 +636,6 @@ describe("Bulk Export/Share Operations", () => {
 
 describe("Keyboard Accessibility for Bulk Operations", () => {
 	it("should navigate list with arrow keys", async () => {
-
 		render(<MockBulkSelection />);
 
 		const item1 = screen.getByLabelText("Select Item 1");
@@ -656,7 +646,6 @@ describe("Keyboard Accessibility for Bulk Operations", () => {
 	});
 
 	it("should support Space to toggle selection", async () => {
-
 		render(<MockBulkSelection />);
 
 		const item1 = screen.getByLabelText("Select Item 1");

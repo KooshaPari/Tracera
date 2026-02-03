@@ -28,63 +28,59 @@ describe("React Memoization Optimizations", () => {
 					renderSpy();
 					return <div>{item.title ?? item.name}</div>;
 				},
-				(prev, next) => {
-					// Return true if props are equal (skip re-render)
-					return (
-						prev.item.id === next.item.id &&
-						prev.item.title === next.item.title &&
-						prev.item.type === next.item.type &&
-						prev.item.status === next.item.status &&
-						prev.item.priority === next.item.priority &&
-						prev.item.owner === next.item.owner
-					);
-				},
+				(prev, next) =>
+					prev.item.id === next.item.id &&
+					prev.item.title === next.item.title &&
+					prev.item.type === next.item.type &&
+					prev.item.status === next.item.status &&
+					prev.item.priority === next.item.priority &&
+					prev.item.owner === next.item.owner,
 			);
 
 			const { rerender } = render(
 				<TestItemCard
 					item={{
 						id: "1",
+						owner: "John",
+						priority: "medium",
+						status: "todo",
 						title: "Test",
 						type: "feature",
-						status: "todo",
-						priority: "medium",
-						owner: "John",
 					}}
 					onDragStart={vi.fn()}
 				/>,
 			);
 
-			expect(renderSpy).toHaveBeenCalledTimes(1);
+			expect(renderSpy).toHaveBeenCalledOnce();
 
 			// Re-render with same props - should skip re-render
 			rerender(
 				<TestItemCard
 					item={{
 						id: "1",
+						owner: "John",
+						priority: "medium",
+						status: "todo",
 						title: "Test",
 						type: "feature",
-						status: "todo",
-						priority: "medium",
-						owner: "John",
 					}}
 					onDragStart={vi.fn()}
 				/>,
 			);
 
 			// Still 1 because memo prevented re-render
-			expect(renderSpy).toHaveBeenCalledTimes(1);
+			expect(renderSpy).toHaveBeenCalledOnce();
 
 			// Re-render with changed title - should re-render
 			rerender(
 				<TestItemCard
 					item={{
 						id: "1",
+						owner: "John",
+						priority: "medium",
+						status: "todo",
 						title: "Test Updated",
 						type: "feature",
-						status: "todo",
-						priority: "medium",
-						owner: "John",
 					}}
 					onDragStart={vi.fn()}
 				/>,
@@ -118,7 +114,7 @@ describe("React Memoization Optimizations", () => {
 			rerender(<TestComponent />);
 			const secondReference = callbackReference;
 
-			// useCallback should return same reference across renders
+			// UseCallback should return same reference across renders
 			expect(initialReference).toBe(secondReference);
 		});
 	});
@@ -140,13 +136,10 @@ describe("React Memoization Optimizations", () => {
 					renderSpy();
 					return <div>{nodeId}</div>;
 				},
-				(prev, next) => {
-					return (
-						prev.nodeId === next.nodeId &&
-						prev.expandedIds.has(prev.nodeId) ===
-							next.expandedIds.has(next.nodeId)
-					);
-				},
+				(prev, next) =>
+					prev.nodeId === next.nodeId &&
+					prev.expandedIds.has(prev.nodeId) ===
+						next.expandedIds.has(next.nodeId),
 			);
 
 			const expandedIds = new Set<string>(["1", "2"]);
@@ -159,7 +152,7 @@ describe("React Memoization Optimizations", () => {
 				/>,
 			);
 
-			expect(renderSpy).toHaveBeenCalledTimes(1);
+			expect(renderSpy).toHaveBeenCalledOnce();
 
 			// Re-render with same Set content but different reference
 			const newExpandedIds = new Set<string>(["1", "2"]);
@@ -173,7 +166,7 @@ describe("React Memoization Optimizations", () => {
 			);
 
 			// Still 1 because custom comparison checks Set content, not reference
-			expect(renderSpy).toHaveBeenCalledTimes(1);
+			expect(renderSpy).toHaveBeenCalledOnce();
 
 			// Re-render where item is not in expanded set - should re-render
 			const changedExpandedIds = new Set<string>(["2", "3"]);
@@ -233,16 +226,13 @@ describe("React Memoization Optimizations", () => {
 						</tr>
 					);
 				},
-				(prev, next) => {
-					return (
-						prev.item.id === next.item.id &&
-						prev.item.title === next.item.title &&
-						prev.item.type === next.item.type &&
-						prev.item.status === next.item.status &&
-						prev.item.priority === next.item.priority &&
-						prev.item.owner === next.item.owner
-					);
-				},
+				(prev, next) =>
+					prev.item.id === next.item.id &&
+					prev.item.title === next.item.title &&
+					prev.item.type === next.item.type &&
+					prev.item.status === next.item.status &&
+					prev.item.priority === next.item.priority &&
+					prev.item.owner === next.item.owner,
 			);
 
 			const { rerender } = render(
@@ -251,11 +241,11 @@ describe("React Memoization Optimizations", () => {
 						<TestTableRow
 							item={{
 								id: "1",
+								owner: "Alice",
+								priority: "high",
+								status: "todo",
 								title: "Task 1",
 								type: "feature",
-								status: "todo",
-								priority: "high",
-								owner: "Alice",
 							}}
 							onDelete={vi.fn()}
 							onNavigate={vi.fn()}
@@ -264,7 +254,7 @@ describe("React Memoization Optimizations", () => {
 				</table>,
 			);
 
-			expect(renderSpy).toHaveBeenCalledTimes(1);
+			expect(renderSpy).toHaveBeenCalledOnce();
 
 			// Same item data should not trigger re-render
 			rerender(
@@ -273,11 +263,11 @@ describe("React Memoization Optimizations", () => {
 						<TestTableRow
 							item={{
 								id: "1",
+								owner: "Alice",
+								priority: "high",
+								status: "todo",
 								title: "Task 1",
 								type: "feature",
-								status: "todo",
-								priority: "high",
-								owner: "Alice",
 							}}
 							onDelete={vi.fn()}
 							onNavigate={vi.fn()}
@@ -286,7 +276,7 @@ describe("React Memoization Optimizations", () => {
 				</table>,
 			);
 
-			expect(renderSpy).toHaveBeenCalledTimes(1);
+			expect(renderSpy).toHaveBeenCalledOnce();
 
 			// Different item should trigger re-render
 			rerender(
@@ -295,11 +285,11 @@ describe("React Memoization Optimizations", () => {
 						<TestTableRow
 							item={{
 								id: "1",
+								owner: "Alice",
+								priority: "high",
+								status: "done",
 								title: "Task 1 Updated",
 								type: "feature",
-								status: "done",
-								priority: "high",
-								owner: "Alice",
 							}}
 							onDelete={vi.fn()}
 							onNavigate={vi.fn()}
@@ -338,7 +328,9 @@ describe("React Memoization Optimizations", () => {
 				return (
 					<tr>
 						<td>
-							<button onClick={handleNavigate}>{item.title ?? item.name}</button>
+							<button onClick={handleNavigate}>
+								{item.title ?? item.name}
+							</button>
 						</td>
 						<td>
 							<button onClick={handleDelete}>Delete</button>
@@ -394,7 +386,9 @@ describe("React Memoization Optimizations", () => {
 				const computed = useMemo(() => {
 					computeSpy();
 					return items.filter((item) =>
-						(item.title ?? item.name ?? "").toLowerCase().includes(filter.toLowerCase()),
+						(item.title ?? item.name ?? "")
+							.toLowerCase()
+							.includes(filter.toLowerCase()),
 					);
 				}, [items, filter]);
 
@@ -406,13 +400,13 @@ describe("React Memoization Optimizations", () => {
 				<TestComponent items={items} filter="test" />,
 			);
 
-			expect(computeSpy).toHaveBeenCalledTimes(1);
+			expect(computeSpy).toHaveBeenCalledOnce();
 
 			// Same items and filter - should not recompute
 			rerender(<TestComponent items={items} filter="test" />);
 
 			// Still 1 because items reference is same and filter is same
-			expect(computeSpy).toHaveBeenCalledTimes(1);
+			expect(computeSpy).toHaveBeenCalledOnce();
 
 			// Different filter - should recompute
 			rerender(<TestComponent items={items} filter="other" />);

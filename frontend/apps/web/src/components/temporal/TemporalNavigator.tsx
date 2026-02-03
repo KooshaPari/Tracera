@@ -30,9 +30,10 @@ export type ViewMode = "timeline" | "branches" | "comparison" | "progress";
 /**
  * Version snapshot data
  */
-export interface VersionSnapshot {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+export type VersionSnapshot = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
 
 export interface Branch {
 	id: string;
@@ -75,31 +76,41 @@ function getStatusColor(
 	status: Branch["status"],
 ): "default" | "secondary" | "destructive" | "outline" {
 	switch (status) {
-		case "active":
+		case "active": {
 			return "default";
-		case "review":
+		}
+		case "review": {
 			return "secondary";
-		case "merged":
+		}
+		case "merged": {
 			return "outline";
-		case "abandoned":
+		}
+		case "abandoned": {
 			return "destructive";
-		default:
+		}
+		default: {
 			return "default";
+		}
 	}
 }
 
 function getStatusIcon(status: Branch["status"]) {
 	switch (status) {
-		case "active":
+		case "active": {
 			return "●";
-		case "review":
+		}
+		case "review": {
 			return "◐";
-		case "merged":
+		}
+		case "merged": {
 			return "✓";
-		case "abandoned":
+		}
+		case "abandoned": {
 			return "✕";
-		default:
+		}
+		default: {
 			return "○";
+		}
 	}
 }
 
@@ -166,14 +177,14 @@ export function TemporalNavigator({
 				{/* View mode toggle buttons */}
 				<div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
 					{[
-						{ id: "timeline" as ViewMode, icon: Clock, label: "Timeline" },
-						{ id: "branches" as ViewMode, icon: GitBranch, label: "Branches" },
+						{ icon: Clock, id: "timeline" as ViewMode, label: "Timeline" },
+						{ icon: GitBranch, id: "branches" as ViewMode, label: "Branches" },
 						{
-							id: "comparison" as ViewMode,
 							icon: GitCompare,
+							id: "comparison" as ViewMode,
 							label: "Compare",
 						},
-						{ id: "progress" as ViewMode, icon: TrendingUp, label: "Progress" },
+						{ icon: TrendingUp, id: "progress" as ViewMode, label: "Progress" },
 					].map(({ id, icon: Icon, label }) => (
 						<Button
 							key={id}
@@ -421,9 +432,9 @@ function ProgressView({ branches, versions }: ProgressViewProps) {
 								variant={
 									branch.status === "active"
 										? "default"
-										: branch.status === "merged"
+										: (branch.status === "merged"
 											? "outline"
-											: "secondary"
+											: "secondary")
 								}
 								className="text-xs"
 							>

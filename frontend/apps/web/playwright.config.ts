@@ -15,7 +15,7 @@ export default defineConfig({
 	fullyParallel: false,
 
 	// Fail the build on CI if you accidentally left test.only in the source code
-	forbidOnly: !!process.env.CI,
+	forbidOnly: Boolean(process.env.CI),
 
 	// Retry on CI only
 	retries: process.env.CI ? 2 : 0,
@@ -86,8 +86,8 @@ export default defineConfig({
 	// Run your local dev server before starting the tests
 	webServer: {
 		command: "bun run dev",
-		url: "http://localhost:5173",
 		reuseExistingServer: !process.env.CI,
 		timeout: 120 * 1000,
+		url: "http://localhost:5173",
 	},
 });

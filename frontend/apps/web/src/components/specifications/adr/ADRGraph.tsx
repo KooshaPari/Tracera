@@ -44,11 +44,11 @@ interface GraphEdge {
 }
 
 const STATUS_COLORS: Record<ADRStatus, string> = {
-	proposed: "bg-yellow-500/20 border-yellow-500/50 text-yellow-700",
 	accepted: "bg-green-500/20 border-green-500/50 text-green-700",
 	deprecated: "bg-orange-500/20 border-orange-500/50 text-orange-700",
-	superseded: "bg-blue-500/20 border-blue-500/50 text-blue-700",
+	proposed: "bg-yellow-500/20 border-yellow-500/50 text-yellow-700",
 	rejected: "bg-red-500/20 border-red-500/50 text-red-700",
+	superseded: "bg-blue-500/20 border-blue-500/50 text-blue-700",
 };
 
 export function ADRGraph({
@@ -63,7 +63,7 @@ export function ADRGraph({
 	// Calculate graph layout
 	const { nodes, edges } = useMemo(() => {
 		if (!adrs || adrs.length === 0) {
-			return { nodes: [], edges: [] };
+			return { edges: [], nodes: [] };
 		}
 
 		const edges: GraphEdge[] = [];
@@ -147,20 +147,24 @@ export function ADRGraph({
 
 			const connectedIds = new Set<string>();
 			for (const edge of edges) {
-				if (edge.source === adr.id) connectedIds.add(edge.target);
-				if (edge.target === adr.id) connectedIds.add(edge.source);
+				if (edge.source === adr.id) {
+					connectedIds.add(edge.target);
+				}
+				if (edge.target === adr.id) {
+					connectedIds.add(edge.source);
+				}
 			}
 
-			return { adr, x, y, level, connectedIds };
+			return { adr, connectedIds, level, x, y };
 		});
 
-		return { nodes, edges };
+		return { edges, nodes };
 	}, [adrs]);
 
 	// Calculate bounds for auto-fit
 	const bounds = useMemo(() => {
 		if (nodes.length === 0) {
-			return { minX: 0, maxX: 800, minY: 0, maxY: 600 };
+			return { maxX: 800, maxY: 600, minX: 0, minY: 0 };
 		}
 
 		let minX = Infinity,
@@ -175,7 +179,7 @@ export function ADRGraph({
 			maxY = Math.max(maxY, node.y + 40);
 		}
 
-		return { minX, maxX, minY, maxY };
+		return { maxX, maxY, minX, minY };
 	}, [nodes]);
 
 	const canvasWidth = bounds.maxX - bounds.minX + 100;
@@ -190,17 +194,17 @@ export function ADRGraph({
 
 	const handleExport = useCallback(() => {
 		const data = {
-			nodes: nodes.map((n) => ({
-				id: n.adr.id,
-				number: n.adr.adrNumber,
-				title: n.adr.title,
-				status: n.adr.status,
-				level: n.level,
-			})),
 			edges: edges.map((e) => ({
 				source: adrs.find((a) => a.id === e.source)?.adrNumber,
 				target: adrs.find((a) => a.id === e.target)?.adrNumber,
 				type: e.type,
+			})),
+			nodes: nodes.map((n) => ({
+				id: n.adr.id,
+				level: n.level,
+				number: n.adr.adrNumber,
+				status: n.adr.status,
+				title: n.adr.title,
 			})),
 		};
 
@@ -301,13 +305,15 @@ export function ADRGraph({
 						height={canvasHeight * zoom}
 						className="min-w-full min-h-[400px]"
 					>
-						<g transform={`translate(50, 50)`}>
+						<g transform="translate(50, 50)">
 							{/* Edges */}
 							{edges.map((edge, idx) => {
 								const sourceNode = nodes.find((n) => n.adr.id === edge.source);
 								const targetNode = nodes.find((n) => n.adr.id === edge.target);
 
-								if (!sourceNode || !targetNode) return null;
+								if (!sourceNode || !targetNode) {
+									return null;
+								}
 
 								const isSupersedes = edge.type === "supersedes";
 								const strokeDasharray = isSupersedes ? "5,5" : "0";
@@ -376,11 +382,11 @@ export function ADRGraph({
 											stroke={
 												isSelected
 													? "#ef4444"
-													: isConnected
+													: (isConnected
 														? "#3b82f6"
-														: "#e2e8f0"
+														: "#e2e8f0")
 											}
-											strokeWidth={isSelected ? 3 : isConnected ? 2 : 1}
+											strokeWidth={isSelected ? 3 : (isConnected ? 2 : 1)}
 											rx={8}
 											className="transition-all group-hover:shadow-lg"
 										/>
@@ -405,7 +411,7 @@ export function ADRGraph({
 											fill="currentColor"
 											className="pointer-events-none line-clamp-1"
 										>
-											{node.adr.title.substring(0, 15)}
+											{node.adr.title.slice(0, 15)}
 										</text>
 									</g>
 								);
@@ -484,7 +490,7 @@ export function ADRGraph({
 										</span>
 									);
 								}
-								return Array.from(selectedNode.connectedIds).map((id) => {
+								return [...selectedNode.connectedIds].map((id) => {
 									const related = nodes.find((n) => n.adr.id === id);
 									if (related) {
 										return (

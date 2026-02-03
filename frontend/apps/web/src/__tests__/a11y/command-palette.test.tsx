@@ -15,7 +15,9 @@ function MockCommandPalette({
 	open: boolean;
 	onClose: () => void;
 }) {
-	if (!open) return null;
+	if (!open) {
+		return null;
+	}
 
 	return (
 		<div
@@ -44,7 +46,7 @@ function MockCommandPalette({
 							placeholder="Execute command or jump to view..."
 							aria-label="Search commands"
 							aria-describedby="command-hint"
-							aria-expanded={true}
+							aria-expanded
 							aria-controls="command-listbox"
 							aria-activedescendant="cmd-item-nav-home"
 							role="combobox"
@@ -64,7 +66,7 @@ function MockCommandPalette({
 						<button
 							id="cmd-item-nav-home"
 							role="option"
-							aria-selected={true}
+							aria-selected
 							aria-describedby="cmd-item-nav-home-desc"
 						>
 							<div id="cmd-item-nav-home-desc">Home</div>
@@ -84,7 +86,7 @@ function MockCommandPalette({
 describe("CommandPalette - Combobox ARIA Pattern", () => {
 	it("should have proper combobox structure with ARIA roles", async () => {
 		const { container, getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const results = await axe(container);
 		expect(results).toHaveNoViolations();
@@ -96,7 +98,7 @@ describe("CommandPalette - Combobox ARIA Pattern", () => {
 
 	it("should have aria-label and aria-describedby on input", async () => {
 		const { container, getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const input = getByRole("combobox");
 
@@ -112,7 +114,7 @@ describe("CommandPalette - Combobox ARIA Pattern", () => {
 
 	it("should have role='option' on command items", async () => {
 		const { container, getAllByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const options = getAllByRole("option");
 
@@ -128,7 +130,7 @@ describe("CommandPalette - Combobox ARIA Pattern", () => {
 
 	it("should have aria-live region for search results", () => {
 		const { getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const liveRegion = getByRole("status");
 
@@ -138,7 +140,7 @@ describe("CommandPalette - Combobox ARIA Pattern", () => {
 
 	it("should have aria-label on dialog", async () => {
 		const { container, getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const dialog = getByRole("dialog");
 
@@ -153,7 +155,7 @@ describe("CommandPalette - Combobox ARIA Pattern", () => {
 describe("CommandPalette - Keyboard Navigation", () => {
 	it("should support arrow key navigation", async () => {
 		const { getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const input = getByRole("combobox");
 
@@ -168,9 +170,7 @@ describe("CommandPalette - Keyboard Navigation", () => {
 	it("should support Escape to close", async () => {
 		const handleClose = vi.fn();
 
-		render(
-			<MockCommandPalette open={true} onClose={handleClose} />,
-		);
+		render(<MockCommandPalette open onClose={handleClose} />);
 		const input = getByRole("combobox");
 		input.focus();
 
@@ -180,7 +180,7 @@ describe("CommandPalette - Keyboard Navigation", () => {
 
 	it("should support Enter to select", async () => {
 		const { getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const input = getByRole("combobox");
 
@@ -193,7 +193,7 @@ describe("CommandPalette - Keyboard Navigation", () => {
 	it("should support Tab to exit palette", async () => {
 		const handleClose = vi.fn();
 		const { getByRole } = render(
-			<MockCommandPalette open={true} onClose={handleClose} />,
+			<MockCommandPalette open onClose={handleClose} />,
 		);
 		const input = getByRole("combobox");
 
@@ -206,7 +206,7 @@ describe("CommandPalette - Keyboard Navigation", () => {
 describe("CommandPalette - Focus Management", () => {
 	it("should have visible focus indicator on input", () => {
 		const { getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const input = getByRole("combobox");
 
@@ -214,13 +214,13 @@ describe("CommandPalette - Focus Management", () => {
 		expect(input).toHaveFocus();
 
 		// Check for focus-visible class or ring
-		const _styles = window.getComputedStyle(input);
+		const _styles = globalThis.getComputedStyle(input);
 		// Focus indicator should be visible
 	});
 
 	it("should have proper focus trap structure", () => {
 		const { getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const dialog = getByRole("dialog");
 
@@ -238,7 +238,7 @@ describe("CommandPalette - Focus Management", () => {
 describe("CommandPalette - Search Results", () => {
 	it("should have aria-live region that announces results", () => {
 		const { getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const liveRegion = getByRole("status");
 
@@ -248,7 +248,7 @@ describe("CommandPalette - Search Results", () => {
 
 	it("should have no results status message", () => {
 		const { getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const status = getByRole("status");
 
@@ -260,7 +260,7 @@ describe("CommandPalette - Search Results", () => {
 describe("CommandPalette - Screen Reader Accessibility", () => {
 	it("should have accessible dialog structure", async () => {
 		const { container, getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 
 		// Dialog should have proper ARIA attributes
@@ -274,7 +274,7 @@ describe("CommandPalette - Screen Reader Accessibility", () => {
 
 	it("should provide helpful labels for all interactive elements", async () => {
 		const { container, getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 
 		const input = getByRole("combobox");
@@ -288,17 +288,13 @@ describe("CommandPalette - Screen Reader Accessibility", () => {
 
 describe("CommandPalette - WCAG 2.1 AA Compliance", () => {
 	it("should pass axe accessibility audit", async () => {
-		render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
-		);
+		render(<MockCommandPalette open onClose={() => {}} />);
 		const results = await axe(container);
 		expect(results).toHaveNoViolations();
 	});
 
 	it("should have sufficient color contrast", () => {
-		render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
-		);
+		render(<MockCommandPalette open onClose={() => {}} />);
 
 		// All text should have sufficient contrast
 		const textElements = container.querySelectorAll("p, span, button, input");
@@ -307,7 +303,7 @@ describe("CommandPalette - WCAG 2.1 AA Compliance", () => {
 
 	it("should have visible focus indicators", () => {
 		const { getByRole } = render(
-			<MockCommandPalette open={true} onClose={() => {}} />,
+			<MockCommandPalette open onClose={() => {}} />,
 		);
 		const input = getByRole("combobox");
 

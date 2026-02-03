@@ -12,15 +12,14 @@ export function Layout() {
 	const isItemDetail =
 		/\/items\/[^/]+$/.test(path) ||
 		/\/projects\/[^/]+\/views\/[^/]+\/[^/]+$/.test(path);
-	const isE2E =
-		typeof navigator !== "undefined" && navigator.webdriver;
+	const isE2E = typeof navigator !== "undefined" && navigator.webdriver;
 
 	// Check if any active route is an auth route
 	const isAuthRoute = matches.some((match) =>
 		match.routeId.startsWith("/auth"),
 	);
 
-	const shelllessRouteIds = new Set<string>([]);
+	const shelllessRouteIds = new Set<string>();
 
 	const isShelllessRoute = matches.some((match) =>
 		shelllessRouteIds.has(String(match.routeId)),
@@ -44,7 +43,8 @@ export function Layout() {
 
 	// 404 check - If only the root route matches, it's a global 404
 	// (Root route is always matches[0])
-	const isGlobal404 = matches.length === 1 && matches[0]?.routeId === "__root__";
+	const isGlobal404 =
+		matches.length === 1 && matches[0]?.routeId === "__root__";
 
 	if (isGlobal404) {
 		return (
@@ -75,12 +75,16 @@ export function Layout() {
 
 	useEffect(() => {
 		const handleFirstTab = (event: KeyboardEvent) => {
-			if (event.key !== "Tab" || event.shiftKey) return;
-			if (hasHandledFirstTabRef.current) return;
+			if (event.key !== "Tab" || event.shiftKey) {
+				return;
+			}
+			if (hasHandledFirstTabRef.current) {
+				return;
+			}
 			if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
 				return;
 			}
-			const skipLink = document.getElementById("skip-to-main");
+			const skipLink = document.querySelector("#skip-to-main");
 			if (skipLink) {
 				event.preventDefault();
 				hasHandledFirstTabRef.current = true;
@@ -88,12 +92,16 @@ export function Layout() {
 			}
 		};
 		const handleFirstFocus = (event: FocusEvent) => {
-			if (hasHandledFirstTabRef.current) return;
+			if (hasHandledFirstTabRef.current) {
+				return;
+			}
 			if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
 				return;
 			}
-			const skipLink = document.getElementById("skip-to-main");
-			if (!skipLink || event.target === skipLink) return;
+			const skipLink = document.querySelector("#skip-to-main");
+			if (!skipLink || event.target === skipLink) {
+				return;
+			}
 			hasHandledFirstTabRef.current = true;
 			(skipLink as HTMLElement).focus();
 		};

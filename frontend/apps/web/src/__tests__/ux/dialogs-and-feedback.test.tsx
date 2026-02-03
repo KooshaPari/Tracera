@@ -31,7 +31,9 @@ function MockConfirmDialog({
 	onConfirm?: () => void;
 	onCancel?: () => void;
 }) {
-	if (!open) return null;
+	if (!open) {
+		return null;
+	}
 
 	return (
 		<div
@@ -96,13 +98,15 @@ function MockToast({
 		}
 	}, [open, duration, onClose]);
 
-	if (!open) return null;
+	if (!open) {
+		return null;
+	}
 
 	const bgColor = {
-		success: "bg-green-600",
 		error: "bg-red-600",
-		warning: "bg-yellow-600",
 		info: "bg-blue-600",
+		success: "bg-green-600",
+		warning: "bg-yellow-600",
 	}[type];
 
 	return (
@@ -127,11 +131,11 @@ class MockErrorBoundary extends React.Component<
 		onError?: (error: Error) => void;
 	}) {
 		super(props);
-		this.state = { hasError: false, error: null };
+		this.state = { error: null, hasError: false };
 	}
 
 	static getDerivedStateFromError(error: Error) {
-		return { hasError: true, error };
+		return { error, hasError: true };
 	}
 
 	componentDidCatch(error: Error) {
@@ -149,7 +153,7 @@ class MockErrorBoundary extends React.Component<
 					<h2 className="text-red-800 font-semibold">Something went wrong</h2>
 					<p className="mt-2 text-red-700">{this.state.error?.message}</p>
 					<button
-						onClick={() => window.location.reload()}
+						onClick={() => globalThis.location.reload()}
 						className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
 					>
 						Reload Page
@@ -164,7 +168,7 @@ class MockErrorBoundary extends React.Component<
 
 describe("Confirmation Dialogs - Structure and Accessibility", () => {
 	it("should render dialog with proper ARIA roles", () => {
-		render(<MockConfirmDialog open={true} />);
+		render(<MockConfirmDialog open />);
 
 		const dialog = screen.getByRole("alertdialog");
 		expect(dialog).toHaveAttribute("aria-modal", "true");
@@ -175,7 +179,7 @@ describe("Confirmation Dialogs - Structure and Accessibility", () => {
 	it("should have proper heading and description", () => {
 		render(
 			<MockConfirmDialog
-				open={true}
+				open
 				title="Delete Item"
 				message="This action cannot be undone"
 			/>,
@@ -188,13 +192,7 @@ describe("Confirmation Dialogs - Structure and Accessibility", () => {
 	});
 
 	it("should have labeled action buttons", () => {
-		render(
-			<MockConfirmDialog
-				open={true}
-				confirmLabel="Delete"
-				cancelLabel="Keep"
-			/>,
-		);
+		render(<MockConfirmDialog open confirmLabel="Delete" cancelLabel="Keep" />);
 
 		expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Keep" })).toBeInTheDocument();
@@ -211,40 +209,38 @@ describe("Confirmation Dialogs - User Interactions", () => {
 
 		render(
 			<MockConfirmDialog
-				open={true}
+				open
 				confirmLabel="Confirm"
 				onConfirm={handleConfirm}
 			/>,
 		);
 
 		await user.click(screen.getByRole("button", { name: "Confirm" }));
-		expect(handleConfirm).toHaveBeenCalledOnce();
+		expect(handleConfirm).toHaveBeenCalledTimes(1);
 	});
 
 	it("should call onCancel when cancel button clicked", async () => {
 		const handleCancel = vi.fn();
 
 		render(
-			<MockConfirmDialog
-				open={true}
-				cancelLabel="Cancel"
-				onCancel={handleCancel}
-			/>,
+			<MockConfirmDialog open cancelLabel="Cancel" onCancel={handleCancel} />,
 		);
 
 		await user.click(screen.getByRole("button", { name: "Cancel" }));
-		expect(handleCancel).toHaveBeenCalledOnce();
+		expect(handleCancel).toHaveBeenCalledTimes(1);
 	});
 
 	it("should close dialog when backdrop clicked", async () => {
 		const handleCancel = vi.fn();
 
 		const { container } = render(
-			<MockConfirmDialog open={true} onCancel={handleCancel} />,
+			<MockConfirmDialog open onCancel={handleCancel} />,
 		);
 
 		const backdrop = container.querySelector("[aria-hidden='true']");
-		if (backdrop) await user.click(backdrop);
+		if (backdrop) {
+			await user.click(backdrop);
+		}
 		expect(handleCancel).toHaveBeenCalled();
 	});
 
@@ -252,11 +248,7 @@ describe("Confirmation Dialogs - User Interactions", () => {
 		const handleCancel = vi.fn();
 
 		render(
-			<MockConfirmDialog
-				open={true}
-				cancelLabel="Cancel"
-				onCancel={handleCancel}
-			/>,
+			<MockConfirmDialog open cancelLabel="Cancel" onCancel={handleCancel} />,
 		);
 
 		const confirmBtn = screen.getByRole("button", { name: "Confirm" });
@@ -277,16 +269,14 @@ describe("Confirmation Dialogs - User Interactions", () => {
 
 describe("Confirmation Dialogs - Destructive Actions", () => {
 	it("should style destructive actions distinctly", () => {
-		render(
-			<MockConfirmDialog open={true} isDestructive={true} />,
-		);
+		render(<MockConfirmDialog open isDestructive />);
 
 		const confirmBtn = screen.getByRole("button", { name: "Confirm" });
 		expect(confirmBtn.className).toContain("bg-red-600");
 	});
 
 	it("should require confirmation for destructive actions", () => {
-		render(<MockConfirmDialog open={true} isDestructive={true} />);
+		render(<MockConfirmDialog open isDestructive />);
 
 		const dialog = screen.getByRole("alertdialog");
 		expect(dialog).toBeInTheDocument();
@@ -296,9 +286,7 @@ describe("Confirmation Dialogs - Destructive Actions", () => {
 
 describe("Success Toast - Display and Behavior", () => {
 	it("should render toast with role='status'", () => {
-		render(
-			<MockToast open={true} type="success" message="Saved successfully" />,
-		);
+		render(<MockToast open type="success" message="Saved successfully" />);
 
 		const toast = screen.getByRole("status");
 		expect(toast).toBeInTheDocument();
@@ -308,11 +296,7 @@ describe("Success Toast - Display and Behavior", () => {
 
 	it("should display success message", () => {
 		render(
-			<MockToast
-				open={true}
-				type="success"
-				message="Item created successfully"
-			/>,
+			<MockToast open type="success" message="Item created successfully" />,
 		);
 
 		expect(screen.getByText("Item created successfully")).toBeInTheDocument();
@@ -322,7 +306,7 @@ describe("Success Toast - Display and Behavior", () => {
 		const handleClose = vi.fn();
 		render(
 			<MockToast
-				open={true}
+				open
 				type="success"
 				message="Success"
 				duration={100}
@@ -337,7 +321,7 @@ describe("Success Toast - Display and Behavior", () => {
 
 	it("should apply success styling", () => {
 		const { container } = render(
-			<MockToast open={true} type="success" message="Success" />,
+			<MockToast open type="success" message="Success" />,
 		);
 
 		const toast = container.querySelector(".bg-green-600");
@@ -348,7 +332,7 @@ describe("Success Toast - Display and Behavior", () => {
 describe("Error Toast - Display and Behavior", () => {
 	it("should render error toast with distinct styling", () => {
 		const { container } = render(
-			<MockToast open={true} type="error" message="Error occurred" />,
+			<MockToast open type="error" message="Error occurred" />,
 		);
 
 		const toast = container.querySelector(".bg-red-600");
@@ -360,7 +344,7 @@ describe("Error Toast - Display and Behavior", () => {
 		const handleClose = vi.fn();
 		render(
 			<MockToast
-				open={true}
+				open
 				type="error"
 				message="Error"
 				duration={0}
@@ -374,11 +358,7 @@ describe("Error Toast - Display and Behavior", () => {
 
 	it("should provide clear error messaging", () => {
 		render(
-			<MockToast
-				open={true}
-				type="error"
-				message="Failed to save: Network error"
-			/>,
+			<MockToast open type="error" message="Failed to save: Network error" />,
 		);
 
 		expect(
@@ -389,7 +369,7 @@ describe("Error Toast - Display and Behavior", () => {
 
 describe("Toast Types and Variants", () => {
 	it("should support multiple toast types", () => {
-		const types: Array<"success" | "error" | "warning" | "info"> = [
+		const types: ("success" | "error" | "warning" | "info")[] = [
 			"success",
 			"error",
 			"warning",
@@ -398,7 +378,7 @@ describe("Toast Types and Variants", () => {
 
 		types.forEach((type) => {
 			const { unmount } = render(
-				<MockToast open={true} type={type} message={`${type} message`} />,
+				<MockToast open type={type} message={`${type} message`} />,
 			);
 
 			expect(screen.getByText(`${type} message`)).toBeInTheDocument();
@@ -408,25 +388,25 @@ describe("Toast Types and Variants", () => {
 
 	it("should apply appropriate styling for each type", () => {
 		const styleMap = {
-			success: "bg-green-600",
 			error: "bg-red-600",
-			warning: "bg-yellow-600",
 			info: "bg-blue-600",
+			success: "bg-green-600",
+			warning: "bg-yellow-600",
 		};
 
 		Object.entries(styleMap).forEach(([type, className]) => {
 			const { container, unmount } = render(
 				<MockToast
-					open={true}
+					open
 					type={
-					type === "success"
-						? "success"
-						: type === "error"
-							? "error"
-							: type === "warning"
-								? "warning"
-								: "info"
-				}
+						type === "success"
+							? "success"
+							: type === "error"
+								? "error"
+								: type === "warning"
+									? "warning"
+									: "info"
+					}
 					message={type}
 				/>,
 			);

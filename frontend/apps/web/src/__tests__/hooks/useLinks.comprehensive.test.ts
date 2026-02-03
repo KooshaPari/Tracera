@@ -16,13 +16,13 @@ import {
 
 // Mock fetch
 const mockFetch = vi.fn();
-global.fetch = mockFetch as unknown as typeof fetch;
+globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 const createWrapper = () => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { retry: false },
 			mutations: { retry: false },
+			queries: { retry: false },
 		},
 	});
 
@@ -35,21 +35,21 @@ describe("useLinks - Comprehensive Coverage", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("useLinks", () => {
+	describe(useLinks, () => {
 		it("should fetch links with all filters", async () => {
 			const mockLinks = [
 				{
 					id: "1",
+					projectId: "proj-1",
 					sourceId: "item-1",
 					targetId: "item-2",
 					type: "depends_on",
-					projectId: "proj-1",
 				},
 			];
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ links: mockLinks, total: 1 }),
+				ok: true,
 			});
 
 			const { result } = renderHook(
@@ -106,8 +106,8 @@ describe("useLinks - Comprehensive Coverage", () => {
 			const mockLinks = [{ id: "1", projectId: "proj-1" }];
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ links: mockLinks, total: 1 }),
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useLinks({ projectId: "proj-1" }), {
@@ -130,8 +130,8 @@ describe("useLinks - Comprehensive Coverage", () => {
 			const mockLinks = [{ id: "1", type: "implements" }];
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ links: mockLinks, total: 1 }),
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useLinks({ type: "implements" }), {
@@ -151,21 +151,21 @@ describe("useLinks - Comprehensive Coverage", () => {
 		});
 	});
 
-	describe("useCreateLink", () => {
+	describe(useCreateLink, () => {
 		it("should create link with description", async () => {
 			const newLink = {
+				description: "Test description",
+				projectId: "proj-1",
 				sourceId: "item-1",
 				targetId: "item-2",
 				type: "depends_on" as const,
-				projectId: "proj-1",
-				description: "Test description",
 			};
 
 			const createdLink = { id: "1", ...newLink };
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => createdLink,
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useCreateLink(), {
@@ -180,26 +180,26 @@ describe("useLinks - Comprehensive Coverage", () => {
 			expect(mockFetch).toHaveBeenCalledWith(
 				expect.stringContaining("/api/v1/links"),
 				expect.objectContaining({
-					method: "POST",
+					body: expect.stringContaining("description"),
 					headers: expect.objectContaining({
 						"Content-Type": "application/json",
 					}),
-					body: expect.stringContaining("description"),
+					method: "POST",
 				}),
 			);
 		});
 
 		it("should invalidate queries on success", async () => {
 			const newLink = {
+				projectId: "proj-1",
 				sourceId: "item-1",
 				targetId: "item-2",
 				type: "depends_on" as const,
-				projectId: "proj-1",
 			};
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ id: "1", ...newLink }),
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useCreateLink(), {
@@ -212,7 +212,7 @@ describe("useLinks - Comprehensive Coverage", () => {
 		});
 	});
 
-	describe("useDeleteLink", () => {
+	describe(useDeleteLink, () => {
 		it("should delete a link", async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
@@ -264,20 +264,20 @@ describe("useLinks - Comprehensive Coverage", () => {
 		});
 	});
 
-	describe("useTraceabilityGraph", () => {
+	describe(useTraceabilityGraph, () => {
 		it("should build graph from items and links", async () => {
 			const mockItems = [
 				{
 					id: "item-1",
+					status: "in_progress",
 					title: "Item 1",
 					view: "feature",
-					status: "in_progress",
 				},
 				{
 					id: "item-2",
+					status: "pending",
 					title: "Item 2",
 					view: "test",
-					status: "pending",
 				},
 			];
 
@@ -292,14 +292,14 @@ describe("useLinks - Comprehensive Coverage", () => {
 
 			// Mock items fetch (first call)
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => mockItems,
+				ok: true,
 			});
 
 			// Mock links fetch (second call via useLinks)
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ links: mockLinks, total: 1 }),
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useTraceabilityGraph("proj-1"), {
@@ -324,13 +324,13 @@ describe("useLinks - Comprehensive Coverage", () => {
 
 		it("should show loading state when data is missing", () => {
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => [],
+				ok: true,
 			});
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ links: [], total: 0 }),
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useTraceabilityGraph("proj-1"), {
@@ -352,13 +352,13 @@ describe("useLinks - Comprehensive Coverage", () => {
 
 		it("should handle empty items and links", async () => {
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => [],
+				ok: true,
 			});
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ links: [], total: 0 }),
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useTraceabilityGraph("proj-1"), {

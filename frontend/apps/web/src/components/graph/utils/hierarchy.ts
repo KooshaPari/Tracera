@@ -32,14 +32,14 @@ export function buildHierarchy(
 	links: Link[],
 ): Map<string, HierarchyNode> {
 	// Map items by ID for quick lookup (currently unused but kept for future use)
-	// const itemMap = new Map(items.map((i) => [i.id, i]));
+	// Const itemMap = new Map(items.map((i) => [i.id, i]));
 	const childMap = new Map<string, Set<string>>();
 	const parentMap = new Map<string, string>();
 
 	// Find parent_of links to build parent-child relationships
 	for (const link of links) {
 		if (link.type === "parent_of") {
-			// parent_of: source is parent, target is child
+			// Parent_of: source is parent, target is child
 			if (!childMap.has(link.sourceId)) {
 				childMap.set(link.sourceId, new Set());
 			}
@@ -53,20 +53,20 @@ export function buildHierarchy(
 
 	for (const item of items) {
 		const parentId = parentMap.get(item.id);
-		const childrenIds = Array.from(childMap.get(item.id) || new Set());
+		const childrenIds = [...(childMap.get(item.id) || new Set())];
 
 		const hierarchyNode: HierarchyNode = {
-			id: item.id,
-			item,
-			parentId,
+			ancestors: [],
 			childrenIds,
 			depth: 0,
-			ancestors: [],
 			descendants: [],
 			hierarchyPath: [],
-			isRoot: !parentId,
+			id: item.id,
 			isLeaf: childrenIds.length === 0,
 			isOrphan: false,
+			isRoot: !parentId,
+			item,
+			parentId,
 		};
 
 		hierarchyMap.set(item.id, hierarchyNode);
@@ -74,13 +74,15 @@ export function buildHierarchy(
 
 	// Calculate depths via BFS from roots
 	const visited = new Set<string>();
-	const queue = Array.from(hierarchyMap.values())
+	const queue = [...hierarchyMap.values()]
 		.filter((n) => n.isRoot)
-		.map((n) => ({ nodeId: n.id, depth: 0 }));
+		.map((n) => ({ depth: 0, nodeId: n.id }));
 
 	while (queue.length > 0) {
 		const { nodeId, depth } = queue.shift()!;
-		if (visited.has(nodeId)) continue;
+		if (visited.has(nodeId)) {
+			continue;
+		}
 
 		visited.add(nodeId);
 		const node = hierarchyMap.get(nodeId)!;
@@ -89,7 +91,7 @@ export function buildHierarchy(
 		// Process children
 		for (const childId of node.childrenIds) {
 			if (!visited.has(childId)) {
-				queue.push({ nodeId: childId, depth: depth + 1 });
+				queue.push({ depth: depth + 1, nodeId: childId });
 			}
 		}
 	}
@@ -103,7 +105,9 @@ export function buildHierarchy(
 		// Trace up to find root
 		const visited = new Set<string>();
 		while (current) {
-			if (visited.has(current.id)) break; // Cycle detection
+			if (visited.has(current.id)) {
+				break;
+			} // Cycle detection
 			visited.add(current.id);
 
 			if (current.isRoot) {
@@ -111,7 +115,7 @@ export function buildHierarchy(
 				break;
 			}
 
-			const parentId = current.parentId;
+			const { parentId } = current;
 			current = parentId ? hierarchyMap.get(parentId) : undefined;
 		}
 
@@ -142,7 +146,9 @@ function getAncestors(
 	const visited = new Set<string>();
 
 	while (current?.parentId) {
-		if (visited.has(current.id)) break; // Cycle detection
+		if (visited.has(current.id)) {
+			break;
+		} // Cycle detection
 		visited.add(current.id);
 
 		ancestors.unshift(current.parentId);
@@ -165,11 +171,15 @@ function getDescendants(
 
 	while (queue.length > 0) {
 		const currentId = queue.shift()!;
-		if (visited.has(currentId)) continue;
+		if (visited.has(currentId)) {
+			continue;
+		}
 
 		visited.add(currentId);
 		const node = hierarchyMap.get(currentId);
-		if (!node) continue;
+		if (!node) {
+			continue;
+		}
 
 		for (const childId of node.childrenIds) {
 			descendants.push(childId);
@@ -193,11 +203,13 @@ function buildPath(
 
 	// Collect path from node up to root
 	while (current) {
-		if (visited.has(current.id)) break; // Cycle detection
+		if (visited.has(current.id)) {
+			break;
+		} // Cycle detection
 		visited.add(current.id);
 		path.unshift(current.id);
 
-		const parentId = current.parentId;
+		const { parentId } = current;
 		current = parentId ? hierarchyMap.get(parentId) : undefined;
 	}
 
@@ -227,7 +239,9 @@ export function getParent(
 	hierarchyMap: Map<string, HierarchyNode>,
 ): HierarchyNode | undefined {
 	const node = hierarchyMap.get(itemId);
-	if (!node?.parentId) return undefined;
+	if (!node?.parentId) {
+		return undefined;
+	}
 	return hierarchyMap.get(node.parentId);
 }
 
@@ -239,7 +253,9 @@ export function getChildren(
 	hierarchyMap: Map<string, HierarchyNode>,
 ): HierarchyNode[] {
 	const node = hierarchyMap.get(itemId);
-	if (!node) return [];
+	if (!node) {
+		return [];
+	}
 
 	return node.childrenIds
 		.map((id) => hierarchyMap.get(id))
@@ -277,11 +293,15 @@ export function getDescendantNodes(
 
 	while (queue.length > 0) {
 		const currentId = queue.shift()!;
-		if (visited.has(currentId)) continue;
+		if (visited.has(currentId)) {
+			continue;
+		}
 
 		visited.add(currentId);
 		const node = hierarchyMap.get(currentId);
-		if (!node) continue;
+		if (!node) {
+			continue;
+		}
 
 		for (const childId of node.childrenIds) {
 			const childNode = hierarchyMap.get(childId);
@@ -306,9 +326,11 @@ export function getDescendantNodes(
 export function getBreadcrumbPath(
 	itemId: string,
 	hierarchyMap: Map<string, HierarchyNode>,
-): Array<{ id: string; title: string }> {
+): { id: string; title: string }[] {
 	const node = hierarchyMap.get(itemId);
-	if (!node) return [];
+	if (!node) {
+		return [];
+	}
 
 	return node.hierarchyPath.map((id) => {
 		const n = hierarchyMap.get(id);
@@ -331,15 +353,17 @@ export function findCommonAncestor(
 	const node1 = hierarchyMap.get(itemId1);
 	const node2 = hierarchyMap.get(itemId2);
 
-	if (!node1 || !node2) return undefined;
+	if (!node1 || !node2) {
+		return undefined;
+	}
 
 	// Build reversed ancestor arrays (from leaf to root for easier finding)
 	const ancestors1 = [...node1.ancestors].toReversed();
-	const ancestors2 = [...node2.ancestors].toReversed();
+	const ancestors2 = new Set([...node2.ancestors].toReversed());
 
 	// Find first match going from immediate parent upward (closest common ancestor)
 	for (const ancestorId of ancestors1) {
-		if (ancestors2.includes(ancestorId)) {
+		if (ancestors2.has(ancestorId)) {
 			return ancestorId;
 		}
 	}
@@ -355,10 +379,14 @@ export function getSiblings(
 	hierarchyMap: Map<string, HierarchyNode>,
 ): HierarchyNode[] {
 	const node = hierarchyMap.get(itemId);
-	if (!node?.parentId) return [];
+	if (!node?.parentId) {
+		return [];
+	}
 
 	const parent = hierarchyMap.get(node.parentId);
-	if (!parent) return [];
+	if (!parent) {
+		return [];
+	}
 
 	return parent.childrenIds
 		.filter((id) => id !== itemId)
@@ -375,7 +403,9 @@ export function isAncestor(
 	hierarchyMap: Map<string, HierarchyNode>,
 ): boolean {
 	const node = hierarchyMap.get(itemId);
-	if (!node) return false;
+	if (!node) {
+		return false;
+	}
 
 	return node.ancestors.includes(potentialAncestorId);
 }
@@ -389,7 +419,9 @@ export function isDescendant(
 	hierarchyMap: Map<string, HierarchyNode>,
 ): boolean {
 	const node = hierarchyMap.get(itemId);
-	if (!node) return false;
+	if (!node) {
+		return false;
+	}
 
 	return node.descendants.includes(potentialDescendantId);
 }
@@ -401,14 +433,14 @@ export function getItemsAtDepth(
 	depth: number,
 	hierarchyMap: Map<string, HierarchyNode>,
 ): HierarchyNode[] {
-	return Array.from(hierarchyMap.values()).filter((n) => n.depth === depth);
+	return [...hierarchyMap.values()].filter((n) => n.depth === depth);
 }
 
 /**
  * Calculate statistics about hierarchy
  */
 export function getHierarchyStats(hierarchyMap: Map<string, HierarchyNode>) {
-	const nodes = Array.from(hierarchyMap.values());
+	const nodes = [...hierarchyMap.values()];
 
 	const depths = nodes.map((n) => n.depth);
 	const maxDepth = Math.max(...depths, 0);
@@ -427,14 +459,14 @@ export function getHierarchyStats(hierarchyMap: Map<string, HierarchyNode>) {
 	}
 
 	return {
-		totalNodes: nodes.length,
+		averageDepth: depths.reduce((a, b) => a + b, 0) / Math.max(nodes.length, 1),
+		depthDistribution: Object.fromEntries(depthDistribution),
+		leafCount: leaves.length,
 		maxDepth,
 		minDepth,
-		averageDepth: depths.reduce((a, b) => a + b, 0) / Math.max(nodes.length, 1),
-		rootCount: roots.length,
-		leafCount: leaves.length,
 		orphanCount: orphans.length,
-		depthDistribution: Object.fromEntries(depthDistribution),
+		rootCount: roots.length,
+		totalNodes: nodes.length,
 	};
 }
 
@@ -443,18 +475,18 @@ export function getHierarchyStats(hierarchyMap: Map<string, HierarchyNode>) {
  */
 export function exportHierarchyStructure(
 	hierarchyMap: Map<string, HierarchyNode>,
-): Array<{
+): {
 	id: string;
 	parentId?: string;
 	depth: number;
 	title: string;
 	childCount: number;
-}> {
-	return Array.from(hierarchyMap.values()).map((node) => ({
+}[] {
+	return [...hierarchyMap.values()].map((node) => ({
+		childCount: node.childrenIds.length,
+		depth: node.depth,
 		id: node.id,
 		parentId: node.parentId,
-		depth: node.depth,
 		title: node.item.title,
-		childCount: node.childrenIds.length,
 	}));
 }

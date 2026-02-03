@@ -91,7 +91,9 @@ export function ReportsView() {
 			projectId?: string;
 		}) => {
 			if (format === "json" || format === "csv") {
-				if (!projectId) {throw new Error("Select project context");}
+				if (!projectId) {
+					throw new Error("Select project context");
+				}
 				const out = await api.exportImport.export(projectId, format);
 				if (!(out instanceof Blob)) {
 					toast.error("Export did not return a downloadable file");
@@ -118,7 +120,9 @@ export function ReportsView() {
 			toast.error(error.message || "Engine failure during generation");
 		},
 		onSuccess: (data) => {
-			if (data.success) {toast.success("Export successful");}
+			if (data.success) {
+				toast.success("Export successful");
+			}
 		},
 	});
 

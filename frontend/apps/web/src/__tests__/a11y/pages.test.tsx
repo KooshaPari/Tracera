@@ -27,8 +27,8 @@ vi.mock("@tanstack/react-router", async () => {
 
 const queryClient = new QueryClient({
 	defaultOptions: {
-		queries: { retry: false },
 		mutations: { retry: false },
+		queries: { retry: false },
 	},
 });
 

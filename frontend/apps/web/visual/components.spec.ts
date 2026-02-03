@@ -28,7 +28,7 @@ test.describe("Button Component Visual Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="space-y-8">
           <section class="space-y-4">
@@ -111,7 +111,7 @@ test.describe("Button Component Visual Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="space-y-4">
           <button id="default-btn" class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
@@ -142,7 +142,7 @@ test.describe("Input Component Visual Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="p-8 space-y-6 max-w-md">
           <section class="space-y-4">
@@ -192,7 +192,7 @@ test.describe("Card Component Visual Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="p-8 space-y-6">
           <section class="space-y-4">
@@ -263,7 +263,7 @@ test.describe("Badge Component Visual Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="p-8 space-y-6">
           <section class="space-y-4">
@@ -328,7 +328,7 @@ test.describe("Form Components Visual Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="p-8 max-w-2xl mx-auto">
           <div class="rounded-xl border bg-card text-card-foreground shadow">
@@ -400,7 +400,7 @@ test.describe("Loading and Empty States", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="p-8 space-y-8">
           <section class="space-y-4">
@@ -459,7 +459,7 @@ test.describe("Loading and Empty States", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="p-8">
           <div class="rounded-xl border bg-card p-12">
@@ -495,7 +495,7 @@ test.describe("Alert Component Visual Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="p-8 space-y-6 bg-background max-w-3xl">
           <section class="space-y-4">
@@ -607,7 +607,7 @@ test.describe("Select and Dropdown Visual Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="p-8 space-y-6 bg-background max-w-2xl">
           <section class="space-y-4">

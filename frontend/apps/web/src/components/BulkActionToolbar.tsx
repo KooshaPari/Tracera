@@ -2,7 +2,7 @@ import { Trash2, X } from "lucide-react";
 import { useCallback } from "react";
 
 import { cn } from "@/lib/utils";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 export interface BulkAction {
 	id: string;
@@ -34,7 +34,9 @@ export function BulkActionToolbar({
 }: BulkActionToolbarProps) {
 	const handleAction = useCallback(
 		async (action: BulkAction) => {
-			if (selectedCount === 0 || loading) return;
+			if (selectedCount === 0 || loading) {
+				return;
+			}
 			try {
 				await action.action(
 					[],
@@ -118,10 +120,10 @@ export function BulkActionToolbar({
 // Predefined bulk actions
 export const commonBulkActions = {
 	delete: (onDelete: (ids: string[]) => Promise<void>): BulkAction => ({
+		action: onDelete,
+		icon: <Trash2 className="h-4 w-4" />,
 		id: "delete",
 		label: "Delete",
-		icon: <Trash2 className="h-4 w-4" />,
-		action: onDelete,
 		variant: "destructive",
 	}),
 };

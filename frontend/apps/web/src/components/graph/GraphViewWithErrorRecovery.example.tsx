@@ -5,207 +5,190 @@
  * in a real-world graph view component with React Query.
  */
 
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { GraphErrorBoundary } from './GraphErrorBoundary';
-import { EnhancedErrorState } from './EnhancedErrorState';
-import { NetworkErrorState } from './NetworkErrorState';
-import { TimeoutErrorState } from './TimeoutErrorState';
-import { RecoveryProgress } from './RecoveryProgress';
-import { useAutoRecovery } from '@/hooks/useAutoRecovery';
-import { GraphSkeleton } from './GraphSkeleton';
-import { FlowGraphView } from './FlowGraphView';
-import { logger } from '@/lib/logger';
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { GraphErrorBoundary } from "./GraphErrorBoundary";
+import { EnhancedErrorState } from "./EnhancedErrorState";
+import { NetworkErrorState } from "./NetworkErrorState";
+import { TimeoutErrorState } from "./TimeoutErrorState";
+import { RecoveryProgress } from "./RecoveryProgress";
+import { useAutoRecovery } from "@/hooks/useAutoRecovery";
+import { GraphSkeleton } from "./GraphSkeleton";
+import { FlowGraphView } from "./FlowGraphView";
+import { logger } from "@/lib/logger";
 
 // Example API function
 async function fetchGraphData(projectId: string) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
-  try {
-    const response = await fetch(`/api/projects/${projectId}/graph`, {
-      signal: controller.signal,
-    });
+	try {
+		const response = await fetch(`/api/projects/${projectId}/graph`, {
+			signal: controller.signal,
+		});
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+		}
 
-    return await response.json();
-  } finally {
-    clearTimeout(timeoutId);
-  }
+		return await response.json();
+	} finally {
+		clearTimeout(timeoutId);
+	}
 }
 
 interface GraphViewWithErrorRecoveryProps {
-  projectId: string;
+	projectId: string;
 }
 
 export function GraphViewWithErrorRecovery({
-  projectId,
+	projectId,
 }: GraphViewWithErrorRecoveryProps) {
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+	const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
-  // Track online/offline status
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
+	// Track online/offline status
+	useEffect(() => {
+		const handleOnline = () => setIsOffline(false);
+		const handleOffline = () => setIsOffline(true);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+		globalThis.addEventListener("online", handleOnline);
+		globalThis.addEventListener("offline", handleOffline);
 
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+		return () => {
+			globalThis.removeEventListener("online", handleOnline);
+			globalThis.removeEventListener("offline", handleOffline);
+		};
+	}, []);
 
-  // Fetch graph data with React Query
-  const {
-    data,
-    error,
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ['graph', projectId],
-    queryFn: () => fetchGraphData(projectId),
-    retry: false, // We handle retries ourselves
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+	// Fetch graph data with React Query
+	const { data, error, isLoading, refetch } = useQuery({
+		queryKey: ["graph", projectId],
+		queryFn: () => fetchGraphData(projectId),
+		retry: false, // We handle retries ourselves
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
 
-  // Auto-recovery with exponential backoff
-  const recovery = useAutoRecovery(
-    error as Error | null,
-    refetch,
-    {
-      maxRetries: 3,
-      retryDelay: 1000,
-      exponentialBackoff: true,
-      onRetry: (attempt) => {
-        logger.info(`[GraphView] Auto-retry attempt ${attempt}/${3}`);
-      },
-      onMaxRetriesReached: () => {
-        logger.error('[GraphView] Max retries reached, showing error state');
-      },
-    }
-  );
+	// Auto-recovery with exponential backoff
+	const recovery = useAutoRecovery(error as Error | null, refetch, {
+		exponentialBackoff: true,
+		maxRetries: 3,
+		onMaxRetriesReached: () => {
+			logger.error("[GraphView] Max retries reached, showing error state");
+		},
+		onRetry: (attempt) => {
+			logger.info(`[GraphView] Auto-retry attempt ${attempt}/${3}`);
+		},
+		retryDelay: 1000,
+	});
 
-  // Determine error type
-  const isNetworkError = error?.message?.includes('network') ||
-                        error?.message?.includes('Failed to fetch');
-  const isTimeoutError = error?.message?.includes('timeout') ||
-                         error?.message?.includes('aborted');
+	// Determine error type
+	const isNetworkError =
+		error?.message?.includes("network") ||
+		error?.message?.includes("Failed to fetch");
+	const isTimeoutError =
+		error?.message?.includes("timeout") || error?.message?.includes("aborted");
 
-  // Show loading skeleton
-  if (isLoading && !data) {
-    return <GraphSkeleton />;
-  }
+	// Show loading skeleton
+	if (isLoading && !data) {
+		return <GraphSkeleton />;
+	}
 
-  // Show recovery progress during auto-retry
-  if (recovery.isRetrying && recovery.nextRetryIn) {
-    return (
-      <div className="flex items-center justify-center h-full p-4">
-        <RecoveryProgress
-          retryCount={recovery.retryCount}
-          maxRetries={3}
-          nextRetryIn={recovery.nextRetryIn}
-        />
-      </div>
-    );
-  }
+	// Show recovery progress during auto-retry
+	if (recovery.isRetrying && recovery.nextRetryIn) {
+		return (
+			<div className="flex items-center justify-center h-full p-4">
+				<RecoveryProgress
+					retryCount={recovery.retryCount}
+					maxRetries={3}
+					nextRetryIn={recovery.nextRetryIn}
+				/>
+			</div>
+		);
+	}
 
-  // Show error states after max retries
-  if (error && recovery.retryCount >= 3) {
-    // Offline error
-    if (isOffline) {
-      return (
-        <div className="flex items-center justify-center h-full p-4">
-          <NetworkErrorState
-            isOffline={true}
-            onRetry={() => refetch()}
-          />
-        </div>
-      );
-    }
+	// Show error states after max retries
+	if (error && recovery.retryCount >= 3) {
+		// Offline error
+		if (isOffline) {
+			return (
+				<div className="flex items-center justify-center h-full p-4">
+					<NetworkErrorState isOffline onRetry={() => refetch()} />
+				</div>
+			);
+		}
 
-    // Network error
-    if (isNetworkError) {
-      return (
-        <div className="flex items-center justify-center h-full p-4">
-          <NetworkErrorState
-            isOffline={false}
-            onRetry={() => refetch()}
-          />
-        </div>
-      );
-    }
+		// Network error
+		if (isNetworkError) {
+			return (
+				<div className="flex items-center justify-center h-full p-4">
+					<NetworkErrorState isOffline={false} onRetry={() => refetch()} />
+				</div>
+			);
+		}
 
-    // Timeout error
-    if (isTimeoutError) {
-      return (
-        <div className="flex items-center justify-center h-full p-4">
-          <TimeoutErrorState
-            timeout={30000}
-            onRetry={() => refetch()}
-          />
-        </div>
-      );
-    }
+		// Timeout error
+		if (isTimeoutError) {
+			return (
+				<div className="flex items-center justify-center h-full p-4">
+					<TimeoutErrorState timeout={30_000} onRetry={() => refetch()} />
+				</div>
+			);
+		}
 
-    // Generic error
-    return (
-      <div className="flex items-center justify-center h-full p-4">
-        <EnhancedErrorState
-          error={error as Error}
-          onRetry={() => refetch()}
-          onReportBug={(errorDetails) => {
-            // Send to error tracking service
-            logger.error('[Bug Report]', {
-              component: 'GraphView',
-              projectId,
-              error: errorDetails,
-              timestamp: new Date().toISOString(),
-              userAgent: navigator.userAgent,
-            });
+		// Generic error
+		return (
+			<div className="flex items-center justify-center h-full p-4">
+				<EnhancedErrorState
+					error={error as Error}
+					onRetry={() => refetch()}
+					onReportBug={(errorDetails) => {
+						// Send to error tracking service
+						logger.error("[Bug Report]", {
+							component: "GraphView",
+							error: errorDetails,
+							projectId,
+							timestamp: new Date().toISOString(),
+							userAgent: navigator.userAgent,
+						});
 
-            // You could also send to Sentry, LogRocket, etc.
-            // Sentry.captureException(error, { extra: errorDetails });
-          }}
-          showDetails={true}
-          variant="card"
-        />
-      </div>
-    );
-  }
+						// You could also send to Sentry, LogRocket, etc.
+						// Sentry.captureException(error, { extra: errorDetails });
+					}}
+					showDetails
+					variant="card"
+				/>
+			</div>
+		);
+	}
 
-  // Render graph with error boundary
-  return (
-    <GraphErrorBoundary
-      onError={(error, errorInfo) => {
-        // Log to error tracking service
-        logger.error('[GraphView] Caught error:', error, errorInfo);
+	// Render graph with error boundary
+	return (
+		<GraphErrorBoundary
+			onError={(error, errorInfo) => {
+				// Log to error tracking service
+				logger.error("[GraphView] Caught error:", error, errorInfo);
 
-        // Send to Sentry/LogRocket
-        // Sentry.captureException(error, {
-        //   contexts: {
-        //     react: {
-        //       componentStack: errorInfo.componentStack,
-        //     },
-        //   },
-        // });
-      }}
-    >
-      {data ? (
-        <FlowGraphView
-          nodes={data.nodes}
-          edges={data.edges}
-          projectId={projectId}
-        />
-      ) : (
-        <GraphSkeleton />
-      )}
-    </GraphErrorBoundary>
-  );
+				// Send to Sentry/LogRocket
+				// Sentry.captureException(error, {
+				//   Contexts: {
+				//     React: {
+				//       ComponentStack: errorInfo.componentStack,
+				//     },
+				//   },
+				// });
+			}}
+		>
+			{data ? (
+				<FlowGraphView
+					nodes={data.nodes}
+					edges={data.edges}
+					projectId={projectId}
+				/>
+			) : (
+				<GraphSkeleton />
+			)}
+		</GraphErrorBoundary>
+	);
 }
 
 // Export for use in routes/pages

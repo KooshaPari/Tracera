@@ -10,10 +10,10 @@
  * - Reports size reductions
  */
 
-import { readdir, stat, writeFile } from 'fs/promises';
-import { join, extname } from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { readdir, stat, writeFile } from 'node:fs/promises';
+import { extname, join } from 'node:path';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 
 const execAsync = promisify(exec);
 
@@ -45,7 +45,7 @@ async function getFileSize(path: string): Promise<number> {
  * Format bytes to human-readable size
  */
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) {return '0 Bytes';}
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -94,13 +94,13 @@ async function optimizeSVG(filePath: string): Promise<AssetStats | null> {
     const reductionPercent = (reduction / originalSize) * 100;
 
     return {
-      originalSize,
       optimizedSize,
+      originalSize,
       reduction,
       reductionPercent,
     };
   } catch (error) {
-    console.error(`Failed to optimize ${filePath}:`, error);
+    
     return null;
   }
 }
@@ -119,21 +119,21 @@ async function optimizeImage(filePath: string): Promise<AssetStats | null> {
       try {
         // Note: This requires sharp to be installed
         // For now, we'll document this as a manual step or use Next.js Image optimization
-        console.log(`  WebP/AVIF generation for ${filePath} will be handled by Next.js Image`);
+        
       } catch {
-        console.log(`  Skipping WebP/AVIF generation (will be handled by Next.js)`);
+        
       }
     }
 
     // Return original stats (Next.js will handle optimization at runtime)
     return {
-      originalSize,
       optimizedSize: originalSize,
+      originalSize,
       reduction: 0,
       reductionPercent: 0,
     };
   } catch (error) {
-    console.error(`Failed to process ${filePath}:`, error);
+    
     return null;
   }
 }
@@ -142,49 +142,47 @@ async function optimizeImage(filePath: string): Promise<AssetStats | null> {
  * Main optimization function
  */
 async function optimizeAssets(): Promise<void> {
-  console.log('🎨 Asset Optimization Tool\n');
-  console.log('━'.repeat(60));
+  
+  
 
   const publicDir = join(process.cwd(), 'public');
   const result: OptimizationResult = {
     images: new Map(),
     svgs: new Map(),
-    totalOriginalSize: 0,
     totalOptimizedSize: 0,
+    totalOriginalSize: 0,
     totalReduction: 0,
     totalReductionPercent: 0,
   };
 
   // Find all SVG files
-  console.log('\n📊 Finding SVG files...');
+  
   const svgFiles = await findFiles(publicDir, ['.svg']);
-  console.log(`  Found ${svgFiles.length} SVG files`);
+  
 
   // Optimize SVGs
   if (svgFiles.length > 0) {
-    console.log('\n⚙️  Optimizing SVGs...');
+    
     for (const file of svgFiles) {
       const stats = await optimizeSVG(file);
       if (stats) {
         result.svgs.set(file, stats);
         result.totalOriginalSize += stats.originalSize;
         result.totalOptimizedSize += stats.optimizedSize;
-        console.log(
-          `  ✓ ${file.replace(publicDir, '')} - ${formatBytes(stats.reduction)} saved (${stats.reductionPercent.toFixed(1)}%)`
-        );
+        
       }
     }
   }
 
   // Find all image files
-  console.log('\n📊 Finding image files...');
+  
   const imageFiles = await findFiles(publicDir, ['.png', '.jpg', '.jpeg', '.gif', '.webp']);
-  console.log(`  Found ${imageFiles.length} image files`);
+  
 
   // Process images
   if (imageFiles.length > 0) {
-    console.log('\n⚙️  Processing images...');
-    console.log('  Note: Images will be optimized by Next.js Image at runtime');
+    
+    
     for (const file of imageFiles) {
       const stats = await optimizeImage(file);
       if (stats) {
@@ -201,16 +199,16 @@ async function optimizeAssets(): Promise<void> {
     result.totalOriginalSize > 0 ? (result.totalReduction / result.totalOriginalSize) * 100 : 0;
 
   // Print summary
-  console.log('\n━'.repeat(60));
-  console.log('\n📈 Optimization Summary:\n');
-  console.log(`  Total files processed: ${svgFiles.length + imageFiles.length}`);
-  console.log(`  SVG files optimized: ${result.svgs.size}`);
-  console.log(`  Image files processed: ${result.images.size}`);
-  console.log(`\n  Original size: ${formatBytes(result.totalOriginalSize)}`);
-  console.log(`  Optimized size: ${formatBytes(result.totalOptimizedSize)}`);
-  console.log(`  Total saved: ${formatBytes(result.totalReduction)}`);
-  console.log(`  Reduction: ${result.totalReductionPercent.toFixed(2)}%`);
-  console.log('\n━'.repeat(60));
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
   // Save report
   const reportPath = join(process.cwd(), 'asset-optimization-report.json');
@@ -218,7 +216,7 @@ async function optimizeAssets(): Promise<void> {
     reportPath,
     JSON.stringify(
       {
-        timestamp: new Date().toISOString(),
+        images: Object.fromEntries(result.images),
         summary: {
           totalFiles: svgFiles.length + imageFiles.length,
           svgFiles: result.svgs.size,
@@ -229,18 +227,18 @@ async function optimizeAssets(): Promise<void> {
           reductionPercent: result.totalReductionPercent,
         },
         svgs: Object.fromEntries(result.svgs),
-        images: Object.fromEntries(result.images),
+        timestamp: new Date().toISOString(),
       },
       null,
       2
     )
   );
 
-  console.log(`\n📄 Report saved to: ${reportPath}\n`);
+  
 }
 
 // Run optimization
 optimizeAssets().catch((error) => {
-  console.error('❌ Optimization failed:', error);
+  
   process.exit(1);
 });

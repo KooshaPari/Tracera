@@ -13,298 +13,309 @@
  * - Rich node detail panel for WebGL mode
  */
 
-import { memo, useState, useCallback, useEffect, useMemo } from 'react';
-import type { Node, Edge } from '@xyflow/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FlowGraphViewInner } from './FlowGraphViewInner';
-import { SigmaGraphViewEnhanced } from './SigmaGraphView.enhanced';
-import { RichNodeDetailPanel } from './sigma/RichNodeDetailPanel';
-import { useHybridGraph, type HybridGraphConfig } from '@/hooks/useHybridGraph';
-import { Badge } from '@/components/ui/badge';
-import { _Button } from '@/components/ui/button';
-import { Zap, Layers, Activity, AlertTriangle } from 'lucide-react';
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import type { Edge, Node } from "@xyflow/react";
+import { AnimatePresence, motion } from "framer-motion";
+import { FlowGraphViewInner } from "./FlowGraphViewInner";
+import { SigmaGraphViewEnhanced } from "./SigmaGraphView.enhanced";
+import { RichNodeDetailPanel } from "./sigma/RichNodeDetailPanel";
+import { useHybridGraph } from "@/hooks/useHybridGraph";
+import type { HybridGraphConfig } from "@/hooks/useHybridGraph";
+import { Badge } from "@/components/ui/badge";
+import { _Button } from "@/components/ui/button";
+import { Activity, AlertTriangle, Layers, Zap } from "lucide-react";
 
 interface HybridGraphViewProps {
-  nodes: Node[];
-  edges: Edge[];
-  onNodeClick?: (nodeId: string) => void;
-  onNodeExpand?: (nodeId: string) => void;
-  onNodeNavigate?: (nodeId: string) => void;
-  config?: HybridGraphConfig;
-  className?: string;
+	nodes: Node[];
+	edges: Edge[];
+	onNodeClick?: (nodeId: string) => void;
+	onNodeExpand?: (nodeId: string) => void;
+	onNodeNavigate?: (nodeId: string) => void;
+	config?: HybridGraphConfig;
+	className?: string;
 }
 
 interface PerformanceWarning {
-  type: 'threshold' | 'fps' | 'memory';
-  message: string;
-  severity: 'info' | 'warning' | 'error';
+	type: "threshold" | "fps" | "memory";
+	message: string;
+	severity: "info" | "warning" | "error";
 }
 
 export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
-  nodes,
-  edges,
-  onNodeClick,
-  onNodeExpand,
-  onNodeNavigate,
-  config,
-  className = '',
+	nodes,
+	edges,
+	onNodeClick,
+	onNodeExpand,
+	onNodeNavigate,
+	config,
+	className = "",
 }: HybridGraphViewProps) {
-  const {
-    useWebGL,
-    nodeCount,
-    edgeCount,
-    graphologyGraph,
-    selectedNodeId,
-    setSelectedNodeId,
-  } = useHybridGraph(nodes, edges, config);
+	const {
+		useWebGL,
+		nodeCount,
+		edgeCount,
+		graphologyGraph,
+		selectedNodeId,
+		setSelectedNodeId,
+	} = useHybridGraph(nodes, edges, config);
 
-  const [detailPanelNode, setDetailPanelNode] = useState<any>(null);
-  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
-  const [showTransition, setShowTransition] = useState(false);
-  const [previousMode, setPreviousMode] = useState<'reactflow' | 'webgl'>(
-    useWebGL ? 'webgl' : 'reactflow'
-  );
-  const [performanceWarnings, setPerformanceWarnings] = useState<PerformanceWarning[]>([]);
+	const [detailPanelNode, setDetailPanelNode] = useState<any>(null);
+	const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+	const [showTransition, setShowTransition] = useState(false);
+	const [previousMode, setPreviousMode] = useState<"reactflow" | "webgl">(
+		useWebGL ? "webgl" : "reactflow",
+	);
+	const [performanceWarnings, setPerformanceWarnings] = useState<
+		PerformanceWarning[]
+	>([]);
 
-  // Detect mode transitions
-  useEffect(() => {
-    const currentMode = useWebGL ? 'webgl' : 'reactflow';
+	// Detect mode transitions
+	useEffect(() => {
+		const currentMode = useWebGL ? "webgl" : "reactflow";
 
-    if (currentMode !== previousMode) {
-      setShowTransition(true);
+		if (currentMode !== previousMode) {
+			setShowTransition(true);
 
-      // Hide transition message after animation
-      const timer = setTimeout(() => {
-        setShowTransition(false);
-      }, 1500);
+			// Hide transition message after animation
+			const timer = setTimeout(() => {
+				setShowTransition(false);
+			}, 1500);
 
-      setPreviousMode(currentMode);
+			setPreviousMode(currentMode);
 
-      return () => clearTimeout(timer);
-    }
-  }, [useWebGL, previousMode]);
+			return () => clearTimeout(timer);
+		}
+	}, [useWebGL, previousMode]);
 
-  // Performance warnings
-  useEffect(() => {
-    const warnings: PerformanceWarning[] = [];
+	// Performance warnings
+	useEffect(() => {
+		const warnings: PerformanceWarning[] = [];
 
-    // Near threshold warning
-    if (!useWebGL && nodeCount > 8000) {
-      warnings.push({
-        type: 'threshold',
-        message: `Approaching 10k node threshold (${nodeCount.toLocaleString()} nodes). WebGL mode will activate automatically.`,
-        severity: 'info',
-      });
-    }
+		// Near threshold warning
+		if (!useWebGL && nodeCount > 8000) {
+			warnings.push({
+				message: `Approaching 10k node threshold (${nodeCount.toLocaleString()} nodes). WebGL mode will activate automatically.`,
+				severity: "info",
+				type: "threshold",
+			});
+		}
 
-    // Very large graph warning
-    if (useWebGL && nodeCount > 50000) {
-      warnings.push({
-        type: 'memory',
-        message: `Large graph detected (${nodeCount.toLocaleString()} nodes). Performance mode enabled.`,
-        severity: 'warning',
-      });
-    }
+		// Very large graph warning
+		if (useWebGL && nodeCount > 50_000) {
+			warnings.push({
+				message: `Large graph detected (${nodeCount.toLocaleString()} nodes). Performance mode enabled.`,
+				severity: "warning",
+				type: "memory",
+			});
+		}
 
-    setPerformanceWarnings(warnings);
-  }, [useWebGL, nodeCount]);
+		setPerformanceWarnings(warnings);
+	}, [useWebGL, nodeCount]);
 
-  // Handle node click
-  const handleNodeClick = useCallback(
-    (nodeId: string) => {
-      setSelectedNodeId(nodeId);
+	// Handle node click
+	const handleNodeClick = useCallback(
+		(nodeId: string) => {
+			setSelectedNodeId(nodeId);
 
-      // In WebGL mode, open detail panel
-      if (useWebGL) {
-        const node = nodes.find((n) => n["id"] === nodeId);
-        if (node) {
-          setDetailPanelNode({
-            id: node["id"],
-            label: node.data?.["label"] || node["id"],
-            type: node["type"] || 'default',
-            data: node.data || {},
-          });
-        }
-      }
+			// In WebGL mode, open detail panel
+			if (useWebGL) {
+				const node = nodes.find((n) => n["id"] === nodeId);
+				if (node) {
+					setDetailPanelNode({
+						data: node.data || {},
+						id: node["id"],
+						label: node.data?.["label"] || node["id"],
+						type: node["type"] || "default",
+					});
+				}
+			}
 
-      // Call parent handler
-      onNodeClick?.(nodeId);
-    },
-    [useWebGL, nodes, setSelectedNodeId, onNodeClick]
-  );
+			// Call parent handler
+			onNodeClick?.(nodeId);
+		},
+		[useWebGL, nodes, setSelectedNodeId, onNodeClick],
+	);
 
-  // Handle node hover
-  const handleNodeHover = useCallback((nodeId: string | null) => {
-    setHoveredNodeId(nodeId);
-  }, []);
+	// Handle node hover
+	const handleNodeHover = useCallback((nodeId: string | null) => {
+		setHoveredNodeId(nodeId);
+	}, []);
 
-  // Handle node double-click (expand)
-  const handleNodeDoubleClick = useCallback(
-    (nodeId: string) => {
-      onNodeExpand?.(nodeId);
-    },
-    [onNodeExpand]
-  );
+	// Handle node double-click (expand)
+	const handleNodeDoubleClick = useCallback(
+		(nodeId: string) => {
+			onNodeExpand?.(nodeId);
+		},
+		[onNodeExpand],
+	);
 
-  // Handle background click (deselect)
-  const handleBackgroundClick = useCallback(() => {
-    setSelectedNodeId(null);
-    setDetailPanelNode(null);
-  }, [setSelectedNodeId]);
+	// Handle background click (deselect)
+	const handleBackgroundClick = useCallback(() => {
+		setSelectedNodeId(null);
+		setDetailPanelNode(null);
+	}, [setSelectedNodeId]);
 
-  // Determine performance mode for Sigma
-  const sigmaPerformanceMode = useMemo(() => {
-    if (nodeCount > 50000) return 'performance';
-    if (nodeCount < 1000) return 'quality';
-    return 'balanced';
-  }, [nodeCount]);
+	// Determine performance mode for Sigma
+	const sigmaPerformanceMode = useMemo(() => {
+		if (nodeCount > 50_000) {
+			return "performance";
+		}
+		if (nodeCount < 1000) {
+			return "quality";
+		}
+		return "balanced";
+	}, [nodeCount]);
 
-  return (
-    <div className={`relative h-full w-full ${className}`}>
-      {/* Performance indicators */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
-        {/* Mode indicator */}
-        <Badge
-          variant={useWebGL ? 'default' : 'secondary'}
-          className="text-xs font-medium shadow-md"
-        >
-          {useWebGL ? (
-            <>
-              <Zap className="h-3 w-3 mr-1" />
-              WebGL Mode
-            </>
-          ) : (
-            <>
-              <Layers className="h-3 w-3 mr-1" />
-              ReactFlow Mode
-            </>
-          )}
-        </Badge>
+	return (
+		<div className={`relative h-full w-full ${className}`}>
+			{/* Performance indicators */}
+			<div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
+				{/* Mode indicator */}
+				<Badge
+					variant={useWebGL ? "default" : "secondary"}
+					className="text-xs font-medium shadow-md"
+				>
+					{useWebGL ? (
+						<>
+							<Zap className="h-3 w-3 mr-1" />
+							WebGL Mode
+						</>
+					) : (
+						<>
+							<Layers className="h-3 w-3 mr-1" />
+							ReactFlow Mode
+						</>
+					)}
+				</Badge>
 
-        {/* Node/Edge count */}
-        <Badge variant="outline" className="text-xs shadow-md">
-          <Activity className="h-3 w-3 mr-1" />
-          {nodeCount.toLocaleString()}N / {edgeCount.toLocaleString()}E
-        </Badge>
+				{/* Node/Edge count */}
+				<Badge variant="outline" className="text-xs shadow-md">
+					<Activity className="h-3 w-3 mr-1" />
+					{nodeCount.toLocaleString()}N / {edgeCount.toLocaleString()}E
+				</Badge>
 
-        {/* Performance mode (WebGL only) */}
-        {useWebGL && (
-          <Badge
-            variant="outline"
-            className={`text-xs shadow-md ${
-              sigmaPerformanceMode === 'performance'
-                ? 'border-orange-500 text-orange-500'
-                : ''
-            }`}
-          >
-            {sigmaPerformanceMode.charAt(0).toUpperCase() + sigmaPerformanceMode.slice(1)}
-          </Badge>
-        )}
-      </div>
+				{/* Performance mode (WebGL only) */}
+				{useWebGL && (
+					<Badge
+						variant="outline"
+						className={`text-xs shadow-md ${
+							sigmaPerformanceMode === "performance"
+								? "border-orange-500 text-orange-500"
+								: ""
+						}`}
+					>
+						{sigmaPerformanceMode.charAt(0).toUpperCase() +
+							sigmaPerformanceMode.slice(1)}
+					</Badge>
+				)}
+			</div>
 
-      {/* Performance warnings */}
-      {performanceWarnings.length > 0 && (
-        <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-2 max-w-md">
-          {performanceWarnings.map((warning, i) => (
-            <Badge
-              key={i}
-              variant={warning.severity === 'error' ? 'destructive' : 'default'}
-              className="text-xs shadow-md"
-            >
-              <AlertTriangle className="h-3 w-3 mr-1" />
-              {warning.message}
-            </Badge>
-          ))}
-        </div>
-      )}
+			{/* Performance warnings */}
+			{performanceWarnings.length > 0 && (
+				<div className="absolute bottom-4 left-4 z-10 flex flex-col gap-2 max-w-md">
+					{performanceWarnings.map((warning, i) => (
+						<Badge
+							key={i}
+							variant={warning.severity === "error" ? "destructive" : "default"}
+							className="text-xs shadow-md"
+						>
+							<AlertTriangle className="h-3 w-3 mr-1" />
+							{warning.message}
+						</Badge>
+					))}
+				</div>
+			)}
 
-      {/* Transition notification */}
-      <AnimatePresence>
-        {showTransition && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-20 left-1/2 transform -translate-x-1/2 z-20"
-          >
-            <Badge variant="default" className="text-sm font-medium shadow-lg px-4 py-2">
-              {useWebGL ? (
-                <>
-                  <Zap className="h-4 w-4 mr-2" />
-                  Switching to WebGL for better performance...
-                </>
-              ) : (
-                <>
-                  <Layers className="h-4 w-4 mr-2" />
-                  Switching to ReactFlow for richer interactivity...
-                </>
-              )}
-            </Badge>
-          </motion.div>
-        )}
-      </AnimatePresence>
+			{/* Transition notification */}
+			<AnimatePresence>
+				{showTransition && (
+					<motion.div
+						initial={{ opacity: 0, y: -20 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: -20 }}
+						className="absolute top-20 left-1/2 transform -translate-x-1/2 z-20"
+					>
+						<Badge
+							variant="default"
+							className="text-sm font-medium shadow-lg px-4 py-2"
+						>
+							{useWebGL ? (
+								<>
+									<Zap className="h-4 w-4 mr-2" />
+									Switching to WebGL for better performance...
+								</>
+							) : (
+								<>
+									<Layers className="h-4 w-4 mr-2" />
+									Switching to ReactFlow for richer interactivity...
+								</>
+							)}
+						</Badge>
+					</motion.div>
+				)}
+			</AnimatePresence>
 
-      {/* Graph renderer with smooth transitions */}
-      <AnimatePresence mode="wait">
-        {useWebGL && graphologyGraph ? (
-          // WebGL mode (>= 10k nodes)
-          <motion.div
-            key="webgl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="h-full w-full"
-          >
-            <SigmaGraphViewEnhanced
-              graph={graphologyGraph}
-              onNodeClick={handleNodeClick}
-              onNodeHover={handleNodeHover}
-              onNodeDoubleClick={handleNodeDoubleClick}
-              onBackgroundClick={handleBackgroundClick}
-              selectedNodeId={selectedNodeId}
-              hoveredNodeId={hoveredNodeId}
-              performanceMode={sigmaPerformanceMode}
-              className="h-full w-full"
-            />
-          </motion.div>
-        ) : (
-          // ReactFlow mode (< 10k nodes)
-          <motion.div
-            key="reactflow"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="h-full w-full"
-          >
-            <FlowGraphViewInner
-              nodes={nodes}
-              edges={edges}
-              onNodeSelect={handleNodeClick}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+			{/* Graph renderer with smooth transitions */}
+			<AnimatePresence mode="wait">
+				{useWebGL && graphologyGraph ? (
+					// WebGL mode (>= 10k nodes)
+					<motion.div
+						key="webgl"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.3 }}
+						className="h-full w-full"
+					>
+						<SigmaGraphViewEnhanced
+							graph={graphologyGraph}
+							onNodeClick={handleNodeClick}
+							onNodeHover={handleNodeHover}
+							onNodeDoubleClick={handleNodeDoubleClick}
+							onBackgroundClick={handleBackgroundClick}
+							selectedNodeId={selectedNodeId}
+							hoveredNodeId={hoveredNodeId}
+							performanceMode={sigmaPerformanceMode}
+							className="h-full w-full"
+						/>
+					</motion.div>
+				) : (
+					// ReactFlow mode (< 10k nodes)
+					<motion.div
+						key="reactflow"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.3 }}
+						className="h-full w-full"
+					>
+						<FlowGraphViewInner
+							nodes={nodes}
+							edges={edges}
+							onNodeSelect={handleNodeClick}
+						/>
+					</motion.div>
+				)}
+			</AnimatePresence>
 
-      {/* Rich node detail panel (WebGL mode only) */}
-      <AnimatePresence>
-        {useWebGL && detailPanelNode && (
-          <motion.div
-            initial={{ x: 400, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 400, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          >
-            <RichNodeDetailPanel
-              node={detailPanelNode}
-              onClose={() => setDetailPanelNode(null)}
-              onExpand={onNodeExpand}
-              onNavigate={onNodeNavigate}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+			{/* Rich node detail panel (WebGL mode only) */}
+			<AnimatePresence>
+				{useWebGL && detailPanelNode && (
+					<motion.div
+						initial={{ opacity: 0, x: 400 }}
+						animate={{ opacity: 1, x: 0 }}
+						exit={{ opacity: 0, x: 400 }}
+						transition={{ damping: 25, stiffness: 300, type: "spring" }}
+					>
+						<RichNodeDetailPanel
+							node={detailPanelNode}
+							onClose={() => setDetailPanelNode(null)}
+							onExpand={onNodeExpand}
+							onNavigate={onNodeNavigate}
+						/>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</div>
+	);
 });

@@ -9,15 +9,56 @@ function getAbsolutePath(value: string): string {
 }
 
 const config: StorybookConfig = {
-	stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
 	addons: [
 		getAbsolutePath("@storybook/addon-links"),
 		getAbsolutePath("@storybook/addon-docs"),
+		"@storybook/addon-a11y",
+		"@storybook/addon-designs",
+		"@storybook/addon-coverage",
 	],
+
+	core: {
+		disableTelemetry: true,
+	},
+
+	docs: {
+		autodocs: "tag",
+		defaultName: "Documentation",
+	},
+
+	features: {
+		storyStoreV7: true,
+		buildStoriesJson: true,
+	},
 
 	framework: {
 		name: getAbsolutePath("@storybook/react-vite"),
-		options: {},
+		options: {
+			builder: {
+				viteConfigPath: undefined,
+			},
+		},
+	},
+
+	stories: [
+		"../src/**/*.mdx",
+		"../src/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+	],
+
+	typescript: {
+		check: true,
+		reactDocgen: "react-docgen-typescript",
+		reactDocgenTypescriptOptions: {
+			shouldExtractLiteralValuesFromEnum: true,
+			shouldRemoveUndefinedFromOptional: true,
+			propFilter: (prop) => {
+				if (prop.parent) {
+					return !prop.parent.fileName.includes("node_modules");
+				}
+				return true;
+			},
+		},
 	},
 };
+
 export default config;

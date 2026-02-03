@@ -33,7 +33,7 @@ test.describe("Sync and Offline Mode", () => {
 			// Check for synced indicator
 			const syncedText = page.getByText(/synced|up to date|connected/i);
 			await expect(syncedText)
-				.toBeVisible({ timeout: 10000 })
+				.toBeVisible({ timeout: 10_000 })
 				.catch(() => {
 					console.log("Synced status not displayed");
 				});
@@ -80,7 +80,7 @@ test.describe("Sync and Offline Mode", () => {
 
 				// Should show synced status
 				const syncedIndicator = page.getByText(/synced|up to date/i);
-				await expect(syncedIndicator).toBeVisible({ timeout: 10000 });
+				await expect(syncedIndicator).toBeVisible({ timeout: 10_000 });
 			} else {
 				console.log("Manual sync button not found");
 			}
@@ -238,7 +238,7 @@ test.describe("Sync and Offline Mode", () => {
 
 			// Should show synced status
 			const syncedMsg = page.getByText(/synced|up to date/i);
-			await expect(syncedMsg).toBeVisible({ timeout: 10000 });
+			await expect(syncedMsg).toBeVisible({ timeout: 10_000 });
 		});
 	});
 
@@ -291,7 +291,7 @@ test.describe("Sync and Offline Mode", () => {
 			// Check for connected status
 			const connectedMsg = page.getByText(/connected|live/i);
 			await expect(connectedMsg)
-				.toBeVisible({ timeout: 10000 })
+				.toBeVisible({ timeout: 10_000 })
 				.catch(() => {
 					console.log("WebSocket connected status not shown");
 				});

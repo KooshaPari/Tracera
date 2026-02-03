@@ -20,11 +20,11 @@ import {
 	X,
 } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
-import {
-	type CrossPerspectiveSearchResult,
-	type GroupedSearchResults,
-	type SearchFilters,
-	useCrossPerspectiveSearch,
+import { useCrossPerspectiveSearch } from "./hooks/useCrossPerspectiveSearch";
+import type {
+	CrossPerspectiveSearchResult,
+	GroupedSearchResults,
+	SearchFilters,
 } from "./hooks/useCrossPerspectiveSearch";
 
 interface CrossPerspectiveSearchProps {
@@ -42,24 +42,24 @@ interface CrossPerspectiveSearchProps {
  */
 function getPerspectiveColor(perspective: string): string {
 	const colors: Record<string, string> = {
-		feature: "#3b82f6",
-		code: "#8b5cf6",
-		test: "#10b981",
 		api: "#f59e0b",
-		database: "#ec4899",
-		wireframe: "#06b6d4",
-		documentation: "#6366f1",
-		deployment: "#14b8a6",
 		architecture: "#f97316",
+		code: "#8b5cf6",
 		configuration: "#a855f7",
+		database: "#ec4899",
 		dataflow: "#0ea5e9",
 		dependency: "#ef4444",
+		deployment: "#14b8a6",
+		documentation: "#6366f1",
 		domain: "#f43f5e",
+		feature: "#3b82f6",
 		infrastructure: "#84cc16",
 		journey: "#d946ef",
 		monitoring: "#fb923c",
 		performance: "#22c55e",
 		security: "#8b5cf6",
+		test: "#10b981",
+		wireframe: "#06b6d4",
 	};
 	return colors[perspective.toLowerCase()] || "#64748b";
 }
@@ -69,11 +69,11 @@ function getPerspectiveColor(perspective: string): string {
  */
 function getStatusColor(status: ItemStatus): string {
 	const colors: Record<ItemStatus, string> = {
-		todo: "#64748b",
-		in_progress: "#f59e0b",
-		done: "#10b981",
 		blocked: "#ef4444",
 		cancelled: "#94a3b8",
+		done: "#10b981",
+		in_progress: "#f59e0b",
+		todo: "#64748b",
 	};
 	return colors[status] || "#64748b";
 }
@@ -89,21 +89,25 @@ function formatConfidence(confidence: number): string {
  * Highlight matching text in content
  */
 function highlightMatch(text: string, query: string): React.ReactNode {
-	if (!text || !query.trim()) return text;
+	if (!text || !query.trim()) {
+		return text;
+	}
 
 	const lowerText = text.toLowerCase();
 	const lowerQuery = query.toLowerCase();
 	const index = lowerText.indexOf(lowerQuery);
 
-	if (index === -1) return text;
+	if (index === -1) {
+		return text;
+	}
 
 	return (
 		<>
-			{text.substring(0, index)}
+			{text.slice(0, index)}
 			<mark className="bg-yellow-200/60 dark:bg-yellow-900/40 font-semibold">
-				{text.substring(index, index + query.length)}
+				{text.slice(index, index + query.length)}
 			</mark>
-			{text.substring(index + query.length)}
+			{text.slice(index + query.length)}
 		</>
 	);
 }
@@ -306,13 +310,15 @@ function CrossPerspectiveSearchComponent({
 	const { performSearch, addToHistory, getHistory } =
 		useCrossPerspectiveSearch();
 
-	const results = useMemo(() => {
-		return performSearch(items, links, query, filters);
-	}, [items, links, query, filters, performSearch]);
+	const results = useMemo(
+		() => performSearch(items, links, query, filters),
+		[items, links, query, filters, performSearch],
+	);
 
-	const totalResultsCount = useMemo(() => {
-		return results.reduce((sum, group) => sum + group.count, 0);
-	}, [results]);
+	const totalResultsCount = useMemo(
+		() => results.reduce((sum, group) => sum + group.count, 0),
+		[results],
+	);
 
 	const handleSearch = useCallback((newQuery: string) => {
 		setQuery(newQuery);
@@ -337,19 +343,23 @@ function CrossPerspectiveSearchComponent({
 				totalResults += Math.min(group.count, maxResultsPerPerspective);
 			}
 
-			if (!totalResults) return;
+			if (!totalResults) {
+				return;
+			}
 
 			switch (e.key) {
-				case "ArrowDown":
+				case "ArrowDown": {
 					e.preventDefault();
 					setSelectedResultIndex((prev) =>
 						Math.min(prev + 1, totalResults - 1),
 					);
 					break;
-				case "ArrowUp":
+				}
+				case "ArrowUp": {
 					e.preventDefault();
 					setSelectedResultIndex((prev) => Math.max(prev - 1, 0));
 					break;
+				}
 				case "Enter": {
 					e.preventDefault();
 					// Find and select the result at the current index
@@ -365,10 +375,11 @@ function CrossPerspectiveSearchComponent({
 					}
 					break;
 				}
-				case "Escape":
+				case "Escape": {
 					e.preventDefault();
 					handleClear();
 					break;
+				}
 			}
 		},
 		[
@@ -425,7 +436,7 @@ function CrossPerspectiveSearchComponent({
 							let globalIndexOffset = 0;
 
 							// Calculate offset
-							for (let i = 0; i < results.indexOf(group); i++) {
+							for (let i = 0; i < results.indexOf(group); i += 1) {
 								globalIndexOffset += Math.min(
 									results[i].count,
 									maxResultsPerPerspective,
@@ -469,7 +480,6 @@ function CrossPerspectiveSearchComponent({
 						onChange={(e) => handleSearch(e.target.value)}
 						onKeyDown={handleKeyDown}
 						className="flex-1"
-						autoFocus
 					/>
 					{query && (
 						<Button
@@ -546,9 +556,11 @@ function CrossPerspectiveSearchComponent({
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="">All types</SelectItem>
-										{Array.from(
-											new Set(items.map((item) => item.type).filter(Boolean)),
-										).map((type) => (
+										{[
+											...new Set(
+												items.map((item) => item.type).filter(Boolean),
+											),
+										].map((type) => (
 											<SelectItem key={type} value={type || ""}>
 												{type}
 											</SelectItem>
@@ -576,7 +588,7 @@ function CrossPerspectiveSearchComponent({
 						let globalIndexOffset = 0;
 
 						// Calculate offset for this group
-						for (let i = 0; i < results.indexOf(group); i++) {
+						for (let i = 0; i < results.indexOf(group); i += 1) {
 							globalIndexOffset += Math.min(
 								results[i].count,
 								maxResultsPerPerspective,
@@ -599,7 +611,7 @@ function CrossPerspectiveSearchComponent({
 						);
 					})}
 				</div>
-			) : query ? (
+			) : (query ? (
 				<div className="p-8 text-center text-muted-foreground">
 					<Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
 					<p className="text-sm">No items found matching "{query}"</p>
@@ -651,7 +663,7 @@ function CrossPerspectiveSearchComponent({
 						</div>
 					)}
 				</div>
-			)}
+			))}
 
 			{/* Footer with keyboard hints */}
 			{query && results.length > 0 && (

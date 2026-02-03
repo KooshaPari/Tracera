@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Web Worker for off-main-thread graph layout computation
  *
@@ -13,10 +12,10 @@
  * @module graphLayout.worker
  */
 
-import * as Comlink from 'comlink';
-import type { ElkExtendedEdge, ElkNode } from 'elkjs';
-import * as ELKModule from 'elkjs/lib/elk.bundled.js';
-import { logger } from '@/lib/logger';
+import * as Comlink from "comlink";
+import type { ElkExtendedEdge, ElkNode } from "elkjs";
+import * as ELKModule from "elkjs/lib/elk.bundled.js";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -39,11 +38,17 @@ export interface NodePosition {
 	y: number;
 }
 
-export type LayoutAlgorithm = 'dagre' | 'elk' | 'd3-force' | 'grid' | 'circular' | 'radial';
+export type LayoutAlgorithm =
+	| "dagre"
+	| "elk"
+	| "d3-force"
+	| "grid"
+	| "circular"
+	| "radial";
 
 export interface LayoutOptions {
 	algorithm: LayoutAlgorithm;
-	direction?: 'TB' | 'LR' | 'BT' | 'RL';
+	direction?: "TB" | "LR" | "BT" | "RL";
 	nodeSep?: number;
 	rankSep?: number;
 	marginX?: number;
@@ -75,10 +80,10 @@ export interface ProgressCallback {
 
 // Direction mapping from dagre convention to ELK
 const DIRECTION_MAP: Record<string, string> = {
-	TB: 'DOWN',
-	BT: 'UP',
-	LR: 'RIGHT',
-	RL: 'LEFT',
+	BT: "UP",
+	LR: "RIGHT",
+	RL: "LEFT",
+	TB: "DOWN",
 };
 
 // Lazy ELK initialization to avoid test environment issues
@@ -90,7 +95,7 @@ function getELK() {
 			const ELK = (ELKModule as any).default || ELKModule;
 			elkInstance = new ELK();
 		} catch (error) {
-			logger.error('[GraphLayoutWorker] Failed to initialize ELK:', error);
+			logger.error("[GraphLayoutWorker] Failed to initialize ELK:", error);
 			throw error;
 		}
 	}
@@ -109,14 +114,14 @@ function getELK() {
 async function layoutWithELK(
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): Promise<LayoutResult> {
 	if (nodes.length === 0) {
-		return { positions: {}, size: { width: 0, height: 0 } };
+		return { positions: {}, size: { height: 0, width: 0 } };
 	}
 
 	const {
-		direction = 'TB',
+		direction = "TB",
 		nodeSep = 60,
 		rankSep = 100,
 		marginX = 40,
@@ -126,16 +131,6 @@ async function layoutWithELK(
 	} = options;
 
 	const graph: ElkNode = {
-		id: 'root',
-		layoutOptions: {
-			'elk.algorithm': 'layered',
-			'elk.direction': DIRECTION_MAP[direction] || 'DOWN',
-			'elk.spacing.nodeNode': String(nodeSep),
-			'elk.layered.spacing.nodeNodeBetweenLayers': String(rankSep),
-			'elk.padding': `[left=${marginX}, top=${marginY}, right=${marginX}, bottom=${marginY}]`,
-			'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
-			'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
-		},
 		children: nodes.map((n) => ({
 			id: n.id,
 			width: n.width || nodeWidth,
@@ -146,6 +141,16 @@ async function layoutWithELK(
 			sources: [e.source],
 			targets: [e.target],
 		})) as ElkExtendedEdge[],
+		id: "root",
+		layoutOptions: {
+			"elk.algorithm": "layered",
+			"elk.direction": DIRECTION_MAP[direction] || "DOWN",
+			"elk.spacing.nodeNode": String(nodeSep),
+			"elk.layered.spacing.nodeNodeBetweenLayers": String(rankSep),
+			"elk.padding": `[left=${marginX}, top=${marginY}, right=${marginX}, bottom=${marginY}]`,
+			"elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+			"elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+		},
 	};
 
 	const elk = getELK();
@@ -166,7 +171,7 @@ async function layoutWithELK(
 
 	return {
 		positions,
-		size: { width: maxX + marginX, height: maxY + marginY },
+		size: { height: maxY + marginY, width: maxX + marginX },
 	};
 }
 
@@ -178,10 +183,10 @@ async function layoutWithELK(
 function layoutWithDagre(
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): LayoutResult {
 	if (nodes.length === 0) {
-		return { positions: {}, size: { width: 0, height: 0 } };
+		return { positions: {}, size: { height: 0, width: 0 } };
 	}
 
 	const {
@@ -247,7 +252,7 @@ function layoutWithDagre(
 	let maxWidth = 0;
 	let maxHeight = 0;
 
-	const maxLevel = Math.max(...Array.from(levelGroups.keys()));
+	const maxLevel = Math.max(...[...levelGroups.keys()]);
 	for (const [level, nodeIds] of levelGroups) {
 		const y = marginY + level * (nodeHeight + rankSep);
 		const levelWidth = nodeIds.length * (nodeWidth + nodeSep);
@@ -263,7 +268,7 @@ function layoutWithDagre(
 
 	return {
 		positions,
-		size: { width: maxWidth, height: maxHeight },
+		size: { height: maxHeight, width: maxWidth },
 	};
 }
 
@@ -275,17 +280,13 @@ function layoutWithDagre(
 function layoutWithForce(
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): LayoutResult {
 	if (nodes.length === 0) {
-		return { positions: {}, size: { width: 0, height: 0 } };
+		return { positions: {}, size: { height: 0, width: 0 } };
 	}
 
-	const {
-		nodeWidth = 200,
-		nodeHeight = 120,
-		nodeSep = 60,
-	} = options;
+	const { nodeWidth = 200, nodeHeight = 120, nodeSep = 60 } = options;
 
 	// Initialize positions with jitter
 	const positions = new Map<
@@ -298,10 +299,10 @@ function layoutWithForce(
 		const baseX = (index % cols) * (nodeWidth + nodeSep * 2);
 		const baseY = Math.floor(index / cols) * (nodeHeight + nodeSep * 2);
 		positions.set(node.id, {
-			x: baseX + (Math.random() - 0.5) * 50,
-			y: baseY + (Math.random() - 0.5) * 50,
 			vx: 0,
 			vy: 0,
+			x: baseX + (Math.random() - 0.5) * 50,
+			y: baseY + (Math.random() - 0.5) * 50,
 		});
 	});
 
@@ -315,7 +316,10 @@ function layoutWithForce(
 	}
 
 	// Run simulation
-	const iterations = Math.min(50, Math.max(20, 100 - Math.floor(nodes.length / 100)));
+	const iterations = Math.min(
+		50,
+		Math.max(20, 100 - Math.floor(nodes.length / 100)),
+	);
 	const repulsionStrength = 5000;
 	const attractionStrength = 0.1;
 	const damping = 0.9;
@@ -387,8 +391,8 @@ function layoutWithForce(
 	return {
 		positions: result,
 		size: {
-			width: maxX - minX + nodeWidth + 100,
 			height: maxY - minY + nodeHeight + 100,
+			width: maxX - minX + nodeWidth + 100,
 		},
 	};
 }
@@ -401,10 +405,10 @@ function layoutWithForce(
 function layoutWithGrid(
 	nodes: LayoutNode[],
 	_edges: LayoutEdge[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): LayoutResult {
 	if (nodes.length === 0) {
-		return { positions: {}, size: { width: 0, height: 0 } };
+		return { positions: {}, size: { height: 0, width: 0 } };
 	}
 
 	const {
@@ -430,7 +434,7 @@ function layoutWithGrid(
 
 	return {
 		positions,
-		size: { width: maxWidth, height: maxHeight },
+		size: { height: maxHeight, width: maxWidth },
 	};
 }
 
@@ -442,10 +446,10 @@ function layoutWithGrid(
 function layoutWithCircular(
 	nodes: LayoutNode[],
 	_edges: LayoutEdge[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): LayoutResult {
 	if (nodes.length === 0) {
-		return { positions: {}, size: { width: 0, height: 0 } };
+		return { positions: {}, size: { height: 0, width: 0 } };
 	}
 
 	const {
@@ -470,8 +474,8 @@ function layoutWithCircular(
 	});
 
 	const size = {
-		width: centerX * 2 + radius + nodeWidth,
 		height: centerY * 2 + radius + nodeHeight,
+		width: centerX * 2 + radius + nodeWidth,
 	};
 
 	return { positions, size };
@@ -485,10 +489,10 @@ function layoutWithCircular(
 function layoutWithRadial(
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): LayoutResult {
 	if (nodes.length === 0) {
-		return { positions: {}, size: { width: 0, height: 0 } };
+		return { positions: {}, size: { height: 0, width: 0 } };
 	}
 
 	const {
@@ -514,8 +518,8 @@ function layoutWithRadial(
 	// Assign depths via BFS
 	const depths = new Map<string, number>();
 	const queue: { id: string; depth: number }[] = roots.map((r) => ({
-		id: r.id,
 		depth: 0,
+		id: r.id,
 	}));
 
 	while (queue.length > 0) {
@@ -526,7 +530,7 @@ function layoutWithRadial(
 		const nodeChildren = children.get(id) || [];
 		for (const childId of nodeChildren) {
 			if (!depths.has(childId)) {
-				queue.push({ id: childId, depth: depth + 1 });
+				queue.push({ depth: depth + 1, id: childId });
 			}
 		}
 	}
@@ -571,8 +575,8 @@ function layoutWithRadial(
 
 	const maxDepth = byDepth.size;
 	const size = {
-		width: centerX * 2 + maxDepth * baseRadius + nodeWidth,
 		height: centerY * 2 + maxDepth * baseRadius + nodeHeight,
+		width: centerX * 2 + maxDepth * baseRadius + nodeWidth,
 	};
 
 	return { positions, size };
@@ -589,14 +593,14 @@ function layoutWithRadial(
 async function* layoutProgressive(
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): AsyncGenerator<LayoutResult> {
 	const batchSize = options.batchSize || 100;
 	const totalBatches = Math.ceil(nodes.length / batchSize);
 
 	// For now, we'll implement progressive for grid layout (simplest)
 	// Future: Implement for ELK and other algorithms
-	if (options.algorithm === 'grid') {
+	if (options.algorithm === "grid") {
 		for (let i = 0; i < totalBatches; i++) {
 			const start = i * batchSize;
 			const end = Math.min(start + batchSize, nodes.length);
@@ -626,29 +630,29 @@ async function* layoutProgressive(
 export async function computeLayout(
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): Promise<LayoutResult> {
 	const startTime = performance.now();
 
 	let result: LayoutResult;
 
 	switch (options.algorithm) {
-		case 'elk':
+		case "elk":
 			result = await layoutWithELK(nodes, edges, options);
 			break;
-		case 'dagre':
+		case "dagre":
 			result = layoutWithDagre(nodes, edges, options);
 			break;
-		case 'd3-force':
+		case "d3-force":
 			result = layoutWithForce(nodes, edges, options);
 			break;
-		case 'grid':
+		case "grid":
 			result = layoutWithGrid(nodes, edges, options);
 			break;
-		case 'circular':
+		case "circular":
 			result = layoutWithCircular(nodes, edges, options);
 			break;
-		case 'radial':
+		case "radial":
 			result = layoutWithRadial(nodes, edges, options);
 			break;
 		default:
@@ -657,7 +661,7 @@ export async function computeLayout(
 
 	const duration = performance.now() - startTime;
 	logger.info(
-		`[GraphLayoutWorker] Layout ${options.algorithm} for ${nodes.length} nodes completed in ${duration.toFixed(2)}ms`
+		`[GraphLayoutWorker] Layout ${options.algorithm} for ${nodes.length} nodes completed in ${duration.toFixed(2)}ms`,
 	);
 
 	return result;
@@ -669,7 +673,7 @@ export async function computeLayout(
 export async function* computeLayoutProgressive(
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): AsyncGenerator<LayoutResult> {
 	yield* layoutProgressive(nodes, edges, options);
 }
@@ -681,7 +685,7 @@ export async function benchmarkLayout(
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
 	algorithm: LayoutAlgorithm,
-	iterations: number = 5
+	iterations: number = 5,
 ): Promise<{
 	algorithm: LayoutAlgorithm;
 	nodeCount: number;
@@ -711,12 +715,12 @@ export async function benchmarkLayout(
 
 	return {
 		algorithm,
-		nodeCount: nodes.length,
+		avgTime,
 		edgeCount: edges.length,
 		iterations,
-		avgTime,
-		minTime,
 		maxTime,
+		minTime,
+		nodeCount: nodes.length,
 		stdDev,
 	};
 }
@@ -726,12 +730,11 @@ export async function benchmarkLayout(
 // ============================================================================
 
 const api = {
+	benchmarkLayout,
 	computeLayout,
 	computeLayoutProgressive,
-	benchmarkLayout,
 };
 
 Comlink.expose(api);
 
 export type GraphLayoutWorkerAPI = typeof api;
-/* eslint-enable */

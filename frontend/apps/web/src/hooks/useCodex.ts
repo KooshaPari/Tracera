@@ -1,7 +1,8 @@
 // React hooks for Codex agent integration
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { codexApi, type CodexReviewRequest } from "../api/codex";
+import { codexApi } from "../api/codex";
+import type { CodexReviewRequest } from "../api/codex";
 
 export function useCodexInteractions(
 	projectId: string,
@@ -13,17 +14,17 @@ export function useCodexInteractions(
 	},
 ) {
 	return useQuery({
-		queryKey: ["codex-interactions", projectId, options],
-		queryFn: () => codexApi.listInteractions(projectId, options),
 		enabled: !!projectId,
+		queryFn: () => codexApi.listInteractions(projectId, options),
+		queryKey: ["codex-interactions", projectId, options],
 	});
 }
 
 export function useCodexAuthStatus(projectId: string) {
 	return useQuery({
-		queryKey: ["codex-auth-status", projectId],
-		queryFn: () => codexApi.getAuthStatus(projectId),
 		enabled: !!projectId,
+		queryFn: () => codexApi.getAuthStatus(projectId),
+		queryKey: ["codex-auth-status", projectId],
 		refetchInterval: 30000, // Refresh every 30s
 	});
 }
@@ -34,9 +35,7 @@ export function useCodexReviewImage(projectId: string) {
 		mutationFn: (data: CodexReviewRequest) =>
 			codexApi.reviewImage(projectId, data),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ["codex-interactions", projectId],
-			});
+			undefined;
 		},
 	});
 }
@@ -47,9 +46,7 @@ export function useCodexReviewVideo(projectId: string) {
 		mutationFn: (data: CodexReviewRequest) =>
 			codexApi.reviewVideo(projectId, data),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ["codex-interactions", projectId],
-			});
+			undefined;
 		},
 	});
 }

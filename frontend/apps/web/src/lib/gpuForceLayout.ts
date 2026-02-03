@@ -13,7 +13,7 @@
  */
 
 import type { Edge, Node } from "@xyflow/react";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // TYPES
@@ -37,7 +37,10 @@ export interface GPUForceLayoutOptions {
 	/** Velocity damping (default: 0.9) */
 	damping?: number;
 	/** Progress callback (0-1) */
-	onProgress?: (progress: number, positions: Map<string, { x: number; y: number }>) => void;
+	onProgress?: (
+		progress: number,
+		positions: Map<string, { x: number; y: number }>,
+	) => void;
 }
 
 export interface GPUForceLayoutResult {
@@ -105,7 +108,9 @@ export async function detectGPUBackend(): Promise<GPUBackend> {
 function cpuForceLayout<T extends Record<string, unknown>>(
 	nodes: Node<T>[],
 	edges: Edge[],
-	options: Required<Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">> & {
+	options: Required<
+		Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">
+	> & {
 		onProgress?: GPUForceLayoutOptions["onProgress"];
 	},
 ): Map<string, { x: number; y: number }> {
@@ -183,7 +188,10 @@ function cpuForceLayout<T extends Record<string, unknown>>(
 		if (options.onProgress && iter % 10 === 0) {
 			const progress = (iter + 1) / options.iterations;
 			const currentPositions = new Map(
-				Array.from(positions.entries()).map(([id, p]) => [id, { x: p.x, y: p.y }]),
+				Array.from(positions.entries()).map(([id, p]) => [
+					id,
+					{ x: p.x, y: p.y },
+				]),
 			);
 			options.onProgress(progress, currentPositions);
 		}
@@ -221,7 +229,9 @@ function cpuForceLayout<T extends Record<string, unknown>>(
 async function webgpuForceLayout<T extends Record<string, unknown>>(
 	nodes: Node<T>[],
 	edges: Edge[],
-	options: Required<Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">> & {
+	options: Required<
+		Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">
+	> & {
 		onProgress?: GPUForceLayoutOptions["onProgress"];
 	},
 ): Promise<Map<string, { x: number; y: number }>> {
@@ -244,7 +254,9 @@ async function webgpuForceLayout<T extends Record<string, unknown>>(
 async function webglForceLayout<T extends Record<string, unknown>>(
 	nodes: Node<T>[],
 	edges: Edge[],
-	options: Required<Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">> & {
+	options: Required<
+		Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">
+	> & {
 		onProgress?: GPUForceLayoutOptions["onProgress"];
 	},
 ): Promise<Map<string, { x: number; y: number }>> {
@@ -283,7 +295,9 @@ async function webglForceLayout<T extends Record<string, unknown>>(
 export class GPUForceLayout<T extends Record<string, unknown>> {
 	private nodes: Node<T>[];
 	private edges: Edge[];
-	private options: Required<Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">> & {
+	private options: Required<
+		Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">
+	> & {
 		onProgress?: GPUForceLayoutOptions["onProgress"];
 		forceBackend?: GPUBackend;
 	};
@@ -328,10 +342,18 @@ export class GPUForceLayout<T extends Record<string, unknown>> {
 
 		switch (backend) {
 			case "webgpu":
-				positions = await webgpuForceLayout(this.nodes, this.edges, this.options);
+				positions = await webgpuForceLayout(
+					this.nodes,
+					this.edges,
+					this.options,
+				);
 				break;
 			case "webgl":
-				positions = await webglForceLayout(this.nodes, this.edges, this.options);
+				positions = await webglForceLayout(
+					this.nodes,
+					this.edges,
+					this.options,
+				);
 				break;
 			case "cpu":
 			default:

@@ -16,7 +16,9 @@ beforeEach(() => {
 	user = userEvent.setup();
 });
 
-function validateFormData(formData: Record<string, string>): Record<string, string> {
+function validateFormData(
+	formData: Record<string, string>,
+): Record<string, string> {
 	const newErrors: Record<string, string> = {};
 
 	if (!formData.email) {
@@ -52,17 +54,17 @@ function MockAccessibleForm({
 
 		const formData = new FormData(e.currentTarget);
 		const data = {
-			name: formData.get("name"),
 			email: formData.get("email"),
 			message: formData.get("message"),
+			name: formData.get("name"),
 		};
 
 		const validationErrors = validateFormData(data as Record<string, string>);
 		setErrors(validationErrors);
 		setTouched({
-			name: true,
 			email: true,
 			message: true,
+			name: true,
 		});
 
 		if (Object.keys(validationErrors).length === 0) {
@@ -84,9 +86,9 @@ function MockAccessibleForm({
 		if (formElement) {
 			const formData = new FormData(formElement);
 			const data = {
-				name: formData.get("name") || "",
 				email: formData.get("email") || "",
 				message: formData.get("message") || "",
+				name: formData.get("name") || "",
 			};
 
 			const fieldErrors = validateFormData(data as Record<string, string>);
@@ -117,7 +119,7 @@ function MockAccessibleForm({
 					type="text"
 					placeholder="Your name"
 					onBlur={() => handleBlur("name")}
-					aria-invalid={touched.name && !!errors.name}
+					aria-invalid={touched.name && Boolean(errors.name)}
 					aria-describedby={errors.name ? "name-error" : undefined}
 					className={`w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-600 focus:border-transparent ${
 						errors.name && touched.name
@@ -150,7 +152,7 @@ function MockAccessibleForm({
 					type="email"
 					placeholder="your@email.com"
 					onBlur={() => handleBlur("email")}
-					aria-invalid={touched.email && !!errors.email}
+					aria-invalid={touched.email && Boolean(errors.email)}
 					aria-describedby={errors.email ? "email-error" : "email-hint"}
 					className={`w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-600 focus:border-transparent ${
 						errors.email && touched.email
@@ -186,7 +188,7 @@ function MockAccessibleForm({
 					placeholder="Your message here..."
 					rows={4}
 					onBlur={() => handleBlur("message")}
-					aria-invalid={touched.message && !!errors.message}
+					aria-invalid={touched.message && Boolean(errors.message)}
 					aria-describedby={errors.message ? "message-error" : "message-help"}
 					className={`w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-600 focus:border-transparent resize-vertical ${
 						errors.message && touched.message
@@ -253,7 +255,9 @@ describe("Form Validation - Field-Level Errors", () => {
 		const emailInput = screen.getByPlaceholderText("your@email.com");
 		await user.type(emailInput, "invalid");
 		const focusAway = container.querySelector("button");
-		if (focusAway) await user.click(focusAway);
+		if (focusAway) {
+			await user.click(focusAway);
+		}
 
 		await waitFor(() => {
 			const error = screen.getByText("Please enter a valid email address");
@@ -486,7 +490,9 @@ describe("Form Validation - Error Recovery", () => {
 		const resetBtn = screen.getByRole("button", { name: "Clear" });
 
 		await user.type(nameInput, "John");
-		expect(nameInput instanceof HTMLInputElement ? nameInput.value : "").toBe("John");
+		expect(nameInput instanceof HTMLInputElement ? nameInput.value : "").toBe(
+			"John",
+		);
 
 		await user.click(resetBtn);
 

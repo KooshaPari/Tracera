@@ -11,7 +11,7 @@ interface MerkleProofViewerProps {
 	leafIndex: number;
 	leafHash: string;
 	verified: boolean;
-	verificationPath?: Array<{ direction: string; hash: string }>;
+	verificationPath?: { direction: string; hash: string }[];
 	treeSize?: number;
 	algorithm?: string;
 	className?: string;

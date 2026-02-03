@@ -8,11 +8,11 @@ import { useWebSocketStore } from "../../stores/websocketStore";
 
 describe("WebSocket Hooks and Store", () => {
 	const mockRealtimeEvent: RealtimeEvent = {
-		type: "created",
-		table: "items",
-		schema: "public",
 		record: { id: "1", title: "Test Item" },
+		schema: "public",
+		table: "items",
 		timestamp: Date.now(),
+		type: "created",
 	};
 
 	beforeEach(() => {

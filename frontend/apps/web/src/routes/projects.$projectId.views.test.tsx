@@ -23,8 +23,5 @@ export const TEST_VIEW = TestView;
 
 export const Route = createFileRoute("/projects/$projectId/views/test")({
 	component: TestView,
-	loader: async () => {
-		// ItemsTableView fetches its own data
-		return {};
-	},
+	loader: async () => ({}),
 });

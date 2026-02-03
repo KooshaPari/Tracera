@@ -4,9 +4,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { TooltipContent } from "@tracertm/ui";
 
 const meta: Meta<typeof TooltipContent> = {
-	title: "Components/TooltipContent",
 	component: TooltipContent,
 	tags: ["autodocs"],
+	title: "Components/TooltipContent",
 };
 
 export default meta;

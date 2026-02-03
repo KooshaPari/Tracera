@@ -7,7 +7,9 @@ import type {
 	DesignToken,
 	LibraryComponent,
 } from "@tracertm/types";
-import { apiClient, handleApiResponse } from "./client";
+import client from "./client";
+
+const { apiClient, handleApiResponse } = client;
 
 const apiGet = apiClient["GET"];
 
@@ -17,8 +19,7 @@ const componentLibraryQueryKeys = {
 		["componentLibrary", "component", componentId] as const,
 	components: (libraryId: string) =>
 		["componentLibrary", "components", libraryId] as const,
-	detail: (id: string) =>
-		[...componentLibraryQueryKeys.details(), id] as const,
+	detail: (id: string) => [...componentLibraryQueryKeys.details(), id] as const,
 	details: () => [...componentLibraryQueryKeys.all, "detail"] as const,
 	list: (projectId: string) =>
 		[...componentLibraryQueryKeys.lists(), projectId] as const,
@@ -36,8 +37,8 @@ const useComponentLibraries = (
 	const queryOptions = Object.assign(
 		{
 			enabled: Boolean(projectId),
-			queryFn: () =>
-				handleApiResponse(
+			queryFn: async () =>
+				await handleApiResponse(
 					apiGet("/api/v1/projects/{projectId}/libraries", {
 						params: { path: { projectId } },
 					}),
@@ -57,8 +58,8 @@ const useComponentLibrary = (
 	const queryOptions = Object.assign(
 		{
 			enabled: Boolean(libraryId),
-			queryFn: () =>
-				handleApiResponse(
+			queryFn: async () =>
+				await handleApiResponse(
 					apiGet("/api/v1/libraries/{libraryId}", {
 						params: { path: { libraryId } },
 					}),
@@ -78,8 +79,8 @@ const useLibraryComponents = (
 	const queryOptions = Object.assign(
 		{
 			enabled: Boolean(libraryId),
-			queryFn: () =>
-				handleApiResponse(
+			queryFn: async () =>
+				await handleApiResponse(
 					apiGet("/api/v1/libraries/{libraryId}/components", {
 						params: { path: { libraryId } },
 					}),
@@ -99,8 +100,8 @@ const useLibraryComponent = (
 	const queryOptions = Object.assign(
 		{
 			enabled: Boolean(componentId),
-			queryFn: () =>
-				handleApiResponse(
+			queryFn: async () =>
+				await handleApiResponse(
 					apiGet("/api/v1/components/{componentId}", {
 						params: { path: { componentId } },
 					}),
@@ -120,8 +121,8 @@ const useComponentUsage = (
 	const queryOptions = Object.assign(
 		{
 			enabled: Boolean(componentId),
-			queryFn: () =>
-				handleApiResponse(
+			queryFn: async () =>
+				await handleApiResponse(
 					apiGet("/api/v1/components/{componentId}/usage", {
 						params: { path: { componentId } },
 					}),
@@ -141,8 +142,8 @@ const useDesignTokens = (
 	const queryOptions = Object.assign(
 		{
 			enabled: Boolean(libraryId),
-			queryFn: () =>
-				handleApiResponse(
+			queryFn: async () =>
+				await handleApiResponse(
 					apiGet("/api/v1/libraries/{libraryId}/tokens", {
 						params: { path: { libraryId } },
 					}),

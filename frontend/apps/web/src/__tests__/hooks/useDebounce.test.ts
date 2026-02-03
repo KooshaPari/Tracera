@@ -65,7 +65,7 @@ describe("useDebounce Hook", () => {
 
 	describe("Timer Management", () => {
 		it("should create timeout on value change", () => {
-			const setTimeoutSpy = vi.spyOn(global, "setTimeout");
+			const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
 			const delay = 300;
 
 			// Simulate setTimeout call
@@ -76,7 +76,7 @@ describe("useDebounce Hook", () => {
 		});
 
 		it("should clear previous timeout", () => {
-			const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
+			const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
 			const timerId = 1;
 
 			clearTimeout(timerId);
@@ -86,7 +86,7 @@ describe("useDebounce Hook", () => {
 		});
 
 		it("should cleanup on unmount", () => {
-			const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
+			const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
 
 			// Simulate cleanup function called
 			clearTimeout(1);
@@ -116,8 +116,8 @@ describe("useDebounce Hook", () => {
 		});
 
 		it("should handle rapid successive value changes", () => {
-			const setTimeoutSpy = vi.spyOn(global, "setTimeout");
-			const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
+			const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+			const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
 
 			// First change
 			setTimeout(() => {}, 300);

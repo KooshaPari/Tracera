@@ -40,7 +40,7 @@ test.describe("Screenshot Storage", () => {
 			await expect(progressBar).toBeVisible();
 
 			// Wait for upload to complete
-			await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 
 			// Verify success message
 			const successMessage = page.locator('[data-testid="upload-success"]');
@@ -49,7 +49,7 @@ test.describe("Screenshot Storage", () => {
 
 		// Then: Verify screenshot is saved
 		const screenshot = page.locator('[data-testid="item-screenshot"]');
-		await expect(screenshot).toBeVisible({ timeout: 10000 });
+		await expect(screenshot).toBeVisible({ timeout: 10_000 });
 		await expect(screenshot).toHaveAttribute("src", /\.(jpg|jpeg|png)$/);
 	});
 
@@ -78,7 +78,7 @@ test.describe("Screenshot Storage", () => {
 			expect(initialPercent).toMatch(/\d+%/);
 
 			// Wait for completion
-			await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 
 			// Verify final state
 			const successMessage = page.locator('[data-testid="upload-success"]');
@@ -101,11 +101,11 @@ test.describe("Screenshot Storage", () => {
 
 			// Wait for upload
 			const progressBar = page.locator('[data-testid="upload-progress"]');
-			await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 
 			// Then: Verify thumbnail is generated and visible
 			const thumbnail = page.locator('[data-testid="screenshot-thumbnail"]');
-			await expect(thumbnail).toBeVisible({ timeout: 10000 });
+			await expect(thumbnail).toBeVisible({ timeout: 10_000 });
 
 			// Verify thumbnail has correct dimensions
 			const boundingBox = await thumbnail.boundingBox();
@@ -129,7 +129,7 @@ test.describe("Screenshot Storage", () => {
 			await screenshotButton.click();
 
 			const progressBar = page.locator('[data-testid="upload-progress"]');
-			await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 			const duration1 = Date.now() - startTime1;
 
 			// When: Taking second screenshot (should be cached)
@@ -137,7 +137,7 @@ test.describe("Screenshot Storage", () => {
 			await screenshotButton.click();
 
 			const progressBar2 = page.locator('[data-testid="upload-progress"]');
-			await progressBar2.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar2.waitFor({ state: "hidden", timeout: 30_000 });
 			const duration2 = Date.now() - startTime2;
 
 			// Then: Second should be faster (cached)
@@ -163,7 +163,7 @@ test.describe("Screenshot Storage", () => {
 			if (await screenshotButton.isVisible()) {
 				await screenshotButton.click();
 				const progressBar = page.locator('[data-testid="upload-progress"]');
-				await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+				await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 			}
 		}
 
@@ -206,7 +206,7 @@ test.describe("Screenshot Storage", () => {
 			if (await screenshotButton.isVisible()) {
 				await screenshotButton.click();
 				const progressBar = page.locator('[data-testid="upload-progress"]');
-				await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+				await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 			}
 		}
 
@@ -219,7 +219,7 @@ test.describe("Screenshot Storage", () => {
 
 		// Then: Verify screenshot is still visible
 		const reloadedScreenshot = page.locator('[data-testid="item-screenshot"]');
-		await expect(reloadedScreenshot).toBeVisible({ timeout: 10000 });
+		await expect(reloadedScreenshot).toBeVisible({ timeout: 10_000 });
 
 		// Verify it's the same screenshot
 		const reloadedUrl = await reloadedScreenshot.getAttribute("src");
@@ -245,7 +245,7 @@ test.describe("Screenshot Storage", () => {
 
 			// Then: Verify error message is shown
 			const errorMessage = page.locator('[data-testid="upload-error"]');
-			await expect(errorMessage).toBeVisible({ timeout: 10000 });
+			await expect(errorMessage).toBeVisible({ timeout: 10_000 });
 
 			// Verify error can be dismissed
 			const dismissButton = page.locator('[data-testid="dismiss-error"]');
@@ -270,17 +270,17 @@ test.describe("Screenshot Storage", () => {
 			// First screenshot
 			await screenshotButton.click();
 			let progressBar = page.locator('[data-testid="upload-progress"]');
-			await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 
 			// Second screenshot
 			await screenshotButton.click();
 			progressBar = page.locator('[data-testid="upload-progress"]');
-			await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 
 			// Third screenshot
 			await screenshotButton.click();
 			progressBar = page.locator('[data-testid="upload-progress"]');
-			await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 		}
 
 		// Then: Verify all screenshots are stored
@@ -312,7 +312,7 @@ test.describe("Screenshot Storage", () => {
 			if (await screenshotButton.isVisible()) {
 				await screenshotButton.click();
 				const progressBar = page.locator('[data-testid="upload-progress"]');
-				await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+				await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 			}
 		}
 
@@ -360,7 +360,7 @@ test.describe("Screenshot Storage", () => {
 			// Version 1
 			await screenshotButton.click();
 			let progressBar = page.locator('[data-testid="upload-progress"]');
-			await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 
 			// Verify version is shown
 			const version = page.locator('[data-testid="screenshot-version"]');
@@ -372,7 +372,7 @@ test.describe("Screenshot Storage", () => {
 			// Version 2
 			await screenshotButton.click();
 			progressBar = page.locator('[data-testid="upload-progress"]');
-			await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+			await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 
 			// Then: Verify version history is available
 			const versionHistory = page.locator(
@@ -402,7 +402,7 @@ test.describe("Screenshot Storage", () => {
 			if (await screenshotButton.isVisible()) {
 				await screenshotButton.click();
 				const progressBar = page.locator('[data-testid="upload-progress"]');
-				await progressBar.waitFor({ state: "hidden", timeout: 30000 });
+				await progressBar.waitFor({ state: "hidden", timeout: 30_000 });
 			}
 		}
 

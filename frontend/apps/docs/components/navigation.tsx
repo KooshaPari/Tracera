@@ -27,7 +27,7 @@ interface PageNavigationProps {
  * Shows at the bottom of each documentation page
  */
 export function PageNavigation({ previous, next }: PageNavigationProps) {
-  if (!previous && !next) return null;
+  if (!previous && !next) {return null;}
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 border-t mt-12 pt-8">
@@ -78,7 +78,7 @@ interface BreadcrumbsProps {
  * Shows the current page's location in the documentation hierarchy
  */
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
-  if (items.length === 0) return null;
+  if (items.length === 0) {return null;}
 
   return (
     <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -117,7 +117,7 @@ interface TableOfContentsProps {
  * Sticky navigation showing headings on the current page
  */
 export function TableOfContents({ items, activeId }: TableOfContentsProps) {
-  if (items.length === 0) return null;
+  if (items.length === 0) {return null;}
 
   return (
     <div className="space-y-2">

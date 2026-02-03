@@ -52,17 +52,21 @@ interface QADashboardViewProps {
 }
 
 const statusColors: Record<string, string> = {
-	passed: "bg-green-500/10 text-green-600 border-green-500/30",
-	failed: "bg-red-500/10 text-red-600 border-red-500/30",
-	running: "bg-blue-500/10 text-blue-600 border-blue-500/30",
-	pending: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
 	blocked: "bg-orange-500/10 text-orange-600 border-orange-500/30",
 	cancelled: "bg-gray-500/10 text-gray-600 border-gray-500/30",
+	failed: "bg-red-500/10 text-red-600 border-red-500/30",
+	passed: "bg-green-500/10 text-green-600 border-green-500/30",
+	pending: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
+	running: "bg-blue-500/10 text-blue-600 border-blue-500/30",
 };
 
 function formatDuration(seconds: number): string {
-	if (seconds < 60) return `${Math.round(seconds)}s`;
-	if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+	if (seconds < 60) {
+		return `${Math.round(seconds)}s`;
+	}
+	if (seconds < 3600) {
+		return `${Math.round(seconds / 60)}m`;
+	}
 	return `${(seconds / 3600).toFixed(1)}h`;
 }
 
@@ -96,7 +100,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
 				</div>
 				<Select
 					value={String(trendDays)}
-					onValueChange={(v) => setTrendDays(parseInt(v, 10))}
+					onValueChange={(v) => setTrendDays(Number.parseInt(v, 10))}
 				>
 					<SelectTrigger className="w-[140px]">
 						<SelectValue placeholder="Time range" />
@@ -228,7 +232,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
 						<CardContent>
 							{trendLoading ? (
 								<Skeleton className="h-[200px] w-full" />
-							) : passRateTrend?.trend.length === 0 ? (
+							) : (passRateTrend?.trend.length === 0 ? (
 								<div className="text-center py-12 text-muted-foreground">
 									<BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
 									<p>No test run data available</p>
@@ -283,7 +287,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
 										</div>
 									</div>
 								</div>
-							)}
+							))}
 						</CardContent>
 					</Card>
 
@@ -455,7 +459,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
 							<CardContent>
 								{defectLoading ? (
 									<Skeleton className="h-[200px] w-full" />
-								) : defectDensity?.topFailingTests.length === 0 ? (
+								) : (defectDensity?.topFailingTests.length === 0 ? (
 									<div className="text-center py-8 text-muted-foreground">
 										<CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-green-500" />
 										<p>No failing tests</p>
@@ -487,7 +491,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
 												))}
 										</TableBody>
 									</Table>
-								)}
+								))}
 							</CardContent>
 						</Card>
 
@@ -570,7 +574,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
 						<CardContent>
 							{historyLoading ? (
 								<Skeleton className="h-[300px] w-full" />
-							) : executionHistory?.runs.length === 0 ? (
+							) : (executionHistory?.runs.length === 0 ? (
 								<div className="text-center py-12 text-muted-foreground">
 									<Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
 									<p>No test runs in the selected period</p>
@@ -630,7 +634,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
 										))}
 									</TableBody>
 								</Table>
-							)}
+							))}
 						</CardContent>
 					</Card>
 				</TabsContent>

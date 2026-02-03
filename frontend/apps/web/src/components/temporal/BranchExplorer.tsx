@@ -26,16 +26,21 @@ export interface BranchExplorerProps {
 
 function getStatusColor(status: Branch["status"]) {
 	switch (status) {
-		case "active":
+		case "active": {
 			return "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300";
-		case "review":
+		}
+		case "review": {
 			return "bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300";
-		case "merged":
+		}
+		case "merged": {
 			return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
-		case "abandoned":
+		}
+		case "abandoned": {
 			return "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300";
-		default:
+		}
+		default: {
 			return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
+		}
 	}
 }
 
@@ -124,7 +129,9 @@ export function BranchExplorer({
 						className="flex-1 min-w-0"
 						onClick={() => onBranchChange(branch.id)}
 						onKeyDown={(e) => {
-							if (e.key === "Enter") onBranchChange(branch.id);
+							if (e.key === "Enter") {
+								onBranchChange(branch.id);
+							}
 						}}
 						role="button"
 						tabIndex={0}

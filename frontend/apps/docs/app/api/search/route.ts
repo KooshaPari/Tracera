@@ -17,10 +17,10 @@ import { source } from '@/source';
  */
 export const { GET } = createSearchAPI('advanced', {
   indexes: source.getPages().map((page) => ({
-    title: page.data.title,
     description: page.data.description ?? '',
-    structuredData: page.data.structuredData,
     id: page.url,
+    structuredData: page.data.structuredData,
+    title: page.data.title,
     url: page.url,
   })),
 });

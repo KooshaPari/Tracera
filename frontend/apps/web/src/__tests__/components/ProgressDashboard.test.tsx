@@ -13,13 +13,12 @@ import { ProgressDashboard } from "../../components/temporal/ProgressDashboard";
 
 // Mock data
 const mockMilestone: Milestone = {
-	id: "1",
-	projectId: "proj-1",
-	name: "v1.0 Release",
-	slug: "v1-0-release",
-	targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-	status: "in_progress" satisfies MilestoneStatus,
+	createdAt: new Date().toISOString(),
 	health: "green" satisfies HealthStatus,
+	id: "1",
+	itemCount: 10,
+	itemIds: ["item-1", "item-2"],
+	name: "v1.0 Release",
 	progress: {
 		totalItems: 10,
 		completedItems: 7,
@@ -28,72 +27,73 @@ const mockMilestone: Milestone = {
 		notStartedItems: 1,
 		percentage: 70,
 	},
-	itemIds: ["item-1", "item-2"],
-	itemCount: 10,
-	createdAt: new Date().toISOString(),
+	projectId: "proj-1",
+	slug: "v1-0-release",
+	status: "in_progress" satisfies MilestoneStatus,
+	targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
 	updatedAt: new Date().toISOString(),
 };
 
 const mockSprint: Sprint = {
+	addedPoints: 0,
+	completedItemIds: [],
+	completedPoints: 35,
+	createdAt: new Date().toISOString(),
+	durationDays: 14,
+	endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+	health: "green" satisfies HealthStatus,
 	id: "sprint-1",
-	projectId: "proj-1",
+	itemCount: 10,
+	itemIds: [],
 	name: "Sprint 1",
+	plannedPoints: 50,
+	projectId: "proj-1",
+	remainingPoints: 15,
+	removedPoints: 0,
 	slug: "sprint-1",
 	startDate: new Date().toISOString(),
-	endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-	durationDays: 14,
 	status: "active" satisfies SprintStatus,
-	health: "green" satisfies HealthStatus,
-	plannedPoints: 50,
-	completedPoints: 35,
-	remainingPoints: 15,
-	addedPoints: 0,
-	removedPoints: 0,
-	itemIds: [],
-	itemCount: 10,
-	completedItemIds: [],
-	createdAt: new Date().toISOString(),
 	updatedAt: new Date().toISOString(),
 };
 
 const mockMetrics: ProjectMetrics = {
-	totalItems: 100,
-	byStatus: {
-		todo: 40,
-		in_progress: 30,
-		done: 30,
-	},
+	atRiskCount: 3,
+	blockedCount: 2,
+	byLifecycle: {},
 	byPriority: {
 		critical: 10,
 		high: 20,
 		medium: 40,
 		low: 30,
 	},
+	byStatus: {
+		todo: 40,
+		in_progress: 30,
+		done: 30,
+	},
 	byType: {},
-	byLifecycle: {},
-	completedThisWeek: 10,
 	completedLastWeek: 8,
-	velocity: 10 / 7,
-	blockedCount: 2,
-	atRiskCount: 3,
+	completedThisWeek: 10,
 	overdueCount: 1,
+	totalItems: 100,
+	velocity: 10 / 7,
 };
 
 const mockSnapshot: ProgressSnapshot = {
+	createdAt: new Date().toISOString(),
 	id: "snapshot-1",
+	metrics: mockMetrics as any,
 	projectId: "proj-1",
 	snapshotDate: new Date().toISOString(),
-	metrics: mockMetrics as any,
-	createdAt: new Date().toISOString(),
 };
 
-describe("ProgressDashboard", () => {
+describe(ProgressDashboard, () => {
 	const defaultProps = {
-		projectId: "proj-1",
-		milestones: [mockMilestone],
-		sprints: [mockSprint],
-		snapshots: [mockSnapshot],
 		metrics: mockMetrics,
+		milestones: [mockMilestone],
+		projectId: "proj-1",
+		snapshots: [mockSnapshot],
+		sprints: [mockSprint],
 	};
 
 	it("renders dashboard with summary cards", () => {

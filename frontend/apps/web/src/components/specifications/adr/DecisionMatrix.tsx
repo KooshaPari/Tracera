@@ -64,14 +64,18 @@ export function DecisionMatrix({
 	// Sort options
 	const sortedOptions = [...options].toSorted((a, b) => {
 		switch (sortBy) {
-			case "chosen":
-				return a.isChosen ? -1 : b.isChosen ? 1 : 0;
-			case "pros":
+			case "chosen": {
+				return a.isChosen ? -1 : (b.isChosen ? 1 : 0);
+			}
+			case "pros": {
 				return (b.pros?.length || 0) - (a.pros?.length || 0);
-			case "cons":
+			}
+			case "cons": {
 				return (a.cons?.length || 0) - (b.cons?.length || 0);
-			default:
+			}
+			default: {
 				return 0;
+			}
 		}
 	});
 
@@ -209,9 +213,9 @@ export function DecisionMatrix({
 												className={`text-sm font-bold ${
 													calculateScore(option) > 0
 														? "text-green-600"
-														: calculateScore(option) < 0
+														: (calculateScore(option) < 0
 															? "text-red-600"
-															: "text-muted-foreground"
+															: "text-muted-foreground")
 												}`}
 											>
 												{calculateScore(option) > 0 ? "+" : ""}

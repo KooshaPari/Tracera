@@ -45,7 +45,9 @@ import { getProjectDisplayName } from "@/lib/project-name-utils";
 import { cn } from "@/lib/utils";
 
 function formatProjectDate(value: string | null | undefined): string {
-	if (value == null || value === "") {return "—";}
+	if (value == null || value === "") {
+		return "—";
+	}
 	const d = new Date(value);
 	return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
 }
@@ -107,7 +109,9 @@ export function ProjectDetailView() {
 			}
 			return;
 		}
-		if (lastSyncedProjectIdRef.current === project.id) {return;}
+		if (lastSyncedProjectIdRef.current === project.id) {
+			return;
+		}
 		lastSyncedProjectIdRef.current = project.id;
 		setCurrentProject(project);
 	}, [project?.id, project, setCurrentProject]);
@@ -252,17 +256,25 @@ export function ProjectDetailView() {
 						icon: Network,
 						label: "Active Links",
 						sub: "Traceability links",
-						value: typeof linksTotal === "number" ? linksTotal.toLocaleString() : String(linksTotal),
+						value:
+							typeof linksTotal === "number"
+								? linksTotal.toLocaleString()
+								: String(linksTotal),
 					},
 					{
 						color: "text-green-500",
 						icon: Layers,
 						label: "Total Items",
 						sub: "Across all types",
-						value: typeof itemsTotal === "number" ? itemsTotal.toLocaleString() : String(itemsTotal),
+						value:
+							typeof itemsTotal === "number"
+								? itemsTotal.toLocaleString()
+								: String(itemsTotal),
 					},
 					{
-						color: stats.byStatus["blocked"] ? "text-red-500" : "text-emerald-500",
+						color: stats.byStatus["blocked"]
+							? "text-red-500"
+							: "text-emerald-500",
 						icon: AlertCircle,
 						label: "Risk Level",
 						sub: `${stats.byStatus["blocked"] || 0} Blockers`,

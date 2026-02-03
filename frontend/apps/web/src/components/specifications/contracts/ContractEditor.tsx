@@ -69,27 +69,32 @@ export function ContractEditor({
 	const [newTransition, setNewTransition] = useState<
 		Partial<ContractTransition>
 	>({
+		actions: [],
 		fromState: "",
+		guards: [],
 		toState: "",
 		trigger: "",
-		guards: [],
-		actions: [],
 	});
 	const [newState, setNewState] = useState("");
 
-	const handleChange = (field: keyof Contract, value: Contract[typeof field]) => {
+	const handleChange = (
+		field: keyof Contract,
+		value: Contract[typeof field],
+	) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
 	};
 
 	const addCondition = (
 		type: "preconditions" | "postconditions" | "invariants",
 	) => {
-		if (!newCondition.description?.trim()) return;
+		if (!newCondition.description?.trim()) {
+			return;
+		}
 
 		const condition = {
-			id: `cond_${Date.now()}`,
 			description: newCondition.description,
 			expression: newCondition.expression,
+			id: `cond_${Date.now()}`,
 			isRequired: newCondition.isRequired ?? true,
 		} as ContractCondition;
 
@@ -112,7 +117,9 @@ export function ContractEditor({
 	};
 
 	const addState = () => {
-		if (!newState.trim()) return;
+		if (!newState.trim()) {
+			return;
+		}
 
 		setFormData((prev) => ({
 			...prev,
@@ -134,16 +141,17 @@ export function ContractEditor({
 			!newTransition.fromState ||
 			!newTransition.toState ||
 			!newTransition.trigger
-		)
+		) {
 			return;
+		}
 
 		const transition = {
-			id: `trans_${Date.now()}`,
+			actions: newTransition.actions,
 			fromState: newTransition.fromState,
+			guards: newTransition.guards,
+			id: `trans_${Date.now()}`,
 			toState: newTransition.toState,
 			trigger: newTransition.trigger,
-			guards: newTransition.guards,
-			actions: newTransition.actions,
 		} as ContractTransition;
 
 		setFormData((prev) => ({
@@ -152,11 +160,11 @@ export function ContractEditor({
 		}));
 
 		setNewTransition({
+			actions: [],
 			fromState: "",
+			guards: [],
 			toState: "",
 			trigger: "",
-			guards: [],
-			actions: [],
 		});
 	};
 

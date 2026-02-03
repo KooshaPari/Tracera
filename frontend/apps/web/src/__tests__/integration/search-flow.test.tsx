@@ -32,7 +32,7 @@ describe("Search Flow Integration", () => {
 
 		// Verify search text was set
 		expect(result.current.query.q).toBe("test");
-	}, 10000);
+	}, 10_000);
 
 	it("should handle pagination", async () => {
 		const { result } = renderHook(() => useSearch(), {
@@ -51,7 +51,7 @@ describe("Search Flow Integration", () => {
 
 		// Verify pagination state changed
 		expect(result.current.query.page).toBe(2);
-	}, 10000);
+	}, 10_000);
 
 	it("should handle search clear", async () => {
 		const { result } = renderHook(() => useSearch(), {
@@ -70,9 +70,9 @@ describe("Search Flow Integration", () => {
 		});
 
 		expect(result.current.query).toEqual({
-			q: "",
 			page: 1,
 			per_page: 20,
+			q: "",
 		});
 	});
 
@@ -83,8 +83,8 @@ describe("Search Flow Integration", () => {
 
 		act(() => {
 			result.current.updateQuery({
-				types: ["feature"],
 				statuses: ["in_progress" as ItemStatus],
+				types: ["feature"],
 			});
 		});
 

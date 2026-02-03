@@ -30,14 +30,14 @@ vi.mock("../../hooks/useLinks", () => ({
 	useLinks: vi.fn(),
 }));
 
-describe("TraceabilityMatrixView", () => {
+describe(TraceabilityMatrixView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -46,16 +46,16 @@ describe("TraceabilityMatrixView", () => {
 	it("renders traceability matrix interface", () => {
 		vi.mocked(useItems).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -73,16 +73,16 @@ describe("TraceabilityMatrixView", () => {
 	it("displays loading state", () => {
 		vi.mocked(useItems).mockReturnValue({
 			data: undefined,
-			isLoading: true,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: true,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: undefined,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -112,16 +112,16 @@ describe("TraceabilityMatrixView", () => {
 
 		vi.mocked(useItems).mockReturnValue({
 			data: [...requirements, ...features],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: links,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -137,16 +137,16 @@ describe("TraceabilityMatrixView", () => {
 	it("shows export button", () => {
 		vi.mocked(useItems).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -161,16 +161,16 @@ describe("TraceabilityMatrixView", () => {
 	it("handles empty state", () => {
 		vi.mocked(useItems).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(

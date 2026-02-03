@@ -248,15 +248,15 @@ export type ItemLifecycle =
  * Lifecycle transition rules
  */
 export const LIFECYCLE_TRANSITIONS: Record<ItemLifecycle, ItemLifecycle[]> = {
-	idea: ["proposed", "retired"],
-	proposed: ["planned", "retired"],
-	planned: ["in_progress", "retired"],
-	in_progress: ["implemented", "planned", "retired"],
-	implemented: ["verified", "in_progress", "retired"],
-	verified: ["released", "implemented", "retired"],
-	released: ["deprecated"],
 	deprecated: ["retired", "released"],
+	idea: ["proposed", "retired"],
+	implemented: ["verified", "in_progress", "retired"],
+	in_progress: ["implemented", "planned", "retired"],
+	planned: ["in_progress", "retired"],
+	proposed: ["planned", "retired"],
+	released: ["deprecated"],
 	retired: [],
+	verified: ["released", "implemented", "retired"],
 };
 
 // =============================================================================
@@ -601,12 +601,12 @@ export function getLifecycleColor(lifecycle: ItemLifecycle): string {
  */
 export function getBranchTypeIcon(branchType: BranchType): string {
 	const icons: Record<BranchType, string> = {
+		archive: "Archive",
+		experiment: "Flask",
+		feature: "Sparkles",
+		hotfix: "Zap",
 		main: "GitBranch",
 		release: "Tag",
-		feature: "Sparkles",
-		experiment: "Flask",
-		hotfix: "Zap",
-		archive: "Archive",
 	};
 	return icons[branchType];
 }

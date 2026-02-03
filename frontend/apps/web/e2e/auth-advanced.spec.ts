@@ -111,9 +111,9 @@ test.describe("Advanced Authentication Flows", () => {
 			await page.waitForURL("/");
 
 			// Verify persistent session in localStorage
-			const rememberMe = await page.evaluate(() => {
-				return localStorage.getItem("rememberMe");
-			});
+			const rememberMe = await page.evaluate(() =>
+				localStorage.getItem("rememberMe"),
+			);
 			expect(rememberMe).toBe("true");
 		});
 	});
@@ -140,9 +140,9 @@ test.describe("Advanced Authentication Flows", () => {
 			await expect(page).toHaveURL("/auth/login");
 
 			// Session should be cleared
-			const token = await page.evaluate(() => {
-				return localStorage.getItem("authToken");
-			});
+			const token = await page.evaluate(() =>
+				localStorage.getItem("authToken"),
+			);
 			expect(token).toBeNull();
 		});
 
@@ -177,13 +177,11 @@ test.describe("Advanced Authentication Flows", () => {
 			await page.waitForURL("/auth/login");
 
 			// Verify all session data is cleared
-			const sessionData = await page.evaluate(() => {
-				return {
-					token: localStorage.getItem("authToken"),
-					user: localStorage.getItem("user"),
-					session: sessionStorage.getItem("session"),
-				};
-			});
+			const sessionData = await page.evaluate(() => ({
+				session: sessionStorage.getItem("session"),
+				token: localStorage.getItem("authToken"),
+				user: localStorage.getItem("user"),
+			}));
 
 			expect(sessionData.token).toBeNull();
 			expect(sessionData.user).toBeNull();
@@ -201,18 +199,18 @@ test.describe("Advanced Authentication Flows", () => {
 			await page.waitForURL("/");
 
 			// Get auth token
-			const tokenBefore = await page.evaluate(() => {
-				return localStorage.getItem("authToken");
-			});
+			const tokenBefore = await page.evaluate(() =>
+				localStorage.getItem("authToken"),
+			);
 
 			// Reload page
 			await page.reload();
 			await page.waitForLoadState("networkidle");
 
 			// Should still be authenticated
-			const tokenAfter = await page.evaluate(() => {
-				return localStorage.getItem("authToken");
-			});
+			const tokenAfter = await page.evaluate(() =>
+				localStorage.getItem("authToken"),
+			);
 			expect(tokenAfter).toBe(tokenBefore);
 
 			// User menu should still be visible
@@ -261,8 +259,8 @@ test.describe("Advanced Authentication Flows", () => {
 			await page.route("**/api/auth/refresh", (route) => {
 				_refreshRequested = true;
 				void route.fulfill({
-					status: 200,
 					body: JSON.stringify({ token: "new-token" }),
+					status: 200,
 				});
 			});
 
@@ -272,9 +270,9 @@ test.describe("Advanced Authentication Flows", () => {
 
 			// Token should have been refreshed (in real implementation)
 			// This is a simplified check
-			const token = await page.evaluate(() => {
-				return localStorage.getItem("authToken");
-			});
+			const token = await page.evaluate(() =>
+				localStorage.getItem("authToken"),
+			);
 			expect(token).toBeTruthy();
 		});
 
@@ -438,7 +436,7 @@ test.describe("Advanced Authentication Flows", () => {
 
 			// Should show multiple errors
 			const errors = page.locator(".error");
-			await expect(errors).toHaveCount(4); // email, password, confirm, name
+			await expect(errors).toHaveCount(4); // Email, password, confirm, name
 		});
 
 		test("should enforce terms acceptance", async ({ page }) => {
@@ -539,9 +537,7 @@ test.describe("Advanced Authentication Flows", () => {
 			await page.waitForURL("/");
 
 			// Password should never be stored
-			const storage = await page.evaluate(() => {
-				return JSON.stringify(localStorage);
-			});
+			const storage = await page.evaluate(() => JSON.stringify(localStorage));
 
 			expect(storage).not.toContain("password123");
 		});

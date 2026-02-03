@@ -30,8 +30,8 @@ export function useTableKeyboardNavigation({
 	containerId,
 }: UseTableKeyboardNavigationProps) {
 	const [focusState, setFocusState] = useState<FocusState>({
-		rowIndex: 0,
 		colIndex: 0,
+		rowIndex: 0,
 	});
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -39,18 +39,24 @@ export function useTableKeyboardNavigation({
 	const getFocusableElement = useCallback(
 		(rowIdx: number, colIdx: number): HTMLElement | null => {
 			if (containerId) {
-				const container = document.getElementById(containerId);
-				if (!container) return null;
+				const container = document.querySelector(`#${containerId}`);
+				if (!container) {
+					return null;
+				}
 
 				const row = container.querySelector(
 					`[data-row-index="${rowIdx}"]`,
 				) as HTMLElement | null;
-				if (!row) return null;
+				if (!row) {
+					return null;
+				}
 
 				const cell = row.querySelector(
 					`[data-col-index="${colIdx}"]`,
 				) as HTMLElement | null;
-				if (!cell) return null;
+				if (!cell) {
+					return null;
+				}
 
 				// Find focusable element within cell
 				const focusable = cell.querySelector(
@@ -153,8 +159,8 @@ export function useTableKeyboardNavigation({
 
 				// Update focus state
 				setFocusState({
-					rowIndex: newRowIndex,
 					colIndex: newColIndex,
+					rowIndex: newRowIndex,
 				});
 
 				// Call callback if provided
@@ -180,10 +186,12 @@ export function useTableKeyboardNavigation({
 	// Setup event listeners
 	useEffect(() => {
 		const container = containerId
-			? document.getElementById(containerId)
+			? document.querySelector(`#${containerId}`)
 			: containerRef.current;
 
-		if (!container) return;
+		if (!container) {
+			return;
+		}
 
 		container.addEventListener("keydown", handleKeyDown);
 
@@ -193,9 +201,9 @@ export function useTableKeyboardNavigation({
 	}, [containerId, handleKeyDown]);
 
 	return {
+		containerRef,
 		focusState,
 		setFocusState,
-		containerRef,
 	};
 }
 
@@ -204,7 +212,7 @@ export function useTableKeyboardNavigation({
  */
 function announceToScreenReader(message: string) {
 	// Get or create live region
-	let liveRegion = document.getElementById("table-announcements");
+	let liveRegion = document.querySelector("#table-announcements");
 	if (!liveRegion) {
 		liveRegion = document.createElement("div");
 		liveRegion.id = "table-announcements";
@@ -212,7 +220,7 @@ function announceToScreenReader(message: string) {
 		liveRegion.setAttribute("aria-live", "polite");
 		liveRegion.setAttribute("aria-atomic", "true");
 		liveRegion.className = "sr-only";
-		document.body.appendChild(liveRegion);
+		document.body.append(liveRegion);
 	}
 
 	liveRegion.textContent = message;
@@ -232,7 +240,9 @@ export function useRovingTabindex(
 	// Set roving tabindex
 	useEffect(() => {
 		itemsRef.current.forEach((item, index) => {
-			if (!item) return;
+			if (!item) {
+				return;
+			}
 			item.tabIndex = index === focusedIndex ? 0 : -1;
 		});
 	}, [focusedIndex]);
@@ -286,8 +296,8 @@ export function useRovingTabindex(
 
 	return {
 		focusedIndex,
-		setFocusedIndex,
-		itemsRef,
 		handleKeyDown,
+		itemsRef,
+		setFocusedIndex,
 	};
 }

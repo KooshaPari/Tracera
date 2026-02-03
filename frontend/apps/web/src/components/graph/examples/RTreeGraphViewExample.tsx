@@ -15,13 +15,8 @@
  */
 
 import { useCallback, useMemo, useState } from "react";
-import ReactFlow, {
-	Background,
-	Controls,
-	MiniMap,
-	Panel,
-	type ReactFlowInstance,
-} from "reactflow";
+import ReactFlow, { Background, Controls, MiniMap, Panel } from "reactflow";
+import type { ReactFlowInstance } from "reactflow";
 import "reactflow/dist/style.css";
 
 import {
@@ -29,11 +24,11 @@ import {
 	useRTreeViewportCulling,
 } from "@/hooks/useRTreeViewportCulling";
 import type { Edge } from "@/lib/spatialIndex";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 interface RTreeGraphViewExampleProps {
 	edges: Edge[];
-	nodes: Array<{ id: string; label: string; x: number; y: number }>;
+	nodes: { id: string; label: string; x: number; y: number }[];
 }
 
 /**
@@ -55,15 +50,16 @@ export function RTreeGraphViewExample({
 	const [showStats, setShowStats] = useState(true);
 
 	// R-tree viewport culling (O(log n))
-	const { cullableEdges, cullingStats, spatialIndex } =
-		useRTreeViewportCulling({
+	const { cullableEdges, cullingStats, spatialIndex } = useRTreeViewportCulling(
+		{
 			edges,
-			nodes,
-			reactFlowInstance,
 			enabled: true,
+			minEdgesForRTree: 10000,
+			nodes,
 			padding: 100,
-			minEdgesForRTree: 10000, // Use R-tree for >10k edges
-		});
+			reactFlowInstance, // Use R-tree for >10k edges
+		},
+	);
 
 	// Detailed statistics
 	const stats = useRTreeCullingStats(cullingStats);
@@ -85,9 +81,7 @@ export function RTreeGraphViewExample({
 					<Panel position="top-right" className="bg-white p-4 rounded shadow">
 						<div className="space-y-2 text-sm">
 							<div className="flex items-center justify-between gap-8">
-								<h3 className="font-bold text-lg">
-									R-tree Performance
-								</h3>
+								<h3 className="font-bold text-lg">R-tree Performance</h3>
 								<button
 									type="button"
 									onClick={() => setShowStats(false)}
@@ -147,9 +141,9 @@ export function RTreeGraphViewExample({
 										className={`font-mono ${
 											stats.queryTimeMs < 1
 												? "text-green-600"
-												: stats.queryTimeMs < 5
+												: (stats.queryTimeMs < 5
 													? "text-yellow-600"
-													: "text-red-600"
+													: "text-red-600")
 										}`}
 									>
 										{stats.queryTimeMs.toFixed(3)}ms
@@ -187,7 +181,7 @@ export function RTreeGraphViewExample({
 												Excellent
 											</span>
 										</>
-									) : stats.queryTimeMs < 5 ? (
+									) : (stats.queryTimeMs < 5 ? (
 										<>
 											<span className="text-yellow-600">⚠️</span>
 											<span className="text-yellow-600 font-semibold">
@@ -197,23 +191,17 @@ export function RTreeGraphViewExample({
 									) : (
 										<>
 											<span className="text-red-600">🐌</span>
-											<span className="text-red-600 font-semibold">
-												Slow
-											</span>
+											<span className="text-red-600 font-semibold">Slow</span>
 										</>
-									)}
+									))}
 								</div>
 							</div>
 
 							{/* Spatial Index Info */}
 							{spatialIndex && (
 								<div className="border-t pt-2 text-xs text-gray-500">
-									<div>
-										Index: {spatialIndex.getStats().memoryEstimate}
-									</div>
-									<div>
-										Depth: {spatialIndex.getStats().treeDepth}
-									</div>
+									<div>Index: {spatialIndex.getStats().memoryEstimate}</div>
+									<div>Depth: {spatialIndex.getStats().treeDepth}</div>
 								</div>
 							)}
 						</div>
@@ -251,9 +239,9 @@ export function SimpleRTreeIntegration({
 	// Just add this hook!
 	const { cullableEdges } = useRTreeViewportCulling({
 		edges,
+		enabled: true,
 		nodes,
 		reactFlowInstance,
-		enabled: true,
 	});
 
 	return (
@@ -279,27 +267,30 @@ export function RTreeWithMonitoring({
 	const [reactFlowInstance, setReactFlowInstance] =
 		useState<ReactFlowInstance | null>(null);
 
-	const handleStatsChange = useCallback((stats: { nodeCount: number; edgeCount: number; fps: number }) => {
-		// Log to analytics
-		logger.info("Culling stats:", {
-			visible: stats.visibleEdges,
-			culled: stats.culledEdges,
-			ratio: stats.cullingRatio,
-			queryTime: stats.queryTimeMs,
-		});
+	const handleStatsChange = useCallback(
+		(stats: { nodeCount: number; edgeCount: number; fps: number }) => {
+			// Log to analytics
+			logger.info("Culling stats:", {
+				culled: stats.culledEdges,
+				queryTime: stats.queryTimeMs,
+				ratio: stats.cullingRatio,
+				visible: stats.visibleEdges,
+			});
 
-		// Send to monitoring service
-		if (stats.queryTimeMs > 5) {
-			logger.warn("Slow viewport culling detected!");
-		}
-	}, []);
+			// Send to monitoring service
+			if (stats.queryTimeMs > 5) {
+				logger.warn("Slow viewport culling detected!");
+			}
+		},
+		[],
+	);
 
 	const { cullableEdges } = useRTreeViewportCulling({
 		edges,
-		nodes,
-		reactFlowInstance,
 		enabled: true,
+		nodes,
 		onStatsChange: handleStatsChange,
+		reactFlowInstance,
 	});
 
 	return (
@@ -317,27 +308,27 @@ export function RTreeWithMonitoring({
 /**
  * Generate large test data for demonstration
  */
-export function generateLargeGraph(numEdges: number = 100000): {
+export function generateLargeGraph(numEdges = 100_000): {
 	edges: Edge[];
-	nodes: Array<{ id: string; label: string; x: number; y: number }>;
+	nodes: { id: string; label: string; x: number; y: number }[];
 } {
-	const nodes: Array<{ id: string; label: string; x: number; y: number }> = [];
+	const nodes: { id: string; label: string; x: number; y: number }[] = [];
 	const edges: Edge[] = [];
 
 	// Create nodes in a grid
 	const gridSize = Math.ceil(Math.sqrt(numEdges * 2));
-	for (let i = 0; i < gridSize; i++) {
-		for (let j = 0; j < gridSize; j++) {
+	for (let i = 0; i < gridSize; i += 1) {
+		for (let j = 0; j < gridSize; j += 1) {
 			nodes.push({
+				data: { label: `${i},${j}` },
 				id: `node-${i}-${j}`,
 				position: { x: i * 100, y: j * 100 },
-				data: { label: `${i},${j}` },
 			});
 		}
 	}
 
 	// Create edges between adjacent nodes
-	for (let i = 0; i < Math.min(numEdges, nodes.length - 1); i++) {
+	for (let i = 0; i < Math.min(numEdges, nodes.length - 1); i += 1) {
 		edges.push({
 			id: `edge-${i}`,
 			source: nodes[i].id,
@@ -352,7 +343,7 @@ export function generateLargeGraph(numEdges: number = 100000): {
  * Demo component showing performance difference
  */
 export function RTreePerformanceDemo() {
-	const [graphSize, setGraphSize] = useState(10000);
+	const [graphSize, setGraphSize] = useState(10_000);
 	const { edges, nodes } = useMemo(
 		() => generateLargeGraph(graphSize),
 		[graphSize],
@@ -372,12 +363,11 @@ export function RTreePerformanceDemo() {
 						max="100000"
 						step="1000"
 						value={graphSize}
-						onChange={(e) =>
-							setGraphSize(Number.parseInt(e.target.value))}
+						onChange={(e) => setGraphSize(Number.parseInt(e.target.value))}
 						className="w-64"
 					/>
 					<div className="text-sm text-gray-600">
-						{graphSize >= 10000
+						{graphSize >= 10_000
 							? "✅ Using R-tree (O(log n))"
 							: "❌ Linear search (O(n))"}
 					</div>

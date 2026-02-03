@@ -13,10 +13,10 @@ function Register() {
 	useEffect(() => {
 		if (user) {
 			// Already logged in, redirect to home
-			window.location.href = "/home";
+			globalThis.location.href = "/home";
 		} else {
 			// Not logged in, immediately redirect to WorkOS signup
-			void signUp();
+			undefined;
 		}
 	}, [user, signUp]);
 

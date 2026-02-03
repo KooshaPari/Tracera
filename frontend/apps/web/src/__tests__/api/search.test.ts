@@ -19,14 +19,14 @@ describe("Search API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchSearchResults", () => {
+	describe(fetchSearchResults, () => {
 		it("should fetch search results", async () => {
 			const mockResult = {
 				items: [],
-				total: 0,
-				query: "test",
 				page: 1,
 				per_page: 10,
+				query: "test",
+				total: 0,
 			};
 			vi.mocked(searchApi.search).mockResolvedValue(mockResult);
 
@@ -38,19 +38,19 @@ describe("Search API", () => {
 		it("should handle complex search queries", async () => {
 			const mockResult = {
 				items: [],
-				total: 0,
-				query: "complex search",
 				page: 1,
 				per_page: 20,
+				query: "complex search",
+				total: 0,
 			};
 			vi.mocked(searchApi.search).mockResolvedValue(mockResult);
 
 			const query = {
-				q: "complex search",
-				type: "item",
-				projectId: "proj-1",
 				limit: 20,
 				offset: 0,
+				projectId: "proj-1",
+				q: "complex search",
+				type: "item",
 			};
 			const result = await fetchSearchResults(query);
 			expect(result).toEqual(mockResult);

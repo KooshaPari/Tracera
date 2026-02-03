@@ -24,12 +24,21 @@ function VelocityCustomTooltip({
 	payload,
 }: {
 	active?: boolean;
-	payload?: Array<{ payload: { period: string; planned: number; completed: number; velocity: number } }>;
+	payload?: {
+		payload: {
+			period: string;
+			planned: number;
+			completed: number;
+			velocity: number;
+		};
+	}[];
 }) {
-	if (active && payload && payload.length) {
+	if (active && payload && payload.length > 0) {
 		const first = payload[0];
 		const data = first?.payload;
-		if (!data) return null;
+		if (!data) {
+			return null;
+		}
 		return (
 			<div className="bg-white dark:bg-gray-800 p-3 rounded shadow-lg border border-gray-200 dark:border-gray-700">
 				<p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -54,12 +63,14 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
 	history = [],
 	height = 300,
 }) => {
-	const [data, setData] = useState<Array<{
-		period: string;
-		planned: number;
-		completed: number;
-		velocity: number;
-	}>>([]);
+	const [data, setData] = useState<
+		{
+			period: string;
+			planned: number;
+			completed: number;
+			velocity: number;
+		}[]
+	>([]);
 	const [trend, setTrend] = useState<"improving" | "stable" | "declining">(
 		"stable",
 	);
@@ -70,18 +81,18 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
 			const mockData = Array.from({ length: 12 }, (_, i) => {
 				const baseVelocity = 20 + Math.sin(i / 3) * 5;
 				return {
+					completed: Math.round(baseVelocity + Math.random() * 5),
 					period: `Sprint ${i + 1}`,
 					planned: Math.round(baseVelocity * (1 + Math.random() * 0.2)),
-					completed: Math.round(baseVelocity + Math.random() * 5),
 					velocity: Math.round(baseVelocity),
 				};
 			});
 			setData(mockData);
 		} else {
 			const chartData = history.map((point) => ({
+				completed: point.completedPoints,
 				period: point.periodLabel,
 				planned: point.plannedPoints,
-				completed: point.completedPoints,
 				velocity: point.velocity,
 			}));
 			setData(chartData);
@@ -108,9 +119,9 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
 	const trendColor =
 		trend === "improving"
 			? "#22c55e"
-			: trend === "declining"
+			: (trend === "declining"
 				? "#ef4444"
-				: "#eab308";
+				: "#eab308");
 
 	return (
 		<div className="w-full">
@@ -132,7 +143,7 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
 			<ResponsiveContainer width="100%" height={height}>
 				<ComposedChart
 					data={data}
-					margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+					margin={{ bottom: 5, left: 0, right: 30, top: 5 }}
 				>
 					<defs>
 						<linearGradient id="colorPlanned" x1="0" y1="0" x2="0" y2="1">
@@ -156,7 +167,7 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
 					<YAxis
 						stroke="#6b7280"
 						style={{ fontSize: "12px" }}
-						label={{ value: "Points", angle: -90, position: "insideLeft" }}
+						label={{ angle: -90, position: "insideLeft", value: "Points" }}
 					/>
 					<Tooltip content={<VelocityCustomTooltip />} />
 					<Legend wrapperStyle={{ paddingTop: "20px" }} />
@@ -186,7 +197,7 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
 						orientation="right"
 						stroke="#6b7280"
 						style={{ fontSize: "12px" }}
-						label={{ value: "Velocity", angle: 90, position: "insideRight" }}
+						label={{ angle: 90, position: "insideRight", value: "Velocity" }}
 					/>
 				</ComposedChart>
 			</ResponsiveContainer>

@@ -3,7 +3,7 @@
 // Features: image compression, presigned URL upload, progress tracking, error handling
 
 import type { Item } from "@tracertm/types";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import client from "@/api/client";
 
 const { getAuthHeaders } = client;
@@ -59,9 +59,9 @@ const THUMBNAIL_SIZES: Record<
 	ThumbnailSize,
 	{ width: number; height: number }
 > = {
-	small: { width: 150, height: 150 },
-	medium: { width: 300, height: 300 },
-	large: { width: 600, height: 600 },
+	large: { height: 600, width: 600 },
+	medium: { height: 300, width: 300 },
+	small: { height: 150, width: 150 },
 };
 
 /**
@@ -104,8 +104,8 @@ async function compressImage(
 			const canvas = document.createElement("canvas");
 
 			// Calculate dimensions while maintaining aspect ratio
-			let width = img.width;
-			let height = img.height;
+			let { width } = img;
+			let { height } = img;
 
 			if (width > maxWidth || height > maxHeight) {
 				const aspectRatio = width / height;
@@ -171,15 +171,20 @@ async function compressImage(
  */
 export async function captureComponentScreenshot(
 	element: HTMLElement,
-	width: number = 1200,
-	height: number = 800,
+	width = 1200,
+	height = 800,
 ): Promise<string> {
 	try {
 		// Dynamically import html2canvas (note: requires npm install html2canvas)
 		// For now, use a mock implementation or rely on server-side screenshots
-		let html2canvas: ((element: HTMLElement, options?: Record<string, unknown>) => Promise<HTMLCanvasElement>) | undefined;
+		let html2canvas:
+			| ((
+					element: HTMLElement,
+					options?: Record<string, unknown>,
+			  ) => Promise<HTMLCanvasElement>)
+			| undefined;
 		try {
-			// any: external library with incomplete type definitions
+			// Any: external library with incomplete type definitions
 			html2canvas = (await import("html2canvas")).default as any;
 		} catch {
 			// Fallback: return mock data URL if html2canvas not available
@@ -306,8 +311,8 @@ function dataUrlToFile(dataUrl: string, filename: string): File {
 	const n = bstr.length;
 	const u8arr = new Uint8Array(n);
 
-	for (let i = 0; i < n; i++) {
-		u8arr[i] = bstr.charCodeAt(i);
+	for (let i = 0; i < n; i += 1) {
+		u8arr[i] = bstr.codePointAt(i);
 	}
 
 	return new File([u8arr], filename, { type: mime });
@@ -322,26 +327,26 @@ async function getPresignedUploadUrl(
 ): Promise<{ uploadUrl: string; key: string }> {
 	try {
 		const response = await fetch("/api/v1/storage/presigned-upload", {
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-			credentials: "include",
 			body: JSON.stringify({
-				filename,
 				contentType,
+				filename,
 			}),
+			credentials: "include",
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		});
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
 			throw Object.assign(new Error("Failed to get upload URL"), {
 				code: "UPLOAD_FAILED" as const,
-				statusCode: response.status,
 				details: errorData.error || response.statusText,
+				statusCode: response.status,
 			});
 		}
 
 		const data = await response.json();
-		return { uploadUrl: data.uploadUrl, key: data.key };
+		return { key: data.key, uploadUrl: data.uploadUrl };
 	} catch (error) {
 		if (error instanceof Error && "code" in error) {
 			throw error;
@@ -381,8 +386,8 @@ async function uploadToS3(
 						new Error(`S3 upload failed with status ${xhr.status}`),
 						{
 							code: "UPLOAD_FAILED" as const,
-							statusCode: xhr.status,
 							details: xhr.responseText,
+							statusCode: xhr.status,
 						},
 					),
 				);
@@ -423,7 +428,7 @@ async function uploadToS3(
 export async function uploadScreenshot(
 	screenshotData: string,
 	componentId: string,
-	version: string = "v1",
+	version = "v1",
 	options: UploadOptions = {},
 ): Promise<{
 	url: string;
@@ -483,7 +488,7 @@ export async function uploadScreenshot(
 		const url = `/api/v1/storage/${key}`;
 		options.onProgress?.(100);
 
-		return { url, key, fileSize: file.size };
+		return { fileSize: file.size, key, url };
 	} catch (error) {
 		logger.error("Screenshot upload failed:", error);
 
@@ -507,17 +512,17 @@ export async function uploadScreenshot(
 export async function deleteScreenshot(key: string): Promise<void> {
 	try {
 		const response = await fetch(`/api/v1/storage/${key}`, {
-			method: "DELETE",
-			headers: getAuthHeaders(),
 			credentials: "include",
+			headers: getAuthHeaders(),
+			method: "DELETE",
 		});
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
 			throw Object.assign(new Error("Failed to delete screenshot"), {
 				code: "UPLOAD_FAILED" as const,
-				statusCode: response.status,
 				details: errorData.error || response.statusText,
+				statusCode: response.status,
 			});
 		}
 	} catch (error) {
@@ -573,10 +578,10 @@ export function getComponentScreenshots(
  */
 function generateContentHash(data: string): string {
 	let hash = 0;
-	for (let i = 0; i < data.length; i++) {
-		const char = data.charCodeAt(i);
+	for (let i = 0; i < data.length; i += 1) {
+		const char = data.codePointAt(i);
 		hash = (hash << 5) - hash + char;
-		hash = hash & hash; // Convert to 32-bit integer
+		hash &= hash; // Convert to 32-bit integer
 	}
 	return `hash_${Math.abs(hash)}`;
 }
@@ -594,7 +599,7 @@ function generateContentHash(data: string): string {
 export async function createScreenshot(
 	element: HTMLElement,
 	componentId: string,
-	version: string = "1.0.0",
+	version = "1.0.0",
 	versionType: "design" | "draft" | "review" | "release" = "draft",
 	options: UploadOptions = {},
 ): Promise<ScreenshotMetadata> {
@@ -671,7 +676,9 @@ export function screenshotNeedsUpdate(
 	existingMetadata: ScreenshotMetadata | undefined,
 	newContentHash: string,
 ): boolean {
-	if (!existingMetadata) return true;
+	if (!existingMetadata) {
+		return true;
+	}
 	return existingMetadata.contentHash !== newContentHash;
 }
 
@@ -683,19 +690,21 @@ export function screenshotNeedsUpdate(
  * @returns Promise resolving to array of screenshot metadata
  */
 export async function batchCaptureScreenshots(
-	elements: Array<{
+	elements: {
 		element: HTMLElement;
 		componentId: string;
 		version: string;
-	}>,
+	}[],
 	options: UploadOptions = {},
 ): Promise<ScreenshotMetadata[]> {
 	const results: ScreenshotMetadata[] = [];
 	const totalElements = elements.length;
 
-	for (let i = 0; i < elements.length; i++) {
+	for (let i = 0; i < elements.length; i += 1) {
 		const entry = elements[i];
-		if (!entry) continue;
+		if (!entry) {
+			continue;
+		}
 		const { element, componentId, version } = entry;
 
 		try {

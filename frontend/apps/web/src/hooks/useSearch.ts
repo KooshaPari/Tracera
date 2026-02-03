@@ -15,9 +15,9 @@ export function useSearch(initialQuery: Partial<SearchQuery> = {}) {
 	const debouncedQuery = useDebounce(query.q, 300);
 
 	const searchQuery = useQuery({
-		queryKey: ["search", { ...query, q: debouncedQuery }],
-		queryFn: () => api.search.search({ ...query, q: debouncedQuery }),
 		enabled: debouncedQuery.length > 0,
+		queryFn: () => api.search.search({ ...query, q: debouncedQuery }),
+		queryKey: ["search", { ...query, q: debouncedQuery }],
 	});
 
 	const updateQuery = useCallback((updates: Partial<SearchQuery>) => {
@@ -34,32 +34,32 @@ export function useSearch(initialQuery: Partial<SearchQuery> = {}) {
 
 	const clearSearch = useCallback(() => {
 		setQuery({
-			q: "",
 			page: 1,
 			per_page: 20,
+			q: "",
 		});
 	}, []);
 
 	return {
+		clearSearch,
+		error: searchQuery.error,
+		isError: searchQuery.isError,
+		isLoading: searchQuery.isLoading,
 		query,
 		results: searchQuery.data,
-		isLoading: searchQuery.isLoading,
-		isError: searchQuery.isError,
-		error: searchQuery.error,
-		updateQuery,
-		setSearchText,
 		setPage,
-		clearSearch,
+		setSearchText,
+		updateQuery,
 	};
 }
 
-export function useSearchSuggestions(q: string, limit: number = 10) {
+export function useSearchSuggestions(q: string, limit = 10) {
 	const debouncedQuery = useDebounce(q, 200);
 
 	return useQuery({
-		queryKey: ["search-suggestions", debouncedQuery, limit],
-		queryFn: () => api.search.suggest(debouncedQuery, limit),
 		enabled: debouncedQuery.length > 2,
+		queryFn: () => api.search.suggest(debouncedQuery, limit),
+		queryKey: ["search-suggestions", debouncedQuery, limit],
 		staleTime: 60000, // 1 minute
 	});
 }

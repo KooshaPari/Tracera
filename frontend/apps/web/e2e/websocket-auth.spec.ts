@@ -107,7 +107,7 @@ test.describe("WebSocket Authentication Security", () => {
 				(msg) => msg === "event" || msg === "created" || msg === "updated",
 			);
 
-			if (authIndex >= 0 && eventIndex >= 0) {
+			if (authIndex !== -1 && eventIndex !== -1) {
 				expect(authIndex).toBeLessThan(eventIndex);
 				console.log("✓ Auth response received before event messages");
 			}

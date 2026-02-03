@@ -31,7 +31,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // NOTE: These imports will work after installing dependencies
 // Commented out to prevent build errors before installation
 /*
-import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
+Import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
 import { useLayoutForceAtlas2 } from '@react-sigma/layout-forceatlas2';
 import Graph from 'graphology';
 import '@react-sigma/core/lib/react-sigma.min.css';
@@ -67,41 +67,41 @@ type LayoutAlgorithm = "force" | "circular" | "random" | "none";
  */
 function generateRandomGraph(
 	nodeCount: number,
-	avgDegree: number = 4,
+	avgDegree = 4,
 ): { items: Item[]; links: Link[] } {
 	const items: Item[] = [];
 	const links: Link[] = [];
 
 	// Generate nodes
-	for (let i = 0; i < nodeCount; i++) {
+	for (let i = 0; i < nodeCount; i += 1) {
 		items.push({
+			createdAt: new Date().toISOString(),
 			id: `node-${i}`,
 			projectId: "test",
 			title: `Node ${i}`,
 			type: ["feature", "requirement", "task", "test"][i % 4] as any,
-			view: "feature",
-			version: 1,
-			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
+			version: 1,
+			view: "feature",
 		});
 	}
 
 	// Generate edges (average degree)
 	const edgeCount = Math.floor((nodeCount * avgDegree) / 2);
-	for (let i = 0; i < edgeCount; i++) {
+	for (let i = 0; i < edgeCount; i += 1) {
 		const source = Math.floor(Math.random() * nodeCount);
 		const target = Math.floor(Math.random() * nodeCount);
 
 		if (source !== target) {
 			links.push({
+				createdAt: new Date().toISOString(),
 				id: `edge-${i}`,
 				projectId: "test",
 				sourceId: `node-${source}`,
 				targetId: `node-${target}`,
 				type: "relates_to" as any,
-				version: 1,
-				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
+				version: 1,
 			});
 		}
 	}
@@ -114,7 +114,7 @@ function generateRandomGraph(
 // =============================================================================
 
 /*
-function GraphDataController({
+Function GraphDataController({
   items,
   links,
   layout,
@@ -191,7 +191,7 @@ function GraphDataController({
 */
 
 /*
-function GraphEventController({
+Function GraphEventController({
   onNodeClick,
   onNodeHover,
 }: {
@@ -228,7 +228,7 @@ function GraphEventController({
 // =============================================================================
 
 /*
-function getColorForType(type: string): string {
+Function getColorForType(type: string): string {
 	const colors: Record<string, string> = {
 		feature: "#3b82f6", // blue
 		requirement: "#10b981", // green
@@ -245,20 +245,20 @@ function getColorForType(type: string): string {
 // PERFORMANCE MONITOR
 // =============================================================================
 
-function usePerformanceMonitor(
-	enabled: boolean,
-): PerformanceStats | undefined {
+function usePerformanceMonitor(enabled: boolean): PerformanceStats | undefined {
 	const [stats, setStats] = useState<PerformanceStats>();
 
 	useEffect(() => {
-		if (!enabled) return;
+		if (!enabled) {
+			return;
+		}
 
 		let frameCount = 0;
 		let lastTime = performance.now();
 		let rafId: number;
 
 		const measure = () => {
-			frameCount++;
+			frameCount += 1;
 			const now = performance.now();
 
 			if (now - lastTime >= 1000) {
@@ -268,10 +268,10 @@ function usePerformanceMonitor(
 				);
 
 				setStats((prev) => ({
+					edgeCount: prev?.edgeCount ?? 0,
 					fps,
 					memory,
 					nodeCount: prev?.nodeCount ?? 0,
-					edgeCount: prev?.edgeCount ?? 0,
 					renderTime: prev?.renderTime ?? 0,
 				}));
 
@@ -296,7 +296,7 @@ function usePerformanceMonitor(
 export function SigmaGraphView({
 	items,
 	links,
-}: Omit<SigmaGraphViewProps, 'onNodeClick' | 'onNodeHover'>) {
+}: Omit<SigmaGraphViewProps, "onNodeClick" | "onNodeHover">) {
 	const [showPerformance, _setShowPerformance] = useState(true);
 	const [_layout, _setLayout] = useState<LayoutAlgorithm>("random");
 	const [_isRunningLayout, _setIsRunningLayout] = useState(false);
@@ -313,7 +313,7 @@ export function SigmaGraphView({
 
 	// NOTE: Uncomment after installing dependencies
 	/*
-  return (
+  Return (
     <div className="h-full flex flex-col">
       <SigmaContainer
         style={{ height: '100%', width: '100%' }}
@@ -393,7 +393,7 @@ export function SigmaGraphView({
 // =============================================================================
 
 export function SigmaProofOfConcept() {
-	const [nodeCount, setNodeCount] = useState(10000);
+	const [nodeCount, setNodeCount] = useState(10_000);
 	const [avgDegree, setAvgDegree] = useState(4);
 	const [layout, setLayout] = useState<LayoutAlgorithm>("random");
 
@@ -463,7 +463,11 @@ export function SigmaProofOfConcept() {
 						<Badge
 							variant="outline"
 							className={
-								stats.fps >= 55 ? "bg-green-50" : stats.fps >= 30 ? "bg-yellow-50" : "bg-red-50"
+								stats.fps >= 55
+									? "bg-green-50"
+									: (stats.fps >= 30
+										? "bg-yellow-50"
+										: "bg-red-50")
 							}
 						>
 							FPS: <span className="font-mono font-bold ml-1">{stats.fps}</span>

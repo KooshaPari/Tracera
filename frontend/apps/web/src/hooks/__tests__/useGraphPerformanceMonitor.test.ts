@@ -2,22 +2,24 @@
  * Tests for useGraphPerformanceMonitor hook
  */
 
-import { renderHook, act, waitFor } from "@testing-library/react";
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	useGraphPerformanceMonitor,
 	createProfilerCallback,
 	perfMark,
-	type PerformanceMetrics,
-	type LODDistribution,
+	useGraphPerformanceMonitor,
+} from "../useGraphPerformanceMonitor";
+import type {
+	LODDistribution,
+	PerformanceMetrics,
 } from "../useGraphPerformanceMonitor";
 import type { CacheStatistics } from "../../lib/graphCache";
 
 // Mock data
 const mockNodes = Array.from({ length: 100 }, (_, i) => ({
 	id: `node-${i}`,
-	type: "requirement",
 	title: `Node ${i}`,
+	type: "requirement",
 }));
 
 const mockEdges = Array.from({ length: 150 }, (_, i) => ({
@@ -32,8 +34,8 @@ const mockVisibleEdges = mockEdges.slice(0, 75);
 
 const mockLODDistribution: LODDistribution = {
 	high: 10,
-	medium: 20,
 	low: 15,
+	medium: 20,
 	skeleton: 5,
 };
 
@@ -42,31 +44,31 @@ const mockCacheStats: {
 	grouping: CacheStatistics;
 	search: CacheStatistics;
 } = {
-	layout: {
-		totalEntries: 10,
-		maxEntries: 100,
-		totalHits: 80,
-		totalMisses: 20,
-		hitRatio: 0.8,
-		totalMemory: 1024000,
-		maxMemory: 52428800,
-		memoryUsagePercent: 2,
-		oldestEntry: { key: "layout:graph1:dagre", age: 300 },
-		newestEntry: { key: "layout:graph2:force", age: 5 },
-		entriesBySize: { tiny: 2, small: 5, medium: 3, large: 0 },
-	},
 	grouping: {
 		totalEntries: 5,
 		maxEntries: 50,
 		totalHits: 40,
 		totalMisses: 10,
 		hitRatio: 0.8,
-		totalMemory: 512000,
-		maxMemory: 26214400,
+		totalMemory: 512_000,
+		maxMemory: 26_214_400,
 		memoryUsagePercent: 2,
 		oldestEntry: { key: "grouping:graph1:type", age: 200 },
 		newestEntry: { key: "grouping:graph2:status", age: 10 },
 		entriesBySize: { tiny: 1, small: 3, medium: 1, large: 0 },
+	},
+	layout: {
+		totalEntries: 10,
+		maxEntries: 100,
+		totalHits: 80,
+		totalMisses: 20,
+		hitRatio: 0.8,
+		totalMemory: 1_024_000,
+		maxMemory: 52_428_800,
+		memoryUsagePercent: 2,
+		oldestEntry: { key: "layout:graph1:dagre", age: 300 },
+		newestEntry: { key: "layout:graph2:force", age: 5 },
+		entriesBySize: { tiny: 2, small: 5, medium: 3, large: 0 },
 	},
 	search: {
 		totalEntries: 8,
@@ -74,8 +76,8 @@ const mockCacheStats: {
 		totalHits: 60,
 		totalMisses: 15,
 		hitRatio: 0.8,
-		totalMemory: 256000,
-		maxMemory: 10485760,
+		totalMemory: 256_000,
+		maxMemory: 10_485_760,
 		memoryUsagePercent: 2,
 		oldestEntry: { key: "search:graph1:test", age: 100 },
 		newestEntry: { key: "search:graph2:node", age: 2 },
@@ -83,7 +85,7 @@ const mockCacheStats: {
 	},
 };
 
-describe("useGraphPerformanceMonitor", () => {
+describe(useGraphPerformanceMonitor, () => {
 	let originalEnv: string | undefined;
 
 	beforeEach(() => {
@@ -94,26 +96,26 @@ describe("useGraphPerformanceMonitor", () => {
 		process.env.NODE_ENV = "development";
 
 		// Mock sessionStorage
-		global.sessionStorage = {
-			getItem: vi.fn(() => null),
-			setItem: vi.fn(),
-			removeItem: vi.fn(),
+		globalThis.sessionStorage = {
 			clear: vi.fn(),
-			length: 0,
+			getItem: vi.fn(() => null),
 			key: vi.fn(),
+			length: 0,
+			removeItem: vi.fn(),
+			setItem: vi.fn(),
 		};
 
 		// Mock performance.now
 		vi.spyOn(performance, "now").mockReturnValue(1000);
 
 		// Mock requestAnimationFrame
-		global.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
+		globalThis.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
 			setTimeout(() => {
 				cb(0);
 			}, 16);
 			return 1;
 		});
-		global.cancelAnimationFrame = vi.fn();
+		globalThis.cancelAnimationFrame = vi.fn();
 	});
 
 	afterEach(() => {
@@ -128,11 +130,11 @@ describe("useGraphPerformanceMonitor", () => {
 	it("should initialize with null metrics", () => {
 		const { result } = renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
 				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
 				enabled: true,
+				nodes: mockNodes,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -145,11 +147,11 @@ describe("useGraphPerformanceMonitor", () => {
 
 		const { result } = renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
 				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
 				enabled: false,
+				nodes: mockNodes,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -159,14 +161,14 @@ describe("useGraphPerformanceMonitor", () => {
 	it("should collect performance metrics", async () => {
 		const { result } = renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
-				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
-				lodDistribution: mockLODDistribution,
 				cacheStats: mockCacheStats,
+				edges: mockEdges,
 				enabled: true,
+				lodDistribution: mockLODDistribution,
+				nodes: mockNodes,
 				reportInterval: 100,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -205,12 +207,12 @@ describe("useGraphPerformanceMonitor", () => {
 	it("should track FPS metrics", async () => {
 		const { result } = renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
 				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
 				enabled: true,
+				nodes: mockNodes,
 				reportInterval: 100,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -231,13 +233,13 @@ describe("useGraphPerformanceMonitor", () => {
 	it("should calculate cache hit rates correctly", async () => {
 		const { result } = renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
-				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
 				cacheStats: mockCacheStats,
+				edges: mockEdges,
 				enabled: true,
+				nodes: mockNodes,
 				reportInterval: 100,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -264,12 +266,12 @@ describe("useGraphPerformanceMonitor", () => {
 	it("should maintain history of metrics", async () => {
 		const { result } = renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
 				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
 				enabled: true,
+				nodes: mockNodes,
 				reportInterval: 50,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -287,13 +289,13 @@ describe("useGraphPerformanceMonitor", () => {
 	it("should provide summary string", async () => {
 		const { result } = renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
-				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
 				cacheStats: mockCacheStats,
+				edges: mockEdges,
 				enabled: true,
+				nodes: mockNodes,
 				reportInterval: 100,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -314,12 +316,12 @@ describe("useGraphPerformanceMonitor", () => {
 	it("should reset metrics and history", async () => {
 		const { result } = renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
 				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
 				enabled: true,
+				nodes: mockNodes,
 				reportInterval: 100,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -343,13 +345,13 @@ describe("useGraphPerformanceMonitor", () => {
 
 		renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
 				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
 				enabled: true,
-				reportInterval: 100,
+				nodes: mockNodes,
 				onMetricsUpdate,
+				reportInterval: 100,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -369,13 +371,13 @@ describe("useGraphPerformanceMonitor", () => {
 
 		renderHook(() =>
 			useGraphPerformanceMonitor({
-				nodes: mockNodes,
 				edges: mockEdges,
-				visibleNodes: mockVisibleNodes,
-				visibleEdges: mockVisibleEdges,
 				enabled: true,
-				reportInterval: 100,
+				nodes: mockNodes,
 				persistToStorage: true,
+				reportInterval: 100,
+				visibleEdges: mockVisibleEdges,
+				visibleNodes: mockVisibleNodes,
 			}),
 		);
 
@@ -391,7 +393,7 @@ describe("useGraphPerformanceMonitor", () => {
 	});
 });
 
-describe("createProfilerCallback", () => {
+describe(createProfilerCallback, () => {
 	it("should create profiler callback that logs to console", () => {
 		const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -425,10 +427,10 @@ describe("createProfilerCallback", () => {
 	});
 });
 
-describe("perfMark", () => {
+describe(perfMark, () => {
 	beforeEach(() => {
-		vi.spyOn(performance, "mark").mockImplementation(() => ({} as any));
-		vi.spyOn(performance, "measure").mockImplementation(() => ({} as any));
+		vi.spyOn(performance, "mark").mockImplementation(() => ({}) as any);
+		vi.spyOn(performance, "measure").mockImplementation(() => ({}) as any);
 		vi.spyOn(performance, "getEntriesByName").mockReturnValue([
 			{ duration: 42 } as any,
 		]);

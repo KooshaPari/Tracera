@@ -27,11 +27,11 @@ describe("Wireframe View Route", () => {
 
 	it("supports wireframe metadata", () => {
 		const mockWireframe = {
+			format: "figma",
 			id: "wf-1",
+			status: "done",
 			title: "Homepage Wireframe",
 			type: "wireframe",
-			status: "done",
-			format: "figma",
 		};
 
 		expect(mockWireframe.format).toMatch(/^(figma|sketch|adobe_xd|penpot)$/);
@@ -40,21 +40,21 @@ describe("Wireframe View Route", () => {
 
 	it("handles multiple wireframes", () => {
 		const mockWireframes = [
-			{ id: "wf1", title: "Homepage", format: "figma" },
-			{ id: "wf2", title: "Dashboard", format: "figma" },
-			{ id: "wf3", title: "Profile", format: "figma" },
+			{ format: "figma", id: "wf1", title: "Homepage" },
+			{ format: "figma", id: "wf2", title: "Dashboard" },
+			{ format: "figma", id: "wf3", title: "Profile" },
 		];
 
 		expect(mockWireframes).toHaveLength(3);
-		expect(mockWireframes.every(w => w.format === "figma")).toBe(true);
+		expect(mockWireframes.every((w) => w.format === "figma")).toBe(true);
 	});
 
 	it("extracts wireframe dimensions", () => {
 		const mockWireframe = {
-			id: "wf-1",
-			width: 1920,
 			height: 1080,
+			id: "wf-1",
 			scale: 1,
+			width: 1920,
 		};
 
 		expect(mockWireframe.width).toBeGreaterThan(0);

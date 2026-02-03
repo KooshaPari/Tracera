@@ -18,12 +18,8 @@ import { Plus, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { BulkActionToolbar, KeyboardShortcutsModal } from "@/components";
-import {
-	type KeyboardShortcutAction,
-	useBulkSelection,
-	useKeyboardShortcuts,
-	useUndoRedo,
-} from "@/hooks";
+import { useBulkSelection, useKeyboardShortcuts, useUndoRedo } from "@/hooks";
+import type { KeyboardShortcutAction } from "@/hooks";
 
 interface Item {
 	id: string;
@@ -48,9 +44,9 @@ export function PowerUserExample() {
 		canRedo,
 	} = useUndoRedo<ItemListState>({
 		items: [
-			{ id: "1", title: "Learn Keyboard Shortcuts", checked: false },
-			{ id: "2", title: "Use Bulk Selection", checked: false },
-			{ id: "3", title: "Master Undo/Redo", checked: false },
+			{ checked: false, id: "1", title: "Learn Keyboard Shortcuts" },
+			{ checked: false, id: "2", title: "Use Bulk Selection" },
+			{ checked: false, id: "3", title: "Master Undo/Redo" },
 		],
 	});
 
@@ -60,15 +56,11 @@ export function PowerUserExample() {
 	// Define keyboard shortcuts
 	const shortcuts: KeyboardShortcutAction[] = [
 		{
-			key: "n",
-			meta: true,
-			description: "Create new item",
-			category: "editing",
 			action: useCallback(() => {
 				const newItem: Item = {
+					checked: false,
 					id: Date.now().toString(),
 					title: "New Item",
-					checked: false,
 				};
 				const newState = {
 					items: [...listState.items, newItem],
@@ -76,68 +68,69 @@ export function PowerUserExample() {
 				setListState(newState, "Created new item");
 				toast.success("New item created");
 			}, [listState, setListState]),
+			category: "editing",
+			description: "Create new item",
+			key: "n",
+			meta: true,
 		},
 		{
-			key: "f",
-			meta: true,
-			description: "Focus search",
-			category: "navigation",
 			action: useCallback(() => {
 				const searchInput = document.getElementById("search-input");
 				searchInput?.focus();
 				toast.info("Focus on search");
 			}, []),
+			category: "navigation",
+			description: "Focus search",
+			key: "f",
+			meta: true,
 		},
 		{
-			key: "/",
-			description: "Focus search with slash",
-			category: "navigation",
 			action: useCallback(() => {
 				const searchInput = document.getElementById("search-input");
 				searchInput?.focus();
 				setSearchQuery("/");
 			}, []),
+			category: "navigation",
+			description: "Focus search with slash",
+			key: "/",
 		},
 		{
-			key: "z",
-			meta: true,
-			description: "Undo last action",
-			category: "editing",
 			action: useCallback(() => {
 				if (canUndo) {
 					undo();
 					toast.success("Undo");
 				}
 			}, [canUndo, undo]),
-		},
-		{
+			category: "editing",
+			description: "Undo last action",
 			key: "z",
 			meta: true,
-			shift: true,
-			description: "Redo last action",
-			category: "editing",
+		},
+		{
 			action: useCallback(() => {
 				if (canRedo) {
 					redo();
 					toast.success("Redo");
 				}
 			}, [canRedo, redo]),
+			category: "editing",
+			description: "Redo last action",
+			key: "z",
+			meta: true,
+			shift: true,
 		},
 		{
-			key: "a",
-			meta: true,
-			description: "Select all items",
-			category: "selection",
-			context: "Items view",
 			action: useCallback(() => {
 				bulkSelection.selectAll(listState.items.map((item) => item.id));
 				toast.success(`Selected ${listState.items.length} items`);
 			}, [listState.items, bulkSelection]),
+			category: "selection",
+			context: "Items view",
+			description: "Select all items",
+			key: "a",
+			meta: true,
 		},
 		{
-			key: "Delete",
-			description: "Bulk delete selected items",
-			category: "selection",
 			action: useCallback(async () => {
 				if (bulkSelection.selectedIds.length === 0) {
 					toast.error("No items selected");
@@ -154,15 +147,15 @@ export function PowerUserExample() {
 				bulkSelection.deselectAll();
 				toast.success("Items deleted");
 			}, [listState, bulkSelection, setListState]),
+			category: "selection",
+			description: "Bulk delete selected items",
+			key: "Delete",
 		},
 	];
 
 	// Setup keyboard shortcuts and modal
-	const {
-		isShortcutsModalOpen,
-		setIsShortcutsModalOpen,
-		allShortcuts,
-	} = useKeyboardShortcuts(shortcuts);
+	const { isShortcutsModalOpen, setIsShortcutsModalOpen, allShortcuts } =
+		useKeyboardShortcuts(shortcuts);
 
 	// Handle item toggle
 	const toggleItem = useCallback(
@@ -189,10 +182,10 @@ export function PowerUserExample() {
 	}, [listState, bulkSelection, setListState]);
 
 	const deleteAction = {
+		action: handleBulkDelete,
+		icon: <Trash2 className="h-4 w-4" />,
 		id: "delete",
 		label: "Delete",
-		icon: <Trash2 className="h-4 w-4" />,
-		action: handleBulkDelete,
 		variant: "destructive" as const,
 	};
 
@@ -268,9 +261,9 @@ export function PowerUserExample() {
 					<button
 						onClick={() => {
 							const newItem: Item = {
+								checked: false,
 								id: Date.now().toString(),
 								title: "New Item",
-								checked: false,
 							};
 							const newState = {
 								items: [...listState.items, newItem],

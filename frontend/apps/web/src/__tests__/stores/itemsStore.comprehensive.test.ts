@@ -11,47 +11,47 @@ describe("ItemsStore", () => {
 	beforeEach(() => {
 		// Reset store before each test
 		useItemsStore.setState({
+			isLoading: false,
 			items: new Map(),
 			itemsByProject: new Map(),
-			isLoading: false,
 			loadingItems: new Set(),
 			pendingCreates: new Map(),
-			pendingUpdates: new Map(),
 			pendingDeletes: new Set(),
+			pendingUpdates: new Map(),
 		});
 	});
 
 	const mockItem: Item = {
-		id: "item-1",
-		projectId: "proj-1",
-		type: "feature",
-		title: "Test Feature",
-		description: "Test description",
-		status: "todo",
-		priority: "high",
 		created_at: "2024-01-01T00:00:00Z",
+		description: "Test description",
+		id: "item-1",
+		priority: "high",
+		projectId: "proj-1",
+		status: "todo",
+		title: "Test Feature",
+		type: "feature",
 		updated_at: "2024-01-01T00:00:00Z",
 	};
 
 	const mockItem2: Item = {
-		id: "item-2",
-		projectId: "proj-1",
-		type: "task",
-		title: "Test Task",
-		status: "in_progress",
-		priority: "medium",
 		created_at: "2024-01-01T00:00:00Z",
+		id: "item-2",
+		priority: "medium",
+		projectId: "proj-1",
+		status: "in_progress",
+		title: "Test Task",
+		type: "task",
 		updated_at: "2024-01-01T00:00:00Z",
 	};
 
 	const mockItem3: Item = {
-		id: "item-3",
-		projectId: "proj-2",
-		type: "bug",
-		title: "Test Bug",
-		status: "done",
-		priority: "low",
 		created_at: "2024-01-01T00:00:00Z",
+		id: "item-3",
+		priority: "low",
+		projectId: "proj-2",
+		status: "done",
+		title: "Test Bug",
+		type: "bug",
 		updated_at: "2024-01-01T00:00:00Z",
 	};
 
@@ -170,9 +170,9 @@ describe("ItemsStore", () => {
 			const { addItem, updateItem } = useItemsStore.getState();
 			addItem(mockItem);
 			updateItem("item-1", {
-				title: "New Title",
-				status: "done",
 				priority: "low",
+				status: "done",
+				title: "New Title",
 			});
 
 			const { items } = useItemsStore.getState();
@@ -298,12 +298,12 @@ describe("ItemsStore", () => {
 
 	describe("optimisticCreate", () => {
 		const createData: CreateItemInput = {
-			projectId: "proj-1",
-			type: "feature",
-			title: "New Feature",
 			description: "Description",
-			status: "todo",
 			priority: "high",
+			projectId: "proj-1",
+			status: "todo",
+			title: "New Feature",
+			type: "feature",
 		};
 
 		it("should add temporary item", () => {
@@ -346,11 +346,11 @@ describe("ItemsStore", () => {
 
 	describe("confirmCreate", () => {
 		const createData: CreateItemInput = {
-			projectId: "proj-1",
-			type: "feature",
-			title: "New Feature",
-			status: "todo",
 			priority: "high",
+			projectId: "proj-1",
+			status: "todo",
+			title: "New Feature",
+			type: "feature",
 		};
 
 		it("should replace temporary item with real item", () => {
@@ -386,11 +386,11 @@ describe("ItemsStore", () => {
 
 	describe("rollbackCreate", () => {
 		const createData: CreateItemInput = {
-			projectId: "proj-1",
-			type: "feature",
-			title: "New Feature",
-			status: "todo",
 			priority: "high",
+			projectId: "proj-1",
+			status: "todo",
+			title: "New Feature",
+			type: "feature",
 		};
 
 		it("should remove temporary item", () => {
@@ -424,8 +424,8 @@ describe("ItemsStore", () => {
 
 	describe("optimisticUpdate", () => {
 		const updates: UpdateItemInput = {
-			title: "Updated Title",
 			status: "done",
+			title: "Updated Title",
 		};
 
 		it("should update item immediately", () => {

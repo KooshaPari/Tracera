@@ -7,7 +7,7 @@
  * - Performance with large datasets
  */
 
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { ViewportBounds } from "../useViewportGraph";
 
 // Simple test to verify hook structure without complex mocking
@@ -17,10 +17,10 @@ describe("useViewportGraph", () => {
 	it("should export required types", () => {
 		// Type check - will fail at compile time if types are missing
 		const viewport: ViewportBounds = {
-			minX: 0,
-			minY: 0,
 			maxX: 1000,
 			maxY: 1000,
+			minX: 0,
+			minY: 0,
 			zoom: 1,
 		};
 

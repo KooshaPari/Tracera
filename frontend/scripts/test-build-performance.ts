@@ -5,9 +5,9 @@
  */
 
 import { spawn } from "bun";
-import { existsSync, rmSync } from "fs";
-import { readdir, stat } from "fs/promises";
-import { join } from "path";
+import { existsSync, rmSync } from "node:fs";
+import { readdir, stat } from "node:fs/promises";
+import { join } from "node:path";
 
 interface BuildMetrics {
 	app: string;
@@ -32,21 +32,21 @@ interface TestResults {
 
 const APPS = ["web", "docs", "storybook"];
 const DIST_DIRS = {
-	web: "apps/web/dist",
 	docs: "apps/docs/dist",
 	storybook: "apps/storybook/storybook-static",
+	web: "apps/web/dist",
 };
 
 async function cleanDist(app: string): Promise<void> {
 	const distPath = DIST_DIRS[app as keyof typeof DIST_DIRS];
 	if (existsSync(distPath)) {
-		console.log(`  🧹 Cleaning ${distPath}...`);
-		rmSync(distPath, { recursive: true, force: true });
+		
+		rmSync(distPath, { force: true, recursive: true });
 	}
 }
 
 async function getDirectorySize(dirPath: string): Promise<number> {
-	if (!existsSync(dirPath)) return 0;
+	if (!existsSync(dirPath)) {return 0;}
 
 	let totalSize = 0;
 	const files = await readdir(dirPath, { recursive: true });
@@ -67,14 +67,14 @@ async function getDirectorySize(dirPath: string): Promise<number> {
 }
 
 async function countChunks(dirPath: string): Promise<number> {
-	if (!existsSync(dirPath)) return 0;
+	if (!existsSync(dirPath)) {return 0;}
 
 	const files = await readdir(dirPath, { recursive: true });
 	return files.filter((f) => f.endsWith(".js") || f.endsWith(".css")).length;
 }
 
 async function buildApp(app: string): Promise<BuildMetrics> {
-	console.log(`\n📦 Building ${app}...`);
+	
 
 	const startTime = Date.now();
 	const errors: string[] = [];
@@ -86,8 +86,8 @@ async function buildApp(app: string): Promise<BuildMetrics> {
 		const proc = spawn({
 			cmd: ["bun", "run", "build"],
 			cwd: `apps/${app}`,
-			stdout: "pipe",
 			stderr: "pipe",
+			stdout: "pipe",
 		});
 
 		const _output = await new Response(proc.stdout).text();
@@ -98,13 +98,13 @@ async function buildApp(app: string): Promise<BuildMetrics> {
 
 		if (!success) {
 			errors.push(errorOutput || "Build failed");
-			console.log(`  ❌ Build failed`);
+			
 		} else {
-			console.log(`  ✅ Build succeeded`);
+			
 		}
-	} catch (err) {
-		errors.push(err instanceof Error ? err.message : String(err));
-		console.log(`  ❌ Build error: ${errors[0]}`);
+	} catch (error) {
+		errors.push(error instanceof Error ? error.message : String(error));
+		
 	}
 
 	const buildTime = Date.now() - startTime;
@@ -112,23 +112,23 @@ async function buildApp(app: string): Promise<BuildMetrics> {
 	const bundleSize = await getDirectorySize(distPath);
 	const chunkCount = await countChunks(distPath);
 
-	console.log(`  ⏱️  Time: ${(buildTime / 1000).toFixed(2)}s`);
-	console.log(`  📊 Size: ${(bundleSize / 1024 / 1024).toFixed(2)} MB`);
-	console.log(`  📦 Chunks: ${chunkCount}`);
+	
+	
+	
 
 	return {
 		app,
 		buildTime,
-		success,
 		bundleSize,
 		chunkCount,
 		errors,
+		success,
 	};
 }
 
 async function runBuildTests(): Promise<TestResults> {
-	console.log("🚀 Starting Build Performance Tests\n");
-	console.log("=".repeat(60));
+	
+	
 
 	const startTime = Date.now();
 	const results: BuildMetrics[] = [];
@@ -146,66 +146,54 @@ async function runBuildTests(): Promise<TestResults> {
 	const totalBundleSize = results.reduce((sum, r) => sum + r.bundleSize, 0);
 
 	return {
-		timestamp: new Date().toISOString(),
-		overallSuccess: successCount === APPS.length,
-		totalTime,
 		apps: results,
+		overallSuccess: successCount === APPS.length,
 		summary: {
-			successRate: `${successCount}/${APPS.length}`,
 			avgBuildTime,
+			successRate: `${successCount}/${APPS.length}`,
 			totalBundleSize,
 		},
+		timestamp: new Date().toISOString(),
+		totalTime,
 	};
 }
 
 function printResults(results: TestResults): void {
-	console.log("\n" + "=".repeat(60));
-	console.log("📊 BUILD PERFORMANCE RESULTS");
-	console.log("=".repeat(60));
+	
+	
+	
 
-	console.log(`\n⏰ Total Time: ${(results.totalTime / 1000).toFixed(2)}s`);
-	console.log(`✅ Success Rate: ${results.summary.successRate}`);
-	console.log(
-		`📈 Avg Build Time: ${(results.summary.avgBuildTime / 1000).toFixed(2)}s`,
-	);
-	console.log(
-		`💾 Total Bundle Size: ${(results.summary.totalBundleSize / 1024 / 1024).toFixed(2)} MB`,
-	);
+	
+	
+	
+	
 
-	console.log("\n📦 Individual App Metrics:");
-	console.log("-".repeat(60));
+	
+	
 
 	for (const app of results.apps) {
 		const status = app.success ? "✅" : "❌";
-		console.log(`\n${status} ${app.app.toUpperCase()}`);
-		console.log(`   Build Time: ${(app.buildTime / 1000).toFixed(2)}s`);
-		console.log(
-			`   Bundle Size: ${(app.bundleSize / 1024 / 1024).toFixed(2)} MB`,
-		);
-		console.log(`   Chunks: ${app.chunkCount}`);
+		
+		
+		
+		
 
 		if (app.errors.length > 0) {
-			console.log(`   Errors: ${app.errors.join(", ")}`);
+			
 		}
 	}
 
-	console.log("\n" + "=".repeat(60));
-	console.log("🎯 TARGET VALIDATION");
-	console.log("=".repeat(60));
+	
+	
+	
 
 	const webBuild = results.apps.find((a) => a.app === "web");
 	const webTime = webBuild ? webBuild.buildTime / 1000 : 0;
 	const totalBuildTime = results.totalTime / 1000;
 
-	console.log(
-		`\n✓ Web build < 15s: ${webTime < 15 ? "✅ PASS" : "❌ FAIL"} (${webTime.toFixed(2)}s)`,
-	);
-	console.log(
-		`✓ Full build < 45s: ${totalBuildTime < 45 ? "✅ PASS" : "❌ FAIL"} (${totalBuildTime.toFixed(2)}s)`,
-	);
-	console.log(
-		`✓ All builds succeed: ${results.overallSuccess ? "✅ PASS" : "❌ FAIL"}`,
-	);
+	
+	
+	
 }
 
 // Main execution
@@ -218,7 +206,7 @@ await Bun.write(
 	JSON.stringify(results, null, 2),
 );
 
-console.log("\n📁 Results saved to build-performance-results.json\n");
+
 
 // Exit with error code if tests failed
 process.exit(results.overallSuccess ? 0 : 1);

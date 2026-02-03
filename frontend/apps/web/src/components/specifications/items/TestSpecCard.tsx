@@ -53,71 +53,82 @@ const testTypeStyles: Record<
 		icon: React.ComponentType<{ className?: string }>;
 	}
 > = {
-	unit: { bg: "bg-blue-500/10", text: "text-blue-600", icon: Code },
-	integration: {
-		bg: "bg-purple-500/10",
-		text: "text-purple-600",
-		icon: LayoutList,
-	},
-	e2e: { bg: "bg-green-500/10", text: "text-green-600", icon: Play },
-	performance: { bg: "bg-orange-500/10", text: "text-orange-600", icon: Gauge },
-	security: { bg: "bg-red-500/10", text: "text-red-600", icon: Shield },
 	accessibility: {
 		bg: "bg-pink-500/10",
-		text: "text-pink-600",
 		icon: Activity,
+		text: "text-pink-600",
 	},
-	contract: { bg: "bg-cyan-500/10", text: "text-cyan-600", icon: FileCode },
-	mutation: { bg: "bg-yellow-500/10", text: "text-yellow-600", icon: Zap },
-	fuzz: { bg: "bg-amber-500/10", text: "text-amber-600", icon: AlertTriangle },
+	contract: { bg: "bg-cyan-500/10", icon: FileCode, text: "text-cyan-600" },
+	e2e: { bg: "bg-green-500/10", icon: Play, text: "text-green-600" },
+	fuzz: { bg: "bg-amber-500/10", icon: AlertTriangle, text: "text-amber-600" },
+	integration: {
+		bg: "bg-purple-500/10",
+		icon: LayoutList,
+		text: "text-purple-600",
+	},
+	mutation: { bg: "bg-yellow-500/10", icon: Zap, text: "text-yellow-600" },
+	performance: { bg: "bg-orange-500/10", icon: Gauge, text: "text-orange-600" },
 	property: {
 		bg: "bg-indigo-500/10",
-		text: "text-indigo-600",
 		icon: CheckCircle2,
+		text: "text-indigo-600",
 	},
+	security: { bg: "bg-red-500/10", icon: Shield, text: "text-red-600" },
+	unit: { bg: "bg-blue-500/10", icon: Code, text: "text-blue-600" },
 };
 
 const runStatusStyles = {
-	passed: { icon: CheckCircle2, bg: "bg-green-500/10", text: "text-green-600" },
-	failed: { icon: XCircle, bg: "bg-red-500/10", text: "text-red-600" },
-	skipped: { icon: Clock, bg: "bg-muted", text: "text-muted-foreground" },
 	blocked: {
-		icon: AlertTriangle,
 		bg: "bg-orange-500/10",
+		icon: AlertTriangle,
 		text: "text-orange-600",
 	},
+	error: { bg: "bg-red-500/10", icon: XCircle, text: "text-red-600" },
+	failed: { bg: "bg-red-500/10", icon: XCircle, text: "text-red-600" },
 	flaky: {
-		icon: AlertTriangle,
 		bg: "bg-yellow-500/10",
+		icon: AlertTriangle,
 		text: "text-yellow-600",
 	},
-	timeout: { icon: Timer, bg: "bg-red-500/10", text: "text-red-600" },
-	error: { icon: XCircle, bg: "bg-red-500/10", text: "text-red-600" },
+	passed: { bg: "bg-green-500/10", icon: CheckCircle2, text: "text-green-600" },
+	skipped: { bg: "bg-muted", icon: Clock, text: "text-muted-foreground" },
+	timeout: { bg: "bg-red-500/10", icon: Timer, text: "text-red-600" },
 };
 
 function getFlakinessColor(score: number | undefined): string {
-	if (score === undefined) return "text-muted-foreground";
-	if (score <= 0.05) return "text-green-500";
-	if (score <= 0.15) return "text-yellow-500";
-	if (score <= 0.3) return "text-orange-500";
+	if (score === undefined) {
+		return "text-muted-foreground";
+	}
+	if (score <= 0.05) {
+		return "text-green-500";
+	}
+	if (score <= 0.15) {
+		return "text-yellow-500";
+	}
+	if (score <= 0.3) {
+		return "text-orange-500";
+	}
 	return "text-red-500";
 }
 
 function getDurationTrend(trend: string | undefined) {
 	switch (trend) {
-		case "improving":
-			return { icon: TrendingDown, text: "text-green-500", label: "Faster" };
-		case "degrading":
-			return { icon: TrendingUp, text: "text-red-500", label: "Slower" };
-		default:
-			return { icon: Activity, text: "text-muted-foreground", label: "Stable" };
+		case "improving": {
+			return { icon: TrendingDown, label: "Faster", text: "text-green-500" };
+		}
+		case "degrading": {
+			return { icon: TrendingUp, label: "Slower", text: "text-red-500" };
+		}
+		default: {
+			return { icon: Activity, label: "Stable", text: "text-muted-foreground" };
+		}
 	}
 }
 
 const defaultTestType = {
 	bg: "bg-blue-500/10",
-	text: "text-blue-600",
 	icon: Code,
+	text: "text-blue-600",
 };
 
 export function TestSpecCard({

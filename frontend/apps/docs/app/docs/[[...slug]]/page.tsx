@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { DocsPage, DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page';
+import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
 import { source } from '@/source';
 import { mdxComponents } from '@/components/mdx-components';
@@ -12,7 +12,7 @@ export default async function Page(props: PageProps) {
   const params = await props.params;
   const page = source.getPage(params.slug);
 
-  if (!page) notFound();
+  if (!page) {notFound();}
 
   const MDX = page.data.body;
 
@@ -21,17 +21,17 @@ export default async function Page(props: PageProps) {
       toc={page.data.toc}
       full={page.data.full}
       tableOfContent={{
-        style: 'clerk',
         single: false,
+        style: 'clerk',
       }}
       breadcrumb={{
         enabled: true,
       }}
       editOnGithub={{
         owner: 'yourusername',
+        path: `content/docs/${page.file.path}`,
         repo: 'tracertm',
         sha: 'main',
-        path: `content/docs/${page.file.path}`,
       }}
     >
       <DocsTitle>{page.data.title}</DocsTitle>
@@ -51,16 +51,16 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params;
   const page = source.getPage(params.slug);
 
-  if (!page) notFound();
+  if (!page) {notFound();}
 
   return {
-    title: page.data.title,
     description: page.data.description,
     openGraph: {
       title: page.data.title,
       description: page.data.description ?? '',
       type: 'article',
     },
+    title: page.data.title,
     twitter: {
       card: 'summary_large_image',
       title: page.data.title,

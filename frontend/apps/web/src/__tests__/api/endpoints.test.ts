@@ -8,15 +8,15 @@ import { mockItems, mockLinks, mockProjects } from "../mocks/data";
 
 // Mock fetch responses for API tests
 function createMockApiResponse(data: any, status = 200) {
-	return new Response(JSON.stringify(data), {
-		status,
+	return Response.json(data, {
 		headers: { "Content-Type": "application/json" },
+		status,
 	});
 }
 
 // NOTE: These tests require proper mocking of openapi-fetch client
 // The actual API endpoints are tested at integration level via hooks tests
-// which properly validate the query patterns and response handling
+// Which properly validate the query patterns and response handling
 describe.skip("API Endpoints", () => {
 	beforeEach(() => {
 		// Mock fetch directly  - replace the global fetch with our mock implementation
@@ -61,9 +61,9 @@ describe.skip("API Endpoints", () => {
 			if (urlNormalized === "/api/v1/projects" && method === "POST") {
 				return createMockApiResponse(
 					{
+						created_at: new Date().toISOString(),
 						id: "new-proj",
 						name: "New Project",
-						created_at: new Date().toISOString(),
 					},
 					201,
 				);
@@ -142,12 +142,12 @@ describe.skip("API Endpoints", () => {
 
 			// Graph - full graph
 			if (urlNormalized === "/api/v1/graph/full" && method === "GET") {
-				return createMockApiResponse({ nodes: [], edges: [] });
+				return createMockApiResponse({ edges: [], nodes: [] });
 			}
 
 			// Graph - impact analysis
 			if (urlNormalized === "/api/v1/graph/impact/item-1" && method === "GET") {
-				return createMockApiResponse({ affected_items: [], affected_count: 0 });
+				return createMockApiResponse({ affected_count: 0, affected_items: [] });
 			}
 
 			// Graph - dependencies analysis
@@ -162,7 +162,7 @@ describe.skip("API Endpoints", () => {
 			if (urlNormalized === "/api/v1/search" && method === "GET") {
 				const urlObj = new URL(urlStr, "http://localhost:4000");
 				const query = urlObj.searchParams.get("q") || "";
-				return createMockApiResponse({ items: [], total: 0, query });
+				return createMockApiResponse({ items: [], query, total: 0 });
 			}
 
 			// Health check
@@ -176,7 +176,7 @@ describe.skip("API Endpoints", () => {
 		};
 
 		// Replace global fetch with our mock
-		global.fetch = vi.fn(fetchImpl) as typeof fetch;
+		globalThis.fetch = vi.fn(fetchImpl) as typeof fetch;
 	});
 	describe("projectsApi", () => {
 		it("should list projects", async () => {
@@ -191,8 +191,8 @@ describe.skip("API Endpoints", () => {
 
 		it("should create a project", async () => {
 			const newProject = {
-				name: "New Project",
 				description: "Test project",
+				name: "New Project",
 			};
 			const project = await api.projects.create(newProject);
 			expect(project).toHaveProperty("id");
@@ -233,9 +233,9 @@ describe.skip("API Endpoints", () => {
 		it("should create an item", async () => {
 			const newItem = {
 				project_id: "proj-1",
-				type: "feature" as const,
-				title: "New Item",
 				status: "pending" as const,
+				title: "New Item",
+				type: "feature" as const,
 			};
 			const item = await api.items.create(newItem);
 			expect(item).toHaveProperty("id");
@@ -302,9 +302,9 @@ describe.skip("API Endpoints", () => {
 	describe("searchApi", () => {
 		it("should search items", async () => {
 			const results = await api.search.searchGet({
-				q: "test",
 				page: 1,
 				per_page: 10,
+				q: "test",
 			});
 			expect(results).toHaveProperty("items");
 			expect(results).toHaveProperty("total");

@@ -9,7 +9,8 @@ import {
 	DialogContent,
 	DialogTrigger,
 } from "@tracertm/ui/components/Dialog";
-import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { CheckCircle2, Clock, Image, Link2, Play, XCircle } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { NodeExpandPopup } from "./NodeExpandPopup";
@@ -22,7 +23,7 @@ export interface QANodeMetrics {
 	passCount: number;
 	failCount: number;
 	coverage?: number; // 0-100
-	avgDuration?: number; // ms
+	avgDuration?: number; // Ms
 	flakiness?: number; // 0-100
 	lastRunAt?: string;
 }
@@ -63,9 +64,12 @@ export interface QAEnhancedNodeData {
 // === Main Component ===
 
 function getPassRateColor(rate: number): string {
-	if (rate >= 90) return "text-green-500 bg-green-500/10 border-green-500/30";
-	if (rate >= 70)
+	if (rate >= 90) {
+		return "text-green-500 bg-green-500/10 border-green-500/30";
+	}
+	if (rate >= 70) {
 		return "text-yellow-500 bg-yellow-500/10 border-yellow-500/30";
+	}
 	return "text-red-500 bg-red-500/10 border-red-500/30";
 }
 
@@ -75,7 +79,7 @@ function QAEnhancedNodeComponent({
 }: NodeProps<Node<QAEnhancedNodeData, "qaEnhanced">>) {
 	const [popupOpen, setPopupOpen] = useState(false);
 
-	const hasPreview = !!data.preview?.thumbnailUrl;
+	const hasPreview = Boolean(data.preview?.thumbnailUrl);
 	const passRate = data.metrics?.passRate ?? 0;
 
 	const handleImageClick = useCallback((e: React.MouseEvent) => {
@@ -118,11 +122,11 @@ function QAEnhancedNodeComponent({
 							>
 								{passRate >= 90 ? (
 									<CheckCircle2 className="h-3.5 w-3.5" />
-								) : passRate >= 70 ? (
+								) : (passRate >= 70 ? (
 									<Clock className="h-3.5 w-3.5" />
 								) : (
 									<XCircle className="h-3.5 w-3.5" />
-								)}
+								))}
 								{passRate}%
 							</div>
 						)}

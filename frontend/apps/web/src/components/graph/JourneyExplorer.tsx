@@ -104,29 +104,29 @@ interface JourneyMetrics {
 // =============================================================================
 
 const JOURNEY_TYPE_CONFIG = {
-	user_flow: {
-		label: "User Flow",
-		icon: Activity,
-		color: "#9333ea",
-		description: "User interaction paths through the system",
-	},
-	data_path: {
-		label: "Data Path",
-		icon: Zap,
-		color: "#3b82f6",
-		description: "Data flow between components and databases",
-	},
 	call_chain: {
-		label: "Call Chain",
-		icon: Layers,
 		color: "#f59e0b",
 		description: "Function/method invocation sequences",
+		icon: Layers,
+		label: "Call Chain",
+	},
+	data_path: {
+		color: "#3b82f6",
+		description: "Data flow between components and databases",
+		icon: Zap,
+		label: "Data Path",
 	},
 	test_trace: {
-		label: "Test Trace",
-		icon: Beaker,
 		color: "#22c55e",
 		description: "Test execution flows and coverage",
+		icon: Beaker,
+		label: "Test Trace",
+	},
+	user_flow: {
+		color: "#9333ea",
+		description: "User interaction paths through the system",
+		icon: Activity,
+		label: "User Flow",
 	},
 };
 
@@ -161,7 +161,7 @@ function calculateJourneyMetrics(
 	const linkDensity = maxPossibleLinks > 0 ? linkCount / maxPossibleLinks : 0;
 	const confidence = Math.round((linkDensity * coverage) / 100);
 
-	return { nodeCount, linkCount, coverage, confidence };
+	return { confidence, coverage, linkCount, nodeCount };
 }
 
 function getJourneyNodeNames(
@@ -357,7 +357,7 @@ function JourneyCard({
 						<JourneyFlowVisualizer
 							journey={journey}
 							itemNames={itemNames}
-							compact={true}
+							compact
 						/>
 					</div>
 				)}
@@ -431,14 +431,16 @@ function CreateJourneyDialog({
 	const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
 
 	const handleCreate = () => {
-		if (!name.trim()) return;
+		if (!name.trim()) {
+			return;
+		}
 
 		onCreate({
-			name: name.trim(),
-			type,
-			nodeIds: selectedNodes,
-			links: [],
 			color: JOURNEY_TYPE_CONFIG[type].color,
+			links: [],
+			name: name.trim(),
+			nodeIds: selectedNodes,
+			type,
 		});
 
 		setName("");
@@ -550,12 +552,9 @@ export const JourneyExplorer = memo(function JourneyExplorer({
 		() =>
 			journeys.reduce(
 				(acc, journey) => {
-					acc[journey.id] = calculateJourneyMetrics(
-						journey,
-						items,
-						links,
-						Array.from(allNodeIds),
-					);
+					acc[journey.id] = calculateJourneyMetrics(journey, items, links, [
+						...allNodeIds,
+					]);
 					return acc;
 				},
 				{} as Record<string, JourneyMetrics>,
@@ -576,16 +575,18 @@ export const JourneyExplorer = memo(function JourneyExplorer({
 	);
 
 	// Filter journeys
-	const filteredJourneys = useMemo(() => {
-		return journeys.filter((journey) => {
-			const matchesSearch =
-				journey.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				journey.type.toLowerCase().includes(searchTerm.toLowerCase());
-			const matchesType =
-				selectedType === "all" || journey.type === selectedType;
-			return matchesSearch && matchesType;
-		});
-	}, [journeys, searchTerm, selectedType]);
+	const filteredJourneys = useMemo(
+		() =>
+			journeys.filter((journey) => {
+				const matchesSearch =
+					journey.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					journey.type.toLowerCase().includes(searchTerm.toLowerCase());
+				const matchesType =
+					selectedType === "all" || journey.type === selectedType;
+				return matchesSearch && matchesType;
+			}),
+		[journeys, searchTerm, selectedType],
+	);
 
 	// Calculate coverage metrics
 	const coverageMetrics = useMemo(() => {
@@ -598,9 +599,9 @@ export const JourneyExplorer = memo(function JourneyExplorer({
 		const coverage =
 			allNodeIds.size > 0 ? (journeyNodeSet.size / allNodeIds.size) * 100 : 0;
 		return {
+			coverage,
 			nodesInJourneys: journeyNodeSet.size,
 			totalNodes: allNodeIds.size,
-			coverage,
 		};
 	}, [selectedJourneyIds, journeys, allNodeIds]);
 
@@ -681,7 +682,9 @@ export const JourneyExplorer = memo(function JourneyExplorer({
 											className="h-8 px-2"
 											onClick={() => {
 												setOverlayMode(!overlayMode);
-												if (!overlayMode) handleOverlay();
+												if (!overlayMode) {
+													handleOverlay();
+												}
 											}}
 											disabled={isLoading}
 										>
@@ -834,10 +837,10 @@ export const JourneyExplorer = memo(function JourneyExplorer({
 									journey={journey}
 									metrics={
 										journeyMetrics[journey.id] || {
-											nodeCount: 0,
-											linkCount: 0,
-											coverage: 0,
 											confidence: 0,
+											coverage: 0,
+											linkCount: 0,
+											nodeCount: 0,
 										}
 									}
 									isSelected={selectedJourneyIds.includes(journey.id)}

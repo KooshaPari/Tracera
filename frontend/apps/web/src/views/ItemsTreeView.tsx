@@ -148,20 +148,24 @@ const TreeItemContent = memo(
 			</div>
 		);
 	},
-	(prev, next) => (
-			prev.item.id === next.item.id &&
-			prev.item.title === next.item.title &&
-			prev.item.type === next.item.type &&
-			prev.item.status === next.item.status &&
-			prev.item.owner === next.item.owner &&
-			prev.isExpanded === next.isExpanded &&
-			prev.childCount === next.childCount &&
-			prev.projectFilter === next.projectFilter
-		),
+	(prev, next) =>
+		prev.item.id === next.item.id &&
+		prev.item.title === next.item.title &&
+		prev.item.type === next.item.type &&
+		prev.item.status === next.item.status &&
+		prev.item.owner === next.item.owner &&
+		prev.isExpanded === next.isExpanded &&
+		prev.childCount === next.childCount &&
+		prev.projectFilter === next.projectFilter,
 );
 
 const TreeItem = memo(
-	function TreeItem({ node, expandedIds, onToggleExpand, projectFilter }: TreeItemProps) {
+	function TreeItem({
+		node,
+		expandedIds,
+		onToggleExpand,
+		projectFilter,
+	}: TreeItemProps) {
 		const { item, children, level } = node;
 		const hasChildren = children.length > 0;
 		const isExpanded = expandedIds.has(item.id);
@@ -213,22 +217,21 @@ const TreeItem = memo(
 			</div>
 		);
 	},
-	(prev, next) => (
-			prev.node.item.id === next.node.item.id &&
-			prev.node.item.title === next.node.item.title &&
-			prev.node.item.type === next.node.item.type &&
-			prev.node.item.status === next.node.item.status &&
-			prev.node.item.owner === next.node.item.owner &&
-			prev.node.level === next.node.level &&
-			prev.node.children.length === next.node.children.length &&
-			prev.expandedIds.has(prev.node.item.id) ===
-				next.expandedIds.has(next.node.item.id) &&
-			// Compare child IDs to detect structural changes
-			prev.node.children.every(
-				(child, idx) =>
-					next.node.children[idx] &&
-					child.item.id === next.node.children[idx].item.id,
-			)
+	(prev, next) =>
+		prev.node.item.id === next.node.item.id &&
+		prev.node.item.title === next.node.item.title &&
+		prev.node.item.type === next.node.item.type &&
+		prev.node.item.status === next.node.item.status &&
+		prev.node.item.owner === next.node.item.owner &&
+		prev.node.level === next.node.level &&
+		prev.node.children.length === next.node.children.length &&
+		prev.expandedIds.has(prev.node.item.id) ===
+			next.expandedIds.has(next.node.item.id) &&
+		// Compare child IDs to detect structural changes
+		prev.node.children.every(
+			(child, idx) =>
+				next.node.children[idx] &&
+				child.item.id === next.node.children[idx].item.id,
 		),
 );
 
@@ -279,9 +282,13 @@ export function ItemsTreeView() {
 	const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
 	const filteredItems = useMemo(() => {
-		if (items.length === 0) {return [];}
+		if (items.length === 0) {
+			return [];
+		}
 		return items.filter((item: any) => {
-			if (typeFilter && item.type !== typeFilter) {return false;}
+			if (typeFilter && item.type !== typeFilter) {
+				return false;
+			}
 			if (searchQuery) {
 				const query = searchQuery.toLowerCase();
 				return (
@@ -298,42 +305,39 @@ export function ItemsTreeView() {
 	const handleToggleExpand = useCallback((id: string) => {
 		setExpandedIds((prev) => {
 			const next = new Set(prev);
-			if (next.has(id)) {next.delete(id);}
-			else {next.add(id);}
+			if (next.has(id)) {
+				next.delete(id);
+			} else {
+				next.add(id);
+			}
 			return next;
 		});
 	}, []);
 
 	const toggleAll = useCallback(
 		(expand: boolean) => {
-			if (expand) {setExpandedIds(new Set(filteredItems.map((i) => i.id)));}
-			else {setExpandedIds(new Set());}
+			if (expand) {
+				setExpandedIds(new Set(filteredItems.map((i) => i.id)));
+			} else {
+				setExpandedIds(new Set());
+			}
 		},
 		[filteredItems],
 	);
 
-	const handleNavigateToTable = useCallback(() => {
-		if (!projectFilter) {
-			undefined;
-			return;
-		}
-		undefined;
-	}, [navigate, searchParams, projectFilter]);
+	const handleNavigateToTable = useCallback(() => {}, [
+		navigate,
+		searchParams,
+		projectFilter,
+	]);
 
-	const handleNavigateToCreate = useCallback(() => {
-		if (!projectFilter) {
-			undefined;
-			return;
-		}
-		undefined;
-	}, [navigate, searchParams, projectFilter]);
+	const handleNavigateToCreate = useCallback(() => {}, [
+		navigate,
+		searchParams,
+		projectFilter,
+	]);
 
-	const handleProjectFilterChange = useCallback(
-		(v: string) => {
-			undefined;
-		},
-		[navigate],
-	);
+	const handleProjectFilterChange = useCallback((v: string) => {}, [navigate]);
 
 	if (isLoading) {
 		return (

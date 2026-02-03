@@ -17,7 +17,7 @@ export function isValidProjectName(name: string): boolean {
 
 export function isValidItemTitle(title: string): boolean {
 	// Must be 1-200 characters
-	return title.length >= 1 && title.length <= 200;
+	return title.length > 0 && title.length <= 200;
 }
 
 export function isValidId(id: string): boolean {
@@ -29,7 +29,9 @@ export function isValidId(id: string): boolean {
 }
 
 export function isNumeric(value: string): boolean {
-	return !Number.isNaN(parseFloat(value)) && Number.isFinite(Number(value));
+	return (
+		!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value))
+	);
 }
 
 export function isInRange(value: number, min: number, max: number): boolean {
@@ -73,8 +75,8 @@ export function validateProject(data: {
 	}
 
 	return {
-		valid: errors.length === 0,
 		errors,
+		valid: errors.length === 0,
 	};
 }
 
@@ -110,8 +112,8 @@ export function validateItem(data: {
 	}
 
 	return {
-		valid: errors.length === 0,
 		errors,
+		valid: errors.length === 0,
 	};
 }
 
@@ -139,7 +141,7 @@ export function validateLink(data: {
 	}
 
 	return {
-		valid: errors.length === 0,
 		errors,
+		valid: errors.length === 0,
 	};
 }

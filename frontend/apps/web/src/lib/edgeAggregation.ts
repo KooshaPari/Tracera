@@ -63,7 +63,7 @@ export interface EdgeSamplingConfig {
 	maxVisibleEdges: number;
 
 	// Sampling strategy
-	samplingStrategy: 'statistical' | 'importance' | 'hybrid';
+	samplingStrategy: "statistical" | "importance" | "hybrid";
 
 	// For importance sampling
 	priorityTypes?: LinkType[];
@@ -94,7 +94,7 @@ export interface EdgeFilterConfig {
  */
 export function aggregateParallelEdges(
 	edges: EdgeBase[],
-	minEdgesForAggregation: number = 2
+	minEdgesForAggregation: number = 2,
 ): AggregatedEdge[] {
 	// Group edges by source-target pair
 	const edgeGroups = new Map<string, EdgeBase[]>();
@@ -170,7 +170,7 @@ export function aggregateParallelEdges(
 export function detectEdgeClusters(
 	edges: EdgeBase[],
 	nodes: Node[],
-	densityThreshold: number = 10 // edges per 10000px²
+	densityThreshold: number = 10, // edges per 10000px²
 ): EdgeCluster[] {
 	const nodePositions = new Map<string, NodePosition>();
 	for (const node of nodes) {
@@ -255,7 +255,7 @@ function hashString(str: string): number {
  */
 export function sampleEdgesStatistically(
 	edges: EdgeBase[],
-	sampleRatio: number = 0.05
+	sampleRatio: number = 0.05,
 ): EdgeBase[] {
 	const sampledEdges: EdgeBase[] = [];
 
@@ -278,7 +278,7 @@ export function sampleEdgesStatistically(
 export function sampleEdgesByImportance(
 	edges: EdgeBase[],
 	maxEdges: number,
-	priorityTypes: LinkType[] = ['implements', 'tests', 'blocks']
+	priorityTypes: LinkType[] = ["implements", "tests", "blocks"],
 ): EdgeBase[] {
 	// Separate priority and non-priority edges
 	const priorityEdges: EdgeBase[] = [];
@@ -293,7 +293,10 @@ export function sampleEdgesByImportance(
 	}
 
 	// Calculate how many edges we can take from each group
-	const priorityCount = Math.min(priorityEdges.length, Math.floor(maxEdges * 0.7));
+	const priorityCount = Math.min(
+		priorityEdges.length,
+		Math.floor(maxEdges * 0.7),
+	);
 	const normalCount = Math.min(normalEdges.length, maxEdges - priorityCount);
 
 	// Sample normal edges if we have too many
@@ -311,17 +314,20 @@ export function sampleEdgesByImportance(
  */
 export function sampleEdgesHybrid(
 	edges: EdgeBase[],
-	config: EdgeSamplingConfig
+	config: EdgeSamplingConfig,
 ): EdgeBase[] {
 	// First, aggregate parallel edges
-	const aggregated = aggregateParallelEdges(edges, config.minEdgesForAggregation);
+	const aggregated = aggregateParallelEdges(
+		edges,
+		config.minEdgesForAggregation,
+	);
 
 	// If still too many, apply importance sampling
 	if (aggregated.length > config.maxVisibleEdges) {
 		return sampleEdgesByImportance(
 			aggregated,
 			config.maxVisibleEdges,
-			config.priorityTypes
+			config.priorityTypes,
 		);
 	}
 
@@ -337,13 +343,13 @@ export function sampleEdgesHybrid(
  */
 export function filterEdgesByType(
 	edges: EdgeBase[],
-	config: EdgeFilterConfig
+	config: EdgeFilterConfig,
 ): EdgeBase[] {
 	if (config.enabledTypes.size === 0) {
 		return edges; // No filter, return all
 	}
 
-	return edges.filter(edge => config.enabledTypes.has(edge.type));
+	return edges.filter((edge) => config.enabledTypes.has(edge.type));
 }
 
 /**
@@ -352,7 +358,7 @@ export function filterEdgesByType(
 export function getRelatedEdges(
 	edges: EdgeBase[],
 	selectedNodeIds: Set<string>,
-	maxEdges: number = 100
+	maxEdges: number = 100,
 ): EdgeBase[] {
 	const relatedEdges: EdgeBase[] = [];
 
@@ -372,7 +378,7 @@ export function getRelatedEdges(
 export function getEdgesOnDemand(
 	allEdges: EdgeBase[],
 	selectedNodeIds: Set<string>,
-	config: EdgeFilterConfig
+	config: EdgeFilterConfig,
 ): EdgeBase[] {
 	if (selectedNodeIds.size === 0) {
 		// No selection, return filtered edges
@@ -383,7 +389,7 @@ export function getEdgesOnDemand(
 	const relatedEdges = getRelatedEdges(
 		allEdges,
 		selectedNodeIds,
-		config.maxRelatedEdges
+		config.maxRelatedEdges,
 	);
 
 	// Apply type filter
@@ -413,7 +419,7 @@ export interface DenseClusterInfo {
 export function detectCanvasFallbackAreas(
 	edges: EdgeBase[],
 	nodes: Node[],
-	densityThreshold: number = 50 // edges per 10000px²
+	densityThreshold: number = 50, // edges per 10000px²
 ): DenseClusterInfo[] {
 	const nodePositions = new Map<string, NodePosition>();
 	for (const node of nodes) {
@@ -442,7 +448,7 @@ export function detectCanvasFallbackAreas(
 	const clusterInfos: DenseClusterInfo[] = [];
 
 	for (const [key, groupEdges] of gridGroups) {
-		const [gridX, gridY] = key.split(',').map(Number);
+		const [gridX, gridY] = key.split(",").map(Number);
 
 		// Calculate bounds (200x200 grid)
 		const bounds = {
@@ -464,7 +470,7 @@ export function detectCanvasFallbackAreas(
 		});
 	}
 
-	return clusterInfos.filter(info => info.useCanvasRendering);
+	return clusterInfos.filter((info) => info.useCanvasRendering);
 }
 
 // ============================================================================
@@ -493,7 +499,7 @@ export function applyLazyEdgeRendering(
 	nodes: Node[],
 	config: EdgeSamplingConfig,
 	filterConfig?: EdgeFilterConfig,
-	selectedNodeIds?: Set<string>
+	selectedNodeIds?: Set<string>,
 ): LazyEdgeRenderingResult {
 	const totalEdges = edges.length;
 
@@ -501,7 +507,7 @@ export function applyLazyEdgeRendering(
 	const canvasClusters = detectCanvasFallbackAreas(
 		edges,
 		nodes,
-		config.canvasFallbackDensity
+		config.canvasFallbackDensity,
 	);
 
 	// Remove edges that will be rendered in canvas
@@ -509,8 +515,8 @@ export function applyLazyEdgeRendering(
 	for (const cluster of canvasClusters) {
 		// Mark edges in this area for canvas rendering
 		for (const edge of edges) {
-			const sourcePos = nodes.find(n => n.id === edge.source)?.position;
-			const targetPos = nodes.find(n => n.id === edge.target)?.position;
+			const sourcePos = nodes.find((n) => n.id === edge.source)?.position;
+			const targetPos = nodes.find((n) => n.id === edge.target)?.position;
 
 			if (!sourcePos || !targetPos) continue;
 
@@ -528,7 +534,7 @@ export function applyLazyEdgeRendering(
 		}
 	}
 
-	const domEdges = edges.filter(edge => !canvasEdgeIds.has(edge.id));
+	const domEdges = edges.filter((edge) => !canvasEdgeIds.has(edge.id));
 
 	// Step 2: Apply semantic filtering if provided
 	let filteredEdges = domEdges;
@@ -543,19 +549,28 @@ export function applyLazyEdgeRendering(
 	// Step 3: Apply aggregation and sampling
 	let visibleEdges: AggregatedEdge[];
 
-	if (config.samplingStrategy === 'statistical') {
+	if (config.samplingStrategy === "statistical") {
 		// Pure statistical sampling
-		const aggregated = aggregateParallelEdges(filteredEdges, config.minEdgesForAggregation);
-		const sampleRatio = Math.min(config.maxVisibleEdges / aggregated.length, 1.0);
+		const aggregated = aggregateParallelEdges(
+			filteredEdges,
+			config.minEdgesForAggregation,
+		);
+		const sampleRatio = Math.min(
+			config.maxVisibleEdges / aggregated.length,
+			1.0,
+		);
 		const sampled = sampleEdgesStatistically(aggregated, sampleRatio);
 		visibleEdges = sampled as AggregatedEdge[];
-	} else if (config.samplingStrategy === 'importance') {
+	} else if (config.samplingStrategy === "importance") {
 		// Importance-based sampling
-		const aggregated = aggregateParallelEdges(filteredEdges, config.minEdgesForAggregation);
+		const aggregated = aggregateParallelEdges(
+			filteredEdges,
+			config.minEdgesForAggregation,
+		);
 		visibleEdges = sampleEdgesByImportance(
 			aggregated,
 			config.maxVisibleEdges,
-			config.priorityTypes
+			config.priorityTypes,
 		) as AggregatedEdge[];
 	} else {
 		// Hybrid (default)
@@ -566,7 +581,7 @@ export function applyLazyEdgeRendering(
 		visibleEdges,
 		stats: {
 			totalEdges,
-			aggregatedEdges: visibleEdges.filter(e => e._isAggregated).length,
+			aggregatedEdges: visibleEdges.filter((e) => e._isAggregated).length,
 			sampledEdges: visibleEdges.length,
 			filteredEdges: filteredEdges.length,
 			canvasClusters: canvasClusters.length,
@@ -581,30 +596,30 @@ export function applyLazyEdgeRendering(
 // ============================================================================
 
 export function createDefaultSamplingConfig(
-	totalEdges: number
+	totalEdges: number,
 ): EdgeSamplingConfig {
 	// Auto-tune based on edge count
 	let maxVisibleEdges = 100;
-	let samplingStrategy: 'statistical' | 'importance' | 'hybrid' = 'hybrid';
+	let samplingStrategy: "statistical" | "importance" | "hybrid" = "hybrid";
 
 	if (totalEdges < 1000) {
 		maxVisibleEdges = 500;
-		samplingStrategy = 'importance';
+		samplingStrategy = "importance";
 	} else if (totalEdges < 10000) {
 		maxVisibleEdges = 300;
-		samplingStrategy = 'hybrid';
+		samplingStrategy = "hybrid";
 	} else if (totalEdges < 100000) {
 		maxVisibleEdges = 150;
-		samplingStrategy = 'hybrid';
+		samplingStrategy = "hybrid";
 	} else {
 		maxVisibleEdges = 100;
-		samplingStrategy = 'statistical';
+		samplingStrategy = "statistical";
 	}
 
 	return {
 		maxVisibleEdges,
 		samplingStrategy,
-		priorityTypes: ['implements', 'tests', 'blocks', 'depends_on'],
+		priorityTypes: ["implements", "tests", "blocks", "depends_on"],
 		sampleRatio: maxVisibleEdges / totalEdges,
 		minEdgesForAggregation: 2,
 		canvasFallbackDensity: 50,

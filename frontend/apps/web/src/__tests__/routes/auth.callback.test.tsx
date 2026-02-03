@@ -18,18 +18,18 @@ describe("OAuth Callback Route", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		originalLocation = window.location;
+		originalLocation = globalThis.location;
 		const mockLocation: MockLocation = { href: "", search: "" };
-		Object.defineProperty(window, "location", {
+		Object.defineProperty(globalThis, "location", {
+			configurable: true,
 			value: mockLocation,
 			writable: true,
-			configurable: true,
 		});
 	});
 
 	afterEach(() => {
 		// Restore window.location
-		window.location = originalLocation;
+		globalThis.location = originalLocation;
 	});
 
 	it("validates callback route pattern matches /auth/callback", () => {
@@ -37,10 +37,10 @@ describe("OAuth Callback Route", () => {
 	});
 
 	it("handles OAuth error parameters in URL", () => {
-		window.location.search =
+		globalThis.location.search =
 			"?error=access_denied&error_description=User+cancelled";
 
-		const searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(globalThis.location.search);
 		const error = searchParams.get("error");
 		const errorDescription = searchParams.get("error_description");
 
@@ -49,27 +49,27 @@ describe("OAuth Callback Route", () => {
 	});
 
 	it("extracts returnTo parameter from URL", () => {
-		window.location.search = "?returnTo=/projects/123";
+		globalThis.location.search = "?returnTo=/projects/123";
 
-		const searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(globalThis.location.search);
 		const returnTo = searchParams.get("returnTo");
 
 		expect(returnTo).toBe("/projects/123");
 	});
 
 	it("defaults to home when no returnTo is provided", () => {
-		window.location.search = "";
+		globalThis.location.search = "";
 
-		const searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(globalThis.location.search);
 		const returnTo = searchParams.get("returnTo") || "/home";
 
 		expect(returnTo).toBe("/home");
 	});
 
 	it("handles OAuth code parameter in callback", () => {
-		window.location.search = "?code=test_code_123&state=state_value";
+		globalThis.location.search = "?code=test_code_123&state=state_value";
 
-		const searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(globalThis.location.search);
 		const code = searchParams.get("code");
 		const state = searchParams.get("state");
 
@@ -78,10 +78,10 @@ describe("OAuth Callback Route", () => {
 	});
 
 	it("extracts all query parameters correctly", () => {
-		window.location.search =
+		globalThis.location.search =
 			"?code=abc123&state=xyz789&returnTo=/dashboard";
 
-		const params = new URLSearchParams(window.location.search);
+		const params = new URLSearchParams(globalThis.location.search);
 
 		expect(params.get("code")).toBe("abc123");
 		expect(params.get("state")).toBe("xyz789");
@@ -89,17 +89,17 @@ describe("OAuth Callback Route", () => {
 	});
 
 	it("handles empty search string gracefully", () => {
-		window.location.search = "";
+		globalThis.location.search = "";
 
-		const params = new URLSearchParams(window.location.search);
+		const params = new URLSearchParams(globalThis.location.search);
 		expect(params.toString()).toBe("");
 	});
 
 	it("handles special characters in returnTo", () => {
-		window.location.search =
+		globalThis.location.search =
 			"?returnTo=%2Fprojects%2F123%2Fviews%2Ffeature";
 
-		const params = new URLSearchParams(window.location.search);
+		const params = new URLSearchParams(globalThis.location.search);
 		const returnTo = params.get("returnTo");
 
 		expect(returnTo).toBe("/projects/123/views/feature");

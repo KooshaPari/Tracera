@@ -219,7 +219,7 @@ test.describe("Export Functionality", () => {
 
 			if (await exportButton.isVisible()) {
 				const downloadPromise = page.waitForEvent("download", {
-					timeout: 10000,
+					timeout: 10_000,
 				});
 
 				await exportButton.click();
@@ -704,7 +704,7 @@ Test Item,Requirement,Pending,High`;
 				const lines = ["Title,Type,Status,Priority"];
 
 				// Generate 10000 rows (typically > file size limits)
-				for (let i = 0; i < 10000; i++) {
+				for (let i = 0; i < 10_000; i++) {
 					lines.push(`Item ${i},Requirement,Pending,High`);
 				}
 
@@ -1034,7 +1034,7 @@ test.describe("Export/Import Edge Cases", () => {
 				const download = await downloadPromise.catch(() => null);
 				if (download) {
 					const filePath = await download.path();
-					const content = fs.readFileSync(filePath, "utf-8");
+					const content = fs.readFileSync(filePath, "utf8");
 
 					// Verify special characters are preserved or escaped
 					expect(content).toBeTruthy();

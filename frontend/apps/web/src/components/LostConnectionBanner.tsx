@@ -17,7 +17,7 @@ export function LostConnectionBanner() {
 	const isConnecting = status === "connecting";
 	const isReconnecting = status === "reconnecting";
 	const isWaiting = isConnecting || isReconnecting;
-// 	const _isLost = !isWaiting;
+	// 	Const _isLost = !isWaiting;
 
 	// Same palette as preflight: connecting = amber, lost = red (unhealthy)
 	const stripStyle = isWaiting
@@ -40,17 +40,15 @@ export function LostConnectionBanner() {
 			role="status"
 			aria-live="polite"
 			aria-atomic="true"
-			aria-label={
-				isWaiting ? "Connecting to server…" : "Connection lost"
-			}
+			aria-label={isWaiting ? "Connecting to server…" : "Connection lost"}
 			style={{ background: "#0b0f14" }}
 		>
 			{/* Card: same as preflight (max-width, padding, border, bg) */}
 			<div
 				className="w-full max-w-[480px] rounded-2xl border px-8 py-6 shadow-xl"
 				style={{
-					borderColor: "#1f2a37",
 					background: "#0f1720",
+					borderColor: "#1f2a37",
 				}}
 			>
 				<h1 className="mb-1 text-xl font-semibold" style={{ color: "#e6edf3" }}>
@@ -67,19 +65,16 @@ export function LostConnectionBanner() {
 					style={stripStyle}
 				>
 					{isWaiting ? (
-						<Loader2
-							className="h-5 w-5 shrink-0 animate-spin"
-							aria-hidden
-						/>
+						<Loader2 className="h-5 w-5 shrink-0 animate-spin" aria-hidden />
 					) : (
 						<WifiOff className="h-5 w-5 shrink-0" aria-hidden />
 					)}
 					<span>
 						{isConnecting
 							? "Connecting"
-							: isReconnecting
+							: (isReconnecting
 								? "Reconnecting"
-								: "Disconnected"}
+								: "Disconnected")}
 					</span>
 					{isWaiting && (
 						<span
@@ -91,10 +86,7 @@ export function LostConnectionBanner() {
 					)}
 				</div>
 				{lastError && (
-					<p
-						className="mt-3 truncate text-xs"
-						style={{ color: "#9aa4b2" }}
-					>
+					<p className="mt-3 truncate text-xs" style={{ color: "#9aa4b2" }}>
 						{lastError}
 					</p>
 				)}
@@ -107,11 +99,11 @@ export function LostConnectionBanner() {
 						<div
 							className="h-full rounded-full"
 							style={{
-								width: "100%",
+								animation: "connection-shimmer 1.2s ease-in-out infinite",
 								background:
 									"linear-gradient(90deg, #1f2a37 25%, #f59e0b 37%, #1f2a37 63%)",
 								backgroundSize: "400px 100%",
-								animation: "connection-shimmer 1.2s ease-in-out infinite",
+								width: "100%",
 							}}
 							aria-hidden
 						/>
@@ -125,21 +117,21 @@ export function LostConnectionBanner() {
 								<span
 									className="h-4 w-4 shrink-0 rounded-full"
 									style={{
+										animation: "connection-shimmer 1.2s ease-in-out infinite",
 										background:
 											"linear-gradient(90deg, #1f2a37 25%, #273444 37%, #1f2a37 63%)",
 										backgroundSize: "400px 100%",
-										animation: "connection-shimmer 1.2s ease-in-out infinite",
 									}}
 								/>
 								<span
 									className="h-3 rounded-full"
 									style={{
-										width: `${w}%`,
+										animation: "connection-shimmer 1.2s ease-in-out infinite",
+										animationDelay: `${i * 0.15}s`,
 										background:
 											"linear-gradient(90deg, #1f2a37 25%, #273444 37%, #1f2a37 63%)",
 										backgroundSize: "400px 100%",
-										animation: "connection-shimmer 1.2s ease-in-out infinite",
-										animationDelay: `${i * 0.15}s`,
+										width: `${w}%`,
 									}}
 								/>
 							</li>

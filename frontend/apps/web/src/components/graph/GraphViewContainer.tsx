@@ -84,152 +84,156 @@ interface ViewConfig {
 const VIEW_CONFIGS: ViewConfig[] = [
 	// ---- Graph & diagram views (same data, different layout or visualization) ----
 	{
-		id: "traceability",
-		label: "Traceability Graph",
+		category: "graph",
 		description: "Full node graph with all connections",
 		icon: Network,
-		category: "graph",
+		id: "traceability",
+		label: "Traceability Graph",
 		layoutPreference: "organic-network",
 	},
 	{
-		id: "flow-chart",
-		label: "Flow Chart",
+		category: "graph",
 		description: "Top-to-bottom directed flow",
 		icon: ArrowDown,
-		category: "graph",
+		id: "flow-chart",
+		label: "Flow Chart",
 		layoutPreference: "flow-chart",
 	},
 	{
-		id: "dependency-graph",
-		label: "Dependency Graph",
+		category: "graph",
 		description: "Dependencies and relationships",
 		icon: Share2,
-		category: "graph",
+		id: "dependency-graph",
+		label: "Dependency Graph",
 		layoutPreference: "flow-chart",
 	},
 	{
-		id: "hierarchy",
-		label: "Hierarchy / Tree",
+		category: "graph",
 		description: "Tree structure and parent-child",
 		icon: GitBranch,
-		category: "graph",
+		id: "hierarchy",
+		label: "Hierarchy / Tree",
 		layoutPreference: "tree",
 	},
 	{
-		id: "impact-map",
-		label: "Impact Map",
+		category: "graph",
 		description: "Impact and downstream effects",
 		icon: MapPin,
-		category: "graph",
+		id: "impact-map",
+		label: "Impact Map",
 		layoutPreference: "organic-network",
 	},
 	{
-		id: "journey-map",
-		label: "Journey Map",
+		category: "graph",
 		description: "User flows and sequences",
 		icon: Route,
-		category: "graph",
+		id: "journey-map",
+		label: "Journey Map",
 		layoutPreference: "timeline",
 	},
 	{
-		id: "mind-map",
-		label: "Mind Map",
+		category: "graph",
 		description: "Radial layout from center",
 		icon: CircleDot,
-		category: "graph",
+		id: "mind-map",
+		label: "Mind Map",
 		layoutPreference: "mind-map",
 	},
 	{
-		id: "gallery",
-		label: "Gallery / Grid",
+		category: "graph",
 		description: "Grid for quick overview",
 		icon: LayoutGrid,
-		category: "graph",
+		id: "gallery",
+		label: "Gallery / Grid",
 		layoutPreference: "gallery",
 	},
 	// ---- Diagram views (different visualization) ----
 	{
-		id: "page-flow",
-		label: "Page Flow",
+		category: "diagram",
 		description: "UI page interactions and navigation",
 		icon: Workflow,
-		category: "diagram",
+		id: "page-flow",
+		label: "Page Flow",
 	},
 	{
-		id: "components",
-		label: "Component Library",
+		category: "diagram",
 		description: "UI component tree and hierarchy",
 		icon: Component,
-		category: "diagram",
+		id: "components",
+		label: "Component Library",
 	},
 	// ---- Perspectives (filtered by type) ----
 	{
-		id: "perspective-product",
-		label: "Product View",
+		category: "perspective",
 		description: "Features, epics, and user stories",
 		icon: ShoppingCart,
-		category: "perspective",
+		id: "perspective-product",
+		label: "Product View",
 		perspective: "product",
 	},
 	{
-		id: "perspective-business",
-		label: "Business View",
+		category: "perspective",
 		description: "Business rules and requirements",
 		icon: FileStack,
-		category: "perspective",
+		id: "perspective-business",
+		label: "Business View",
 		perspective: "business",
 	},
 	{
-		id: "perspective-technical",
-		label: "Technical View",
+		category: "perspective",
 		description: "Architecture and implementation",
 		icon: GitBranch,
-		category: "perspective",
+		id: "perspective-technical",
+		label: "Technical View",
 		perspective: "technical",
 	},
 	{
-		id: "perspective-ui",
-		label: "UI/UX View",
+		category: "perspective",
 		description: "Wireframes, mockups, and screens",
 		icon: Monitor,
-		category: "perspective",
+		id: "perspective-ui",
+		label: "UI/UX View",
 		perspective: "ui",
 	},
 	{
-		id: "perspective-security",
-		label: "Security View",
+		category: "perspective",
 		description: "Security requirements and controls",
 		icon: Lock,
-		category: "perspective",
+		id: "perspective-security",
+		label: "Security View",
 		perspective: "security",
 	},
 	{
-		id: "perspective-performance",
-		label: "Performance View",
+		category: "perspective",
 		description: "Performance requirements and metrics",
 		icon: Zap,
-		category: "perspective",
+		id: "perspective-performance",
+		label: "Performance View",
 		perspective: "performance",
 	},
 ];
 
 /** Project view nav items for sidebar (Feature, API, Test, Graph, etc.) */
-const PROJECT_VIEW_NAV: { label: string; viewType: string; icon: React.ComponentType<{ className?: string }> }[] = [
-	{ label: "Features", viewType: "feature", icon: Layers },
-	{ label: "Traceability / Graph", viewType: "graph", icon: Network },
-	{ label: "Test Suite", viewType: "test", icon: TestTube },
-	{ label: "API Docs", viewType: "api", icon: Globe },
-	{ label: "Database", viewType: "database", icon: Database },
-	{ label: "Wireframe", viewType: "wireframe", icon: LayoutGrid },
-	{ label: "Matrix", viewType: "matrix", icon: BarChart3 },
-	{ label: "Workflows", viewType: "workflows", icon: Activity },
-	{ label: "Code", viewType: "code", icon: Code },
-	{ label: "Test Cases", viewType: "test-cases", icon: TestTube },
-	{ label: "Test Runs", viewType: "test-runs", icon: Activity },
-	{ label: "Test Suites", viewType: "test-suites", icon: FileStack },
-	{ label: "Problem", viewType: "problem", icon: Shield },
-	{ label: "Process", viewType: "process", icon: Workflow },
-	{ label: "Documentation", viewType: "documentation", icon: BookOpen },
+const PROJECT_VIEW_NAV: {
+	label: string;
+	viewType: string;
+	icon: React.ComponentType<{ className?: string }>;
+}[] = [
+	{ icon: Layers, label: "Features", viewType: "feature" },
+	{ icon: Network, label: "Traceability / Graph", viewType: "graph" },
+	{ icon: TestTube, label: "Test Suite", viewType: "test" },
+	{ icon: Globe, label: "API Docs", viewType: "api" },
+	{ icon: Database, label: "Database", viewType: "database" },
+	{ icon: LayoutGrid, label: "Wireframe", viewType: "wireframe" },
+	{ icon: BarChart3, label: "Matrix", viewType: "matrix" },
+	{ icon: Activity, label: "Workflows", viewType: "workflows" },
+	{ icon: Code, label: "Code", viewType: "code" },
+	{ icon: TestTube, label: "Test Cases", viewType: "test-cases" },
+	{ icon: Activity, label: "Test Runs", viewType: "test-runs" },
+	{ icon: FileStack, label: "Test Suites", viewType: "test-suites" },
+	{ icon: Shield, label: "Problem", viewType: "problem" },
+	{ icon: Workflow, label: "Process", viewType: "process" },
+	{ icon: BookOpen, label: "Documentation", viewType: "documentation" },
 ];
 
 interface GraphViewContainerProps {
@@ -280,12 +284,12 @@ export function GraphViewContainer({
 	const _perspectiveCounts = useMemo(() => {
 		const counts = {
 			all: items.length,
-			product: 0,
 			business: 0,
+			performance: 0,
+			product: 0,
+			security: 0,
 			technical: 0,
 			ui: 0,
-			security: 0,
-			performance: 0,
 		};
 
 		for (const item of items) {
@@ -298,7 +302,7 @@ export function GraphViewContainer({
 				itemType.includes("story") ||
 				itemType.includes("requirement")
 			) {
-				counts.product++;
+				counts.product += 1;
 			}
 
 			// Business items
@@ -307,7 +311,7 @@ export function GraphViewContainer({
 				itemType.includes("rule") ||
 				itemType.includes("process")
 			) {
-				counts.business++;
+				counts.business += 1;
 			}
 
 			// Technical items
@@ -318,7 +322,7 @@ export function GraphViewContainer({
 				itemType.includes("service") ||
 				itemType.includes("module")
 			) {
-				counts.technical++;
+				counts.technical += 1;
 			}
 
 			// UI items
@@ -330,17 +334,17 @@ export function GraphViewContainer({
 				itemType.includes("component") ||
 				itemType.includes("screen")
 			) {
-				counts.ui++;
+				counts.ui += 1;
 			}
 
 			// Security items
 			if (itemType.includes("security") || itemType.includes("auth")) {
-				counts.security++;
+				counts.security += 1;
 			}
 
 			// Performance items
 			if (itemType.includes("performance") || itemType.includes("metric")) {
-				counts.performance++;
+				counts.performance += 1;
 			}
 		}
 
@@ -350,7 +354,7 @@ export function GraphViewContainer({
 	// Get count for a view
 	// Helper to count items by view type (available for future use)
 	/*
-	const getViewCount = useCallback(
+	Const getViewCount = useCallback(
 		(config: ViewConfig): number | undefined => {
 			if (config.category === "graph") return items.length;
 			if (config.category === "diagram") {
@@ -404,7 +408,7 @@ export function GraphViewContainer({
 		(c) => c.category === "perspective",
 	);
 	// Combine graph and diagram views (available for future use)
-// 	const __mainViews = [...graphViews, ...diagramViews];
+	// 	Const __mainViews = [...graphViews, ...diagramViews];
 
 	// Filter view configs by search (for combobox)
 	const searchLower = viewTypeSearch.trim().toLowerCase();
@@ -454,7 +458,9 @@ export function GraphViewContainer({
 					{!sidebarCollapsed && (
 						<div className="flex items-center gap-1.5 min-w-0">
 							<Layers className="h-4 w-4 sm:h-[1.1rem] shrink-0 text-primary" />
-							<span className="font-semibold text-xs sm:text-sm truncate">Views</span>
+							<span className="font-semibold text-xs sm:text-sm truncate">
+								Views
+							</span>
 						</div>
 					)}
 					<Button
@@ -509,12 +515,18 @@ export function GraphViewContainer({
 									className={cn(
 										"flex items-center gap-2 sm:gap-3 h-9 sm:h-10 px-2 sm:px-3 rounded-md transition-all min-w-0 w-full",
 										sidebarCollapsed && "justify-center px-2",
-										isActive && "bg-primary/10 text-primary hover:bg-primary/15",
+										isActive &&
+											"bg-primary/10 text-primary hover:bg-primary/15",
 										!isActive && "hover:bg-muted/50",
 									)}
 									title={sidebarCollapsed ? nav.label : undefined}
 								>
-									<Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0", isActive && "text-primary")} />
+									<Icon
+										className={cn(
+											"h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0",
+											isActive && "text-primary",
+										)}
+									/>
 									{!sidebarCollapsed && (
 										<span className="truncate flex-1 text-left text-xs sm:text-sm min-w-0">
 											{nav.label}
@@ -586,7 +598,9 @@ export function GraphViewContainer({
 												<div className="flex items-center gap-2 min-w-0">
 													<config.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
 													<div className="min-w-0 flex-1">
-														<span className="block truncate text-xs sm:text-sm">{config.label}</span>
+														<span className="block truncate text-xs sm:text-sm">
+															{config.label}
+														</span>
 														<span className="block text-[10px] sm:text-[11px] text-muted-foreground line-clamp-2">
 															{config.description}
 														</span>
@@ -599,7 +613,9 @@ export function GraphViewContainer({
 												<div className="flex items-center gap-2 min-w-0">
 													<config.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
 													<div className="min-w-0 flex-1">
-														<span className="block truncate text-xs sm:text-sm">{config.label}</span>
+														<span className="block truncate text-xs sm:text-sm">
+															{config.label}
+														</span>
 														<span className="block text-[10px] sm:text-[11px] text-muted-foreground line-clamp-2">
 															{config.description}
 														</span>
@@ -618,7 +634,9 @@ export function GraphViewContainer({
 												<div className="flex items-center gap-2 min-w-0">
 													<config.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
 													<div className="min-w-0 flex-1">
-														<span className="block truncate text-xs sm:text-sm">{config.label}</span>
+														<span className="block truncate text-xs sm:text-sm">
+															{config.label}
+														</span>
 														<span className="block text-[10px] sm:text-[11px] text-muted-foreground line-clamp-2">
 															{config.description}
 														</span>
@@ -666,14 +684,13 @@ export function GraphViewContainer({
 				{/* View content */}
 				<div className="flex-1 overflow-hidden relative">
 					{children({
-						viewMode,
-						perspective: getPerspective(viewMode),
-						layoutPreference: currentConfig?.layoutPreference,
 						items,
+						layoutPreference: currentConfig?.layoutPreference,
 						links,
 						onNavigateToItem,
+						perspective: getPerspective(viewMode),
+						viewMode,
 					})}
-
 				</div>
 			</div>
 		</div>

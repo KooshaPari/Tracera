@@ -17,7 +17,6 @@ export function getServer() {
 
 // For backward compatibility if code imports server directly
 export const server = new Proxy({} as ReturnType<typeof setupServer>, {
-	get: (_target, prop) => {
-		return getServer()[prop as keyof ReturnType<typeof setupServer>];
-	},
+	get: (_target, prop) =>
+		getServer()[prop as keyof ReturnType<typeof setupServer>],
 });

@@ -5,12 +5,11 @@ import { describe, expect, it } from "vitest";
 // Input Sanitization Tests
 describe("Input Sanitization Tests", () => {
 	describe("Text Input Sanitization", () => {
-		const sanitizeText = (input: string): string => {
-			return input
+		const sanitizeText = (input: string): string =>
+			input
 				.trim()
 				.replace(/[<>]/g, "") // Remove angle brackets
-				.substring(0, 1000); // Limit length
-		};
+				.substring(0, 1000);
 
 		it("should trim whitespace", () => {
 			const input = "  test  ";
@@ -46,7 +45,7 @@ describe("Input Sanitization Tests", () => {
 			}
 
 			// Remove potentially dangerous characters
-			return trimmed.replace(/[<>'"]/g, "");
+			return trimmed.replaceAll(/[<>'"]/g, "");
 		};
 
 		it("should validate email format", () => {
@@ -95,9 +94,9 @@ describe("Input Sanitization Tests", () => {
 				}
 
 				return urlObj.toString();
-            } catch {
-                return null;
-            }
+			} catch {
+				return null;
+			}
 		};
 
 		it("should accept valid HTTPS URLs", () => {
@@ -140,8 +139,10 @@ describe("Input Sanitization Tests", () => {
 	});
 
 	describe("Rich Text Sanitization", () => {
-		const sanitizeRichText = (html: string): string => {
-			return DOMPurify.sanitize(html, {
+		const sanitizeRichText = (html: string): string =>
+			DOMPurify.sanitize(html, {
+				ALLOW_DATA_ATTR: false,
+				ALLOWED_ATTR: ["href", "title"],
 				ALLOWED_TAGS: [
 					"p",
 					"br",
@@ -159,11 +160,8 @@ describe("Input Sanitization Tests", () => {
 					"code",
 					"pre",
 				],
-				ALLOWED_ATTR: ["href", "title"],
-				ALLOW_DATA_ATTR: false,
 				KEEP_CONTENT: true,
 			});
-		};
 
 		it("should preserve safe HTML tags", () => {
 			const input = "<p>Hello <strong>World</strong></p>";
@@ -206,12 +204,11 @@ describe("Input Sanitization Tests", () => {
 	});
 
 	describe("Filename Sanitization", () => {
-		const sanitizeFilename = (filename: string): string => {
-			return filename
+		const sanitizeFilename = (filename: string): string =>
+			filename
 				.replace(/[^a-zA-Z0-9._-]/g, "_") // Replace special chars
 				.replace(/\.{2,}/g, ".") // Remove directory traversal
-				.substring(0, 255); // Limit length
-		};
+				.substring(0, 255);
 
 		it("should remove path traversal attempts", () => {
 			const malicious = "../../../etc/passwd";
@@ -255,9 +252,9 @@ describe("Input Sanitization Tests", () => {
 				delete parsed.prototype;
 
 				return parsed;
-            } catch {
-                return null;
-            }
+			} catch {
+				return null;
+			}
 		};
 
 		it("should parse valid JSON", () => {
@@ -284,12 +281,11 @@ describe("Input Sanitization Tests", () => {
 	});
 
 	describe("Search Query Sanitization", () => {
-		const sanitizeSearchQuery = (query: string): string => {
-			return query
+		const sanitizeSearchQuery = (query: string): string =>
+			query
 				.trim()
 				.replace(/[<>'"]/g, "") // Remove potential XSS
-				.substring(0, 200); // Limit length
-		};
+				.substring(0, 200);
 
 		it("should trim whitespace", () => {
 			const query = "  search term  ";
@@ -318,7 +314,7 @@ describe("Input Sanitization Tests", () => {
 	describe("Phone Number Sanitization", () => {
 		const sanitizePhoneNumber = (phone: string): string | null => {
 			// Remove all non-digit characters
-			const digitsOnly = phone.replace(/\D/g, "");
+			const digitsOnly = phone.replaceAll(/\D/g, "");
 
 			// Validate length (example: 10-15 digits)
 			if (digitsOnly.length < 10 || digitsOnly.length > 15) {
@@ -361,9 +357,9 @@ describe("Input Sanitization Tests", () => {
 			const cleaned = tag
 				.trim()
 				.toLowerCase()
-				.replace(/[^a-z0-9-]/g, "-") // Replace special chars with dash
-				.replace(/-+/g, "-") // Collapse multiple dashes
-				.replace(/^-|-$/g, ""); // Remove leading/trailing dashes
+				.replaceAll(/[^a-z0-9-]/g, "-") // Replace special chars with dash
+				.replaceAll(/-+/g, "-") // Collapse multiple dashes
+				.replaceAll(/^-|-$/g, ""); // Remove leading/trailing dashes
 
 			if (cleaned.length < 2 || cleaned.length > 50) {
 				return null;
@@ -406,7 +402,7 @@ describe("Input Sanitization Tests", () => {
 			min?: number,
 			max?: number,
 		): number | null => {
-			const num = parseInt(input, 10);
+			const num = Number.parseInt(input, 10);
 
 			if (Number.isNaN(num)) {
 				return null;
@@ -515,28 +511,34 @@ describe("Input Sanitization Tests", () => {
 describe("Comprehensive Sanitization Helper", () => {
 	const sanitizeInput = (input: unknown, type: string): unknown => {
 		switch (type) {
-			case "text":
+			case "text": {
 				return input.trim().substring(0, 1000);
-			case "html":
+			}
+			case "html": {
 				return DOMPurify.sanitize(input);
-			case "email":
+			}
+			case "email": {
 				return input
 					.trim()
 					.toLowerCase()
 					.replace(/[<>'"]/g, "");
-			case "url":
+			}
+			case "url": {
 				try {
 					const url = new URL(input);
 					return ["http:", "https:"].includes(url.protocol)
 						? url.toString()
 						: null;
-            } catch {
-                return null;
-            }
-			case "integer":
+				} catch {
+					return null;
+				}
+			}
+			case "integer": {
 				return parseInt(input, 10) || 0;
-			default:
+			}
+			default: {
 				return input;
+			}
 		}
 	};
 

@@ -17,15 +17,15 @@ import {
 	ConfirmationDialog,
 } from "../../components/ui/confirmation-dialog";
 
-describe("ConfirmationDialog", () => {
+describe(ConfirmationDialog, () => {
 	let user: ReturnType<typeof userEvent.setup>;
 	const defaultProps = {
-		open: true,
-		onOpenChange: vi.fn(),
-		title: "Delete item?",
 		description: "This action cannot be undone.",
-		onConfirm: vi.fn(),
 		onCancel: vi.fn(),
+		onConfirm: vi.fn(),
+		onOpenChange: vi.fn(),
+		open: true,
+		title: "Delete item?",
 	};
 
 	beforeEach(() => {
@@ -43,9 +43,7 @@ describe("ConfirmationDialog", () => {
 	});
 
 	it("does not render when closed", () => {
-		render(
-			<ConfirmationDialog {...defaultProps} open={false} />,
-		);
+		render(<ConfirmationDialog {...defaultProps} open={false} />);
 
 		expect(screen.queryByText("Delete item?")).not.toBeInTheDocument();
 	});
@@ -88,11 +86,7 @@ describe("ConfirmationDialog", () => {
 
 	it("shows loading state", () => {
 		render(
-			<ConfirmationDialog
-				{...defaultProps}
-				isLoading={true}
-				confirmText="Delete"
-			/>,
+			<ConfirmationDialog {...defaultProps} isLoading confirmText="Delete" />,
 		);
 
 		const confirmButton = screen.getByRole("button", { name: /deleting/i });
@@ -109,11 +103,7 @@ describe("ConfirmationDialog", () => {
 
 	it("shows warning for critical severity", () => {
 		render(
-			<ConfirmationDialog
-				{...defaultProps}
-				severity="critical"
-				showWarning={true}
-			/>,
+			<ConfirmationDialog {...defaultProps} severity="critical" showWarning />,
 		);
 
 		expect(
@@ -168,7 +158,7 @@ describe("ConfirmationDialog", () => {
 		render(
 			<ConfirmationDialog
 				{...defaultProps}
-				isLoading={true}
+				isLoading
 				confirmText="Delete"
 				cancelText="Cancel"
 			/>,
@@ -196,14 +186,14 @@ describe("ConfirmationDialog", () => {
 	});
 });
 
-describe("BulkConfirmationDialog", () => {
+describe(BulkConfirmationDialog, () => {
 	let user: ReturnType<typeof userEvent.setup>;
 	const defaultProps = {
-		open: true,
-		onOpenChange: vi.fn(),
 		actionType: "delete" as const,
 		itemCount: 5,
 		onConfirm: vi.fn(),
+		onOpenChange: vi.fn(),
+		open: true,
 	};
 
 	beforeEach(() => {
@@ -258,10 +248,10 @@ describe("BulkConfirmationDialog", () => {
 
 	it("handles different action types", () => {
 		const actionTypes = [
-			{ type: "delete" as const, icon: "Delete" },
-			{ type: "archive" as const, icon: "Archive" },
-			{ type: "status-change" as const, icon: "Change status" },
-			{ type: "assign" as const, icon: "Assign" },
+			{ icon: "Delete", type: "delete" as const },
+			{ icon: "Archive", type: "archive" as const },
+			{ icon: "Change status", type: "status-change" as const },
+			{ icon: "Assign", type: "assign" as const },
 		];
 
 		actionTypes.forEach(({ type }) => {

@@ -1,332 +1,186 @@
-/**
- * MCP HTTP Client for TraceRTM
- *
- * Provides HTTP transport for MCP protocol with:
- * - JSON-RPC 2.0 request/response handling
- * - Bearer token authentication
- * - Server-Sent Events (SSE) for progress streaming
- * - TypeScript type safety
- */
-
 import EventSourcePolyfill from "event-source-polyfill";
+import type {
+	JsonRpcRequest,
+	JsonRpcResponse,
+	MCPClientConfig,
+	MCPEventSource,
+	MCPPrompt,
+	MCPResource,
+	MCPTool,
+	ProgressNotification,
+} from "./mcp-client-types";
+import { type MCPClientState, type ProgressCallbacks, mcpClientUtils } from "./mcp-client-utils";
 
-/**
- * JSON-RPC 2.0 request structure
- */
-export interface JsonRpcRequest {
-	jsonrpc: "2.0";
-	id: string | number;
-	method: string;
-	params?: Record<string, unknown> | undefined;
-}
+type InitializeResponse = {
+	capabilities: Record<string, unknown>;
+	protocolVersion: string;
+	serverInfo: { name: string; version: string };
+};
 
-/**
- * JSON-RPC 2.0 response structure
- */
-export interface JsonRpcResponse<T = unknown> {
-	jsonrpc: "2.0";
-	id: string | number;
-	result?: T;
-	error?: {
-		code: number;
-		message: string;
-		data?: unknown;
-	};
-}
+type InitializeParams = {
+	capabilities?: Record<string, unknown>;
+	clientInfo?: { name: string; version: string };
+	protocolVersion?: string;
+};
 
-/**
- * MCP tool parameter definition
- */
-export interface MCPToolParam {
-	name: string;
-	type: string;
-	description?: string;
-	required?: boolean;
-	default?: unknown;
-}
-
-/**
- * MCP tool definition
- */
-export interface MCPTool {
-	name: string;
-	description: string;
-	parameters: MCPToolParam[];
-}
-
-/**
- * MCP resource definition
- */
-export interface MCPResource {
-	uri: string;
-	name: string;
-	description?: string;
-	mimeType?: string;
-}
-
-/**
- * MCP prompt definition
- */
-export interface MCPPrompt {
-	name: string;
-	description?: string;
-	arguments?: MCPToolParam[];
-}
-
-/**
- * Progress notification from SSE stream
- */
-export interface ProgressNotification {
-	progress: number;
-	total?: number;
-	message?: string;
-}
-
-/**
- * MCP client configuration
- */
-export interface MCPClientConfig {
-	baseUrl: string;
-	token?: string;
-	timeout?: number;
-}
-
-/**
- * HTTP-based MCP client implementation
- */
-export class MCPClient {
-	private baseUrl: string;
-	private token?: string;
-	private timeout: number;
-	private requestId = 0;
+class MCPClient {
+	private state: MCPClientState;
 
 	constructor(config: MCPClientConfig) {
-		this.baseUrl = config.baseUrl.replace(/\/$/, ""); // Remove trailing slash
-		this.token = config.token;
-		this.timeout = config.timeout || 30000;
+		this.state = mcpClientUtils.createMcpState(config);
 	}
 
-	/**
-	 * Set or update the authentication token
-	 */
 	setToken(token: string): void {
-		this.token = token;
+		this.state.token = token;
 	}
 
-	/**
-	 * Generate a unique request ID
-	 */
 	private nextRequestId(): number {
-		return ++this.requestId;
+		this.state.requestId += 1;
+		return this.state.requestId;
 	}
 
-	/**
-	 * Build headers for MCP requests
-	 */
-	private buildHeaders(): Record<string, string> {
-		const headers: Record<string, string> = {
-			"Content-Type": "application/json",
-		};
-
-		if (this.token) {
-			headers['Authorization'] = `Bearer ${this.token}`;
-		}
-
-		return headers;
-	}
-
-	/**
-	 * Send a JSON-RPC request to the MCP server
-	 */
-	private async sendRequest<T>(
+	private buildRequestPayload(
 		method: string,
 		params?: Record<string, unknown>,
-	): Promise<T> {
-		const request: JsonRpcRequest = {
-			jsonrpc: "2.0",
-			id: this.nextRequestId(),
-			method,
-			params,
-		};
+	): JsonRpcRequest {
+		return mcpClientUtils.createRequestPayload(this.nextRequestId(), method, params);
+	}
 
+	private async sendRequest<TResult>(
+		method: string,
+		params?: Record<string, unknown>,
+	): Promise<TResult> {
+		const request = this.buildRequestPayload(method, params);
 		const controller = new AbortController();
-		let timeoutId: ReturnType<typeof setTimeout> | null = null;
-		const timeoutPromise = new Promise<never>((_, reject) => {
-			timeoutId = setTimeout(() => {
-				controller.abort();
-				reject(new Error("Request timeout"));
-			}, this.timeout);
-		});
+		const timeoutId = setTimeout(() => {
+			controller.abort();
+		}, this.state.timeout);
 
 		try {
-			const fetchPromise = fetch(`${this.baseUrl}/mcp/rpc`, {
-				method: "POST",
-				headers: this.buildHeaders(),
+			const response = await fetch(`${this.state.baseUrl}/mcp/rpc`, {
 				body: JSON.stringify(request),
+				headers: mcpClientUtils.createHeaders(this.state.token),
+				method: "POST",
 				signal: controller.signal,
 			});
-			const response = await Promise.race([fetchPromise, timeoutPromise]);
 
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+			return mcpClientUtils.parseResponse<TResult>(response);
+		} catch (error) {
+			if (error instanceof DOMException && error.name === "AbortError") {
+				throw new Error("Request timeout", { cause: error });
 			}
-
-			const data: JsonRpcResponse<T> = await response.json();
-
-			if (data.error) {
-				throw new Error(
-					`JSON-RPC Error ${data.error.code}: ${data.error.message}`,
-				);
-			}
-
-			if (data.result === undefined) {
-				throw new Error("Invalid JSON-RPC response: missing result");
-			}
-
-			return data.result;
+			throw error;
 		} finally {
-			if (timeoutId) {
-				clearTimeout(timeoutId);
-			}
+			clearTimeout(timeoutId);
 		}
 	}
 
-	/**
-	 * Initialize the MCP session
-	 */
-	async initialize(params?: {
-		protocolVersion?: string;
-		capabilities?: Record<string, unknown>;
-		clientInfo?: { name: string; version: string };
-	}): Promise<{
-		protocolVersion: string;
-		capabilities: Record<string, unknown>;
-		serverInfo: { name: string; version: string };
-	}> {
+	initialize(params?: InitializeParams): Promise<InitializeResponse> {
 		return this.sendRequest("initialize", params);
 	}
 
-	/**
-	 * List available tools
-	 */
-	async listTools(): Promise<{ tools: MCPTool[] }> {
+	listTools(): Promise<{ tools: MCPTool[] }> {
 		return this.sendRequest("tools/list");
 	}
 
-	/**
-	 * Call a tool with parameters
-	 */
-	async callTool<T = unknown>(
+	callTool<TResult = unknown>(
 		name: string,
 		args?: Record<string, unknown>,
-	): Promise<T> {
-		return this.sendRequest("tools/call", { name, arguments: args });
+	): Promise<TResult> {
+		return this.sendRequest("tools/call", { arguments: args, name });
 	}
 
-	/**
-	 * List available resources
-	 */
-	async listResources(): Promise<{ resources: MCPResource[] }> {
+	listResources(): Promise<{ resources: MCPResource[] }> {
 		return this.sendRequest("resources/list");
 	}
 
-	/**
-	 * Read a resource by URI
-	 */
-	async readResource(uri: string): Promise<{ contents: unknown }> {
+	readResource(uri: string): Promise<{ contents: unknown }> {
 		return this.sendRequest("resources/read", { uri });
 	}
 
-	/**
-	 * List available prompts
-	 */
-	async listPrompts(): Promise<{ prompts: MCPPrompt[] }> {
+	listPrompts(): Promise<{ prompts: MCPPrompt[] }> {
 		return this.sendRequest("prompts/list");
 	}
 
-	/**
-	 * Get a prompt with arguments
-	 */
-	async getPrompt(
+	getPrompt(
 		name: string,
 		args?: Record<string, unknown>,
 	): Promise<{ messages: unknown[] }> {
-		return this.sendRequest("prompts/get", { name, arguments: args });
+		return this.sendRequest("prompts/get", { arguments: args, name });
 	}
 
-	/**
-	 * Subscribe to progress notifications via SSE
-	 */
-	subscribeToProgress(
-		onProgress: (notification: ProgressNotification) => void,
-		onError?: (error: Error) => void,
-	): () => void {
+	subscribeToProgress(callbacks: ProgressCallbacks): () => void {
 		const headers: Record<string, string> = {};
-		if (this.token) {
-			headers['Authorization'] = `Bearer ${this.token}`;
+
+		if (mcpClientUtils.isNonEmptyString(this.state.token)) {
+			headers["Authorization"] = `Bearer ${this.state.token}`;
 		}
 
-		const eventSource = new EventSourcePolyfill(
-			`${this.baseUrl}/mcp/progress`,
-			{
-				headers,
-			},
+		const eventSource: MCPEventSource = new EventSourcePolyfill(
+			`${this.state.baseUrl}/mcp/progress`,
+			{ headers },
 		);
 
 		/* eslint-disable unicorn/prefer-add-event-listener -- EventSource API uses .onmessage/.onerror */
-		eventSource.onmessage = (event: MessageEvent) => {
+		eventSource.onmessage = (event: MessageEvent): void => {
 			try {
-				const notification = JSON.parse(event.data) as ProgressNotification;
-				onProgress(notification);
-			} catch (error) {
-				if (onError) {
-					onError(
-						error instanceof Error
-							? error
-							: new Error("Failed to parse progress"),
+				const parsed = mcpClientUtils.parseJson(event.data);
+				const notification = mcpClientUtils.parseProgressNotification(parsed);
+
+				if (!notification) {
+					mcpClientUtils.handleProgressError(
+						callbacks,
+						new Error("Invalid progress payload"),
 					);
+					return;
 				}
+
+				callbacks.onProgress(notification);
+			} catch (error) {
+				mcpClientUtils.handleProgressError(callbacks, error);
 			}
 		};
 
-		eventSource.onerror = (_error: Event) => {
-			if (onError) {
-				onError(new Error("SSE connection error"));
+		eventSource.onerror = (_error: Event): void => {
+			if (callbacks.onError !== undefined) {
+				callbacks.onError(new Error("SSE connection error"));
 			}
 		};
 		/* eslint-enable unicorn/prefer-add-event-listener */
 
-		// Return cleanup function
 		return () => {
 			eventSource.close();
 		};
 	}
 
-	/**
-	 * Close the MCP session
-	 */
 	async close(): Promise<void> {
-		// MCP doesn't have a formal close method, but we can send a notification
-		// No response expected for notifications
 		try {
-			await fetch(`${this.baseUrl}/mcp/rpc`, {
-				method: "POST",
-				headers: this.buildHeaders(),
+			await fetch(`${this.state.baseUrl}/mcp/rpc`, {
 				body: JSON.stringify({
 					jsonrpc: "2.0",
 					method: "notifications/cancelled",
 					params: {},
 				}),
+				headers: mcpClientUtils.createHeaders(this.state.token),
+				method: "POST",
 			});
 		} catch {
-			// Ignore errors on close
+			return;
 		}
 	}
 }
 
-/**
- * Create an MCP client instance
- */
-export function createMCPClient(config: MCPClientConfig): MCPClient {
-	return new MCPClient(config);
-}
+const createMCPClient = (config: MCPClientConfig): MCPClient =>
+	new MCPClient(config);
+
+export {
+	MCPClient,
+	createMCPClient,
+	type JsonRpcRequest,
+	type JsonRpcResponse,
+	type MCPClientConfig,
+	type MCPPrompt,
+	type MCPResource,
+	type MCPTool,
+	type ProgressNotification,
+};

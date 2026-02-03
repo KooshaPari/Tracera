@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-export, import/group-exports, import/unambiguous */
 declare module "event-source-polyfill" {
 	export interface EventSourceInit {
 		headers?: Record<string, string>;
@@ -10,18 +11,18 @@ declare module "event-source-polyfill" {
 		readonly url: string;
 		readonly readyState: number;
 		readonly withCredentials: boolean;
-		onopen: ((this: EventSource, ev: Event) => any) | null;
-		onmessage: ((this: EventSource, ev: MessageEvent) => any) | null;
-		onerror: ((this: EventSource, ev: Event) => any) | null;
+		onopen: ((this: EventSource, ev: Event) => unknown) | null;
+		onmessage: ((this: EventSource, ev: MessageEvent) => unknown) | null;
+		onerror: ((this: EventSource, ev: Event) => unknown) | null;
 		addEventListener(
 			type: string,
 			listener: EventListenerOrEventListenerObject,
-			options?: boolean | AddEventListenerOptions
+			options?: boolean | AddEventListenerOptions,
 		): void;
 		removeEventListener(
 			type: string,
 			listener: EventListenerOrEventListenerObject,
-			options?: boolean | EventListenerOptions
+			options?: boolean | EventListenerOptions,
 		): void;
 		close(): void;
 	}
@@ -33,3 +34,5 @@ declare module "event-source-polyfill" {
 	/** Polyfill constructor (default export). */
 	export default EventSource;
 }
+
+export type EventSourcePolyfillModule = Record<string, unknown>;

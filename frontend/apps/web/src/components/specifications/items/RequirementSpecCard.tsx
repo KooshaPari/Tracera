@@ -46,49 +46,49 @@ const requirementTypeLabels: Record<
 	string,
 	{ label: string; description: string }
 > = {
-	ubiquitous: { label: "Ubiquitous", description: "Always applies" },
-	event_driven: { label: "Event-Driven", description: "When <trigger> occurs" },
-	state_driven: { label: "State-Driven", description: "While <state> holds" },
-	optional: { label: "Optional", description: "Where <feature> is enabled" },
-	complex: { label: "Complex", description: "Multi-condition requirement" },
-	unwanted: { label: "Unwanted", description: "Shall not behavior" },
+	complex: { description: "Multi-condition requirement", label: "Complex" },
+	event_driven: { description: "When <trigger> occurs", label: "Event-Driven" },
+	optional: { description: "Where <feature> is enabled", label: "Optional" },
+	state_driven: { description: "While <state> holds", label: "State-Driven" },
+	ubiquitous: { description: "Always applies", label: "Ubiquitous" },
+	unwanted: { description: "Shall not behavior", label: "Unwanted" },
 };
 
 const constraintTypeStyles = {
-	hard: { bg: "bg-red-500/10", text: "text-red-600", label: "Hard Constraint" },
-	soft: {
-		bg: "bg-yellow-500/10",
-		text: "text-yellow-600",
-		label: "Soft Constraint",
-	},
+	hard: { bg: "bg-red-500/10", label: "Hard Constraint", text: "text-red-600" },
 	optimizable: {
 		bg: "bg-green-500/10",
-		text: "text-green-600",
 		label: "Optimizable",
+		text: "text-green-600",
+	},
+	soft: {
+		bg: "bg-yellow-500/10",
+		label: "Soft Constraint",
+		text: "text-yellow-600",
 	},
 };
 
 const verificationStatusStyles = {
-	unverified: { icon: Clock, bg: "bg-muted", text: "text-muted-foreground" },
-	pending: { icon: Clock, bg: "bg-yellow-500/10", text: "text-yellow-600" },
-	verified: {
-		icon: CheckCircle2,
-		bg: "bg-green-500/10",
-		text: "text-green-600",
-	},
-	failed: { icon: XCircle, bg: "bg-red-500/10", text: "text-red-600" },
 	expired: {
-		icon: AlertTriangle,
 		bg: "bg-orange-500/10",
+		icon: AlertTriangle,
 		text: "text-orange-600",
+	},
+	failed: { bg: "bg-red-500/10", icon: XCircle, text: "text-red-600" },
+	pending: { bg: "bg-yellow-500/10", icon: Clock, text: "text-yellow-600" },
+	unverified: { bg: "bg-muted", icon: Clock, text: "text-muted-foreground" },
+	verified: {
+		bg: "bg-green-500/10",
+		icon: CheckCircle2,
+		text: "text-green-600",
 	},
 };
 
 const riskLevelStyles = {
 	critical: { bg: "bg-red-500", text: "text-white" },
 	high: { bg: "bg-orange-500", text: "text-white" },
-	medium: { bg: "bg-yellow-500", text: "text-white" },
 	low: { bg: "bg-green-500", text: "text-white" },
+	medium: { bg: "bg-yellow-500", text: "text-white" },
 	minimal: { bg: "bg-blue-500", text: "text-white" },
 };
 
@@ -100,8 +100,8 @@ export function RequirementSpecCard({
 	showQuality = true,
 }: RequirementSpecCardProps) {
 	const reqType = requirementTypeLabels[spec.requirement_type] || {
-		label: spec.requirement_type,
 		description: "",
+		label: spec.requirement_type,
 	};
 	const constraintStyle = constraintTypeStyles[spec.constraint_type];
 	const verificationStyle = verificationStatusStyles[spec.verification_status];
@@ -111,10 +111,15 @@ export function RequirementSpecCard({
 	// Build EARS pattern display
 	const buildEarsPattern = () => {
 		const parts: string[] = [];
-		if (spec.ears_trigger) parts.push(`When ${spec.ears_trigger}`);
-		if (spec.ears_precondition) parts.push(`while ${spec.ears_precondition}`);
-		if (spec.ears_postcondition)
+		if (spec.ears_trigger) {
+			parts.push(`When ${spec.ears_trigger}`);
+		}
+		if (spec.ears_precondition) {
+			parts.push(`while ${spec.ears_precondition}`);
+		}
+		if (spec.ears_postcondition) {
 			parts.push(`the system shall ${spec.ears_postcondition}`);
+		}
 		return parts.join(", ");
 	};
 

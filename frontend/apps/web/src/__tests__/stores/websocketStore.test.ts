@@ -84,11 +84,11 @@ describe("websocketStore", () => {
 		it("should add events", () => {
 			const { result } = renderHook(() => useWebSocketStore());
 			const event = {
-				type: "updated" as const,
-				table: "items" as const,
-				schema: "public",
 				record: { id: "item-1" },
+				schema: "public",
+				table: "items" as const,
 				timestamp: Date.now(),
+				type: "updated" as const,
 			};
 
 			act(() => {
@@ -105,11 +105,11 @@ describe("websocketStore", () => {
 			act(() => {
 				for (let i = 0; i < 150; i++) {
 					result.current.addEvent({
-						type: "created" as const,
-						table: "items" as const,
-						schema: "public",
 						record: { id: i },
+						schema: "public",
+						table: "items" as const,
 						timestamp: Date.now(),
+						type: "created" as const,
 					});
 				}
 			});
@@ -122,11 +122,11 @@ describe("websocketStore", () => {
 
 			act(() => {
 				result.current.addEvent({
-					type: "created" as const,
-					table: "items" as const,
-					schema: "public",
 					record: {},
+					schema: "public",
+					table: "items" as const,
 					timestamp: Date.now(),
+					type: "created" as const,
 				});
 				result.current.clearEvents();
 			});

@@ -1,4 +1,4 @@
-// equivalenceIO.test.ts - Tests for equivalence import/export utilities
+// EquivalenceIO.test.ts - Tests for equivalence import/export utilities
 
 import type {
 	CanonicalConcept,
@@ -28,12 +28,16 @@ import {
 // =============================================================================
 
 const mockEquivalenceLink: EquivalenceLink = {
+	canonicalId: "canon-1",
+	confidence: 0.95,
+	confirmedAt: "2024-01-15T10:05:00Z",
+	confirmedBy: "user-1",
+	createdAt: "2024-01-15T10:00:00Z",
+	equivalenceType: "same_as",
 	id: "link-1",
 	projectId: "proj-1",
 	sourceItemId: "item-1",
-	targetItemId: "item-2",
-	equivalenceType: "same_as",
-	confidence: 0.95,
+	status: "confirmed",
 	strategies: [
 		{
 			strategy: "manual_link",
@@ -42,51 +46,48 @@ const mockEquivalenceLink: EquivalenceLink = {
 			detectedAt: "2024-01-15T10:00:00Z",
 		},
 	],
-	canonicalId: "canon-1",
-	status: "confirmed",
-	confirmedBy: "user-1",
-	confirmedAt: "2024-01-15T10:05:00Z",
-	createdAt: "2024-01-15T10:00:00Z",
+	targetItemId: "item-2",
 	updatedAt: "2024-01-15T10:05:00Z",
 };
 
 const mockCanonicalConcept: CanonicalConcept = {
-	id: "canon-1",
-	projectId: "proj-1",
-	name: "User Authentication",
-	slug: "user-authentication",
+	category: "identity",
+	confidence: 0.9,
+	createdAt: "2024-01-15T10:00:00Z",
 	description: "The concept of authenticating users in the system",
 	domain: "security",
-	category: "identity",
-	tags: ["security", "auth", "identity"],
-	confidence: 0.9,
-	source: "manual",
+	id: "canon-1",
+	name: "User Authentication",
+	projectId: "proj-1",
 	projectionCount: 3,
-	createdAt: "2024-01-15T10:00:00Z",
+	slug: "user-authentication",
+	source: "manual",
+	tags: ["security", "auth", "identity"],
 	updatedAt: "2024-01-15T10:00:00Z",
 	version: 1,
 };
 
 const mockCanonicalProjection: CanonicalProjection = {
-	id: "proj-1",
 	canonicalId: "canon-1",
-	itemId: "item-1",
-	projectId: "proj-1",
-	perspective: "technical",
 	confidence: 0.95,
-	strategy: "manual_link",
+	confirmedAt: "2024-01-15T10:05:00Z",
+	confirmedBy: "user-1",
+	createdAt: "2024-01-15T10:00:00Z",
+	id: "proj-1",
 	isConfirmed: true,
 	isRejected: false,
-	confirmedBy: "user-1",
-	confirmedAt: "2024-01-15T10:05:00Z",
-	createdAt: "2024-01-15T10:00:00Z",
+	itemId: "item-1",
+	perspective: "technical",
+	projectId: "proj-1",
+	strategy: "manual_link",
 	updatedAt: "2024-01-15T10:05:00Z",
 };
 
 const mockExportPackage: EquivalenceExportPackage = {
-	version: "1.0",
+	canonicalConcepts: [mockCanonicalConcept],
+	canonicalProjections: [mockCanonicalProjection],
+	equivalenceLinks: [mockEquivalenceLink],
 	exportedAt: "2024-01-15T10:00:00Z",
-	projectId: "proj-1",
 	exportedBy: "user-1",
 	metadata: {
 		totalLinks: 1,
@@ -98,9 +99,8 @@ const mockExportPackage: EquivalenceExportPackage = {
 			average: 0.925,
 		},
 	},
-	equivalenceLinks: [mockEquivalenceLink],
-	canonicalConcepts: [mockCanonicalConcept],
-	canonicalProjections: [mockCanonicalProjection],
+	projectId: "proj-1",
+	version: "1.0",
 };
 
 // =============================================================================
@@ -108,7 +108,7 @@ const mockExportPackage: EquivalenceExportPackage = {
 // =============================================================================
 
 describe("equivalenceIO - Serialization", () => {
-	describe("serializeToJSON", () => {
+	describe(serializeToJSON, () => {
 		it("should serialize package to JSON string", () => {
 			const json = serializeToJSON(mockExportPackage);
 			expect(typeof json).toBe("string");
@@ -132,7 +132,7 @@ describe("equivalenceIO - Serialization", () => {
 		});
 	});
 
-	describe("deserializeFromJSON", () => {
+	describe(deserializeFromJSON, () => {
 		it("should deserialize valid JSON to package", () => {
 			const json = serializeToJSON(mockExportPackage);
 			const deserialized = deserializeFromJSON(json);
@@ -163,7 +163,7 @@ describe("equivalenceIO - Serialization", () => {
 		});
 	});
 
-	describe("serializeToCSV", () => {
+	describe(serializeToCSV, () => {
 		it("should serialize to CSV with proper headers", () => {
 			const csv = serializeToCSV(mockExportPackage);
 			expect(csv.links).toContain("id,projectId,sourceItemId");
@@ -252,7 +252,7 @@ describe("equivalenceIO - Serialization", () => {
 // =============================================================================
 
 describe("equivalenceIO - Validation", () => {
-	describe("validateExportPackage", () => {
+	describe(validateExportPackage, () => {
 		it("should validate correct package", () => {
 			const result = validateExportPackage(mockExportPackage);
 			expect(result.valid).toBe(true);
@@ -287,14 +287,14 @@ describe("equivalenceIO - Validation", () => {
 		});
 	});
 
-	describe("validateImportOptions", () => {
+	describe(validateImportOptions, () => {
 		it("should validate correct options", () => {
 			const options: EquivalenceImportOptions = {
-				mode: "merge",
 				conflictResolution: "skip",
-				validateReferences: true,
+				mode: "merge",
 				preserveTimestamps: false,
 				updateProjectId: true,
+				validateReferences: true,
 			};
 
 			const result = validateImportOptions(options);
@@ -320,7 +320,7 @@ describe("equivalenceIO - Validation", () => {
 // =============================================================================
 
 describe("equivalenceIO - Merging", () => {
-	describe("mergeExportPackages", () => {
+	describe(mergeExportPackages, () => {
 		it("should merge packages in merge mode", () => {
 			const existing: EquivalenceExportPackage = {
 				...mockExportPackage,
@@ -343,11 +343,11 @@ describe("equivalenceIO - Merging", () => {
 			};
 
 			const options: EquivalenceImportOptions = {
-				mode: "merge",
 				conflictResolution: "skip",
-				validateReferences: true,
+				mode: "merge",
 				preserveTimestamps: false,
 				updateProjectId: false,
+				validateReferences: true,
 			};
 
 			const merged = mergeExportPackages(existing, incoming, options);
@@ -371,11 +371,11 @@ describe("equivalenceIO - Merging", () => {
 			};
 
 			const options: EquivalenceImportOptions = {
-				mode: "replace",
 				conflictResolution: "skip",
-				validateReferences: true,
+				mode: "replace",
 				preserveTimestamps: false,
 				updateProjectId: false,
+				validateReferences: true,
 			};
 
 			const merged = mergeExportPackages(existing, incoming, options);
@@ -400,11 +400,11 @@ describe("equivalenceIO - Merging", () => {
 			};
 
 			const options: EquivalenceImportOptions = {
-				mode: "merge",
 				conflictResolution: "skip",
-				validateReferences: true,
+				mode: "merge",
 				preserveTimestamps: false,
 				updateProjectId: false,
+				validateReferences: true,
 			};
 
 			const merged = mergeExportPackages(existing, incoming, options);
@@ -428,11 +428,11 @@ describe("equivalenceIO - Merging", () => {
 			};
 
 			const options: EquivalenceImportOptions = {
-				mode: "merge",
 				conflictResolution: "overwrite",
-				validateReferences: true,
+				mode: "merge",
 				preserveTimestamps: false,
 				updateProjectId: false,
+				validateReferences: true,
 			};
 
 			const merged = mergeExportPackages(existing, incoming, options);
@@ -441,12 +441,12 @@ describe("equivalenceIO - Merging", () => {
 
 		it("should update project IDs when configured", () => {
 			const options: EquivalenceImportOptions = {
-				mode: "merge",
 				conflictResolution: "skip",
-				validateReferences: true,
+				mode: "merge",
 				preserveTimestamps: false,
-				updateProjectId: true,
 				targetProjectId: "proj-new",
+				updateProjectId: true,
+				validateReferences: true,
 			};
 
 			const merged = mergeExportPackages(
@@ -467,7 +467,7 @@ describe("equivalenceIO - Merging", () => {
 // =============================================================================
 
 describe("equivalenceIO - Summary", () => {
-	describe("createExportSummary", () => {
+	describe(createExportSummary, () => {
 		it("should create summary with correct counts", () => {
 			const summary = createExportSummary(mockExportPackage);
 			expect(summary.totalLinks).toBe(1);

@@ -1,5 +1,5 @@
 import { AlertCircle, Download, Loader2 } from "lucide-react";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import React, { useCallback, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -53,7 +53,7 @@ function formatSize(bytes: number): string {
 	let unitIndex = 0;
 	while (size >= 1024 && unitIndex < units.length - 1) {
 		size /= 1024;
-		unitIndex++;
+		unitIndex += 1;
 	}
 	return `${size.toFixed(2)} ${units[unitIndex]}`;
 }
@@ -81,11 +81,13 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 				`/api/v1/projects/${projectId}/equivalence/export-statistics`,
 				{ headers: getAuthHeaders() },
 			);
-			if (!response.ok) throw new Error("Failed to fetch statistics");
+			if (!response.ok) {
+				throw new Error("Failed to fetch statistics");
+			}
 			const data = await response.json();
 			setStats(data);
-		} catch (err) {
-			logger.error("Failed to fetch export statistics:", err);
+		} catch (error) {
+			logger.error("Failed to fetch export statistics:", error);
 			setError("Failed to load export statistics");
 		}
 	}, [projectId]);
@@ -93,7 +95,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 	// Fetch statistics when dialog opens
 	React.useEffect(() => {
 		if (isOpen && !stats) {
-			void fetchStats();
+			undefined;
 		}
 	}, [isOpen, stats, fetchStats]);
 
@@ -113,8 +115,8 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 			const config: ExportConfig = {
 				format,
 				includeEmbeddings,
-				includeMetadata,
 				includeItemInfo,
+				includeMetadata,
 				pretty,
 			};
 
@@ -129,22 +131,24 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 					{ headers: getAuthHeaders() },
 				);
 
-				if (!response.ok) throw new Error("Export failed");
+				if (!response.ok) {
+					throw new Error("Export failed");
+				}
 
 				const blob = await response.blob();
 				const url = URL.createObjectURL(blob);
 				const link = document.createElement("a");
 				link.href = url;
 				link.download = `equivalence-${projectName}-${new Date().toISOString().split("T")[0]}.${format}`;
-				document.body.appendChild(link);
+				document.body.append(link);
 				link.click();
 				document.body.removeChild(link);
 				URL.revokeObjectURL(url);
 			}
 
 			onClose();
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Export failed");
+		} catch (error) {
+			setError(error instanceof Error ? error.message : "Export failed");
 		} finally {
 			setIsLoading(false);
 		}
@@ -157,10 +161,12 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 	};
 
 	const estimateSize = (): string => {
-		if (!stats) return "Calculating...";
+		if (!stats) {
+			return "Calculating...";
+		}
 		// Rough estimation: ~500 bytes per concept, projection, and link
 		const baseSize = (stats.concepts + stats.projections + stats.links) * 500;
-		const embeddingsSize = includeEmbeddings ? stats.concepts * 12800 : 0; // ~3200 floats
+		const embeddingsSize = includeEmbeddings ? stats.concepts * 12_800 : 0; // ~3200 floats
 		return formatSize(baseSize + embeddingsSize);
 	};
 
@@ -248,7 +254,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 											id="embeddings"
 											checked={includeEmbeddings}
 											onCheckedChange={(checked) =>
-												setIncludeEmbeddings(!!checked)
+												setIncludeEmbeddings(Boolean(checked))
 											}
 										/>
 										<Label
@@ -263,7 +269,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 											id="metadata"
 											checked={includeMetadata}
 											onCheckedChange={(checked) =>
-												setIncludeMetadata(!!checked)
+												setIncludeMetadata(Boolean(checked))
 											}
 										/>
 										<Label
@@ -278,7 +284,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 											id="iteminfo"
 											checked={includeItemInfo}
 											onCheckedChange={(checked) =>
-												setIncludeItemInfo(!!checked)
+												setIncludeItemInfo(Boolean(checked))
 											}
 										/>
 										<Label
@@ -292,7 +298,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 										<Checkbox
 											id="pretty"
 											checked={pretty}
-											onCheckedChange={(checked) => setPretty(!!checked)}
+											onCheckedChange={(checked) => setPretty(Boolean(checked))}
 										/>
 										<Label
 											htmlFor="pretty"

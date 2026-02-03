@@ -1,5 +1,10 @@
 import { Badge } from "@tracertm/ui/components/Badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui/components/Card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@tracertm/ui/components/Card";
 import { memo } from "react";
 
 interface NodeHoverTooltipProps {

@@ -2,65 +2,62 @@
 
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-	type Branch,
-	TemporalNavigator,
-	type Version,
-} from "../TemporalNavigator";
+import { TemporalNavigator } from "../TemporalNavigator";
+import type { Branch, Version } from "../TemporalNavigator";
 
-describe("TemporalNavigator", () => {
+describe(TemporalNavigator, () => {
 	const mockBranches: Branch[] = [
 		{
+			createdAt: new Date("2024-01-01"),
 			id: "branch-1",
+			mergeRequestCount: 0,
 			name: "main",
 			status: "active",
-			createdAt: new Date("2024-01-01"),
 			updatedAt: new Date("2024-01-15"),
-			mergeRequestCount: 0,
 		},
 		{
-			id: "branch-2",
-			name: "develop",
-			status: "active",
-			parentId: "branch-1",
 			createdAt: new Date("2024-01-05"),
-			updatedAt: new Date("2024-01-14"),
+			id: "branch-2",
 			mergeRequestCount: 2,
+			name: "develop",
+			parentId: "branch-1",
+			status: "active",
+			updatedAt: new Date("2024-01-14"),
 		},
 		{
-			id: "branch-3",
-			name: "feature/auth",
-			status: "review",
-			parentId: "branch-2",
 			createdAt: new Date("2024-01-10"),
-			updatedAt: new Date("2024-01-13"),
+			id: "branch-3",
 			mergeRequestCount: 1,
+			name: "feature/auth",
+			parentId: "branch-2",
+			status: "review",
+			updatedAt: new Date("2024-01-13"),
 		},
 	];
 
 	const mockVersions: Version[] = [
 		{
-			id: "v-1",
 			branchId: "branch-1",
-			title: "v1.0.0",
+			id: "v-1",
+			status: "published",
 			tag: "1.0.0",
 			timestamp: new Date("2024-01-01"),
-			status: "published",
+			title: "v1.0.0",
 		},
 		{
-			id: "v-2",
 			branchId: "branch-1",
-			title: "v1.1.0",
+			id: "v-2",
+			status: "published",
 			tag: "1.1.0",
 			timestamp: new Date("2024-01-10"),
-			status: "published",
+			title: "v1.1.0",
 		},
 		{
-			id: "v-3",
 			branchId: "branch-2",
-			title: "Dev Build",
-			timestamp: new Date("2024-01-15"),
+			id: "v-3",
 			status: "draft",
+			timestamp: new Date("2024-01-15"),
+			title: "Dev Build",
 		},
 	];
 

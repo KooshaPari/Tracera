@@ -15,13 +15,13 @@ import {
 // Mock fetch (vi.fn() compatible with fetch at runtime)
 const mockFetch = vi.fn();
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- test mock
-global.fetch = mockFetch as unknown as typeof fetch;
+globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 const createWrapper = () => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { retry: false },
 			mutations: { retry: false },
+			queries: { retry: false },
 		},
 	});
 
@@ -29,20 +29,20 @@ const createWrapper = () => {
 		React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
 
-describe("useProjects", () => {
+describe(useProjects, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	it("should fetch projects", async () => {
 		const mockProjects = [
-			{ id: "1", name: "Project 1", description: "Desc 1" },
-			{ id: "2", name: "Project 2", description: "Desc 2" },
+			{ description: "Desc 1", id: "1", name: "Project 1" },
+			{ description: "Desc 2", id: "2", name: "Project 2" },
 		];
 
 		mockFetch.mockResolvedValueOnce({
-			ok: true,
 			json: async () => mockProjects,
+			ok: true,
 		});
 
 		const { result } = renderHook(() => useProjects(), {
@@ -52,7 +52,7 @@ describe("useProjects", () => {
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		expect(result.current.data).toEqual(mockProjects);
-		expect(mockFetch).toHaveBeenCalledTimes(1);
+		expect(mockFetch).toHaveBeenCalledOnce();
 	});
 
 	it("should handle fetch error", async () => {
@@ -71,21 +71,21 @@ describe("useProjects", () => {
 	});
 });
 
-describe("useProject", () => {
+describe(useProject, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	it("should fetch a single project", async () => {
 		const mockProject = {
+			description: "Description",
 			id: "1",
 			name: "Project 1",
-			description: "Description",
 		};
 
 		mockFetch.mockResolvedValueOnce({
-			ok: true,
 			json: async () => mockProject,
+			ok: true,
 		});
 
 		const { result } = renderHook(() => useProject("1"), {
@@ -115,15 +115,15 @@ describe("useProject", () => {
 	});
 });
 
-describe("useCreateProject", () => {
+describe(useCreateProject, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	it("should create a project", async () => {
 		const newProject = {
-			name: "New Project",
 			description: "New Description",
+			name: "New Project",
 		};
 
 		const createdProject = {
@@ -132,8 +132,8 @@ describe("useCreateProject", () => {
 		};
 
 		mockFetch.mockResolvedValueOnce({
-			ok: true,
 			json: async () => createdProject,
+			ok: true,
 		});
 
 		const { result } = renderHook(() => useCreateProject(), {
@@ -164,8 +164,8 @@ describe("useCreateProject", () => {
 		});
 
 		result.current.mutate({
-			name: "New Project",
 			description: "Description",
+			name: "New Project",
 		});
 
 		await waitFor(() => expect(result.current.isError).toBe(true));

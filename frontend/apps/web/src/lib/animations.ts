@@ -4,20 +4,16 @@
  */
 
 /** Page/section entrance: fade in and slide up */
-export const animateInFadeUp =
-	"animate-in-fade-up";
+export const animateInFadeUp = "animate-in-fade-up";
 
 /** Page/section entrance: fade in only */
-export const animateInFade =
-	"animate-in-fade";
+export const animateInFade = "animate-in-fade";
 
 /** Card/section entrance: scale in */
-export const animateInScale =
-	"animate-in-scale";
+export const animateInScale = "animate-in-scale";
 
 /** Stagger children (list items, cards) - use on parent */
-export const staggerChildren =
-	"stagger-children";
+export const staggerChildren = "stagger-children";
 
 /** Interactive hover/active: lift and shadow (cards, list rows) */
 export const interactiveCard =

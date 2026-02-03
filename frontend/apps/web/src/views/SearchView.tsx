@@ -62,7 +62,6 @@ export function SearchView() {
 							value={query}
 							onChange={(e) => setQuery(e.target.value)}
 							className="pl-14 h-14 border-none bg-transparent focus-visible:ring-0 text-lg font-medium"
-							
 						/>
 					</div>
 					<div className="flex items-center gap-2 px-2 w-full md:w-auto">
@@ -111,7 +110,11 @@ export function SearchView() {
 
 						<div className="grid grid-cols-1 gap-4 stagger-children">
 							{results.items.map((item) => {
-								const raw = item as Item & { project_id?: string; view_type?: string; item_view?: string };
+								const raw = item as Item & {
+									project_id?: string;
+									view_type?: string;
+									item_view?: string;
+								};
 								const projectId = item.projectId ?? raw.project_id;
 								const viewType =
 									item.view ?? raw.view_type ?? raw.item_view ?? "feature";

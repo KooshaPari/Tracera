@@ -5,11 +5,8 @@
 
 import React from "react";
 import type { Meta } from "@storybook/react";
-import {
-	COMPONENT_VISUAL_CONFIGS,
-	THEMES,
-	type VIEWPORTS,
-} from "./visual-test.config";
+import { COMPONENT_VISUAL_CONFIGS, THEMES } from "./visual-test.config";
+import type { VIEWPORTS } from "./visual-test.config";
 
 /**
  * Generates visual test parameters for a component
@@ -21,18 +18,17 @@ type ViewportKey = keyof typeof VIEWPORTS;
 function getComponentConfig(
 	componentName: string,
 ): (typeof COMPONENT_VISUAL_CONFIGS)[ConfigKey] | undefined {
-	return Object.prototype.hasOwnProperty.call(
-		COMPONENT_VISUAL_CONFIGS,
-		componentName,
-	)
-		? (COMPONENT_VISUAL_CONFIGS[componentName as ConfigKey] as (typeof COMPONENT_VISUAL_CONFIGS)[ConfigKey])
+	return Object.hasOwn(COMPONENT_VISUAL_CONFIGS, componentName)
+		? (COMPONENT_VISUAL_CONFIGS[
+				componentName as ConfigKey
+			] as (typeof COMPONENT_VISUAL_CONFIGS)[ConfigKey])
 		: undefined;
 }
 
 const DEFAULT_VISUAL_CONFIG = {
-	viewports: ["desktop", "tablet"] as ViewportKey[],
-	themes: ["light", "dark"] as (keyof typeof THEMES)[],
 	delay: 300,
+	themes: ["light", "dark"] as (keyof typeof THEMES)[],
+	viewports: ["desktop", "tablet"] as ViewportKey[],
 };
 
 export function generateVisualTestParameters(
@@ -51,6 +47,7 @@ export function generateVisualTestParameters(
 
 	return {
 		chromatic: {
+			delay: mergedConfig.delay ?? 300,
 			modes: mergedConfig.themes.reduce<Record<string, { query: string }>>(
 				(acc, theme) => {
 					const themeConfig = Object.prototype.hasOwnProperty.call(
@@ -66,7 +63,6 @@ export function generateVisualTestParameters(
 				},
 				{},
 			),
-			delay: mergedConfig.delay ?? 300,
 			pauseAnimationAtEnd: mergedWithChromatic.pauseAnimationAtEnd ?? true,
 		},
 	};
@@ -76,7 +72,7 @@ export function generateVisualTestParameters(
  * Creates viewport stories for all configured viewports
  * Useful for testing responsive designs
  */
-export function createViewportStories<T extends { [key: string]: any }>(
+export function createViewportStories<T extends Record<string, any>>(
 	componentName: string,
 	baseArgs: T,
 	viewportsToTest?: ViewportKey[],
@@ -84,9 +80,7 @@ export function createViewportStories<T extends { [key: string]: any }>(
 	const config = getComponentConfig(componentName);
 	const viewports: ViewportKey[] =
 		viewportsToTest ??
-		(config != null
-			? (Array.from(config.viewports) as ViewportKey[])
-			: undefined) ??
+		(config != null ? ([...config.viewports] as ViewportKey[]) : undefined) ??
 		DEFAULT_VISUAL_CONFIG.viewports;
 
 	return Object.fromEntries(
@@ -107,7 +101,7 @@ export function createViewportStories<T extends { [key: string]: any }>(
 /**
  * Creates theme variant stories (light and dark)
  */
-export function createThemeStories<T extends { [key: string]: any }>(
+export function createThemeStories<T extends Record<string, any>>(
 	baseArgs: T,
 	themesToTest: (keyof typeof THEMES)[] = ["light", "dark"],
 ) {
@@ -145,11 +139,33 @@ export function createThemeStories<T extends { [key: string]: any }>(
 /**
  * Creates interaction state stories (hover, focus, active, disabled)
  */
-export function createInteractionStories<T extends { [key: string]: any }>(
+export function createInteractionStories<T extends Record<string, any>>(
 	baseArgs: T,
-	selector: string = "button",
+	selector = "button",
 ) {
 	return {
+		Active: {
+			args: baseArgs,
+			play: ({ canvasElement }: { canvasElement: HTMLElement }) => {
+				const element = canvasElement.querySelector(selector) as Element | null;
+				if (element !== null && element !== undefined) {
+					element.classList.add("active");
+					element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+				}
+			},
+		},
+		Disabled: {
+			args: { ...baseArgs, disabled: true },
+		},
+		Focused: {
+			args: baseArgs,
+			play: async ({ canvasElement }: any) => {
+				const element = canvasElement.querySelector(selector);
+				if (element) {
+					(element as HTMLElement).focus();
+				}
+			},
+		},
 		Hovered: {
 			args: baseArgs,
 			play: async ({ canvasElement }: any) => {
@@ -161,32 +177,6 @@ export function createInteractionStories<T extends { [key: string]: any }>(
 				}
 			},
 		},
-		Focused: {
-			args: baseArgs,
-			play: async ({ canvasElement }: any) => {
-				const element = canvasElement.querySelector(selector);
-				if (element) {
-					(element as HTMLElement).focus();
-				}
-			},
-		},
-		Active: {
-			args: baseArgs,
-			play: ({
-				canvasElement,
-			}: {
-				canvasElement: HTMLElement;
-			}) => {
-				const element = canvasElement.querySelector(selector) as Element | null;
-				if (element !== null && element !== undefined) {
-					element.classList.add("active");
-					element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-				}
-			},
-		},
-		Disabled: {
-			args: { ...baseArgs, disabled: true },
-		},
 	};
 }
 
@@ -194,7 +184,7 @@ export function createInteractionStories<T extends { [key: string]: any }>(
  * Applies comprehensive visual test configuration to metadata
  * Combines viewport, theme, and interaction testing
  */
-export function withVisualTestConfig<T extends { [key: string]: any }>(
+export function withVisualTestConfig<T extends Record<string, any>>(
 	meta: Meta<T>,
 	componentName: string,
 ) {
@@ -222,7 +212,7 @@ export function generateSnapshotName(
 	if (state != null && state !== "") {
 		parts.push(state);
 	}
-	return parts.join("-").toLowerCase().replace(/\s+/g, "-");
+	return parts.join("-").toLowerCase().replaceAll(/\s+/g, "-");
 }
 
 /**
@@ -243,7 +233,7 @@ export class VisualRegressionTracker {
 		if (componentName != null && componentName !== "") {
 			return this.changes.get(componentName) ?? [];
 		}
-		return Array.from(this.changes.entries());
+		return [...this.changes.entries()];
 	}
 
 	hasChanges(componentName?: string) {
@@ -269,13 +259,10 @@ export function validateComponentVisualTests(
 ) {
 	const config = getComponentConfig(componentName);
 	if (config === undefined) {
-		console.warn(`No visual test configuration found for ${componentName}`);
 		return false;
 	}
 
-	const viewportList = Array.from(
-		config.viewports,
-	) as (keyof typeof VIEWPORTS)[];
+	const viewportList = [...config.viewports] as (keyof typeof VIEWPORTS)[];
 	const missingViewports = requiredViewports.filter(
 		(v) => !viewportList.includes(v),
 	);
@@ -284,10 +271,6 @@ export function validateComponentVisualTests(
 	);
 
 	if (missingViewports.length > 0 || missingThemes.length > 0) {
-		console.warn(
-			`Missing visual test config for ${componentName}:`,
-			{ missingViewports, missingThemes },
-		);
 		return false;
 	}
 
@@ -303,28 +286,23 @@ export class VisualTestMetrics {
 	private startTime = Date.now();
 
 	recordComponent(viewportCount: number, themeCount: number) {
-		this.componentCount++;
+		this.componentCount += 1;
 		this.snapshotCount += viewportCount * themeCount;
 	}
 
 	getMetrics() {
 		return {
-			components: this.componentCount,
-			snapshots: this.snapshotCount,
-			duration: Date.now() - this.startTime,
 			averageSnapshotsPerComponent: (
 				this.snapshotCount / this.componentCount
 			).toFixed(1),
+			components: this.componentCount,
+			duration: Date.now() - this.startTime,
+			snapshots: this.snapshotCount,
 		};
 	}
 
 	log() {
 		const metrics = this.getMetrics();
-		console.log(`Visual Testing Metrics:`);
-		console.log(`  Components: ${metrics.components}`);
-		console.log(`  Total Snapshots: ${metrics.snapshots}`);
-		console.log(`  Avg per Component: ${metrics.averageSnapshotsPerComponent}`);
-		console.log(`  Duration: ${metrics.duration}ms`);
 	}
 }
 

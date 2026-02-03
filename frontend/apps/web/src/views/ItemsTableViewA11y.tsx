@@ -272,15 +272,14 @@ const VirtualTableRow = memo(
 			</TableRow>
 		);
 	},
-	(prev, next) => (
-			prev.item.id === next.item.id &&
-			prev.item.title === next.item.title &&
-			prev.item.type === next.item.type &&
-			prev.item.status === next.item.status &&
-			prev.item.priority === next.item.priority &&
-			prev.item.owner === next.item.owner &&
-			prev.isKeyboardFocused === next.isKeyboardFocused
-		),
+	(prev, next) =>
+		prev.item.id === next.item.id &&
+		prev.item.title === next.item.title &&
+		prev.item.type === next.item.type &&
+		prev.item.status === next.item.status &&
+		prev.item.priority === next.item.priority &&
+		prev.item.owner === next.item.owner &&
+		prev.isKeyboardFocused === next.isKeyboardFocused,
 );
 
 VirtualTableRow.displayName = "VirtualTableRow";
@@ -343,25 +342,29 @@ export function ItemsTableViewA11y({
 
 		return filtered.toSorted((a, b) => {
 			const dir = sortOrder === "asc" ? 1 : -1;
-			if (sortColumn === "title") {return a.title.localeCompare(b.title) * dir;}
-			if (sortColumn === "created")
-				{return (
+			if (sortColumn === "title") {
+				return a.title.localeCompare(b.title) * dir;
+			}
+			if (sortColumn === "created") {
+				return (
 					(new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
 					dir
-				);}
+				);
+			}
 			return 0;
 		});
 	}, [items, effectiveTypeFilter, searchQuery, sortColumn, sortOrder]);
 
 	// Keyboard navigation
-	const { focusState: _focusState, setFocusState: _setFocusState } = useTableKeyboardNavigation({
-		colCount: 6,
-		containerId: tableContainerId,
-		onNavigate: (rowIndex, colIndex) => {
-			setKeyboardFocusedCell({ col: colIndex, row: rowIndex });
-		},
-		rowCount: filteredAndSortedItems.length,
-	});
+	const { focusState: _focusState, setFocusState: _setFocusState } =
+		useTableKeyboardNavigation({
+			colCount: 6,
+			containerId: tableContainerId,
+			onNavigate: (rowIndex, colIndex) => {
+				setKeyboardFocusedCell({ col: colIndex, row: rowIndex });
+			},
+			rowCount: filteredAndSortedItems.length,
+		});
 
 	useEffect(() => {
 		if (actionParam === "create") {
@@ -369,20 +372,10 @@ export function ItemsTableViewA11y({
 		}
 	}, [actionParam]);
 
-	const closeCreateModal = useCallback(() => {
-		setShowCreateModal(false);
-		undefined;
-	}, [navigate]);
+	const closeCreateModal = useCallback(() => {}, [navigate]);
 
 	const handleItemNavigate = useCallback(
-		(item: any) => {
-			const viewType = String(item?.view || view || "feature").toLowerCase();
-			if (!effectiveProjectId) {
-				undefined;
-				return;
-			}
-			undefined;
-		},
+		(item: any) => {},
 		[navigate, effectiveProjectId, view],
 	);
 
@@ -408,8 +401,8 @@ export function ItemsTableViewA11y({
 			setNewTitle("");
 			setNewType(type || "feature");
 			closeCreateModal();
-        } catch {
-            toast.error("Failed to create node");
+		} catch {
+			toast.error("Failed to create node");
 		}
 	}, [
 		effectiveProjectId,
@@ -437,8 +430,8 @@ export function ItemsTableViewA11y({
 				toast.success("Node purged from registry");
 				// Announce to screen readers
 				announceToScreenReader("Item deleted successfully");
-            } catch {
-                toast.error("Purge failure");
+			} catch {
+				toast.error("Purge failure");
 				announceToScreenReader("Failed to delete item");
 			}
 		},
@@ -474,9 +467,7 @@ export function ItemsTableViewA11y({
 				<div className="flex items-center gap-2">
 					<Button
 						size="sm"
-						onClick={() =>
-							undefined
-						}
+						onClick={() => {}}
 						className="gap-2 rounded-xl shadow-lg shadow-primary/20"
 						aria-label="Create new node"
 					>
@@ -499,12 +490,7 @@ export function ItemsTableViewA11y({
 				</div>
 				<div className="h-6 w-px bg-border/50 mx-2 hidden md:block" />
 				{!projectId && (
-					<Select
-						value={projectFilter || "all"}
-						onValueChange={(v) =>
-							undefined
-						}
-					>
+					<Select value={projectFilter || "all"} onValueChange={(v) => {}}>
 						<SelectTrigger className="w-[180px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
 							<div className="flex items-center gap-2">
 								<Filter className="h-3.5 w-3.5 text-muted-foreground" />
@@ -524,9 +510,7 @@ export function ItemsTableViewA11y({
 				{!type && (
 					<Select
 						value={effectiveTypeFilter || "all"}
-						onValueChange={(v) =>
-							undefined
-						}
+						onValueChange={(v) => {}}
 					>
 						<SelectTrigger className="w-[140px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
 							<SelectValue placeholder="All Types" />
@@ -622,7 +606,9 @@ export function ItemsTableViewA11y({
 							>
 								{rowVirtualizer.getVirtualItems().map((virtualRow) => {
 									const item = filteredAndSortedItems[virtualRow.index];
-									if (!item) {return null;}
+									if (!item) {
+										return null;
+									}
 
 									const isFocused =
 										keyboardFocusedCell?.row === virtualRow.index;

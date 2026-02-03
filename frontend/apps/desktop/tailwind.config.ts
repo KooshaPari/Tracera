@@ -1,12 +1,13 @@
 import type { Config } from "tailwindcss";
 
 export default {
-	darkMode: "class",
 	content: [
 		"./src/**/*.{ts,tsx}",
 		"../web/src/**/*.{ts,tsx}",
 		"../../packages/ui/src/**/*.{ts,tsx}",
 	],
+	darkMode: "class",
+	plugins: [],
 	theme: {
 		extend: {
 			colors: {
@@ -51,5 +52,4 @@ export default {
 			},
 		},
 	},
-	plugins: [],
 } satisfies Config;

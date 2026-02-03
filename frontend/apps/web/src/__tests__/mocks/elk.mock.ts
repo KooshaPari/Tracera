@@ -2,13 +2,13 @@
 export class ELK {
 	layout() {
 		return Promise.resolve({
-			id: "root",
 			children: [],
 			edges: [],
+			height: 0,
+			id: "root",
+			width: 0,
 			x: 0,
 			y: 0,
-			width: 0,
-			height: 0,
 		});
 	}
 }

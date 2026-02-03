@@ -1,4 +1,5 @@
 // System status API stub
+/* eslint-disable oxc/no-async-await */
 import { getMcpConfig } from "./mcp-config";
 import client from "./client";
 
@@ -9,11 +10,13 @@ export interface SystemStatus {
 	uptime: number;
 	queuedJobs: number;
 	version?: string;
-	mcp?: {
-		baseUrl?: string | null;
-		authMode?: string | null;
-		requiresAuth?: boolean;
-	} | null;
+	mcp?:
+		| {
+				baseUrl?: string | undefined;
+				authMode?: string | undefined;
+				requiresAuth?: boolean;
+		  }
+		| undefined;
 }
 
 export const fetchSystemStatus = async (): Promise<SystemStatus> => {
@@ -25,19 +28,27 @@ export const fetchSystemStatus = async (): Promise<SystemStatus> => {
 		]);
 		if (response.data) {
 			const baseStatus: SystemStatus = {
+				queuedJobs: 0,
 				status: "healthy",
 				uptime: 99.9,
-				queuedJobs: 0,
 			};
-			const merged = Object.assign({}, baseStatus, response.data);
+			const merged: SystemStatus = {
+				queuedJobs: baseStatus.queuedJobs,
+				status: baseStatus.status,
+				uptime: baseStatus.uptime,
+			};
+			const responseData = response.data as Record<string, unknown>;
+			for (const [key, value] of Object.entries(responseData)) {
+				(merged as unknown as Record<string, unknown>)[key] = value;
+			}
 			if (mcpConfig) {
 				merged.mcp = {
-					baseUrl: mcpConfig.mcp_base_url ?? null,
-					authMode: mcpConfig.auth_mode ?? null,
+					authMode: mcpConfig.auth_mode ?? undefined,
+					baseUrl: mcpConfig.mcp_base_url ?? undefined,
 					requiresAuth: mcpConfig.requires_auth ?? false,
 				};
 			} else {
-				merged.mcp = null;
+				merged.mcp = undefined;
 			}
 			return merged;
 		}
@@ -45,8 +56,8 @@ export const fetchSystemStatus = async (): Promise<SystemStatus> => {
 		// Return mock data if endpoint doesn't exist
 	}
 	return {
+		queuedJobs: 0,
 		status: "healthy",
 		uptime: 99.9,
-		queuedJobs: 0,
 	};
 };

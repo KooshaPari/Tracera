@@ -23,12 +23,21 @@ function BurndownCustomTooltip({
 	payload,
 }: {
 	active?: boolean;
-	payload?: Array<{ payload: { date: string; ideal: number; actual: number; completed?: number } }>;
+	payload?: {
+		payload: {
+			date: string;
+			ideal: number;
+			actual: number;
+			completed?: number;
+		};
+	}[];
 }) {
-	if (active && payload && payload.length) {
+	if (active && payload && payload.length > 0) {
 		const first = payload[0];
 		const data = first?.payload;
-		if (!data) return null;
+		if (!data) {
+			return null;
+		}
 		return (
 			<div className="bg-white dark:bg-gray-800 p-3 rounded shadow-lg border border-gray-200 dark:border-gray-700">
 				<p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -64,14 +73,14 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 					new Date(sprint.startDate).getTime()) /
 					(1000 * 60 * 60 * 24),
 			);
-			const mockData: Array<{
+			const mockData: {
 				day: number;
 				date: string;
 				ideal: number;
 				actual: number;
-			}> = [];
+			}[] = [];
 
-			for (let i = 0; i <= days; i++) {
+			for (let i = 0; i <= days; i += 1) {
 				const idealRemaining = Math.max(
 					sprint.plannedPoints * ((days - i) / days),
 					0,
@@ -82,13 +91,13 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 				);
 
 				mockData.push({
-					day: i,
-					date: new Date(sprint.startDate).toLocaleDateString("en-US", {
-						month: "short",
-						day: "numeric",
-					}),
-					ideal: Math.round(idealRemaining),
 					actual: Math.round(actualRemaining),
+					date: new Date(sprint.startDate).toLocaleDateString("en-US", {
+						day: "numeric",
+						month: "short",
+					}),
+					day: i,
+					ideal: Math.round(idealRemaining),
 				});
 			}
 
@@ -96,14 +105,14 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 		}
 
 		return data.map((point, index) => ({
-			day: index,
-			date: new Date(point.date).toLocaleDateString("en-US", {
-				month: "short",
-				day: "numeric",
-			}),
-			ideal: point.idealPoints,
 			actual: point.remainingPoints,
 			completed: point.completedPoints,
+			date: new Date(point.date).toLocaleDateString("en-US", {
+				day: "numeric",
+				month: "short",
+			}),
+			day: index,
+			ideal: point.idealPoints,
 		}));
 	}, [sprint, data]);
 
@@ -112,7 +121,7 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 			<ResponsiveContainer width="100%" height={height}>
 				<LineChart
 					data={chartData}
-					margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+					margin={{ bottom: 5, left: 0, right: 30, top: 5 }}
 				>
 					<defs>
 						<linearGradient id="colorIdeal" x1="0" y1="0" x2="0" y2="1">
@@ -130,9 +139,9 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 						stroke="#6b7280"
 						style={{ fontSize: "12px" }}
 						label={{
-							value: "Points Remaining",
 							angle: -90,
 							position: "insideLeft",
+							value: "Points Remaining",
 						}}
 					/>
 					<Tooltip content={<BurndownCustomTooltip />} />

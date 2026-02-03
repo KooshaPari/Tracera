@@ -1,3 +1,4 @@
+/* eslint-disable promise/prefer-await-to-then */
 import apiConstants from "./client-constants";
 
 class ApiError extends Error {
@@ -25,7 +26,10 @@ const safeApiCall = <TData>(
 	}
 
 	return Promise.reject(
-		new ApiError(apiConstants.statusServerError, "API request failed: promise is null"),
+		new ApiError(
+			apiConstants.statusServerError,
+			"API request failed: promise is null",
+		),
 	);
 };
 
@@ -38,7 +42,9 @@ const handleApiResponse = <TData>(
 	if (promise) {
 		return promise.then((result) => {
 			const { data, error, response } = result;
-			const status = response ? response.status : apiConstants.statusServerError;
+			const status = response
+				? response.status
+				: apiConstants.statusServerError;
 			const statusText = response ? response.statusText : "";
 
 			if (error) {
@@ -55,7 +61,10 @@ const handleApiResponse = <TData>(
 	}
 
 	return Promise.reject(
-		new ApiError(apiConstants.statusServerError, "API request failed: promise is null"),
+		new ApiError(
+			apiConstants.statusServerError,
+			"API request failed: promise is null",
+		),
 	);
 };
 

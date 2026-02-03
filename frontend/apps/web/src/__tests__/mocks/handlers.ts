@@ -4,22 +4,22 @@ import { mockItems, mockLinks, mockProjects } from "./data";
 const API_BASE = "http://localhost:4000";
 
 export const handlers = [
-	http.get(`${API_BASE}/api/v1/projects`, () => {
-		return HttpResponse.json({
-			total: mockProjects.length,
+	http.get(`${API_BASE}/api/v1/projects`, () =>
+		HttpResponse.json({
 			projects: mockProjects,
-		});
-	}),
-	http.get(`${API_BASE}/api/v1/items`, () => {
-		return HttpResponse.json({
-			total: mockItems.length,
+			total: mockProjects.length,
+		}),
+	),
+	http.get(`${API_BASE}/api/v1/items`, () =>
+		HttpResponse.json({
 			items: mockItems,
-		});
-	}),
-	http.get(`${API_BASE}/api/v1/links`, () => {
-		return HttpResponse.json({
-			total: mockLinks.length,
+			total: mockItems.length,
+		}),
+	),
+	http.get(`${API_BASE}/api/v1/links`, () =>
+		HttpResponse.json({
 			links: mockLinks,
-		});
-	}),
+			total: mockLinks.length,
+		}),
+	),
 ];

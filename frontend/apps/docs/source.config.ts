@@ -21,10 +21,10 @@ export const { docs, meta } = defineDocs({
   // Configure frontmatter schema
   schema: {
     frontmatter: (z) => ({
-      title: z.string().optional(),
       description: z.string().optional(),
       icon: z.string().optional(),
       index: z.boolean().default(false),
+      title: z.string().optional(),
     }),
   },
 });
@@ -64,8 +64,8 @@ export default defineConfig({
         {
           // Syntax highlighting themes for light/dark mode
           themes: {
-            light: 'github-light',
             dark: 'github-dark',
+            light: 'github-light',
           },
           // Enable line numbers and copy button
           defaultLanguage: 'plaintext',

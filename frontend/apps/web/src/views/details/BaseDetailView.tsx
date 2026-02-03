@@ -88,71 +88,75 @@ export function BaseDetailView({
 				</header>
 
 				{/* Optional header content */}
-				{headerContent && <div className="shrink-0 w-full pt-4">{headerContent}</div>}
+				{headerContent && (
+					<div className="shrink-0 w-full pt-4">{headerContent}</div>
+				)}
 
 				{/* Main content card with tabs */}
 				<main className="min-h-0 flex-1 overflow-auto pt-6 md:pt-8">
-				<Card className="border-0 bg-card/50 backdrop-blur-sm shadow-xl shadow-primary/10 overflow-hidden">
-					<Tabs defaultValue={activeDefaultTab} className="w-full">
-						<div className="border-b bg-muted/30 px-4 md:px-6">
-							<TabsList
-								className="h-auto p-0 bg-transparent border-0 gap-0 md:gap-2 w-full overflow-x-auto"
-								aria-label="Item details sections"
-							>
+					<Card className="border-0 bg-card/50 backdrop-blur-sm shadow-xl shadow-primary/10 overflow-hidden">
+						<Tabs defaultValue={activeDefaultTab} className="w-full">
+							<div className="border-b bg-muted/30 px-4 md:px-6">
+								<TabsList
+									className="h-auto p-0 bg-transparent border-0 gap-0 md:gap-2 w-full overflow-x-auto"
+									aria-label="Item details sections"
+								>
+									{tabs.map((tab) => (
+										<TabsTrigger
+											key={tab.id}
+											value={tab.id}
+											className={cn(
+												"relative rounded-none border-b-2 border-transparent px-3 py-3 md:px-4 md:py-4",
+												"data-[state=active]:border-primary data-[state=active]:bg-transparent",
+												"text-sm md:text-base font-medium",
+												"hover:bg-muted/40 transition-colors",
+												"whitespace-nowrap min-w-[80px] md:min-w-0",
+											)}
+											aria-label={tab.ariaLabel || tab.label}
+										>
+											<span className="flex items-center gap-2">
+												{tab.label}
+												{tab.badge && (
+													<span
+														className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary"
+														aria-label={`${tab.badge} items`}
+													>
+														{tab.badge}
+													</span>
+												)}
+											</span>
+										</TabsTrigger>
+									))}
+								</TabsList>
+							</div>
+
+							<div className="p-4 md:p-6 lg:p-8">
 								{tabs.map((tab) => (
-									<TabsTrigger
+									<TabsContent
 										key={tab.id}
 										value={tab.id}
-										className={cn(
-											"relative rounded-none border-b-2 border-transparent px-3 py-3 md:px-4 md:py-4",
-											"data-[state=active]:border-primary data-[state=active]:bg-transparent",
-											"text-sm md:text-base font-medium",
-											"hover:bg-muted/40 transition-colors",
-											"whitespace-nowrap min-w-[80px] md:min-w-0",
-										)}
-										aria-label={tab.ariaLabel || tab.label}
+										className="mt-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg"
+										tabIndex={0}
 									>
-										<span className="flex items-center gap-2">
-											{tab.label}
-											{tab.badge && (
-												<span
-													className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary"
-													aria-label={`${tab.badge} items`}
-												>
-													{tab.badge}
-												</span>
-											)}
-										</span>
-									</TabsTrigger>
+										{isLoading ? (
+											<div className="flex items-center justify-center py-12">
+												<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+												<span className="sr-only">Loading {tab.label}...</span>
+											</div>
+										) : (
+											tab.content
+										)}
+									</TabsContent>
 								))}
-							</TabsList>
-						</div>
-
-						<div className="p-4 md:p-6 lg:p-8">
-							{tabs.map((tab) => (
-								<TabsContent
-									key={tab.id}
-									value={tab.id}
-									className="mt-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg"
-									tabIndex={0}
-								>
-									{isLoading ? (
-										<div className="flex items-center justify-center py-12">
-											<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-											<span className="sr-only">Loading {tab.label}...</span>
-										</div>
-									) : (
-										tab.content
-									)}
-								</TabsContent>
-							))}
-						</div>
-					</Tabs>
-				</Card>
+							</div>
+						</Tabs>
+					</Card>
 				</main>
 
 				{/* Optional footer content */}
-				{footerContent && <div className="shrink-0 w-full pt-6">{footerContent}</div>}
+				{footerContent && (
+					<div className="shrink-0 w-full pt-6">{footerContent}</div>
+				)}
 			</div>
 		</div>
 	);

@@ -2,7 +2,7 @@
  * Authentication utility functions and helpers
  */
 
-import { AUTH_ROUTES } from "@/config/constants";
+import config from "@/config/constants";
 import { useAuthStore } from "@/stores/authStore";
 
 /**
@@ -10,10 +10,10 @@ import { useAuthStore } from "@/stores/authStore";
  */
 export function isPublicRoute(pathname: string): boolean {
 	const publicRoutes = [
-		AUTH_ROUTES.LOGIN,
-		AUTH_ROUTES.REGISTER,
-		AUTH_ROUTES.RESET_PASSWORD,
-		AUTH_ROUTES.CALLBACK,
+		config.AUTH_ROUTES.LOGIN,
+		config.AUTH_ROUTES.REGISTER,
+		config.AUTH_ROUTES.RESET_PASSWORD,
+		config.AUTH_ROUTES.CALLBACK,
 	];
 	return publicRoutes.some((route) => pathname.startsWith(route));
 }

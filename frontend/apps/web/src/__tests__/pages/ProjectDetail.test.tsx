@@ -5,9 +5,9 @@
 
 import { QueryClient } from "@tanstack/react-query";
 import {
+	RouterProvider,
 	createMemoryHistory,
 	createRouter,
-	RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -15,22 +15,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { routeTree } from "@/routeTree.gen";
 
 vi.mock("@/api/projects", () => ({
+	deleteProject: vi.fn(),
 	fetchProject: vi.fn(),
 	updateProject: vi.fn(),
-	deleteProject: vi.fn(),
 }));
 
 vi.mock("@/api/items", () => ({
-	fetchProjectItems: vi.fn(),
 	createItem: vi.fn(),
-	updateItem: vi.fn(),
 	deleteItem: vi.fn(),
+	fetchProjectItems: vi.fn(),
+	updateItem: vi.fn(),
 }));
 
 vi.mock("@/api/links", () => ({
-	fetchProjectLinks: vi.fn(),
 	createLink: vi.fn(),
 	deleteLink: vi.fn(),
+	fetchProjectLinks: vi.fn(),
 }));
 
 describe("Project Detail Page", () => {
@@ -41,8 +41,8 @@ describe("Project Detail Page", () => {
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false, gcTime: 0 },
 				mutations: { retry: false },
+				queries: { retry: false, gcTime: 0 },
 			},
 		});
 
@@ -51,9 +51,9 @@ describe("Project Detail Page", () => {
 		});
 
 		router = createRouter({
-			routeTree,
-			history,
 			context: { queryClient },
+			history,
+			routeTree,
 		});
 
 		vi.clearAllMocks();
@@ -70,11 +70,11 @@ describe("Project Detail Page", () => {
 			const { fetchProjectLinks } = await import("@/api/links");
 
 			vi.mocked(fetchProject).mockResolvedValue({
+				created_at: "2024-01-15",
+				description: "Complete online shopping solution",
 				id: "proj-123",
 				name: "E-Commerce Platform",
-				description: "Complete online shopping solution",
 				status: "active",
-				created_at: "2024-01-15",
 				updated_at: "2024-02-20",
 			});
 			vi.mocked(fetchProjectItems).mockResolvedValue({ data: [], total: 0 });
@@ -100,12 +100,12 @@ describe("Project Detail Page", () => {
 			const { fetchProjectLinks } = await import("@/api/links");
 
 			vi.mocked(fetchProject).mockResolvedValue({
+				created_at: "2024-01-15T10:00:00Z",
 				id: "proj-123",
 				name: "Test Project",
-				created_at: "2024-01-15T10:00:00Z",
-				updated_at: "2024-02-20T14:30:00Z",
 				owner: "John Doe",
 				tags: ["critical", "backend"],
+				updated_at: "2024-02-20T14:30:00Z",
 			});
 			vi.mocked(fetchProjectItems).mockResolvedValue({ data: [], total: 0 });
 			vi.mocked(fetchProjectLinks).mockResolvedValue({ data: [], total: 0 });
@@ -157,10 +157,10 @@ describe("Project Detail Page", () => {
 				id: "proj-123",
 				name: "Test Project",
 				stats: {
-					totalItems: 156,
-					totalLinks: 342,
 					completionRate: 67.5,
 					coverage: 89.2,
+					totalItems: 156,
+					totalLinks: 342,
 				},
 			});
 			vi.mocked(fetchProjectItems).mockResolvedValue({ data: [], total: 0 });
@@ -414,17 +414,17 @@ describe("Project Detail Page", () => {
 				data: [
 					{
 						id: "item-1",
+						priority: "high",
+						status: "in-progress",
 						title: "User Authentication",
 						type: "feature",
-						status: "in-progress",
-						priority: "high",
 					},
 					{
 						id: "item-2",
+						priority: "critical",
+						status: "done",
 						title: "Login Bug Fix",
 						type: "bug",
-						status: "done",
-						priority: "critical",
 					},
 				],
 				total: 2,
@@ -558,9 +558,9 @@ describe("Project Detail Page", () => {
 			});
 			vi.mocked(fetchProjectItems).mockResolvedValue({
 				data: [
-					{ id: "item-1", title: "Low Priority", priority: "low" },
-					{ id: "item-2", title: "Critical Priority", priority: "critical" },
-					{ id: "item-3", title: "High Priority", priority: "high" },
+					{ id: "item-1", priority: "low", title: "Low Priority" },
+					{ id: "item-2", priority: "critical", title: "Critical Priority" },
+					{ id: "item-3", priority: "high", title: "High Priority" },
 				],
 				total: 3,
 			});
@@ -657,10 +657,10 @@ describe("Project Detail Page", () => {
 					{
 						id: "link-1",
 						sourceId: "item-1",
-						targetId: "item-2",
-						type: "depends",
 						sourceTitle: "Feature A",
+						targetId: "item-2",
 						targetTitle: "Feature B",
+						type: "depends",
 					},
 				],
 				total: 1,
@@ -760,9 +760,9 @@ describe("Project Detail Page", () => {
 			vi.mocked(fetchProjectItems).mockResolvedValue({ data: [], total: 0 });
 			vi.mocked(fetchProjectLinks).mockResolvedValue({
 				data: [
-					{ id: "link-1", type: "depends", sourceId: "1", targetId: "2" },
-					{ id: "link-2", type: "blocks", sourceId: "2", targetId: "3" },
-					{ id: "link-3", type: "depends", sourceId: "3", targetId: "4" },
+					{ id: "link-1", sourceId: "1", targetId: "2", type: "depends" },
+					{ id: "link-2", sourceId: "2", targetId: "3", type: "blocks" },
+					{ id: "link-3", sourceId: "3", targetId: "4", type: "depends" },
 				],
 				total: 3,
 			});
@@ -802,7 +802,7 @@ describe("Project Detail Page", () => {
 			});
 			vi.mocked(fetchProjectItems).mockResolvedValue({ data: [], total: 0 });
 			vi.mocked(fetchProjectLinks).mockResolvedValue({
-				data: [{ id: "link-1", type: "depends", sourceId: "1", targetId: "2" }],
+				data: [{ id: "link-1", sourceId: "1", targetId: "2", type: "depends" }],
 				total: 1,
 			});
 			vi.mocked(deleteLink).mockResolvedValue({ success: true });
@@ -837,16 +837,16 @@ describe("Project Detail Page", () => {
 			const { fetchProjectLinks } = await import("@/api/links");
 
 			vi.mocked(fetchProject).mockResolvedValue({
+				description: "Old description",
 				id: "proj-123",
 				name: "Old Name",
-				description: "Old description",
 			});
 			vi.mocked(fetchProjectItems).mockResolvedValue({ data: [], total: 0 });
 			vi.mocked(fetchProjectLinks).mockResolvedValue({ data: [], total: 0 });
 			vi.mocked(updateProject).mockResolvedValue({
+				description: "New description",
 				id: "proj-123",
 				name: "New Name",
-				description: "New description",
 			});
 
 			render(<RouterProvider router={router} />);

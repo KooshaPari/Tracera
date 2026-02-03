@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BranchExplorer } from "../BranchExplorer";
 import type { Branch } from "../TemporalNavigator";
 
-describe("BranchExplorer", () => {
+describe(BranchExplorer, () => {
 	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
@@ -14,41 +14,41 @@ describe("BranchExplorer", () => {
 	});
 	const mockBranches: Branch[] = [
 		{
-			id: "branch-1",
-			name: "main",
-			description: "Main production branch",
-			status: "active",
 			createdAt: new Date("2024-01-01"),
-			updatedAt: new Date("2024-01-15"),
+			description: "Main production branch",
+			id: "branch-1",
 			mergeRequestCount: 5,
-		},
-		{
-			id: "branch-2",
-			name: "develop",
-			description: "Development branch",
+			name: "main",
 			status: "active",
-			parentId: "branch-1",
+			updatedAt: new Date("2024-01-15"),
+		},
+		{
 			createdAt: new Date("2024-01-05"),
-			updatedAt: new Date("2024-01-14"),
+			description: "Development branch",
+			id: "branch-2",
 			mergeRequestCount: 2,
-		},
-		{
-			id: "branch-3",
-			name: "feature/auth",
-			status: "review",
-			parentId: "branch-2",
-			createdAt: new Date("2024-01-10"),
-			updatedAt: new Date("2024-01-13"),
-			mergeRequestCount: 1,
-		},
-		{
-			id: "branch-4",
-			name: "hotfix/security",
-			status: "merged",
+			name: "develop",
 			parentId: "branch-1",
+			status: "active",
+			updatedAt: new Date("2024-01-14"),
+		},
+		{
+			createdAt: new Date("2024-01-10"),
+			id: "branch-3",
+			mergeRequestCount: 1,
+			name: "feature/auth",
+			parentId: "branch-2",
+			status: "review",
+			updatedAt: new Date("2024-01-13"),
+		},
+		{
 			createdAt: new Date("2024-01-12"),
-			updatedAt: new Date("2024-01-12"),
+			id: "branch-4",
 			mergeRequestCount: 0,
+			name: "hotfix/security",
+			parentId: "branch-1",
+			status: "merged",
+			updatedAt: new Date("2024-01-12"),
 		},
 	];
 

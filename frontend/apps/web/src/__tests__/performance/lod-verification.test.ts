@@ -17,154 +17,157 @@
  * The key verification is relative performance (O(log n) vs O(n)) not absolute timings.
  */
 
-import { describe, it, expect } from 'vitest';
-import { getNodeType, type NodeTypeContext } from '@/components/graph/nodeRegistry';
-import { GraphSpatialIndex } from '@/lib/spatialIndex';
-import { getEdgeLODTier, EDGE_LOD_TIERS } from '@/lib/edgeLOD';
+import { describe, expect, it } from "vitest";
+import { getNodeType } from "@/components/graph/nodeRegistry";
+import type { NodeTypeContext } from "@/components/graph/nodeRegistry";
+import { GraphSpatialIndex } from "@/lib/spatialIndex";
+import { EDGE_LOD_TIERS, getEdgeLODTier } from "@/lib/edgeLOD";
 
-describe('LOD System Verification', () => {
-	describe('Node LOD Selection', () => {
-		it('should use SimplePill for >5000 nodes', () => {
+describe("LOD System Verification", () => {
+	describe("Node LOD Selection", () => {
+		it("should use SimplePill for >5000 nodes", () => {
 			const context: NodeTypeContext = {
+				distance: 100,
+				isFocused: false,
+				isSelected: false,
 				totalNodeCount: 6000,
-				zoom: 1.0,
-				isSelected: false,
-				isFocused: false,
-				distance: 100,
+				zoom: 1,
 			};
 
-			const nodeType = getNodeType('requirement', context);
-			expect(nodeType).toBe('simple');
+			const nodeType = getNodeType("requirement", context);
+			expect(nodeType).toBe("simple");
 		});
 
-		it('should use MediumPill for 2000-5000 nodes', () => {
+		it("should use MediumPill for 2000-5000 nodes", () => {
 			const context: NodeTypeContext = {
+				distance: 100,
+				isFocused: false,
+				isSelected: false,
 				totalNodeCount: 3000,
-				zoom: 1.0,
-				isSelected: false,
-				isFocused: false,
-				distance: 100,
+				zoom: 1,
 			};
 
-			const nodeType = getNodeType('requirement', context);
-			expect(nodeType).toBe('medium');
+			const nodeType = getNodeType("requirement", context);
+			expect(nodeType).toBe("medium");
 		});
 
-		it('should use full detail for selected nodes regardless of count', () => {
+		it("should use full detail for selected nodes regardless of count", () => {
 			const context: NodeTypeContext = {
-				totalNodeCount: 10000,
-				zoom: 0.1,
-				isSelected: true,
-				isFocused: false,
 				distance: 1000,
+				isFocused: false,
+				isSelected: true,
+				totalNodeCount: 10_000,
+				zoom: 0.1,
 			};
 
-			const nodeType = getNodeType('requirement', context);
+			const nodeType = getNodeType("requirement", context);
 			// Should not be simple or medium when selected
-			expect(nodeType).not.toBe('simple');
-			expect(nodeType).not.toBe('medium');
+			expect(nodeType).not.toBe("simple");
+			expect(nodeType).not.toBe("medium");
 			// Should be a type-specific node (requirement, test, epic, etc.)
-			expect(['requirement', 'test', 'epic', 'default', 'richPill']).toContain(nodeType);
+			expect(["requirement", "test", "epic", "default", "richPill"]).toContain(
+				nodeType,
+			);
 		});
 
-		it('should use SimplePill when zoomed out (<0.5)', () => {
+		it("should use SimplePill when zoomed out (<0.5)", () => {
 			const context: NodeTypeContext = {
+				distance: 100,
+				isFocused: false,
+				isSelected: false,
 				totalNodeCount: 100,
 				zoom: 0.3,
-				isSelected: false,
-				isFocused: false,
-				distance: 100,
 			};
 
-			const nodeType = getNodeType('requirement', context);
-			expect(nodeType).toBe('simple');
+			const nodeType = getNodeType("requirement", context);
+			expect(nodeType).toBe("simple");
 		});
 
-		it('should use SimplePill when far from viewport (>800px)', () => {
+		it("should use SimplePill when far from viewport (>800px)", () => {
 			const context: NodeTypeContext = {
-				totalNodeCount: 100,
-				zoom: 1.0,
-				isSelected: false,
-				isFocused: false,
 				distance: 900,
-			};
-
-			const nodeType = getNodeType('requirement', context);
-			expect(nodeType).toBe('simple');
-		});
-
-		it('should use skeleton for loading state', () => {
-			const context: NodeTypeContext = {
-				totalNodeCount: 100,
-				zoom: 1.0,
-				isSelected: false,
 				isFocused: false,
-				loadingState: 'loading',
-			};
-
-			const nodeType = getNodeType('requirement', context);
-			expect(nodeType).toBe('skeleton');
-		});
-
-		it('should use skeleton for error state', () => {
-			const context: NodeTypeContext = {
+				isSelected: false,
 				totalNodeCount: 100,
-				zoom: 1.0,
-				isSelected: false,
-				isFocused: false,
-				loadingState: 'error',
+				zoom: 1,
 			};
 
-			const nodeType = getNodeType('requirement', context);
-			expect(nodeType).toBe('skeleton');
+			const nodeType = getNodeType("requirement", context);
+			expect(nodeType).toBe("simple");
 		});
 
-		it('should prioritize focused state like selected state', () => {
+		it("should use skeleton for loading state", () => {
 			const context: NodeTypeContext = {
-				totalNodeCount: 10000,
-				zoom: 0.1,
+				isFocused: false,
 				isSelected: false,
-				isFocused: true,
+				loadingState: "loading",
+				totalNodeCount: 100,
+				zoom: 1,
+			};
+
+			const nodeType = getNodeType("requirement", context);
+			expect(nodeType).toBe("skeleton");
+		});
+
+		it("should use skeleton for error state", () => {
+			const context: NodeTypeContext = {
+				isFocused: false,
+				isSelected: false,
+				loadingState: "error",
+				totalNodeCount: 100,
+				zoom: 1,
+			};
+
+			const nodeType = getNodeType("requirement", context);
+			expect(nodeType).toBe("skeleton");
+		});
+
+		it("should prioritize focused state like selected state", () => {
+			const context: NodeTypeContext = {
 				distance: 1000,
+				isFocused: true,
+				isSelected: false,
+				totalNodeCount: 10_000,
+				zoom: 0.1,
 			};
 
-			const nodeType = getNodeType('requirement', context);
-			expect(nodeType).not.toBe('simple');
-			expect(nodeType).not.toBe('medium');
+			const nodeType = getNodeType("requirement", context);
+			expect(nodeType).not.toBe("simple");
+			expect(nodeType).not.toBe("medium");
 		});
 
-		it('should use medium for moderate zoom (0.5-0.8)', () => {
+		it("should use medium for moderate zoom (0.5-0.8)", () => {
 			const context: NodeTypeContext = {
+				distance: 100,
+				isFocused: false,
+				isSelected: false,
 				totalNodeCount: 1000,
 				zoom: 0.6,
-				isSelected: false,
-				isFocused: false,
-				distance: 100,
 			};
 
-			const nodeType = getNodeType('requirement', context);
-			expect(nodeType).toBe('medium');
+			const nodeType = getNodeType("requirement", context);
+			expect(nodeType).toBe("medium");
 		});
 
-		it('should use medium for moderate distance (400-800px)', () => {
+		it("should use medium for moderate distance (400-800px)", () => {
 			const context: NodeTypeContext = {
-				totalNodeCount: 1000,
-				zoom: 1.0,
-				isSelected: false,
-				isFocused: false,
 				distance: 500,
+				isFocused: false,
+				isSelected: false,
+				totalNodeCount: 1000,
+				zoom: 1,
 			};
 
-			const nodeType = getNodeType('requirement', context);
-			expect(nodeType).toBe('medium');
+			const nodeType = getNodeType("requirement", context);
+			expect(nodeType).toBe("medium");
 		});
 	});
 
-	describe('R-tree Spatial Index Performance', () => {
-		it('should index 10,000 nodes in <300ms', () => {
-			const nodes = Array.from({ length: 10000 }, (_, i) => ({
+	describe("R-tree Spatial Index Performance", () => {
+		it("should index 10,000 nodes in <300ms", () => {
+			const nodes = Array.from({ length: 10_000 }, (_, i) => ({
 				id: `node-${i}`,
-				position: { x: Math.random() * 10000, y: Math.random() * 10000 },
+				position: { x: Math.random() * 10_000, y: Math.random() * 10_000 },
 			}));
 
 			const spatialIndex = new GraphSpatialIndex();
@@ -174,13 +177,13 @@ describe('LOD System Verification', () => {
 
 			// Allow 300ms for test environment overhead (production: ~50ms)
 			expect(duration).toBeLessThan(300);
-			expect(spatialIndex.getNodeCount()).toBe(10000);
+			expect(spatialIndex.getNodeCount()).toBe(10_000);
 		});
 
-		it('should query viewport in <5ms for 10,000 nodes', () => {
-			const nodes = Array.from({ length: 10000 }, (_, i) => ({
+		it("should query viewport in <5ms for 10,000 nodes", () => {
+			const nodes = Array.from({ length: 10_000 }, (_, i) => ({
 				id: `node-${i}`,
-				position: { x: Math.random() * 10000, y: Math.random() * 10000 },
+				position: { x: Math.random() * 10_000, y: Math.random() * 10_000 },
 			}));
 
 			const spatialIndex = new GraphSpatialIndex();
@@ -188,11 +191,11 @@ describe('LOD System Verification', () => {
 
 			const startTime = performance.now();
 			const result = spatialIndex.queryViewport({
+				height: 1080,
+				width: 1920,
 				x: 0,
 				y: 0,
-				width: 1920,
-				height: 1080,
-				zoom: 1.0,
+				zoom: 1,
 			});
 			const duration = performance.now() - startTime;
 
@@ -201,13 +204,13 @@ describe('LOD System Verification', () => {
 			expect(result.nodes.length).toBeLessThan(nodes.length); // Should cull some nodes
 		});
 
-		it('should cull edges efficiently for 15,000 edges', () => {
+		it("should cull edges efficiently for 15,000 edges", () => {
 			const nodes = Array.from({ length: 5000 }, (_, i) => ({
 				id: `node-${i}`,
-				position: { x: Math.random() * 10000, y: Math.random() * 10000 },
+				position: { x: Math.random() * 10_000, y: Math.random() * 10_000 },
 			}));
 
-			const edges = Array.from({ length: 15000 }, (_, i) => ({
+			const edges = Array.from({ length: 15_000 }, (_, i) => ({
 				id: `edge-${i}`,
 				sourceId: `node-${Math.floor(Math.random() * 5000)}`,
 				targetId: `node-${Math.floor(Math.random() * 5000)}`,
@@ -224,15 +227,15 @@ describe('LOD System Verification', () => {
 
 			// Allow 300ms for test environment overhead with large edge set
 			expect(indexDuration).toBeLessThan(300);
-			expect(spatialIndex.getEdgeCount()).toBe(15000);
+			expect(spatialIndex.getEdgeCount()).toBe(15_000);
 
 			const queryStart = performance.now();
 			const result = spatialIndex.queryViewport({
+				height: 1080,
+				width: 1920,
 				x: 0,
 				y: 0,
-				width: 1920,
-				height: 1080,
-				zoom: 1.0,
+				zoom: 1,
 			});
 			const queryDuration = performance.now() - queryStart;
 
@@ -241,10 +244,10 @@ describe('LOD System Verification', () => {
 			expect(result.edges.length).toBeLessThan(edges.length); // Should cull some edges
 		});
 
-		it('should handle viewport panning without performance degradation', () => {
-			const nodes = Array.from({ length: 10000 }, (_, i) => ({
+		it("should handle viewport panning without performance degradation", () => {
+			const nodes = Array.from({ length: 10_000 }, (_, i) => ({
 				id: `node-${i}`,
-				position: { x: Math.random() * 10000, y: Math.random() * 10000 },
+				position: { x: Math.random() * 10_000, y: Math.random() * 10_000 },
 			}));
 
 			const spatialIndex = new GraphSpatialIndex();
@@ -252,11 +255,11 @@ describe('LOD System Verification', () => {
 
 			// Simulate 10 viewport panning queries
 			const queries = Array.from({ length: 10 }, (_, i) => ({
+				height: 1080,
+				width: 1920,
 				x: i * 500,
 				y: i * 500,
-				width: 1920,
-				height: 1080,
-				zoom: 1.0,
+				zoom: 1,
 			}));
 
 			const startTime = performance.now();
@@ -269,10 +272,10 @@ describe('LOD System Verification', () => {
 			expect(totalDuration).toBeLessThan(50);
 		});
 
-		it('should scale with zoom level', () => {
+		it("should scale with zoom level", () => {
 			const nodes = Array.from({ length: 5000 }, (_, i) => ({
 				id: `node-${i}`,
-				position: { x: Math.random() * 10000, y: Math.random() * 10000 },
+				position: { x: Math.random() * 10_000, y: Math.random() * 10_000 },
 			}));
 
 			const spatialIndex = new GraphSpatialIndex();
@@ -280,26 +283,26 @@ describe('LOD System Verification', () => {
 
 			// Query at different zoom levels
 			const zoom1x = spatialIndex.queryViewport({
+				height: 1080,
+				width: 1920,
 				x: 0,
 				y: 0,
-				width: 1920,
-				height: 1080,
-				zoom: 1.0,
+				zoom: 1,
 			});
 
 			const zoom2x = spatialIndex.queryViewport({
+				height: 1080,
+				width: 1920,
 				x: 0,
 				y: 0,
-				width: 1920,
-				height: 1080,
-				zoom: 2.0,
+				zoom: 2,
 			});
 
 			const zoom05x = spatialIndex.queryViewport({
+				height: 1080,
+				width: 1920,
 				x: 0,
 				y: 0,
-				width: 1920,
-				height: 1080,
 				zoom: 0.5,
 			});
 
@@ -310,74 +313,58 @@ describe('LOD System Verification', () => {
 		});
 	});
 
-	describe('Edge LOD Tiers', () => {
-		it('should return detailed tier for close edges (<300px)', () => {
-			const tier = getEdgeLODTier(
-				{ x: 100, y: 100 },
-				{ x: 150, y: 150 },
-				1.0,
-			);
-			expect(tier.level).toBe('detailed');
+	describe("Edge LOD Tiers", () => {
+		it("should return detailed tier for close edges (<300px)", () => {
+			const tier = getEdgeLODTier({ x: 100, y: 100 }, { x: 150, y: 150 }, 1);
+			expect(tier.level).toBe("detailed");
 			expect(tier.showLabel).toBe(true);
 			expect(tier.showArrow).toBe(true);
-			expect(tier.pathType).toBe('bezier');
-			expect(tier.opacity).toBe(1.0);
+			expect(tier.pathType).toBe("bezier");
+			expect(tier.opacity).toBe(1);
 		});
 
-		it('should return medium tier for mid-distance edges (300-600px)', () => {
-			const tier = getEdgeLODTier(
-				{ x: 100, y: 100 },
-				{ x: 500, y: 100 },
-				1.0,
-			);
-			expect(tier.level).toBe('medium');
+		it("should return medium tier for mid-distance edges (300-600px)", () => {
+			const tier = getEdgeLODTier({ x: 100, y: 100 }, { x: 500, y: 100 }, 1);
+			expect(tier.level).toBe("medium");
 			expect(tier.showLabel).toBe(false);
 			expect(tier.showArrow).toBe(true);
-			expect(tier.pathType).toBe('bezier');
+			expect(tier.pathType).toBe("bezier");
 			expect(tier.opacity).toBe(0.8);
 		});
 
-		it('should return simple tier for far edges (600-1200px)', () => {
-			const tier = getEdgeLODTier(
-				{ x: 100, y: 100 },
-				{ x: 900, y: 100 },
-				1.0,
-			);
-			expect(tier.level).toBe('simple');
-			expect(tier.pathType).toBe('straight');
+		it("should return simple tier for far edges (600-1200px)", () => {
+			const tier = getEdgeLODTier({ x: 100, y: 100 }, { x: 900, y: 100 }, 1);
+			expect(tier.level).toBe("simple");
+			expect(tier.pathType).toBe("straight");
 			expect(tier.showLabel).toBe(false);
 			expect(tier.showArrow).toBe(false);
 			expect(tier.opacity).toBe(0.5);
 		});
 
-		it('should return hidden tier for very far edges (>1200px)', () => {
-			const tier = getEdgeLODTier(
-				{ x: 100, y: 100 },
-				{ x: 1500, y: 100 },
-				1.0,
-			);
-			expect(tier.level).toBe('hidden');
+		it("should return hidden tier for very far edges (>1200px)", () => {
+			const tier = getEdgeLODTier({ x: 100, y: 100 }, { x: 1500, y: 100 }, 1);
+			expect(tier.level).toBe("hidden");
 			expect(tier.opacity).toBe(0);
 			expect(tier.strokeWidth).toBe(0);
 		});
 
-		it('should adjust thresholds based on zoom level', () => {
+		it("should adjust thresholds based on zoom level", () => {
 			// At 2x zoom, 300px threshold becomes 150px effective distance
 			// So a 200px actual distance should be medium (>150px at 2x zoom)
 			const tier = getEdgeLODTier(
 				{ x: 100, y: 100 },
 				{ x: 300, y: 100 }, // 200px distance
-				2.0,
+				2,
 			);
-			expect(tier.level).toBe('medium');
+			expect(tier.level).toBe("medium");
 		});
 
-		it('should handle zoom factor clamping', () => {
+		it("should handle zoom factor clamping", () => {
 			// Very high zoom (>2) should be clamped to 2
 			const tierHigh = getEdgeLODTier(
 				{ x: 100, y: 100 },
 				{ x: 500, y: 100 },
-				5.0,
+				5,
 			);
 
 			// Very low zoom (<0.5) should be clamped to 0.5
@@ -388,42 +375,42 @@ describe('LOD System Verification', () => {
 			);
 
 			// Both should be valid tiers (not crash)
-			expect(['detailed', 'medium', 'simple', 'hidden']).toContain(tierHigh.level);
-			expect(['detailed', 'medium', 'simple', 'hidden']).toContain(tierLow.level);
+			expect(["detailed", "medium", "simple", "hidden"]).toContain(
+				tierHigh.level,
+			);
+			expect(["detailed", "medium", "simple", "hidden"]).toContain(
+				tierLow.level,
+			);
 		});
 
-		it('should verify all tier thresholds are correctly defined', () => {
+		it("should verify all tier thresholds are correctly defined", () => {
 			expect(EDGE_LOD_TIERS).toHaveLength(4);
 
 			// Verify tiers are sorted by increasing distance
-			expect(EDGE_LOD_TIERS[0]!.level).toBe('detailed');
+			expect(EDGE_LOD_TIERS[0]!.level).toBe("detailed");
 			expect(EDGE_LOD_TIERS[0]!.distanceThreshold).toBe(0);
 
-			expect(EDGE_LOD_TIERS[1]!.level).toBe('medium');
+			expect(EDGE_LOD_TIERS[1]!.level).toBe("medium");
 			expect(EDGE_LOD_TIERS[1]!.distanceThreshold).toBe(300);
 
-			expect(EDGE_LOD_TIERS[2]!.level).toBe('simple');
+			expect(EDGE_LOD_TIERS[2]!.level).toBe("simple");
 			expect(EDGE_LOD_TIERS[2]!.distanceThreshold).toBe(600);
 
-			expect(EDGE_LOD_TIERS[3]!.level).toBe('hidden');
+			expect(EDGE_LOD_TIERS[3]!.level).toBe("hidden");
 			expect(EDGE_LOD_TIERS[3]!.distanceThreshold).toBe(1200);
 		});
 
-		it('should calculate diagonal distances correctly', () => {
+		it("should calculate diagonal distances correctly", () => {
 			// Pythagorean theorem: sqrt(300^2 + 400^2) = 500px
-			const tier = getEdgeLODTier(
-				{ x: 0, y: 0 },
-				{ x: 300, y: 400 },
-				1.0,
-			);
+			const tier = getEdgeLODTier({ x: 0, y: 0 }, { x: 300, y: 400 }, 1);
 			// 500px should be in medium tier (300-600px)
-			expect(tier.level).toBe('medium');
+			expect(tier.level).toBe("medium");
 		});
 	});
 
-	describe('Integration Tests', () => {
-		it('should demonstrate viewport culling efficiency', () => {
-			const nodes = Array.from({ length: 10000 }, (_, i) => ({
+	describe("Integration Tests", () => {
+		it("should demonstrate viewport culling efficiency", () => {
+			const nodes = Array.from({ length: 10_000 }, (_, i) => ({
 				id: `node-${i}`,
 				position: {
 					x: (i % 100) * 100,
@@ -436,11 +423,11 @@ describe('LOD System Verification', () => {
 
 			// Small viewport should only return a fraction of nodes
 			const result = spatialIndex.queryViewport({
+				height: 1080,
+				width: 1920,
 				x: 0,
 				y: 0,
-				width: 1920,
-				height: 1080,
-				zoom: 1.0,
+				zoom: 1,
 			});
 
 			// Should have significant culling (>50% reduction)
@@ -448,22 +435,22 @@ describe('LOD System Verification', () => {
 			expect(cullingRate).toBeGreaterThan(0.5);
 		});
 
-		it('should handle empty graph gracefully', () => {
+		it("should handle empty graph gracefully", () => {
 			const spatialIndex = new GraphSpatialIndex();
 
 			const result = spatialIndex.queryViewport({
+				height: 1080,
+				width: 1920,
 				x: 0,
 				y: 0,
-				width: 1920,
-				height: 1080,
-				zoom: 1.0,
+				zoom: 1,
 			});
 
 			expect(result.nodes).toHaveLength(0);
 			expect(result.edges).toHaveLength(0);
 		});
 
-		it('should maintain accuracy with buffer zones', () => {
+		it("should maintain accuracy with buffer zones", () => {
 			const nodes = Array.from({ length: 1000 }, (_, i) => ({
 				id: `node-${i}`,
 				position: {
@@ -477,11 +464,11 @@ describe('LOD System Verification', () => {
 
 			// Nodes near viewport edge should be included (buffer zone)
 			const result = spatialIndex.queryViewport({
+				height: 1000,
+				width: 1000,
 				x: 1000,
 				y: 1000,
-				width: 1000,
-				height: 1000,
-				zoom: 1.0,
+				zoom: 1,
 			});
 
 			// Should include nodes within and slightly outside viewport
@@ -502,36 +489,36 @@ describe('LOD System Verification', () => {
 			}
 		});
 
-		it('should verify LOD reduces rendered nodes at scale', () => {
+		it("should verify LOD reduces rendered nodes at scale", () => {
 			// Test that LOD system correctly identifies when to use simple nodes
 			const testCases = [
-				{ nodeCount: 1000, zoom: 1.0, distance: 100, expectedSimple: false },
-				{ nodeCount: 6000, zoom: 1.0, distance: 100, expectedSimple: true },
-				{ nodeCount: 1000, zoom: 0.3, distance: 100, expectedSimple: true },
-				{ nodeCount: 1000, zoom: 1.0, distance: 900, expectedSimple: true },
+				{ distance: 100, expectedSimple: false, nodeCount: 1000, zoom: 1 },
+				{ distance: 100, expectedSimple: true, nodeCount: 6000, zoom: 1 },
+				{ distance: 100, expectedSimple: true, nodeCount: 1000, zoom: 0.3 },
+				{ distance: 900, expectedSimple: true, nodeCount: 1000, zoom: 1 },
 			];
 
 			for (const testCase of testCases) {
 				const context: NodeTypeContext = {
+					distance: testCase.distance,
+					isFocused: false,
+					isSelected: false,
 					totalNodeCount: testCase.nodeCount,
 					zoom: testCase.zoom,
-					isSelected: false,
-					isFocused: false,
-					distance: testCase.distance,
 				};
 
-				const nodeType = getNodeType('requirement', context);
-				const isSimple = nodeType === 'simple';
+				const nodeType = getNodeType("requirement", context);
+				const isSimple = nodeType === "simple";
 				expect(isSimple).toBe(testCase.expectedSimple);
 			}
 		});
 	});
 
-	describe('Performance Regression Tests', () => {
-		it('should maintain consistent query performance across multiple runs', () => {
-			const nodes = Array.from({ length: 10000 }, (_, i) => ({
+	describe("Performance Regression Tests", () => {
+		it("should maintain consistent query performance across multiple runs", () => {
+			const nodes = Array.from({ length: 10_000 }, (_, i) => ({
 				id: `node-${i}`,
-				position: { x: Math.random() * 10000, y: Math.random() * 10000 },
+				position: { x: Math.random() * 10_000, y: Math.random() * 10_000 },
 			}));
 
 			const spatialIndex = new GraphSpatialIndex();
@@ -543,11 +530,11 @@ describe('LOD System Verification', () => {
 			for (let i = 0; i < 100; i++) {
 				const startTime = performance.now();
 				spatialIndex.queryViewport({
+					height: 1080,
+					width: 1920,
 					x: Math.random() * 5000,
 					y: Math.random() * 5000,
-					width: 1920,
-					height: 1080,
-					zoom: 1.0,
+					zoom: 1,
 				});
 				timings.push(performance.now() - startTime);
 			}
@@ -561,15 +548,15 @@ describe('LOD System Verification', () => {
 			expect(maxTime).toBeLessThan(10);
 		});
 
-		it('should verify edge LOD calculation performance', () => {
+		it("should verify edge LOD calculation performance", () => {
 			// Calculate 10,000 edge LOD tiers
-			const calculations = 10000;
+			const calculations = 10_000;
 			const startTime = performance.now();
 
 			for (let i = 0; i < calculations; i++) {
 				getEdgeLODTier(
-					{ x: Math.random() * 10000, y: Math.random() * 10000 },
-					{ x: Math.random() * 10000, y: Math.random() * 10000 },
+					{ x: Math.random() * 10_000, y: Math.random() * 10_000 },
+					{ x: Math.random() * 10_000, y: Math.random() * 10_000 },
 					Math.random() * 2,
 				);
 			}

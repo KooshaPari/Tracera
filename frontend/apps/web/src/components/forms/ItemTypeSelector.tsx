@@ -23,26 +23,27 @@ import {
 	Sparkles,
 	Zap,
 } from "lucide-react";
-import { getItemTypesForView, type ItemTypeConfig } from "@/lib/itemTypeConfig";
+import { getItemTypesForView } from "@/lib/itemTypeConfig";
+import type { ItemTypeConfig } from "@/lib/itemTypeConfig";
 
 // Icon mapping for item types
 const ICON_MAP: Record<string, LucideIcon> = {
-	requirement: FileText,
-	test: FlaskConical,
+	api: Code,
+	architecture: Box,
+	bug: Bug,
+	code: FileCode,
+	database: Database,
+	document: FileText,
 	epic: Layers,
+	feature: Sparkles,
+	generic: Box,
+	performance: Zap,
+	requirement: FileText,
+	security: Shield,
 	story: BookOpen,
 	task: CheckSquare,
-	bug: Bug,
-	feature: Sparkles,
-	api: Code,
-	database: Database,
-	code: FileCode,
+	test: FlaskConical,
 	wireframe: Layout,
-	document: FileText,
-	architecture: Box,
-	security: Shield,
-	performance: Zap,
-	generic: Box,
 };
 
 interface ItemTypeSelectorProps {

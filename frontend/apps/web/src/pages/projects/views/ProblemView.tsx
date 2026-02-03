@@ -1,4 +1,8 @@
-import type { ImpactLevel, Problem, ProblemStatus } from "../../../../../../packages/types/src/index";
+import type {
+	ImpactLevel,
+	Problem,
+	ProblemStatus,
+} from "../../../../../../packages/types/src/index";
 import {
 	AlertTriangle,
 	CheckCircle,
@@ -12,28 +16,28 @@ import { CreateProblemForm } from "../../../components/forms/CreateProblemForm";
 import { useProblemStats, useProblems } from "../../../hooks/useProblems";
 
 const statusColors: Record<ProblemStatus, string> = {
-	open: "bg-red-100 text-red-700",
-	in_investigation: "bg-yellow-100 text-yellow-700",
-	pending_workaround: "bg-orange-100 text-orange-700",
-	known_error: "bg-purple-100 text-purple-700",
 	awaiting_fix: "bg-blue-100 text-blue-700",
 	closed: "bg-green-100 text-green-700",
+	in_investigation: "bg-yellow-100 text-yellow-700",
+	known_error: "bg-purple-100 text-purple-700",
+	open: "bg-red-100 text-red-700",
+	pending_workaround: "bg-orange-100 text-orange-700",
 };
 
 const impactColors: Record<ImpactLevel, string> = {
 	critical: "bg-red-500 text-white",
 	high: "bg-orange-500 text-white",
-	medium: "bg-yellow-500 text-black",
 	low: "bg-gray-300 text-gray-700",
+	medium: "bg-yellow-500 text-black",
 };
 
 const statusLabels: Record<ProblemStatus, string> = {
-	open: "Open",
-	in_investigation: "Investigating",
-	pending_workaround: "Pending Workaround",
-	known_error: "Known Error",
 	awaiting_fix: "Awaiting Fix",
 	closed: "Closed",
+	in_investigation: "Investigating",
+	known_error: "Known Error",
+	open: "Open",
+	pending_workaround: "Pending Workaround",
 };
 
 interface ProblemViewProps {
@@ -99,8 +103,8 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 							Open Problems
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{(stats.byStatus?.['open'] ?? 0) +
-								(stats.byStatus?.['in_investigation'] ?? 0)}
+							{(stats.byStatus?.["open"] ?? 0) +
+								(stats.byStatus?.["in_investigation"] ?? 0)}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -109,7 +113,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 							Known Errors
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.['known_error'] ?? 0}
+							{stats.byStatus?.["known_error"] ?? 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -118,7 +122,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 							Resolved
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.['closed'] ?? 0}
+							{stats.byStatus?.["closed"] ?? 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -127,7 +131,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 							Critical
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byPriority?.['critical'] ?? 0}
+							{stats.byPriority?.["critical"] ?? 0}
 						</div>
 					</div>
 				</div>
@@ -183,7 +187,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 				<div className="flex items-center justify-center py-12">
 					<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 				</div>
-			) : filteredProblems.length === 0 ? (
+			) : (filteredProblems.length === 0 ? (
 				<div className="rounded-lg border border-dashed p-12 text-center">
 					<AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" />
 					<h3 className="mt-4 text-lg font-semibold">No problems found</h3>
@@ -238,7 +242,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 						</table>
 					</div>
 				</div>
-			)}
+			))}
 
 			{/* Create Modal */}
 			{showCreateModal && (
@@ -305,11 +309,11 @@ function ProblemRow({ problem }: { problem: Problem }) {
 			<td className="px-4 py-3">
 				{problem.rootCauseIdentified ? (
 					<span className="text-green-600">✓ Identified</span>
-				) : problem.workaroundAvailable ? (
+				) : (problem.workaroundAvailable ? (
 					<span className="text-yellow-600">Workaround</span>
 				) : (
 					<span className="text-muted-foreground">—</span>
-				)}
+				))}
 			</td>
 			<td className="px-4 py-3 text-sm text-muted-foreground">{createdDate}</td>
 		</tr>

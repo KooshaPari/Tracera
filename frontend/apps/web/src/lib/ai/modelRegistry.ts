@@ -18,7 +18,8 @@ export const AI_PROVIDERS: AIProviderConfig[] = [
 				id: "claude-sonnet-4-5-20250929",
 				name: "Claude Sonnet 4.5",
 				provider: "claude",
-				description: "Recommended: best balance of intelligence, speed, and cost",
+				description:
+					"Recommended: best balance of intelligence, speed, and cost",
 				contextWindow: 200000,
 				maxOutput: 65536,
 			},

@@ -1,4 +1,4 @@
-import { HomeIcon, BookOpenIcon, CodeIcon } from 'lucide-react';
+import { BookOpenIcon, CodeIcon, HomeIcon } from 'lucide-react';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
 /**
@@ -6,10 +6,7 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
  * Used by both docs and home layouts
  */
 export const baseOptions: BaseLayoutProps = {
-  nav: {
-    title: 'TracerTM',
-    transparentMode: 'top',
-  },
+  githubUrl: 'https://github.com/yourusername/tracertm',
   links: [
     {
       text: 'Documentation',
@@ -29,5 +26,8 @@ export const baseOptions: BaseLayoutProps = {
       icon: <HomeIcon />,
     },
   ],
-  githubUrl: 'https://github.com/yourusername/tracertm',
+  nav: {
+    title: 'TracerTM',
+    transparentMode: 'top',
+  },
 };

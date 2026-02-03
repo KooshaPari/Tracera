@@ -1,7 +1,7 @@
 // Keyboard Shortcuts Hook for Graph Controls
 // Provides keyboard navigation and control shortcuts
 
-import { useEffect, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useReactFlow } from "@xyflow/react";
 
 interface KeyboardShortcutsConfig {
@@ -46,7 +46,9 @@ export function useGraphKeyboardShortcuts({
 
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent) => {
-			if (!enabled) return;
+			if (!enabled) {
+				return;
+			}
 
 			// Ignore if user is typing in an input
 			const target = event.target as HTMLElement;
@@ -64,24 +66,27 @@ export function useGraphKeyboardShortcuts({
 			// Zoom in: Cmd/Ctrl + Plus/Equal
 			if (isMod && (event.key === "+" || event.key === "=")) {
 				event.preventDefault();
-				if (onZoomIn) onZoomIn();
-				else void zoomIn({ duration: 200 });
+				if (onZoomIn) {
+					onZoomIn();
+				} else undefined;
 				return;
 			}
 
 			// Zoom out: Cmd/Ctrl + Minus
 			if (isMod && event.key === "-") {
 				event.preventDefault();
-				if (onZoomOut) onZoomOut();
-				else void zoomOut({ duration: 200 });
+				if (onZoomOut) {
+					onZoomOut();
+				} else undefined;
 				return;
 			}
 
 			// Fit view: Cmd/Ctrl + 0
 			if (isMod && event.key === "0") {
 				event.preventDefault();
-				if (onFitView) onFitView();
-				else void fitView({ padding: 0.2, duration: 300 });
+				if (onFitView) {
+					onFitView();
+				} else undefined;
 				return;
 			}
 
@@ -153,29 +158,31 @@ export function useGraphKeyboardShortcuts({
 	);
 
 	useEffect(() => {
-		if (!enabled) return;
+		if (!enabled) {
+			return;
+		}
 
-		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
+		globalThis.addEventListener("keydown", handleKeyDown);
+		return () => globalThis.removeEventListener("keydown", handleKeyDown);
 	}, [handleKeyDown, enabled]);
 }
 
 // Keyboard shortcuts reference
 export const KEYBOARD_SHORTCUTS = {
-	zoom: {
-		in: "Cmd/Ctrl + Plus",
-		out: "Cmd/Ctrl + Minus",
-		fit: "Cmd/Ctrl + 0",
-		actualSize: "Cmd/Ctrl + 1",
-	},
-	view: {
-		fullscreen: "F",
-		detailPanel: "P",
-		miniMap: "M",
-	},
 	actions: {
 		export: "Cmd/Ctrl + E",
 		filters: "Cmd/Ctrl + F",
 		reset: "Cmd/Ctrl + Shift + R",
+	},
+	view: {
+		detailPanel: "P",
+		fullscreen: "F",
+		miniMap: "M",
+	},
+	zoom: {
+		actualSize: "Cmd/Ctrl + 1",
+		fit: "Cmd/Ctrl + 0",
+		in: "Cmd/Ctrl + Plus",
+		out: "Cmd/Ctrl + Minus",
 	},
 } as const;

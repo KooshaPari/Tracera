@@ -38,9 +38,9 @@ describe("Helper Utilities", () => {
 	describe("Array utilities", () => {
 		it("should group array by key", () => {
 			const items = [
-				{ id: 1, category: "A" },
-				{ id: 2, category: "B" },
-				{ id: 3, category: "A" },
+				{ category: "A", id: 1 },
+				{ category: "B", id: 2 },
+				{ category: "A", id: 3 },
 			];
 			const grouped = groupBy(items, "category");
 			expect(grouped.A).toHaveLength(2);
@@ -146,13 +146,13 @@ describe("Helper Utilities", () => {
 	describe("Type guards", () => {
 		it("should check if value is not null", () => {
 			expect(isNotNull(null)).toBe(false);
-			expect(isNotNull(undefined)).toBe(false);
+			expect(isNotNull()).toBe(false);
 			expect(isNotNull(0)).toBe(true);
 			expect(isNotNull("")).toBe(true);
 		});
 
 		it("should check if value is defined", () => {
-			expect(isDefined(undefined)).toBe(false);
+			expect(isDefined()).toBe(false);
 			expect(isDefined(null)).toBe(true);
 			expect(isDefined(0)).toBe(true);
 		});
@@ -177,7 +177,7 @@ describe("Helper Utilities", () => {
 			expect(mockFn).not.toHaveBeenCalled();
 
 			await new Promise((resolve) => setTimeout(resolve, 60));
-			expect(mockFn).toHaveBeenCalledTimes(1);
+			expect(mockFn).toHaveBeenCalledOnce();
 		});
 
 		it("should throttle function calls", async () => {
@@ -188,7 +188,7 @@ describe("Helper Utilities", () => {
 			throttledFn();
 			throttledFn();
 
-			expect(mockFn).toHaveBeenCalledTimes(1);
+			expect(mockFn).toHaveBeenCalledOnce();
 
 			await new Promise((resolve) => setTimeout(resolve, 60));
 			throttledFn();

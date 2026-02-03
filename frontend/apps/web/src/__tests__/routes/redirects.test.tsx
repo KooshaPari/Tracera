@@ -27,23 +27,25 @@ describe("Redirect Routes - Backward Compatibility", () => {
 			};
 
 			const newPath = `/projects/${itemWithView.projectId}/views/${itemWithView.view.toLowerCase()}/item-123`;
-			expect(newPath).toMatch(/^\/projects\/project-456\/views\/feature\/item-123$/);
+			expect(newPath).toMatch(
+				/^\/projects\/project-456\/views\/feature\/item-123$/,
+			);
 		});
 
 		it("should handle view type case conversion", () => {
 			const viewTypes = ["FEATURE", "TEST", "API", "DATABASE"];
-			const lowercase = viewTypes.map(v => v.toLowerCase());
+			const lowercase = viewTypes.map((v) => v.toLowerCase());
 
 			expect(lowercase).toEqual(["feature", "test", "api", "database"]);
 		});
 
 		it("should map item type to view type correctly", () => {
 			const typeToView: Record<string, string> = {
+				api_endpoint: "api",
+				database_schema: "database",
 				epic: "feature",
 				story: "feature",
 				test_case: "test",
-				api_endpoint: "api",
-				database_schema: "database",
 			};
 
 			expect(typeToView.epic).toBe("feature");
@@ -101,9 +103,9 @@ describe("Redirect Routes - Backward Compatibility", () => {
 	describe("History Management", () => {
 		it("should use replace strategy for redirects", () => {
 			const redirect = {
+				mode: "replace" as const,
 				path: "/items/item-123",
 				target: "/projects/proj-456/views/feature/item-123",
-				mode: "replace" as const,
 			};
 
 			expect(redirect.mode).toBe("replace");
@@ -144,9 +146,9 @@ describe("Redirect Routes - Backward Compatibility", () => {
 
 		it("should normalize view type values", () => {
 			const views = ["FEATURE", "feature", "Feature"];
-			const normalized = views.map(v => v.toLowerCase());
+			const normalized = views.map((v) => v.toLowerCase());
 
-			expect(normalized.every(v => v === "feature")).toBe(true);
+			expect(normalized.every((v) => v === "feature")).toBe(true);
 		});
 	});
 });

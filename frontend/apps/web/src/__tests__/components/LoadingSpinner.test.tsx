@@ -178,7 +178,9 @@ describe("LoadingSpinner Component", () => {
 		});
 
 		it("should render text in full screen mode", () => {
-			const { container } = render(<LoadingSpinner fullScreen text="Loading application..." />);
+			const { container } = render(
+				<LoadingSpinner fullScreen text="Loading application..." />,
+			);
 
 			expect(screen.getByText("Loading application...")).toBeInTheDocument();
 		});
@@ -233,7 +235,9 @@ describe("LoadingSpinner Component", () => {
 		it("should have dark mode classes for spinner border", () => {
 			const { container } = render(<LoadingSpinner />);
 
-			const spinner = container.querySelector(".dark\\:border-gray-800");
+			const spinner = container.querySelector(
+				String.raw`.dark\:border-gray-800`,
+			);
 			expect(spinner).toBeInTheDocument();
 		});
 
@@ -247,7 +251,9 @@ describe("LoadingSpinner Component", () => {
 		it("should have dark mode classes for full screen overlay", () => {
 			const { container } = render(<LoadingSpinner fullScreen />);
 
-			const overlay = container.querySelector(".dark\\:bg-gray-900\\/80");
+			const overlay = container.querySelector(
+				String.raw`.dark\:bg-gray-900\/80`,
+			);
 			expect(overlay).toBeInTheDocument();
 		});
 	});
@@ -298,7 +304,9 @@ describe("LoadingSpinner Component", () => {
 		});
 
 		it("should handle special characters in text", () => {
-			const { container } = render(<LoadingSpinner text="Loading <data> & 'items'..." />);
+			const { container } = render(
+				<LoadingSpinner text="Loading <data> & 'items'..." />,
+			);
 
 			expect(
 				screen.getByText("Loading <data> & 'items'..."),
@@ -377,14 +385,18 @@ describe("LoadingSpinner Component", () => {
 		});
 
 		it("should render as data fetching indicator", () => {
-			const { container } = render(<LoadingSpinner size="md" text="Fetching data..." />);
+			const { container } = render(
+				<LoadingSpinner size="md" text="Fetching data..." />,
+			);
 
 			const spinner = screen.getByText("Fetching data...").previousSibling;
 			expect(spinner).toHaveClass("animate-spin");
 		});
 
 		it("should render as form submission indicator", () => {
-			const { container } = render(<LoadingSpinner size="sm" text="Submitting..." />);
+			const { container } = render(
+				<LoadingSpinner size="sm" text="Submitting..." />,
+			);
 
 			expect(screen.getByText("Submitting...")).toBeInTheDocument();
 		});

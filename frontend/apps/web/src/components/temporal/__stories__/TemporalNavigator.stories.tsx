@@ -1,19 +1,16 @@
 // TemporalNavigator Storybook stories
 import type { Meta, StoryObj } from "@storybook/react";
-import { logger } from '@/lib/logger';
-import {
-	type Branch,
-	TemporalNavigator,
-	type Version,
-} from "../TemporalNavigator";
+import { logger } from "@/lib/logger";
+import { TemporalNavigator } from "../TemporalNavigator";
+import type { Branch, Version } from "../TemporalNavigator";
 
 const meta = {
-	title: "Temporal/TemporalNavigator",
 	component: TemporalNavigator,
 	parameters: {
 		layout: "centered",
 	},
 	tags: ["autodocs"],
+	title: "Temporal/TemporalNavigator",
 } satisfies Meta<typeof TemporalNavigator>;
 
 export default meta;
@@ -21,78 +18,78 @@ type Story = StoryObj<typeof meta>;
 
 const mockBranches: Branch[] = [
 	{
-		id: "main",
-		name: "main",
-		description: "Production branch",
-		status: "active",
 		createdAt: new Date("2024-01-01"),
-		updatedAt: new Date("2024-01-20"),
+		description: "Production branch",
+		id: "main",
 		mergeRequestCount: 3,
-	},
-	{
-		id: "develop",
-		name: "develop",
-		description: "Development branch",
+		name: "main",
 		status: "active",
-		parentId: "main",
-		createdAt: new Date("2024-01-05"),
-		updatedAt: new Date("2024-01-19"),
-		mergeRequestCount: 5,
+		updatedAt: new Date("2024-01-20"),
 	},
 	{
-		id: "feature-auth",
-		name: "feature/authentication",
-		status: "review",
-		parentId: "develop",
+		createdAt: new Date("2024-01-05"),
+		description: "Development branch",
+		id: "develop",
+		mergeRequestCount: 5,
+		name: "develop",
+		parentId: "main",
+		status: "active",
+		updatedAt: new Date("2024-01-19"),
+	},
+	{
 		createdAt: new Date("2024-01-10"),
-		updatedAt: new Date("2024-01-15"),
+		id: "feature-auth",
 		mergeRequestCount: 1,
+		name: "feature/authentication",
+		parentId: "develop",
+		status: "review",
+		updatedAt: new Date("2024-01-15"),
 	},
 ];
 
 const mockVersions: Version[] = [
 	{
-		id: "v1.0.0",
+		author: "Alice",
 		branchId: "main",
-		title: "v1.0.0 - Initial Release",
+		description: "First stable release with core features",
+		id: "v1.0.0",
+		status: "published",
 		tag: "1.0.0",
 		timestamp: new Date("2024-01-01"),
-		author: "Alice",
-		status: "published",
-		description: "First stable release with core features",
+		title: "v1.0.0 - Initial Release",
 	},
 	{
-		id: "v1.0.1",
+		author: "Bob",
 		branchId: "main",
-		title: "v1.0.1 - Bugfix",
+		description: "Critical security patches",
+		id: "v1.0.1",
+		status: "published",
 		tag: "1.0.1",
 		timestamp: new Date("2024-01-05"),
-		author: "Bob",
-		status: "published",
-		description: "Critical security patches",
+		title: "v1.0.1 - Bugfix",
 	},
 	{
-		id: "v1.1.0",
+		author: "Charlie",
 		branchId: "main",
-		title: "v1.1.0 - New Features",
+		description: "Authentication and user management",
+		id: "v1.1.0",
+		status: "published",
 		tag: "1.1.0",
 		timestamp: new Date("2024-01-12"),
-		author: "Charlie",
-		status: "published",
-		description: "Authentication and user management",
+		title: "v1.1.0 - New Features",
 	},
 ];
 
 export const Default: Story = {
 	args: {
-		projectId: "proj-123",
+		branches: mockBranches,
 		currentBranchId: "main",
 		currentVersionId: "v1.1.0",
-		branches: mockBranches,
-		versions: mockVersions,
 		onBranchChange: (branchId) => logger.info("Branch changed to:", branchId),
 		onVersionChange: (versionId) =>
 			logger.info("Version changed to:", versionId),
+		projectId: "proj-123",
+		versions: mockVersions,
 	},
 };
 

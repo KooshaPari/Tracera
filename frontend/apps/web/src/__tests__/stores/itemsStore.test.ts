@@ -10,13 +10,13 @@ describe("itemsStore", () => {
 	beforeEach(() => {
 		// Reset store state
 		useItemsStore.setState({
+			isLoading: false,
 			items: new Map(),
 			itemsByProject: new Map(),
-			isLoading: false,
 			loadingItems: new Set(),
 			pendingCreates: new Map(),
-			pendingUpdates: new Map(),
 			pendingDeletes: new Set(),
+			pendingUpdates: new Map(),
 		});
 	});
 
@@ -136,8 +136,8 @@ describe("itemsStore", () => {
 		it("should optimistically create an item", () => {
 			const data = {
 				projectId: "proj-1",
-				type: "feature",
 				title: "New Item",
+				type: "feature",
 			};
 
 			useItemsStore.getState().optimisticCreate("temp-1", data);
@@ -150,8 +150,8 @@ describe("itemsStore", () => {
 		it("should confirm optimistic create", () => {
 			const data = {
 				projectId: "proj-1",
-				type: "feature",
 				title: "New Item",
+				type: "feature",
 			};
 			const realItem = createMockItem({ id: "real-1", ...data });
 
@@ -167,8 +167,8 @@ describe("itemsStore", () => {
 		it("should rollback optimistic create", () => {
 			const data = {
 				projectId: "proj-1",
-				type: "feature",
 				title: "New Item",
+				type: "feature",
 			};
 
 			useItemsStore.getState().optimisticCreate("temp-1", data);

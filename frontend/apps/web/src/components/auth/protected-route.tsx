@@ -14,7 +14,9 @@ interface ProtectedRouteProps {
 	requireAccount?: boolean;
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps): ReactNode {
+export default function ProtectedRoute({
+	children,
+}: ProtectedRouteProps): ReactNode {
 	const { user, isLoading } = useAuth();
 
 	useEffect(() => {

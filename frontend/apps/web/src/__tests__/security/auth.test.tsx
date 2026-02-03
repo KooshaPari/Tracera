@@ -40,8 +40,8 @@ describe("Authentication Security Tests", () => {
 			act(() => {
 				result.current.setToken("test-token-123");
 				result.current.setUser({
-					id: "1",
 					email: "test@example.com",
+					id: "1",
 				});
 			});
 
@@ -79,12 +79,14 @@ describe("Authentication Security Tests", () => {
 			const validateJWT = (token: string): boolean => {
 				// JWT format: header.payload.signature
 				const parts = token.split(".");
-				if (parts.length !== 3) return false;
+				if (parts.length !== 3) {
+					return false;
+				}
 
 				// Check each part is base64
 				return parts.every((part) => {
 					try {
-						atob(part.replace(/-/g, "+").replace(/_/g, "/"));
+						atob(part.replaceAll(/-/g, "+").replaceAll(/_/g, "/"));
 						return true;
 					} catch {
 						return false;
@@ -107,7 +109,9 @@ describe("Authentication Security Tests", () => {
 					const parts = token.split(".");
 					const payload = JSON.parse(atob(parts[1]));
 
-					if (!payload.exp) return true;
+					if (!payload.exp) {
+						return true;
+					}
 
 					const now = Math.floor(Date.now() / 1000);
 					return payload.exp < now;
@@ -117,7 +121,7 @@ describe("Authentication Security Tests", () => {
 			};
 
 			// Create expired token (exp in the past)
-			const expiredPayload = btoa(JSON.stringify({ exp: 1000000 }));
+			const expiredPayload = btoa(JSON.stringify({ exp: 1_000_000 }));
 			const expiredToken = `header.${expiredPayload}.signature`;
 			expect(isTokenExpired(expiredToken)).toBe(true);
 
@@ -133,18 +137,22 @@ describe("Authentication Security Tests", () => {
 			const extractClaims = (token: string): Record<string, unknown> | null => {
 				try {
 					const parts = token.split(".");
-					if (parts.length !== 3) return null;
+					if (parts.length !== 3) {
+						return null;
+					}
 
 					const payload = JSON.parse(atob(parts[1]));
 
 					// Validate required claims
-					if (!payload.sub || !payload.exp) return null;
+					if (!payload.sub || !payload.exp) {
+						return null;
+					}
 
 					return {
-						userId: payload.sub,
 						email: payload.email,
-						role: payload.role,
 						exp: payload.exp,
+						role: payload.role,
+						userId: payload.sub,
 					};
 				} catch {
 					return null;
@@ -153,10 +161,10 @@ describe("Authentication Security Tests", () => {
 
 			const validPayload = btoa(
 				JSON.stringify({
-					sub: "user-123",
 					email: "test@example.com",
-					role: "user",
 					exp: Math.floor(Date.now() / 1000) + 3600,
+					role: "user",
+					sub: "user-123",
 				}),
 			);
 			const token = `header.${validPayload}.signature`;
@@ -215,8 +223,8 @@ describe("Authentication Security Tests", () => {
 
 			act(() => {
 				result1.current.setUser({
-					id: "1",
 					email: "test@example.com",
+					id: "1",
 					name: "Test User",
 				});
 				result1.current.setToken("test-token");
@@ -239,8 +247,8 @@ describe("Authentication Security Tests", () => {
 			act(() => {
 				result.current.setToken("old-token");
 				result.current.setUser({
-					id: "1",
 					email: "test@example.com",
+					id: "1",
 				});
 			});
 
@@ -260,8 +268,8 @@ describe("Authentication Security Tests", () => {
 			act(() => {
 				result.current.setToken("sensitive-token");
 				result.current.setUser({
-					id: "1",
 					email: "test@example.com",
+					id: "1",
 					metadata: { secretKey: "secret-value" },
 				});
 			});
@@ -281,8 +289,8 @@ describe("Authentication Security Tests", () => {
 			// User 1 logs in
 			act(() => {
 				result.current.setUser({
-					id: "1",
 					email: "user1@example.com",
+					id: "1",
 				});
 				result.current.setToken("user1-token");
 			});
@@ -297,8 +305,8 @@ describe("Authentication Security Tests", () => {
 			// User 2 logs in
 			act(() => {
 				result.current.setUser({
-					id: "2",
 					email: "user2@example.com",
+					id: "2",
 				});
 				result.current.setToken("user2-token");
 			});
@@ -331,19 +339,29 @@ describe("Authentication Security Tests", () => {
 		it("should validate password strength requirements", () => {
 			const validatePasswordStrength = (password: string): boolean => {
 				// Minimum 8 characters
-				if (password.length < 8) return false;
+				if (password.length < 8) {
+					return false;
+				}
 
 				// At least one uppercase
-				if (!/[A-Z]/.test(password)) return false;
+				if (!/[A-Z]/.test(password)) {
+					return false;
+				}
 
 				// At least one lowercase
-				if (!/[a-z]/.test(password)) return false;
+				if (!/[a-z]/.test(password)) {
+					return false;
+				}
 
 				// At least one number
-				if (!/[0-9]/.test(password)) return false;
+				if (!/[0-9]/.test(password)) {
+					return false;
+				}
 
 				// At least one special character
-				if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return false;
+				if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+					return false;
+				}
 
 				return true;
 			};
@@ -363,11 +381,10 @@ describe("Authentication Security Tests", () => {
 				"Qwerty123!",
 			];
 
-			const isCommonPassword = (password: string): boolean => {
-				return commonPasswords.some(
+			const isCommonPassword = (password: string): boolean =>
+				commonPasswords.some(
 					(common) => password.toLowerCase() === common.toLowerCase(),
 				);
-			};
 
 			commonPasswords.forEach((password) => {
 				expect(isCommonPassword(password)).toBe(true);
@@ -384,11 +401,11 @@ describe("Authentication Security Tests", () => {
 				requiredRole: string,
 			): boolean => {
 				const roleHierarchy: Record<string, number> = {
-					guest: 0,
-					user: 1,
-					moderator: 2,
 					admin: 3,
+					guest: 0,
+					moderator: 2,
 					superadmin: 4,
+					user: 1,
 				};
 
 				const userLevel = roleHierarchy[userRole] || 0;
@@ -407,8 +424,8 @@ describe("Authentication Security Tests", () => {
 
 			act(() => {
 				result.current.setUser({
-					id: "1",
 					email: "admin@example.com",
+					id: "1",
 					role: "admin",
 				});
 			});
@@ -442,9 +459,8 @@ describe("Authentication Security Tests", () => {
 			const storedToken = "csrf-token-123";
 			const requestToken = "csrf-token-123";
 
-			const isValidCSRFToken = (request: string, stored: string): boolean => {
-				return request === stored && request.length > 0;
-			};
+			const isValidCSRFToken = (request: string, stored: string): boolean =>
+				request === stored && request.length > 0;
 
 			expect(isValidCSRFToken(requestToken, storedToken)).toBe(true);
 			expect(isValidCSRFToken("wrong-token", storedToken)).toBe(false);
@@ -452,10 +468,12 @@ describe("Authentication Security Tests", () => {
 		});
 
 		it("should use SameSite cookie attribute for CSRF protection", () => {
-			const setCookie = (name: string, value: string, options: Record<string, unknown>) => {
-				// Mock cookie setting
-				return `${name}=${value}; SameSite=${String(options.sameSite)}; Secure=${String(options.secure)}`;
-			};
+			const setCookie = (
+				name: string,
+				value: string,
+				options: Record<string, unknown>,
+			) =>
+				`${name}=${value}; SameSite=${String(options.sameSite)}; Secure=${String(options.secure)}`;
 
 			const cookie = setCookie("auth_token", "token-123", {
 				sameSite: "Strict",
@@ -469,10 +487,8 @@ describe("Authentication Security Tests", () => {
 
 	describe("Multi-Factor Authentication (MFA)", () => {
 		it("should support MFA verification flow", () => {
-			const verifyMFACode = (code: string, _secret: string): boolean => {
-				// Simplified MFA verification (in reality, use TOTP library)
-				return code.length === 6 && /^\d{6}$/.test(code);
-			};
+			const verifyMFACode = (code: string, _secret: string): boolean =>
+				code.length === 6 && /^\d{6}$/.test(code);
 
 			expect(verifyMFACode("123456", "secret")).toBe(true);
 			expect(verifyMFACode("12345", "secret")).toBe(false);
@@ -484,8 +500,8 @@ describe("Authentication Security Tests", () => {
 
 			act(() => {
 				result.current.setUser({
-					id: "1",
 					email: "test@example.com",
+					id: "1",
 					metadata: { mfaEnabled: true },
 				});
 			});
@@ -516,9 +532,7 @@ describe("Authentication Security Tests", () => {
 			const MAX_ATTEMPTS = 5;
 			let attempts = 0;
 
-			const isAccountLocked = (): boolean => {
-				return attempts >= MAX_ATTEMPTS;
-			};
+			const isAccountLocked = (): boolean => attempts >= MAX_ATTEMPTS;
 
 			expect(isAccountLocked()).toBe(false);
 
@@ -557,9 +571,8 @@ describe("Authentication Security Tests", () => {
 				tokenRegistry.add(token);
 			};
 
-			const isTokenInvalid = (token: string): boolean => {
-				return tokenRegistry.has(token);
-			};
+			const isTokenInvalid = (token: string): boolean =>
+				tokenRegistry.has(token);
 
 			const oldToken = "token-before-password-change";
 			invalidateToken(oldToken);
@@ -586,10 +599,8 @@ describe("Authentication Security Tests", () => {
 		});
 
 		it("should not send tokens in URL parameters", () => {
-			const secureRequest = (url: string, token: string): boolean => {
-				// Token should never be in URL
-				return !url.includes(token);
-			};
+			const secureRequest = (url: string, token: string): boolean =>
+				!url.includes(token);
 
 			const token = "secret-token-123";
 			const badURL = `https://api.example.com/data?token=${token}`;
@@ -606,8 +617,8 @@ describe("Authentication Security Tests", () => {
 
 			act(() => {
 				result.current.setUser({
-					id: "1",
 					email: "test@example.com",
+					id: "1",
 					name: "Test User",
 				});
 			});

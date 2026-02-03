@@ -40,7 +40,9 @@ export interface DetailHeaderProps {
 
 /** Human-readable view label for detail heading (e.g. FEATURE -> "Feature") */
 function viewHeadingLabel(view: string | undefined): string {
-	if (!view) {return "Item";}
+	if (!view) {
+		return "Item";
+	}
 	return view.charAt(0).toUpperCase() + view.slice(1).toLowerCase();
 }
 

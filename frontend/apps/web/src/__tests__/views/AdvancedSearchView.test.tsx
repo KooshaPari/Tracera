@@ -20,16 +20,16 @@ vi.mock("@tanstack/react-router", async () => {
 });
 
 // Mock fetch (cast to satisfy typeof fetch which may include preconnect in some envs)
-(global as any).fetch = vi.fn();
+(globalThis as any).fetch = vi.fn();
 
-describe("AdvancedSearchView", () => {
+describe(AdvancedSearchView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -92,13 +92,12 @@ describe("AdvancedSearchView", () => {
 
 	it("shows loading state", async () => {
 		const user = userEvent.setup();
-		(global as any).fetch.mockImplementation(
+		(globalThis as any).fetch.mockImplementation(
 			() =>
 				new Promise((resolve) =>
 					setTimeout(
 						() =>
 							resolve({
-								ok: true,
 								json: async () => ({
 									project_id: "test",
 									query: "test",
@@ -106,6 +105,7 @@ describe("AdvancedSearchView", () => {
 									results: [],
 									total: 0,
 								}),
+								ok: true,
 							}),
 						100,
 					),
@@ -131,17 +131,16 @@ describe("AdvancedSearchView", () => {
 		const user = userEvent.setup();
 		const mockResults = [
 			{
+				description: "Test description",
 				id: "item-1",
+				status: "todo",
 				title: "Test Item",
 				type: "item",
-				status: "todo",
-				description: "Test description",
 			},
 		];
 
 		// Mock fetch BEFORE rendering to ensure it's ready
-		(global.fetch as any).mockResolvedValue({
-			ok: true,
+		(globalThis.fetch as any).mockResolvedValue({
 			json: async () => ({
 				project_id: "test",
 				query: "test",
@@ -149,6 +148,7 @@ describe("AdvancedSearchView", () => {
 				results: mockResults,
 				total: 1,
 			}),
+			ok: true,
 		});
 
 		render(
@@ -175,8 +175,7 @@ describe("AdvancedSearchView", () => {
 
 	it("displays empty state when no results", async () => {
 		const user = userEvent.setup();
-		(global as any).fetch.mockResolvedValue({
-			ok: true,
+		(globalThis as any).fetch.mockResolvedValue({
 			json: async () => ({
 				project_id: "test",
 				query: "test",
@@ -184,6 +183,7 @@ describe("AdvancedSearchView", () => {
 				results: [],
 				total: 0,
 			}),
+			ok: true,
 		});
 
 		render(
@@ -216,7 +216,7 @@ describe("AdvancedSearchView", () => {
 		);
 
 		// Find the View select by its ID
-		const viewSelect = document.getElementById("view-filter");
+		const viewSelect = document.querySelector("#view-filter");
 		expect(viewSelect).toBeInTheDocument();
 
 		await user.click(viewSelect!);
@@ -257,7 +257,7 @@ describe("AdvancedSearchView", () => {
 	it("displays error message on search failure", async () => {
 		const user = userEvent.setup();
 		// Mock fetch BEFORE rendering to ensure error is ready
-		(global as any).fetch.mockRejectedValue(new Error("Search failed"));
+		(globalThis as any).fetch.mockRejectedValue(new Error("Search failed"));
 
 		render(
 			<QueryClientProvider client={queryClient}>

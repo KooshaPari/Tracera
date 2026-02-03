@@ -5,10 +5,10 @@
  * to prevent form errors from crashing the entire application.
  */
 
-import { lazy, Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import { Loader2, AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@tracertm/ui/components/Button";
 
 // Lazy load form components for better code splitting
@@ -22,7 +22,9 @@ const CreateProcessForm = lazy(() =>
 	import("./CreateProcessForm").then((m) => ({ default: m.CreateProcessForm })),
 );
 const CreateTestCaseForm = lazy(() =>
-	import("./CreateTestCaseForm").then((m) => ({ default: m.CreateTestCaseForm })),
+	import("./CreateTestCaseForm").then((m) => ({
+		default: m.CreateTestCaseForm,
+	})),
 );
 const CreateProjectForm = lazy(() =>
 	import("./CreateProjectForm").then((m) => ({ default: m.CreateProjectForm })),
@@ -54,9 +56,7 @@ function FormErrorFallback(error: Error, reset: () => void) {
 				<div className="flex justify-center">
 					<AlertCircle className="h-12 w-12 text-destructive" />
 				</div>
-				<h3 className="text-lg font-semibold text-destructive">
-					Form Error
-				</h3>
+				<h3 className="text-lg font-semibold text-destructive">Form Error</h3>
 				<p className="text-sm text-muted-foreground">
 					{error.message || "Unable to load form"}
 				</p>
@@ -64,7 +64,7 @@ function FormErrorFallback(error: Error, reset: () => void) {
 					<Button variant="outline" onClick={reset}>
 						Try Again
 					</Button>
-					<Button variant="ghost" onClick={() => window.location.reload()}>
+					<Button variant="ghost" onClick={() => globalThis.location.reload()}>
 						Reload Page
 					</Button>
 				</div>
@@ -76,7 +76,9 @@ function FormErrorFallback(error: Error, reset: () => void) {
 /**
  * Safe wrapper for CreateItemForm with error boundary and lazy loading
  */
-export function SafeCreateItemForm(props: React.ComponentProps<typeof CreateItemForm>) {
+export function SafeCreateItemForm(
+	props: React.ComponentProps<typeof CreateItemForm>,
+) {
 	return (
 		<ErrorBoundary name="CreateItemForm" fallback={FormErrorFallback}>
 			<Suspense fallback={<FormLoadingFallback />}>
@@ -89,7 +91,9 @@ export function SafeCreateItemForm(props: React.ComponentProps<typeof CreateItem
 /**
  * Safe wrapper for CreateProblemForm with error boundary and lazy loading
  */
-export function SafeCreateProblemForm(props: React.ComponentProps<typeof CreateProblemForm>) {
+export function SafeCreateProblemForm(
+	props: React.ComponentProps<typeof CreateProblemForm>,
+) {
 	return (
 		<ErrorBoundary name="CreateProblemForm" fallback={FormErrorFallback}>
 			<Suspense fallback={<FormLoadingFallback />}>
@@ -102,7 +106,9 @@ export function SafeCreateProblemForm(props: React.ComponentProps<typeof CreateP
 /**
  * Safe wrapper for CreateProcessForm with error boundary and lazy loading
  */
-export function SafeCreateProcessForm(props: React.ComponentProps<typeof CreateProcessForm>) {
+export function SafeCreateProcessForm(
+	props: React.ComponentProps<typeof CreateProcessForm>,
+) {
 	return (
 		<ErrorBoundary name="CreateProcessForm" fallback={FormErrorFallback}>
 			<Suspense fallback={<FormLoadingFallback />}>
@@ -115,7 +121,9 @@ export function SafeCreateProcessForm(props: React.ComponentProps<typeof CreateP
 /**
  * Safe wrapper for CreateTestCaseForm with error boundary and lazy loading
  */
-export function SafeCreateTestCaseForm(props: React.ComponentProps<typeof CreateTestCaseForm>) {
+export function SafeCreateTestCaseForm(
+	props: React.ComponentProps<typeof CreateTestCaseForm>,
+) {
 	return (
 		<ErrorBoundary name="CreateTestCaseForm" fallback={FormErrorFallback}>
 			<Suspense fallback={<FormLoadingFallback />}>
@@ -128,7 +136,9 @@ export function SafeCreateTestCaseForm(props: React.ComponentProps<typeof Create
 /**
  * Safe wrapper for CreateProjectForm with error boundary and lazy loading
  */
-export function SafeCreateProjectForm(props: React.ComponentProps<typeof CreateProjectForm>) {
+export function SafeCreateProjectForm(
+	props: React.ComponentProps<typeof CreateProjectForm>,
+) {
 	return (
 		<ErrorBoundary name="CreateProjectForm" fallback={FormErrorFallback}>
 			<Suspense fallback={<FormLoadingFallback />}>
@@ -141,7 +151,9 @@ export function SafeCreateProjectForm(props: React.ComponentProps<typeof CreateP
 /**
  * Safe wrapper for CreateLinkForm with error boundary and lazy loading
  */
-export function SafeCreateLinkForm(props: React.ComponentProps<typeof CreateLinkForm>) {
+export function SafeCreateLinkForm(
+	props: React.ComponentProps<typeof CreateLinkForm>,
+) {
 	return (
 		<ErrorBoundary name="CreateLinkForm" fallback={FormErrorFallback}>
 			<Suspense fallback={<FormLoadingFallback />}>

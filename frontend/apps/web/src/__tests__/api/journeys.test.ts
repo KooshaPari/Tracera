@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import {
-	type CreateJourneyInput,
-	type DetectJourneysInput,
-	type Journey,
-	type JourneyStep,
-	journeyQueryKeys,
-	type UpdateJourneyInput,
+import { journeyQueryKeys } from "../../api/journeys";
+import type {
+	CreateJourneyInput,
+	DetectJourneysInput,
+	Journey,
+	JourneyStep,
+	UpdateJourneyInput,
 } from "../../api/journeys";
 
 describe("journey API hooks", () => {
@@ -39,15 +39,15 @@ describe("journey API hooks", () => {
 	describe("Journey type", () => {
 		it("should validate journey structure", () => {
 			const journey: Journey = {
-				id: "journey-1",
-				projectId: "project-1",
-				name: "User Onboarding",
-				description: "New user signup and setup flow",
-				type: "user",
-				itemIds: ["item-1", "item-2", "item-3"],
-				sequence: [0, 1, 2],
-				metadata: { personas: ["newUser"] },
 				createdAt: "2024-01-01T00:00:00Z",
+				description: "New user signup and setup flow",
+				id: "journey-1",
+				itemIds: ["item-1", "item-2", "item-3"],
+				metadata: { personas: ["newUser"] },
+				name: "User Onboarding",
+				projectId: "project-1",
+				sequence: [0, 1, 2],
+				type: "user",
 				updatedAt: "2024-01-02T00:00:00Z",
 			};
 
@@ -63,14 +63,14 @@ describe("journey API hooks", () => {
 
 		it("should allow optional detectedAt field", () => {
 			const journey: Journey = {
-				id: "journey-1",
-				projectId: "project-1",
-				name: "System Flow",
-				type: "system",
-				itemIds: ["item-1"],
-				sequence: [0],
-				detectedAt: "2024-01-01T00:00:00Z",
 				createdAt: "2024-01-01T00:00:00Z",
+				detectedAt: "2024-01-01T00:00:00Z",
+				id: "journey-1",
+				itemIds: ["item-1"],
+				name: "System Flow",
+				projectId: "project-1",
+				sequence: [0],
+				type: "system",
 				updatedAt: "2024-01-01T00:00:00Z",
 			};
 
@@ -81,10 +81,10 @@ describe("journey API hooks", () => {
 	describe("JourneyStep type", () => {
 		it("should validate journey step structure", () => {
 			const step: JourneyStep = {
+				description: "First step",
+				duration: 300,
 				itemId: "item-1",
 				order: 0,
-				duration: 300,
-				description: "First step",
 			};
 
 			expect(step.itemId).toBeDefined();
@@ -105,12 +105,12 @@ describe("journey API hooks", () => {
 	describe("Input types", () => {
 		it("should validate CreateJourneyInput", () => {
 			const input: CreateJourneyInput = {
-				projectId: "project-1",
-				name: "New Journey",
 				description: "A new journey",
-				type: "business",
 				itemIds: ["item-1", "item-2"],
 				metadata: { owner: "team-a" },
+				name: "New Journey",
+				projectId: "project-1",
+				type: "business",
 			};
 
 			expect(input.projectId).toBeDefined();
@@ -121,8 +121,8 @@ describe("journey API hooks", () => {
 
 		it("should validate UpdateJourneyInput", () => {
 			const input: UpdateJourneyInput = {
-				name: "Updated Journey",
 				itemIds: ["item-1", "item-2", "item-3"],
+				name: "Updated Journey",
 			};
 
 			expect(input.name).toBeDefined();
@@ -130,9 +130,9 @@ describe("journey API hooks", () => {
 
 		it("should validate DetectJourneysInput", () => {
 			const input: DetectJourneysInput = {
-				projectId: "project-1",
-				minLength: 2,
 				maxLength: 10,
+				minLength: 2,
+				projectId: "project-1",
 				types: ["user", "system"],
 			};
 
@@ -142,7 +142,7 @@ describe("journey API hooks", () => {
 
 	describe("Journey types validation", () => {
 		it("should accept all valid journey types", () => {
-			const validTypes: Array<"user" | "system" | "business" | "technical"> = [
+			const validTypes: ("user" | "system" | "business" | "technical")[] = [
 				"user",
 				"system",
 				"business",
@@ -151,13 +151,13 @@ describe("journey API hooks", () => {
 
 			validTypes.forEach((type) => {
 				const journey: Journey = {
-					id: "journey-1",
-					projectId: "project-1",
-					name: "Test",
-					type: type,
-					itemIds: [],
-					sequence: [],
 					createdAt: "2024-01-01T00:00:00Z",
+					id: "journey-1",
+					itemIds: [],
+					name: "Test",
+					projectId: "project-1",
+					sequence: [],
+					type: type,
 					updatedAt: "2024-01-01T00:00:00Z",
 				};
 

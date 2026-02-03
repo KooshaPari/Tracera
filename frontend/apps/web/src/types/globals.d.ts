@@ -1,27 +1,30 @@
+/* eslint-disable import/no-named-export, import/group-exports, import/unambiguous */
 // Global type definitions
 
 /// <reference types="vite/client" />
 
-// Vite environment variables
-interface ImportMetaEnv {
-	readonly VITE_API_URL: string;
-	readonly VITE_WS_URL: string;
-	readonly VITE_APP_NAME: string;
-	readonly VITE_APP_VERSION: string;
-	readonly MODE: string;
-	readonly DEV: boolean;
-	readonly PROD: boolean;
-	readonly SSR: boolean;
-}
+declare global {
+	// Vite environment variables
+	interface ImportMetaEnv {
+		readonly VITE_API_URL: string;
+		readonly VITE_WS_URL: string;
+		readonly VITE_APP_NAME: string;
+		readonly VITE_APP_VERSION: string;
+		readonly MODE: string;
+		readonly DEV: boolean;
+		readonly PROD: boolean;
+		readonly SSR: boolean;
+	}
 
-interface ImportMeta {
-	readonly env: ImportMetaEnv;
-}
+	interface ImportMeta {
+		readonly env: ImportMetaEnv;
+	}
 
-// Window extensions
-interface Window {
-	__TRACERTM_DEVTOOLS__?: boolean;
-	__wsCheckInterval?: ReturnType<typeof setInterval>;
+	// Window extensions
+	interface Window {
+		__TRACERTM_DEVTOOLS__?: boolean;
+		__wsCheckInterval?: ReturnType<typeof setInterval>;
+	}
 }
 
 // Module declarations
@@ -69,6 +72,7 @@ declare module "*.module.css" {
 
 // Extend JSX namespace for custom elements if needed
 declare namespace JSX {
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-	interface IntrinsicElements extends Record<string, unknown> {}
+	type IntrinsicElements = Record<string, unknown>;
 }
+
+export type GlobalTypesModule = Record<string, unknown>;

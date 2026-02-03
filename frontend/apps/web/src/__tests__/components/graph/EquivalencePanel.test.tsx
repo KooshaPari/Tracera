@@ -18,71 +18,71 @@ import { EquivalencePanel } from "@/components/graph/EquivalencePanel";
 // =============================================================================
 
 const mockItem: Item = {
-	id: "item-1",
-	projectId: "proj-1",
-	type: "feature",
-	title: "User Login Feature",
-	perspective: "product",
-	status: "active",
 	createdAt: "2024-01-01T00:00:00Z",
+	id: "item-1",
+	perspective: "product",
+	projectId: "proj-1",
+	status: "active",
+	title: "User Login Feature",
+	type: "feature",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockEquivalenceLink: EquivalenceLink = {
+	confidence: 0.95,
 	id: "link-1",
 	sourceItemId: "item-1",
-	targetItemId: "item-2",
-	confidence: 0.95,
 	status: "confirmed",
 	strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+	targetItemId: "item-2",
 } as any;
 
 const mockSuggestedLink: EquivalenceLink = {
+	confidence: 0.75,
 	id: "link-2",
 	sourceItemId: "item-1",
-	targetItemId: "item-3",
-	confidence: 0.75,
 	status: "suggested",
 	strategies: [{ strategy: "semantic_similarity", confidence: 0.75 }],
+	targetItemId: "item-3",
 } as any;
 
 const mockCanonicalConcept: CanonicalConcept = {
+	description: "Core authentication functionality across perspectives",
 	id: "concept-1",
 	name: "User Authentication",
-	description: "Core authentication functionality across perspectives",
 } as any;
 
 const mockProjection: CanonicalProjection = {
-	id: "proj-1",
 	canonicalConceptId: "concept-1",
-	itemId: "item-2",
-	perspective: "technical",
 	confidence: 0.9,
+	id: "proj-1",
 	isConfirmed: true,
 	isRejected: false,
+	itemId: "item-2",
+	perspective: "technical",
 	strategy: "api_contract",
 } as any;
 
 const mockItems: Item[] = [
 	mockItem,
 	{
-		id: "item-2",
-		projectId: "proj-1",
-		type: "api",
-		title: "Authentication API",
-		perspective: "technical",
-		status: "active",
 		createdAt: "2024-01-01T00:00:00Z",
+		id: "item-2",
+		perspective: "technical",
+		projectId: "proj-1",
+		status: "active",
+		title: "Authentication API",
+		type: "api",
 		updatedAt: "2024-01-01T00:00:00Z",
 	} as any,
 	{
-		id: "item-3",
-		projectId: "proj-1",
-		type: "ui_component",
-		title: "Login Form Component",
-		perspective: "ui",
-		status: "active",
 		createdAt: "2024-01-01T00:00:00Z",
+		id: "item-3",
+		perspective: "ui",
+		projectId: "proj-1",
+		status: "active",
+		title: "Login Form Component",
+		type: "ui_component",
 		updatedAt: "2024-01-01T00:00:00Z",
 	} as any,
 ];
@@ -495,7 +495,7 @@ describe("EquivalencePanel Component", () => {
 					equivalenceLinks={[]}
 					items={mockItems}
 					onViewItem={onViewItem}
-					isLoading={true}
+					isLoading
 				/>,
 			);
 

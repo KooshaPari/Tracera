@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const projectSchema = z.object({
-	name: z.string().min(1, "Name is required").max(255, "Name too long"),
 	description: z.string().max(2000).optional(),
+	name: z.string().min(1, "Name is required").max(255, "Name too long"),
 });
 
 type ProjectFormData = z.infer<typeof projectSchema>;

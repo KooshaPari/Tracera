@@ -14,12 +14,10 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
 import { parseArgs } from "node:util";
 import { globSync } from "glob";
-import { analyzeComponents, type ComponentInfo } from "./analyzer";
-import {
-	defaultConfig,
-	type GeneratorConfig,
-	type StoryTemplateConfig,
-} from "./config";
+import { analyzeComponents } from './analyzer';
+import type { ComponentInfo } from './analyzer';
+import { defaultConfig } from './config';
+import type { GeneratorConfig, StoryTemplateConfig } from './config';
 import {
 	getComponentDesign,
 	loadDesignMetadata,
@@ -44,8 +42,8 @@ async function generateStories(options: {
 		verbose = false,
 	} = options;
 
-	console.log("🎨 TraceRTM Storybook Story Generator");
-	console.log("=====================================\n");
+	
+	
 
 	const rootDir = findRootDir();
 	const config = defaultConfig;
@@ -58,7 +56,7 @@ async function generateStories(options: {
 	const designMetadata = loadDesignMetadata(designMetadataPath);
 
 	if (!designMetadata) {
-		console.log("📝 No design metadata found. Creating example file...");
+		
 		saveExampleDesignMetadata(designMetadataPath);
 	}
 
@@ -66,22 +64,22 @@ async function generateStories(options: {
 	const componentFiles = findComponentFiles(rootDir, config, targetComponent);
 
 	if (componentFiles.length === 0) {
-		console.log("❌ No components found");
+		
 		return;
 	}
 
-	console.log(`📦 Found ${componentFiles.length} component(s)\n`);
+	
 
 	// Analyze components
-	console.log("🔍 Analyzing components...");
+	
 	const components = analyzeComponents(componentFiles);
 
 	if (components.length === 0) {
-		console.log("❌ No valid components to generate stories for");
+		
 		return;
 	}
 
-	console.log(`✅ Analyzed ${components.length} component(s)\n`);
+	
 
 	// Generate stories
 	let generated = 0;
@@ -98,15 +96,15 @@ async function generateStories(options: {
 		);
 
 		if (result) {
-			generated++;
+			generated += 1;
 		} else {
-			skipped++;
+			skipped += 1;
 		}
 	}
 
-	console.log("\n✨ Story generation complete!");
-	console.log(`   Generated: ${generated}`);
-	console.log(`   Skipped: ${skipped}`);
+	
+	
+	
 }
 
 /**
@@ -123,7 +121,7 @@ function findComponentFiles(
 		const fullDir = join(rootDir, dir);
 
 		if (!existsSync(fullDir)) {
-			console.warn(`⚠️  Component directory not found: ${dir}`);
+			
 			continue;
 		}
 
@@ -172,7 +170,7 @@ function generateStoryForComponent(
 	// Get import path
 	const importPath = getImportPath(filePath, rootDir, config);
 	if (!importPath) {
-		console.warn(`⚠️  Could not determine import path for ${name}`);
+		
 		return false;
 	}
 
@@ -184,14 +182,14 @@ function generateStoryForComponent(
 
 	// Create story config
 	const storyConfig: StoryTemplateConfig = {
-		componentName: name,
-		importPath,
-		title,
 		componentId: componentDesign?.componentId,
-		storyId: componentDesign?.storyId,
+		componentName: name,
 		figmaUrl: componentDesign?.figmaUrl,
-		variants,
+		importPath,
 		props,
+		storyId: componentDesign?.storyId,
+		title,
+		variants,
 	};
 
 	// Generate story content
@@ -205,7 +203,7 @@ function generateStoryForComponent(
 	// Check if story already exists
 	if (existsSync(storyFilePath) && !force) {
 		if (verbose) {
-			console.log(`⏭️  Skipping ${name} (already exists)`);
+			
 		}
 		return false;
 	}
@@ -214,19 +212,19 @@ function generateStoryForComponent(
 	mkdirSync(storiesDir, { recursive: true });
 
 	// Write story file
-	writeFileSync(storyFilePath, storyContent, "utf-8");
+	writeFileSync(storyFilePath, storyContent, "utf8");
 
 	const action = existsSync(storyFilePath) ? "♻️  Regenerated" : "✅ Generated";
-	console.log(`${action} ${name}.stories.tsx`);
+	
 
 	if (verbose) {
-		console.log(`   Import: ${importPath}`);
-		console.log(`   Variants: ${variants.length}`);
-		console.log(`   Props: ${props.length}`);
+		
+		
+		
 		if (componentDesign?.figmaUrl) {
-			console.log(`   Figma: ${componentDesign.figmaUrl}`);
+			
 		}
-		console.log();
+		
 	}
 
 	return true;
@@ -263,7 +261,7 @@ function findRootDir(): string {
 	while (currentDir !== "/") {
 		const packageJsonPath = join(currentDir, "package.json");
 		if (existsSync(packageJsonPath)) {
-			const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+			const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 			if (packageJson.workspaces) {
 				return currentDir;
 			}
@@ -281,59 +279,42 @@ function findRootDir(): string {
 async function main() {
 	const { values } = parseArgs({
 		options: {
-			force: {
-				type: "boolean",
-				short: "f",
-				default: false,
-			},
 			component: {
-				type: "string",
 				short: "c",
+				type: "string",
 			},
-			verbose: {
-				type: "boolean",
-				short: "v",
+			force: {
 				default: false,
+				short: "f",
+				type: "boolean",
 			},
 			help: {
-				type: "boolean",
-				short: "h",
 				default: false,
+				short: "h",
+				type: "boolean",
+			},
+			verbose: {
+				default: false,
+				short: "v",
+				type: "boolean",
 			},
 		},
 	});
 
 	if (values.help) {
-		console.log(`
-TraceRTM Storybook Story Generator
-
-Usage:
-  bun run generate:stories [options]
-
-Options:
-  -f, --force          Overwrite existing story files
-  -c, --component NAME Generate story for specific component only
-  -v, --verbose        Show detailed output
-  -h, --help           Show this help message
-
-Examples:
-  bun run generate:stories
-  bun run generate:stories --force
-  bun run generate:stories --component Button
-  bun run generate:stories --component Input --verbose
-`);
+		
 		return;
 	}
 
 	await generateStories({
-		force: values.force as boolean,
 		component: values.component as string | undefined,
+		force: values.force as boolean,
 		verbose: values.verbose as boolean,
 	});
 }
 
 // Run CLI
 main().catch((error) => {
-	console.error("❌ Error:", error);
+	
 	process.exit(1);
 });

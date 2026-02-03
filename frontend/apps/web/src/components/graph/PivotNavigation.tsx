@@ -69,12 +69,12 @@ const PERSPECTIVE_ICONS: Record<
 	React.ComponentType<{ className?: string }>
 > = {
 	all: Network,
-	product: Users,
 	business: Briefcase,
+	performance: Gauge,
+	product: Users,
+	security: Shield,
 	technical: Code,
 	ui: Layout,
-	security: Shield,
-	performance: Gauge,
 };
 
 // =============================================================================
@@ -87,14 +87,18 @@ function PivotNavigationComponent({
 	onPivot,
 	compact = false,
 	showEmpty = false,
-}: Omit<PivotNavigationProps, 'currentItem'>) {
+}: Omit<PivotNavigationProps, "currentItem">) {
 	// Group equivalent items by perspective
 	const itemsByPerspective = useMemo(() => {
 		const grouped = new Map<GraphPerspective, PivotTarget[]>();
 
 		for (const target of equivalentItems) {
-			if (target.perspectiveId === currentPerspective) continue;
-			if (target.perspectiveId === "all") continue;
+			if (target.perspectiveId === currentPerspective) {
+				continue;
+			}
+			if (target.perspectiveId === "all") {
+				continue;
+			}
 
 			const existing = grouped.get(target.perspectiveId) || [];
 			existing.push(target);
@@ -105,13 +109,15 @@ function PivotNavigationComponent({
 	}, [equivalentItems, currentPerspective]);
 
 	// Get perspectives that have equivalents
-	const perspectivesWithItems = useMemo(() => {
-		return PERSPECTIVE_CONFIGS.filter((config) => {
-			if (config.id === "all") return false;
-			if (config.id === currentPerspective) return false;
-			return showEmpty || itemsByPerspective.has(config.id);
-		});
-	}, [itemsByPerspective, currentPerspective, showEmpty]);
+	const perspectivesWithItems = useMemo(
+		() =>
+			PERSPECTIVE_CONFIGS.filter((config) => {
+				if (config.id === "all") return false;
+				if (config.id === currentPerspective) return false;
+				return showEmpty || itemsByPerspective.has(config.id);
+			}),
+		[itemsByPerspective, currentPerspective, showEmpty],
+	);
 
 	if (perspectivesWithItems.length === 0 && !showEmpty) {
 		return null;
@@ -286,8 +292,8 @@ function CompactPivotNavigation({
 	itemsByPerspective,
 	perspectivesWithItems,
 	onPivot,
-}: Omit<CompactPivotNavigationProps, 'currentPerspective'>) {
-	const totalEquivalents = Array.from(itemsByPerspective.values()).reduce(
+}: Omit<CompactPivotNavigationProps, "currentPerspective">) {
+	const totalEquivalents = [...itemsByPerspective.values()].reduce(
 		(sum, items) => sum + items.length,
 		0,
 	);
@@ -314,9 +320,11 @@ function CompactPivotNavigation({
 						<div className="space-y-2">
 							{perspectivesWithItems.map((config) => {
 								const items = itemsByPerspective.get(config.id) || [];
-								if (items.length === 0) return null;
+								if (items.length === 0) {
+									return null;
+								}
 
-// 								const _Icon = PERSPECTIVE_ICONS[config.id] || Network;
+								// 								Const _Icon = PERSPECTIVE_ICONS[config.id] || Network;
 
 								return (
 									<div key={config.id} className="space-y-1">
@@ -367,9 +375,15 @@ interface ConfidenceIndicatorProps {
 }
 
 function getConfidenceColor(conf: number): string {
-	if (conf >= 0.9) return "bg-green-500";
-	if (conf >= 0.7) return "bg-amber-500";
-	if (conf >= 0.5) return "bg-orange-500";
+	if (conf >= 0.9) {
+		return "bg-green-500";
+	}
+	if (conf >= 0.7) {
+		return "bg-amber-500";
+	}
+	if (conf >= 0.5) {
+		return "bg-orange-500";
+	}
 	return "bg-red-500";
 }
 
@@ -382,7 +396,7 @@ function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
 						<div
 							key={threshold}
 							className={`w-1 h-2 rounded-sm ${
-									confidence >= threshold
+								confidence >= threshold
 									? getConfidenceColor(confidence)
 									: "bg-muted-foreground/20"
 							}`}
@@ -420,40 +434,50 @@ export function buildPivotTargets(
 			link.sourceItemId === currentItem.id
 				? link.targetItemId
 				: link.sourceItemId;
-		if (seenIds.has(targetId)) continue;
+		if (seenIds.has(targetId)) {
+			continue;
+		}
 		seenIds.add(targetId);
 
 		const item = itemsMap.get(targetId);
-		if (!item) continue;
+		if (!item) {
+			continue;
+		}
 
 		results.push({
+			confidence: link.confidence,
 			item,
 			perspectiveId: getPerspectiveForItem(item),
-			confidence: link.confidence,
 			source: "equivalence",
 		});
 	}
 
 	// From canonical projections
 	for (const projection of projections) {
-		if (projection.itemId === currentItem.id) continue;
-		if (seenIds.has(projection.itemId)) continue;
+		if (projection.itemId === currentItem.id) {
+			continue;
+		}
+		if (seenIds.has(projection.itemId)) {
+			continue;
+		}
 		seenIds.add(projection.itemId);
 
 		const item = itemsMap.get(projection.itemId);
-		if (!item) continue;
+		if (!item) {
+			continue;
+		}
 
 		results.push({
+			confidence: projection.confidence,
 			item,
 			perspectiveId:
 				(projection.perspective as GraphPerspective) ||
 				getPerspectiveForItem(item),
-			confidence: projection.confidence,
 			source: "canonical",
 		});
 	}
 
-    return results.toSorted((a, b) => b.confidence - a.confidence);
+	return results.toSorted((a, b) => b.confidence - a.confidence);
 }
 
 function getPerspectiveForItem(item: Item): GraphPerspective {

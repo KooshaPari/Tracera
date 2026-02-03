@@ -65,52 +65,52 @@ interface ItemSpecsOverviewProps {
 
 const specTypeConfig = [
 	{
+		bg: "bg-blue-500/10",
+		color: "text-blue-600",
+		description: "EARS patterns, constraints, quality metrics",
+		icon: FileText,
 		id: "requirement",
 		label: "Requirements",
-		icon: FileText,
-		color: "text-blue-600",
-		bg: "bg-blue-500/10",
-		description: "EARS patterns, constraints, quality metrics",
 	},
 	{
+		bg: "bg-purple-500/10",
+		color: "text-purple-600",
+		description: "Test cases, flakiness detection, coverage",
+		icon: FileCode,
 		id: "test",
 		label: "Tests",
-		icon: FileCode,
-		color: "text-purple-600",
-		bg: "bg-purple-500/10",
-		description: "Test cases, flakiness detection, coverage",
 	},
 	{
+		bg: "bg-indigo-500/10",
+		color: "text-indigo-600",
+		description: "Business value, timeline, stories",
+		icon: Layers,
 		id: "epic",
 		label: "Epics",
-		icon: Layers,
-		color: "text-indigo-600",
-		bg: "bg-indigo-500/10",
-		description: "Business value, timeline, stories",
 	},
 	{
+		bg: "bg-green-500/10",
+		color: "text-green-600",
+		description: "As a/I want/So that, acceptance criteria",
+		icon: Users,
 		id: "user_story",
 		label: "User Stories",
-		icon: Users,
-		color: "text-green-600",
-		bg: "bg-green-500/10",
-		description: "As a/I want/So that, acceptance criteria",
 	},
 	{
+		bg: "bg-orange-500/10",
+		color: "text-orange-600",
+		description: "Time tracking, subtasks, blockers",
+		icon: ListTodo,
 		id: "task",
 		label: "Tasks",
-		icon: ListTodo,
-		color: "text-orange-600",
-		bg: "bg-orange-500/10",
-		description: "Time tracking, subtasks, blockers",
 	},
 	{
+		bg: "bg-red-500/10",
+		color: "text-red-600",
+		description: "Severity, reproduction, root cause",
+		icon: Bug,
 		id: "defect",
 		label: "Defects",
-		icon: Bug,
-		color: "text-red-600",
-		bg: "bg-red-500/10",
-		description: "Severity, reproduction, root cause",
 	},
 ];
 
@@ -155,12 +155,12 @@ export function ItemSpecsOverview({
 
 	// Calculate summary metrics
 	const specCounts = {
-		requirement: reqSpecs.length,
-		test: testSpecs.length,
-		epic: epicSpecs.length,
-		user_story: storySpecs.length,
-		task: taskSpecs.length,
 		defect: defectSpecs.length,
+		epic: epicSpecs.length,
+		requirement: reqSpecs.length,
+		task: taskSpecs.length,
+		test: testSpecs.length,
+		user_story: storySpecs.length,
 	};
 
 	const totalSpecs = Object.values(specCounts).reduce((a, b) => a + b, 0);
@@ -300,18 +300,18 @@ export function ItemSpecsOverview({
 									"p-2 rounded-full",
 									avgQualityScore >= 80
 										? "bg-green-500/10 text-green-600"
-										: avgQualityScore >= 60
+										: (avgQualityScore >= 60
 											? "bg-yellow-500/10 text-yellow-600"
-											: "bg-red-500/10 text-red-600",
+											: "bg-red-500/10 text-red-600"),
 								)}
 							>
 								{avgQualityScore >= 80 ? (
 									<TrendingUp className="w-5 h-5" />
-								) : avgQualityScore >= 60 ? (
+								) : (avgQualityScore >= 60 ? (
 									<Target className="w-5 h-5" />
 								) : (
 									<TrendingDown className="w-5 h-5" />
-								)}
+								))}
 							</div>
 						</div>
 						<Progress
@@ -336,9 +336,9 @@ export function ItemSpecsOverview({
 									"p-2 rounded-full",
 									testPassRate >= 90
 										? "bg-green-500/10 text-green-600"
-										: testPassRate >= 70
+										: (testPassRate >= 70
 											? "bg-yellow-500/10 text-yellow-600"
-											: "bg-red-500/10 text-red-600",
+											: "bg-red-500/10 text-red-600"),
 								)}
 							>
 								<CheckCircle2 className="w-5 h-5" />
@@ -366,9 +366,9 @@ export function ItemSpecsOverview({
 									"p-2 rounded-full",
 									avgFlakiness <= 5
 										? "bg-green-500/10 text-green-600"
-										: avgFlakiness <= 15
+										: (avgFlakiness <= 15
 											? "bg-yellow-500/10 text-yellow-600"
-											: "bg-red-500/10 text-red-600",
+											: "bg-red-500/10 text-red-600"),
 								)}
 							>
 								<RefreshCw className="w-5 h-5" />
@@ -377,9 +377,9 @@ export function ItemSpecsOverview({
 						<p className="text-xs text-muted-foreground mt-2">
 							{avgFlakiness <= 5
 								? "Stable tests"
-								: avgFlakiness <= 15
+								: (avgFlakiness <= 15
 									? "Some flaky tests"
-									: "High flakiness detected"}
+									: "High flakiness detected")}
 						</p>
 					</CardContent>
 				</Card>
@@ -396,9 +396,9 @@ export function ItemSpecsOverview({
 									"p-2 rounded-full",
 									criticalDefects.length > 0
 										? "bg-red-500/10 text-red-600"
-										: openDefects.length > 5
+										: (openDefects.length > 5
 											? "bg-yellow-500/10 text-yellow-600"
-											: "bg-green-500/10 text-green-600",
+											: "bg-green-500/10 text-green-600"),
 								)}
 							>
 								{criticalDefects.length > 0 ? (

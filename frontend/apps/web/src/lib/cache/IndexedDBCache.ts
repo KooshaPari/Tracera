@@ -12,7 +12,7 @@
  * - Version migration support
  */
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import type {
 	IObservableCache,
 	CacheEntry,
@@ -23,7 +23,7 @@ import type {
 	CacheEvent,
 	CacheEventType,
 	CacheEventListener,
-} from './CacheInterface';
+} from "./CacheInterface";
 import {
 	TTL,
 	isExpired,
@@ -31,7 +31,7 @@ import {
 	matchesPattern,
 	estimateSize,
 	CacheEventType as EventType,
-} from './CacheInterface';
+} from "./CacheInterface";
 
 /**
  * IndexedDB cache configuration
@@ -68,8 +68,8 @@ export class IndexedDBCache implements IObservableCache {
 	private initPromise: Promise<void> | null = null;
 
 	constructor(config: IndexedDBCacheConfig = {}) {
-		this.dbName = config.dbName ?? 'trace-cache';
-		this.storeName = config.storeName ?? 'cache-entries';
+		this.dbName = config.dbName ?? "trace-cache";
+		this.storeName = config.storeName ?? "cache-entries";
 		this.version = config.version ?? 1;
 		this.defaultTTL = config.defaultTTL ?? TTL.MEDIUM;
 		this.maxEntries = config.maxEntries ?? 5000;
@@ -83,8 +83,8 @@ export class IndexedDBCache implements IObservableCache {
 	 * Initialize IndexedDB
 	 */
 	private async initialize(): Promise<void> {
-		if (typeof window === 'undefined' || !window.indexedDB) {
-			throw new Error('IndexedDB not available');
+		if (typeof window === "undefined" || !window.indexedDB) {
+			throw new Error("IndexedDB not available");
 		}
 
 		return new Promise((resolve, reject) => {
@@ -101,7 +101,7 @@ export class IndexedDBCache implements IObservableCache {
 				}
 				// Clean up expired entries on startup
 				this.cleanupExpired().catch((error) => {
-					logger.error('[IndexedDBCache] Cleanup failed:', error);
+					logger.error("[IndexedDBCache] Cleanup failed:", error);
 				});
 				resolve();
 			};
@@ -111,15 +111,26 @@ export class IndexedDBCache implements IObservableCache {
 
 				// Create object store if it doesn't exist
 				if (!db.objectStoreNames.contains(this.storeName)) {
-					const store = db.createObjectStore(this.storeName, { keyPath: 'key' });
+					const store = db.createObjectStore(this.storeName, {
+						keyPath: "key",
+					});
 
 					// Create indexes for efficient queries
-					store.createIndex('expiresAt', 'metadata.expiresAt', { unique: false });
-					store.createIndex('tags', 'metadata.tags', { unique: false, multiEntry: true });
-					store.createIndex('createdAt', 'metadata.createdAt', { unique: false });
+					store.createIndex("expiresAt", "metadata.expiresAt", {
+						unique: false,
+					});
+					store.createIndex("tags", "metadata.tags", {
+						unique: false,
+						multiEntry: true,
+					});
+					store.createIndex("createdAt", "metadata.createdAt", {
+						unique: false,
+					});
 
 					if (this.enableLogging) {
-						logger.debug(`[IndexedDBCache] Created object store: ${this.storeName}`);
+						logger.debug(
+							`[IndexedDBCache] Created object store: ${this.storeName}`,
+						);
 					}
 				}
 			};
@@ -134,7 +145,7 @@ export class IndexedDBCache implements IObservableCache {
 			await this.initPromise;
 		}
 		if (!this.db) {
-			throw new Error('IndexedDB not initialized');
+			throw new Error("IndexedDB not initialized");
 		}
 	}
 
@@ -144,7 +155,7 @@ export class IndexedDBCache implements IObservableCache {
 	async get<T = unknown>(key: string): Promise<T | null> {
 		await this.ensureInitialized();
 
-		const transaction = this.db!.transaction([this.storeName], 'readonly');
+		const transaction = this.db!.transaction([this.storeName], "readonly");
 		const store = transaction.objectStore(this.storeName);
 
 		return new Promise((resolve) => {
@@ -157,7 +168,7 @@ export class IndexedDBCache implements IObservableCache {
 					this.totalMisses++;
 					this.emit({
 						type: EventType.MISS,
-						backend: 'IndexedDBCache',
+						backend: "IndexedDBCache",
 						key,
 						timestamp: Date.now(),
 					});
@@ -171,10 +182,10 @@ export class IndexedDBCache implements IObservableCache {
 					this.totalMisses++;
 					this.emit({
 						type: EventType.MISS,
-						backend: 'IndexedDBCache',
+						backend: "IndexedDBCache",
 						key,
 						timestamp: Date.now(),
-						metadata: { reason: 'expired' },
+						metadata: { reason: "expired" },
 					});
 					resolve(null);
 					return;
@@ -187,12 +198,12 @@ export class IndexedDBCache implements IObservableCache {
 
 				// Update entry in DB
 				this.updateMetadata(key, entry.metadata).catch((error) => {
-					logger.error('[IndexedDBCache] Failed to update metadata:', error);
+					logger.error("[IndexedDBCache] Failed to update metadata:", error);
 				});
 
 				this.emit({
 					type: EventType.HIT,
-					backend: 'IndexedDBCache',
+					backend: "IndexedDBCache",
 					key,
 					timestamp: Date.now(),
 				});
@@ -201,7 +212,10 @@ export class IndexedDBCache implements IObservableCache {
 			};
 
 			request.onerror = () => {
-				logger.error(`[IndexedDBCache] Get failed for key=${key}:`, request.error);
+				logger.error(
+					`[IndexedDBCache] Get failed for key=${key}:`,
+					request.error,
+				);
 				resolve(null);
 			};
 		});
@@ -210,7 +224,11 @@ export class IndexedDBCache implements IObservableCache {
 	/**
 	 * Set a value in cache
 	 */
-	async set<T = unknown>(key: string, value: T, options: CacheOptions = {}): Promise<void> {
+	async set<T = unknown>(
+		key: string,
+		value: T,
+		options: CacheOptions = {},
+	): Promise<void> {
 		await this.ensureInitialized();
 
 		const ttl = options.ttl ?? this.defaultTTL;
@@ -234,7 +252,7 @@ export class IndexedDBCache implements IObservableCache {
 
 		const entry: CacheEntry<T> = { key, value, metadata };
 
-		const transaction = this.db!.transaction([this.storeName], 'readwrite');
+		const transaction = this.db!.transaction([this.storeName], "readwrite");
 		const store = transaction.objectStore(this.storeName);
 
 		return new Promise((resolve, reject) => {
@@ -243,7 +261,7 @@ export class IndexedDBCache implements IObservableCache {
 			request.onsuccess = () => {
 				this.emit({
 					type: EventType.SET,
-					backend: 'IndexedDBCache',
+					backend: "IndexedDBCache",
 					key,
 					timestamp: Date.now(),
 					metadata: { size, ttl },
@@ -275,7 +293,7 @@ export class IndexedDBCache implements IObservableCache {
 	async delete(key: string): Promise<boolean> {
 		await this.ensureInitialized();
 
-		const transaction = this.db!.transaction([this.storeName], 'readwrite');
+		const transaction = this.db!.transaction([this.storeName], "readwrite");
 		const store = transaction.objectStore(this.storeName);
 
 		return new Promise((resolve) => {
@@ -284,7 +302,7 @@ export class IndexedDBCache implements IObservableCache {
 			request.onsuccess = () => {
 				this.emit({
 					type: EventType.DELETE,
-					backend: 'IndexedDBCache',
+					backend: "IndexedDBCache",
 					key,
 					timestamp: Date.now(),
 				});
@@ -292,7 +310,10 @@ export class IndexedDBCache implements IObservableCache {
 			};
 
 			request.onerror = () => {
-				logger.error(`[IndexedDBCache] Delete failed for key=${key}:`, request.error);
+				logger.error(
+					`[IndexedDBCache] Delete failed for key=${key}:`,
+					request.error,
+				);
 				resolve(false);
 			};
 		});
@@ -313,12 +334,12 @@ export class IndexedDBCache implements IObservableCache {
 		const keysToDelete: string[] = [];
 
 		// Find keys by pattern or tags
-		const transaction = this.db!.transaction([this.storeName], 'readonly');
+		const transaction = this.db!.transaction([this.storeName], "readonly");
 		const store = transaction.objectStore(this.storeName);
 
 		if (options.tags && options.tags.length > 0) {
 			// Use tag index
-			const index = store.index('tags');
+			const index = store.index("tags");
 			for (const tag of options.tags) {
 				const request = index.getAll(tag);
 				await new Promise<void>((resolve) => {
@@ -339,7 +360,9 @@ export class IndexedDBCache implements IObservableCache {
 		if (options.pattern) {
 			// Get all keys and filter by pattern
 			const allKeys = await this.keys();
-			const matchedKeys = allKeys.filter((key) => matchesPattern(key, options.pattern!));
+			const matchedKeys = allKeys.filter((key) =>
+				matchesPattern(key, options.pattern!),
+			);
 			matchedKeys.forEach((key) => {
 				if (!keysToDelete.includes(key)) {
 					keysToDelete.push(key);
@@ -354,7 +377,7 @@ export class IndexedDBCache implements IObservableCache {
 
 		this.emit({
 			type: EventType.INVALIDATE,
-			backend: 'IndexedDBCache',
+			backend: "IndexedDBCache",
 			pattern: options.pattern,
 			tags: options.tags,
 			timestamp: Date.now(),
@@ -370,7 +393,7 @@ export class IndexedDBCache implements IObservableCache {
 	async clear(): Promise<void> {
 		await this.ensureInitialized();
 
-		const transaction = this.db!.transaction([this.storeName], 'readwrite');
+		const transaction = this.db!.transaction([this.storeName], "readwrite");
 		const store = transaction.objectStore(this.storeName);
 
 		return new Promise((resolve, reject) => {
@@ -379,7 +402,7 @@ export class IndexedDBCache implements IObservableCache {
 			request.onsuccess = () => {
 				this.emit({
 					type: EventType.CLEAR,
-					backend: 'IndexedDBCache',
+					backend: "IndexedDBCache",
 					timestamp: Date.now(),
 				});
 				resolve();
@@ -412,7 +435,7 @@ export class IndexedDBCache implements IObservableCache {
 			totalMemory,
 			maxMemory: 100 * 1024 * 1024, // 100MB typical limit
 			memoryUsagePercent: Math.round((totalMemory / (100 * 1024 * 1024)) * 100),
-			backendType: 'IndexedDBCache',
+			backendType: "IndexedDBCache",
 		};
 	}
 
@@ -422,7 +445,7 @@ export class IndexedDBCache implements IObservableCache {
 	async keys(pattern?: string): Promise<string[]> {
 		await this.ensureInitialized();
 
-		const transaction = this.db!.transaction([this.storeName], 'readonly');
+		const transaction = this.db!.transaction([this.storeName], "readonly");
 		const store = transaction.objectStore(this.storeName);
 
 		return new Promise((resolve) => {
@@ -438,7 +461,7 @@ export class IndexedDBCache implements IObservableCache {
 			};
 
 			request.onerror = () => {
-				logger.error('[IndexedDBCache] Failed to get keys:', request.error);
+				logger.error("[IndexedDBCache] Failed to get keys:", request.error);
 				resolve([]);
 			};
 		});
@@ -516,7 +539,7 @@ export class IndexedDBCache implements IObservableCache {
 				try {
 					listener(event);
 				} catch (error) {
-					logger.error('[IndexedDBCache] Event listener error:', error);
+					logger.error("[IndexedDBCache] Event listener error:", error);
 				}
 			});
 		}
@@ -525,8 +548,11 @@ export class IndexedDBCache implements IObservableCache {
 	/**
 	 * Private: Update metadata
 	 */
-	private async updateMetadata(key: string, metadata: CacheMetadata): Promise<void> {
-		const transaction = this.db!.transaction([this.storeName], 'readwrite');
+	private async updateMetadata(
+		key: string,
+		metadata: CacheMetadata,
+	): Promise<void> {
+		const transaction = this.db!.transaction([this.storeName], "readwrite");
 		const store = transaction.objectStore(this.storeName);
 
 		return new Promise((resolve) => {
@@ -547,7 +573,7 @@ export class IndexedDBCache implements IObservableCache {
 	 * Private: Count entries
 	 */
 	private async count(): Promise<number> {
-		const transaction = this.db!.transaction([this.storeName], 'readonly');
+		const transaction = this.db!.transaction([this.storeName], "readonly");
 		const store = transaction.objectStore(this.storeName);
 
 		return new Promise((resolve) => {
@@ -561,14 +587,17 @@ export class IndexedDBCache implements IObservableCache {
 	 * Private: Calculate total size
 	 */
 	private async calculateTotalSize(): Promise<number> {
-		const transaction = this.db!.transaction([this.storeName], 'readonly');
+		const transaction = this.db!.transaction([this.storeName], "readonly");
 		const store = transaction.objectStore(this.storeName);
 
 		return new Promise((resolve) => {
 			const request = store.getAll();
 			request.onsuccess = () => {
 				const entries = request.result as CacheEntry[];
-				const total = entries.reduce((sum, entry) => sum + entry.metadata.size, 0);
+				const total = entries.reduce(
+					(sum, entry) => sum + entry.metadata.size,
+					0,
+				);
 				resolve(total);
 			};
 			request.onerror = () => resolve(0);
@@ -579,9 +608,9 @@ export class IndexedDBCache implements IObservableCache {
 	 * Private: Evict oldest entry
 	 */
 	private async evictOldest(): Promise<void> {
-		const transaction = this.db!.transaction([this.storeName], 'readwrite');
+		const transaction = this.db!.transaction([this.storeName], "readwrite");
 		const store = transaction.objectStore(this.storeName);
-		const index = store.index('createdAt');
+		const index = store.index("createdAt");
 
 		return new Promise((resolve) => {
 			const request = index.openCursor();
@@ -591,7 +620,7 @@ export class IndexedDBCache implements IObservableCache {
 					store.delete(cursor.primaryKey);
 					this.emit({
 						type: EventType.EVICTION,
-						backend: 'IndexedDBCache',
+						backend: "IndexedDBCache",
 						key: cursor.primaryKey as string,
 						timestamp: Date.now(),
 					});
@@ -608,9 +637,9 @@ export class IndexedDBCache implements IObservableCache {
 	private async cleanupExpired(): Promise<number> {
 		await this.ensureInitialized();
 
-		const transaction = this.db!.transaction([this.storeName], 'readwrite');
+		const transaction = this.db!.transaction([this.storeName], "readwrite");
 		const store = transaction.objectStore(this.storeName);
-		const index = store.index('expiresAt');
+		const index = store.index("expiresAt");
 
 		let count = 0;
 		const now = Date.now();
@@ -628,7 +657,9 @@ export class IndexedDBCache implements IObservableCache {
 					cursor.continue();
 				} else {
 					if (this.enableLogging && count > 0) {
-						logger.debug(`[IndexedDBCache] Cleaned up ${count} expired entries`);
+						logger.debug(
+							`[IndexedDBCache] Cleaned up ${count} expired entries`,
+						);
 					}
 					resolve(count);
 				}
@@ -641,6 +672,8 @@ export class IndexedDBCache implements IObservableCache {
 /**
  * Create IndexedDB cache instance
  */
-export function createIndexedDBCache(config: IndexedDBCacheConfig = {}): IndexedDBCache {
+export function createIndexedDBCache(
+	config: IndexedDBCacheConfig = {},
+): IndexedDBCache {
 	return new IndexedDBCache(config);
 }

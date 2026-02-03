@@ -27,7 +27,15 @@ vi.mock("@tanstack/react-router", async () => {
 		}),
 		useLocation: () => ({ pathname: "/" }),
 		useParams: () => ({}),
-		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string; [key: string]: unknown }) => (
+		Link: ({
+			children,
+			to,
+			...props
+		}: {
+			children: React.ReactNode;
+			to: string;
+			[key: string]: unknown;
+		}) => (
 			<a href={typeof to === "string" ? to : to?.toString?.()} {...props}>
 				{children}
 			</a>
@@ -97,6 +105,15 @@ const createMockLink = (overrides?: Partial<Link>): Link => ({
 });
 
 const createMockGraphData = (): GraphData => ({
+	edges: [
+		{
+			id: "link-1",
+			source: "item-1",
+			target: "item-2",
+			type: "implements" as any,
+			metadata: {},
+		},
+	],
 	nodes: [
 		{
 			id: "item-1",
@@ -113,44 +130,31 @@ const createMockGraphData = (): GraphData => ({
 			metadata: {},
 		},
 	],
-	edges: [
-		{
-			id: "link-1",
-			source: "item-1",
-			target: "item-2",
-			type: "implements" as any,
-			metadata: {},
-		},
-	],
 });
 
 const createMockSearchResult = (items: Item[]): SearchResult => ({
 	items,
-	total: items.length,
 	page: 1,
 	per_page: 10,
 	query: "test",
+	total: items.length,
 });
 
-const setupQueryClient = () => {
-	return new QueryClient({
+const setupQueryClient = () =>
+	new QueryClient({
 		defaultOptions: {
 			queries: {
-				retry: false,
 				gcTime: 0,
+				retry: false,
 			},
 		},
 	});
-};
 
 const renderWithProviders = (
 	ui: React.ReactElement,
 	{ queryClient = setupQueryClient(), route: _route = "/" } = {},
-) => {
-	return render(
-		<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
-	);
-};
+) =>
+	render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 
 // ============================================================================
 // STORE INTEGRATION TESTS
@@ -170,8 +174,8 @@ describe("Store Integration Tests", () => {
 			const { setToken, setUser } = useAuthStore.getState();
 
 			const mockUser = {
-				id: "user-1",
 				email: "test@example.com",
+				id: "user-1",
 				name: "Test User",
 			};
 
@@ -200,7 +204,7 @@ describe("Store Integration Tests", () => {
 			const { setToken, setUser, logout } = useAuthStore.getState();
 
 			setToken("test-token");
-			setUser({ id: "1", email: "test@example.com" });
+			setUser({ email: "test@example.com", id: "1" });
 
 			logout();
 
@@ -214,8 +218,8 @@ describe("Store Integration Tests", () => {
 		it("should handle profile updates", () => {
 			const { setUser, updateProfile } = useAuthStore.getState();
 
-			setUser({ id: "1", email: "test@example.com", name: "Old Name" });
-			updateProfile({ name: "New Name", avatar: "avatar.png" });
+			setUser({ email: "test@example.com", id: "1", name: "Old Name" });
+			updateProfile({ avatar: "avatar.png", name: "New Name" });
 
 			const state = useAuthStore.getState();
 			expect(state.user?.name).toBe("New Name");
@@ -256,10 +260,10 @@ describe("Store Integration Tests", () => {
 
 			const tempId = "temp-1";
 			const createData = {
-				project_id: "project-1",
-				type: "requirement" as any,
-				title: "New Item",
 				description: "Test description",
+				project_id: "project-1",
+				title: "New Item",
+				type: "requirement" as any,
 			};
 
 			optimisticCreate(tempId, createData);
@@ -283,8 +287,8 @@ describe("Store Integration Tests", () => {
 			const tempId = "temp-1";
 			optimisticCreate(tempId, {
 				project_id: "project-1",
-				type: "requirement" as any,
 				title: "New Item",
+				type: "requirement" as any,
 			});
 
 			expect(useItemsStore.getState().items.get(tempId)).toBeDefined();
@@ -427,11 +431,11 @@ describe("Store Integration Tests", () => {
 				useSyncStore.getState();
 
 			const mutation = {
-				id: "mut-1",
-				type: "create",
-				entity: "item",
 				data: {},
+				entity: "item",
+				id: "mut-1",
 				timestamp: Date.now(),
+				type: "create",
 			};
 
 			addPendingMutation(mutation as any);
@@ -450,11 +454,11 @@ describe("Store Integration Tests", () => {
 				useSyncStore.getState();
 
 			const mutation = {
-				id: "mut-1",
-				type: "create",
-				entity: "item",
 				data: {},
+				entity: "item",
+				id: "mut-1",
 				timestamp: Date.now(),
+				type: "create",
 			};
 
 			addPendingMutation(mutation as any);
@@ -509,14 +513,14 @@ describe("API Integration Tests", () => {
 			vi.spyOn(api.projects, "create").mockResolvedValue(newProject);
 
 			const result = await api.projects.create({
-				name: "New Project",
 				description: "Test description",
+				name: "New Project",
 			});
 
 			expect(result.name).toBe("New Project");
 			expect(api.projects.create).toHaveBeenCalledWith({
-				name: "New Project",
 				description: "Test description",
+				name: "New Project",
 			});
 		});
 
@@ -533,7 +537,7 @@ describe("API Integration Tests", () => {
 		});
 
 		it("should delete project", async () => {
-			vi.spyOn(api.projects, "delete").mockResolvedValue(undefined);
+			vi.spyOn(api.projects, "delete").mockResolvedValue();
 
 			await api.projects.delete("project-1");
 
@@ -562,8 +566,8 @@ describe("API Integration Tests", () => {
 
 			const result = await api.items.create({
 				project_id: "project-1",
-				type: "requirement" as any,
 				title: "New Item",
+				type: "requirement" as any,
 			});
 
 			expect(result.title).toBe("New Item");
@@ -612,10 +616,10 @@ describe("API Integration Tests", () => {
 
 		it("should get impact analysis", async () => {
 			const impact: ImpactAnalysis = {
-				item_id: "item-1",
-				affected_items: [createMockItem({ id: "item-2" })],
 				affected_count: 1,
+				affected_items: [createMockItem({ id: "item-2" })],
 				depth: 2,
+				item_id: "item-1",
 			};
 
 			vi.spyOn(api.graph, "getImpactAnalysis").mockResolvedValue(impact);
@@ -627,10 +631,10 @@ describe("API Integration Tests", () => {
 
 		it("should get dependency analysis", async () => {
 			const deps: DependencyAnalysis = {
-				item_id: "item-1",
 				dependencies: [createMockItem({ id: "item-0" })],
 				dependency_count: 1,
 				depth: 2,
+				item_id: "item-1",
 			};
 
 			vi.spyOn(api.graph, "getDependencyAnalysis").mockResolvedValue(deps);
@@ -913,7 +917,7 @@ describe("Cross-Store Integration Tests", () => {
 		useAuthStore.getState().logout();
 		useItemsStore.getState().clearItems();
 		useProjectStore.getState().clearCurrentProject();
-		useSyncStore.setState({ pendingMutations: [], failedMutations: [] });
+		useSyncStore.setState({ failedMutations: [], pendingMutations: [] });
 	});
 
 	it("should sync auth state with items access", async () => {
@@ -956,18 +960,18 @@ describe("Cross-Store Integration Tests", () => {
 		setOnline(false);
 
 		const mutation = {
-			id: "mut-1",
-			type: "create",
-			entity: "item",
 			data: { title: "New Item" },
+			entity: "item",
+			id: "mut-1",
 			timestamp: Date.now(),
+			type: "create",
 		};
 
 		addPendingMutation(mutation as any);
 		optimisticCreate("temp-1", {
 			project_id: "project-1",
-			type: "requirement" as any,
 			title: "New Item",
+			type: "requirement" as any,
 		});
 
 		const syncState = useSyncStore.getState();
@@ -1001,8 +1005,8 @@ describe("End-to-End Workflow Tests", () => {
 		const tempId = "temp-1";
 		optimisticCreate(tempId, {
 			project_id: project.id,
-			type: "requirement" as any,
 			title: "New Requirement",
+			type: "requirement" as any,
 		});
 
 		expect(useItemsStore.getState().items.get(tempId)).toBeDefined();
@@ -1033,11 +1037,11 @@ describe("End-to-End Workflow Tests", () => {
 
 		// Queue mutations
 		addPendingMutation({
-			id: "mut-1",
-			type: "create",
-			entity: "item",
 			data: {},
+			entity: "item",
+			id: "mut-1",
 			timestamp: Date.now(),
+			type: "create",
 		} as any);
 
 		expect(useSyncStore.getState().pendingMutations).toHaveLength(1);
@@ -1058,7 +1062,8 @@ describe("End-to-End Workflow Tests", () => {
 	});
 
 	it("should handle project switching workflow", () => {
-		const { setCurrentProject, addRecentProject: _addRecentProject } = useProjectStore.getState();
+		const { setCurrentProject, addRecentProject: _addRecentProject } =
+			useProjectStore.getState();
 		const { addItems, getItemsByProject } = useItemsStore.getState();
 
 		const project1 = createMockProject({ id: "p1", name: "Project 1" });

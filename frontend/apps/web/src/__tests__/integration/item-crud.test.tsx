@@ -32,15 +32,15 @@ describe("Item CRUD Integration", () => {
 		});
 
 		const newItem = {
-			projectId: "proj-1",
-			view: "CODE" as const,
-			type: "feature",
-			title: "Test CRUD Item",
-			status: "todo" as const,
 			priority: "high" as const,
+			projectId: "proj-1",
+			status: "todo" as const,
+			title: "Test CRUD Item",
+			type: "feature",
+			view: "CODE" as const,
 		};
 
-		let createdItemId: string = "";
+		let createdItemId = "";
 
 		await act(async () => {
 			createResult.current.mutate(newItem, {
@@ -66,11 +66,11 @@ describe("Item CRUD Integration", () => {
 		if (createdItemId) {
 			await act(async () => {
 				updateResult.current.mutate({
-					id: createdItemId,
 					data: {
 						title: "Updated CRUD Item",
 						status: "in_progress" as const,
 					},
+					id: createdItemId,
 				});
 			});
 
@@ -109,12 +109,12 @@ describe("Item CRUD Integration", () => {
 		// Try to create an invalid item (this would fail in real API)
 		await act(async () => {
 			result.current.mutate({
-				projectId: "",
-				view: "CODE" as const,
-				type: "",
-				title: "",
-				status: "todo" as const,
 				priority: "high" as const,
+				projectId: "",
+				status: "todo" as const,
+				title: "",
+				type: "",
+				view: "CODE" as const,
 			});
 		});
 

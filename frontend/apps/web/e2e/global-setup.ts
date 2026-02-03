@@ -1,68 +1,21 @@
-import { test as base, expect as baseExpect, type Locator } from "@playwright/test";
-import { setupApiMocks } from "./fixtures/api-mocks";
-
 /**
- * Extended test fixture with API mocking enabled by default
+ * Global Setup - Runs once before all tests
+ *
+ * Use for:
+ * - Starting mock API servers
+ * - Seeding test database
+ * - Generating authentication tokens
  */
-export const test = base.extend({
-	page: async ({ page }, use, testInfo) => {
-		// Setup API mocks BEFORE any navigation
-		await setupApiMocks(page);
+import type { FullConfig } from "@playwright/test";
 
-		const shouldAutoAuth = !/auth|security/i.test(testInfo.file);
+async function globalSetup(config: FullConfig) {
+	console.log("🚀 Global setup starting...");
 
-		if (shouldAutoAuth) {
-			const authState = {
-				user: {
-					id: "test-user",
-					email: "test@example.com",
-					name: "Test User",
-					role: "admin",
-				},
-				token: "test-token",
-				account: {
-					id: "test-account",
-					name: "Test Account",
-					slug: "test-account",
-					account_type: "personal",
-				},
-				isAuthenticated: true,
-			};
+	// Example: Start mock API server
+	// const mockServer = await startMockServer();
+	// process.env.MOCK_SERVER_URL = mockServer.url;
 
-			await page.addInitScript((state) => {
-				// Mark test environment for route guards
-				(globalThis as typeof globalThis & { __E2E__?: boolean }).__E2E__ =
-					true;
-				const serialized = JSON.stringify({ state, version: 0 });
-				localStorage.setItem("tracertm-auth-store", serialized);
-				if (state.token) {
-					localStorage.setItem("auth_token", state.token);
-					localStorage.setItem("authToken", state.token);
-				}
-			}, authState);
-		}
+	console.log("✅ Global setup complete");
+}
 
-		// Override goto to ensure mocks are in place
-		const originalGoto = page.goto.bind(page);
-		page.goto = async (
-			url: string,
-			options?: Parameters<typeof originalGoto>[1],
-		) => {
-			return originalGoto(url, options);
-		};
-
-		await use(page);
-	},
-});
-
-export const expect = baseExpect.extend({
-	async toBeInTheDocument(locator: Locator) {
-		const count = await locator.count();
-		const pass = count > 0;
-		return {
-			pass,
-			message: () =>
-				`expected locator${pass ? " not" : ""} to be in the document`,
-		};
-	},
-});
+export default globalSetup;

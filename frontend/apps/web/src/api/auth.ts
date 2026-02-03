@@ -14,7 +14,7 @@
  */
 
 import { fetchCSRFToken, getCSRFToken } from "../lib/csrf";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "../stores";
 import client from "./client";
 
 const { ApiError, apiClient, handleApiResponse, safeApiCall } = client;
@@ -243,13 +243,13 @@ async function handleAuthResponse<TResponse>(
 }
 
 const AUTH_ERROR_MESSAGES: Record<string, string> = {
-	INVALID_CREDENTIALS: "Invalid email or password",
-	USER_NOT_FOUND: "User not found",
-	USER_DISABLED: "This account has been disabled",
-	INVALID_PASSWORD: "Current password is incorrect",
-	PASSWORD_MISMATCH: "Passwords do not match",
-	INVALID_TOKEN: "Invalid or expired token",
 	CSRF_TOKEN_MISSING: "Security token missing, please refresh the page",
+	INVALID_CREDENTIALS: "Invalid email or password",
+	INVALID_PASSWORD: "Current password is incorrect",
+	INVALID_TOKEN: "Invalid or expired token",
+	PASSWORD_MISMATCH: "Passwords do not match",
+	USER_DISABLED: "This account has been disabled",
+	USER_NOT_FOUND: "User not found",
 };
 
 const EMPTY_LENGTH = 0;
@@ -775,12 +775,7 @@ function getLoginErrorMessage(error: unknown): string {
 	if (error instanceof ApiError) {
 		const { message, code, details } = parseErrorData(error.data);
 		return getAuthErrorMessage(
-			new AuthError(
-				message || error.statusText,
-				error.status,
-				code,
-				details,
-			),
+			new AuthError(message || error.statusText, error.status, code, details),
 		);
 	}
 	if (error instanceof Error) {

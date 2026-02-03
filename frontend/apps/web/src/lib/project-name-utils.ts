@@ -15,7 +15,9 @@
  * @param slugOrName - Project ID/slug or existing name
  * @returns Human-readable project name
  */
-export function slugToDisplayName(slugOrName: string | null | undefined): string {
+export function slugToDisplayName(
+	slugOrName: string | null | undefined,
+): string {
 	if (slugOrName == null || typeof slugOrName !== "string") {
 		return "Project";
 	}
@@ -34,7 +36,10 @@ export function slugToDisplayName(slugOrName: string | null | undefined): string
 	}
 
 	// Extract the meaningful part (remove "proj_" prefix and numeric suffix)
-	const parts = normalized.replace(/^proj_/, "").split("_").filter(Boolean);
+	const parts = normalized
+		.replace(/^proj_/, "")
+		.split("_")
+		.filter(Boolean);
 
 	// Remove trailing numeric parts (like "001", "002")
 	const meaningfulParts = parts.filter((part) => !/^\d+$/.test(part));
@@ -74,10 +79,15 @@ export function slugToDisplayName(slugOrName: string | null | undefined): string
  * @param project - Project object with id and name fields
  * @returns Human-readable project name
  */
-export function getProjectDisplayName(project: {
-	id?: string | null;
-	name?: string | null;
-} | null | undefined): string {
+export function getProjectDisplayName(
+	project:
+		| {
+				id?: string | null;
+				name?: string | null;
+		  }
+		| null
+		| undefined,
+): string {
 	if (project == null) {
 		return "Project";
 	}
@@ -85,7 +95,12 @@ export function getProjectDisplayName(project: {
 	const id = project.id ?? "";
 	// If name exists and is human-readable (not a slug), use it
 	// Pattern matches: Proj_*, proj_* (case-insensitive), with optional trailing 's'
-	if (name != null && typeof name === "string" && name.trim() && !name.match(/^[Pp]roj_[a-z0-9_]+s?$/i)) {
+	if (
+		name != null &&
+		typeof name === "string" &&
+		name.trim() &&
+		!name.match(/^[Pp]roj_[a-z0-9_]+s?$/i)
+	) {
 		return name;
 	}
 	// Otherwise, convert the ID to a human-readable name (handles null/undefined id)

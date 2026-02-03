@@ -85,7 +85,10 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 	const [slot2Tab, setSlot2Tab] = useState("status");
 
 	// Ensure projects is always an array - memoize to prevent infinite loops
-	const projectsArray = useMemo(() => Array.isArray(projects) ? projects : [], [projects]);
+	const projectsArray = useMemo(
+		() => (Array.isArray(projects) ? projects : []),
+		[projects],
+	);
 
 	// Set default pinned project
 	useEffect(() => {
@@ -127,7 +130,9 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 					const items = Array.isArray(data) ? data : data.items || [];
 					return {
 						count: total,
-						items: items.map((item: any) => (Object.assign(item, {projectId:item.projectId||project.id}))),
+						items: items.map((item: any) =>
+							Object.assign(item, { projectId: item.projectId || project.id }),
+						),
 						projectId: project.id,
 					};
 				} catch {
@@ -182,28 +187,36 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 		"#ec4899",
 	];
 
-	const projectsWithStats = useMemo(() => projectsArray.map((project) => {
-			const pItems = allItems.filter((item) => item.projectId === project.id);
-			const completed = pItems.filter(
-				(item) => item.status === "done" || item.status === "completed",
-			).length;
-			const progress =
-				pItems.length > 0 ? (completed / pItems.length) * 100 : 0;
-			return {
-				...project,
-				displayName: getProjectDisplayName(project),
-				itemCount: projectItemCounts[project.id] || pItems.length,
-				progress,
-			};
-		}), [projectsArray, allItems, projectItemCounts]);
+	const projectsWithStats = useMemo(
+		() =>
+			projectsArray.map((project) => {
+				const pItems = allItems.filter((item) => item.projectId === project.id);
+				const completed = pItems.filter(
+					(item) => item.status === "done" || item.status === "completed",
+				).length;
+				const progress =
+					pItems.length > 0 ? (completed / pItems.length) * 100 : 0;
+				return {
+					...project,
+					displayName: getProjectDisplayName(project),
+					itemCount: projectItemCounts[project.id] || pItems.length,
+					progress,
+				};
+			}),
+		[projectsArray, allItems, projectItemCounts],
+	);
 
-	const pinnedProject = useMemo(() => (
+	const pinnedProject = useMemo(
+		() =>
 			projectsWithStats.find((p) => p.id === pinnedProjectId) ||
-			projectsWithStats[0]
-		), [projectsWithStats, pinnedProjectId]);
+			projectsWithStats[0],
+		[projectsWithStats, pinnedProjectId],
+	);
 
 	const pinnedProjectDetails = useMemo(() => {
-		if (!pinnedProject) {return [];}
+		if (!pinnedProject) {
+			return [];
+		}
 		const pItems = allItems.filter(
 			(item) => item.projectId === pinnedProject.id,
 		);
@@ -231,8 +244,12 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 				const bName = b.displayName || b.name;
 				return aName.localeCompare(bName);
 			}
-			if (sortBy === "items") {return b.itemCount - a.itemCount;}
-			if (sortBy === "progress") {return b.progress - a.progress;}
+			if (sortBy === "items") {
+				return b.itemCount - a.itemCount;
+			}
+			if (sortBy === "progress") {
+				return b.progress - a.progress;
+			}
 			return 0;
 		});
 
@@ -629,12 +646,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 								}
 							};
 
-							const handleEdit = (e: React.MouseEvent) => {
-								e.preventDefault();
-								e.stopPropagation();
-								undefined;
-								toast.info("Edit project in project details");
-							};
+							const handleEdit = (e: React.MouseEvent) => {};
 
 							return (
 								<div key={project.id} className="relative group">
@@ -683,10 +695,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end" className="w-48">
 													<DropdownMenuItem
-														onClick={(e) => {
-															e.stopPropagation();
-															undefined;
-														}}
+														onClick={(e) => {}}
 														className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
 													>
 														<ExternalLink className="h-4 w-4" />
@@ -704,10 +713,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 													</DropdownMenuItem>
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
-														onClick={(e) => {
-															e.stopPropagation();
-															undefined;
-														}}
+														onClick={(e) => {}}
 														className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
 													>
 														<Trash2 className="h-4 w-4" />
@@ -786,12 +792,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 								}
 							};
 
-							const handleEdit = (e: React.MouseEvent) => {
-								e.preventDefault();
-								e.stopPropagation();
-								undefined;
-								toast.info("Edit project in project details");
-							};
+							const handleEdit = (e: React.MouseEvent) => {};
 
 							return (
 								<div key={project.id} className="relative group">
@@ -877,10 +878,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 										</DropdownMenuTrigger>
 										<DropdownMenuContent align="end" className="w-48">
 											<DropdownMenuItem
-												onClick={(e) => {
-													e.stopPropagation();
-													undefined;
-												}}
+												onClick={(e) => {}}
 												className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
 											>
 												<ExternalLink className="h-4 w-4" />
@@ -898,10 +896,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 											</DropdownMenuItem>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem
-												onClick={(e) => {
-													e.stopPropagation();
-													undefined;
-												}}
+												onClick={(e) => {}}
 												className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
 											>
 												<Trash2 className="h-4 w-4" />

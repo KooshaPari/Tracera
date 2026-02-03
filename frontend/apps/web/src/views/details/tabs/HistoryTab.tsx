@@ -92,7 +92,9 @@ export function HistoryTab({ item, className }: HistoryTabProps) {
 	}, [item]);
 
 	const timeSinceUpdate = useMemo(() => {
-		if (!item.updatedAt) {return "Unknown";}
+		if (!item.updatedAt) {
+			return "Unknown";
+		}
 
 		const now = new Date();
 		const updated = new Date(item.updatedAt);
@@ -101,8 +103,12 @@ export function HistoryTab({ item, className }: HistoryTabProps) {
 		const diffHours = Math.floor(diffMs / 3_600_000);
 		const diffDays = Math.floor(diffMs / 86_400_000);
 
-		if (diffMins < 60) {return `${diffMins} minutes ago`;}
-		if (diffHours < 24) {return `${diffHours} hours ago`;}
+		if (diffMins < 60) {
+			return `${diffMins} minutes ago`;
+		}
+		if (diffHours < 24) {
+			return `${diffHours} hours ago`;
+		}
 		return `${diffDays} days ago`;
 	}, [item.updatedAt]);
 

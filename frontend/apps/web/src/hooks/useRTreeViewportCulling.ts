@@ -21,14 +21,10 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-	RBushSpatialIndex,
-	type Edge,
-	type NodePosition,
-	type ViewportBounds,
-} from "@/lib/spatialIndex";
+import { RBushSpatialIndex } from "@/lib/spatialIndex";
+import type { Edge, NodePosition, ViewportBounds } from "@/lib/spatialIndex";
 import { getViewportBounds } from "@/lib/viewportCulling";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 interface UseRTreeViewportCullingProps {
 	edges: Edge[];
@@ -94,8 +90,8 @@ export function useRTreeViewportCulling({
 	enabled = true,
 	padding = 100,
 	onStatsChange,
-	// rebuildThreshold = 0.1, // Rebuild if >10% changed
-	minEdgesForRTree = 10000, // Only use R-tree for large graphs
+	// RebuildThreshold = 0.1, // Rebuild if >10% changed
+	minEdgesForRTree = 10_000, // Only use R-tree for large graphs
 }: UseRTreeViewportCullingProps): UseRTreeViewportCullingResult {
 	const [viewportBounds, setViewportBounds] = useState<ViewportBounds | null>(
 		null,
@@ -105,14 +101,14 @@ export function useRTreeViewportCulling({
 	const useRTree = enabled && edges.length >= minEdgesForRTree;
 
 	// Extract node positions (memoized)
-	const nodePositions = useMemo(() => {
-		return extractNodePositions(nodes);
-	}, [nodes]);
+	const nodePositions = useMemo(() => extractNodePositions(nodes), [nodes]);
 
 	// Build spatial index (memoized)
 	const [indexBuildTime, setIndexBuildTime] = useState<number>(0);
 	const spatialIndex = useMemo(() => {
-		if (!useRTree) return null;
+		if (!useRTree) {
+			return null;
+		}
 
 		const startTime = performance.now();
 		const index = new RBushSpatialIndex();
@@ -125,15 +121,18 @@ export function useRTreeViewportCulling({
 	}, [edges, nodePositions, useRTree]);
 
 	// Clear index on unmount
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			spatialIndex?.clear();
-		};
-	}, [spatialIndex]);
+		},
+		[spatialIndex],
+	);
 
 	// Update viewport bounds on viewport change
 	const handleViewportChange = useCallback(() => {
-		if (!enabled) return;
+		if (!enabled) {
+			return;
+		}
 
 		const bounds = getViewportBounds(reactFlowInstance);
 		setViewportBounds(bounds);
@@ -141,7 +140,9 @@ export function useRTreeViewportCulling({
 
 	// Listen for viewport changes
 	useEffect(() => {
-		if (!enabled || !reactFlowInstance) return;
+		if (!enabled || !reactFlowInstance) {
+			return;
+		}
 
 		// Get initial viewport bounds
 		handleViewportChange();
@@ -177,20 +178,22 @@ export function useRTreeViewportCulling({
 			result = edges.filter((edge) => {
 				const sourcePos = nodePositions.get(edge.source);
 				const targetPos = nodePositions.get(edge.target);
-				if (!sourcePos || !targetPos) return false;
+				if (!sourcePos || !targetPos) {
+					return false;
+				}
 
 				const edgeBounds = {
-					minX: Math.min(sourcePos.x, targetPos.x),
 					maxX: Math.max(sourcePos.x, targetPos.x),
-					minY: Math.min(sourcePos.y, targetPos.y),
 					maxY: Math.max(sourcePos.y, targetPos.y),
+					minX: Math.min(sourcePos.x, targetPos.x),
+					minY: Math.min(sourcePos.y, targetPos.y),
 				};
 
 				const searchBounds = {
-					minX: viewportBounds.minX - padding,
 					maxX: viewportBounds.maxX + padding,
-					minY: viewportBounds.minY - padding,
 					maxY: viewportBounds.maxY + padding,
+					minX: viewportBounds.minX - padding,
+					minY: viewportBounds.minY - padding,
 				};
 
 				return !(
@@ -216,13 +219,13 @@ export function useRTreeViewportCulling({
 		const cullingRatio = totalEdges > 0 ? (culledEdges / totalEdges) * 100 : 0;
 
 		const stats: CullingStats = {
-			totalEdges,
-			visibleEdges,
 			culledEdges,
 			cullingRatio,
-			queryTimeMs: queryTime,
 			indexBuildTimeMs: indexBuildTime,
+			queryTimeMs: queryTime,
+			totalEdges,
 			usingRTree: !!spatialIndex,
+			visibleEdges,
 		};
 
 		// Report stats change if callback provided
@@ -243,9 +246,9 @@ export function useRTreeViewportCulling({
 	return {
 		cullableEdges,
 		cullingStats,
-		viewportBounds,
 		isEnabled: enabled,
 		spatialIndex,
+		viewportBounds,
 	};
 }
 
@@ -285,13 +288,13 @@ export function useRTreeCullingStats(stats: CullingStats | null): {
 		queryTimeMs > 0 ? estimatedLinearMs / queryTimeMs : 1;
 
 	return {
-		culledCount,
-		visibleCount,
-		savedPercentage,
-		queryTimeMs,
 		buildTimeMs,
-		usingRTree,
+		culledCount,
 		estimatedSpeedupVsLinear,
+		queryTimeMs,
+		savedPercentage,
+		usingRTree,
+		visibleCount,
 	};
 }
 
@@ -311,7 +314,9 @@ export function useRTreeDebug(
 	edgeCount: number,
 ): void {
 	useEffect(() => {
-		if (!stats) return;
+		if (!stats) {
+			return;
+		}
 
 		const detailedStats = useRTreeCullingStats(stats);
 
@@ -319,9 +324,7 @@ export function useRTreeDebug(
 		logger.info(`Edges: ${edgeCount.toLocaleString()}`);
 		logger.info(`Visible: ${detailedStats.visibleCount.toLocaleString()}`);
 		logger.info(`Culled: ${detailedStats.culledCount.toLocaleString()}`);
-		logger.info(
-			`Culling Ratio: ${detailedStats.savedPercentage.toFixed(1)}%`,
-		);
+		logger.info(`Culling Ratio: ${detailedStats.savedPercentage.toFixed(1)}%`);
 		logger.info(`Query Time: ${detailedStats.queryTimeMs.toFixed(3)}ms`);
 		logger.info(`Build Time: ${detailedStats.buildTimeMs.toFixed(3)}ms`);
 		logger.info(`Using R-tree: ${detailedStats.usingRTree ? "✅" : "❌"}`);

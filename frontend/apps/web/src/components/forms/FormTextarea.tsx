@@ -10,17 +10,15 @@ export interface FormTextareaProps
 export const FormTextarea = React.forwardRef<
 	HTMLTextAreaElement,
 	FormTextareaProps
->(({ className, error, ...props }, ref) => {
-	return (
-		<Textarea
-			ref={ref}
-			className={cn(
-				error && "border-red-500 focus-visible:ring-red-500",
-				className,
-			)}
-			{...props}
-		/>
-	);
-});
+>(({ className, error, ...props }, ref) => (
+	<Textarea
+		ref={ref}
+		className={cn(
+			error && "border-red-500 focus-visible:ring-red-500",
+			className,
+		)}
+		{...props}
+	/>
+));
 
 FormTextarea.displayName = "FormTextarea";

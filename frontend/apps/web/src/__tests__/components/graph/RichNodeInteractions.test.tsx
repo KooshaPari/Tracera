@@ -7,7 +7,7 @@ import { NodeContextMenu } from "../../../components/graph/NodeContextMenu";
 import { NodeHoverTooltip } from "../../../components/graph/NodeHoverTooltip";
 import { NodeQuickActions } from "../../../components/graph/NodeQuickActions";
 
-describe("NodeActions", () => {
+describe(NodeActions, () => {
 	it("renders all action buttons", () => {
 		const onExpand = vi.fn();
 		const onNavigate = vi.fn();
@@ -51,7 +51,7 @@ describe("NodeActions", () => {
 		await user.click(expandButton);
 
 		expect(onExpand).toHaveBeenCalledWith("test-node");
-		expect(onExpand).toHaveBeenCalledTimes(1);
+		expect(onExpand).toHaveBeenCalledOnce();
 	});
 
 	it("calls onNavigate when navigate button is clicked", async () => {
@@ -75,14 +75,14 @@ describe("NodeActions", () => {
 		await user.click(navigateButton);
 
 		expect(onNavigate).toHaveBeenCalledWith("test-node");
-		expect(onNavigate).toHaveBeenCalledTimes(1);
+		expect(onNavigate).toHaveBeenCalledOnce();
 	});
 
 	it("shows collapse icon when expanded", () => {
 		render(
 			<NodeActions
 				nodeId="test-node"
-				isExpanded={true}
+				isExpanded
 				onExpand={vi.fn()}
 				onNavigate={vi.fn()}
 				onShowMenu={vi.fn()}
@@ -118,7 +118,7 @@ describe("NodeActions", () => {
 	});
 });
 
-describe("NodeContextMenu", () => {
+describe(NodeContextMenu, () => {
 	it("renders children as trigger", () => {
 		render(
 			<NodeContextMenu
@@ -137,7 +137,6 @@ describe("NodeContextMenu", () => {
 	});
 
 	it("shows menu items on right click", async () => {
-
 		render(
 			<NodeContextMenu
 				nodeId="test-node"
@@ -151,7 +150,10 @@ describe("NodeContextMenu", () => {
 			</NodeContextMenu>,
 		);
 
-		await user.pointer({ keys: "[MouseRight>]", target: screen.getByText("Test Content") });
+		await user.pointer({
+			keys: "[MouseRight>]",
+			target: screen.getByText("Test Content"),
+		});
 
 		await waitFor(() => {
 			expect(screen.getByText("View Details")).toBeInTheDocument();
@@ -177,7 +179,10 @@ describe("NodeContextMenu", () => {
 			</NodeContextMenu>,
 		);
 
-		await user.pointer({ keys: "[MouseRight>]", target: screen.getByText("Test Content") });
+		await user.pointer({
+			keys: "[MouseRight>]",
+			target: screen.getByText("Test Content"),
+		});
 
 		await waitFor(() => {
 			expect(screen.getByText("View Details")).toBeInTheDocument();
@@ -204,7 +209,10 @@ describe("NodeContextMenu", () => {
 			</NodeContextMenu>,
 		);
 
-		await user.pointer({ keys: "[MouseRight>]", target: screen.getByText("Test Content") });
+		await user.pointer({
+			keys: "[MouseRight>]",
+			target: screen.getByText("Test Content"),
+		});
 
 		await waitFor(() => {
 			expect(screen.getByText("Copy ID")).toBeInTheDocument();
@@ -216,7 +224,7 @@ describe("NodeContextMenu", () => {
 	});
 });
 
-describe("NodeHoverTooltip", () => {
+describe(NodeHoverTooltip, () => {
 	it("renders tooltip with basic info", () => {
 		render(
 			<NodeHoverTooltip
@@ -247,9 +255,9 @@ describe("NodeHoverTooltip", () => {
 
 	it("renders metadata when provided", () => {
 		const metadata = {
-			priority: "high",
 			assignee: "John Doe",
 			deadline: "2024-12-31",
+			priority: "high",
 		};
 
 		render(
@@ -270,11 +278,11 @@ describe("NodeHoverTooltip", () => {
 
 	it("limits metadata to 3 items", () => {
 		const metadata = {
-			priority: "high",
 			assignee: "John Doe",
-			deadline: "2024-12-31",
-			status: "active",
 			category: "feature",
+			deadline: "2024-12-31",
+			priority: "high",
+			status: "active",
 		};
 
 		render(
@@ -304,13 +312,13 @@ describe("NodeHoverTooltip", () => {
 		const tooltip = container.firstChild;
 		expect(tooltip).toBeInstanceOf(HTMLElement);
 		if (tooltip instanceof HTMLElement) {
-			expect(tooltip.style.left).toBe("160px"); // x + 10
-			expect(tooltip.style.top).toBe("210px"); // y + 10
+			expect(tooltip.style.left).toBe("160px"); // X + 10
+			expect(tooltip.style.top).toBe("210px"); // Y + 10
 		}
 	});
 });
 
-describe("NodeQuickActions", () => {
+describe(NodeQuickActions, () => {
 	it("renders all quick action buttons", () => {
 		render(
 			<NodeQuickActions
@@ -326,7 +334,6 @@ describe("NodeQuickActions", () => {
 	});
 
 	it("opens link popover when link button is clicked", async () => {
-
 		render(
 			<NodeQuickActions
 				nodeId="test-node"
@@ -373,7 +380,6 @@ describe("NodeQuickActions", () => {
 	});
 
 	it("opens tag popover when tag button is clicked", async () => {
-
 		render(
 			<NodeQuickActions
 				nodeId="test-node"
@@ -448,7 +454,6 @@ describe("NodeQuickActions", () => {
 	});
 
 	it("clears input after submission", async () => {
-
 		render(
 			<NodeQuickActions
 				nodeId="test-node"
@@ -474,9 +479,7 @@ describe("NodeQuickActions", () => {
 		await user.click(addButton);
 
 		await waitFor(() => {
-			expect(
-				inputEl instanceof HTMLInputElement ? inputEl.value : "",
-			).toBe("");
+			expect(inputEl instanceof HTMLInputElement ? inputEl.value : "").toBe("");
 		});
 	});
 });

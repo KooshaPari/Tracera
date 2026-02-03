@@ -3,35 +3,35 @@ import { FolderOpen, MoreVertical, Plus, Search } from "lucide-react";
 
 const projects = [
 	{
-		id: "1",
-		name: "TraceRTM Frontend",
 		description: "Desktop App + Website",
+		id: "1",
 		items: 44,
 		links: 5,
+		name: "TraceRTM Frontend",
 		status: "active",
 	},
 	{
-		id: "2",
-		name: "Pokemon Go Demo",
 		description: "Sample project demonstration",
+		id: "2",
 		items: 28,
 		links: 12,
+		name: "Pokemon Go Demo",
 		status: "active",
 	},
 	{
-		id: "3",
-		name: "E-Commerce Platform",
 		description: "Full-stack e-commerce",
+		id: "3",
 		items: 156,
 		links: 234,
+		name: "E-Commerce Platform",
 		status: "active",
 	},
 	{
-		id: "4",
-		name: "Mobile Banking App",
 		description: "React Native banking",
+		id: "4",
 		items: 89,
 		links: 145,
+		name: "Mobile Banking App",
 		status: "archived",
 	},
 ];

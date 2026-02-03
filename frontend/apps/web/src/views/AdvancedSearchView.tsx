@@ -59,8 +59,8 @@ export function AdvancedSearchView() {
 				`/api/v1/projects/${filters.project_id || "all"}/search/advanced`,
 				{
 					body: JSON.stringify({
-						query: query || undefined,
 						filters: filters,
+						query: query || undefined,
 					}),
 					headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 					method: "POST",
@@ -95,7 +95,7 @@ export function AdvancedSearchView() {
 	};
 
 	const results = searchQuery.data?.results || [];
-	const {isLoading} = searchQuery;
+	const { isLoading } = searchQuery;
 
 	return (
 		<div className="space-y-6">
@@ -406,7 +406,10 @@ export function AdvancedSearchView() {
 				<Card className="p-0 overflow-hidden">
 					<CardErrorFallback
 						title="Search failed"
-						message={searchQuery.error?.message ?? "Error performing search. Please try again."}
+						message={
+							searchQuery.error?.message ??
+							"Error performing search. Please try again."
+						}
 						error={searchQuery.error ?? undefined}
 						retry={() => searchQuery.refetch()}
 						className="p-6 border-0 rounded-none"

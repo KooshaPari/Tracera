@@ -1,7 +1,8 @@
 import { Button } from "@tracertm/ui";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { AlertTriangle, RefreshCcw, RotateCw } from "lucide-react";
-import { Component, type ReactNode } from "react";
+import { Component } from "react";
+import type { ReactNode } from "react";
 
 interface ErrorBoundaryProps {
 	children: ReactNode;
@@ -20,11 +21,11 @@ export class ErrorBoundary extends Component<
 > {
 	constructor(props: ErrorBoundaryProps) {
 		super(props);
-		this.state = { hasError: false, error: null };
+		this.state = { error: null, hasError: false };
 	}
 
 	static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-		return { hasError: true, error };
+		return { error, hasError: true };
 	}
 
 	override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -33,7 +34,7 @@ export class ErrorBoundary extends Component<
 	}
 
 	reset = () => {
-		this.setState({ hasError: false, error: null });
+		this.setState({ error: null, hasError: false });
 	};
 
 	override render() {
@@ -73,7 +74,7 @@ export class ErrorBoundary extends Component<
 								Try Reset
 							</Button>
 							<Button
-								onClick={() => window.location.reload()}
+								onClick={() => globalThis.location.reload()}
 								variant="outline"
 								className="flex-1 gap-2"
 								size="sm"

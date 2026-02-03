@@ -4,42 +4,21 @@
 import type {
 	Item,
 	ItemStatus,
-	LinkType,
-	Priority,
-	ViewType,
-} from "@tracertm/types";
-import type { paths } from "./schema";
-
-export type {
-	Item,
-	ItemStatus,
 	Link,
 	LinkType,
 	Priority,
 	Project,
 	ViewType,
 } from "@tracertm/types";
+import type { paths } from "./schema";
 
 // OpenAPI Schema Type Exports
-export type { paths } from "./schema";
 
-/**
- * Extract path keys from OpenAPI schema
- * @example type ItemsPaths = ApiPaths<"/api/v1/items">;
- */
-export type ApiPaths = keyof paths;
+type ApiPaths = keyof paths;
 
-/**
- * Extract operation keys for a specific path
- * @example type GetItemsOp = PathOperations<"/api/v1/items">;
- */
-export type PathOperations<P extends ApiPaths> = keyof paths[P];
+type PathOperations<P extends ApiPaths> = keyof paths[P];
 
-/**
- * Extract request body type for a specific operation
- * @example type CreateItemBody = ApiRequestBody<"/api/v1/items", "post">;
- */
-export type ApiRequestBody<
+type ApiRequestBody<
 	P extends ApiPaths,
 	M extends PathOperations<P>,
 > = paths[P][M] extends {
@@ -48,11 +27,7 @@ export type ApiRequestBody<
 	? Body
 	: never;
 
-/**
- * Extract response type for a specific operation
- * @example type ListItemsResponse = ApiResponse<"/api/v1/items", "get", 200>;
- */
-export type ApiResponse<
+type ApiResponse<
 	P extends ApiPaths,
 	M extends PathOperations<P>,
 	Status extends number = 200,
@@ -64,168 +39,192 @@ export type ApiResponse<
 		: never
 	: never;
 
-/**
- * Extract query parameters for a specific operation
- * @example type ListItemsParams = ApiQueryParams<"/api/v1/items", "get">;
- */
-export type ApiQueryParams<
+type ApiQueryParams<
 	P extends ApiPaths,
 	M extends PathOperations<P>,
 > = paths[P][M] extends { parameters: { query?: infer Q } } ? Q : never;
 
-/**
- * Extract path parameters for a specific operation
- * @example type GetItemParams = ApiPathParams<"/api/v1/items/{item_id}", "get">;
- */
-export type ApiPathParams<
+type ApiPathParams<
 	P extends ApiPaths,
 	M extends PathOperations<P>,
 > = paths[P][M] extends { parameters: { path?: infer P } } ? P : never;
 
-/**
- * Complete parameter set for an operation
- * @example type ListItemsParams = ApiAllParams<"/api/v1/items", "get">;
- */
-export interface ApiAllParams<P extends ApiPaths, M extends PathOperations<P>> {
-	query?: ApiQueryParams<P, M>;
+interface ApiAllParams<P extends ApiPaths, M extends PathOperations<P>> {
 	path?: ApiPathParams<P, M>;
+	query?: ApiQueryParams<P, M>;
 }
 
-// Additional input types for API mutations
-export interface CreateProjectInput {
+interface CreateProjectInput {
+	description?: string;
 	name: string;
-	description?: string;
 }
 
-export interface UpdateProjectInput {
+interface UpdateProjectInput {
+	description?: string;
 	name?: string;
-	description?: string;
 }
 
-export interface CreateItemInput {
+interface CreateItemInput {
+	description?: string;
+	parentId?: string;
+	priority?: Priority;
 	projectId: string;
-	type: string;
+	status?: ItemStatus;
 	title: string;
-	description?: string;
-	status?: ItemStatus;
-	priority?: Priority;
-	parentId?: string;
+	type: string;
 }
 
-export interface UpdateItemInput {
-	type?: string;
+interface UpdateItemInput {
+	description?: string;
+	parentId?: string;
+	priority?: Priority;
+	status?: ItemStatus;
 	title?: string;
-	description?: string;
-	status?: ItemStatus;
-	priority?: Priority;
-	parentId?: string;
+	type?: string;
 }
 
-export interface CreateLinkInput {
+interface CreateLinkInput {
+	description?: string;
 	sourceId: string;
 	targetId: string;
 	type: LinkType;
-	description?: string;
 }
 
-export interface UpdateLinkInput {
+interface UpdateLinkInput {
+	description?: string;
 	type?: LinkType;
-	description?: string;
 }
 
-export interface SearchQuery {
-	q: string;
-	types?: string[];
-	statuses?: ItemStatus[];
-	priorities?: Priority[];
-	projectId?: string;
+interface SearchQuery {
 	page?: number;
 	per_page?: number;
+	priorities?: Priority[];
+	projectId?: string;
+	q: string;
+	statuses?: ItemStatus[];
+	types?: string[];
 }
 
-export interface SearchResult {
+interface SearchResult {
+	hasMore: boolean;
 	items: Item[];
-	total: number;
 	page: number;
 	pageSize: number;
-	hasMore: boolean;
+	total: number;
 }
 
-export interface PaginationParams {
+interface PaginationParams {
+	cursor?: string;
 	limit?: number;
-	offset?: number; // Deprecated: Use cursor instead
-	cursor?: string; // Cursor for cursor-based pagination
+	offset?: number;
 }
 
-export interface CursorPaginationResponse<T> {
+interface CursorPaginationResponse<T> {
+	count: number;
+	has_more: boolean;
 	items: T[];
 	next_cursor?: string;
-	has_more: boolean;
-	count: number;
 }
 
-export interface ImpactAnalysis {
-	itemId: string;
-	affectedItems: Item[];
+interface ImpactAnalysis {
 	affectedCount: number;
+	affectedItems: Item[];
 	depth: number;
+	itemId: string;
 }
 
-export interface DependencyAnalysis {
-	itemId: string;
+interface DependencyAnalysis {
 	dependencies: Item[];
 	dependencyCount: number;
 	depth: number;
+	itemId: string;
 }
 
-export interface TraceabilityMatrix {
-	requirements: Item[];
+interface TraceabilityMatrix {
 	coverage: Record<
 		string,
 		{
+			coveragePercentage: number;
+			documentedBy: Item[];
 			implementedBy: Item[];
 			testedBy: Item[];
-			documentedBy: Item[];
-			coveragePercentage: number;
 		}
 	>;
+	requirements: Item[];
 }
 
-export interface GraphNode {
+interface GraphNode {
 	id: string;
-	type: string;
-	title: string;
 	status: ItemStatus;
+	title: string;
+	type: string;
 	view?: ViewType;
 }
 
-export interface GraphEdge {
+interface GraphEdge {
 	id: string;
 	source: string;
 	target: string;
 	type: LinkType;
 }
 
-export interface GraphData {
-	nodes: GraphNode[];
+interface GraphData {
 	edges: GraphEdge[];
+	nodes: GraphNode[];
 }
 
-export interface PaginatedResponse<T> {
+interface PaginatedResponse<T> {
+	hasMore: boolean;
 	items: T[];
-	total: number;
 	page: number;
 	pageSize: number;
-	hasMore: boolean;
+	total: number;
 }
 
-export type ErrorDetails = Record<
+type ErrorDetails = Record<
 	string,
 	string | number | boolean | object | null | undefined
 >;
 
-export interface ApiError {
+interface ApiError {
 	code: string;
-	message: string;
 	details?: ErrorDetails;
+	message: string;
 }
+
+export type {
+	ApiAllParams,
+	ApiError,
+	ApiPathParams,
+	ApiPaths,
+	ApiQueryParams,
+	ApiRequestBody,
+	ApiResponse,
+	CreateItemInput,
+	CreateLinkInput,
+	CreateProjectInput,
+	CursorPaginationResponse,
+	DependencyAnalysis,
+	ErrorDetails,
+	GraphData,
+	GraphEdge,
+	GraphNode,
+	ImpactAnalysis,
+	Item,
+	ItemStatus,
+	Link,
+	LinkType,
+	PaginatedResponse,
+	PaginationParams,
+	PathOperations,
+	Priority,
+	Project,
+	SearchQuery,
+	SearchResult,
+	TraceabilityMatrix,
+	UpdateItemInput,
+	UpdateLinkInput,
+	UpdateProjectInput,
+	ViewType,
+	paths,
+};

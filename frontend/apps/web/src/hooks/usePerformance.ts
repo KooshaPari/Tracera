@@ -45,21 +45,21 @@ export function usePerformance<T extends Node>(
 
 	// Performance metrics tracking
 	const metricsRef = useRef<PerformanceMetrics>({
-		totalNodes: nodes.length,
-		totalEdges: edges.length,
-		visibleNodes: nodes.length,
-		visibleEdges: edges.length,
-		renderTime: 0,
-		memoryUsage: 0,
 		fps: 60,
+		memoryUsage: 0,
+		renderTime: 0,
+		totalEdges: edges.length,
+		totalNodes: nodes.length,
+		visibleEdges: edges.length,
+		visibleNodes: nodes.length,
 	});
 
 	const [metrics, setMetrics] = useState<PerformanceMetrics>(
 		metricsRef.current,
 	);
 	const [visibleRange, setVisibleRange] = useState({
-		start: 0,
 		end: finalConfig.itemsPerPage,
+		start: 0,
 	});
 
 	// Determine if virtualization is needed
@@ -124,10 +124,10 @@ export function usePerformance<T extends Node>(
 			// Check if performance.memory is available (Chrome only)
 			const perfMemory = performance as any;
 			if (perfMemory.memory?.usedJSHeapSize) {
-				const memoryMB = (perfMemory.memory.usedJSHeapSize / 1048576).toFixed(
+				const memoryMB = (perfMemory.memory.usedJSHeapSize / 1_048_576).toFixed(
 					2,
 				);
-				metricsRef.current.memoryUsage = parseFloat(memoryMB);
+				metricsRef.current.memoryUsage = Number.parseFloat(memoryMB);
 				setMetrics({ ...metricsRef.current });
 			}
 		}, 1000);
@@ -141,7 +141,7 @@ export function usePerformance<T extends Node>(
 		let lastTime = performance.now();
 
 		const countFrame = () => {
-			frameCount++;
+			frameCount += 1;
 			const currentTime = performance.now();
 
 			if (currentTime - lastTime >= 1000) {
@@ -162,31 +162,30 @@ export function usePerformance<T extends Node>(
 	// Handle scroll/viewport change
 	const handleViewportChange = useCallback(
 		(newStart: number, newEnd: number) => {
-			setVisibleRange({ start: newStart, end: newEnd });
+			setVisibleRange({ end: newEnd, start: newStart });
 		},
 		[],
 	);
 
 	// Memoized lazy edge renderer
 	const lazyRenderEdges = useCallback(
-		(viewportNodes: Set<string>): Edge[] => {
-			return edges.filter(
+		(viewportNodes: Set<string>): Edge[] =>
+			edges.filter(
 				(edge) =>
 					viewportNodes.has(edge.source) && viewportNodes.has(edge.target),
-			);
-		},
+			),
 		[edges],
 	);
 
 	// Memoized node clustering (group nearby nodes)
 	const clusterNodes = useCallback(
-		(maxClusterSize: number = 10): Map<string, T[]> => {
+		(maxClusterSize = 10): Map<string, T[]> => {
 			const clusters = new Map<string, T[]>();
 
 			let clusterIndex = 0;
 			for (let i = 0; i < nodes.length; i += maxClusterSize) {
 				const cluster = nodes.slice(i, i + maxClusterSize);
-				clusters.set(`cluster-${clusterIndex++}`, cluster);
+				clusters.set(`cluster-${(clusterIndex += 1)}`, cluster);
 			}
 
 			return clusters;
@@ -230,7 +229,7 @@ export function usePerformance<T extends Node>(
 export function useMemoizedCalculation<T>(
 	calculateFn: () => T,
 	dependencies: React.DependencyList,
-	cacheSize: number = 10,
+	cacheSize = 10,
 ) {
 	const cacheRef = useRef<Map<string, T>>(new Map());
 	const keysRef = useRef<string[]>([]);
@@ -266,7 +265,7 @@ export function useMemoizedCalculation<T>(
  */
 export function useDebouncedCallback<T extends (...args: any[]) => any>(
 	callback: T,
-	delay: number = 300,
+	delay = 300,
 ): (...args: Parameters<T>) => void {
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -283,13 +282,14 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
 		[callback, delay],
 	);
 
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current);
 			}
-		};
-	}, []);
+		},
+		[],
+	);
 
 	return debouncedCallback;
 }
@@ -299,7 +299,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
  */
 export function useThrottledCallback<T extends (...args: any[]) => any>(
 	callback: T,
-	interval: number = 300,
+	interval = 300,
 ): (...args: Parameters<T>) => void {
 	const lastCallRef = useRef<number>(0);
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -329,13 +329,14 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
 		[callback, interval],
 	);
 
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current);
 			}
-		};
-	}, []);
+		},
+		[],
+	);
 
 	return throttledCallback;
 }

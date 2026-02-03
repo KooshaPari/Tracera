@@ -97,28 +97,37 @@ export interface UICodeTracePanelProps {
 // =============================================================================
 
 const STRATEGY_LABELS: Record<EquivalenceStrategy, string> = {
+	api_contract: "API Contract",
+	co_occurrence: "Co-occurrence",
 	explicit_annotation: "Explicit",
 	manual_link: "Manual",
-	api_contract: "API Contract",
-	shared_canonical: "Shared Concept",
 	naming_pattern: "Naming Match",
 	semantic_similarity: "Semantic",
+	shared_canonical: "Shared Concept",
 	structural: "Structural",
 	temporal: "Temporal",
-	co_occurrence: "Co-occurrence",
 };
 
 const CONFIDENCE_COLOR = (confidence: number): string => {
-	if (confidence >= 0.9) return "bg-green-100 text-green-900 border-green-300";
-	if (confidence >= 0.7) return "bg-blue-100 text-blue-900 border-blue-300";
-	if (confidence >= 0.5)
+	if (confidence >= 0.9) {
+		return "bg-green-100 text-green-900 border-green-300";
+	}
+	if (confidence >= 0.7) {
+		return "bg-blue-100 text-blue-900 border-blue-300";
+	}
+	if (confidence >= 0.5) {
 		return "bg-yellow-100 text-yellow-900 border-yellow-300";
+	}
 	return "bg-orange-100 text-orange-900 border-orange-300";
 };
 
 const CONFIDENCE_ICON = (confidence: number) => {
-	if (confidence >= 0.9) return <CheckCircle2 className="w-4 h-4" />;
-	if (confidence >= 0.7) return <Zap className="w-4 h-4" />;
+	if (confidence >= 0.9) {
+		return <CheckCircle2 className="w-4 h-4" />;
+	}
+	if (confidence >= 0.7) {
+		return <Zap className="w-4 h-4" />;
+	}
 	return <Sparkles className="w-4 h-4" />;
 };
 
@@ -442,7 +451,9 @@ export const UICodeTracePanel = memo(function UICodeTracePanelComponent({
 	onNavigateToUI,
 	onRefreshTrace,
 }: UICodeTracePanelProps) {
-	const [_expandedLevels, _setExpandedLevels] = useState<Set<string>>(new Set());
+	const [_expandedLevels, _setExpandedLevels] = useState<Set<string>>(
+		new Set(),
+	);
 
 	if (!traceChain && !isLoading) {
 		return (
@@ -471,7 +482,9 @@ export const UICodeTracePanel = memo(function UICodeTracePanelComponent({
 		);
 	}
 
-	if (!traceChain) return null;
+	if (!traceChain) {
+		return null;
+	}
 
 	const overallConfidencePercent = Math.round(
 		traceChain.overallConfidence * 100,
@@ -561,10 +574,10 @@ export const UICodeTracePanel = memo(function UICodeTracePanelComponent({
 				<p>
 					Last updated:{" "}
 					{new Date(traceChain.lastUpdated).toLocaleString("en-US", {
-						month: "short",
 						day: "numeric",
 						hour: "2-digit",
 						minute: "2-digit",
+						month: "short",
 					})}
 				</p>
 			</div>

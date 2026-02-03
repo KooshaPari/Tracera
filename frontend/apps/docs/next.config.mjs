@@ -11,14 +11,13 @@ const bundleAnalyzer = withBundleAnalyzer({
 
 // PWA configuration for offline support and caching
 const pwaConfig = withPWA({
+  aggressiveFrontEndNavCaching: true,
+  cacheOnFrontEndNav: true,
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
   register: true,
-  skipWaiting: true,
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
-  swcMinify: true,
+  skipWaiting: true,
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching: [
@@ -29,7 +28,7 @@ const pwaConfig = withPWA({
           cacheName: 'offlineCache',
           expiration: {
             maxEntries: 200,
-            maxAgeSeconds: 86400, // 1 day
+            maxAgeSeconds: 86_400, // 1 day
           },
         },
       },
@@ -43,20 +42,20 @@ const nextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
 
   images: {
-    unoptimized: process.env.NODE_ENV === 'development',
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
-    dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    dangerouslyAllowSVG: true,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    formats: ['image/avif', 'image/webp'],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'api.tracertm.com',
       },
     ],
+    unoptimized: process.env.NODE_ENV === 'development',
   },
 
   trailingSlash: false,
@@ -75,7 +74,6 @@ const nextConfig = {
   },
 
   // Enable SWC minification (faster and smaller bundles)
-  swcMinify: true,
 
   // Production source maps (disabled for smaller bundles)
   productionBrowserSourceMaps: false,
@@ -91,7 +89,6 @@ const nextConfig = {
 
         // Manual chunk splitting for better caching
         splitChunks: {
-          chunks: 'all',
           cacheGroups: {
             // Separate React into its own chunk
             react: {
@@ -129,6 +126,7 @@ const nextConfig = {
               reuseExistingChunk: true,
             },
           },
+          chunks: 'all',
         },
       };
     }
@@ -145,27 +143,26 @@ const nextConfig = {
     return [
       {
         // Cache static assets immutably
-        source: '/_next/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
         ],
+        source: '/_next/static/:path*',
       },
       {
         // Cache images for 1 year
-        source: '/images/:path*',
         headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
         ],
+        source: '/images/:path*',
       },
       {
         // Cache HTML pages with revalidation
-        source: '/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -184,6 +181,7 @@ const nextConfig = {
             value: '1; mode=block',
           },
         ],
+        source: '/:path*',
       },
     ];
   },

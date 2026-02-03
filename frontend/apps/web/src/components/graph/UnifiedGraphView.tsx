@@ -41,16 +41,14 @@ import {
 	Merge,
 } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
-import {
-	applyDimensionFilters,
-	type DimensionFilter,
-	DimensionFilters,
-} from "./DimensionFilters";
+import { DimensionFilters, applyDimensionFilters } from "./DimensionFilters";
+import type { DimensionFilter } from "./DimensionFilters";
 import { FlowGraphViewInner } from "./FlowGraphViewInner";
-import { GraphViewContainer, type GraphViewMode } from "./GraphViewContainer";
+import { GraphViewContainer } from "./GraphViewContainer";
+import type { GraphViewMode } from "./GraphViewContainer";
 import type { LayoutType } from "./layouts/useDAGLayout";
 import { PageInteractionFlow } from "./PageInteractionFlow";
-import { buildPivotTargets, PivotNavigation } from "./PivotNavigation";
+import { PivotNavigation, buildPivotTargets } from "./PivotNavigation";
 import type { GraphPerspective } from "./types";
 import { PERSPECTIVE_CONFIGS, TYPE_TO_PERSPECTIVE } from "./types";
 import { UIComponentTree } from "./UIComponentTree";
@@ -150,34 +148,34 @@ const DISPLAY_MODE_CONFIGS: {
 	icon: React.ComponentType<{ className?: string }>;
 }[] = [
 	{
-		id: "single",
-		label: "Single",
 		description: "One perspective at a time",
 		icon: Maximize2,
+		id: "single",
+		label: "Single",
 	},
 	{
-		id: "split",
-		label: "Split",
 		description: "Side-by-side comparison",
 		icon: Columns2,
+		id: "split",
+		label: "Split",
 	},
 	{
-		id: "layered",
-		label: "Layered",
 		description: "Overlapping perspectives",
 		icon: Layers2,
+		id: "layered",
+		label: "Layered",
 	},
 	{
-		id: "unified",
-		label: "Unified",
 		description: "All merged with dimensions",
 		icon: Merge,
+		id: "unified",
+		label: "Unified",
 	},
 	{
-		id: "pivot",
-		label: "Pivot",
 		description: "Focus on equivalences",
 		icon: Focus,
+		id: "pivot",
+		label: "Pivot",
 	},
 ];
 
@@ -186,9 +184,9 @@ const EQUIVALENCE_MODE_CONFIGS: {
 	label: string;
 	icon: React.ComponentType<{ className?: string }>;
 }[] = [
-	{ id: "hide", label: "Hide", icon: EyeOff },
-	{ id: "highlight", label: "Highlight", icon: Link2 },
-	{ id: "merge", label: "Merge", icon: Merge },
+	{ icon: EyeOff, id: "hide", label: "Hide" },
+	{ icon: Link2, id: "highlight", label: "Highlight" },
+	{ icon: Merge, id: "merge", label: "Merge" },
 ];
 
 // =============================================================================
@@ -265,8 +263,8 @@ function addEquivalenceLinks(
 		updatedAt: eq.updatedAt,
 		// Mark as equivalence link for special styling
 		metadata: {
-			isEquivalence: true,
 			confidence: eq.confidence,
+			isEquivalence: true,
 			status: eq.status,
 		},
 	}));
@@ -283,7 +281,7 @@ function applyJourneyOverlay(
 	journey: DerivedJourney | undefined,
 ): { items: Item[]; links: Link[]; journeyActive: boolean } {
 	if (!journey) {
-		return { items, links, journeyActive: false };
+		return { items, journeyActive: false, links };
 	}
 
 	const journeyNodeSet = new Set(journey.nodeIds);
@@ -311,7 +309,7 @@ function applyJourneyOverlay(
 		},
 	}));
 
-	return { items: markedItems, links: markedLinks, journeyActive: true };
+	return { items: markedItems, journeyActive: true, links: markedLinks };
 }
 
 // =============================================================================
@@ -426,7 +424,7 @@ const JourneySelector = memo(function JourneySelector({
 			value={activeJourney?.id || "none"}
 			onValueChange={(value) => {
 				if (value === "none") {
-					onChange(undefined);
+					onChange();
 				} else {
 					onChange(availableJourneys.find((j) => j.id === value));
 				}
@@ -595,7 +593,9 @@ function PivotView({
 	);
 
 	const pivotTargets = useMemo(() => {
-		if (!focusedItem) return [];
+		if (!focusedItem) {
+			return [];
+		}
 
 		const itemEquivalences = equivalenceLinks.filter(
 			(eq) =>
@@ -612,7 +612,9 @@ function PivotView({
 	}, [focusedItem, equivalenceLinks, canonicalProjections, items]);
 
 	const currentPerspective = useMemo(() => {
-		if (!focusedItem) return "all" as GraphPerspective;
+		if (!focusedItem) {
+			return "all" as GraphPerspective;
+		}
 		const itemType = (
 			focusedItem.type ||
 			focusedItem.view ||
@@ -842,7 +844,7 @@ function ViewRenderer({
 
 	// Render based on view mode
 	switch (viewMode) {
-		case "page-flow":
+		case "page-flow": {
 			return (
 				<div className="h-full p-4">
 					<PageInteractionFlow
@@ -853,8 +855,9 @@ function ViewRenderer({
 					/>
 				</div>
 			);
+		}
 
-		case "components":
+		case "components": {
 			return (
 				<ComponentLibraryView
 					items={items}
@@ -862,7 +865,8 @@ function ViewRenderer({
 					onNavigateToItem={onNavigateToItem}
 				/>
 			);
-		default:
+		}
+		default: {
 			return (
 				<div className="h-full p-4">
 					<ReactFlowProvider>
@@ -876,6 +880,7 @@ function ViewRenderer({
 					</ReactFlowProvider>
 				</div>
 			);
+		}
 	}
 }
 

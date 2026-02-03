@@ -1,13 +1,23 @@
 import { createContext } from "react";
 
-export type Theme = "light" | "dark";
+type Theme = "light" | "dark";
 
-export interface ThemeContextType {
+type ThemeContextType = {
+	isReady: boolean;
 	theme: Theme;
 	setTheme: (theme: Theme) => void;
 	toggleTheme: () => void;
-}
+};
 
-const ThemeContext = createContext<ThemeContextType | null>(null);
+const createNoop = (): void => {};
+
+const DEFAULT_THEME_CONTEXT: ThemeContextType = {
+	isReady: false,
+	setTheme: createNoop,
+	theme: "light",
+	toggleTheme: createNoop,
+};
+
+const ThemeContext = createContext<ThemeContextType>(DEFAULT_THEME_CONTEXT);
 
 export default ThemeContext;

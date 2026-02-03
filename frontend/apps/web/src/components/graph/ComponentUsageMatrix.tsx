@@ -95,48 +95,48 @@ const CATEGORY_ICONS: Record<
 	React.ComponentType<{ className?: string }>
 > = {
 	atom: Square,
-	molecule: Grid3x3,
-	organism: Layers,
-	template: Package,
-	page: BarChart3,
-	utility: Zap,
-	layout: Layers,
-	navigation: Grid3x3,
-	feedback: AlertCircle,
-	overlay: Package,
 	"data-display": BarChart3,
 	"data-entry": Component,
+	feedback: AlertCircle,
+	layout: Layers,
+	molecule: Grid3x3,
+	navigation: Grid3x3,
+	organism: Layers,
 	other: Component,
+	overlay: Package,
+	page: BarChart3,
+	template: Package,
+	utility: Zap,
 };
 
 const CATEGORY_LABELS: Record<ComponentCategory, string> = {
 	atom: "Atoms",
-	molecule: "Molecules",
-	organism: "Organisms",
-	template: "Templates",
-	page: "Pages",
-	utility: "Utility",
-	layout: "Layout",
-	navigation: "Navigation",
-	feedback: "Feedback",
-	overlay: "Overlay",
 	"data-display": "Data Display",
 	"data-entry": "Data Entry",
+	feedback: "Feedback",
+	layout: "Layout",
+	molecule: "Molecules",
+	navigation: "Navigation",
+	organism: "Organisms",
 	other: "Other",
+	overlay: "Overlay",
+	page: "Pages",
+	template: "Templates",
+	utility: "Utility",
 };
 
 const STATUS_COLORS: Record<string, string> = {
-	stable: "bg-green-100 text-green-800 border-green-200",
 	beta: "bg-blue-100 text-blue-800 border-blue-200",
 	deprecated: "bg-red-100 text-red-800 border-red-200",
 	experimental: "bg-purple-100 text-purple-800 border-purple-200",
+	stable: "bg-green-100 text-green-800 border-green-200",
 };
 
 const STATUS_LABELS: Record<string, string> = {
-	stable: "Stable",
 	beta: "Beta",
 	deprecated: "Deprecated",
 	experimental: "Experimental",
+	stable: "Stable",
 };
 
 // =============================================================================
@@ -154,12 +154,14 @@ function getUsageStats(
 	usageData?: ComponentUsage[],
 ): UsageStats {
 	const stats: UsageStats = {
-		totalUsage: component.usageCount || 0,
 		pageUsage: {},
+		totalUsage: component.usageCount || 0,
 		variantUsage: {},
 	};
 
-	if (!usageData) return stats;
+	if (!usageData) {
+		return stats;
+	}
 
 	usageData.forEach((usage) => {
 		if (usage.componentId === component.id) {
@@ -178,7 +180,9 @@ function getUsageStats(
 }
 
 function getUsagePercentage(used: number, total: number): number {
-	if (total === 0) return 0;
+	if (total === 0) {
+		return 0;
+	}
 	return Math.round((used / total) * 100);
 }
 
@@ -481,8 +485,8 @@ const CategorySection = memo(function CategorySection({
 						component={component}
 						stats={
 							stats[component.id] || {
-								totalUsage: 0,
 								pageUsage: {},
+								totalUsage: 0,
 								variantUsage: {},
 							}
 						}
@@ -530,14 +534,18 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
 	}, [components, usage]);
 
 	// Filter components by category and search query
-	const filteredByCategory = useMemo(() => {
-		return selectedCategory === "all"
-			? components
-			: components.filter((comp) => comp.category === selectedCategory);
-	}, [components, selectedCategory]);
+	const filteredByCategory = useMemo(
+		() =>
+			selectedCategory === "all"
+				? components
+				: components.filter((comp) => comp.category === selectedCategory),
+		[components, selectedCategory],
+	);
 
 	const filteredComponents = useMemo(() => {
-		if (!searchQuery.trim()) return filteredByCategory;
+		if (!searchQuery.trim()) {
+			return filteredByCategory;
+		}
 		const query = searchQuery.toLowerCase();
 		return filteredByCategory.filter(
 			(comp) =>
@@ -551,18 +559,18 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
 	const componentsByCategory = useMemo(() => {
 		const grouped: Record<ComponentCategory, LibraryComponent[]> = {
 			atom: [],
-			molecule: [],
-			organism: [],
-			template: [],
-			page: [],
-			utility: [],
-			layout: [],
-			navigation: [],
-			feedback: [],
-			overlay: [],
 			"data-display": [],
 			"data-entry": [],
+			feedback: [],
+			layout: [],
+			molecule: [],
+			navigation: [],
+			organism: [],
 			other: [],
+			overlay: [],
+			page: [],
+			template: [],
+			utility: [],
 		};
 
 		filteredComponents.forEach((comp) => {
@@ -586,7 +594,7 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
 			0,
 		);
 
-		return { total, unused, deprecated, totalUses };
+		return { deprecated, total, totalUses, unused };
 	}, [filteredComponents, usageStats]);
 
 	if (isLoading) {

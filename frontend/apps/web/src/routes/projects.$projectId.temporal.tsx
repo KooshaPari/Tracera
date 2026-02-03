@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { Branch, Version } from "@/components/temporal";
 import { ProgressDashboard, TemporalNavigator } from "@/components/temporal";
 import { requireAuth } from "@/lib/route-guards";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 /**
  * Temporal Navigation View
@@ -29,30 +29,30 @@ export function TemporalView() {
 			setIsLoading(true);
 			try {
 				// TODO: Replace with actual API calls
-				// const branchesData = await api.branches.list({ projectId });
-				// const versionsData = await api.versions.list({ projectId });
-				// const milestonesData = await api.milestones.list({ projectId });
-				// const sprintsData = await api.sprints.list({ projectId });
+				// Const branchesData = await api.branches.list({ projectId });
+				// Const versionsData = await api.versions.list({ projectId });
+				// Const milestonesData = await api.milestones.list({ projectId });
+				// Const sprintsData = await api.sprints.list({ projectId });
 
 				// Mock data for now
 				const mockBranches: Branch[] = [
 					{
+						createdAt: new Date(),
 						id: "main",
+						mergeRequestCount: 0,
 						name: "Main",
 						status: "active",
-						createdAt: new Date(),
 						updatedAt: new Date(),
-						mergeRequestCount: 0,
 					},
 				];
 
 				const mockVersions: Version[] = [
 					{
-						id: "v1",
 						branchId: "main",
-						title: "Version 1.0",
-						timestamp: new Date(),
+						id: "v1",
 						status: "published",
+						timestamp: new Date(),
+						title: "Version 1.0",
 					},
 				];
 
@@ -69,7 +69,7 @@ export function TemporalView() {
 			}
 		};
 
-		void loadTemporalData();
+		undefined;
 	}, []);
 
 	const handleBranchChange = (branchId: string) => {
@@ -156,8 +156,5 @@ export const TEMPORAL_VIEW = TemporalView;
 export const Route = createFileRoute("/projects/$projectId/temporal")({
 	beforeLoad: () => requireAuth(),
 	component: TemporalView,
-	loader: async () => {
-		// Temporal data is loaded in component
-		return {};
-	},
+	loader: async () => ({}),
 });

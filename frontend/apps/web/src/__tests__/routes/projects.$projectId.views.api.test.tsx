@@ -7,9 +7,7 @@ import { describe, expect, it } from "vitest";
 describe("API View Route", () => {
 	it("validates API view route path pattern", () => {
 		const apiViewPath = "/projects/proj-1/views/api";
-		expect(apiViewPath).toMatch(
-			/^\/projects\/[^/]+\/views\/api$/,
-		);
+		expect(apiViewPath).toMatch(/^\/projects\/[^/]+\/views\/api$/);
 	});
 
 	it("extracts projectId from route parameters", () => {
@@ -30,10 +28,10 @@ describe("API View Route", () => {
 	it("supports API endpoint metadata", () => {
 		const mockApiEndpoint = {
 			id: "item-1",
-			title: "GET /api/users",
-			type: "api",
 			method: "GET",
 			path: "/api/users",
+			title: "GET /api/users",
+			type: "api",
 		};
 
 		expect(mockApiEndpoint.method).toMatch(/^(GET|POST|PUT|DELETE|PATCH)$/);
@@ -48,7 +46,7 @@ describe("API View Route", () => {
 		];
 
 		expect(mockEndpoints).toHaveLength(3);
-		expect(mockEndpoints.every(ep => ep.path.startsWith('/api/'))).toBe(true);
+		expect(mockEndpoints.every((ep) => ep.path.startsWith("/api/"))).toBe(true);
 	});
 
 	it("validates HTTP methods used in API definitions", () => {

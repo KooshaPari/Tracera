@@ -29,36 +29,36 @@ export default class CustomTestEnvironment implements Environment {
 			let store: Record<string, string> = {};
 
 			return {
-				getItem: (key: string) => store[key] || null,
-				setItem: (key: string, value: string) => {
-					store[key] = value.toString();
-				},
-				removeItem: (key: string) => {
-					delete store[key];
-				},
 				clear: () => {
 					store = {};
+				},
+				getItem: (key: string) => store[key] || null,
+				key: (index: number) => {
+					const keys = Object.keys(store);
+					return keys[index] || null;
 				},
 				get length() {
 					return Object.keys(store).length;
 				},
-				key: (index: number) => {
-					const keys = Object.keys(store);
-					return keys[index] || null;
+				removeItem: (key: string) => {
+					delete store[key];
+				},
+				setItem: (key: string, value: string) => {
+					store[key] = value.toString();
 				},
 			};
 		})();
 
 		Object.defineProperty(global, "localStorage", {
+			configurable: true,
 			value: localStorageMock,
 			writable: true,
-			configurable: true,
 		});
 
 		Object.defineProperty(global.window, "localStorage", {
+			configurable: true,
 			value: localStorageMock,
 			writable: true,
-			configurable: true,
 		});
 
 		return {

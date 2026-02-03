@@ -24,36 +24,36 @@ describe("Hierarchy Utilities", () => {
 	let links: Link[];
 
 	const createItem = (id: string, title: string): Item => ({
-		id,
-		projectId: "p1",
-		view: "technical",
-		type: "Component",
-		title,
-		description: `Item ${id}`,
-		status: "done" as const,
-		priority: "medium" as const,
-		version: 1,
 		createdAt: new Date().toISOString(),
+		description: `Item ${id}`,
+		id,
+		priority: "medium" as const,
+		projectId: "p1",
+		status: "done" as const,
+		title,
+		type: "Component",
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "technical",
 	});
 
 	const createParentOfLink = (parentId: string, childId: string): Link => ({
+		createdAt: new Date().toISOString(),
+		description: `${parentId} is parent of ${childId}`,
 		id: `link-${parentId}-${childId}`,
 		sourceId: parentId,
 		targetId: childId,
 		type: "parent_of",
-		description: `${parentId} is parent of ${childId}`,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	});
 
 	beforeEach(() => {
 		// Build a hierarchy:
-		//     root
+		//     Root
 		//    /    \
-		//   a      b
+		//   A      b
 		//  / \
-		// a1  a2
+		// A1  a2
 		//
 		items = [
 			createItem("root", "Root"),
@@ -71,7 +71,7 @@ describe("Hierarchy Utilities", () => {
 		];
 	});
 
-	describe("buildHierarchy", () => {
+	describe(buildHierarchy, () => {
 		it("should create hierarchy from parent_of links", () => {
 			const hierarchy = buildHierarchy(items, links);
 
@@ -124,7 +124,7 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("getParent", () => {
+	describe(getParent, () => {
 		it("should return parent node", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const parent = getParent("a1", hierarchy);
@@ -140,7 +140,7 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("getChildren", () => {
+	describe(getChildren, () => {
 		it("should return all children", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const children = getChildren("a", hierarchy);
@@ -158,12 +158,12 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("getAncestorChain", () => {
+	describe(getAncestorChain, () => {
 		it("should return ancestor chain from immediate parent to root", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const chain = getAncestorChain("a1", hierarchy);
 
-			expect(chain.length).toBe(2); // a, root
+			expect(chain.length).toBe(2); // A, root
 			expect(chain[0].id).toBe("a");
 			expect(chain[1].id).toBe("root");
 		});
@@ -176,12 +176,12 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("getDescendantNodes", () => {
+	describe(getDescendantNodes, () => {
 		it("should return all descendants recursively", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const descendants = getDescendantNodes("a", hierarchy);
 
-			expect(descendants.length).toBe(2); // a1, a2
+			expect(descendants.length).toBe(2); // A1, a2
 			expect(descendants.some((d) => d.id === "a1")).toBe(true);
 			expect(descendants.some((d) => d.id === "a2")).toBe(true);
 		});
@@ -190,7 +190,7 @@ describe("Hierarchy Utilities", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const descendants = getDescendantNodes("root", hierarchy);
 
-			expect(descendants.length).toBe(4); // a, b, a1, a2
+			expect(descendants.length).toBe(4); // A, b, a1, a2
 		});
 
 		it("should return empty array for leaf nodes", () => {
@@ -201,12 +201,12 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("getBreadcrumbPath", () => {
+	describe(getBreadcrumbPath, () => {
 		it("should return breadcrumb path for item", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const breadcrumbs = getBreadcrumbPath("a1", hierarchy);
 
-			expect(breadcrumbs.length).toBe(3); // root, a, a1
+			expect(breadcrumbs.length).toBe(3); // Root, a, a1
 			expect(breadcrumbs[0].title).toBe("Root");
 			expect(breadcrumbs[1].title).toBe("Component A");
 			expect(breadcrumbs[2].title).toBe("Component A1");
@@ -221,7 +221,7 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("findCommonAncestor", () => {
+	describe(findCommonAncestor, () => {
 		it("should find common ancestor of siblings", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const ancestor = findCommonAncestor("a1", "a2", hierarchy);
@@ -247,7 +247,7 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("getSiblings", () => {
+	describe(getSiblings, () => {
 		it("should return all siblings", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const siblings = getSiblings("a1", hierarchy);
@@ -273,7 +273,7 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("isAncestor", () => {
+	describe(isAncestor, () => {
 		it("should identify ancestor correctly", () => {
 			const hierarchy = buildHierarchy(items, links);
 
@@ -289,7 +289,7 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("isDescendant", () => {
+	describe(isDescendant, () => {
 		it("should identify descendant correctly", () => {
 			const hierarchy = buildHierarchy(items, links);
 
@@ -305,7 +305,7 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("getItemsAtDepth", () => {
+	describe(getItemsAtDepth, () => {
 		it("should return all items at specific depth", () => {
 			const hierarchy = buildHierarchy(items, links);
 
@@ -328,7 +328,7 @@ describe("Hierarchy Utilities", () => {
 		});
 	});
 
-	describe("getHierarchyStats", () => {
+	describe(getHierarchyStats, () => {
 		it("should calculate hierarchy statistics", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const stats = getHierarchyStats(hierarchy);
@@ -336,7 +336,7 @@ describe("Hierarchy Utilities", () => {
 			expect(stats.totalNodes).toBe(5);
 			expect(stats.maxDepth).toBe(2);
 			expect(stats.rootCount).toBe(1);
-			expect(stats.leafCount).toBe(3); // a1, a2, b
+			expect(stats.leafCount).toBe(3); // A1, a2, b
 		});
 
 		it("should include depth distribution", () => {

@@ -4,26 +4,24 @@
 import { render, screen } from "@testing-library/react";
 import type { Item, Link } from "@tracertm/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	type DerivedJourney,
-	JourneyExplorer,
-} from "@/components/graph/JourneyExplorer";
+import { JourneyExplorer } from "@/components/graph/JourneyExplorer";
+import type { DerivedJourney } from "@/components/graph/JourneyExplorer";
 
 // =============================================================================
 // TEST DATA
 // =============================================================================
 
 const createMockItem = (id: string, title: string, type: string): Item => ({
+	createdAt: new Date().toISOString(),
 	id,
+	priority: "high" as any,
 	projectId: "proj-1",
-	view: "technical" as any,
+	status: "done",
 	title,
 	type,
-	status: "done",
-	priority: "high" as any,
-	version: 1,
-	createdAt: new Date().toISOString(),
 	updatedAt: new Date().toISOString(),
+	version: 1,
+	view: "technical" as any,
 });
 
 const createMockLink = (
@@ -32,12 +30,12 @@ const createMockLink = (
 	targetId: string,
 	type: string,
 ): Link => ({
+	createdAt: new Date().toISOString(),
 	id,
+	projectId: "proj-1",
 	sourceId,
 	targetId,
 	type: type as any,
-	projectId: "proj-1",
-	createdAt: new Date().toISOString(),
 });
 
 // Complex workflow scenario
@@ -110,29 +108,29 @@ describe("JourneyExplorer - Integration Tests", () => {
 		it("should display detected user flow journeys", () => {
 			const journeys: DerivedJourney[] = [
 				{
+					color: "#9333ea",
 					id: "j-1",
-					name: "Login Flow",
-					type: "user_flow",
-					nodeIds: ["page-1", "comp-1", "api-1", "db-1"],
 					links: [
 						{ sourceId: "page-1", targetId: "comp-1", type: "implements" },
 						{ sourceId: "comp-1", targetId: "api-1", type: "calls" },
 						{ sourceId: "api-1", targetId: "db-1", type: "reads_from" },
 					],
-					color: "#9333ea",
+					name: "Login Flow",
+					nodeIds: ["page-1", "comp-1", "api-1", "db-1"],
+					type: "user_flow",
 				},
 				{
+					color: "#9333ea",
 					id: "j-2",
-					name: "Dashboard Load",
-					type: "user_flow",
-					nodeIds: ["page-2", "comp-2", "comp-3", "api-2", "db-1"],
 					links: [
 						{ sourceId: "page-2", targetId: "comp-2", type: "implements" },
 						{ sourceId: "page-2", targetId: "comp-3", type: "implements" },
 						{ sourceId: "comp-3", targetId: "api-2", type: "calls" },
 						{ sourceId: "api-2", targetId: "db-1", type: "reads_from" },
 					],
-					color: "#9333ea",
+					name: "Dashboard Load",
+					nodeIds: ["page-2", "comp-2", "comp-3", "api-2", "db-1"],
+					type: "user_flow",
 				},
 			];
 
@@ -146,21 +144,21 @@ describe("JourneyExplorer - Integration Tests", () => {
 
 			expect(screen.getByText("Login Flow")).toBeInTheDocument();
 			expect(screen.getByText("Dashboard Load")).toBeInTheDocument();
-			expect(screen.getByText("2")).toBeInTheDocument(); // badge count
+			expect(screen.getByText("2")).toBeInTheDocument(); // Badge count
 		});
 
 		it("should display detected data path journeys", () => {
 			const journeys: DerivedJourney[] = [
 				{
+					color: "#3b82f6",
 					id: "j-1",
-					name: "User Data Path",
-					type: "data_path",
-					nodeIds: ["api-1", "db-1", "db-2"],
 					links: [
 						{ sourceId: "api-1", targetId: "db-1", type: "reads_from" },
 						{ sourceId: "api-1", targetId: "db-2", type: "writes_to" },
 					],
-					color: "#3b82f6",
+					name: "User Data Path",
+					nodeIds: ["api-1", "db-1", "db-2"],
+					type: "data_path",
 				},
 			];
 
@@ -179,15 +177,15 @@ describe("JourneyExplorer - Integration Tests", () => {
 		it("should display detected call chain journeys", () => {
 			const journeys: DerivedJourney[] = [
 				{
+					color: "#f59e0b",
 					id: "j-1",
-					name: "Auth Call Chain",
-					type: "call_chain",
-					nodeIds: ["comp-1", "api-1", "db-1"],
 					links: [
 						{ sourceId: "comp-1", targetId: "api-1", type: "calls" },
 						{ sourceId: "api-1", targetId: "db-1", type: "reads_from" },
 					],
-					color: "#f59e0b",
+					name: "Auth Call Chain",
+					nodeIds: ["comp-1", "api-1", "db-1"],
+					type: "call_chain",
 				},
 			];
 
@@ -206,15 +204,15 @@ describe("JourneyExplorer - Integration Tests", () => {
 		it("should display detected test trace journeys", () => {
 			const journeys: DerivedJourney[] = [
 				{
+					color: "#22c55e",
 					id: "j-1",
-					name: "Auth Test Trace",
-					type: "test_trace",
-					nodeIds: ["test-1", "comp-1", "api-1"],
 					links: [
 						{ sourceId: "test-1", targetId: "comp-1", type: "tests" },
 						{ sourceId: "test-1", targetId: "api-1", type: "validates" },
 					],
-					color: "#22c55e",
+					name: "Auth Test Trace",
+					nodeIds: ["test-1", "comp-1", "api-1"],
+					type: "test_trace",
 				},
 			];
 
@@ -235,20 +233,20 @@ describe("JourneyExplorer - Integration Tests", () => {
 		it("should show coverage metrics for selected journeys", () => {
 			const journeys: DerivedJourney[] = [
 				{
-					id: "j-1",
-					name: "Journey 1",
-					type: "user_flow",
-					nodeIds: ["page-1", "comp-1", "api-1"],
-					links: [],
 					color: "#9333ea",
+					id: "j-1",
+					links: [],
+					name: "Journey 1",
+					nodeIds: ["page-1", "comp-1", "api-1"],
+					type: "user_flow",
 				},
 				{
-					id: "j-2",
-					name: "Journey 2",
-					type: "user_flow",
-					nodeIds: ["api-1", "db-1", "db-2"],
-					links: [],
 					color: "#9333ea",
+					id: "j-2",
+					links: [],
+					name: "Journey 2",
+					nodeIds: ["api-1", "db-1", "db-2"],
+					type: "user_flow",
 				},
 			];
 
@@ -268,12 +266,12 @@ describe("JourneyExplorer - Integration Tests", () => {
 		it("should aggregate node coverage across multiple journeys", () => {
 			const journeys: DerivedJourney[] = [
 				{
-					id: "j-1",
-					name: "Journey 1",
-					type: "user_flow",
-					nodeIds: ["page-1", "page-2"],
-					links: [],
 					color: "#9333ea",
+					id: "j-1",
+					links: [],
+					name: "Journey 1",
+					nodeIds: ["page-1", "page-2"],
+					type: "user_flow",
 				},
 				{
 					id: "j-2",
@@ -346,12 +344,12 @@ describe("JourneyExplorer - Integration Tests", () => {
 
 			const journeys: DerivedJourney[] = [
 				{
-					id: "j-1",
-					name: "Test Journey",
-					type: "user_flow",
-					nodeIds: ["page-1"],
-					links: [],
 					color: "#9333ea",
+					id: "j-1",
+					links: [],
+					name: "Test Journey",
+					nodeIds: ["page-1"],
+					type: "user_flow",
 				},
 			];
 
@@ -379,12 +377,12 @@ describe("JourneyExplorer - Integration Tests", () => {
 
 			const journeys: DerivedJourney[] = [
 				{
-					id: "j-1",
-					name: "Test Journey",
-					type: "user_flow",
-					nodeIds: ["page-1"],
-					links: [],
 					color: "#9333ea",
+					id: "j-1",
+					links: [],
+					name: "Test Journey",
+					nodeIds: ["page-1"],
+					type: "user_flow",
 				},
 			];
 
@@ -415,14 +413,14 @@ describe("JourneyExplorer - Integration Tests", () => {
 
 			const journeys: DerivedJourney[] = [
 				{
+					color: "#9333ea",
 					id: "j-1",
-					name: "Journey 1",
-					type: "user_flow",
-					nodeIds: ["page-1", "comp-1"],
 					links: [
 						{ sourceId: "page-1", targetId: "comp-1", type: "implements" },
 					],
-					color: "#9333ea",
+					name: "Journey 1",
+					nodeIds: ["page-1", "comp-1"],
+					type: "user_flow",
 				},
 			];
 
@@ -459,12 +457,12 @@ describe("JourneyExplorer - Integration Tests", () => {
 
 			const journeys: DerivedJourney[] = [
 				{
-					id: "j-1",
-					name: "Journey 1",
-					type: "user_flow",
-					nodeIds: ["page-1", "comp-1"],
-					links: [],
 					color: "#9333ea",
+					id: "j-1",
+					links: [],
+					name: "Journey 1",
+					nodeIds: ["page-1", "comp-1"],
+					type: "user_flow",
 				},
 			];
 
@@ -499,12 +497,12 @@ describe("JourneyExplorer - Integration Tests", () => {
 
 			const journeys: DerivedJourney[] = [
 				{
-					id: "j-1",
-					name: "Journey 1",
-					type: "user_flow",
-					nodeIds: ["page-1", "comp-1"],
-					links: [],
 					color: "#9333ea",
+					id: "j-1",
+					links: [],
+					name: "Journey 1",
+					nodeIds: ["page-1", "comp-1"],
+					type: "user_flow",
 				},
 			];
 
@@ -538,14 +536,14 @@ describe("JourneyExplorer - Integration Tests", () => {
 	describe("Performance and Scale", () => {
 		it("should handle large number of journeys efficiently", () => {
 			const journeys: DerivedJourney[] = Array.from({ length: 50 }, (_, i) => ({
+				color: "#9333ea",
 				id: `j-${i}`,
+				links: [],
 				name: `Journey ${i}`,
+				nodeIds: mockItems.slice(0, 5).map((item) => item.id),
 				type: (["user_flow", "data_path", "call_chain", "test_trace"] as const)[
 					i % 4
 				],
-				nodeIds: mockItems.slice(0, 5).map((item) => item.id),
-				links: [],
-				color: "#9333ea",
 			}));
 
 			render(
@@ -561,14 +559,13 @@ describe("JourneyExplorer - Integration Tests", () => {
 		});
 
 		it("should filter large journey set efficiently", async () => {
-
 			const journeys: DerivedJourney[] = Array.from({ length: 50 }, (_, i) => ({
-				id: `j-${i}`,
-				name: `Journey ${i}`,
-				type: "user_flow",
-				nodeIds: mockItems.slice(0, 2).map((item) => item.id),
-				links: [],
 				color: "#9333ea",
+				id: `j-${i}`,
+				links: [],
+				name: `Journey ${i}`,
+				nodeIds: mockItems.slice(0, 2).map((item) => item.id),
+				type: "user_flow",
 			}));
 
 			render(
@@ -591,14 +588,14 @@ describe("JourneyExplorer - Integration Tests", () => {
 		it("should handle missing item references gracefully", () => {
 			const journeys: DerivedJourney[] = [
 				{
+					color: "#9333ea",
 					id: "j-1",
-					name: "Journey with Missing Items",
-					type: "user_flow",
-					nodeIds: ["page-1", "missing-id", "page-2"],
 					links: [
 						{ sourceId: "page-1", targetId: "missing-id", type: "calls" },
 					],
-					color: "#9333ea",
+					name: "Journey with Missing Items",
+					nodeIds: ["page-1", "missing-id", "page-2"],
+					type: "user_flow",
 				},
 			];
 
@@ -618,12 +615,12 @@ describe("JourneyExplorer - Integration Tests", () => {
 		it("should handle empty journey data", () => {
 			const journeys: DerivedJourney[] = [
 				{
-					id: "j-1",
-					name: "Empty Journey",
-					type: "user_flow",
-					nodeIds: [],
-					links: [],
 					color: "#9333ea",
+					id: "j-1",
+					links: [],
+					name: "Empty Journey",
+					nodeIds: [],
+					type: "user_flow",
 				},
 			];
 

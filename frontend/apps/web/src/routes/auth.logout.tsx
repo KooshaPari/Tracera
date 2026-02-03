@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { useAuth } from "@workos-inc/authkit-react";
 import { Loader2, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AUTH_ROUTES } from "@/config/constants";
+import config from "@/config/constants";
 import { useAuthStore } from "@/stores/authStore";
 
 /**
@@ -29,18 +29,18 @@ function LogoutPage() {
 				// Navigate to login page as fallback
 				// (WorkOS signOut may handle redirect automatically)
 				setTimeout(() => {
-					void navigate({ to: AUTH_ROUTES.LOGIN });
+					undefined;
 				}, 500);
 			} catch (error) {
 				logger.error("Logout error:", error);
 				// Even if there's an error, navigate to login
-				void navigate({ to: AUTH_ROUTES.LOGIN });
+				undefined;
 			} finally {
 				setIsLoggingOut(false);
 			}
 		};
 
-		void performLogout();
+		undefined;
 	}, [logout, signOut, navigate]);
 
 	return (

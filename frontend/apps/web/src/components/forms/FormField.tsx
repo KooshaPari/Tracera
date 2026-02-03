@@ -32,10 +32,10 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
 
 				{React.isValidElement(children) &&
 					React.cloneElement(children, {
-						id: htmlFor,
-						"aria-describedby": error ? errorId : helpText ? helpId : undefined,
+						"aria-describedby": error ? errorId : (helpText ? helpId : undefined),
 						"aria-invalid": error ? true : undefined,
 						"aria-required": required ? true : undefined,
+						id: htmlFor,
 					} as any)}
 
 				{error ? (
@@ -48,11 +48,11 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
 					>
 						{error}
 					</p>
-				) : helpText ? (
+				) : (helpText ? (
 					<p id={helpId} className="text-xs text-muted-foreground">
 						{helpText}
 					</p>
-				) : null}
+				) : null)}
 			</div>
 		);
 	},

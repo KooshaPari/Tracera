@@ -2,8 +2,10 @@
 import type { UseMutationOptions, UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { DesignToken } from "@tracertm/types";
-import { apiClient, handleApiResponse } from "./client";
+import client from "./client";
 import componentLibraryQueries from "./component-library.queries";
+
+const { apiClient, handleApiResponse } = client;
 
 interface CreateDesignTokenInput {
 	libraryId: string;
@@ -23,9 +25,9 @@ interface UpdateDesignTokenInput {
 }
 
 const { componentLibraryQueryKeys } = componentLibraryQueries;
-const apiDelete = apiClient["DELETE"];
-const apiPost = apiClient["POST"];
-const apiPut = apiClient["PUT"];
+const apiDelete = apiClient.DELETE;
+const apiPost = apiClient.POST;
+const apiPut = apiClient.PUT;
 
 const useCreateDesignToken = (
 	options?: UseMutationOptions<DesignToken, Error, CreateDesignTokenInput>,
@@ -48,7 +50,7 @@ const useCreateDesignToken = (
 					}),
 				),
 			onSuccess: (data: DesignToken) =>
-				queryClient.invalidateQueries({
+				void queryClient.invalidateQueries({
 					queryKey: componentLibraryQueryKeys.tokens(data.libraryId),
 				}),
 		},
@@ -81,7 +83,7 @@ const useUpdateDesignToken = (
 					}),
 				),
 			onSuccess: (data: DesignToken) =>
-				queryClient.invalidateQueries({
+				void queryClient.invalidateQueries({
 					queryKey: componentLibraryQueryKeys.tokens(data.libraryId),
 				}),
 		},
@@ -109,10 +111,10 @@ const useDeleteDesignToken = (
 					}),
 				),
 			onSuccess: (
-				unusedResult: void,
+				_data: void,
 				variables: { tokenId: string; libraryId: string },
 			) =>
-				queryClient.invalidateQueries({
+				void queryClient.invalidateQueries({
 					queryKey: componentLibraryQueryKeys.tokens(variables.libraryId),
 				}),
 		},

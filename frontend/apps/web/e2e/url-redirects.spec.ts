@@ -14,8 +14,6 @@ test.describe("URL Redirects - Backward Compatibility", () => {
 
 			if (itemId === "valid-item-123") {
 				await route.fulfill({
-					status: 200,
-					contentType: "application/json",
 					body: JSON.stringify({
 						id: "valid-item-123",
 						project_id: "project-456",
@@ -29,12 +27,14 @@ test.describe("URL Redirects - Backward Compatibility", () => {
 						created_at: "2024-01-01T00:00:00Z",
 						updated_at: "2024-01-01T00:00:00Z",
 					}),
+					contentType: "application/json",
+					status: 200,
 				});
 			} else if (itemId === "invalid-item-999") {
 				await route.fulfill({
-					status: 404,
-					contentType: "application/json",
 					body: JSON.stringify({ error: "Item not found" }),
+					contentType: "application/json",
+					status: 404,
 				});
 			} else {
 				await route.continue();
@@ -44,8 +44,6 @@ test.describe("URL Redirects - Backward Compatibility", () => {
 		// Mock projects API
 		await page.route("**/api/v1/projects", async (route) => {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({
 					items: [
 						{
@@ -58,6 +56,8 @@ test.describe("URL Redirects - Backward Compatibility", () => {
 					],
 					total: 1,
 				}),
+				contentType: "application/json",
+				status: 200,
 			});
 		});
 	});
@@ -110,8 +110,6 @@ test.describe("URL Redirects - Backward Compatibility", () => {
 		// Mock item with uppercase view type
 		await page.route("**/api/v1/items/test-item", async (route) => {
 			await route.fulfill({
-				status: 200,
-				contentType: "application/json",
 				body: JSON.stringify({
 					id: "test-item",
 					project_id: "project-123",
@@ -124,6 +122,8 @@ test.describe("URL Redirects - Backward Compatibility", () => {
 					created_at: "2024-01-01T00:00:00Z",
 					updated_at: "2024-01-01T00:00:00Z",
 				}),
+				contentType: "application/json",
+				status: 200,
 			});
 		});
 
@@ -239,9 +239,9 @@ test.describe("Accessibility - Redirect Pages", () => {
 	test("should have accessible error state", async ({ page }) => {
 		await page.route("**/api/v1/items/error-item", async (route) => {
 			await route.fulfill({
-				status: 404,
-				contentType: "application/json",
 				body: JSON.stringify({ error: "Not found" }),
+				contentType: "application/json",
+				status: 404,
 			});
 		});
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { existsSync } from "fs";
-import { readdir } from "fs/promises";
+import { existsSync } from "node:fs";
+import { readdir } from "node:fs/promises";
 
 interface ValidationCheck {
 	category: string;
@@ -24,13 +24,13 @@ function addCheck(
 	pass: boolean,
 	details: string,
 ): void {
-	checks.push({ category, check, pass, details });
+	checks.push({ category, check, details, pass });
 	const status = pass ? "✅" : "❌";
-	console.log("  " + status + " " + check + ": " + details);
+	
 }
 
 async function validatePackageOptimizations(): Promise<void> {
-	console.log("\n📦 Validating Package Optimizations...");
+	
 	const pkgPath = "package.json";
 	if (!existsSync(pkgPath)) {
 		addCheck("Packages", "Root package.json exists", false, "File not found");
@@ -65,14 +65,14 @@ async function validatePackageOptimizations(): Promise<void> {
 		});
 		const output = await new Response(proc.stdout).text();
 		const sizeMatch = output.match(/^(\d+)/);
-		const sizeMB = sizeMatch ? parseInt(sizeMatch[1]) : 0;
+		const sizeMB = sizeMatch ? Number.parseInt(sizeMatch[1]) : 0;
 		const pass = sizeMB < 400;
 		addCheck("Packages", "node_modules size < 400MB", pass, sizeMB + "MB");
 	}
 }
 
 async function validateBuildOptimizations(): Promise<void> {
-	console.log("\n🔧 Validating Build Optimizations...");
+	
 	const turboPath = "turbo.json";
 	if (!existsSync(turboPath)) {
 		addCheck("Build", "Turbo configuration", false, "turbo.json not found");
@@ -103,7 +103,7 @@ async function validateBuildOptimizations(): Promise<void> {
 }
 
 async function validateCodeOptimizations(): Promise<void> {
-	console.log("\n⚡ Validating Code Optimizations...");
+	
 	const itemsTablePath = "apps/web/src/views/ItemsTableView.tsx";
 	if (existsSync(itemsTablePath)) {
 		const content = await Bun.file(itemsTablePath).text();
@@ -132,7 +132,7 @@ async function validateCodeOptimizations(): Promise<void> {
 }
 
 async function validateTestSetup(): Promise<void> {
-	console.log("\n🧪 Validating Test Setup...");
+	
 	const hasVitestConfig =
 		existsSync("apps/web/vitest.config.ts") || existsSync("vitest.config.ts");
 	addCheck(
@@ -175,7 +175,7 @@ async function validateTestSetup(): Promise<void> {
 }
 
 async function runValidation(): Promise<ValidationResults> {
-	console.log("🚀 Starting Optimization Validation\n" + "=".repeat(60));
+	
 	await validatePackageOptimizations();
 	await validateBuildOptimizations();
 	await validateCodeOptimizations();
@@ -183,49 +183,31 @@ async function runValidation(): Promise<ValidationResults> {
 	const passed = checks.filter((c) => c.pass).length;
 	const failed = checks.filter((c) => !c.pass).length;
 	return {
-		timestamp: new Date().toISOString(),
-		overallSuccess: failed === 0,
 		checks,
-		summary: { total: checks.length, passed, failed },
+		overallSuccess: failed === 0,
+		summary: { failed, passed, total: checks.length },
+		timestamp: new Date().toISOString(),
 	};
 }
 
 function printResults(results: ValidationResults): void {
-	console.log("\n" + "=".repeat(60));
-	console.log("📊 VALIDATION RESULTS");
-	console.log("=".repeat(60));
-	console.log(
-		"\n✅ Passed: " + results.summary.passed + "/" + results.summary.total,
-	);
-	console.log(
-		"❌ Failed: " + results.summary.failed + "/" + results.summary.total,
-	);
+	
+	
+	
+	
+	
 	const categories = [...new Set(results.checks.map((c) => c.category))];
-	console.log("\n📋 Summary by Category:\n" + "-".repeat(60));
+	
 	for (const category of categories) {
 		const categoryChecks = results.checks.filter(
 			(c) => c.category === category,
 		);
 		const categoryPassed = categoryChecks.filter((c) => c.pass).length;
 		const status = categoryPassed === categoryChecks.length ? "✅" : "⚠️";
-		console.log(
-			"\n" +
-				status +
-				" " +
-				category +
-				": " +
-				categoryPassed +
-				"/" +
-				categoryChecks.length +
-				" passed",
-		);
+		
 	}
-	console.log("\n" + "=".repeat(60));
-	console.log(
-		results.overallSuccess
-			? "✅ All optimizations validated!"
-			: "⚠️  " + results.summary.failed + " checks failed.",
-	);
+	
+	
 }
 
 const results = await runValidation();
@@ -234,5 +216,5 @@ await Bun.write(
 	"optimization-validation-results.json",
 	JSON.stringify(results, null, 2),
 );
-console.log("\n📁 Results saved to optimization-validation-results.json\n");
+
 process.exit(0);

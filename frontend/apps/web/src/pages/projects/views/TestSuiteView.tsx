@@ -12,17 +12,17 @@ import { useState } from "react";
 import { useTestSuiteStats, useTestSuites } from "../../../hooks/useTestSuites";
 
 const statusColors: Record<TestSuiteStatus, string> = {
-	draft: "bg-gray-100 text-gray-700",
 	active: "bg-green-100 text-green-700",
-	deprecated: "bg-yellow-100 text-yellow-700",
 	archived: "bg-red-100 text-red-700",
+	deprecated: "bg-yellow-100 text-yellow-700",
+	draft: "bg-gray-100 text-gray-700",
 };
 
 const statusLabels: Record<TestSuiteStatus, string> = {
-	draft: "Draft",
 	active: "Active",
-	deprecated: "Deprecated",
 	archived: "Archived",
+	deprecated: "Deprecated",
+	draft: "Draft",
 };
 
 interface TestSuiteViewProps {
@@ -161,7 +161,7 @@ export function TestSuiteView({ projectId }: TestSuiteViewProps) {
 				<div className="flex items-center justify-center py-12">
 					<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 				</div>
-			) : filteredSuites.length === 0 ? (
+			) : (filteredSuites.length === 0 ? (
 				<div className="rounded-lg border border-dashed p-12 text-center">
 					<FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
 					<h3 className="mt-4 text-lg font-semibold">No test suites found</h3>
@@ -216,7 +216,7 @@ export function TestSuiteView({ projectId }: TestSuiteViewProps) {
 						</table>
 					</div>
 				</div>
-			)}
+			))}
 
 			{/* Create Modal - placeholder */}
 			{showCreateModal && (
@@ -228,7 +228,10 @@ export function TestSuiteView({ projectId }: TestSuiteViewProps) {
 						aria-labelledby="create-test-suite-title"
 					>
 						<div className="flex items-center justify-between mb-4">
-							<h2 id="create-test-suite-title" className="text-lg font-semibold">
+							<h2
+								id="create-test-suite-title"
+								className="text-lg font-semibold"
+							>
 								Create Test Suite
 							</h2>
 							<button
@@ -352,9 +355,9 @@ function TestSuiteRow({ suite }: { suite: TestSuite }) {
 						className={`text-sm font-medium ${
 							suite.passRate >= 90
 								? "text-green-600"
-								: suite.passRate >= 70
+								: (suite.passRate >= 70
 									? "text-yellow-600"
-									: "text-red-600"
+									: "text-red-600")
 						}`}
 					>
 						{suite.passRate.toFixed(1)}%

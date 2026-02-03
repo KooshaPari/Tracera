@@ -43,7 +43,9 @@ export function SpecificationsDashboardView({
 	const isLoading = adrsLoading || contractsLoading || featuresLoading;
 
 	const typeDistribution = useMemo(() => {
-		if (items.length === 0) {return [];}
+		if (items.length === 0) {
+			return [];
+		}
 		const counts = new Map<string, number>();
 		for (const item of items) {
 			const type = String(item.type || "unknown").toLowerCase();
@@ -51,7 +53,12 @@ export function SpecificationsDashboardView({
 		}
 		return [...counts.entries()]
 			.map(([type, count]) => ({ count, type }))
-			.toSorted((a: { type: string; count: number }, b: { type: string; count: number }) => b.count - a.count);
+			.toSorted(
+				(
+					a: { type: string; count: number },
+					b: { type: string; count: number },
+				) => b.count - a.count,
+			);
 	}, [items]);
 
 	const totalItems = items.length;
@@ -253,14 +260,9 @@ export function SpecificationsDashboardView({
 		return gaps.slice(0, 5); // Show top 5 gaps
 	}, [features, contracts]);
 
-	const handleNavigate = (section: string, _id?: string) => {
-		undefined;
-	};
+	const handleNavigate = (section: string, _id?: string) => {};
 
-	const handleCreateNew = (type: string) => {
-		const tab = type === "adr" ? "adrs" : "features";
-		undefined;
-	};
+	const handleCreateNew = (type: string) => {};
 
 	if (isLoading) {
 		return (
@@ -314,13 +316,7 @@ export function SpecificationsDashboardView({
 					>
 						<BookOpen className="h-4 w-4" /> Features
 					</Button>
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() =>
-							undefined
-						}
-					>
+					<Button variant="ghost" size="sm" onClick={() => {}}>
 						Scenario Activity
 					</Button>
 				</div>
@@ -339,29 +335,31 @@ export function SpecificationsDashboardView({
 						</div>
 					) : (
 						<div className="space-y-3">
-							{typeDistribution.slice(0, 8).map((row: { type: string; count: number }) => {
-								const percent = totalItems
-									? Math.round((row.count / totalItems) * 100)
-									: 0;
-								return (
-									<div key={row.type} className="space-y-1">
-										<div className="flex items-center justify-between text-xs">
-											<span className="uppercase tracking-wide text-muted-foreground">
-												{row.type}
-											</span>
-											<span className="font-semibold">
-												{row.count} ({percent}%)
-											</span>
+							{typeDistribution
+								.slice(0, 8)
+								.map((row: { type: string; count: number }) => {
+									const percent = totalItems
+										? Math.round((row.count / totalItems) * 100)
+										: 0;
+									return (
+										<div key={row.type} className="space-y-1">
+											<div className="flex items-center justify-between text-xs">
+												<span className="uppercase tracking-wide text-muted-foreground">
+													{row.type}
+												</span>
+												<span className="font-semibold">
+													{row.count} ({percent}%)
+												</span>
+											</div>
+											<div className="h-2 w-full rounded-full bg-muted/40 overflow-hidden">
+												<div
+													className="h-full bg-primary/70"
+													style={{ width: `${percent}%` }}
+												/>
+											</div>
 										</div>
-										<div className="h-2 w-full rounded-full bg-muted/40 overflow-hidden">
-											<div
-												className="h-full bg-primary/70"
-												style={{ width: `${percent}%` }}
-											/>
-										</div>
-									</div>
-								);
-							})}
+									);
+								})}
 						</div>
 					)}
 				</CardContent>

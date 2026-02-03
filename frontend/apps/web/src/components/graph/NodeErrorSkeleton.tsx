@@ -2,7 +2,8 @@
 // Renders an error placeholder by lodLevel: dot → minimal pill → compact pill → full pill/card + retry
 
 import { Button } from "@tracertm/ui/components/Button";
-import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { AlertCircle } from "lucide-react";
 import { memo } from "react";
 import { LODLevel } from "./utils/lod";
@@ -22,7 +23,7 @@ function NodeErrorSkeletonComponent({
 	const message =
 		data.errorMessage ??
 		(typeof data.error === "string" ? data.error : "Error");
-	const onRetry = data.onRetry;
+	const { onRetry } = data;
 
 	return (
 		<>
@@ -31,7 +32,12 @@ function NodeErrorSkeletonComponent({
 				position={Position.Left}
 				className="!w-2 !h-2 !min-w-2 !min-h-2 !-left-1 !border-2 !border-destructive/50"
 			/>
-			<LodErrorShape lod={lod} message={message} nodeId={data.id} onRetry={onRetry} />
+			<LodErrorShape
+				lod={lod}
+				message={message}
+				nodeId={data.id}
+				onRetry={onRetry}
+			/>
 			<Handle
 				type="source"
 				position={Position.Right}
@@ -53,21 +59,23 @@ function LodErrorShape({
 	onRetry?: (id: string) => void;
 }) {
 	switch (lod) {
-		case LODLevel.VeryFar:
+		case LODLevel.VeryFar: {
 			return (
 				<div
 					className="h-2 w-2 min-w-2 min-h-2 rounded-full bg-destructive/80"
 					title={message}
 				/>
 			);
-		case LODLevel.Far:
+		}
+		case LODLevel.Far: {
 			return (
 				<div
 					className="h-2 w-4 min-w-[8px] rounded bg-destructive/60"
 					title={message}
 				/>
 			);
-		case LODLevel.Medium:
+		}
+		case LODLevel.Medium: {
 			return (
 				<div
 					className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-destructive/10 border border-destructive/30 text-destructive"
@@ -77,9 +85,10 @@ function LodErrorShape({
 					<span className="text-[10px] truncate max-w-[60px]">Error</span>
 				</div>
 			);
+		}
 		case LODLevel.Close:
 		case LODLevel.VeryClose:
-		default:
+		default: {
 			return (
 				<div className="px-2 py-1.5 rounded-md bg-destructive/10 border border-destructive/30 text-destructive text-xs max-w-[160px]">
 					<div className="flex items-center gap-1 mb-1">
@@ -101,6 +110,7 @@ function LodErrorShape({
 					)}
 				</div>
 			);
+		}
 	}
 }
 

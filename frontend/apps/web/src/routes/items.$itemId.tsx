@@ -16,15 +16,7 @@ function ItemRedirectComponent() {
 	useEffect(() => {
 		if (item) {
 			// Redirect to new URL format
-			void navigate({
-				to: "/projects/$projectId/views/$viewType/$itemId",
-				params: {
-					projectId: item.projectId,
-					viewType: item.view.toLowerCase(),
-					itemId: item.id,
-				},
-				replace: true, // Replace history entry to prevent back button issues
-			});
+			undefined;
 		}
 	}, [item, navigate]);
 

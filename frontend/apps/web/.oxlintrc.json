@@ -7,5 +7,6 @@
 		"routeTree.gen.ts",
 		"src/api/schema.ts",
 		"**/*.gen.ts"
-	]
+	],
+	"overrides": []
 }

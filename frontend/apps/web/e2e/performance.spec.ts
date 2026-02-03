@@ -39,28 +39,31 @@ test.describe("Performance - Load Times", () => {
 		await page.waitForLoadState("networkidle");
 
 		// Get performance metrics
-		const metrics = await page.evaluate(() => {
-			return new Promise((resolve) => {
-				new PerformanceObserver((list) => {
-					const entries = list.getEntries();
-					const vitals: any = {};
+		const metrics = await page.evaluate(
+			() =>
+				new Promise((resolve) => {
+					new PerformanceObserver((list) => {
+						const entries = list.getEntries();
+						const vitals: any = {};
 
-					for (const entry of entries) {
-						if (entry.entryType === "largest-contentful-paint") {
-							vitals.lcp = entry.startTime;
+						for (const entry of entries) {
+							if (entry.entryType === "largest-contentful-paint") {
+								vitals.lcp = entry.startTime;
+							}
+							if (entry.entryType === "first-input") {
+								vitals.fid = (entry as any).processingStart - entry.startTime;
+							}
 						}
-						if (entry.entryType === "first-input") {
-							vitals.fid = (entry as any).processingStart - entry.startTime;
-						}
-					}
 
-					resolve(vitals);
-				}).observe({ entryTypes: ["largest-contentful-paint", "first-input"] });
+						resolve(vitals);
+					}).observe({
+						entryTypes: ["largest-contentful-paint", "first-input"],
+					});
 
-				// Timeout after 5 seconds
-				setTimeout(() => resolve({}), 5000);
-			});
-		});
+					// Timeout after 5 seconds
+					setTimeout(() => resolve({}), 5000);
+				}),
+		);
 
 		// LCP should be under 2.5 seconds (good)
 		if ((metrics as any).lcp) {
@@ -76,26 +79,27 @@ test.describe("Performance - Load Times", () => {
 	test("should have acceptable Time to Interactive", async ({ page }) => {
 		await page.goto("/");
 
-		const tti = await page.evaluate(() => {
-			return new Promise((resolve) => {
-				const startTime = performance.now();
+		const tti = await page.evaluate(
+			() =>
+				new Promise((resolve) => {
+					const startTime = performance.now();
 
-				const checkInteractive = () => {
-					const now = performance.now();
+					const checkInteractive = () => {
+						const now = performance.now();
 
-					// Check if main thread is idle
-					requestIdleCallback(() => {
-						resolve(now - startTime);
-					});
-				};
+						// Check if main thread is idle
+						requestIdleCallback(() => {
+							resolve(now - startTime);
+						});
+					};
 
-				if (document.readyState === "complete") {
-					checkInteractive();
-				} else {
-					window.addEventListener("load", checkInteractive);
-				}
-			});
-		});
+					if (document.readyState === "complete") {
+						checkInteractive();
+					} else {
+						window.addEventListener("load", checkInteractive);
+					}
+				}),
+		);
 
 		// TTI should be under 3.8 seconds
 		expect(tti).toBeLessThan(3800);
@@ -157,19 +161,20 @@ test.describe("Performance - Runtime Performance", () => {
 		await page.goto("/items");
 
 		// Measure render time for large list
-		const renderTime = await page.evaluate(() => {
-			return new Promise<number>((resolve) => {
-				const start = performance.now();
+		const renderTime = await page.evaluate(
+			() =>
+				new Promise<number>((resolve) => {
+					const start = performance.now();
 
-				// Trigger re-render by scrolling
-				window.scrollTo(0, document.body.scrollHeight);
+					// Trigger re-render by scrolling
+					window.scrollTo(0, document.body.scrollHeight);
 
-				requestAnimationFrame(() => {
-					const end = performance.now();
-					resolve(end - start);
-				});
-			});
-		});
+					requestAnimationFrame(() => {
+						const end = performance.now();
+						resolve(end - start);
+					});
+				}),
+		);
 
 		// Rendering should be fast (under 16ms for 60fps)
 		expect(renderTime).toBeLessThan(50);
@@ -197,9 +202,9 @@ test.describe("Performance - Runtime Performance", () => {
 		await page.goto("/items");
 
 		// Get initial memory
-		const initialMemory = await page.evaluate(() => {
-			return (performance as any).memory?.usedJSHeapSize || 0;
-		});
+		const initialMemory = await page.evaluate(
+			() => (performance as any).memory?.usedJSHeapSize || 0,
+		);
 
 		// Perform operations that might leak
 		for (let i = 0; i < 10; i++) {
@@ -210,17 +215,17 @@ test.describe("Performance - Runtime Performance", () => {
 
 		// Trigger garbage collection (if available)
 		await page.evaluate(() => {
-			if ((window as any).gc) {
-				(window as any).gc();
+			if ((globalThis as any).gc) {
+				(globalThis as any).gc();
 			}
 		});
 
 		await page.waitForTimeout(1000);
 
 		// Get final memory
-		const finalMemory = await page.evaluate(() => {
-			return (performance as any).memory?.usedJSHeapSize || 0;
-		});
+		const finalMemory = await page.evaluate(
+			() => (performance as any).memory?.usedJSHeapSize || 0,
+		);
 
 		// Memory should not increase significantly (less than 10MB)
 		const memoryIncrease = finalMemory - initialMemory;
@@ -274,9 +279,9 @@ test.describe("Performance - Runtime Performance", () => {
 
 			// If virtualized, rendered count should be less than total
 			return {
+				isVirtualized: renderedCount < (allItems?.length || 0),
 				rendered: renderedCount,
 				total: allItems?.length || 0,
-				isVirtualized: renderedCount < (allItems?.length || 0),
 			};
 		});
 
@@ -293,18 +298,19 @@ test.describe("Performance - Runtime Performance", () => {
 		await page.click('[data-testid="filter-type-requirement"]');
 
 		// Measure render time
-		const renderTime = await page.evaluate(() => {
-			return new Promise<number>((resolve) => {
-				const start = performance.now();
+		const renderTime = await page.evaluate(
+			() =>
+				new Promise<number>((resolve) => {
+					const start = performance.now();
 
-				requestAnimationFrame(() => {
 					requestAnimationFrame(() => {
-						const end = performance.now();
-						resolve(end - start);
+						requestAnimationFrame(() => {
+							const end = performance.now();
+							resolve(end - start);
+						});
 					});
-				});
-			});
-		});
+				}),
+		);
 
 		// Optimized re-renders should be fast
 		expect(renderTime).toBeLessThan(100);
@@ -318,8 +324,11 @@ test.describe("Performance - Bundle Size", () => {
 		page.on("response", (response) => {
 			if (response.url().endsWith(".js")) {
 				responses.push({
+					size: Number.parseInt(
+						response.headers()["content-length"] || "0",
+						10,
+					),
 					url: response.url(),
-					size: parseInt(response.headers()["content-length"] || "0", 10),
 				});
 			}
 		});
@@ -345,13 +354,13 @@ test.describe("Performance - Bundle Size", () => {
 		await page.goto("/");
 		await page.waitForLoadState("networkidle");
 
-		const dashboardFiles = [...jsFiles];
+		const dashboardFiles = new Set(jsFiles);
 		jsFiles.length = 0;
 
 		await page.goto("/items");
 		await page.waitForLoadState("networkidle");
 
-		const itemsFiles = jsFiles.filter((f) => !dashboardFiles.includes(f));
+		const itemsFiles = jsFiles.filter((f) => !dashboardFiles.has(f));
 
 		// Should load different chunks for different routes
 		expect(itemsFiles.length).toBeGreaterThan(0);
@@ -435,9 +444,9 @@ test.describe("Performance - Network Optimization", () => {
 
 		const preloadLinks = await page.evaluate(() => {
 			const links = document.querySelectorAll('link[rel="preload"]');
-			return Array.from(links).map((link) => ({
-				href: link.getAttribute("href"),
+			return [...links].map((link) => ({
 				as: link.getAttribute("as"),
+				href: link.getAttribute("href"),
 			}));
 		});
 
@@ -450,7 +459,7 @@ test.describe("Performance - Network Optimization", () => {
 
 		const prefetchLinks = await page.evaluate(() => {
 			const links = document.querySelectorAll('link[rel="prefetch"]');
-			return Array.from(links).map((link) => link.getAttribute("href"));
+			return [...links].map((link) => link.getAttribute("href"));
 		});
 
 		// Should prefetch likely next pages
@@ -467,7 +476,7 @@ test.describe("Performance - Rendering Optimization", () => {
 			let containCount = 0;
 
 			items.forEach((item) => {
-				const styles = window.getComputedStyle(item);
+				const styles = globalThis.getComputedStyle(item);
 				if (styles.contain !== "none") {
 					containCount++;
 				}
@@ -483,23 +492,24 @@ test.describe("Performance - Rendering Optimization", () => {
 	test("should minimize layout thrashing", async ({ page }) => {
 		await page.goto("/items");
 
-		const layoutTime = await page.evaluate(() => {
-			return new Promise<number>((resolve) => {
-				const start = performance.now();
+		const layoutTime = await page.evaluate(
+			() =>
+				new Promise<number>((resolve) => {
+					const start = performance.now();
 
-				// Trigger potential layout thrashing
-				const items = document.querySelectorAll('[data-testid="item-card"]');
-				items.forEach((item) => {
-					const height = item.clientHeight;
-					(item as HTMLElement).style.height = `${height}px`;
-				});
+					// Trigger potential layout thrashing
+					const items = document.querySelectorAll('[data-testid="item-card"]');
+					items.forEach((item) => {
+						const height = item.clientHeight;
+						(item as HTMLElement).style.height = `${height}px`;
+					});
 
-				requestAnimationFrame(() => {
-					const end = performance.now();
-					resolve(end - start);
-				});
-			});
-		});
+					requestAnimationFrame(() => {
+						const end = performance.now();
+						resolve(end - start);
+					});
+				}),
+		);
 
 		// Should complete layout operations quickly
 		expect(layoutTime).toBeLessThan(50);
@@ -513,7 +523,7 @@ test.describe("Performance - Rendering Optimization", () => {
 
 		const hasWillChange = await page.evaluate(() => {
 			const modal = document.querySelector('[role="dialog"]');
-			const styles = window.getComputedStyle(modal!);
+			const styles = globalThis.getComputedStyle(modal!);
 			return styles.willChange !== "auto";
 		});
 
@@ -525,28 +535,29 @@ test.describe("Performance - Rendering Optimization", () => {
 		await page.goto("/items");
 
 		// Measure frame rate during scroll
-		const frameRate = await page.evaluate(() => {
-			return new Promise<number>((resolve) => {
-				let frameCount = 0;
-				const duration = 1000; // 1 second
-				const startTime = performance.now();
+		const frameRate = await page.evaluate(
+			() =>
+				new Promise<number>((resolve) => {
+					let frameCount = 0;
+					const duration = 1000; // 1 second
+					const startTime = performance.now();
 
-				const countFrames = () => {
-					frameCount++;
-					const elapsed = performance.now() - startTime;
+					const countFrames = () => {
+						frameCount++;
+						const elapsed = performance.now() - startTime;
 
-					if (elapsed < duration) {
-						requestAnimationFrame(countFrames);
-					} else {
-						resolve(frameCount);
-					}
-				};
+						if (elapsed < duration) {
+							requestAnimationFrame(countFrames);
+						} else {
+							resolve(frameCount);
+						}
+					};
 
-				// Start scrolling
-				window.scrollBy(0, 10);
-				requestAnimationFrame(countFrames);
-			});
-		});
+					// Start scrolling
+					window.scrollBy(0, 10);
+					requestAnimationFrame(countFrames);
+				}),
+		);
 
 		// Should maintain close to 60fps
 		expect(frameRate).toBeGreaterThan(50);
@@ -649,7 +660,7 @@ test.describe("Performance - Database and API", () => {
 		page.on("response", (response) => {
 			const url = response.url();
 			if (url.includes("/graphql") || url.includes("/api/graphql")) {
-				totalGraphqlSize += parseInt(
+				totalGraphqlSize += Number.parseInt(
 					response.headers()["content-length"] || "0",
 					10,
 				);
@@ -720,7 +731,7 @@ test.describe("Performance - Accessibility and Performance", () => {
 	test("should work smoothly with screen readers enabled", async ({ page }) => {
 		// Enable screen reader mode
 		await page.addInitScript(() => {
-			(window as any).screenReaderEnabled = true;
+			(globalThis as any).screenReaderEnabled = true;
 		});
 
 		const startTime = Date.now();
@@ -770,37 +781,38 @@ test.describe("Performance - Virtual Scrolling", () => {
 	test("should update virtual scroll viewport smoothly", async ({ page }) => {
 		await page.goto("/items");
 
-		const scrollMetrics = await page.evaluate(() => {
-			return new Promise((resolve) => {
-				const scrollEvents: number[] = [];
-				let scrollEventCount = 0;
+		const scrollMetrics = await page.evaluate(
+			() =>
+				new Promise((resolve) => {
+					const scrollEvents: number[] = [];
+					let scrollEventCount = 0;
 
-				const handleScroll = () => {
-					scrollEventCount++;
-					scrollEvents.push(performance.now());
-				};
+					const handleScroll = () => {
+						scrollEventCount++;
+						scrollEvents.push(performance.now());
+					};
 
-				window.addEventListener("scroll", handleScroll);
+					window.addEventListener("scroll", handleScroll);
 
-				// Perform smooth scroll
-				window.scrollBy({ top: 1000, behavior: "smooth" });
+					// Perform smooth scroll
+					window.scrollBy({ behavior: "smooth", top: 1000 });
 
-				// Wait and measure
-				setTimeout(() => {
-					window.removeEventListener("scroll", handleScroll);
-					const avgTime =
-						scrollEvents.length > 0
-							? (scrollEvents[scrollEvents.length - 1] - scrollEvents[0]) /
-								scrollEventCount
-							: 0;
+					// Wait and measure
+					setTimeout(() => {
+						window.removeEventListener("scroll", handleScroll);
+						const avgTime =
+							scrollEvents.length > 0
+								? (scrollEvents[scrollEvents.length - 1] - scrollEvents[0]) /
+									scrollEventCount
+								: 0;
 
-					resolve({
-						eventCount: scrollEventCount,
-						avgTimePerEvent: avgTime,
-					});
-				}, 2000);
-			});
-		});
+						resolve({
+							avgTimePerEvent: avgTime,
+							eventCount: scrollEventCount,
+						});
+					}, 2000);
+				}),
+		);
 
 		expect(scrollMetrics).toBeDefined();
 	});
@@ -808,38 +820,39 @@ test.describe("Performance - Virtual Scrolling", () => {
 	test("should handle rapid scrolling without janky UI", async ({ page }) => {
 		await page.goto("/items");
 
-		const jankMetrics = await page.evaluate(() => {
-			return new Promise((resolve) => {
-				const frameTimings: number[] = [];
-				let lastFrameTime = performance.now();
+		const jankMetrics = await page.evaluate(
+			() =>
+				new Promise((resolve) => {
+					const frameTimings: number[] = [];
+					let lastFrameTime = performance.now();
 
-				const measureFrames = () => {
-					const now = performance.now();
-					const frameTime = now - lastFrameTime;
-					frameTimings.push(frameTime);
-					lastFrameTime = now;
+					const measureFrames = () => {
+						const now = performance.now();
+						const frameTime = now - lastFrameTime;
+						frameTimings.push(frameTime);
+						lastFrameTime = now;
 
-					if (frameTimings.length < 60) {
-						requestAnimationFrame(measureFrames);
-					} else {
-						// Calculate jank (frames over 50ms)
-						const jankFrames = frameTimings.filter((t) => t > 50).length;
+						if (frameTimings.length < 60) {
+							requestAnimationFrame(measureFrames);
+						} else {
+							// Calculate jank (frames over 50ms)
+							const jankFrames = frameTimings.filter((t) => t > 50).length;
 
-						resolve({
-							totalFrames: frameTimings.length,
-							jankFrames: jankFrames,
-							jankPercentage: (jankFrames / frameTimings.length) * 100,
-							avgFrameTime:
-								frameTimings.reduce((a, b) => a + b, 0) / frameTimings.length,
-						});
-					}
-				};
+							resolve({
+								avgFrameTime:
+									frameTimings.reduce((a, b) => a + b, 0) / frameTimings.length,
+								jankFrames: jankFrames,
+								jankPercentage: (jankFrames / frameTimings.length) * 100,
+								totalFrames: frameTimings.length,
+							});
+						}
+					};
 
-				// Start rapid scrolling
-				window.scrollBy(0, 1000);
-				requestAnimationFrame(measureFrames);
-			});
-		});
+					// Start rapid scrolling
+					window.scrollBy(0, 1000);
+					requestAnimationFrame(measureFrames);
+				}),
+		);
 
 		// Less than 10% jank frames is acceptable
 		expect((jankMetrics as any).jankPercentage).toBeLessThan(10);
@@ -876,7 +889,7 @@ test.describe("Performance - Lighthouse Integration", () => {
 
 			return {
 				cls: getCLS(),
-				pageUrl: window.location.href,
+				pageUrl: globalThis.location.href,
 			};
 		});
 
@@ -919,11 +932,11 @@ test.describe("Performance - Lighthouse Integration", () => {
 			});
 
 			return {
-				headingCount: headings.length,
 				accessibleLinksCount: linkswithText,
-				totalLinks: links.length,
+				headingCount: headings.length,
 				labeledInputs: labeledInputs,
 				totalInputs: inputs.length,
+				totalLinks: links.length,
 			};
 		});
 
@@ -968,53 +981,54 @@ test.describe("Performance - Lighthouse Integration", () => {
 	});
 
 	test("should measure all Core Web Vitals together", async ({ page }) => {
-		const metrics = await page.evaluate(() => {
-			return new Promise((resolve) => {
-				const vitals = {
-					lcp: 0,
-					fid: 0,
-					cls: 0,
-					ttfb: 0,
-				};
+		const metrics = await page.evaluate(
+			() =>
+				new Promise((resolve) => {
+					const vitals = {
+						cls: 0,
+						fid: 0,
+						lcp: 0,
+						ttfb: 0,
+					};
 
-				// LCP observer
-				new PerformanceObserver((list) => {
-					const entries = list.getEntries();
-					const lastEntry = entries[entries.length - 1];
-					vitals.lcp = lastEntry.startTime;
-				}).observe({ entryTypes: ["largest-contentful-paint"] });
+					// LCP observer
+					new PerformanceObserver((list) => {
+						const entries = list.getEntries();
+						const lastEntry = entries[entries.length - 1];
+						vitals.lcp = lastEntry.startTime;
+					}).observe({ entryTypes: ["largest-contentful-paint"] });
 
-				// FID observer
-				new PerformanceObserver((list) => {
-					for (const entry of list.getEntries()) {
-						if (vitals.fid === 0) {
-							vitals.fid = (entry as any).processingStart - entry.startTime;
+					// FID observer
+					new PerformanceObserver((list) => {
+						for (const entry of list.getEntries()) {
+							if (vitals.fid === 0) {
+								vitals.fid = (entry as any).processingStart - entry.startTime;
+							}
 						}
-					}
-				}).observe({ entryTypes: ["first-input"] });
+					}).observe({ entryTypes: ["first-input"] });
 
-				// CLS observer
-				let clsValue = 0;
-				new PerformanceObserver((list) => {
-					for (const entry of list.getEntries()) {
-						if (!(entry as any).hadRecentInput) {
-							clsValue += (entry as any).value;
+					// CLS observer
+					let clsValue = 0;
+					new PerformanceObserver((list) => {
+						for (const entry of list.getEntries()) {
+							if (!(entry as any).hadRecentInput) {
+								clsValue += (entry as any).value;
+							}
 						}
+						vitals.cls = clsValue;
+					}).observe({ entryTypes: ["layout-shift"] });
+
+					// TTFB from navigation timing
+					if (performance.getEntriesByType("navigation").length > 0) {
+						const navEntry = performance.getEntriesByType(
+							"navigation",
+						)[0] as PerformanceNavigationTiming;
+						vitals.ttfb = navEntry.responseStart - navEntry.fetchStart;
 					}
-					vitals.cls = clsValue;
-				}).observe({ entryTypes: ["layout-shift"] });
 
-				// TTFB from navigation timing
-				if (performance.getEntriesByType("navigation").length > 0) {
-					const navEntry = performance.getEntriesByType(
-						"navigation",
-					)[0] as PerformanceNavigationTiming;
-					vitals.ttfb = navEntry.responseStart - navEntry.fetchStart;
-				}
-
-				setTimeout(() => resolve(vitals), 5000);
-			});
-		});
+					setTimeout(() => resolve(vitals), 5000);
+				}),
+		);
 
 		// Validate Core Web Vitals
 		expect((metrics as any).lcp).toBeLessThan(2500); // Good LCP
@@ -1036,8 +1050,8 @@ test.describe("Performance - Memory Management", () => {
 			// Force garbage collection if available; must stay inside evaluate (browser context)
 			// eslint-disable-next-line unicorn/consistent-function-scoping
 			const forceGC = () => {
-				if ((window as any).gc) {
-					(window as any).gc();
+				if ((globalThis as any).gc) {
+					(globalThis as any).gc();
 				}
 			};
 
@@ -1065,9 +1079,9 @@ test.describe("Performance - Memory Management", () => {
 			const finalMemory = (performance as any).memory?.usedJSHeapSize || 0;
 
 			return {
-				initialMemory,
 				finalMemory,
 				increase: finalMemory - initialMemory,
+				initialMemory,
 				readings,
 			};
 		});
@@ -1097,15 +1111,15 @@ test.describe("Performance - Memory Management", () => {
 			const _timers: any[] = [];
 
 			// Monitor setTimeout calls
-			const originalSetTimeout = window.setTimeout;
-			(window as any).__timeouts = 0;
+			const originalSetTimeout = globalThis.setTimeout;
+			(globalThis as any).__timeouts = 0;
 
-			window.setTimeout = ((...args: any[]) => {
-				(window as any).__timeouts++;
-				return originalSetTimeout.apply(window, args);
+			globalThis.setTimeout = ((...args: any[]) => {
+				(globalThis as any).__timeouts++;
+				return originalSetTimeout.apply(globalThis, args);
 			}) as any;
 
-			return (window as any).__timeouts || 0;
+			return (globalThis as any).__timeouts || 0;
 		});
 
 		// Should have reasonable number of timers

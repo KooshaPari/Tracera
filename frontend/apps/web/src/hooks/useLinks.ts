@@ -23,12 +23,24 @@ async function fetchLinks(
 	filters: LinkFilters = {},
 ): Promise<{ links: Link[]; total: number }> {
 	const params = new URLSearchParams();
-	if (filters.projectId) params.set("project_id", filters.projectId);
-	if (filters.sourceId) params.set("source_id", filters.sourceId);
-	if (filters.targetId) params.set("target_id", filters.targetId);
-	if (filters.type) params.set("type", filters.type);
-	if (filters.limit) params.set("limit", String(filters.limit));
-	if (filters.offset) params.set("offset", String(filters.offset));
+	if (filters.projectId) {
+		params.set("project_id", filters.projectId);
+	}
+	if (filters.sourceId) {
+		params.set("source_id", filters.sourceId);
+	}
+	if (filters.targetId) {
+		params.set("target_id", filters.targetId);
+	}
+	if (filters.type) {
+		params.set("type", filters.type);
+	}
+	if (filters.limit) {
+		params.set("limit", String(filters.limit));
+	}
+	if (filters.offset) {
+		params.set("offset", String(filters.offset));
+	}
 
 	// ✅ NEW: Send excluded types to API for server-side filtering
 	if (filters.excludeTypes?.length) {
@@ -41,10 +53,12 @@ async function fetchLinks(
 			...getAuthHeaders(),
 		},
 	});
-	if (!res.ok) throw new Error("Failed to fetch links");
+	if (!res.ok) {
+		throw new Error("Failed to fetch links");
+	}
 	const data = await res.json();
 	// API returns { total: number, links: Link[] } or array
-	const linksArray = Array.isArray(data) ? data : data['links'] || [];
+	const linksArray = Array.isArray(data) ? data : data["links"] || [];
 	// Transform snake_case to camelCase for frontend compatibility
 	const transformedLinks = linksArray.map((link: any) => ({
 		...link,
@@ -55,7 +69,7 @@ async function fetchLinks(
 	return {
 		links: transformedLinks,
 		total:
-			data['total'] || (Array.isArray(data) ? data.length : linksArray.length),
+			data["total"] || (Array.isArray(data) ? data.length : linksArray.length),
 	};
 }
 
@@ -69,26 +83,30 @@ interface CreateLinkData {
 
 async function createLink(data: CreateLinkData): Promise<Link> {
 	const res = await fetch(`${API_URL}/api/v1/links`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			project_id: data['projectId'],
-			source_id: data['sourceId'],
-			target_id: data['targetId'],
+			description: data["description"],
+			project_id: data["projectId"],
+			source_id: data["sourceId"],
+			target_id: data["targetId"],
 			type: data.type,
-			description: data['description'],
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to create link");
+	if (!res.ok) {
+		throw new Error("Failed to create link");
+	}
 	return res.json() as Promise<Link>;
 }
 
 async function deleteLink(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/links/${id}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete link");
+	if (!res.ok) {
+		throw new Error("Failed to delete link");
+	}
 }
 
 export function useLinks(filters: LinkFilters = {}) {
@@ -113,7 +131,7 @@ export function useLinks(filters: LinkFilters = {}) {
 	return useQuery({
 		queryKey: key,
 		queryFn: () => fetchLinks(filters),
-		enabled: !!token,
+		enabled: Boolean(token),
 		...QUERY_CONFIGS.dynamic, // Links change frequently
 	});
 }
@@ -123,7 +141,7 @@ export function useCreateLink() {
 	return useMutation({
 		mutationFn: createLink,
 		onSuccess: () => {
-			void void queryClient.invalidateQueries({ queryKey: ["links"] });
+			undefined;
 		},
 	});
 }
@@ -133,7 +151,7 @@ export function useDeleteLink() {
 	return useMutation({
 		mutationFn: deleteLink,
 		onSuccess: () => {
-			void void queryClient.invalidateQueries({ queryKey: ["links"] });
+			undefined;
 		},
 	});
 }
@@ -145,7 +163,7 @@ export function useTraceabilityGraph(projectId: string) {
 	const [visibleEdgeCount, setVisibleEdgeCount] = useState(MAX_EDGES_INITIAL);
 
 	const { data: items } = useQuery<
-		Array<{ id: string; title: string; view: string; status: string }>
+		{ id: string; title: string; view: string; status: string }[]
 	>({
 		queryKey: queryKeys.items.list(projectId),
 		queryFn: async () => {
@@ -153,19 +171,21 @@ export function useTraceabilityGraph(projectId: string) {
 				`${API_URL}/api/v1/items?project_id=${projectId}`,
 				{ headers: getAuthHeaders() },
 			);
-			if (!res.ok) throw new Error("Failed to fetch items");
+			if (!res.ok) {
+				throw new Error("Failed to fetch items");
+			}
 			return res.json() as Promise<
-				Array<{ id: string; title: string; view: string; status: string }>
+				{ id: string; title: string; view: string; status: string }[]
 			>;
 		},
-		enabled: !!projectId,
+		enabled: Boolean(projectId),
 		...QUERY_CONFIGS.graph, // Graph data is expensive, cache longer
 	});
 
 	// ✅ FIXED: Fetch links with filtering + reasonable limit
 	const { data: linksData } = useLinks({
 		projectId,
-		limit: 10000, // ✅ NEW: API limit to prevent massive responses
+		limit: 10_000, // ✅ NEW: API limit to prevent massive responses
 		excludeTypes: ["implements"], // ✅ NEW: Filter out 84% redundant links
 	});
 
@@ -181,14 +201,7 @@ export function useTraceabilityGraph(projectId: string) {
 	};
 
 	return {
-		nodes: (items ?? []).map((item) => ({
-			data: {
-				id: item.id,
-				label: item.title,
-				type: item.view.toLowerCase(),
-				status: item.status,
-			},
-		})),
+		canLoadMore,
 		edges: visibleLinks.map((link) => ({
 			data: {
 				id: link.id,
@@ -197,10 +210,17 @@ export function useTraceabilityGraph(projectId: string) {
 				type: link.type,
 			},
 		})),
-		canLoadMore,
-		visibleEdges: visibleLinks.length,
-		totalEdges: allLinks.length,
-		onLoadMore,
 		isLoading: !(items && allLinks),
+		nodes: (items ?? []).map((item) => ({
+			data: {
+				id: item.id,
+				label: item.title,
+				status: item.status,
+				type: item.view.toLowerCase(),
+			},
+		})),
+		onLoadMore,
+		totalEdges: allLinks.length,
+		visibleEdges: visibleLinks.length,
 	};
 }

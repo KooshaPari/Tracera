@@ -10,7 +10,14 @@ import {
 	CollapsibleTrigger,
 } from "@tracertm/ui/components/Collapsible";
 import { Badge } from "@tracertm/ui/components/Badge";
-import { Bot, ChevronDown, ChevronRight, Loader2, Wrench, User } from "lucide-react";
+import {
+	Bot,
+	ChevronDown,
+	ChevronRight,
+	Loader2,
+	User,
+	Wrench,
+} from "lucide-react";
 import { useState } from "react";
 import type { ChatMessage as ChatMessageType, ToolCall } from "@/lib/ai/types";
 
@@ -22,7 +29,8 @@ interface ChatMessageProps {
 export function ChatMessage({ message, isLast }: ChatMessageProps) {
 	const isUser = message.role === "user";
 	const isStreaming = message.isStreaming && isLast;
-	const hasToolCalls = !isUser && message.toolCalls && message.toolCalls.length > 0;
+	const hasToolCalls =
+		!isUser && message.toolCalls && message.toolCalls.length > 0;
 	const [toolsOpen, setToolsOpen] = useState(false);
 
 	return (
@@ -79,9 +87,7 @@ export function ChatMessage({ message, isLast }: ChatMessageProps) {
 								<ChevronRight className="h-3.5 w-3.5" />
 							)}
 							<Wrench className="h-3.5 w-3.5" />
-							<span>
-								Tools used ({message.toolCalls!.length})
-							</span>
+							<span>Tools used ({message.toolCalls!.length})</span>
 						</CollapsibleTrigger>
 						<CollapsibleContent>
 							<ul className="mt-1.5 space-y-1.5 pl-4 border-l-2 border-muted">
@@ -108,7 +114,9 @@ function ToolCallRow({ toolCall }: { toolCall: ToolCall }) {
 	const status = toolCall.isExecuting
 		? "running"
 		: toolCall.result
-			? (toolCall.result.success ? "ok" : "error")
+			? toolCall.result.success
+				? "ok"
+				: "error"
 			: "—";
 	return (
 		<li className="text-xs">
@@ -118,9 +126,9 @@ function ToolCallRow({ toolCall }: { toolCall: ToolCall }) {
 					variant={
 						status === "error"
 							? "destructive"
-							: status === "running"
+							: (status === "running"
 								? "secondary"
-								: "outline"
+								: "outline")
 					}
 					className="text-[10px] px-1.5 py-0"
 				>
@@ -146,19 +154,25 @@ function formatMessageTime(isoString: string): string {
 		const date = new Date(isoString);
 		const now = new Date();
 		const diffMs = now.getTime() - date.getTime();
-		const diffMins = Math.floor(diffMs / 60000);
+		const diffMins = Math.floor(diffMs / 60_000);
 
-		if (diffMins < 1) return "Just now";
-		if (diffMins < 60) return `${diffMins}m ago`;
+		if (diffMins < 1) {
+			return "Just now";
+		}
+		if (diffMins < 60) {
+			return `${diffMins}m ago`;
+		}
 
 		const diffHours = Math.floor(diffMins / 60);
-		if (diffHours < 24) return `${diffHours}h ago`;
+		if (diffHours < 24) {
+			return `${diffHours}h ago`;
+		}
 
 		return date.toLocaleDateString(undefined, {
-			month: "short",
 			day: "numeric",
 			hour: "numeric",
 			minute: "2-digit",
+			month: "short",
 		});
 	} catch {
 		return "";

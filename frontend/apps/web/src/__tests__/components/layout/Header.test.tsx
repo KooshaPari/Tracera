@@ -7,17 +7,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock the router hooks BEFORE any imports that use them
 vi.mock("@tanstack/react-router", () => ({
 	useLocation: () => ({ pathname: "/" }),
-	useParams: () => ({}),
 	useNavigate: () => vi.fn(),
+	useParams: () => ({}),
 	useRouter: () => ({ navigate: vi.fn() }),
 }));
 
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Header } from "../../../components/layout/Header";
-import { ThemeProvider } from "../../../providers/theme-provider";
+import ThemeProvider from "../../../providers/theme-provider";
 
-describe("Header", () => {
+describe(Header, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});

@@ -10,7 +10,5 @@ export const Route = createFileRoute(
 	"/projects/$projectId/views/test-runs" as any,
 )({
 	component: TestRunViewRoute,
-	loader: async () => {
-		return {};
-	},
+	loader: async () => ({}),
 });

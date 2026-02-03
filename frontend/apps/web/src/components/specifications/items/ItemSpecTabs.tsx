@@ -52,40 +52,40 @@ interface ItemSpecTabsProps {
 
 const specTypes = [
 	{
+		description: "EARS patterns, constraints, quality metrics",
+		icon: FileText,
 		id: "requirement",
 		label: "Requirement",
-		icon: FileText,
-		description: "EARS patterns, constraints, quality metrics",
 	},
 	{
+		description: "Test cases, flakiness, coverage",
+		icon: FileCode,
 		id: "test",
 		label: "Test",
-		icon: FileCode,
-		description: "Test cases, flakiness, coverage",
 	},
 	{
+		description: "Business value, timeline, stories",
+		icon: Layers,
 		id: "epic",
 		label: "Epic",
-		icon: Layers,
-		description: "Business value, timeline, stories",
 	},
 	{
+		description: "As a/I want/So that, acceptance criteria",
+		icon: Users,
 		id: "user_story",
 		label: "User Story",
-		icon: Users,
-		description: "As a/I want/So that, acceptance criteria",
 	},
 	{
+		description: "Time tracking, subtasks, blockers",
+		icon: ListTodo,
 		id: "task",
 		label: "Task",
-		icon: ListTodo,
-		description: "Time tracking, subtasks, blockers",
 	},
 	{
+		description: "Severity, reproduction, root cause",
+		icon: Bug,
 		id: "defect",
 		label: "Defect",
-		icon: Bug,
-		description: "Severity, reproduction, root cause",
 	},
 ];
 
@@ -93,23 +93,30 @@ function getRecommendedSpecs(itemType?: string): string[] {
 	switch (itemType?.toLowerCase()) {
 		case "requirement":
 		case "functional_requirement":
-		case "non_functional_requirement":
+		case "non_functional_requirement": {
 			return ["requirement"];
+		}
 		case "test":
-		case "test_case":
+		case "test_case": {
 			return ["test", "requirement"];
-		case "epic":
+		}
+		case "epic": {
 			return ["epic"];
+		}
 		case "user_story":
-		case "story":
+		case "story": {
 			return ["user_story", "requirement"];
-		case "task":
+		}
+		case "task": {
 			return ["task"];
+		}
 		case "bug":
-		case "defect":
+		case "defect": {
 			return ["defect"];
-		default:
+		}
+		default: {
 			return ["requirement", "test"];
+		}
 	}
 }
 
@@ -156,16 +163,16 @@ export function ItemSpecTabs({
 
 	// Determine which specs exist
 	const existingSpecs = {
-		requirement: !!reqSpec,
-		test: !!testSpec,
-		epic: !!epicSpec,
-		user_story: !!storySpec,
-		task: !!taskSpec,
 		defect: !!defectSpec,
+		epic: !!epicSpec,
+		requirement: !!reqSpec,
+		task: !!taskSpec,
+		test: !!testSpec,
+		user_story: !!storySpec,
 	};
 
 	// Note: hasAnySpec could be used for conditional UI rendering
-	// const hasAnySpec = Object.values(existingSpecs).some(Boolean);
+	// Const hasAnySpec = Object.values(existingSpecs).some(Boolean);
 	const recommendedSpecs = getRecommendedSpecs(itemType);
 
 	// Find first existing spec for default tab

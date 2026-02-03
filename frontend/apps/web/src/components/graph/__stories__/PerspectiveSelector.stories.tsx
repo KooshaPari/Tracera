@@ -2,26 +2,34 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { PerspectiveSelector } from "../PerspectiveSelector";
 
 const meta: Meta<typeof PerspectiveSelector> = {
-	title: "Components/Graph/PerspectiveSelector",
+	argTypes: {
+		currentPerspective: {
+			control: "select",
+			options: [
+				"all",
+				"product",
+				"business",
+				"technical",
+				"ui",
+				"security",
+				"performance",
+			],
+		},
+		itemCounts: { control: "object" },
+		onPerspectiveChange: { action: "perspective changed" },
+	},
 	component: PerspectiveSelector,
-	tags: ["autodocs"],
 	parameters: {
 		chromatic: {
+			delay: 300,
 			modes: {
 				light: { query: "[data-theme='light']" },
 				dark: { query: "[data-theme='dark']" },
 			},
-			delay: 300,
 		},
 	},
-	argTypes: {
-		currentPerspective: {
-			control: "select",
-			options: ["all", "product", "business", "technical", "ui", "security", "performance"],
-		},
-		onPerspectiveChange: { action: "perspective changed" },
-		itemCounts: { control: "object" },
-	},
+	tags: ["autodocs"],
+	title: "Components/Graph/PerspectiveSelector",
 };
 
 export default meta;
@@ -33,8 +41,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
 	args: {
 		currentPerspective: "all",
-		onPerspectiveChange: () => {},
 		itemCounts: undefined,
+		onPerspectiveChange: () => {},
 	},
 };
 
@@ -44,8 +52,8 @@ export const Default: Story = {
 export const WithCounts: Story = {
 	args: {
 		currentPerspective: "all",
+		itemCounts: { all: 42, product: 12, technical: 20 },
 		onPerspectiveChange: () => {},
-		itemCounts: { all: 42, technical: 20, product: 12 },
 	},
 };
 
@@ -55,8 +63,8 @@ export const WithCounts: Story = {
 export const Tablet: Story = {
 	args: {
 		currentPerspective: "all",
-		onPerspectiveChange: () => {},
 		itemCounts: undefined,
+		onPerspectiveChange: () => {},
 	},
 	parameters: {
 		viewport: {
@@ -71,8 +79,8 @@ export const Tablet: Story = {
 export const Mobile: Story = {
 	args: {
 		currentPerspective: "all",
-		onPerspectiveChange: () => {},
 		itemCounts: undefined,
+		onPerspectiveChange: () => {},
 	},
 	parameters: {
 		viewport: {
@@ -87,8 +95,8 @@ export const Mobile: Story = {
 export const DarkMode: Story = {
 	args: {
 		currentPerspective: "all",
-		onPerspectiveChange: () => {},
 		itemCounts: undefined,
+		onPerspectiveChange: () => {},
 	},
 	decorators: [
 		(Story) => (
@@ -112,8 +120,8 @@ export const DarkMode: Story = {
 export const Focused: Story = {
 	args: {
 		currentPerspective: "all",
-		onPerspectiveChange: () => {},
 		itemCounts: undefined,
+		onPerspectiveChange: () => {},
 	},
 	play: async ({ canvasElement }) => {
 		const selector = canvasElement.querySelector("button");
@@ -129,8 +137,8 @@ export const Focused: Story = {
 export const Hovered: Story = {
 	args: {
 		currentPerspective: "all",
-		onPerspectiveChange: () => {},
 		itemCounts: undefined,
+		onPerspectiveChange: () => {},
 	},
 	play: async ({ canvasElement }) => {
 		const selector = canvasElement.querySelector("button");

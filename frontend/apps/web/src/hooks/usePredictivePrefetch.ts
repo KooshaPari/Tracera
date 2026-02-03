@@ -1,5 +1,5 @@
 /**
- * usePredictivePrefetch Hook
+ * UsePredictivePrefetch Hook
  *
  * Tracks viewport pan velocity and preloads graph data ahead of user movement.
  * Uses exponential moving average to smooth velocity calculations and predict
@@ -28,7 +28,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 /**
  * Viewport state including position, dimensions, and zoom
@@ -188,7 +188,7 @@ export function usePredictivePrefetch({
 				lastPrefetchRef.current = now;
 
 				// Convert prediction horizon from ms to frames (assuming 60fps)
-				// predictionHorizon ms / (1000ms/60frames) = frames ahead
+				// PredictionHorizon ms / (1000ms/60frames) = frames ahead
 				const framesAhead = (predictionHorizon / 1000) * 60;
 
 				// Calculate predicted viewport position
@@ -201,16 +201,16 @@ export function usePredictivePrefetch({
 
 				// Build predicted viewport bounds
 				const predictedViewport: PredictedViewport = {
-					minX: predictedX,
-					minY: predictedY,
 					maxX: predictedX + viewportWidthScaled,
 					maxY: predictedY + viewportHeightScaled,
+					minX: predictedX,
+					minY: predictedY,
 					zoom: viewport.zoom,
 				};
 
 				// Trigger prefetch
 				try {
-					void loadViewport(predictedViewport);
+					undefined;
 				} catch (error) {
 					if (process.env.NODE_ENV === "development") {
 						logger.warn("[usePredictivePrefetch] Prefetch failed:", error);
@@ -241,12 +241,6 @@ export function usePredictivePrefetch({
 	const predictedViewport: PredictedViewport | null =
 		isPredicting && currentSpeed > velocityThreshold
 			? {
-					minX:
-						viewport.x +
-						velocityRef.current.x * ((predictionHorizon / 1000) * 60),
-					minY:
-						viewport.y +
-						velocityRef.current.y * ((predictionHorizon / 1000) * 60),
 					maxX:
 						viewport.x +
 						velocityRef.current.x * ((predictionHorizon / 1000) * 60) +
@@ -255,15 +249,21 @@ export function usePredictivePrefetch({
 						viewport.y +
 						velocityRef.current.y * ((predictionHorizon / 1000) * 60) +
 						viewport.height / viewport.zoom,
+					minX:
+						viewport.x +
+						velocityRef.current.x * ((predictionHorizon / 1000) * 60),
+					minY:
+						viewport.y +
+						velocityRef.current.y * ((predictionHorizon / 1000) * 60),
 					zoom: viewport.zoom,
 				}
 			: null;
 
 	return {
-		velocity: velocityRef.current,
-		speed: currentSpeed,
 		isPredicting: isPredicting && currentSpeed > velocityThreshold,
 		predictedViewport,
+		speed: currentSpeed,
+		velocity: velocityRef.current,
 	};
 }
 

@@ -23,53 +23,53 @@ import { CreateTestCaseForm } from "../../../components/forms/CreateTestCaseForm
 import { useTestCaseStats, useTestCases } from "../../../hooks/useTestCases";
 
 const statusColors: Record<TestCaseStatus, string> = {
+	approved: "bg-green-100 text-green-700",
+	archived: "bg-slate-100 text-slate-700",
+	deprecated: "bg-orange-100 text-orange-700",
 	draft: "bg-gray-100 text-gray-700",
 	review: "bg-yellow-100 text-yellow-700",
-	approved: "bg-green-100 text-green-700",
-	deprecated: "bg-orange-100 text-orange-700",
-	archived: "bg-slate-100 text-slate-700",
 };
 
 const priorityColors: Record<TestCasePriority, string> = {
 	critical: "bg-red-500 text-white",
 	high: "bg-orange-500 text-white",
-	medium: "bg-yellow-500 text-black",
 	low: "bg-gray-300 text-gray-700",
+	medium: "bg-yellow-500 text-black",
 };
 
 const automationColors: Record<AutomationStatus, string> = {
-	not_automated: "bg-gray-100 text-gray-600",
-	in_progress: "bg-blue-100 text-blue-700",
 	automated: "bg-green-100 text-green-700",
 	cannot_automate: "bg-red-100 text-red-700",
+	in_progress: "bg-blue-100 text-blue-700",
+	not_automated: "bg-gray-100 text-gray-600",
 };
 
 const statusLabels: Record<TestCaseStatus, string> = {
+	approved: "Approved",
+	archived: "Archived",
+	deprecated: "Deprecated",
 	draft: "Draft",
 	review: "In Review",
-	approved: "Approved",
-	deprecated: "Deprecated",
-	archived: "Archived",
 };
 
 const typeLabels: Record<TestCaseType, string> = {
+	accessibility: "Accessibility",
+	e2e: "E2E",
+	exploratory: "Exploratory",
 	functional: "Functional",
 	integration: "Integration",
-	unit: "Unit",
-	e2e: "E2E",
 	performance: "Performance",
-	security: "Security",
-	accessibility: "Accessibility",
 	regression: "Regression",
+	security: "Security",
 	smoke: "Smoke",
-	exploratory: "Exploratory",
+	unit: "Unit",
 };
 
 const automationLabels: Record<AutomationStatus, string> = {
-	not_automated: "Manual",
-	in_progress: "Automating",
 	automated: "Automated",
 	cannot_automate: "Cannot Automate",
+	in_progress: "Automating",
+	not_automated: "Manual",
 };
 
 interface TestCaseViewProps {
@@ -110,11 +110,11 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 	useEffect(() => {
 		if (error) {
 			toast.error("Failed to load test cases", {
-				description: error.message,
 				action: {
 					label: "Retry",
 					onClick: () => window.location.reload(),
 				},
+				description: error.message,
 			});
 		}
 	}, [error]);
@@ -126,7 +126,9 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 				<p className="mt-1 text-sm">{error.message}</p>
 				<p className="mt-2 text-sm text-red-600">
 					If the API reports missing tables, run Python migrations:{" "}
-					<code className="rounded bg-red-100 px-1">./scripts/run_python_migrations.sh</code>
+					<code className="rounded bg-red-100 px-1">
+						./scripts/run_python_migrations.sh
+					</code>
 				</p>
 			</div>
 		);
@@ -134,13 +136,13 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 
 	// Calculate pass rate
 	const passRate = stats?.executionSummary
-		? stats.executionSummary.totalRuns > 0
+		? (stats.executionSummary.totalRuns > 0
 			? Math.round(
 					(stats.executionSummary.totalPassed /
 						stats.executionSummary.totalRuns) *
 						100,
 				)
-			: 0
+			: 0)
 		: 0;
 
 	return (
@@ -287,7 +289,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 				<div className="flex items-center justify-center py-12">
 					<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 				</div>
-			) : testCases.length === 0 ? (
+			) : (testCases.length === 0 ? (
 				<div className="rounded-lg border border-dashed p-12 text-center">
 					<FlaskConical className="mx-auto h-12 w-12 text-muted-foreground" />
 					<h3 className="mt-4 text-lg font-semibold">No test cases found</h3>
@@ -350,7 +352,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 						</table>
 					</div>
 				</div>
-			)}
+			))}
 
 			{/* Create Modal */}
 			{showCreateModal && (
@@ -416,18 +418,18 @@ function TestCaseRow({ testCase }: { testCase: TestCase }) {
 						className={`inline-flex items-center gap-1 text-sm ${
 							testCase.lastExecutionResult === "passed"
 								? "text-green-600"
-								: testCase.lastExecutionResult === "failed"
+								: (testCase.lastExecutionResult === "failed"
 									? "text-red-600"
-									: "text-yellow-600"
+									: "text-yellow-600")
 						}`}
 					>
 						{testCase.lastExecutionResult === "passed" ? (
 							<CheckCircle className="h-4 w-4" />
-						) : testCase.lastExecutionResult === "failed" ? (
+						) : (testCase.lastExecutionResult === "failed" ? (
 							<XCircle className="h-4 w-4" />
 						) : (
 							<Clock className="h-4 w-4" />
-						)}
+						))}
 						{testCase.lastExecutionResult}
 					</span>
 				) : (

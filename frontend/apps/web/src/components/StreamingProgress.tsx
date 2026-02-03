@@ -3,9 +3,9 @@
  * Displays progress for NDJSON streaming operations
  */
 
-import _React from 'react';
-import type { StreamingStats } from '../lib/ndjson-parser';
-import { calculateThroughput } from '../lib/ndjson-parser';
+import _React from "react";
+import type { StreamingStats } from "../lib/ndjson-parser";
+import { calculateThroughput } from "../lib/ndjson-parser";
 
 export interface StreamingProgressProps {
 	stats: StreamingStats | null;
@@ -16,15 +16,23 @@ export interface StreamingProgressProps {
 }
 
 function formatBytes(bytes: number): string {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+	if (bytes < 1024) {
+		return `${bytes} B`;
+	}
+	if (bytes < 1024 * 1024) {
+		return `${(bytes / 1024).toFixed(2)} KB`;
+	}
 	return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
 function formatDuration(ms: number): string {
-	if (ms < 1000) return `${ms.toFixed(0)}ms`;
-	if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-	return `${(ms / 60000).toFixed(1)}m`;
+	if (ms < 1000) {
+		return `${ms.toFixed(0)}ms`;
+	}
+	if (ms < 60_000) {
+		return `${(ms / 1000).toFixed(1)}s`;
+	}
+	return `${(ms / 60_000).toFixed(1)}m`;
 }
 
 export function StreamingProgress({
@@ -32,7 +40,7 @@ export function StreamingProgress({
 	isStreaming,
 	showThroughput = true,
 	showBytes = false,
-	className = '',
+	className = "",
 }: StreamingProgressProps) {
 	if (!stats && !isStreaming) {
 		return null;
@@ -103,7 +111,7 @@ export function StreamingProgress({
 
 				{/* Status text */}
 				<div className="text-sm text-muted-foreground ml-auto">
-					{isStreaming ? 'Streaming...' : 'Complete'}
+					{isStreaming ? "Streaming..." : "Complete"}
 				</div>
 			</div>
 
@@ -119,7 +127,7 @@ export function StreamingProgress({
 				<div className="mt-2 text-sm text-destructive">
 					<details>
 						<summary className="cursor-pointer">
-							{stats.errors.length} error{stats.errors.length > 1 ? 's' : ''}{' '}
+							{stats.errors.length} error{stats.errors.length > 1 ? "s" : ""}{" "}
 							occurred
 						</summary>
 						<ul className="list-disc list-inside mt-1 pl-4">
@@ -171,7 +179,7 @@ export function StreamingProgressBar({
 	current,
 	total,
 	isStreaming,
-	className = '',
+	className = "",
 }: StreamingProgressBarProps) {
 	const percentage = total ? (current / total) * 100 : 0;
 	const showPercentage = total && total > 0;
@@ -181,7 +189,7 @@ export function StreamingProgressBar({
 			<div className="flex justify-between text-sm mb-1">
 				<span className="text-muted-foreground">
 					{current.toLocaleString()}
-					{total ? ` / ${total.toLocaleString()}` : ''} items
+					{total ? ` / ${total.toLocaleString()}` : ""} items
 				</span>
 				{showPercentage && (
 					<span className="font-mono font-semibold">

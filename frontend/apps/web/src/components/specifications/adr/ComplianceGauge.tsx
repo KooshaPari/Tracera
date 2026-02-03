@@ -9,9 +9,13 @@ interface ComplianceGaugeProps {
 }
 
 function getColor(value: number) {
-	if (value >= 90) return "#10b981"; // green-500
-	if (value >= 70) return "#f59e0b"; // amber-500
-	return "#ef4444"; // red-500
+	if (value >= 90) {
+		return "#10b981";
+	} // Green-500
+	if (value >= 70) {
+		return "#f59e0b";
+	} // Amber-500
+	return "#ef4444"; // Red-500
 }
 
 export function ComplianceGauge({
@@ -30,7 +34,7 @@ export function ComplianceGauge({
 	return (
 		<div
 			className={cn("relative flex flex-col items-center", className)}
-			style={{ width: size, height: size }}
+			style={{ height: size, width: size }}
 		>
 			<ResponsiveContainer width="100%" height="100%">
 				<PieChart>

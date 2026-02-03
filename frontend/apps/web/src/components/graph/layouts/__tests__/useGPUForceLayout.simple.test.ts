@@ -2,16 +2,16 @@
  * Simplified Tests for GPU Force Layout Hook Logic
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import type { Edge, Node } from "@xyflow/react";
-import { getGPUForceLayout, disposeGPUForceLayout } from "../gpuForceLayout";
+import { disposeGPUForceLayout, getGPUForceLayout } from "../gpuForceLayout";
 
 function createNodes(count: number): Node[] {
 	return Array.from({ length: count }, (_, i) => ({
-		id: `node-${i}`,
-		type: "default",
-		position: { x: 0, y: 0 },
 		data: {},
+		id: `node-${i}`,
+		position: { x: 0, y: 0 },
+		type: "default",
 	}));
 }
 
@@ -35,8 +35,8 @@ describe("GPU Force Layout Hook Logic", () => {
 
 			const layout = getGPUForceLayout();
 			const result = await layout.simulate(nodes, edges, {
-				iterations: 50,
 				animateTransitions: false,
+				iterations: 50,
 			});
 
 			expect(result).toHaveLength(5);
@@ -53,10 +53,10 @@ describe("GPU Force Layout Hook Logic", () => {
 		it("should preserve node data", async () => {
 			const nodes: Node[] = [
 				{
-					id: "1",
-					type: "custom",
-					position: { x: 0, y: 0 },
 					data: { label: "Test" },
+					id: "1",
+					position: { x: 0, y: 0 },
+					type: "custom",
 				},
 			];
 
@@ -74,7 +74,7 @@ describe("GPU Force Layout Hook Logic", () => {
 			const layout = getGPUForceLayout();
 			const result = await layout.simulate(nodes, edges, {
 				iterations: 20,
-				repulsionStrength: 10000,
+				repulsionStrength: 10_000,
 				theta: 0.6,
 			});
 
@@ -129,7 +129,7 @@ describe("GPU Force Layout Hook Logic", () => {
 
 		it("should handle self-loops", async () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" },
 			];
 			const edges: Edge[] = [{ id: "e1", source: "1", target: "1" }];
 
@@ -163,7 +163,7 @@ describe("GPU Force Layout Hook Logic", () => {
 			const layout = getGPUForceLayout();
 			const result = await layout.simulate(nodes, edges, {
 				iterations: 50,
-				repulsionStrength: 10000,
+				repulsionStrength: 10_000,
 			});
 
 			// Calculate average distance between nodes

@@ -22,8 +22,8 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
 	const [state, setStateInternal] = useState<T>(initialState);
 	const historyRef = useRef<HistoryEntry<T>[]>([
 		{
-			state: initialState,
 			description: "Initial state",
+			state: initialState,
 			timestamp: Date.now(),
 		},
 	]);
@@ -38,8 +38,8 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
 
 			// Add new entry
 			historyRef.current.push({
-				state: newState,
 				description,
+				state: newState,
 				timestamp: Date.now(),
 			});
 
@@ -54,7 +54,9 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
 			if (prevIndex > 0) {
 				const newIndex = prevIndex - 1;
 				const entry = historyRef.current[newIndex];
-				if (entry) setStateInternal(entry.state);
+				if (entry) {
+					setStateInternal(entry.state);
+				}
 				return newIndex;
 			}
 			return prevIndex;
@@ -66,7 +68,9 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
 			if (prevIndex < historyRef.current.length - 1) {
 				const newIndex = prevIndex + 1;
 				const entry = historyRef.current[newIndex];
-				if (entry) setStateInternal(entry.state);
+				if (entry) {
+					setStateInternal(entry.state);
+				}
 				return newIndex;
 			}
 			return prevIndex;
@@ -76,8 +80,8 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
 	const clear = useCallback(() => {
 		historyRef.current = [
 			{
-				state: initialState,
 				description: "Initial state",
+				state: initialState,
 				timestamp: Date.now(),
 			},
 		];
@@ -86,14 +90,14 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
 	}, [initialState]);
 
 	return {
-		state,
-		setState,
-		undo,
-		redo,
-		canUndo: currentIndexState > 0,
 		canRedo: currentIndexState < historyRef.current.length - 1,
-		history: historyRef.current,
-		currentIndex: currentIndexState,
+		canUndo: currentIndexState > 0,
 		clear,
+		currentIndex: currentIndexState,
+		history: historyRef.current,
+		redo,
+		setState,
+		state,
+		undo,
 	};
 }

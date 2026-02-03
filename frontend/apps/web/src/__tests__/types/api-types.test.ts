@@ -118,13 +118,17 @@ describe("API Type Safety", () => {
 
 		it("should have typed filter requests", () => {
 			// Given: Filter parameters
-			type FilterQuery = { filter?: string; sort?: string; limit?: number };
+			interface FilterQuery {
+				filter?: string;
+				sort?: string;
+				limit?: number;
+			}
 
 			// Then: Verify filter types are available
 			const filterExample: FilterQuery = {
 				filter: "status:open",
-				sort: "createdAt:desc",
 				limit: 10,
+				sort: "createdAt:desc",
 			};
 
 			expect(filterExample.filter).toBeTruthy();
@@ -148,17 +152,17 @@ describe("API Type Safety", () => {
 
 		it("should have error response types", () => {
 			// Given: Error responses
-			type ErrorResponse = {
+			interface ErrorResponse {
 				error: string;
 				code?: string;
 				details?: string;
-			};
+			}
 
 			// Then: Verify error structure
 			const errorExample: ErrorResponse = {
-				error: "Not found",
 				code: "NOT_FOUND",
 				details: "Item with id 123 not found",
+				error: "Not found",
 			};
 
 			expect(errorExample.error).toBeTruthy();
@@ -167,7 +171,7 @@ describe("API Type Safety", () => {
 
 		it("should have paginated response types", () => {
 			// Given: Paginated response
-			type PaginatedResponse<T> = {
+			interface PaginatedResponse<T> {
 				data: T[];
 				pagination: {
 					total: number;
@@ -175,15 +179,15 @@ describe("API Type Safety", () => {
 					pageSize: number;
 					totalPages: number;
 				};
-			};
+			}
 
 			// Then: Verify pagination structure
 			const paginatedExample: PaginatedResponse<{ id: string }> = {
 				data: [{ id: "1" }],
 				pagination: {
-					total: 100,
 					page: 1,
 					pageSize: 10,
+					total: 100,
 					totalPages: 10,
 				},
 			};
@@ -217,20 +221,20 @@ describe("API Type Safety", () => {
 
 		it("should have typed query parameters", () => {
 			// Given: Query parameter types
-			type ListItemsQuery = {
+			interface ListItemsQuery {
 				projectId: string;
 				page?: number;
 				limit?: number;
 				filter?: string;
 				sort?: string;
-			};
+			}
 
 			// Then: Verify query parameters are typed
 			const query: ListItemsQuery = {
-				projectId: "proj-123",
-				page: 1,
-				limit: 20,
 				filter: "status:open",
+				limit: 20,
+				page: 1,
+				projectId: "proj-123",
 				sort: "title",
 			};
 
@@ -240,16 +244,16 @@ describe("API Type Safety", () => {
 
 		it("should have typed header parameters", () => {
 			// Given: Header parameter types
-			type RequestHeaders = {
+			interface RequestHeaders {
 				"Content-Type": string;
 				Authorization?: string;
 				"X-Request-ID"?: string;
-			};
+			}
 
 			// Then: Verify headers are typed
 			const headers: RequestHeaders = {
-				"Content-Type": "application/json",
 				Authorization: "Bearer token",
+				"Content-Type": "application/json",
 				"X-Request-ID": "request-id",
 			};
 
@@ -299,9 +303,9 @@ describe("API Type Safety", () => {
 
 			// Then: Verify safe types are available
 			const safeData: SafeRecord = {
-				name: "test",
-				count: 5,
 				active: true,
+				count: 5,
+				name: "test",
 			};
 
 			expect(safeData).toBeDefined();
@@ -310,11 +314,11 @@ describe("API Type Safety", () => {
 
 		it("should enforce type checking on API responses", () => {
 			// Given: Type-safe API response
-			type TypedResponse<T> = {
+			interface TypedResponse<T> {
 				data: T;
 				status: "success" | "error";
 				timestamp: string;
-			};
+			}
 
 			// Then: Verify types are enforced
 			const response: TypedResponse<{ id: string; name: string }> = {
@@ -328,12 +332,18 @@ describe("API Type Safety", () => {
 
 		it("should use discriminated unions instead of any", () => {
 			// Given: Discriminated union types
-			type SuccessResponse = { status: "success"; data: unknown };
-			type ErrorResponse = { status: "error"; error: string };
+			interface SuccessResponse {
+				status: "success";
+				data: unknown;
+			}
+			interface ErrorResponse {
+				status: "error";
+				error: string;
+			}
 			type Response = SuccessResponse | ErrorResponse;
 
 			// Then: Verify discriminated unions work
-			const response: Response = { status: "success", data: { id: "1" } };
+			const response: Response = { data: { id: "1" }, status: "success" };
 
 			if (response.status === "success") {
 				expect(response.data).toBeDefined();
@@ -354,15 +364,15 @@ describe("API Type Safety", () => {
 	describe("Generic Type Parameters", () => {
 		it("should use generic types for collections", () => {
 			// Given: Generic collection types
-			type Collection<T> = {
+			interface Collection<T> {
 				items: T[];
 				count: number;
-			};
+			}
 
 			// Then: Verify generics work
 			const stringCollection: Collection<string> = {
-				items: ["a", "b", "c"],
 				count: 3,
+				items: ["a", "b", "c"],
 			};
 
 			expect(stringCollection.items).toHaveLength(3);
@@ -370,11 +380,11 @@ describe("API Type Safety", () => {
 
 		it("should use generic types for responses", () => {
 			// Given: Generic response type
-			type ApiResponse<T> = {
+			interface ApiResponse<T> {
 				data: T;
 				error?: string;
 				status: number;
-			};
+			}
 
 			// Then: Verify generic responses work
 			const itemResponse: ApiResponse<{ id: string }> = {
@@ -389,7 +399,7 @@ describe("API Type Safety", () => {
 	describe("Conditional Types", () => {
 		it("should use conditional types for flexible APIs", () => {
 			// Given: Conditional type
-			type Flatten<T> = T extends Array<infer U> ? U : T;
+			type Flatten<T> = T extends (infer U)[] ? U : T;
 
 			// Then: Verify conditional types work
 			type Str = Flatten<string[]>;
@@ -406,20 +416,20 @@ describe("API Type Safety", () => {
 	describe("Utility Types", () => {
 		it("should use Omit for optional fields", () => {
 			// Given: Base type with optional fields
-			type User = {
+			interface User {
 				id: string;
 				name: string;
 				email: string;
 				password: string;
-			};
+			}
 
 			type PublicUser = Omit<User, "password">;
 
 			// Then: Verify Omit removes password
 			const publicUser: PublicUser = {
+				email: "john@example.com",
 				id: "1",
 				name: "John",
-				email: "john@example.com",
 			};
 
 			expect(publicUser).toBeDefined();
@@ -445,12 +455,12 @@ describe("API Type Safety", () => {
 
 		it("should use Pick for specific fields", () => {
 			// Given: Pick type
-			type User = {
+			interface User {
 				id: string;
 				name: string;
 				email: string;
 				createdAt: string;
-			};
+			}
 
 			type UserSummary = Pick<User, "id" | "name">;
 
@@ -468,8 +478,8 @@ describe("API Type Safety", () => {
 		it("should infer types correctly", () => {
 			// Given: Type inference
 			const response = {
-				status: 200,
 				data: { id: "1", name: "test" },
+				status: 200,
 				timestamp: new Date(),
 			};
 
@@ -485,9 +495,9 @@ describe("API Type Safety", () => {
 			// eslint-disable-next-line unicorn/consistent-function-scoping -- test helper
 			function getItem(id: string) {
 				return {
+					active: true,
 					id,
 					name: "Test",
-					active: true,
 				};
 			}
 
@@ -531,9 +541,7 @@ describe("API Type Safety", () => {
 
 			// Then: Verify handler typing works
 			// eslint-disable-next-line unicorn/consistent-function-scoping -- test helper
-			const handler: RequestHandler = async (_request) => {
-				return { success: true };
-			};
+			const handler: RequestHandler = async (_request) => ({ success: true });
 
 			expect(handler).toBeDefined();
 		});

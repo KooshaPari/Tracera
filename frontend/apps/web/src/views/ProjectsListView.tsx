@@ -41,8 +41,8 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
 import { cn } from "@/lib/utils";
-import { exportImportApi } from '../api/endpoints';
-import type { CanonicalExport } from '../api/endpoints';
+import { exportImportApi } from "../api/endpoints";
+import type { CanonicalExport } from "../api/endpoints";
 import {
 	useCreateProject,
 	useDeleteProject,
@@ -84,15 +84,12 @@ function ProjectCard({
 			await deleteProject.mutateAsync(project.id);
 			toast.success(`Project "${displayName}" deleted`);
 			onDelete?.(project.id);
-        } catch {
-            toast.error("Failed to delete project");
+		} catch {
+			toast.error("Failed to delete project");
 		}
 	};
 
-	const handleCopyId = () => {
-		undefined;
-		toast.success("Project ID copied to clipboard");
-	};
+	const handleCopyId = () => {};
 
 	return (
 		<Card className="group relative p-5 sm:p-6 border border-border bg-card hover:border-primary/30 hover:bg-card shadow-lg hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-300 ease-out rounded-[2rem] overflow-hidden backdrop-blur-sm cursor-pointer">
@@ -129,10 +126,7 @@ function ProjectCard({
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="w-48">
 								<DropdownMenuItem
-									onClick={(e) => {
-										e.stopPropagation();
-										undefined;
-									}}
+									onClick={(e) => {}}
 									className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
 								>
 									<ExternalLink className="h-4 w-4" />
@@ -160,10 +154,7 @@ function ProjectCard({
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
-									onClick={(e) => {
-										e.stopPropagation();
-										undefined;
-									}}
+									onClick={(e) => {}}
 									className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
 								>
 									<Trash2 className="h-4 w-4" />
@@ -261,8 +252,8 @@ function EditProjectDialog({
 			setName("");
 			setDescription("");
 			onOpenChange(false);
-        } catch {
-            toast.error("Cluster reject: Failed to update project");
+		} catch {
+			toast.error("Cluster reject: Failed to update project");
 		}
 	};
 
@@ -295,7 +286,6 @@ function EditProjectDialog({
 								onChange={(e) => setName(e.target.value)}
 								placeholder="e.g. PROJECT-X-ALPHA"
 								className="h-12 bg-muted/30 border-none rounded-xl font-bold px-4"
-								
 							/>
 						</div>
 
@@ -369,8 +359,8 @@ function CreateProjectDialog({
 			setDescription("");
 			onOpenChange(false);
 			undefined;
-        } catch {
-            toast.error("Cluster reject: Failed to initialize project");
+		} catch {
+			toast.error("Cluster reject: Failed to initialize project");
 		}
 	};
 
@@ -403,7 +393,6 @@ function CreateProjectDialog({
 								onChange={(e) => setName(e.target.value)}
 								placeholder="e.g. PROJECT-X-ALPHA"
 								className="h-12 bg-muted/30 border-none rounded-xl font-bold px-4"
-								
 							/>
 						</div>
 
@@ -471,10 +460,14 @@ export function ProjectsListView() {
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [showExportDialog, setShowExportDialog] = useState(false);
 	const [showImportDialog, setShowImportDialog] = useState(false);
-	const [exportFormat, setExportFormat] = useState<"json" | "csv" | "full">("json");
+	const [exportFormat, setExportFormat] = useState<"json" | "csv" | "full">(
+		"json",
+	);
 	const [exportProjectId, setExportProjectId] = useState<string | null>(null);
 	const [importFormat] = useState<"json" | "csv">("json");
-	const [importMode, setImportMode] = useState<"into-existing" | "full">("full");
+	const [importMode, setImportMode] = useState<"into-existing" | "full">(
+		"full",
+	);
 	const [importProjectId, setImportProjectId] = useState<string | null>(null);
 	const [importFile, setImportFile] = useState<File | null>(null);
 	const [isExporting, setIsExporting] = useState(false);
@@ -484,8 +477,9 @@ export function ProjectsListView() {
 	const showCreateDialog = searchParams?.action === "create";
 
 	const handleOpenChange = (open: boolean) => {
-		if (!open)
-			{undefined;}
+		if (!open) {
+			undefined;
+		}
 	};
 
 	const handleExport = async () => {
@@ -497,10 +491,16 @@ export function ProjectsListView() {
 		setIsExporting(true);
 		try {
 			const result = await exportImportApi.export(projectId, exportFormat);
-			const blob = result instanceof Blob
-				? result
-				: new Blob([JSON.stringify(result)], { type: "application/json" });
-			const ext = exportFormat === "full" ? "json" : (exportFormat === "csv" ? "csv" : "json");
+			const blob =
+				result instanceof Blob
+					? result
+					: new Blob([JSON.stringify(result)], { type: "application/json" });
+			const ext =
+				exportFormat === "full"
+					? "json"
+					: (exportFormat === "csv"
+						? "csv"
+						: "json");
 			const url = globalThis.URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
@@ -509,22 +509,32 @@ export function ProjectsListView() {
 			a.click();
 			globalThis.URL.revokeObjectURL(url);
 			document.body.removeChild(a);
-			toast.success(exportFormat === "full" ? "Full project export completed" : "Registry backup completed");
+			toast.success(
+				exportFormat === "full"
+					? "Full project export completed"
+					: "Registry backup completed",
+			);
 			setShowExportDialog(false);
-        } catch {
-            toast.error("Export sequence failed");
+		} catch {
+			toast.error("Export sequence failed");
 		} finally {
 			setIsExporting(false);
 		}
 	};
 
 	const handleImport = async () => {
-		if (!importFile) {return;}
+		if (!importFile) {
+			return;
+		}
 		setIsImporting(true);
 		try {
 			const content = await importFile.text();
 			if (importMode === "full") {
-				const parsed = JSON.parse(content) as { project?: unknown; items?: unknown[]; links?: unknown[] };
+				const parsed = JSON.parse(content) as {
+					project?: unknown;
+					items?: unknown[];
+					links?: unknown[];
+				};
 				if (!parsed.project || !Array.isArray(parsed.items)) {
 					toast.error("Invalid canonical format: need project and items");
 					return;
@@ -532,10 +542,17 @@ export function ProjectsListView() {
 				const canonical = {
 					items: parsed.items as CanonicalExport["items"],
 					links: (parsed.links ?? []) as CanonicalExport["links"],
-					project: parsed.project as { id: string; name: string; description?: string; created_at?: string },
+					project: parsed.project as {
+						id: string;
+						name: string;
+						description?: string;
+						created_at?: string;
+					},
 				};
 				const result = await exportImportApi.importFull(canonical);
-				toast.success(`New project created: ${result.items_imported} items, ${result.links_imported} links`);
+				toast.success(
+					`New project created: ${result.items_imported} items, ${result.links_imported} links`,
+				);
 				setShowImportDialog(false);
 				setImportFile(null);
 				undefined;
@@ -545,13 +562,19 @@ export function ProjectsListView() {
 					toast.error("Select a project to import into");
 					return;
 				}
-				const result = await exportImportApi.import(projectId, importFormat, content);
+				const result = await exportImportApi.import(
+					projectId,
+					importFormat,
+					content,
+				);
 				toast.success(`Imported ${result.imported_count} nodes successfully`);
 				setShowImportDialog(false);
 				setImportFile(null);
 			}
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Import integrity failure");
+			toast.error(
+				error instanceof Error ? error.message : "Import integrity failure",
+			);
 		} finally {
 			setIsImporting(false);
 		}
@@ -559,33 +582,7 @@ export function ProjectsListView() {
 
 	const projectsArray = Array.isArray(projects) ? projects : [];
 
-	useEffect(() => {
-		if (projectsArray.length === 0) {return;}
-		const fetchCounts = async () => {
-			const counts: Record<string, number> = {};
-			for (const p of projectsArray) {
-				try {
-					const res = await fetch(
-						`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/v1/items?project_id=${p.id}&limit=1`,
-						{
-							headers: {
-								"X-Bulk-Operation": "true",
-								...getAuthHeaders(),
-							},
-						},
-					);
-					if (res.ok) {
-						const data = await res.json();
-						counts[p.id] = data.total ?? 0;
-					}
-				} catch {
-					counts[p.id] = 0;
-				}
-			}
-			setProjectItemCounts(counts);
-		};
-		undefined;
-	}, [projectsArray]);
+	useEffect(() => {}, [projectsArray]);
 
 	const filteredAndSortedProjects = useMemo(() => {
 		const filtered = projectsArray.filter((p) => {
@@ -601,11 +598,13 @@ export function ProjectsListView() {
 					const aName = getProjectDisplayName(a.project);
 					const bName = getProjectDisplayName(b.project);
 					comp = aName.localeCompare(bName);
-				} else if (sortBy === "date")
-					{comp =
+				} else if (sortBy === "date") {
+					comp =
 						new Date(a.project.createdAt || 0).getTime() -
-						new Date(b.project.createdAt || 0).getTime();}
-				else {comp = a.itemCount - b.itemCount;}
+						new Date(b.project.createdAt || 0).getTime();
+				} else {
+					comp = a.itemCount - b.itemCount;
+				}
 				return sortOrder === "asc" ? comp : -comp;
 			});
 	}, [projectsArray, searchQuery, sortBy, sortOrder, projectItemCounts]);
@@ -655,7 +654,7 @@ export function ProjectsListView() {
 					</Button>
 					<Button
 						size="sm"
-						onClick={() => undefined}
+						onClick={() => {}}
 						className="rounded-xl shadow-lg shadow-primary/20 gap-2 font-black uppercase tracking-widest text-[10px]"
 					>
 						<Plus className="h-4 w-4" /> New Registry
@@ -739,7 +738,9 @@ export function ProjectsListView() {
 				project={editingProject}
 				open={Boolean(editingProject)}
 				onOpenChange={(open) => {
-					if (!open) {setEditingProject(null);}
+					if (!open) {
+						setEditingProject(null);
+					}
 				}}
 			/>
 
@@ -754,7 +755,9 @@ export function ProjectsListView() {
 					</p>
 					<div className="space-y-6">
 						<div>
-							<Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Project</Label>
+							<Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+								Project
+							</Label>
 							<Select
 								value={exportProjectId ?? projectsArray[0]?.id ?? ""}
 								onValueChange={(v) => setExportProjectId(v || null)}
@@ -772,10 +775,14 @@ export function ProjectsListView() {
 							</Select>
 						</div>
 						<div>
-							<Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Format</Label>
+							<Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+								Format
+							</Label>
 							<Select
 								value={exportFormat}
-								onValueChange={(v: "json" | "csv" | "full") => setExportFormat(v)}
+								onValueChange={(v: "json" | "csv" | "full") =>
+									setExportFormat(v)
+								}
 							>
 								<SelectTrigger className="h-12 bg-muted/30 border-none rounded-xl font-bold mt-1">
 									<SelectValue />
@@ -783,13 +790,17 @@ export function ProjectsListView() {
 								<SelectContent>
 									<SelectItem value="json">JSON (items)</SelectItem>
 									<SelectItem value="csv">CSV</SelectItem>
-									<SelectItem value="full">Full (project + items + links)</SelectItem>
+									<SelectItem value="full">
+										Full (project + items + links)
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 						<Button
 							onClick={handleExport}
-							disabled={isExporting || !(exportProjectId ?? projectsArray[0]?.id)}
+							disabled={
+								isExporting || !(exportProjectId ?? projectsArray[0]?.id)
+							}
 							className="w-full h-12 rounded-xl font-black uppercase tracking-widest shadow-lg"
 						>
 							{isExporting ? "Exporting…" : "Initialize Dispatch"}
@@ -808,23 +819,33 @@ export function ProjectsListView() {
 					</p>
 					<div className="space-y-6">
 						<div>
-							<Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Mode</Label>
+							<Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+								Mode
+							</Label>
 							<Select
 								value={importMode}
-								onValueChange={(v: "into-existing" | "full") => setImportMode(v)}
+								onValueChange={(v: "into-existing" | "full") =>
+									setImportMode(v)
+								}
 							>
 								<SelectTrigger className="h-12 bg-muted/30 border-none rounded-xl font-bold mt-1">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="full">As new project (canonical JSON)</SelectItem>
-									<SelectItem value="into-existing">Into existing project (items JSON/CSV)</SelectItem>
+									<SelectItem value="full">
+										As new project (canonical JSON)
+									</SelectItem>
+									<SelectItem value="into-existing">
+										Into existing project (items JSON/CSV)
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 						{importMode === "into-existing" && (
 							<div>
-								<Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Target project</Label>
+								<Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+									Target project
+								</Label>
 								<Select
 									value={importProjectId ?? projectsArray[0]?.id ?? ""}
 									onValueChange={(v) => setImportProjectId(v || null)}
@@ -848,7 +869,9 @@ export function ProjectsListView() {
 								type="file"
 								id="f-up"
 								className="hidden"
-								accept={importMode === "full" ? "application/json,.json" : undefined}
+								accept={
+									importMode === "full" ? "application/json,.json" : undefined
+								}
 								onChange={(e) => setImportFile(e.target.files?.[0] || null)}
 							/>
 							<Label htmlFor="f-up" className="cursor-pointer">
@@ -856,13 +879,22 @@ export function ProjectsListView() {
 									Browse Files
 								</span>
 								<p className="text-[10px] text-muted-foreground mt-1 font-medium">
-									{importFile ? importFile.name : (importMode === "full" ? "Canonical JSON" : "JSON or CSV")}
+									{importFile
+										? importFile.name
+										: (importMode === "full"
+											? "Canonical JSON"
+											: "JSON or CSV")}
 								</p>
 							</Label>
 						</div>
 						<Button
 							onClick={handleImport}
-							disabled={isImporting || !importFile || (importMode === "into-existing" && !(importProjectId ?? projectsArray[0]?.id))}
+							disabled={
+								isImporting ||
+								!importFile ||
+								(importMode === "into-existing" &&
+									!(importProjectId ?? projectsArray[0]?.id))
+							}
 							className="w-full h-12 rounded-xl font-black uppercase tracking-widest shadow-lg"
 						>
 							{isImporting ? "Importing…" : "Execute Ingestion"}

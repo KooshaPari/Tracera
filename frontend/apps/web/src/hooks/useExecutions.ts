@@ -1,11 +1,11 @@
 // React hooks for execution management
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	type ExecutionComplete,
-	type ExecutionCreate,
-	type ExecutionEnvironmentConfigUpdate,
-	executionsApi,
+import { executionsApi } from "../api/executions";
+import type {
+	ExecutionComplete,
+	ExecutionCreate,
+	ExecutionEnvironmentConfigUpdate,
 } from "../api/executions";
 
 export function useExecutions(
@@ -18,17 +18,17 @@ export function useExecutions(
 	},
 ) {
 	return useQuery({
-		queryKey: ["executions", projectId, options],
-		queryFn: () => executionsApi.list(projectId, options),
 		enabled: !!projectId,
+		queryFn: () => executionsApi.list(projectId, options),
+		queryKey: ["executions", projectId, options],
 	});
 }
 
 export function useExecution(projectId: string, executionId: string) {
 	return useQuery({
-		queryKey: ["execution", projectId, executionId],
-		queryFn: () => executionsApi.get(projectId, executionId),
 		enabled: !!projectId && !!executionId,
+		queryFn: () => executionsApi.get(projectId, executionId),
+		queryKey: ["execution", projectId, executionId],
 	});
 }
 
@@ -38,18 +38,18 @@ export function useExecutionArtifacts(
 	artifactType?: string,
 ) {
 	return useQuery({
-		queryKey: ["execution-artifacts", projectId, executionId, artifactType],
+		enabled: !!projectId && !!executionId,
 		queryFn: () =>
 			executionsApi.listArtifacts(projectId, executionId, artifactType),
-		enabled: !!projectId && !!executionId,
+		queryKey: ["execution-artifacts", projectId, executionId, artifactType],
 	});
 }
 
 export function useExecutionConfig(projectId: string) {
 	return useQuery({
-		queryKey: ["execution-config", projectId],
-		queryFn: () => executionsApi.getConfig(projectId),
 		enabled: !!projectId,
+		queryFn: () => executionsApi.getConfig(projectId),
+		queryKey: ["execution-config", projectId],
 	});
 }
 
@@ -59,7 +59,7 @@ export function useCreateExecution(projectId: string) {
 		mutationFn: (data: ExecutionCreate) =>
 			executionsApi.create(projectId, data),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
+			undefined;
 		},
 	});
 }
@@ -70,10 +70,8 @@ export function useStartExecution(projectId: string) {
 		mutationFn: (executionId: string) =>
 			executionsApi.start(projectId, executionId),
 		onSuccess: (_, executionId) => {
-			void queryClient.invalidateQueries({
-				queryKey: ["execution", projectId, executionId],
-			});
-			void queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -89,10 +87,8 @@ export function useCompleteExecution(projectId: string) {
 			data: ExecutionComplete;
 		}) => executionsApi.complete(projectId, executionId, data),
 		onSuccess: (_, { executionId }) => {
-			void queryClient.invalidateQueries({
-				queryKey: ["execution", projectId, executionId],
-			});
-			void queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -103,9 +99,7 @@ export function useUpdateExecutionConfig(projectId: string) {
 		mutationFn: (data: ExecutionEnvironmentConfigUpdate) =>
 			executionsApi.updateConfig(projectId, data),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ["execution-config", projectId],
-			});
+			undefined;
 		},
 	});
 }

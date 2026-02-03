@@ -3,7 +3,8 @@
  * Extracts component props, variants, and metadata using TypeScript AST
  */
 
-import { Project, type SourceFile, SyntaxKind } from "ts-morph";
+import { Project, SyntaxKind } from 'ts-morph';
+import type { SourceFile } from 'ts-morph';
 import type { PropInfo, VariantInfo } from "./config";
 
 export interface ComponentInfo {
@@ -39,12 +40,12 @@ export function analyzeComponent(filePath: string): ComponentInfo | null {
 	const exportType = getExportType(sourceFile, componentName);
 
 	return {
-		name: componentName,
-		filePath,
 		exportType,
-		variants,
-		props,
+		filePath,
 		hasCVA,
+		name: componentName,
+		props,
+		variants,
 	};
 }
 
@@ -59,7 +60,7 @@ function extractComponentName(sourceFile: SourceFile): string | null {
 
 	for (const decl of exportAssignments) {
 		const initializer = decl.getInitializer();
-		if (!initializer) continue;
+		if (!initializer) {continue;}
 
 		// Check for forwardRef pattern
 		if (initializer.getText().includes("forwardRef")) {
@@ -110,28 +111,28 @@ function extractCVAVariants(sourceFile: SourceFile): VariantInfo[] {
 
 	for (const call of callExpressions) {
 		const expression = call.getExpression();
-		if (expression.getText() !== "cva") continue;
+		if (expression.getText() !== "cva") {continue;}
 
 		const args = call.getArguments();
-		if (args.length < 2) continue;
+		if (args.length < 2) {continue;}
 
 		const configArg = args[1];
 		if (
 			!configArg ||
 			configArg.getKind() !== SyntaxKind.ObjectLiteralExpression
 		)
-			continue;
+			{continue;}
 
 		// Find variants property
 		const configObj = configArg.asKind(SyntaxKind.ObjectLiteralExpression);
-		if (!configObj) continue;
+		if (!configObj) {continue;}
 
 		const variantsProp = configObj.getProperty("variants");
 		if (
 			!variantsProp ||
 			variantsProp.getKind() !== SyntaxKind.PropertyAssignment
 		)
-			continue;
+			{continue;}
 
 		const variantsValue = variantsProp
 			.asKind(SyntaxKind.PropertyAssignment)
@@ -140,19 +141,19 @@ function extractCVAVariants(sourceFile: SourceFile): VariantInfo[] {
 			!variantsValue ||
 			variantsValue.getKind() !== SyntaxKind.ObjectLiteralExpression
 		)
-			continue;
+			{continue;}
 
 		const variantsObj = variantsValue.asKind(
 			SyntaxKind.ObjectLiteralExpression,
 		);
-		if (!variantsObj) continue;
+		if (!variantsObj) {continue;}
 
 		// Extract each variant
 		for (const prop of variantsObj.getProperties()) {
-			if (prop.getKind() !== SyntaxKind.PropertyAssignment) continue;
+			if (prop.getKind() !== SyntaxKind.PropertyAssignment) {continue;}
 
 			const propAssignment = prop.asKind(SyntaxKind.PropertyAssignment);
-			if (!propAssignment) continue;
+			if (!propAssignment) {continue;}
 
 			const variantName = propAssignment.getName();
 			const variantValue = propAssignment.getInitializer();
@@ -161,16 +162,16 @@ function extractCVAVariants(sourceFile: SourceFile): VariantInfo[] {
 				!variantValue ||
 				variantValue.getKind() !== SyntaxKind.ObjectLiteralExpression
 			)
-				continue;
+				{continue;}
 
 			const variantObj = variantValue.asKind(
 				SyntaxKind.ObjectLiteralExpression,
 			);
-			if (!variantObj) continue;
+			if (!variantObj) {continue;}
 
 			const options = variantObj
 				.getProperties()
-				.map((p) => p.getName().replace(/['"]/g, ""));
+				.map((p) => p.getName().replaceAll(/['"]/g, ""));
 
 			variants.push({
 				name: variantName,
@@ -196,15 +197,15 @@ function extractCVAVariants(sourceFile: SourceFile): VariantInfo[] {
 				);
 				if (defaultObj) {
 					for (const prop of defaultObj.getProperties()) {
-						if (prop.getKind() !== SyntaxKind.PropertyAssignment) continue;
+						if (prop.getKind() !== SyntaxKind.PropertyAssignment) {continue;}
 						const propAssignment = prop.asKind(SyntaxKind.PropertyAssignment);
-						if (!propAssignment) continue;
+						if (!propAssignment) {continue;}
 
 						const name = propAssignment.getName();
 						const value = propAssignment
 							.getInitializer()
 							?.getText()
-							.replace(/['"]/g, "");
+							.replaceAll(/['"]/g, "");
 
 						const variant = variants.find((v) => v.name === name);
 						if (variant && value) {
@@ -241,8 +242,8 @@ function extractComponentProps(
 
 				props.push({
 					name,
-					type,
 					required,
+					type,
 				});
 			}
 			break;
@@ -263,8 +264,8 @@ function extractComponentProps(
 
 				props.push({
 					name,
-					type: propType.getText(),
 					required,
+					type: propType.getText(),
 				});
 			}
 			break;
@@ -301,7 +302,7 @@ export function analyzeComponents(filePaths: string[]): ComponentInfo[] {
 				results.push(info);
 			}
 		} catch (error) {
-			console.error(`Error analyzing ${filePath}:`, error);
+			
 		}
 	}
 

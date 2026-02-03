@@ -136,13 +136,16 @@ function getMatchedText(
 	const lowerQuery = query.toLowerCase();
 
 	switch (matchType) {
-		case "title":
+		case "title": {
 			return item.title;
-		case "description":
+		}
+		case "description": {
 			return item.description;
-		case "type":
+		}
+		case "type": {
 			return item.type;
-		case "dimension":
+		}
+		case "dimension": {
 			if (item.dimensions) {
 				for (const [_key, value] of Object.entries(item.dimensions)) {
 					if (
@@ -154,8 +157,10 @@ function getMatchedText(
 				}
 			}
 			return undefined;
-		default:
+		}
+		default: {
 			return undefined;
+		}
 	}
 }
 
@@ -197,10 +202,10 @@ function getEquivalences(
 			const equivalentItem = allItems.get(equivalentId);
 			if (equivalentItem) {
 				equivalences.push({
+					confidence: 1.0,
 					equivalentItemId: equivalentId,
 					equivalentPerspective:
 						equivalentItem.perspective || equivalentItem.view,
-					confidence: 1.0,
 					linkType: "same_as",
 				});
 			}
@@ -224,11 +229,11 @@ function getEquivalences(
 				!equivalences.some((e) => e.equivalentItemId === equivalentId)
 			) {
 				equivalences.push({
+					confidence: link.confidence ?? 0.8,
 					equivalentItemId: equivalentId,
 					equivalentPerspective:
 						equivalentItem.perspective || equivalentItem.view,
 					linkId: link.id,
-					confidence: link.confidence ?? 0.8,
 					linkType: link.type as "same_as" | "represents" | "manifests_as",
 				});
 			}
@@ -236,9 +241,9 @@ function getEquivalences(
 	}
 
 	// Deduplicate and sort by confidence
-	const uniqueEquivalences = Array.from(
-		new Map(equivalences.map((e) => [e.equivalentItemId, e])).values(),
-	);
+	const uniqueEquivalences = [
+		...new Map(equivalences.map((e) => [e.equivalentItemId, e])).values(),
+	];
 	uniqueEquivalences.sort((a, b) => b.confidence - a.confidence);
 
 	return uniqueEquivalences;
@@ -318,7 +323,9 @@ export function performCrossPerspectiveSearch(
 				perspective,
 				matchType,
 				score,
-			...(getMatchedText(item, query, matchType) && { matchedText: getMatchedText(item, query, matchType) }),
+				...(getMatchedText(item, query, matchType) && {
+					matchedText: getMatchedText(item, query, matchType),
+				}),
 				equivalences,
 			});
 		}
@@ -346,16 +353,12 @@ export function performCrossPerspectiveSearch(
 	}
 
 	// Convert to array and sort perspectives alphabetically
-	const grouped: GroupedSearchResults[] = Array.from(
-		groupedByPerspective.entries(),
-	)
-		.map(([perspective, results]) => ({
-			perspective,
-			results,
-			count: results.length,
-		}))
-		.slice()
-		.sort((a, b) => a.perspective.localeCompare(b.perspective));
+	const grouped: GroupedSearchResults[] = [...[...groupedByPerspective.entries()].map(([perspective, results]) => ({
+	count: results.length,
+	perspective,
+	results
+}))]
+		.toSorted((a, b) => a.perspective.localeCompare(b.perspective));
 
 	return grouped;
 }
@@ -395,7 +398,7 @@ export function useCrossPerspectiveSearch() {
 
 		// Remove least used entries if cache is too large
 		if (cache.size > MAX_CACHE_ENTRIES) {
-			const entries = Array.from(cache.entries());
+			const entries = [...cache.entries()];
 			entries.sort((a, b) => a[1].hitCount - b[1].hitCount);
 
 			const toDelete = entries.slice(0, cache.size - MAX_CACHE_ENTRIES);
@@ -420,7 +423,7 @@ export function useCrossPerspectiveSearch() {
 			// Check cache
 			const cached = searchCacheRef.current.get(cacheKey);
 			if (cached) {
-				cached.hitCount++;
+				cached.hitCount += 1;
 				// Convert cached results back to grouped format
 				const grouped = new Map<string, CrossPerspectiveSearchResult[]>();
 
@@ -430,13 +433,13 @@ export function useCrossPerspectiveSearch() {
 					grouped.set(result.perspective, existing);
 				}
 
-				return [...Array.from(grouped.entries())
+				return [...grouped.entries()]
 					.map(([perspective, results]) => ({
+						count: results.length,
 						perspective,
 						results,
-						count: results.length,
-					}))]
-					.sort((a, b) => a.perspective.localeCompare(b.perspective));
+					}))
+					.toSorted((a, b) => a.perspective.localeCompare(b.perspective));
 			}
 
 			// Perform search
@@ -452,9 +455,9 @@ export function useCrossPerspectiveSearch() {
 
 			// Cache the results
 			searchCacheRef.current.set(cacheKey, {
+				hitCount: 0,
 				results: flatResults,
 				timestamp: Date.now(),
-				hitCount: 0,
 			});
 
 			// Clean cache if needed
@@ -475,7 +478,7 @@ export function useCrossPerspectiveSearch() {
 			query: string,
 			filters: SearchFilters | undefined,
 			onResults: (results: GroupedSearchResults[]) => void,
-			delay: number = 300,
+			delay = 300,
 		) => {
 			if (debounceTimerRef.current) {
 				clearTimeout(debounceTimerRef.current);
@@ -495,7 +498,7 @@ export function useCrossPerspectiveSearch() {
 	const addToHistory = useCallback((query: string, filters?: SearchFilters) => {
 		setSearchHistory((prev) => {
 			const filtered = prev.filter((entry) => entry.query !== query);
-			return [{ query, timestamp: Date.now(), filters }, ...filtered].slice(
+			return [{ filters, query, timestamp: Date.now() }, ...filtered].slice(
 				0,
 				MAX_HISTORY_ENTRIES,
 			);
@@ -505,16 +508,15 @@ export function useCrossPerspectiveSearch() {
 	/**
 	 * Get search history
 	 */
-	const getHistory = useCallback(() => {
-		return searchHistory.map((entry) => entry.query);
-	}, [searchHistory]);
+	const getHistory = useCallback(
+		() => searchHistory.map((entry) => entry.query),
+		[searchHistory],
+	);
 
 	/**
 	 * Get full history with filters
 	 */
-	const getFullHistory = useCallback(() => {
-		return searchHistory;
-	}, [searchHistory]);
+	const getFullHistory = useCallback(() => searchHistory, [searchHistory]);
 
 	/**
 	 * Clear search history
@@ -532,12 +534,12 @@ export function useCrossPerspectiveSearch() {
 			filters: SearchFilters,
 			results: CrossPerspectiveSearchResult[],
 		) => {
-			const id = `saved-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+			const id = `saved-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 			const newSearch: SavedSearch = {
+				createdAt: Date.now(),
+				filters,
 				id,
 				query,
-				filters,
-				createdAt: Date.now(),
 				results,
 			};
 
@@ -557,17 +559,14 @@ export function useCrossPerspectiveSearch() {
 	/**
 	 * Get all saved searches
 	 */
-	const getSavedSearches = useCallback(() => {
-		return savedSearches;
-	}, [savedSearches]);
+	const getSavedSearches = useCallback(() => savedSearches, [savedSearches]);
 
 	/**
 	 * Load a saved search
 	 */
 	const loadSavedSearch = useCallback(
-		(id: string): SavedSearch | undefined => {
-			return savedSearches.find((search) => search.id === id);
-		},
+		(id: string): SavedSearch | undefined =>
+			savedSearches.find((search) => search.id === id),
 		[savedSearches],
 	);
 
@@ -575,7 +574,7 @@ export function useCrossPerspectiveSearch() {
 	 * Get search suggestions based on query
 	 */
 	const getSuggestions = useCallback(
-		(items: Item[], query: string, limit: number = 10): string[] => {
+		(items: Item[], query: string, limit = 10): string[] => {
 			if (!query.trim()) {
 				return [];
 			}
@@ -613,7 +612,7 @@ export function useCrossPerspectiveSearch() {
 				}
 			}
 
-			return Array.from(suggestions).slice(0, limit);
+			return [...suggestions].slice(0, limit);
 		},
 		[searchHistory],
 	);
@@ -648,7 +647,7 @@ export function useCrossPerspectiveSearch() {
 				for (const result of group.results) {
 					const row = [
 						result.item.id,
-						`"${result.item.title.replace(/"/g, '""')}"`,
+						`"${result.item.title.replaceAll(/"/g, '""')}"`,
 						result.perspective,
 						result.item.type || "",
 						result.item.status || "",
@@ -683,51 +682,52 @@ export function useCrossPerspectiveSearch() {
 	 */
 	const getCacheStats = useCallback(() => {
 		const cache = searchCacheRef.current;
-		const entries: Array<{
+		const entries: {
 			key: string;
 			hits: number;
 			age: number;
-		}> = [];
+		}[] = [];
 
 		cache.forEach((entry, key) => {
 			entries.push({
-				key,
-				hits: entry.hitCount,
 				age: Date.now() - entry.timestamp,
+				hits: entry.hitCount,
+				key,
 			});
 		});
 
 		const stats = {
-			size: cache.size,
 			entries,
+			size: cache.size,
 		};
 		return stats;
 	}, []);
 
 	// Cleanup debounce timer on unmount
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			if (debounceTimerRef.current) {
 				clearTimeout(debounceTimerRef.current);
 			}
-		};
-	}, []);
+		},
+		[],
+	);
 
 	return {
-		performSearch,
-		debouncedSearch,
 		addToHistory,
-		getHistory,
-		getFullHistory,
+		clearCache,
 		clearHistory,
-		saveSearch,
+		debouncedSearch,
 		deleteSavedSearch,
-		getSavedSearches,
-		loadSavedSearch,
-		getSuggestions,
 		exportResults,
 		exportResultsCSV,
-		clearCache,
 		getCacheStats,
+		getFullHistory,
+		getHistory,
+		getSavedSearches,
+		getSuggestions,
+		loadSavedSearch,
+		performSearch,
+		saveSearch,
 	};
 }

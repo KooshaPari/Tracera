@@ -5,8 +5,9 @@
 
 import type { CodeReference } from "@tracertm/types";
 import React, { useCallback, useState } from "react";
-import { type UICodeTraceChain, UICodeTracePanel } from "./UICodeTracePanel";
-import { logger } from '@/lib/logger';
+import { UICodeTracePanel } from "./UICodeTracePanel";
+import type { UICodeTraceChain } from "./UICodeTracePanel";
+import { logger } from "@/lib/logger";
 
 // =============================================================================
 // EXAMPLE 1: Basic Integration with State Management
@@ -22,7 +23,7 @@ export function BasicUICodeTracePanelExample() {
 
 	// Simulate fetching trace chain from API
 	/*
-	const handleFetchTraceChain = useCallback(async (componentId: string) => {
+	Const handleFetchTraceChain = useCallback(async (componentId: string) => {
 		setIsLoading(true);
 		try {
 			// In real app, call your tRPC endpoint
@@ -48,12 +49,12 @@ export function BasicUICodeTracePanelExample() {
 
 	const handleOpenRequirement = useCallback((requirementId: string) => {
 		// Navigate to requirement detail page
-		window.location.href = `/items/${requirementId}`;
+		globalThis.location.href = `/items/${requirementId}`;
 	}, []);
 
 	const handleNavigateToUI = useCallback((componentPath: string) => {
 		// Navigate to component file or preview
-		window.location.href = `/components/${componentPath}`;
+		globalThis.location.href = `/components/${componentPath}`;
 	}, []);
 
 	const handleRefreshTrace = useCallback(async () => {
@@ -61,10 +62,10 @@ export function BasicUICodeTracePanelExample() {
 			setIsLoading(true);
 			try {
 				// Refetch the trace chain
-				// const fresh = await trpc.traces.getUICodeTrace.query({
-				//   componentId: traceChain.id
+				// Const fresh = await trpc.traces.getUICodeTrace.query({
+				//   ComponentId: traceChain.id
 				// });
-				// setTraceChain(fresh);
+				// SetTraceChain(fresh);
 			} finally {
 				setIsLoading(false);
 			}
@@ -97,7 +98,7 @@ export function TRPCIntegrationExample() {
 	);
 
 	// Example tRPC query (you need to set this up in your router)
-	// const { data: traceChain, isLoading, refetch } = trpc.traces.getUICodeTrace.useQuery(
+	// Const { data: traceChain, isLoading, refetch } = trpc.traces.getUICodeTrace.useQuery(
 	//   { componentId: selectedComponentId! },
 	//   { enabled: !!selectedComponentId }
 	// );
@@ -112,7 +113,7 @@ export function TRPCIntegrationExample() {
 	}, []);
 
 	const handleRefresh = useCallback(async () => {
-		// refetch(); // If using tRPC
+		// Refetch(); // If using tRPC
 	}, []);
 
 	return (
@@ -152,8 +153,8 @@ export function TRPCIntegrationExample() {
  */
 export function AtomStateIntegrationExample() {
 	// In real app:
-	// const [selectedTrace, setSelectedTrace] = useAtom(selectedTraceAtom);
-	// const [traceHistory, setTraceHistory] = useAtom(traceHistoryAtom);
+	// Const [selectedTrace, setSelectedTrace] = useAtom(selectedTraceAtom);
+	// Const [traceHistory, setTraceHistory] = useAtom(traceHistoryAtom);
 
 	// Mock state
 	const [selectedTrace, _setSelectedTrace] = useState<UICodeTraceChain | null>(
@@ -165,8 +166,8 @@ export function AtomStateIntegrationExample() {
 		setIsRefreshing(true);
 		try {
 			// Fetch fresh trace data
-			// const fresh = await api.traces.getUICodeTrace(selectedTrace?.id);
-			// setSelectedTrace(fresh);
+			// Const fresh = await api.traces.getUICodeTrace(selectedTrace?.id);
+			// SetSelectedTrace(fresh);
 		} finally {
 			setIsRefreshing(false);
 		}
@@ -199,8 +200,8 @@ export function SidePanelLayoutExample() {
 		setIsLoading(true);
 		try {
 			// Fetch trace chain for selected item
-			// const trace = await api.traces.getUICodeTrace({ componentId: itemId });
-			// setTraceChain(trace);
+			// Const trace = await api.traces.getUICodeTrace({ componentId: itemId });
+			// SetTraceChain(trace);
 		} finally {
 			setIsLoading(false);
 		}
@@ -267,8 +268,8 @@ export function ModalDialogExample() {
 
 	const handleOpenTraceModal = useCallback(async (_componentId: string) => {
 		// Fetch trace data
-		// const trace = await api.traces.getUICodeTrace({ componentId });
-		// setTraceChain(trace);
+		// Const trace = await api.traces.getUICodeTrace({ componentId });
+		// SetTraceChain(trace);
 		setIsOpen(true);
 	}, []);
 
@@ -342,9 +343,9 @@ export function ErrorHandlingExample() {
 		setError(null);
 		try {
 			// TODO: wire up when API is available
-			// const trace = await api.traces.getUICodeTrace({ componentId });
-			// setTraceChain(trace);
-			void componentId;
+			// Const trace = await api.traces.getUICodeTrace({ componentId });
+			// SetTraceChain(trace);
+			undefined;
 			setTraceChain(null);
 		} catch (error) {
 			const message =
@@ -391,17 +392,19 @@ export function URLSearchParamsExample() {
 	const [isLoading, setIsLoading] = useState(false);
 
 	// Get componentId from URL
-	const searchParams = new URLSearchParams(window.location.search);
+	const searchParams = new URLSearchParams(globalThis.location.search);
 	const componentId = searchParams.get("component");
 
 	// Fetch trace when component changes
 	const fetchTrace = useCallback(async () => {
-		if (!componentId) return;
+		if (!componentId) {
+			return;
+		}
 
 		setIsLoading(true);
 		try {
-			// const trace = await api.traces.getUICodeTrace({ componentId });
-			// setTraceChain(trace);
+			// Const trace = await api.traces.getUICodeTrace({ componentId });
+			// SetTraceChain(trace);
 		} finally {
 			setIsLoading(false);
 		}
@@ -409,7 +412,7 @@ export function URLSearchParamsExample() {
 
 	// Effect to fetch when component ID changes
 	React.useEffect(() => {
-		void fetchTrace();
+		undefined;
 	}, [fetchTrace]);
 
 	return (
@@ -533,7 +536,9 @@ export function ExportShareExample() {
 	const [traceChain, _setTraceChain] = useState<UICodeTraceChain | null>(null);
 
 	const handleExportJSON = () => {
-		if (!traceChain) return;
+		if (!traceChain) {
+			return;
+		}
 
 		const json = JSON.stringify(traceChain, null, 2);
 		const blob = new Blob([json], { type: "application/json" });
@@ -545,10 +550,12 @@ export function ExportShareExample() {
 	};
 
 	const handleCopyShareLink = () => {
-		if (!traceChain) return;
+		if (!traceChain) {
+			return;
+		}
 
-		const url = `${window.location.origin}?trace=${traceChain.id}`;
-		void navigator.clipboard.writeText(url);
+		const url = `${globalThis.location.origin}?trace=${traceChain.id}`;
+		undefined;
 		alert("Trace link copied to clipboard!");
 	};
 

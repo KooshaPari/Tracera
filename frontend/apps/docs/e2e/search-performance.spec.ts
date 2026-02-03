@@ -4,7 +4,7 @@
  * Tests the instant search functionality and performance.
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Instant Search', () => {
   test.beforeEach(async ({ page }) => {
@@ -48,12 +48,12 @@ test.describe('Instant Search', () => {
     await expect(results.first()).toBeVisible();
 
     // Should display search performance metric
-    const perfMetric = page.locator('text=/\\d+ms/');
+    const perfMetric = page.locator(String.raw`text=/\d+ms/`);
     await expect(perfMetric).toBeVisible();
 
     // Performance should be <100ms
     const perfText = await perfMetric.textContent();
-    const perfValue = parseInt(perfText || '0');
+    const perfValue = Number.parseInt(perfText || '0');
     expect(perfValue).toBeLessThan(100);
   });
 
@@ -187,8 +187,8 @@ test.describe('Instant Search', () => {
     const actualDuration = endTime - startTime;
 
     // Get displayed performance metric
-    const perfText = await page.locator('text=/\\d+ms/').textContent();
-    const displayedDuration = parseInt(perfText || '0');
+    const perfText = await page.locator(String.raw`text=/\d+ms/`).textContent();
+    const displayedDuration = Number.parseInt(perfText || '0');
 
     // Displayed metric should be reasonable (within 100ms of actual)
     expect(Math.abs(displayedDuration - actualDuration)).toBeLessThan(100);

@@ -24,9 +24,15 @@ interface WSJFCalculatorProps {
 const fibonacciScale = [1, 2, 3, 5, 8, 13, 21];
 
 function getScoreColor(score: number): string {
-	if (score >= 5) return "text-green-600";
-	if (score >= 3) return "text-blue-600";
-	if (score >= 1) return "text-yellow-600";
+	if (score >= 5) {
+		return "text-green-600";
+	}
+	if (score >= 3) {
+		return "text-blue-600";
+	}
+	if (score >= 1) {
+		return "text-yellow-600";
+	}
 	return "text-gray-600";
 }
 
@@ -55,9 +61,9 @@ export function WSJFCalculator({
 		if (onCalculate) {
 			onCalculate({
 				business_value: businessValue,
-				time_criticality: timeCriticality,
-				risk_reduction: riskReduction,
 				job_size: jobSize,
+				risk_reduction: riskReduction,
+				time_criticality: timeCriticality,
 				wsjf_score: wsjfScore,
 			});
 		}
@@ -225,9 +231,9 @@ export function WSJFScoreBadge({
 					: "bg-gray-100 text-gray-700 border-gray-300";
 
 	const sizeClass = {
-		sm: "text-xs px-1.5 py-0.5",
-		md: "text-sm px-2 py-1",
 		lg: "text-base px-3 py-1.5",
+		md: "text-sm px-2 py-1",
+		sm: "text-xs px-1.5 py-0.5",
 	}[size];
 
 	return (

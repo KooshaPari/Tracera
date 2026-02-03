@@ -30,13 +30,13 @@ vi.mock("@tanstack/react-router", async () => {
 });
 
 vi.mock("../../hooks/useItems", () => ({
-	useItems: vi.fn(),
 	useCreateItem: vi.fn(() => ({
 		mutateAsync: vi.fn(),
 		isPending: false,
 	})),
-	useUpdateItem: vi.fn(),
 	useDeleteItem: vi.fn(),
+	useItems: vi.fn(),
+	useUpdateItem: vi.fn(),
 }));
 
 vi.mock("../../hooks/useProjects", () => ({
@@ -51,8 +51,8 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		user = userEvent.setup();
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -60,40 +60,40 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 
 	const mockItems = [
 		{
+			createdAt: new Date("2024-01-01").toISOString(),
 			id: "item-1",
+			owner: "john",
+			priority: "high",
+			status: "in_progress",
 			title: "Create Authentication",
 			type: "feature",
-			status: "in_progress",
-			priority: "high",
-			owner: "john",
-			createdAt: new Date("2024-01-01").toISOString(),
 		},
 		{
+			createdAt: new Date("2024-01-02").toISOString(),
 			id: "item-2",
+			owner: "jane",
+			priority: "critical",
+			status: "todo",
 			title: "Setup Database",
 			type: "feature",
-			status: "todo",
-			priority: "critical",
-			owner: "jane",
-			createdAt: new Date("2024-01-02").toISOString(),
 		},
 		{
+			createdAt: new Date("2024-01-03").toISOString(),
 			id: "item-3",
+			owner: "bob",
+			priority: "high",
+			status: "blocked",
 			title: "Fix Login Bug",
 			type: "bug",
-			status: "blocked",
-			priority: "high",
-			owner: "bob",
-			createdAt: new Date("2024-01-03").toISOString(),
 		},
 	];
 
 	const renderTable = () => {
 		vi.mocked(useItems).mockReturnValue({
 			data: { items: mockItems },
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useDeleteItem).mockReturnValue({
@@ -102,9 +102,9 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 
 		vi.mocked(useProjects).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		return render(
@@ -168,10 +168,10 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		it("should have aria-describedby for table instructions", () => {
 			renderTable();
 
-			const table = document.getElementById("items-table-a11y");
+			const table = document.querySelector("#items-table-a11y");
 			expect(table).toHaveAttribute("aria-describedby", "table-instructions");
 
-			const instructions = document.getElementById("table-instructions");
+			const instructions = document.querySelector("#table-instructions");
 			expect(instructions).toBeInTheDocument();
 			expect(instructions).toHaveClass("sr-only");
 		});
@@ -181,7 +181,7 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		it("should have arrow key navigation instructions in sr-only text", () => {
 			renderTable();
 
-			const instructions = document.getElementById("table-instructions");
+			const instructions = document.querySelector("#table-instructions");
 			expect(instructions?.textContent).toContain("Use arrow keys to navigate");
 			expect(instructions?.textContent).toContain("Home and End");
 			expect(instructions?.textContent).toContain("Ctrl+Home");
@@ -212,7 +212,7 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		it("should announce navigation to screen readers", () => {
 			renderTable();
 
-			const liveRegion = document.getElementById("table-announcements");
+			const liveRegion = document.querySelector("#table-announcements");
 			expect(liveRegion).toHaveAttribute("role", "status");
 			expect(liveRegion).toHaveAttribute("aria-live", "polite");
 			expect(liveRegion).toHaveAttribute("aria-atomic", "true");
@@ -294,12 +294,12 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		it("should have sr-only instructions visible only to screen readers", () => {
 			renderTable();
 
-			const instructions = document.getElementById("table-instructions");
+			const instructions = document.querySelector("#table-instructions");
 			expect(instructions).toHaveClass("sr-only");
 
 			// Verify it's visually hidden but accessible
-			const _styles = window.getComputedStyle(instructions!);
-			// sr-only class should hide element from view
+			const _styles = globalThis.getComputedStyle(instructions!);
+			// Sr-only class should hide element from view
 		});
 
 		it("should hide decorative icons from screen readers", () => {
@@ -320,7 +320,7 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		it("should announce actions through live regions", () => {
 			renderTable();
 
-			const liveRegion = document.getElementById("table-announcements");
+			const liveRegion = document.querySelector("#table-announcements");
 			expect(liveRegion).toBeInTheDocument();
 		});
 	});
@@ -403,7 +403,6 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 
 	describe("Error Handling and States", () => {
 		it("should announce when items are deleted", async () => {
-
 			vi.mocked(useDeleteItem).mockReturnValue({
 				mutateAsync: vi.fn().mockResolvedValue({}),
 			} as any);
@@ -420,9 +419,9 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		it("should handle empty state accessibly", () => {
 			vi.mocked(useItems).mockReturnValue({
 				data: { items: [] },
-				isLoading: false,
-				isError: false,
 				error: null,
+				isError: false,
+				isLoading: false,
 			} as any);
 
 			render(
@@ -437,9 +436,9 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		it("should handle loading state with semantic meaning", () => {
 			vi.mocked(useItems).mockReturnValue({
 				data: null,
-				isLoading: true,
-				isError: false,
 				error: null,
+				isError: false,
+				isLoading: true,
 			} as any);
 
 			render(
@@ -469,7 +468,7 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 			renderTable();
 
 			const h1 = screen.getByRole("heading", { level: 1 });
-			const styles = window.getComputedStyle(h1);
+			const styles = globalThis.getComputedStyle(h1);
 			// Should not use fixed pixel sizes for fonts
 			expect(styles.fontSize).toBeTruthy();
 		});

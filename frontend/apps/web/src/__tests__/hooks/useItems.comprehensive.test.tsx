@@ -17,43 +17,43 @@ import {
 } from "../../hooks/useItems";
 
 // Mock fetch globally
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
 const mockItem: Item = {
-	id: "item-1",
-	projectId: "proj-1",
-	type: "feature",
-	title: "Test Feature",
-	view: "features",
-	status: "todo",
-	priority: "high",
 	createdAt: "2024-01-01T00:00:00Z",
+	id: "item-1",
+	priority: "high",
+	projectId: "proj-1",
+	status: "todo",
+	title: "Test Feature",
+	type: "feature",
 	updatedAt: "2024-01-01T00:00:00Z",
+	view: "features",
 } as any;
 
 const mockItems: Item[] = [
 	mockItem,
 	{
-		id: "item-2",
-		projectId: "proj-1",
-		type: "task",
-		title: "Test Task",
-		view: "code",
-		status: "in_progress",
-		priority: "medium",
 		createdAt: "2024-01-01T00:00:00Z",
+		id: "item-2",
+		priority: "medium",
+		projectId: "proj-1",
+		status: "in_progress",
+		title: "Test Task",
+		type: "task",
 		updatedAt: "2024-01-01T00:00:00Z",
+		view: "code",
 	} as any,
 	{
-		id: "item-3",
-		projectId: "proj-2",
-		type: "bug",
-		title: "Test Bug",
-		view: "tests",
-		status: "done",
-		priority: "low",
 		createdAt: "2024-01-01T00:00:00Z",
+		id: "item-3",
+		priority: "low",
+		projectId: "proj-2",
+		status: "done",
+		title: "Test Bug",
+		type: "bug",
 		updatedAt: "2024-01-01T00:00:00Z",
+		view: "tests",
 	} as any,
 ];
 
@@ -63,10 +63,10 @@ describe("useItems hooks", () => {
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: {
+				mutations: {
 					retry: false,
 				},
-				mutations: {
+				queries: {
 					retry: false,
 				},
 			},
@@ -78,11 +78,11 @@ describe("useItems hooks", () => {
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 
-	describe("useItems", () => {
+	describe(useItems, () => {
 		it("should not fetch without projectId", () => {
 			(fetch as any).mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ items: mockItems, total: mockItems.length }),
+				ok: true,
 			} as Response);
 
 			const { result } = renderHook(() => useItems(), { wrapper });
@@ -93,19 +93,19 @@ describe("useItems hooks", () => {
 
 		it("should fetch items with multiple filters", async () => {
 			(fetch as any).mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({
 					items: mockItems,
 					total: mockItems.length,
 				}),
+				ok: true,
 			} as Response);
 
 			const { result } = renderHook(
 				() =>
 					useItems({
 						projectId: "proj-1",
-						view: "features" as ViewType,
 						status: "todo" as ItemStatus,
+						view: "features" as ViewType,
 					}),
 				{ wrapper },
 			);
@@ -119,7 +119,7 @@ describe("useItems hooks", () => {
 		});
 	});
 
-	describe("useItem", () => {
+	describe(useItem, () => {
 		it("should not fetch when id is empty", () => {
 			const { result } = renderHook(() => useItem(""), { wrapper });
 
@@ -128,11 +128,11 @@ describe("useItems hooks", () => {
 		});
 	});
 
-	describe("useCreateItem", () => {
+	describe(useCreateItem, () => {
 		it("should invalidate queries on success", async () => {
 			(fetch as any).mockResolvedValueOnce({
-				ok: true,
 				json: async () => mockItem,
+				ok: true,
 			} as Response);
 
 			const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -140,12 +140,12 @@ describe("useItems hooks", () => {
 			const { result } = renderHook(() => useCreateItem(), { wrapper });
 
 			result.current.mutate({
-				projectId: "proj-1",
-				view: "FEATURE" as ViewType,
-				type: "feature",
-				title: "New Feature",
-				status: "todo" as ItemStatus,
 				priority: "high" as const,
+				projectId: "proj-1",
+				status: "todo" as ItemStatus,
+				title: "New Feature",
+				type: "feature",
+				view: "FEATURE" as ViewType,
 			});
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -157,22 +157,22 @@ describe("useItems hooks", () => {
 
 		it("should include optional fields in request", async () => {
 			(fetch as any).mockResolvedValueOnce({
-				ok: true,
 				json: async () => mockItem,
+				ok: true,
 			} as Response);
 
 			const { result } = renderHook(() => useCreateItem(), { wrapper });
 
 			result.current.mutate({
-				projectId: "proj-1",
-				view: "FEATURE" as ViewType,
-				type: "feature",
-				title: "New Feature",
 				description: "Test description",
-				status: "todo" as ItemStatus,
-				priority: "high" as const,
-				parentId: "parent-1",
 				owner: "user-1",
+				parentId: "parent-1",
+				priority: "high" as const,
+				projectId: "proj-1",
+				status: "todo" as ItemStatus,
+				title: "New Feature",
+				type: "feature",
+				view: "FEATURE" as ViewType,
 			});
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -186,11 +186,11 @@ describe("useItems hooks", () => {
 		});
 	});
 
-	describe("useUpdateItem", () => {
+	describe(useUpdateItem, () => {
 		it("should invalidate item and list queries on success", async () => {
 			(fetch as any).mockResolvedValueOnce({
-				ok: true,
 				json: async () => mockItem,
+				ok: true,
 			} as Response);
 
 			const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -198,8 +198,8 @@ describe("useItems hooks", () => {
 			const { result } = renderHook(() => useUpdateItem(), { wrapper });
 
 			result.current.mutate({
-				id: "item-1",
 				data: { title: "Updated" },
+				id: "item-1",
 			});
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -213,7 +213,7 @@ describe("useItems hooks", () => {
 		});
 	});
 
-	describe("useDeleteItem", () => {
+	describe(useDeleteItem, () => {
 		it("should delete item", async () => {
 			(fetch as any).mockResolvedValueOnce({
 				ok: true,

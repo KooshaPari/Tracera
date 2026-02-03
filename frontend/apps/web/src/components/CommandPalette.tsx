@@ -49,154 +49,154 @@ function CommandPaletteComponent() {
 	const commands: CommandItem[] = useMemo(() => {
 		const baseCommands: CommandItem[] = [
 			{
-				id: "nav-home",
-				title: "Mission Control",
-				description: "Main operational dashboard",
-				icon: Home,
 				action: () => navigate({ to: "/home" }),
 				category: "NAVIGATE",
+				description: "Main operational dashboard",
+				icon: Home,
+				id: "nav-home",
 				keywords: ["home", "dashboard"],
+				title: "Mission Control",
 			},
 			{
-				id: "nav-projects",
-				title: "Project Registry",
-				description: "All active graph containers",
-				icon: FolderOpen,
 				action: () => navigate({ to: "/projects" }),
 				category: "NAVIGATE",
+				description: "All active graph containers",
+				icon: FolderOpen,
+				id: "nav-projects",
 				keywords: ["projects", "list"],
+				title: "Project Registry",
 			},
 			{
-				id: "sys-settings",
-				title: "System Parameters",
-				description: "Core configuration panel",
-				icon: Settings,
 				action: () => navigate({ to: "/settings" }),
 				category: "SYSTEM",
+				description: "Core configuration panel",
+				icon: Settings,
+				id: "sys-settings",
 				keywords: ["settings", "config"],
+				title: "System Parameters",
 			},
 		];
 
 		if (currentProjectId) {
 			const projectViews: CommandItem[] = [
 				{
-					id: "view-feature",
-					title: "Feature Layer",
+					action: () =>
+						navigate({
+							params: { projectId: currentProjectId, viewType: "feature" },
+							to: "/projects/$projectId/views/$viewType",
+						}),
+					category: "VIEWS",
 					description: "Logic & requirements",
 					icon: Layers,
-					action: () =>
-						navigate({
-							to: "/projects/$projectId/views/$viewType",
-							params: { projectId: currentProjectId, viewType: "feature" },
-						}),
-					category: "VIEWS",
+					id: "view-feature",
+					title: "Feature Layer",
 				},
 				{
-					id: "view-code",
-					title: "Source Mapping",
+					action: () =>
+						navigate({
+							params: { projectId: currentProjectId, viewType: "code" },
+							to: "/projects/$projectId/views/$viewType",
+						}),
+					category: "VIEWS",
 					description: "Repository links",
 					icon: Code,
-					action: () =>
-						navigate({
-							to: "/projects/$projectId/views/$viewType",
-							params: { projectId: currentProjectId, viewType: "code" },
-						}),
-					category: "VIEWS",
+					id: "view-code",
+					title: "Source Mapping",
 				},
 				{
-					id: "view-test",
-					title: "Validation Suite",
+					action: () =>
+						navigate({
+							params: { projectId: currentProjectId, viewType: "test" },
+							to: "/projects/$projectId/views/$viewType",
+						}),
+					category: "VIEWS",
 					description: "Test coverage matrix",
 					icon: Shield,
-					action: () =>
-						navigate({
-							to: "/projects/$projectId/views/$viewType",
-							params: { projectId: currentProjectId, viewType: "test" },
-						}),
-					category: "VIEWS",
+					id: "view-test",
+					title: "Validation Suite",
 				},
 				{
-					id: "view-workflows",
-					title: "Workflow Runs",
-					description: "Temporal runs and schedules",
-					icon: Activity,
 					action: () =>
 						navigate({
-							to: "/projects/$projectId/views/$viewType",
 							params: { projectId: currentProjectId, viewType: "workflows" },
+							to: "/projects/$projectId/views/$viewType",
 						}),
 					category: "VIEWS",
+					description: "Temporal runs and schedules",
+					icon: Activity,
+					id: "view-workflows",
+					title: "Workflow Runs",
 				},
 			];
 
 			const specCommands: CommandItem[] = [
 				{
-					id: "specs-dashboard",
-					title: "Specifications Dashboard",
+					action: () =>
+						navigate({
+							params: { projectId: currentProjectId },
+							to: "/projects/$projectId/specifications",
+						}),
+					category: "SPECS",
 					description: "View all specifications",
 					icon: FileCode,
-					action: () =>
-						navigate({
-							to: "/projects/$projectId/specifications",
-							params: { projectId: currentProjectId },
-						}),
-					category: "SPECS",
+					id: "specs-dashboard",
 					keywords: ["specifications", "specs", "dashboard"],
+					title: "Specifications Dashboard",
 				},
 				{
-					id: "specs-adr",
-					title: "Architecture Decision Records",
-					description: "ADRs for this project",
-					icon: FileText,
 					action: () =>
 						navigate({
-							to: "/projects/$projectId/specifications",
 							params: { projectId: currentProjectId },
 							search: { tab: "adrs" },
+							to: "/projects/$projectId/specifications",
 						}),
 					category: "SPECS",
+					description: "ADRs for this project",
+					icon: FileText,
+					id: "specs-adr",
 					keywords: ["adr", "architecture", "decision"],
+					title: "Architecture Decision Records",
 				},
 				{
-					id: "specs-contracts",
-					title: "Contracts",
-					description: "Service and API contracts",
-					icon: ClipboardCheck,
 					action: () =>
 						navigate({
-							to: "/projects/$projectId/specifications",
 							params: { projectId: currentProjectId },
 							search: { tab: "contracts" },
+							to: "/projects/$projectId/specifications",
 						}),
 					category: "SPECS",
+					description: "Service and API contracts",
+					icon: ClipboardCheck,
+					id: "specs-contracts",
 					keywords: ["contract", "api", "service"],
+					title: "Contracts",
 				},
 				{
-					id: "specs-compliance",
-					title: "Compliance",
-					description: "Compliance and regulatory requirements",
-					icon: Shield,
 					action: () =>
 						navigate({
-							to: "/projects/$projectId/specifications",
 							params: { projectId: currentProjectId },
 							search: { tab: "compliance" },
+							to: "/projects/$projectId/specifications",
 						}),
 					category: "SPECS",
+					description: "Compliance and regulatory requirements",
+					icon: Shield,
+					id: "specs-compliance",
 					keywords: ["compliance", "regulatory", "requirements"],
+					title: "Compliance",
 				},
 				{
-					id: "specs-scenario-activity",
-					title: "Scenario Activity",
-					description: "Scenario execution and history",
-					icon: Activity,
 					action: () =>
 						navigate({
-							to: "/projects/$projectId/scenario-activity",
 							params: { projectId: currentProjectId },
+							to: "/projects/$projectId/scenario-activity",
 						}),
 					category: "SPECS",
+					description: "Scenario execution and history",
+					icon: Activity,
+					id: "specs-scenario-activity",
 					keywords: ["scenario", "activity", "history", "execution"],
+					title: "Scenario Activity",
 				},
 			];
 
@@ -207,7 +207,9 @@ function CommandPaletteComponent() {
 	}, [navigate, currentProjectId]);
 
 	const filtered = useMemo(() => {
-		if (!query) return commands;
+		if (!query) {
+			return commands;
+		}
 		const q = query.toLowerCase();
 		return commands.filter(
 			(c) =>
@@ -226,31 +228,38 @@ function CommandPaletteComponent() {
 				setSelected(0);
 				return;
 			}
-			if (!open) return;
+			if (!open) {
+				return;
+			}
 
 			switch (e.key) {
-				case "Escape":
+				case "Escape": {
 					e.preventDefault();
 					setOpen(false);
 					setQuery("");
 					break;
-				case "ArrowDown":
+				}
+				case "ArrowDown": {
 					e.preventDefault();
 					setSelected((s) => Math.min(s + 1, filtered.length - 1));
 					break;
-				case "ArrowUp":
+				}
+				case "ArrowUp": {
 					e.preventDefault();
 					setSelected((s) => Math.max(s - 1, 0));
 					break;
-				case "Home":
+				}
+				case "Home": {
 					e.preventDefault();
 					setSelected(0);
 					break;
-				case "End":
+				}
+				case "End": {
 					e.preventDefault();
 					setSelected(Math.max(filtered.length - 1, 0));
 					break;
-				case "Enter":
+				}
+				case "Enter": {
 					e.preventDefault();
 					if (filtered[selected]) {
 						filtered[selected].action();
@@ -258,11 +267,13 @@ function CommandPaletteComponent() {
 						setQuery("");
 					}
 					break;
-				case "Tab":
+				}
+				case "Tab": {
 					// Allow Tab to escape palette naturally
 					setOpen(false);
 					setQuery("");
 					break;
+				}
 			}
 		},
 		[open, filtered, selected],
@@ -270,7 +281,7 @@ function CommandPaletteComponent() {
 
 	// Handle focus management when opening/closing
 	useEffect(() => {
-		window.addEventListener("keydown", handleKeyDown);
+		globalThis.addEventListener("keydown", handleKeyDown);
 
 		if (open) {
 			// Save focus to restore later
@@ -288,7 +299,7 @@ function CommandPaletteComponent() {
 			restoreFocus(savedFocusRef.current);
 		}
 
-		return () => window.removeEventListener("keydown", handleKeyDown);
+		return () => globalThis.removeEventListener("keydown", handleKeyDown);
 	}, [handleKeyDown, open, filtered.length]);
 
 	// Announce when search results change
@@ -301,7 +312,9 @@ function CommandPaletteComponent() {
 		}
 	}, [filtered, query, open]);
 
-	if (!open) return null;
+	if (!open) {
+		return null;
+	}
 
 	const categories = [
 		"NAVIGATE",
@@ -383,7 +396,9 @@ function CommandPaletteComponent() {
 				>
 					{categories.map((cat) => {
 						const items = filtered.filter((c) => c.category === cat);
-						if (items.length === 0) return null;
+						if (items.length === 0) {
+							return null;
+						}
 
 						return (
 							<div key={cat} className="space-y-1 mb-4 last:mb-0">

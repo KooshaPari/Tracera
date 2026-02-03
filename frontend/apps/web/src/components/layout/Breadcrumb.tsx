@@ -46,7 +46,9 @@ export function Breadcrumbs() {
 			const pathSegments = pathname.split("/").filter(Boolean);
 
 			pathSegments.forEach((segment, index) => {
-				if (segment === null || typeof segment !== "string") return;
+				if (segment === null || typeof segment !== "string") {
+					return;
+				}
 				const href = `/${pathSegments.slice(0, index + 1).join("/")}`;
 
 				// Skip IDs and query parameters
@@ -63,12 +65,12 @@ export function Breadcrumbs() {
 				if (segment.toLowerCase() === "null") {
 					if (segment === projectId) {
 						segments.push({
-							label: project?.name?.trim() || "Project",
 							href,
 							isLoading: projectLoading,
+							label: project?.name?.trim() || "Project",
 						});
 					} else {
-						segments.push({ label: "—", href });
+						segments.push({ href, label: "—" });
 					}
 					return;
 				}
@@ -76,9 +78,9 @@ export function Breadcrumbs() {
 				// Fetch project name if this is a project ID
 				if (segment === projectId && project) {
 					segments.push({
-						label: (project.name ?? "Project").trim() || "Project",
 						href,
 						isLoading: projectLoading,
+						label: (project.name ?? "Project").trim() || "Project",
 					});
 					return;
 				}
@@ -86,9 +88,9 @@ export function Breadcrumbs() {
 				// Fetch item name if this is an item ID
 				if (segment === itemId && currentItem) {
 					segments.push({
-						label: (currentItem.title ?? "Item").trim() || "Item",
 						href,
 						isLoading: itemLoading,
+						label: (currentItem.title ?? "Item").trim() || "Item",
 					});
 					return;
 				}
@@ -108,13 +110,13 @@ export function Breadcrumbs() {
 						.join(" ")
 						.trim();
 					segments.push({
-						label: viewLabel || "View",
 						href,
+						label: viewLabel || "View",
 					});
 				} else if (!segments.some((s) => s.label === label)) {
 					segments.push({
-						label: label || "Page",
 						href,
+						label: label || "Page",
 					});
 				}
 			});
@@ -133,9 +135,9 @@ export function Breadcrumbs() {
 	]);
 
 	// De-duplicate breadcrumbs
-	const uniqueBreadcrumbs = Array.from(
-		new Map(breadcrumbs.map((b) => [b.href, b])).values(),
-	);
+	const uniqueBreadcrumbs = [
+		...new Map(breadcrumbs.map((b) => [b.href, b])).values(),
+	];
 
 	if (uniqueBreadcrumbs.length === 0) {
 		return null;
@@ -166,7 +168,7 @@ export function Breadcrumbs() {
 								<div className="flex items-center gap-2">
 									<Skeleton className="h-4 w-16" />
 								</div>
-							) : index === uniqueBreadcrumbs.length - 1 ? (
+							) : (index === uniqueBreadcrumbs.length - 1 ? (
 								<BreadcrumbPage className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-widest text-primary truncate max-w-[110px] sm:max-w-[160px] md:max-w-[220px] lg:max-w-[280px]">
 									{item.label}
 								</BreadcrumbPage>
@@ -177,7 +179,7 @@ export function Breadcrumbs() {
 								>
 									<Link to={item.href}>{item.label}</Link>
 								</BreadcrumbLink>
-							)}
+							))}
 						</BreadcrumbItem>
 					</Fragment>
 				))}

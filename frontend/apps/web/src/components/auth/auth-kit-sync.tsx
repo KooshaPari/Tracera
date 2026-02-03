@@ -1,7 +1,7 @@
 /* eslint-disable import/no-default-export, import/no-named-export, oxc/no-async-await, unicorn/no-null, eslint/no-duplicate-imports, eslint/no-magic-numbers, eslint/max-lines-per-function, eslint/max-statements, eslint/sort-imports */
 import { useAuth } from "@workos-inc/authkit-react";
 import { logger } from "@/lib/logger";
-import { AUTH_ROUTES } from "../../config/constants";
+import config from "../../config/constants";
 import { getReturnTo, isPublicRoute } from "../../lib/auth-utils";
 import { useAuthStore } from "../../stores/authStore";
 import type { User } from "../../stores/authStore";
@@ -70,10 +70,12 @@ export default function AuthKitSync(): null {
 				if (
 					!hasRedirectedRef.current &&
 					isPublicRoute(currentPath) &&
-					currentPath !== AUTH_ROUTES.CALLBACK
+					currentPath !== config.AUTH_ROUTES.CALLBACK
 				) {
 					hasRedirectedRef.current = true;
-					const searchParams = new globalThis.URLSearchParams(globalThis.location.search);
+					const searchParams = new globalThis.URLSearchParams(
+						globalThis.location.search,
+					);
 					const returnTo = getReturnTo(searchParams);
 
 					// GetReturnTo already filters out auth routes and returns "/home" as default

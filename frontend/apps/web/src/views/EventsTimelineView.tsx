@@ -84,13 +84,17 @@ export function EventsTimelineView() {
 		[],
 	);
 
-	const filteredEvents = useMemo(() => events.filter((e) => {
-			const matchesQuery =
-				e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				e.description.toLowerCase().includes(searchQuery.toLowerCase());
-			const matchesType = typeFilter === "all" || e.type === typeFilter;
-			return matchesQuery && matchesType;
-		}), [events, searchQuery, typeFilter]);
+	const filteredEvents = useMemo(
+		() =>
+			events.filter((e) => {
+				const matchesQuery =
+					e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					e.description.toLowerCase().includes(searchQuery.toLowerCase());
+				const matchesType = typeFilter === "all" || e.type === typeFilter;
+				return matchesQuery && matchesType;
+			}),
+		[events, searchQuery, typeFilter],
+	);
 
 	return (
 		<div className="p-6 space-y-8 max-w-4xl mx-auto animate-in fade-in duration-500">

@@ -7,8 +7,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import type { DimensionFilter } from "@tracertm/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	applyDimensionFilters,
 	DimensionFilters,
+	applyDimensionFilters,
 	getDimensionColor,
 	getDimensionSize,
 } from "@/components/graph/DimensionFilters";
@@ -32,37 +32,37 @@ const mockDimensionFilters: DimensionFilter[] = [
 
 const mockItems = [
 	{
-		id: "item-1",
-		title: "Item 1",
-		type: "feature",
 		dimensions: {
 			maturity: "implemented",
 			complexity: "simple",
 			coverage: 85,
 			risk: "low",
 		},
+		id: "item-1",
+		title: "Item 1",
+		type: "feature",
 	},
 	{
-		id: "item-2",
-		title: "Item 2",
-		type: "feature",
 		dimensions: {
 			maturity: "draft",
 			complexity: "moderate",
 			coverage: 50,
 			risk: "medium",
 		},
+		id: "item-2",
+		title: "Item 2",
+		type: "feature",
 	},
 	{
-		id: "item-3",
-		title: "Item 3",
-		type: "feature",
 		dimensions: {
 			maturity: "verified",
 			complexity: "complex",
 			coverage: 95,
 			risk: "high",
 		},
+		id: "item-3",
+		title: "Item 3",
+		type: "feature",
 	},
 	{
 		id: "item-4",
@@ -497,7 +497,7 @@ describe("DimensionFilters Component", () => {
 					onFiltersChange={onFiltersChange}
 					displayMode="filter"
 					onDisplayModeChange={onDisplayModeChange}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -514,7 +514,7 @@ describe("DimensionFilters Component", () => {
 					onFiltersChange={onFiltersChange}
 					displayMode="filter"
 					onDisplayModeChange={onDisplayModeChange}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -536,7 +536,7 @@ describe("DimensionFilters Component", () => {
 					onFiltersChange={onFiltersChange}
 					displayMode="filter"
 					onDisplayModeChange={onDisplayModeChange}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -592,7 +592,7 @@ describe("DimensionFilters Component", () => {
 // UTILITY FUNCTION TESTS
 // =============================================================================
 
-describe("applyDimensionFilters", () => {
+describe(applyDimensionFilters, () => {
 	it("returns all items when no filters", () => {
 		const result = applyDimensionFilters(mockItems, []);
 		expect(result).toEqual(mockItems);
@@ -742,7 +742,7 @@ describe("applyDimensionFilters", () => {
 	});
 });
 
-describe("getDimensionColor", () => {
+describe(getDimensionColor, () => {
 	it("returns correct color for maturity levels", () => {
 		const color = getDimensionColor({ maturity: "implemented" }, "maturity");
 		expect(color).toBeTruthy();
@@ -770,11 +770,11 @@ describe("getDimensionColor", () => {
 	});
 });
 
-describe("getDimensionSize", () => {
+describe(getDimensionSize, () => {
 	it("normalizes numeric dimension to size 0.3-1.0", () => {
 		const size = getDimensionSize({ coverage: 50 }, "coverage");
 		expect(size).toBeGreaterThanOrEqual(0.3);
-		expect(size).toBeLessThanOrEqual(1.0);
+		expect(size).toBeLessThanOrEqual(1);
 	});
 
 	it("returns 0.5 as default for missing dimensions", () => {
@@ -794,12 +794,12 @@ describe("getDimensionSize", () => {
 
 	it("scales 100% coverage to ~1.0", () => {
 		const size = getDimensionSize({ coverage: 100 }, "coverage");
-		expect(size).toBeCloseTo(1.0, 1);
+		expect(size).toBeCloseTo(1, 1);
 	});
 
 	it("handles enum dimensions correctly", () => {
 		const size = getDimensionSize({ complexity: "simple" }, "complexity");
 		expect(size).toBeGreaterThanOrEqual(0.3);
-		expect(size).toBeLessThanOrEqual(1.0);
+		expect(size).toBeLessThanOrEqual(1);
 	});
 });

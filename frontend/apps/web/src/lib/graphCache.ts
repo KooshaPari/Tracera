@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 /**
  * LRU Cache for Graph Data
  *
@@ -455,10 +455,7 @@ export async function prewarmCache(graphId: string): Promise<void> {
 	// Implement prewarming strategies based on your application's needs
 
 	if (process.env.NODE_ENV === "development") {
-		logger.debug(
-			"[GraphCache] Cache prewarming initiated for graph:",
-			graphId,
-		);
+		logger.debug("[GraphCache] Cache prewarming initiated for graph:", graphId);
 	}
 }
 

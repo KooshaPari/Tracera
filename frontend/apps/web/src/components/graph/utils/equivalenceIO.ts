@@ -1,4 +1,4 @@
-// equivalenceIO.ts - Serialization, validation, and conversion utilities for equivalence data
+// EquivalenceIO.ts - Serialization, validation, and conversion utilities for equivalence data
 // Handles import/export of equivalence mappings and canonical concepts with format conversion
 
 import type {
@@ -19,6 +19,10 @@ import { logger } from "@/lib/logger";
  * Schema for equivalence evidence validation
  */
 const EquivalenceEvidenceSchema = z.object({
+	confidence: z.number().min(0).max(1),
+	details: z.string(),
+	detectedAt: z.string(),
+	metadata: z.record(z.unknown()).optional(),
 	strategy: z.enum([
 		"explicit_annotation",
 		"manual_link",
@@ -30,20 +34,17 @@ const EquivalenceEvidenceSchema = z.object({
 		"temporal",
 		"co_occurrence",
 	]) as z.ZodType<EquivalenceStrategy>,
-	confidence: z.number().min(0).max(1),
-	details: z.string(),
-	detectedAt: z.string(),
-	metadata: z.record(z.unknown()).optional(),
 });
 
 /**
  * Schema for equivalence link validation
  */
 const EquivalenceLinkSchema = z.object({
-	id: z.string(),
-	projectId: z.string(),
-	sourceItemId: z.string(),
-	targetItemId: z.string(),
+	canonicalId: z.string().optional(),
+	confidence: z.number().min(0).max(1),
+	confirmedAt: z.string().optional(),
+	confirmedBy: z.string().optional(),
+	createdAt: z.string(),
 	equivalenceType: z.enum([
 		"same_as",
 		"represents",
@@ -51,14 +52,13 @@ const EquivalenceLinkSchema = z.object({
 		"derived_from",
 		"alternative_to",
 	]) as z.ZodType<EquivalenceLinkType>,
-	confidence: z.number().min(0).max(1),
-	strategies: z.array(EquivalenceEvidenceSchema),
-	canonicalId: z.string().optional(),
-	status: z.enum(["suggested", "confirmed", "rejected", "auto_confirmed"]),
-	confirmedBy: z.string().optional(),
-	confirmedAt: z.string().optional(),
+	id: z.string(),
+	projectId: z.string(),
 	rejectedReason: z.string().optional(),
-	createdAt: z.string(),
+	sourceItemId: z.string(),
+	status: z.enum(["suggested", "confirmed", "rejected", "auto_confirmed"]),
+	strategies: z.array(EquivalenceEvidenceSchema),
+	targetItemId: z.string(),
 	updatedAt: z.string(),
 });
 
@@ -66,26 +66,26 @@ const EquivalenceLinkSchema = z.object({
  * Schema for canonical concept validation
  */
 const CanonicalConceptSchema = z.object({
-	id: z.string(),
-	projectId: z.string(),
-	name: z.string().min(1).max(255),
-	slug: z.string().min(1).max(255),
+	category: z.string().optional(),
+	childConceptIds: z.array(z.string()).optional(),
+	confidence: z.number().min(0).max(1),
+	createdAt: z.string(),
+	createdBy: z.string().optional(),
 	description: z.string().optional(),
 	domain: z.string(),
-	category: z.string().optional(),
-	tags: z.array(z.string()).optional(),
 	embedding: z.array(z.number()).optional(),
 	embeddingModel: z.string().optional(),
 	embeddingUpdatedAt: z.string().optional(),
+	id: z.string(),
+	name: z.string().min(1).max(255),
+	parentConceptId: z.string().optional(),
+	projectId: z.string(),
 	projectionCount: z.number().min(0),
 	projectionIds: z.array(z.string()).optional(),
 	relatedConceptIds: z.array(z.string()).optional(),
-	parentConceptId: z.string().optional(),
-	childConceptIds: z.array(z.string()).optional(),
-	confidence: z.number().min(0).max(1),
+	slug: z.string().min(1).max(255),
 	source: z.enum(["manual", "inferred", "imported"]),
-	createdBy: z.string().optional(),
-	createdAt: z.string(),
+	tags: z.array(z.string()).optional(),
 	updatedAt: z.string(),
 	version: z.number().min(1),
 });
@@ -94,12 +94,18 @@ const CanonicalConceptSchema = z.object({
  * Schema for canonical projection validation
  */
 const CanonicalProjectionSchema = z.object({
-	id: z.string(),
 	canonicalId: z.string(),
-	itemId: z.string(),
-	projectId: z.string(),
-	perspective: z.string(),
 	confidence: z.number().min(0).max(1),
+	confirmedAt: z.string().optional(),
+	confirmedBy: z.string().optional(),
+	createdAt: z.string(),
+	id: z.string(),
+	isConfirmed: z.boolean(),
+	isRejected: z.boolean(),
+	itemId: z.string(),
+	metadata: z.record(z.unknown()).optional(),
+	perspective: z.string(),
+	projectId: z.string(),
 	strategy: z.enum([
 		"explicit_annotation",
 		"manual_link",
@@ -111,12 +117,6 @@ const CanonicalProjectionSchema = z.object({
 		"temporal",
 		"co_occurrence",
 	]) as z.ZodType<EquivalenceStrategy>,
-	isConfirmed: z.boolean(),
-	isRejected: z.boolean(),
-	confirmedBy: z.string().optional(),
-	confirmedAt: z.string().optional(),
-	metadata: z.record(z.unknown()).optional(),
-	createdAt: z.string(),
 	updatedAt: z.string(),
 });
 
@@ -124,45 +124,45 @@ const CanonicalProjectionSchema = z.object({
  * Schema for complete equivalence export package
  */
 const EquivalenceExportPackageSchema = z.object({
-	version: z.literal("1.0"),
+	canonicalConcepts: z.array(CanonicalConceptSchema),
+	canonicalProjections: z.array(CanonicalProjectionSchema),
+	equivalenceLinks: z.array(EquivalenceLinkSchema),
 	exportedAt: z.string(),
-	projectId: z.string(),
 	exportedBy: z.string().optional(),
 	metadata: z
 		.object({
-			totalLinks: z.number(),
-			totalConcepts: z.number(),
-			totalProjections: z.number(),
 			confidence: z.object({
 				min: z.number(),
 				max: z.number(),
 				average: z.number(),
 			}),
+			totalConcepts: z.number(),
+			totalLinks: z.number(),
+			totalProjections: z.number(),
 		})
 		.optional(),
-	equivalenceLinks: z.array(EquivalenceLinkSchema),
-	canonicalConcepts: z.array(CanonicalConceptSchema),
-	canonicalProjections: z.array(CanonicalProjectionSchema),
+	projectId: z.string(),
+	version: z.literal("1.0"),
 });
 
 /**
  * Schema for import request with options
  */
 const EquivalenceImportOptionsSchema = z.object({
-	mode: z.enum(["replace", "merge"]).default("merge"),
 	conflictResolution: z
 		.enum(["skip", "overwrite", "merge_metadata"])
 		.default("skip"),
-	validateReferences: z.boolean().default(true),
+	mode: z.enum(["replace", "merge"]).default("merge"),
 	preserveTimestamps: z.boolean().default(false),
-	updateProjectId: z.boolean().default(true),
 	targetProjectId: z.string().optional(),
+	updateProjectId: z.boolean().default(true),
+	validateReferences: z.boolean().default(true),
 });
 
 export type EquivalenceImportOptions = z.infer<
 	typeof EquivalenceImportOptionsSchema
 >;
-export type EquivalenceExportPackage = {
+export interface EquivalenceExportPackage {
 	version: "1.0";
 	exportedAt: string;
 	projectId: string;
@@ -180,7 +180,7 @@ export type EquivalenceExportPackage = {
 	equivalenceLinks: EquivalenceLink[];
 	canonicalConcepts: CanonicalConcept[];
 	canonicalProjections: CanonicalProjection[];
-};
+}
 
 // =============================================================================
 // SERIALIZATION / DESERIALIZATION
@@ -215,8 +215,8 @@ export function serializeToCSV(data: EquivalenceExportPackage): {
 	const projectionsCSV = serializeProjectionsToCSV(data.canonicalProjections);
 
 	return {
-		links: linksCSV,
 		concepts: conceptsCSV,
+		links: linksCSV,
 		projections: projectionsCSV,
 	};
 }
@@ -226,14 +226,18 @@ export function serializeToCSV(data: EquivalenceExportPackage): {
  */
 export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
 	const lines = csv.trim().split("\n");
-	if (lines.length < 2) return [];
+	if (lines.length < 2) {
+		return [];
+	}
 
 	const header = lines[0].split(",");
 	const links: EquivalenceLink[] = [];
 
-	for (let i = 1; i < lines.length; i++) {
+	for (let i = 1; i < lines.length; i += 1) {
 		const values = parseCSVLine(lines[i]);
-		if (values.length !== header.length) continue;
+		if (values.length !== header.length) {
+			continue;
+		}
 
 		const record: Record<string, string> = {};
 		header.forEach((key, idx) => {
@@ -242,23 +246,23 @@ export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
 
 		try {
 			const link: EquivalenceLink = {
+				canonicalId: record.canonicalId,
+				confidence: parseFloat(record.confidence),
+				confirmedAt: record.confirmedAt,
+				confirmedBy: record.confirmedBy,
+				createdAt: record.createdAt,
+				equivalenceType: record.equivalenceType as EquivalenceLinkType,
 				id: record.id,
 				projectId: record.projectId,
+				rejectedReason: record.rejectedReason,
 				sourceItemId: record.sourceItemId,
-				targetItemId: record.targetItemId,
-				equivalenceType: record.equivalenceType as EquivalenceLinkType,
-				confidence: parseFloat(record.confidence),
-				strategies: JSON.parse(record.strategies || "[]"),
-				canonicalId: record.canonicalId,
 				status: record.status as
 					| "suggested"
 					| "confirmed"
 					| "rejected"
 					| "auto_confirmed",
-				confirmedBy: record.confirmedBy,
-				confirmedAt: record.confirmedAt,
-				rejectedReason: record.rejectedReason,
-				createdAt: record.createdAt,
+				strategies: JSON.parse(record.strategies || "[]"),
+				targetItemId: record.targetItemId,
 				updatedAt: record.updatedAt,
 			};
 			EquivalenceLinkSchema.parse(link);
@@ -276,14 +280,18 @@ export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
  */
 export function deserializeConceptsFromCSV(csv: string): CanonicalConcept[] {
 	const lines = csv.trim().split("\n");
-	if (lines.length < 2) return [];
+	if (lines.length < 2) {
+		return [];
+	}
 
 	const header = lines[0].split(",");
 	const concepts: CanonicalConcept[] = [];
 
-	for (let i = 1; i < lines.length; i++) {
+	for (let i = 1; i < lines.length; i += 1) {
 		const values = parseCSVLine(lines[i]);
-		if (values.length !== header.length) continue;
+		if (values.length !== header.length) {
+			continue;
+		}
 
 		const record: Record<string, string> = {};
 		header.forEach((key, idx) => {
@@ -292,34 +300,36 @@ export function deserializeConceptsFromCSV(csv: string): CanonicalConcept[] {
 
 		try {
 			const concept: CanonicalConcept = {
-				id: record['id']!,
-				projectId: record['projectId']!,
-				name: record['name']!,
-				slug: record['slug']!,
-				description: record['description'],
-				domain: record['domain']!,
-				category: record['category'],
-				tags: record['tags'] ? record['tags'].split("|") : undefined,
-				embedding: record['embedding'] ? JSON.parse(record['embedding']) : undefined,
-				embeddingModel: record['embeddingModel'],
-				embeddingUpdatedAt: record['embeddingUpdatedAt'],
-				projectionCount: parseInt(record['projectionCount']!, 10),
-				projectionIds: record['projectionIds']
-					? record['projectionIds'].split("|")
+				category: record["category"],
+				childConceptIds: record["childConceptIds"]
+					? record["childConceptIds"].split("|")
 					: undefined,
-				relatedConceptIds: record['relatedConceptIds']
-					? record['relatedConceptIds'].split("|")
+				confidence: parseFloat(record["confidence"]!),
+				createdAt: record["createdAt"]!,
+				createdBy: record["createdBy"],
+				description: record["description"],
+				domain: record["domain"]!,
+				embedding: record["embedding"]
+					? JSON.parse(record["embedding"])
 					: undefined,
-				parentConceptId: record['parentConceptId'],
-				childConceptIds: record['childConceptIds']
-					? record['childConceptIds'].split("|")
+				embeddingModel: record["embeddingModel"],
+				embeddingUpdatedAt: record["embeddingUpdatedAt"],
+				id: record["id"]!,
+				name: record["name"]!,
+				parentConceptId: record["parentConceptId"],
+				projectId: record["projectId"]!,
+				projectionCount: parseInt(record["projectionCount"]!, 10),
+				projectionIds: record["projectionIds"]
+					? record["projectionIds"].split("|")
 					: undefined,
-				confidence: parseFloat(record['confidence']!),
-				source: record['source'] as "manual" | "inferred" | "imported",
-				createdBy: record['createdBy'],
-				createdAt: record['createdAt']!,
-				updatedAt: record['updatedAt']!,
-				version: parseInt(record['version']!, 10),
+				relatedConceptIds: record["relatedConceptIds"]
+					? record["relatedConceptIds"].split("|")
+					: undefined,
+				slug: record["slug"]!,
+				source: record["source"] as "manual" | "inferred" | "imported",
+				tags: record["tags"] ? record["tags"].split("|") : undefined,
+				updatedAt: record["updatedAt"]!,
+				version: parseInt(record["version"]!, 10),
 			};
 			CanonicalConceptSchema.parse(concept);
 			concepts.push(concept);
@@ -338,14 +348,18 @@ export function deserializeProjectionsFromCSV(
 	csv: string,
 ): CanonicalProjection[] {
 	const lines = csv.trim().split("\n");
-	if (lines.length < 2) return [];
+	if (lines.length < 2) {
+		return [];
+	}
 
 	const header = lines[0].split(",");
 	const projections: CanonicalProjection[] = [];
 
-	for (let i = 1; i < lines.length; i++) {
+	for (let i = 1; i < lines.length; i += 1) {
 		const values = parseCSVLine(lines[i]);
-		if (values.length !== header.length) continue;
+		if (values.length !== header.length) {
+			continue;
+		}
 
 		const record: Record<string, string> = {};
 		header.forEach((key, idx) => {
@@ -354,20 +368,22 @@ export function deserializeProjectionsFromCSV(
 
 		try {
 			const projection: CanonicalProjection = {
-				id: record['id']!,
-				canonicalId: record['canonicalId']!,
-				itemId: record['itemId']!,
-				projectId: record['projectId']!,
-				perspective: record['perspective']!,
-				confidence: parseFloat(record['confidence']!),
-				strategy: record['strategy'] as EquivalenceStrategy,
-				isConfirmed: record['isConfirmed'] === "true",
-				isRejected: record['isRejected'] === "true",
-				confirmedBy: record['confirmedBy'],
-				confirmedAt: record['confirmedAt'],
-				metadata: record['metadata'] ? JSON.parse(record['metadata']) : undefined,
-				createdAt: record['createdAt']!,
-				updatedAt: record['updatedAt']!,
+				canonicalId: record["canonicalId"]!,
+				confidence: parseFloat(record["confidence"]!),
+				confirmedAt: record["confirmedAt"],
+				confirmedBy: record["confirmedBy"],
+				createdAt: record["createdAt"]!,
+				id: record["id"]!,
+				isConfirmed: record["isConfirmed"] === "true",
+				isRejected: record["isRejected"] === "true",
+				itemId: record["itemId"]!,
+				metadata: record["metadata"]
+					? JSON.parse(record["metadata"])
+					: undefined,
+				perspective: record["perspective"]!,
+				projectId: record["projectId"]!,
+				strategy: record["strategy"] as EquivalenceStrategy,
+				updatedAt: record["updatedAt"]!,
 			};
 			CanonicalProjectionSchema.parse(projection);
 			projections.push(projection);
@@ -537,9 +553,11 @@ function formatAsCSV(headers: string[], rows: string[][]): string {
  * Escape special characters in CSV field
  */
 function escapeCSVField(field: string): string {
-	if (!field) return '""';
+	if (!field) {
+		return '""';
+	}
 	if (field.includes(",") || field.includes('"') || field.includes("\n")) {
-		return `"${field.replace(/"/g, '""')}"`;
+		return `"${field.replaceAll(/"/g, '""')}"`;
 	}
 	return field;
 }
@@ -552,14 +570,14 @@ function parseCSVLine(line: string): string[] {
 	let current = "";
 	let inQuotes = false;
 
-	for (let i = 0; i < line.length; i++) {
+	for (let i = 0; i < line.length; i += 1) {
 		const char = line[i];
 		const nextChar = line[i + 1];
 
 		if (char === '"') {
 			if (inQuotes && nextChar === '"') {
 				current += '"';
-				i++;
+				i += 1;
 			} else {
 				inQuotes = !inQuotes;
 			}
@@ -588,17 +606,17 @@ export function validateExportPackage(data: unknown): {
 } {
 	try {
 		EquivalenceExportPackageSchema.parse(data);
-		return { valid: true, errors: [] };
+		return { errors: [], valid: true };
 	} catch {
 		if (error instanceof z.ZodError) {
 			return {
-				valid: false,
 				errors: error.issues.map(
 					(issue) => `${issue.path.join(".")}: ${issue.message}`,
 				),
+				valid: false,
 			};
 		}
-		return { valid: false, errors: ["Unknown validation error"] };
+		return { errors: ["Unknown validation error"], valid: false };
 	}
 }
 
@@ -611,17 +629,17 @@ export function validateImportOptions(options: unknown): {
 } {
 	try {
 		EquivalenceImportOptionsSchema.parse(options);
-		return { valid: true, errors: [] };
+		return { errors: [], valid: true };
 	} catch {
 		if (error instanceof z.ZodError) {
 			return {
-				valid: false,
 				errors: error.issues.map(
 					(issue) => `${issue.path.join(".")}: ${issue.message}`,
 				),
+				valid: false,
 			};
 		}
-		return { valid: false, errors: ["Unknown validation error"] };
+		return { errors: ["Unknown validation error"], valid: false };
 	}
 }
 
@@ -656,9 +674,11 @@ export function mergeExportPackages(
 					const idx = merged.equivalenceLinks.findIndex(
 						(l) => l.id === incomingLink.id,
 					);
-					if (idx >= 0) merged.equivalenceLinks[idx] = incomingLink;
+					if (idx !== -1) {
+						merged.equivalenceLinks[idx] = incomingLink;
+					}
 				}
-				// else skip
+				// Else skip
 			} else {
 				merged.equivalenceLinks.push(incomingLink);
 			}
@@ -671,9 +691,11 @@ export function mergeExportPackages(
 					const idx = merged.canonicalConcepts.findIndex(
 						(c) => c.id === incomingConcept.id,
 					);
-					if (idx >= 0) merged.canonicalConcepts[idx] = incomingConcept;
+					if (idx !== -1) {
+						merged.canonicalConcepts[idx] = incomingConcept;
+					}
 				}
-				// else skip
+				// Else skip
 			} else {
 				merged.canonicalConcepts.push(incomingConcept);
 			}
@@ -686,9 +708,11 @@ export function mergeExportPackages(
 					const idx = merged.canonicalProjections.findIndex(
 						(p) => p.id === incomingProjection.id,
 					);
-					if (idx >= 0) merged.canonicalProjections[idx] = incomingProjection;
+					if (idx !== -1) {
+						merged.canonicalProjections[idx] = incomingProjection;
+					}
 				}
-				// else skip
+				// Else skip
 			} else {
 				merged.canonicalProjections.push(incomingProjection);
 			}
@@ -752,21 +776,21 @@ export function createExportSummary(data: EquivalenceExportPackage): {
 	});
 
 	return {
-		totalLinks: links.length,
-		totalConcepts: concepts.length,
-		totalProjections: projections.length,
-		confirmedCount,
-		suggestedCount,
-		rejectedCount,
 		confidenceStats: {
-			min: confidences.length ? Math.min(...confidences) : 0,
-			max: confidences.length ? Math.max(...confidences) : 0,
 			average:
 				confidences.length > 0
 					? confidences.reduce((a, b) => a + b) / confidences.length
 					: 0,
+			max: confidences.length ? Math.max(...confidences) : 0,
+			min: confidences.length ? Math.min(...confidences) : 0,
 		},
+		confirmedCount,
 		domainBreakdown,
+		rejectedCount,
 		strategyBreakdown,
+		suggestedCount,
+		totalConcepts: concepts.length,
+		totalLinks: links.length,
+		totalProjections: projections.length,
 	};
 }

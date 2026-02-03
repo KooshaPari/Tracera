@@ -4,7 +4,7 @@
  * Target: <5s layout calculation for 50k nodes
  */
 
-import { describe, it, expect, beforeAll } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import type { Edge, Node } from "@xyflow/react";
 import { GPUForceLayout } from "../gpuForceLayout";
 
@@ -16,10 +16,10 @@ function generateNodes(count: number): Node[] {
 	const nodes: Node[] = [];
 	for (let i = 0; i < count; i++) {
 		nodes.push({
-			id: `node-${i}`,
-			type: "default",
-			position: { x: 0, y: 0 },
 			data: {},
+			id: `node-${i}`,
+			position: { x: 0, y: 0 },
+			type: "default",
 		});
 	}
 	return nodes;
@@ -90,7 +90,7 @@ describe("GPU Force Layout Performance", () => {
 
 		console.log(`1,000 nodes: ${duration.toFixed(2)}ms`);
 		// Note: In browser with GPU, target is <500ms. In Node.js test env, CPU only.
-		expect(duration).toBeLessThan(15000);
+		expect(duration).toBeLessThan(15_000);
 	});
 
 	it("should demonstrate O(n log n) scaling with Barnes-Hut", async () => {
@@ -126,7 +126,7 @@ describe("GPU Force Layout Performance", () => {
 		// Allow more margin for small graphs and test environment variance
 		expect(ratio1).toBeLessThan(5);
 		expect(ratio2).toBeLessThan(5);
-	}, 30000);
+	}, 30_000);
 
 	it("Barnes-Hut should be faster than naive approach", async () => {
 		const nodes = generateNodes(500);
@@ -154,7 +154,7 @@ describe("GPU Force Layout Performance", () => {
 
 		// Barnes-Hut should provide speedup
 		expect(bhDuration).toBeLessThan(naiveDuration * 1.2); // Allow 20% margin
-	}, 30000); // 30s timeout
+	}, 30_000); // 30s timeout
 
 	it("should handle dense graphs efficiently", async () => {
 		const nodes = generateNodes(500);
@@ -169,7 +169,7 @@ describe("GPU Force Layout Performance", () => {
 
 		console.log(`500 nodes (dense): ${duration.toFixed(2)}ms`);
 		// CPU-only environment, Barnes-Hut still helps
-		expect(duration).toBeLessThan(10000);
+		expect(duration).toBeLessThan(10_000);
 	});
 
 	it("should handle sparse graphs efficiently", async () => {
@@ -185,7 +185,7 @@ describe("GPU Force Layout Performance", () => {
 
 		console.log(`1,000 nodes (sparse): ${duration.toFixed(2)}ms`);
 		// Sparse graphs should be faster than dense
-		expect(duration).toBeLessThan(15000);
+		expect(duration).toBeLessThan(15_000);
 	});
 });
 
@@ -233,7 +233,7 @@ describe("Algorithm Complexity Analysis", () => {
 			// Time ratio should be less than size ratio squared
 			expect(timeRatio).toBeLessThan(ratio * ratio);
 		}
-	}, 30000);
+	}, 30_000);
 });
 
 // ============================================================================
@@ -271,7 +271,9 @@ describe("Layout Quality Metrics", () => {
 			}
 		}
 
-		console.log(`Overlaps: ${overlaps} out of ${(result.length * (result.length - 1)) / 2} pairs`);
+		console.log(
+			`Overlaps: ${overlaps} out of ${(result.length * (result.length - 1)) / 2} pairs`,
+		);
 
 		// Allow some overlaps for large graphs, but should be minimal
 		const overlapRate = overlaps / ((result.length * (result.length - 1)) / 2);

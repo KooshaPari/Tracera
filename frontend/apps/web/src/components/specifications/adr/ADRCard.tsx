@@ -31,19 +31,19 @@ interface ADRCardProps {
 }
 
 const statusColors = {
-	proposed: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
 	accepted: "bg-green-500/10 text-green-500 border-green-500/20",
 	deprecated: "bg-gray-500/10 text-gray-500 border-gray-500/20",
-	superseded: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+	proposed: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
 	rejected: "bg-red-500/10 text-red-500 border-red-500/20",
+	superseded: "bg-orange-500/10 text-orange-500 border-orange-500/20",
 };
 
 const statusIcons = {
-	proposed: Clock,
 	accepted: CheckCircle,
 	deprecated: XCircle,
-	superseded: AlertTriangle,
+	proposed: Clock,
 	rejected: XCircle,
+	superseded: AlertTriangle,
 };
 
 export function ADRCard({

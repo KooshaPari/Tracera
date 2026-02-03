@@ -7,7 +7,9 @@ export function FormValidationError({
 	message,
 	testId = "form-error",
 }: FormValidationErrorProps) {
-	if (!message) return null;
+	if (!message) {
+		return null;
+	}
 
 	return (
 		<div

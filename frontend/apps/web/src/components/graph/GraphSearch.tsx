@@ -128,11 +128,11 @@ function performSearch(
  */
 function getTypeColor(type?: string): string {
 	const colors: Record<string, string> = {
-		component: "#3b82f6",
-		page: "#8b5cf6",
-		feature: "#ec4899",
 		api: "#10b981",
+		component: "#3b82f6",
 		database: "#f59e0b",
+		feature: "#ec4899",
+		page: "#8b5cf6",
 	};
 	return colors[type?.toLowerCase() || ""] || "#64748b";
 }
@@ -191,33 +191,38 @@ function GraphSearchComponent({
 
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
-			if (!results.length) {
+			if (results.length === 0) {
 				return;
 			}
 
 			switch (e.key) {
-				case "ArrowDown":
+				case "ArrowDown": {
 					e.preventDefault();
 					setSelectedResultIndex((prev) =>
 						Math.min(prev + 1, results.length - 1),
 					);
 					break;
-				case "ArrowUp":
+				}
+				case "ArrowUp": {
 					e.preventDefault();
 					setSelectedResultIndex((prev) => Math.max(prev - 1, 0));
 					break;
-				case "Enter":
+				}
+				case "Enter": {
 					e.preventDefault();
 					if (results[selectedResultIndex]) {
 						handleResultClick(results[selectedResultIndex].item.id);
 					}
 					break;
-				case "Escape":
+				}
+				case "Escape": {
 					e.preventDefault();
 					handleClear();
 					break;
-				default:
+				}
+				default: {
 					break;
+				}
 			}
 		},
 		[results, selectedResultIndex, handleResultClick, handleClear],
@@ -402,7 +407,7 @@ function GraphSearchComponent({
 						</div>
 					))}
 				</div>
-			) : query ? (
+			) : (query ? (
 				<div className="p-8 text-center text-muted-foreground">
 					<Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
 					<p className="text-sm">No items found matching &quot;{query}&quot;</p>
@@ -412,7 +417,7 @@ function GraphSearchComponent({
 					<Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
 					<p className="text-sm">Enter a search query to find items</p>
 				</div>
-			)}
+			))}
 		</Card>
 	);
 }

@@ -2,15 +2,15 @@
  * Unit Tests for GPU Force-Directed Layout
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Edge, Node } from "@xyflow/react";
 import {
 	GPUForceLayout,
-	getGPUForceLayout,
 	disposeGPUForceLayout,
+	getGPUForceLayout,
 } from "../gpuForceLayout";
 
-describe("GPUForceLayout", () => {
+describe(GPUForceLayout, () => {
 	let layout: GPUForceLayout;
 
 	beforeEach(() => {
@@ -35,9 +35,9 @@ describe("GPUForceLayout", () => {
 	describe("basic simulation", () => {
 		it("should layout simple graph with 3 nodes", async () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "2", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "3", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "2", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "3", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const edges: Edge[] = [
@@ -61,9 +61,9 @@ describe("GPUForceLayout", () => {
 
 		it("should handle disconnected nodes", async () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "2", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "3", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "2", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "3", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const edges: Edge[] = [];
@@ -87,8 +87,8 @@ describe("GPUForceLayout", () => {
 	describe("configuration", () => {
 		it("should respect custom repulsion strength", async () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "2", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "2", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const edges: Edge[] = [];
@@ -96,7 +96,7 @@ describe("GPUForceLayout", () => {
 			// High repulsion
 			const result1 = await layout.simulate(nodes, edges, {
 				iterations: 100,
-				repulsionStrength: 10000,
+				repulsionStrength: 10_000,
 			});
 
 			// Low repulsion
@@ -121,22 +121,22 @@ describe("GPUForceLayout", () => {
 
 		it("should respect custom attraction strength", async () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "2", type: "default", position: { x: 1000, y: 1000 }, data: {} },
+				{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "2", position: { x: 1000, y: 1000 }, type: "default" },
 			];
 
 			const edges: Edge[] = [{ id: "e1", source: "1", target: "2" }];
 
 			// High attraction
 			const result1 = await layout.simulate(nodes, edges, {
-				iterations: 100,
 				attractionStrength: 0.5,
+				iterations: 100,
 			});
 
 			// Low attraction
 			const result2 = await layout.simulate(nodes, edges, {
-				iterations: 100,
 				attractionStrength: 0.05,
+				iterations: 100,
 			});
 
 			const dist1 = Math.sqrt(
@@ -155,10 +155,10 @@ describe("GPUForceLayout", () => {
 
 		it("should respect iteration count", async () => {
 			const nodes: Node[] = Array.from({ length: 10 }, (_, i) => ({
-				id: `${i}`,
-				type: "default" as const,
-				position: { x: 0, y: 0 },
 				data: {},
+				id: `${i}`,
+				position: { x: 0, y: 0 },
+				type: "default" as const,
 			}));
 
 			const edges: Edge[] = Array.from({ length: 9 }, (_, i) => ({
@@ -185,10 +185,10 @@ describe("GPUForceLayout", () => {
 	describe("Barnes-Hut optimization", () => {
 		it("should accept theta parameter", async () => {
 			const nodes: Node[] = Array.from({ length: 100 }, (_, i) => ({
-				id: `${i}`,
-				type: "default" as const,
-				position: { x: 0, y: 0 },
 				data: {},
+				id: `${i}`,
+				position: { x: 0, y: 0 },
+				type: "default" as const,
 			}));
 
 			const edges: Edge[] = [];
@@ -203,10 +203,10 @@ describe("GPUForceLayout", () => {
 
 		it("should handle different theta values", async () => {
 			const nodes: Node[] = Array.from({ length: 50 }, (_, i) => ({
-				id: `${i}`,
-				type: "default" as const,
-				position: { x: 0, y: 0 },
 				data: {},
+				id: `${i}`,
+				position: { x: 0, y: 0 },
+				type: "default" as const,
 			}));
 
 			const edges: Edge[] = [];
@@ -249,7 +249,7 @@ describe("GPUForceLayout", () => {
 	describe("edge cases", () => {
 		it("should handle single node", async () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const result = await layout.simulate(nodes, []);
@@ -261,8 +261,8 @@ describe("GPUForceLayout", () => {
 
 		it("should handle two nodes with edge", async () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "2", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "2", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const edges: Edge[] = [{ id: "e1", source: "1", target: "2" }];
@@ -285,7 +285,7 @@ describe("GPUForceLayout", () => {
 
 		it("should handle self-loop edge", async () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const edges: Edge[] = [{ id: "e1", source: "1", target: "1" }];
@@ -297,8 +297,8 @@ describe("GPUForceLayout", () => {
 
 		it("should handle duplicate edges", async () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "2", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "2", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const edges: Edge[] = [
@@ -315,10 +315,10 @@ describe("GPUForceLayout", () => {
 	describe("position normalization", () => {
 		it("should normalize positions to positive coordinates", async () => {
 			const nodes: Node[] = Array.from({ length: 20 }, (_, i) => ({
-				id: `${i}`,
-				type: "default" as const,
-				position: { x: 0, y: 0 },
 				data: {},
+				id: `${i}`,
+				position: { x: 0, y: 0 },
+				type: "default" as const,
 			}));
 
 			const edges: Edge[] = [];
@@ -335,10 +335,10 @@ describe("GPUForceLayout", () => {
 		it("should preserve node data", async () => {
 			const nodes: Node[] = [
 				{
-					id: "1",
-					type: "custom",
-					position: { x: 0, y: 0 },
 					data: { label: "Test Node", value: 42 },
+					id: "1",
+					position: { x: 0, y: 0 },
+					type: "custom",
 				},
 			];
 

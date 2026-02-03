@@ -29,7 +29,15 @@ import { cn } from "@/lib/utils";
 import { useItems } from "../hooks/useItems";
 import { useDeleteLink, useLinks } from "../hooks/useLinks";
 
-function buildItemLink(itemId: string, item?: { projectId?: string; project_id?: string; view?: string; view_type?: string }) {
+function buildItemLink(
+	itemId: string,
+	item?: {
+		projectId?: string;
+		project_id?: string;
+		view?: string;
+		view_type?: string;
+	},
+) {
 	const projectId = item?.projectId || item?.project_id;
 	const viewType = item?.view || item?.view_type || "feature";
 	return projectId
@@ -48,14 +56,18 @@ export function LinksView() {
 	const links = linksData?.links ?? [];
 	const items = itemsData?.items ?? [];
 
-	const filteredLinks = useMemo(() => links.filter((link) => {
-			const matchesQuery =
-				link.sourceId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				link.targetId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				link.type.toLowerCase().includes(searchQuery.toLowerCase());
-			const matchesType = typeFilter === "all" || link.type === typeFilter;
-			return matchesQuery && matchesType;
-		}), [links, searchQuery, typeFilter]);
+	const filteredLinks = useMemo(
+		() =>
+			links.filter((link) => {
+				const matchesQuery =
+					link.sourceId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					link.targetId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					link.type.toLowerCase().includes(searchQuery.toLowerCase());
+				const matchesType = typeFilter === "all" || link.type === typeFilter;
+				return matchesQuery && matchesType;
+			}),
+		[links, searchQuery, typeFilter],
+	);
 
 	const handleDelete = async (id: string) => {
 		try {

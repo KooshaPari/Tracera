@@ -37,7 +37,9 @@ export function TraceabilityMatrixView({
 	const links = linksData?.links ?? [];
 
 	const matrix = useMemo(() => {
-		if (items.length === 0) {return { coverage: {}, features: [], requirements: [] };}
+		if (items.length === 0) {
+			return { coverage: {}, features: [], requirements: [] };
+		}
 
 		const requirements = items.filter(
 			(i: any) =>
@@ -48,7 +50,9 @@ export function TraceabilityMatrixView({
 
 		const coverage: Record<string, Set<string>> = {};
 		links.forEach((link: any) => {
-			if (!coverage[link.sourceId]) {coverage[link.sourceId] = new Set();}
+			if (!coverage[link.sourceId]) {
+				coverage[link.sourceId] = new Set();
+			}
 			coverage[link.sourceId]?.add(link.targetId);
 		});
 
@@ -56,7 +60,9 @@ export function TraceabilityMatrixView({
 	}, [items, links, searchQuery]);
 
 	const coveragePercent = useMemo(() => {
-		if (matrix.requirements.length === 0) {return 0;}
+		if (matrix.requirements.length === 0) {
+			return 0;
+		}
 		const covered = matrix.requirements.filter(
 			(r) => (matrix.coverage[r.id]?.size ?? 0) > 0,
 		).length;

@@ -8,29 +8,29 @@ interface SmellIndicatorProps {
 }
 
 const smellLabels: Record<SmellType, string> = {
-	superlative: "Superlative",
-	comparative: "Comparative",
-	subjective: "Subjective",
-	loopholes: "Loophole",
 	ambiguous_adverbs: "Ambiguous Adverb",
-	negative_statements: "Negative",
-	vague_pronouns: "Vague Pronoun",
-	open_ended: "Open Ended",
+	comparative: "Comparative",
 	incomplete_references: "Incomplete Ref",
+	loopholes: "Loophole",
+	negative_statements: "Negative",
+	open_ended: "Open Ended",
+	subjective: "Subjective",
+	superlative: "Superlative",
+	vague_pronouns: "Vague Pronoun",
 };
 
 const smellDescriptions: Record<SmellType, string> = {
-	superlative: "Avoid absolute terms like 'best', 'fastest', 'highest'.",
-	comparative: "Avoid relative terms like 'better', 'faster' without baseline.",
-	subjective: "Avoid user-dependent terms like 'user-friendly', 'easy'.",
-	loopholes: "Avoid optionality terms like 'if possible', 'as appropriate'.",
 	ambiguous_adverbs:
 		"Avoid vague qualifiers like 'usually', 'often', 'significantly'.",
+	comparative: "Avoid relative terms like 'better', 'faster' without baseline.",
+	incomplete_references: "Avoid 'see documentation' without specific link/ID.",
+	loopholes: "Avoid optionality terms like 'if possible', 'as appropriate'.",
 	negative_statements:
 		"Avoid negative constraints; state what the system SHALL do.",
-	vague_pronouns: "Avoid 'it', 'this', 'that' without clear antecedent.",
 	open_ended: "Avoid unquantifiable terms like 'et cetera', 'and so on'.",
-	incomplete_references: "Avoid 'see documentation' without specific link/ID.",
+	subjective: "Avoid user-dependent terms like 'user-friendly', 'easy'.",
+	superlative: "Avoid absolute terms like 'best', 'fastest', 'highest'.",
+	vague_pronouns: "Avoid 'it', 'this', 'that' without clear antecedent.",
 };
 
 export function SmellIndicator({ smells, className }: SmellIndicatorProps) {

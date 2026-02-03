@@ -9,8 +9,8 @@
  * 3. Generates a report of changes
  */
 
-import { readFile, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 const ROOT_DIR = process.cwd();
 
@@ -82,7 +82,7 @@ const TARGET_VERSIONS = {
 
 async function updateRootPackageJson() {
   const pkgPath = join(ROOT_DIR, 'package.json');
-  const content = await readFile(pkgPath, 'utf-8');
+  const content = await readFile(pkgPath, 'utf8');
   const pkg = JSON.parse(content);
 
   // Add/update overrides
@@ -97,22 +97,13 @@ async function updateRootPackageJson() {
   );
 
   await writeFile(pkgPath, JSON.stringify(pkg, null, '\t') + '\n');
-  console.log('✓ Updated root package.json with overrides');
+  
 
   return pkg;
 }
 
 async function generateReport(rootPkg) {
   const report = {
-    timestamp: new Date().toISOString(),
-    overridesAdded: Object.keys(rootPkg.overrides).length,
-    targetVersions: TARGET_VERSIONS,
-    summary: {
-      reactVersion: TARGET_VERSIONS.react,
-      typescriptVersion: TARGET_VERSIONS.typescript,
-      viteVersion: TARGET_VERSIONS.vite,
-      totalOverrides: Object.keys(rootPkg.overrides).length,
-    },
     nextSteps: [
       '1. Run: bun install',
       '2. Run: du -sh node_modules',
@@ -121,6 +112,15 @@ async function generateReport(rootPkg) {
       '5. Run tests: bun run test',
       '6. Compare before/after metrics',
     ],
+    overridesAdded: Object.keys(rootPkg.overrides).length,
+    summary: {
+      reactVersion: TARGET_VERSIONS.react,
+      totalOverrides: Object.keys(rootPkg.overrides).length,
+      typescriptVersion: TARGET_VERSIONS.typescript,
+      viteVersion: TARGET_VERSIONS.vite,
+    },
+    targetVersions: TARGET_VERSIONS,
+    timestamp: new Date().toISOString(),
   };
 
   await writeFile(
@@ -128,27 +128,27 @@ async function generateReport(rootPkg) {
     JSON.stringify(report, null, 2)
   );
 
-  console.log('\n=== DEDUPLICATION REPORT ===\n');
-  console.log(`Overrides added: ${report.overridesAdded}`);
-  console.log(`React: ${report.summary.reactVersion}`);
-  console.log(`TypeScript: ${report.summary.typescriptVersion}`);
-  console.log(`Vite: ${report.summary.viteVersion}`);
-  console.log('\nNext steps:');
-  report.nextSteps.forEach((step) => console.log(`  ${step}`));
-  console.log('\nDetailed report saved to: deduplication-report.json');
+  
+  
+  
+  
+  
+  
+  report.nextSteps.forEach((step) => {});
+  
 }
 
 async function main() {
-  console.log('Starting dependency deduplication...\n');
+  
 
   try {
     const rootPkg = await updateRootPackageJson();
     await generateReport(rootPkg);
 
-    console.log('\n✓ Deduplication configuration complete!');
-    console.log('\nNow run: bun install');
+    
+    
   } catch (error) {
-    console.error('Error:', error);
+    
     process.exit(1);
   }
 }

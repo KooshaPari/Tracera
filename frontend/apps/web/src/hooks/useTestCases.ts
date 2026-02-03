@@ -18,49 +18,49 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformTestCase(data: Record<string, unknown>): TestCase {
 	return {
-		id: data['id'],
-		testCaseNumber: data['test_case_number'],
-		projectId: data['project_id'],
-		title: data['title'],
-		description: data['description'],
-		objective: data['objective'],
+		approvedAt: data["approved_at"],
+		approvedBy: data["approved_by"],
+		assignedTo: data["assigned_to"],
+		automationFramework: data["automation_framework"],
+		automationNotes: data["automation_notes"],
+		automationScriptPath: data["automation_script_path"],
+		automationStatus: data["automation_status"],
+		category: data["category"],
+		createdAt: data["created_at"],
+		createdBy: data["created_by"],
+		deprecatedAt: data["deprecated_at"],
+		deprecationReason: data["deprecation_reason"],
+		description: data["description"],
+		estimatedDurationMinutes: data["estimated_duration_minutes"],
+		expectedResult: data["expected_result"],
+		failCount: data["fail_count"] || 0,
+		id: data["id"],
+		lastExecutedAt: data["last_executed_at"],
+		lastExecutionResult: data["last_execution_result"],
+		metadata: data["metadata"],
+		objective: data["objective"],
+		passCount: data["pass_count"] || 0,
+		postconditions: data["postconditions"],
+		preconditions: data["preconditions"],
+		priority: data["priority"],
+		projectId: data["project_id"],
+		reviewedAt: data["reviewed_at"],
+		reviewedBy: data["reviewed_by"],
 		status: data.status,
-		testType: data['test_type'],
-		priority: data['priority'],
-		category: data['category'],
-		tags: data['tags'],
-		preconditions: data['preconditions'],
-		testSteps: data['test_steps']?.map((step: any) => ({
-			stepNumber: step.step_number,
+		tags: data["tags"],
+		testCaseNumber: data["test_case_number"],
+		testData: data["test_data"],
+		testSteps: data["test_steps"]?.map((step: any) => ({
 			action: step.action,
 			expectedResult: step.expected_result,
+			stepNumber: step.step_number,
 			testData: step.test_data,
 		})),
-		expectedResult: data['expected_result'],
-		postconditions: data['postconditions'],
-		testData: data['test_data'],
-		automationStatus: data['automation_status'],
-		automationScriptPath: data['automation_script_path'],
-		automationFramework: data['automation_framework'],
-		automationNotes: data['automation_notes'],
-		estimatedDurationMinutes: data['estimated_duration_minutes'],
-		createdBy: data['created_by'],
-		assignedTo: data['assigned_to'],
-		reviewedBy: data['reviewed_by'],
-		approvedBy: data['approved_by'],
-		reviewedAt: data['reviewed_at'],
-		approvedAt: data['approved_at'],
-		deprecatedAt: data['deprecated_at'],
-		deprecationReason: data['deprecation_reason'],
-		lastExecutedAt: data['last_executed_at'],
-		lastExecutionResult: data['last_execution_result'],
-		totalExecutions: data['total_executions'] || 0,
-		passCount: data['pass_count'] || 0,
-		failCount: data['fail_count'] || 0,
-		metadata: data['metadata'],
-		version: data['version'],
-		createdAt: data['created_at'],
-		updatedAt: data['updated_at'],
+		testType: data["test_type"],
+		title: data["title"],
+		totalExecutions: data["total_executions"] || 0,
+		updatedAt: data["updated_at"],
+		version: data["version"],
 	};
 }
 
@@ -80,14 +80,27 @@ async function fetchTestCases(
 ): Promise<{ testCases: TestCase[]; total: number }> {
 	const params = new URLSearchParams();
 	params.set("project_id", filters.projectId);
-	if (filters.status) params.set("status", filters.status);
-	if (filters.testType) params.set("test_type", filters.testType);
-	if (filters.priority) params.set("priority", filters.priority);
-	if (filters.automationStatus)
+	if (filters.status) {
+		params.set("status", filters.status);
+	}
+	if (filters.testType) {
+		params.set("test_type", filters.testType);
+	}
+	if (filters.priority) {
+		params.set("priority", filters.priority);
+	}
+	if (filters.automationStatus) {
 		params.set("automation_status", filters.automationStatus);
-	if (filters.category) params.set("category", filters.category);
-	if (filters.assignedTo) params.set("assigned_to", filters.assignedTo);
-	if (filters.search) params.set("search", filters.search);
+	}
+	if (filters.category) {
+		params.set("category", filters.category);
+	}
+	if (filters.assignedTo) {
+		params.set("assigned_to", filters.assignedTo);
+	}
+	if (filters.search) {
+		params.set("search", filters.search);
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/test-cases?${params}`, {
 		headers: {
@@ -101,8 +114,8 @@ async function fetchTestCases(
 	}
 	const data = await res.json();
 	return {
-		testCases: (data['test_cases'] || []).map(transformTestCase),
-		total: data['total'] || 0,
+		testCases: (data["test_cases"] || []).map(transformTestCase),
+		total: data["total"] || 0,
 	};
 }
 
@@ -110,7 +123,9 @@ async function fetchTestCase(id: string): Promise<TestCase> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch test case");
+	if (!res.ok) {
+		throw new Error("Failed to fetch test case");
+	}
 	const data = await res.json();
 	return transformTestCase(data);
 }
@@ -142,41 +157,43 @@ async function createTestCase(
 	data: CreateTestCaseData,
 ): Promise<{ id: string; testCaseNumber: string }> {
 	const res = await fetch(
-		`${API_URL}/api/v1/test-cases?project_id=${data['projectId']}`,
+		`${API_URL}/api/v1/test-cases?project_id=${data["projectId"]}`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
-				title: data['title'],
-				description: data['description'],
-				objective: data['objective'],
-				test_type: data['testType'] || "functional",
-				priority: data['priority'] || "medium",
-				category: data['category'],
-				tags: data['tags'],
-				preconditions: data['preconditions'],
-				test_steps: data['testSteps']?.map((step) => ({
+				assigned_to: data["assignedTo"],
+				automation_framework: data["automationFramework"],
+				automation_notes: data["automationNotes"],
+				automation_script_path: data["automationScriptPath"],
+				automation_status: data["automationStatus"] || "not_automated",
+				category: data["category"],
+				description: data["description"],
+				estimated_duration_minutes: data["estimatedDurationMinutes"],
+				expected_result: data["expectedResult"],
+				metadata: data["metadata"] || {},
+				objective: data["objective"],
+				postconditions: data["postconditions"],
+				preconditions: data["preconditions"],
+				priority: data["priority"] || "medium",
+				tags: data["tags"],
+				test_data: data["testData"],
+				test_steps: data["testSteps"]?.map((step) => ({
 					step_number: step.stepNumber,
 					action: step.action,
 					expected_result: step.expectedResult,
 					test_data: step.testData,
 				})),
-				expected_result: data['expectedResult'],
-				postconditions: data['postconditions'],
-				test_data: data['testData'],
-				automation_status: data['automationStatus'] || "not_automated",
-				automation_script_path: data['automationScriptPath'],
-				automation_framework: data['automationFramework'],
-				automation_notes: data['automationNotes'],
-				estimated_duration_minutes: data['estimatedDurationMinutes'],
-				assigned_to: data['assignedTo'],
-				metadata: data['metadata'] || {},
+				test_type: data["testType"] || "functional",
+				title: data["title"],
 			}),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create test case");
+	if (!res.ok) {
+		throw new Error("Failed to create test case");
+	}
 	const result = await res.json();
-	return { id: result['id'], testCaseNumber: result['test_case_number'] };
+	return { id: result["id"], testCaseNumber: result["test_case_number"] };
 }
 
 async function updateTestCase(
@@ -185,46 +202,77 @@ async function updateTestCase(
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
 
-	if (data['title'] !== undefined) body['title'] = data['title'];
-	if (data['description'] !== undefined) body['description'] = data['description'];
-	if (data['objective'] !== undefined) body['objective'] = data['objective'];
-	if (data['testType'] !== undefined) body['test_type'] = data['testType'];
-	if (data['priority'] !== undefined) body['priority'] = data['priority'];
-	if (data['category'] !== undefined) body['category'] = data['category'];
-	if (data['tags'] !== undefined) body['tags'] = data['tags'];
-	if (data['preconditions'] !== undefined) body['preconditions'] = data['preconditions'];
-	if (data['testSteps'] !== undefined) {
-		body['test_steps'] = data['testSteps'].map((step) => ({
-			step_number: step.stepNumber,
+	if (data["title"] !== undefined) {
+		body["title"] = data["title"];
+	}
+	if (data["description"] !== undefined) {
+		body["description"] = data["description"];
+	}
+	if (data["objective"] !== undefined) {
+		body["objective"] = data["objective"];
+	}
+	if (data["testType"] !== undefined) {
+		body["test_type"] = data["testType"];
+	}
+	if (data["priority"] !== undefined) {
+		body["priority"] = data["priority"];
+	}
+	if (data["category"] !== undefined) {
+		body["category"] = data["category"];
+	}
+	if (data["tags"] !== undefined) {
+		body["tags"] = data["tags"];
+	}
+	if (data["preconditions"] !== undefined) {
+		body["preconditions"] = data["preconditions"];
+	}
+	if (data["testSteps"] !== undefined) {
+		body["test_steps"] = data["testSteps"].map((step) => ({
 			action: step.action,
 			expected_result: step.expectedResult,
+			step_number: step.stepNumber,
 			test_data: step.testData,
 		}));
 	}
-	if (data['expectedResult'] !== undefined)
-		body['expected_result'] = data['expectedResult'];
-	if (data['postconditions'] !== undefined)
-		body['postconditions'] = data['postconditions'];
-	if (data['testData'] !== undefined) body['test_data'] = data['testData'];
-	if (data['automationStatus'] !== undefined)
-		body['automation_status'] = data['automationStatus'];
-	if (data['automationScriptPath'] !== undefined)
-		body['automation_script_path'] = data['automationScriptPath'];
-	if (data['automationFramework'] !== undefined)
-		body['automation_framework'] = data['automationFramework'];
-	if (data['automationNotes'] !== undefined)
-		body['automation_notes'] = data['automationNotes'];
-	if (data['estimatedDurationMinutes'] !== undefined)
-		body['estimated_duration_minutes'] = data['estimatedDurationMinutes'];
-	if (data['assignedTo'] !== undefined) body['assigned_to'] = data['assignedTo'];
-	if (data['metadata'] !== undefined) body['metadata'] = data['metadata'];
+	if (data["expectedResult"] !== undefined) {
+		body["expected_result"] = data["expectedResult"];
+	}
+	if (data["postconditions"] !== undefined) {
+		body["postconditions"] = data["postconditions"];
+	}
+	if (data["testData"] !== undefined) {
+		body["test_data"] = data["testData"];
+	}
+	if (data["automationStatus"] !== undefined) {
+		body["automation_status"] = data["automationStatus"];
+	}
+	if (data["automationScriptPath"] !== undefined) {
+		body["automation_script_path"] = data["automationScriptPath"];
+	}
+	if (data["automationFramework"] !== undefined) {
+		body["automation_framework"] = data["automationFramework"];
+	}
+	if (data["automationNotes"] !== undefined) {
+		body["automation_notes"] = data["automationNotes"];
+	}
+	if (data["estimatedDurationMinutes"] !== undefined) {
+		body["estimated_duration_minutes"] = data["estimatedDurationMinutes"];
+	}
+	if (data["assignedTo"] !== undefined) {
+		body["assigned_to"] = data["assignedTo"];
+	}
+	if (data["metadata"] !== undefined) {
+		body["metadata"] = data["metadata"];
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}`, {
-		method: "PUT",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PUT",
 	});
-	if (!res.ok) throw new Error("Failed to update test case");
+	if (!res.ok) {
+		throw new Error("Failed to update test case");
+	}
 	return res.json();
 }
 
@@ -234,12 +282,12 @@ async function transitionTestCaseStatus(
 	reason?: string,
 ): Promise<{ id: string; status: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}/status`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			new_status: newStatus,
 			reason,
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -254,19 +302,21 @@ async function submitTestCaseForReview(
 	notes?: string,
 ): Promise<{ id: string; status: string; reviewedBy: string }> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}/submit-review`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			reviewer,
 			notes,
+			reviewer,
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to submit for review");
+	if (!res.ok) {
+		throw new Error("Failed to submit for review");
+	}
 	const result = await res.json();
 	return {
-		id: result['id'],
+		id: result["id"],
+		reviewedBy: result["reviewed_by"],
 		status: result.status,
-		reviewedBy: result['reviewed_by'],
 	};
 }
 
@@ -275,20 +325,22 @@ async function approveTestCase(
 	notes?: string,
 ): Promise<{ id: string; status: string; approvedBy: string }> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}/approve`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			reviewer: "", // Will be filled by backend from claims
 			notes,
 			approved: true,
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to approve test case");
+	if (!res.ok) {
+		throw new Error("Failed to approve test case");
+	}
 	const result = await res.json();
 	return {
-		id: result['id'],
+		approvedBy: result["approved_by"],
+		id: result["id"],
 		status: result.status,
-		approvedBy: result['approved_by'],
 	};
 }
 
@@ -298,23 +350,27 @@ async function deprecateTestCase(
 	replacementTestCaseId?: string,
 ): Promise<{ id: string; status: string }> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}/deprecate`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			reason,
 			replacement_test_case_id: replacementTestCaseId,
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to deprecate test case");
+	if (!res.ok) {
+		throw new Error("Failed to deprecate test case");
+	}
 	return res.json();
 }
 
 async function deleteTestCase(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete test case");
+	if (!res.ok) {
+		throw new Error("Failed to delete test case");
+	}
 }
 
 async function fetchTestCaseActivities(
@@ -325,21 +381,25 @@ async function fetchTestCaseActivities(
 		`${API_URL}/api/v1/test-cases/${testCaseId}/activities?limit=${limit}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch activities");
+	if (!res.ok) {
+		throw new Error("Failed to fetch activities");
+	}
 	const data = await res.json();
 	return {
-		testCaseId: data['test_case_id'],
-		activities: (data['activities'] || []).map((a: Record<string, unknown>) => ({
-			id: a.id,
-			testCaseId: a.test_case_id,
-			activityType: a.activity_type,
-			fromValue: a.from_value,
-			toValue: a.to_value,
-			description: a.description,
-			performedBy: a.performed_by,
-			metadata: a.metadata,
-			createdAt: a.created_at,
-		})),
+		activities: (data["activities"] || []).map(
+			(a: Record<string, unknown>) => ({
+				activityType: a.activity_type,
+				createdAt: a.created_at,
+				description: a.description,
+				fromValue: a.from_value,
+				id: a.id,
+				metadata: a.metadata,
+				performedBy: a.performed_by,
+				testCaseId: a.test_case_id,
+				toValue: a.to_value,
+			}),
+		),
+		testCaseId: data["test_case_id"],
 	};
 }
 
@@ -348,20 +408,22 @@ async function fetchTestCaseStats(projectId: string): Promise<TestCaseStats> {
 		`${API_URL}/api/v1/projects/${projectId}/test-cases/stats`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch test case stats");
+	if (!res.ok) {
+		throw new Error("Failed to fetch test case stats");
+	}
 	const data = await res.json();
 	return {
-		projectId: data['project_id'],
-		total: data['total'] || 0,
-		byStatus: data['by_status'] || {},
-		byType: data['by_type'] || {},
-		byPriority: data['by_priority'] || {},
-		byAutomationStatus: data['by_automation_status'] || {},
+		byAutomationStatus: data["by_automation_status"] || {},
+		byPriority: data["by_priority"] || {},
+		byStatus: data["by_status"] || {},
+		byType: data["by_type"] || {},
 		executionSummary: {
-			totalRuns: data['execution_summary']?.total_runs || 0,
-			totalPassed: data['execution_summary']?.total_passed || 0,
-			totalFailed: data['execution_summary']?.total_failed || 0,
+			totalFailed: data["execution_summary"]?.total_failed || 0,
+			totalPassed: data["execution_summary"]?.total_passed || 0,
+			totalRuns: data["execution_summary"]?.total_runs || 0,
 		},
+		projectId: data["project_id"],
+		total: data["total"] || 0,
 	};
 }
 
@@ -369,17 +431,17 @@ async function fetchTestCaseStats(projectId: string): Promise<TestCaseStats> {
 
 export function useTestCases(filters: TestCaseFilters) {
 	return useQuery({
-		queryKey: ["testCases", filters],
-		queryFn: () => fetchTestCases(filters),
 		enabled: !!filters.projectId,
+		queryFn: () => fetchTestCases(filters),
+		queryKey: ["testCases", filters],
 	});
 }
 
 export function useTestCase(id: string) {
 	return useQuery({
-		queryKey: ["testCases", id],
-		queryFn: () => fetchTestCase(id),
 		enabled: !!id,
+		queryFn: () => fetchTestCase(id),
+		queryKey: ["testCases", id],
 	});
 }
 
@@ -388,8 +450,8 @@ export function useCreateTestCase() {
 	return useMutation({
 		mutationFn: createTestCase,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["testCases"] });
-			void queryClient.invalidateQueries({ queryKey: ["testCaseStats"] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -405,8 +467,8 @@ export function useUpdateTestCase() {
 			data: Partial<CreateTestCaseData>;
 		}) => updateTestCase(id, data),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["testCases"] });
-			void queryClient.invalidateQueries({ queryKey: ["testCases", id] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -424,10 +486,10 @@ export function useTransitionTestCaseStatus() {
 			reason?: string;
 		}) => transitionTestCaseStatus(id, newStatus, reason),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["testCases"] });
-			void queryClient.invalidateQueries({ queryKey: ["testCases", id] });
-			void queryClient.invalidateQueries({ queryKey: ["testCaseActivities", id] });
-			void queryClient.invalidateQueries({ queryKey: ["testCaseStats"] });
+			undefined;
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -445,9 +507,9 @@ export function useSubmitTestCaseForReview() {
 			notes?: string;
 		}) => submitTestCaseForReview(id, reviewer, notes),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["testCases"] });
-			void queryClient.invalidateQueries({ queryKey: ["testCases", id] });
-			void queryClient.invalidateQueries({ queryKey: ["testCaseStats"] });
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -458,10 +520,10 @@ export function useApproveTestCase() {
 		mutationFn: ({ id, notes }: { id: string; notes?: string }) =>
 			approveTestCase(id, notes),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["testCases"] });
-			void queryClient.invalidateQueries({ queryKey: ["testCases", id] });
-			void queryClient.invalidateQueries({ queryKey: ["testCaseActivities", id] });
-			void queryClient.invalidateQueries({ queryKey: ["testCaseStats"] });
+			undefined;
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -479,9 +541,9 @@ export function useDeprecateTestCase() {
 			replacementTestCaseId?: string;
 		}) => deprecateTestCase(id, reason, replacementTestCaseId),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["testCases"] });
-			void queryClient.invalidateQueries({ queryKey: ["testCases", id] });
-			void queryClient.invalidateQueries({ queryKey: ["testCaseStats"] });
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -491,24 +553,24 @@ export function useDeleteTestCase() {
 	return useMutation({
 		mutationFn: deleteTestCase,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["testCases"] });
-			void queryClient.invalidateQueries({ queryKey: ["testCaseStats"] });
+			undefined;
+			undefined;
 		},
 	});
 }
 
 export function useTestCaseActivities(testCaseId: string, limit = 50) {
 	return useQuery({
-		queryKey: ["testCaseActivities", testCaseId, limit],
-		queryFn: () => fetchTestCaseActivities(testCaseId, limit),
 		enabled: !!testCaseId,
+		queryFn: () => fetchTestCaseActivities(testCaseId, limit),
+		queryKey: ["testCaseActivities", testCaseId, limit],
 	});
 }
 
 export function useTestCaseStats(projectId: string) {
 	return useQuery({
-		queryKey: ["testCaseStats", projectId],
-		queryFn: () => fetchTestCaseStats(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchTestCaseStats(projectId),
+		queryKey: ["testCaseStats", projectId],
 	});
 }

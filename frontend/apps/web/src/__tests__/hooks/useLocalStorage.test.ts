@@ -6,32 +6,32 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 // Mock localStorage directly in this file if not available
-if (typeof global.localStorage === "undefined") {
+if (typeof globalThis.localStorage === "undefined") {
 	const localStorageMock = (() => {
 		let store: Record<string, string> = {};
 		return {
-			getItem: (key: string) => store[key] || null,
-			setItem: (key: string, value: string) => {
-				store[key] = value.toString();
-			},
-			removeItem: (key: string) => {
-				delete store[key];
-			},
 			clear: () => {
 				store = {};
 			},
-			length: 0,
+			getItem: (key: string) => store[key] || null,
 			key: (index: number) => {
 				const keys = Object.keys(store);
 				return keys[index] || null;
 			},
+			length: 0,
+			removeItem: (key: string) => {
+				delete store[key];
+			},
+			setItem: (key: string, value: string) => {
+				store[key] = value.toString();
+			},
 		};
 	})();
 
-	Object.defineProperty(global, "localStorage", {
+	Object.defineProperty(globalThis, "localStorage", {
+		configurable: true,
 		value: localStorageMock,
 		writable: true,
-		configurable: true,
 	});
 }
 
@@ -50,7 +50,7 @@ describe("useLocalStorage Hook", () => {
 		});
 
 		it("should serialize objects correctly", () => {
-			const obj = { name: "John", age: 30 };
+			const obj = { age: 30, name: "John" };
 			const serialized = JSON.stringify(obj);
 			expect(JSON.parse(serialized)).toEqual(obj);
 		});
@@ -139,14 +139,14 @@ describe("useLocalStorage Hook", () => {
 
 	describe("SSR Safety Logic", () => {
 		it("should handle window undefined checks", () => {
-			const windowUndefined = typeof window === "undefined";
+			const windowUndefined = typeof globalThis.window === "undefined";
 			expect(typeof windowUndefined).toBe("boolean");
 		});
 
 		it("should safely check window object", () => {
 			// This mimics the SSR check pattern used in the hook
-			if (typeof window !== "undefined") {
-				expect(window).toBeDefined();
+			if (typeof globalThis.window !== "undefined") {
+				expect(globalThis).toBeDefined();
 			}
 		});
 	});
@@ -159,8 +159,8 @@ describe("useLocalStorage Hook", () => {
 
 			try {
 				parsed = JSON.parse(invalidJson);
-			} catch (e) {
-				error = e;
+			} catch (error) {
+				error = error;
 			}
 
 			expect(error).toBeDefined();
@@ -171,8 +171,8 @@ describe("useLocalStorage Hook", () => {
 			let error = null;
 			try {
 				localStorage.setItem("test", "value");
-			} catch (e) {
-				error = e;
+			} catch (error) {
+				error = error;
 			}
 
 			expect(error).toBeNull();
@@ -218,8 +218,8 @@ describe("useLocalStorage Hook", () => {
 		});
 
 		it("should not match storage events with different key", () => {
-			const targetKey: string = "my-key";
-			const eventKey: string = "other-key";
+			const targetKey = "my-key";
+			const eventKey = "other-key";
 			const matches = eventKey === targetKey;
 			expect(matches).toBe(false);
 		});
@@ -242,7 +242,7 @@ describe("useLocalStorage Hook", () => {
 			const targetKey = "test-key";
 			const newValue = JSON.stringify("data");
 
-			const shouldUpdate = eventKey === targetKey && !!newValue;
+			const shouldUpdate = eventKey === targetKey && Boolean(newValue);
 			expect(shouldUpdate).toBe(true);
 		});
 	});

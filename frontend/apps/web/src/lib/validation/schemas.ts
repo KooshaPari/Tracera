@@ -198,31 +198,36 @@ export const loginSchema = z.object({
 	password: z.string().min(1, "Password is required"),
 });
 
-export const registerSchema = z.object({
-	email: emailSchema,
-	password: passwordSchema,
-	name: z
-		.string()
-		.min(1, "Name is required")
-		.max(100, "Name is too long")
-		.transform((val) => val.trim()),
-	confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => data.password === data.confirmPassword, {
-	message: "Passwords don't match",
-	path: ["confirmPassword"],
-});
+export const registerSchema = z
+	.object({
+		email: emailSchema,
+		password: passwordSchema,
+		name: z
+			.string()
+			.min(1, "Name is required")
+			.max(100, "Name is too long")
+			.transform((val) => val.trim()),
+		confirmPassword: z.string().min(1, "Please confirm your password"),
+	})
+	.refine((data) => data.password === data.confirmPassword, {
+		message: "Passwords don't match",
+		path: ["confirmPassword"],
+	});
 
-export const changePasswordSchema = z.object({
-	currentPassword: z.string().min(1, "Current password is required"),
-	newPassword: passwordSchema,
-	confirmPassword: z.string().min(1, "Please confirm your new password"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-	message: "Passwords don't match",
-	path: ["confirmPassword"],
-}).refine((data) => data.currentPassword !== data.newPassword, {
-	message: "New password must be different from current password",
-	path: ["newPassword"],
-});
+export const changePasswordSchema = z
+	.object({
+		currentPassword: z.string().min(1, "Current password is required"),
+		newPassword: passwordSchema,
+		confirmPassword: z.string().min(1, "Please confirm your new password"),
+	})
+	.refine((data) => data.newPassword === data.confirmPassword, {
+		message: "Passwords don't match",
+		path: ["confirmPassword"],
+	})
+	.refine((data) => data.currentPassword !== data.newPassword, {
+		message: "New password must be different from current password",
+		path: ["newPassword"],
+	});
 
 // User profile schemas
 
@@ -308,11 +313,15 @@ export const createTestCaseSchema = z.object({
 	description: longTextSchema,
 	projectId: uuidSchema,
 	itemId: uuidSchema.optional(),
-	steps: z.array(z.object({
-		description: mediumTextSchema,
-		expected: mediumTextSchema,
-		order: z.number().int().min(1),
-	})).min(1, "At least one test step is required"),
+	steps: z
+		.array(
+			z.object({
+				description: mediumTextSchema,
+				expected: mediumTextSchema,
+				order: z.number().int().min(1),
+			}),
+		)
+		.min(1, "At least one test step is required"),
 	priority: prioritySchema,
 	status: z.enum(["draft", "active", "deprecated"]),
 });

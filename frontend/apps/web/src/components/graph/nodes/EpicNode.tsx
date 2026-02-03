@@ -10,7 +10,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { CheckCircle2, Circle, GitBranch, TrendingUp } from "lucide-react";
 import { memo } from "react";
 
@@ -44,10 +45,10 @@ export interface EpicNodeData {
 
 // Business value colors
 const BUSINESS_VALUE_COLORS = {
+	critical: "#f59e0b",
+	high: "#10b981",
 	low: "#94a3b8",
 	medium: "#3b82f6",
-	high: "#10b981",
-	critical: "#f59e0b",
 };
 
 function EpicNodeComponent({
@@ -107,8 +108,8 @@ function EpicNodeComponent({
 									className="text-[10px] px-1.5 h-5"
 									style={{
 										backgroundColor: "#7c3aed15",
-										color: "#7c3aed",
 										borderColor: "#7c3aed40",
+										color: "#7c3aed",
 									}}
 								>
 									Epic
@@ -123,8 +124,8 @@ function EpicNodeComponent({
 												className="text-[10px] px-1.5 h-5 ml-auto"
 												style={{
 													backgroundColor: `${businessValueColor}15`,
-													color: businessValueColor,
 													borderColor: `${businessValueColor}40`,
+													color: businessValueColor,
 												}}
 											>
 												<TrendingUp className="h-3 w-3 mr-0.5" />

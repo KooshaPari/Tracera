@@ -7,35 +7,41 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 function authHeaders(token: string | null): Record<string, string> {
 	const headers: Record<string, string> = {};
 	if (token?.trim()) {
-		headers['Authorization'] = `Bearer ${token.trim()}`;
+		headers["Authorization"] = `Bearer ${token.trim()}`;
 	}
 	return headers;
 }
 
 async function fetchProjects(token: string | null): Promise<Project[]> {
 	const res = await fetch(`${API_URL}/api/v1/projects`, {
-		headers: { ...authHeaders(token) },
 		credentials: "include",
+		headers: { ...authHeaders(token) },
 	});
-	if (!res.ok) throw new Error("Failed to fetch projects");
+	if (!res.ok) {
+		throw new Error("Failed to fetch projects");
+	}
 	const data = await res.json();
 	// API returns { total: number, projects: Project[] }, extract projects array
-	const projectsArray = Array.isArray(data) ? data : data['projects'] || [];
+	const projectsArray = Array.isArray(data) ? data : data["projects"] || [];
 	// Transform snake_case to camelCase for frontend compatibility
-	return projectsArray.map((project: any) => ({
-		...project,
-		createdAt: project.created_at || project.createdAt,
-		updatedAt: project.updated_at || project.updatedAt,
-	}));
+	return projectsArray.map((project: any) =>
+		Object.assign(project, {
+			createdAt: project.created_at || project.createdAt,
+			updatedAt: project.updated_at || project.updatedAt,
+		}),
+	);
 }
 
-async function fetchProject(id: string, token: string | null): Promise<Project> {
+async function fetchProject(
+	id: string,
+	token: string | null,
+): Promise<Project> {
 	const res = await fetch(`${API_URL}/api/v1/projects/${id}`, {
+		credentials: "include",
 		headers: {
 			"X-Bulk-Operation": "true",
 			...authHeaders(token),
 		},
-		credentials: "include",
 	});
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -44,8 +50,8 @@ async function fetchProject(id: string, token: string | null): Promise<Project> 
 	const data = await res.json();
 	return {
 		...data,
-		createdAt: data['created_at'] || data['createdAt'],
-		updatedAt: data['updated_at'] || data['updatedAt'],
+		createdAt: data["created_at"] || data["createdAt"],
+		updatedAt: data["updated_at"] || data["updatedAt"],
 	} as Project;
 }
 
@@ -54,12 +60,14 @@ async function createProject(
 	token: string | null,
 ): Promise<Project> {
 	const res = await fetch(`${API_URL}/api/v1/projects`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...authHeaders(token) },
 		body: JSON.stringify(data),
 		credentials: "include",
+		headers: { "Content-Type": "application/json", ...authHeaders(token) },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to create project");
+	if (!res.ok) {
+		throw new Error("Failed to create project");
+	}
 	return res.json() as Promise<Project>;
 }
 
@@ -69,39 +77,43 @@ async function updateProject(
 	token: string | null,
 ): Promise<Project> {
 	const res = await fetch(`${API_URL}/api/v1/projects/${id}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...authHeaders(token) },
 		body: JSON.stringify(data),
 		credentials: "include",
+		headers: { "Content-Type": "application/json", ...authHeaders(token) },
+		method: "PATCH",
 	});
-	if (!res.ok) throw new Error("Failed to update project");
+	if (!res.ok) {
+		throw new Error("Failed to update project");
+	}
 	return res.json() as Promise<Project>;
 }
 
 async function deleteProject(id: string, token: string | null): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/projects/${id}`, {
-		method: "DELETE",
-		headers: authHeaders(token),
 		credentials: "include",
+		headers: authHeaders(token),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete project");
+	if (!res.ok) {
+		throw new Error("Failed to delete project");
+	}
 }
 
 export function useProjects() {
 	const token = useAuthStore((s) => s.token);
 	return useQuery({
-		queryKey: ["projects", token ?? ""],
-		queryFn: () => fetchProjects(token),
 		enabled: !!token,
+		queryFn: () => fetchProjects(token),
+		queryKey: ["projects", token ?? ""],
 	});
 }
 
 export function useProject(id: string) {
 	const token = useAuthStore((s) => s.token);
 	return useQuery({
-		queryKey: ["projects", id, token ?? ""],
-		queryFn: () => fetchProject(id, token),
 		enabled: !!id && !!token,
+		queryFn: () => fetchProject(id, token),
+		queryKey: ["projects", id, token ?? ""],
 		retry: 1,
 	});
 }
@@ -113,7 +125,7 @@ export function useCreateProject() {
 		mutationFn: (data: { name: string; description?: string }) =>
 			createProject(data, token),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["projects"] });
+			undefined;
 		},
 	});
 }
@@ -125,8 +137,8 @@ export function useUpdateProject() {
 		mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) =>
 			updateProject(id, data, token),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["projects"] });
-			void queryClient.invalidateQueries({ queryKey: ["projects", id] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -137,7 +149,7 @@ export function useDeleteProject() {
 	return useMutation({
 		mutationFn: (id: string) => deleteProject(id, token),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["projects"] });
+			undefined;
 		},
 	});
 }

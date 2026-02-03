@@ -20,62 +20,62 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformProcess(data: Record<string, unknown>): Process {
 	return {
-		id: data['id'],
-		processNumber: data['process_number'],
-		projectId: data['project_id'],
+		activatedAt: data["activated_at"],
+		activatedBy: data["activated_by"],
+		bpmnDiagramUrl: data["bpmn_diagram_url"],
+		bpmnXml: data["bpmn_xml"],
+		category: data["category"],
+		createdAt: data["created_at"],
+		deprecatedAt: data["deprecated_at"],
+		deprecatedBy: data["deprecated_by"],
+		deprecationReason: data["deprecation_reason"],
+		description: data["description"],
+		exitCriteria: data["exit_criteria"],
+		expectedDurationHours: data["expected_duration_hours"],
+		id: data["id"],
+		inputs: data["inputs"],
+		isActiveVersion: data["is_active_version"],
+		metadata: data["metadata"],
 		name: data.name,
-		description: data['description'],
-		purpose: data['purpose'],
+		outputs: data["outputs"],
+		owner: data["owner"],
+		parentVersionId: data["parent_version_id"],
+		processNumber: data["process_number"],
+		projectId: data["project_id"],
+		purpose: data["purpose"],
+		relatedProcessIds: data["related_process_ids"],
+		responsibleTeam: data["responsible_team"],
+		slaHours: data["sla_hours"],
+		stages: data["stages"],
 		status: data.status,
-		category: data['category'],
-		tags: data['tags'],
-		versionNumber: data['version_number'],
-		isActiveVersion: data['is_active_version'],
-		parentVersionId: data['parent_version_id'],
-		versionNotes: data['version_notes'],
-		stages: data['stages'],
-		swimlanes: data['swimlanes'],
-		inputs: data['inputs'],
-		outputs: data['outputs'],
-		triggers: data['triggers'],
-		exitCriteria: data['exit_criteria'],
-		bpmnXml: data['bpmn_xml'],
-		bpmnDiagramUrl: data['bpmn_diagram_url'],
-		owner: data['owner'],
-		responsibleTeam: data['responsible_team'],
-		expectedDurationHours: data['expected_duration_hours'],
-		slaHours: data['sla_hours'],
-		activatedAt: data['activated_at'],
-		activatedBy: data['activated_by'],
-		deprecatedAt: data['deprecated_at'],
-		deprecatedBy: data['deprecated_by'],
-		deprecationReason: data['deprecation_reason'],
-		relatedProcessIds: data['related_process_ids'],
-		metadata: data['metadata'],
-		version: data['version'],
-		createdAt: data['created_at'],
-		updatedAt: data['updated_at'],
+		swimlanes: data["swimlanes"],
+		tags: data["tags"],
+		triggers: data["triggers"],
+		updatedAt: data["updated_at"],
+		version: data["version"],
+		versionNotes: data["version_notes"],
+		versionNumber: data["version_number"],
 	};
 }
 
 function transformExecution(data: Record<string, unknown>): ProcessExecution {
 	return {
-		id: data['id'],
-		processId: data['process_id'],
-		executionNumber: data['execution_number'],
+		completedAt: data["completed_at"],
+		completedBy: data["completed_by"],
+		completedStages: data["completed_stages"],
+		contextData: data["context_data"],
+		createdAt: data["created_at"],
+		currentStageId: data["current_stage_id"],
+		executionNumber: data["execution_number"],
+		id: data["id"],
+		initiatedBy: data["initiated_by"],
+		outputItemIds: data["output_item_ids"],
+		processId: data["process_id"],
+		resultSummary: data["result_summary"],
+		startedAt: data["started_at"],
 		status: data.status,
-		currentStageId: data['current_stage_id'],
-		completedStages: data['completed_stages'],
-		startedAt: data['started_at'],
-		completedAt: data['completed_at'],
-		initiatedBy: data['initiated_by'],
-		completedBy: data['completed_by'],
-		triggerItemId: data['trigger_item_id'],
-		contextData: data['context_data'],
-		resultSummary: data['result_summary'],
-		outputItemIds: data['output_item_ids'],
-		createdAt: data['created_at'],
-		updatedAt: data['updated_at'],
+		triggerItemId: data["trigger_item_id"],
+		updatedAt: data["updated_at"],
 	};
 }
 
@@ -92,10 +92,18 @@ async function fetchProcesses(
 ): Promise<{ processes: Process[]; total: number }> {
 	const params = new URLSearchParams();
 	params.set("project_id", filters.projectId);
-	if (filters.status) params.set("status", filters.status);
-	if (filters.category) params.set("category", filters.category);
-	if (filters.owner) params.set("owner", filters.owner);
-	if (filters.activeOnly) params.set("active_only", "true");
+	if (filters.status) {
+		params.set("status", filters.status);
+	}
+	if (filters.category) {
+		params.set("category", filters.category);
+	}
+	if (filters.owner) {
+		params.set("owner", filters.owner);
+	}
+	if (filters.activeOnly) {
+		params.set("active_only", "true");
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/processes?${params}`, {
 		headers: {
@@ -109,8 +117,8 @@ async function fetchProcesses(
 	}
 	const data = await res.json();
 	return {
-		processes: (data['processes'] || []).map(transformProcess),
-		total: data['total'] || 0,
+		processes: (data["processes"] || []).map(transformProcess),
+		total: data["total"] || 0,
 	};
 }
 
@@ -118,7 +126,9 @@ async function fetchProcess(id: string): Promise<Process> {
 	const res = await fetch(`${API_URL}/api/v1/processes/${id}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch process");
+	if (!res.ok) {
+		throw new Error("Failed to fetch process");
+	}
 	const data = await res.json();
 	return transformProcess(data);
 }
@@ -149,35 +159,37 @@ async function createProcess(
 	data: CreateProcessData,
 ): Promise<{ id: string; processNumber: string }> {
 	const res = await fetch(
-		`${API_URL}/api/v1/processes?project_id=${data['projectId']}`,
+		`${API_URL}/api/v1/processes?project_id=${data["projectId"]}`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
+				bpmn_xml: data["bpmnXml"],
+				category: data["category"],
+				description: data["description"],
+				exit_criteria: data["exitCriteria"],
+				expected_duration_hours: data["expectedDurationHours"],
+				inputs: data["inputs"],
+				metadata: data["metadata"] || {},
 				name: data.name,
-				description: data['description'],
-				purpose: data['purpose'],
-				category: data['category'],
-				tags: data['tags'],
-				stages: data['stages'],
-				swimlanes: data['swimlanes'],
-				inputs: data['inputs'],
-				outputs: data['outputs'],
-				triggers: data['triggers'],
-				exit_criteria: data['exitCriteria'],
-				bpmn_xml: data['bpmnXml'],
-				owner: data['owner'],
-				responsible_team: data['responsibleTeam'],
-				expected_duration_hours: data['expectedDurationHours'],
-				sla_hours: data['slaHours'],
-				related_process_ids: data['relatedProcessIds'],
-				metadata: data['metadata'] || {},
+				outputs: data["outputs"],
+				owner: data["owner"],
+				purpose: data["purpose"],
+				related_process_ids: data["relatedProcessIds"],
+				responsible_team: data["responsibleTeam"],
+				sla_hours: data["slaHours"],
+				stages: data["stages"],
+				swimlanes: data["swimlanes"],
+				tags: data["tags"],
+				triggers: data["triggers"],
 			}),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create process");
+	if (!res.ok) {
+		throw new Error("Failed to create process");
+	}
 	const result = await res.json();
-	return { id: result['id'], processNumber: result['process_number'] };
+	return { id: result["id"], processNumber: result["process_number"] };
 }
 
 async function updateProcess(
@@ -185,30 +197,32 @@ async function updateProcess(
 	data: Partial<Omit<CreateProcessData, "projectId">>,
 ): Promise<{ id: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/processes/${id}`, {
-		method: "PUT",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
+			bpmn_xml: data["bpmnXml"],
+			category: data["category"],
+			description: data["description"],
+			exit_criteria: data["exitCriteria"],
+			expected_duration_hours: data["expectedDurationHours"],
+			inputs: data["inputs"],
+			metadata: data["metadata"],
 			name: data.name,
-			description: data['description'],
-			purpose: data['purpose'],
-			category: data['category'],
-			tags: data['tags'],
-			stages: data['stages'],
-			swimlanes: data['swimlanes'],
-			inputs: data['inputs'],
-			outputs: data['outputs'],
-			triggers: data['triggers'],
-			exit_criteria: data['exitCriteria'],
-			bpmn_xml: data['bpmnXml'],
-			owner: data['owner'],
-			responsible_team: data['responsibleTeam'],
-			expected_duration_hours: data['expectedDurationHours'],
-			sla_hours: data['slaHours'],
-			related_process_ids: data['relatedProcessIds'],
-			metadata: data['metadata'],
+			outputs: data["outputs"],
+			owner: data["owner"],
+			purpose: data["purpose"],
+			related_process_ids: data["relatedProcessIds"],
+			responsible_team: data["responsibleTeam"],
+			sla_hours: data["slaHours"],
+			stages: data["stages"],
+			swimlanes: data["swimlanes"],
+			tags: data["tags"],
+			triggers: data["triggers"],
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PUT",
 	});
-	if (!res.ok) throw new Error("Failed to update process");
+	if (!res.ok) {
+		throw new Error("Failed to update process");
+	}
 	return res.json();
 }
 
@@ -222,17 +236,19 @@ async function createProcessVersion(
 	parentVersionId: string;
 }> {
 	const res = await fetch(`${API_URL}/api/v1/processes/${processId}/versions`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({ version_notes: versionNotes }),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to create process version");
+	if (!res.ok) {
+		throw new Error("Failed to create process version");
+	}
 	const result = await res.json();
 	return {
-		id: result['id'],
-		processNumber: result['process_number'],
-		versionNumber: result['version_number'],
-		parentVersionId: result['parent_version_id'],
+		id: result["id"],
+		parentVersionId: result["parent_version_id"],
+		processNumber: result["process_number"],
+		versionNumber: result["version_number"],
 	};
 }
 
@@ -240,16 +256,18 @@ async function activateProcess(
 	processId: string,
 ): Promise<{ id: string; status: string; isActiveVersion: boolean }> {
 	const res = await fetch(`${API_URL}/api/v1/processes/${processId}/activate`, {
-		method: "PUT",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PUT",
 	});
-	if (!res.ok) throw new Error("Failed to activate process");
+	if (!res.ok) {
+		throw new Error("Failed to activate process");
+	}
 	const result = await res.json();
 	return {
-		id: result['id'],
+		id: result["id"],
+		isActiveVersion: result["is_active_version"],
 		status: result.status,
-		isActiveVersion: result['is_active_version'],
 	};
 }
 
@@ -260,21 +278,25 @@ async function deprecateProcess(
 	const res = await fetch(
 		`${API_URL}/api/v1/processes/${processId}/deprecate`,
 		{
-			method: "PUT",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({ deprecation_reason: deprecationReason }),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "PUT",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to deprecate process");
+	if (!res.ok) {
+		throw new Error("Failed to deprecate process");
+	}
 	return res.json();
 }
 
 async function deleteProcess(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/processes/${id}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete process");
+	if (!res.ok) {
+		throw new Error("Failed to delete process");
+	}
 }
 
 async function fetchProcessStats(projectId: string): Promise<{
@@ -287,13 +309,15 @@ async function fetchProcessStats(projectId: string): Promise<{
 		`${API_URL}/api/v1/projects/${projectId}/processes/stats`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch process stats");
+	if (!res.ok) {
+		throw new Error("Failed to fetch process stats");
+	}
 	const data = await res.json();
 	return {
-		projectId: data['project_id'],
-		byStatus: data['by_status'] || {},
-		byCategory: data['by_category'] || {},
-		total: data['total'] || 0,
+		byCategory: data["by_category"] || {},
+		byStatus: data["by_status"] || {},
+		projectId: data["project_id"],
+		total: data["total"] || 0,
 	};
 }
 
@@ -307,18 +331,20 @@ async function createExecution(
 	const res = await fetch(
 		`${API_URL}/api/v1/processes/${processId}/executions`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
+				context_data: contextData || {},
 				process_id: processId,
 				trigger_item_id: triggerItemId,
-				context_data: contextData || {},
 			}),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create execution");
+	if (!res.ok) {
+		throw new Error("Failed to create execution");
+	}
 	const result = await res.json();
-	return { id: result['id'], executionNumber: result['execution_number'] };
+	return { executionNumber: result["execution_number"], id: result["id"] };
 }
 
 async function fetchExecutions(
@@ -327,18 +353,22 @@ async function fetchExecutions(
 	limit = 50,
 ): Promise<{ total: number; executions: ProcessExecution[] }> {
 	const params = new URLSearchParams();
-	if (status) params.set("status", status);
+	if (status) {
+		params.set("status", status);
+	}
 	params.set("limit", limit.toString());
 
 	const res = await fetch(
 		`${API_URL}/api/v1/processes/${processId}/executions?${params}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch executions");
+	if (!res.ok) {
+		throw new Error("Failed to fetch executions");
+	}
 	const data = await res.json();
 	return {
-		total: data['total'] || 0,
-		executions: (data['executions'] || []).map(transformExecution),
+		executions: (data["executions"] || []).map(transformExecution),
+		total: data["total"] || 0,
 	};
 }
 
@@ -346,7 +376,9 @@ async function fetchExecution(executionId: string): Promise<ProcessExecution> {
 	const res = await fetch(`${API_URL}/api/v1/executions/${executionId}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch execution");
+	if (!res.ok) {
+		throw new Error("Failed to fetch execution");
+	}
 	const data = await res.json();
 	return transformExecution(data);
 }
@@ -355,10 +387,12 @@ async function startExecution(
 	executionId: string,
 ): Promise<{ id: string; status: string }> {
 	const res = await fetch(`${API_URL}/api/v1/executions/${executionId}/start`, {
-		method: "POST",
 		headers: getAuthHeaders(),
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to start execution");
+	if (!res.ok) {
+		throw new Error("Failed to start execution");
+	}
 	return res.json();
 }
 
@@ -373,16 +407,18 @@ async function advanceExecution(
 	const res = await fetch(
 		`${API_URL}/api/v1/executions/${executionId}/advance?stage_id=${stageId}`,
 		{
-			method: "POST",
 			headers: getAuthHeaders(),
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to advance execution");
+	if (!res.ok) {
+		throw new Error("Failed to advance execution");
+	}
 	const result = await res.json();
 	return {
-		id: result['id'],
-		currentStageId: result['current_stage_id'],
-		completedStages: result['completed_stages'],
+		completedStages: result["completed_stages"],
+		currentStageId: result["current_stage_id"],
+		id: result["id"],
 	};
 }
 
@@ -394,15 +430,17 @@ async function completeExecution(
 	const res = await fetch(
 		`${API_URL}/api/v1/executions/${executionId}/complete`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
-				result_summary: resultSummary,
 				output_item_ids: outputItemIds,
+				result_summary: resultSummary,
 			}),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to complete execution");
+	if (!res.ok) {
+		throw new Error("Failed to complete execution");
+	}
 	return res.json();
 }
 
@@ -410,17 +448,17 @@ async function completeExecution(
 
 export function useProcesses(filters: ProcessFilters) {
 	return useQuery({
-		queryKey: ["processes", filters],
-		queryFn: () => fetchProcesses(filters),
 		enabled: !!filters.projectId,
+		queryFn: () => fetchProcesses(filters),
+		queryKey: ["processes", filters],
 	});
 }
 
 export function useProcess(id: string) {
 	return useQuery({
-		queryKey: ["processes", id],
-		queryFn: () => fetchProcess(id),
 		enabled: !!id,
+		queryFn: () => fetchProcess(id),
+		queryKey: ["processes", id],
 	});
 }
 
@@ -429,7 +467,7 @@ export function useCreateProcess() {
 	return useMutation({
 		mutationFn: createProcess,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["processes"] });
+			undefined;
 		},
 	});
 }
@@ -445,8 +483,8 @@ export function useUpdateProcess() {
 			data: Partial<Omit<CreateProcessData, "projectId">>;
 		}) => updateProcess(id, data),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["processes"] });
-			void queryClient.invalidateQueries({ queryKey: ["processes", id] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -462,7 +500,7 @@ export function useCreateProcessVersion() {
 			versionNotes?: string;
 		}) => createProcessVersion(processId, versionNotes),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["processes"] });
+			undefined;
 		},
 	});
 }
@@ -472,8 +510,8 @@ export function useActivateProcess() {
 	return useMutation({
 		mutationFn: activateProcess,
 		onSuccess: (_, processId) => {
-			void queryClient.invalidateQueries({ queryKey: ["processes"] });
-			void queryClient.invalidateQueries({ queryKey: ["processes", processId] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -489,8 +527,8 @@ export function useDeprecateProcess() {
 			deprecationReason?: string;
 		}) => deprecateProcess(processId, deprecationReason),
 		onSuccess: (_, { processId }) => {
-			void queryClient.invalidateQueries({ queryKey: ["processes"] });
-			void queryClient.invalidateQueries({ queryKey: ["processes", processId] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -500,16 +538,16 @@ export function useDeleteProcess() {
 	return useMutation({
 		mutationFn: deleteProcess,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["processes"] });
+			undefined;
 		},
 	});
 }
 
 export function useProcessStats(projectId: string) {
 	return useQuery({
-		queryKey: ["processStats", projectId],
-		queryFn: () => fetchProcessStats(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchProcessStats(projectId),
+		queryKey: ["processStats", projectId],
 	});
 }
 
@@ -521,17 +559,17 @@ export function useProcessExecutions(
 	limit = 50,
 ) {
 	return useQuery({
-		queryKey: ["processExecutions", processId, status, limit],
-		queryFn: () => fetchExecutions(processId, status, limit),
 		enabled: !!processId,
+		queryFn: () => fetchExecutions(processId, status, limit),
+		queryKey: ["processExecutions", processId, status, limit],
 	});
 }
 
 export function useExecution(executionId: string) {
 	return useQuery({
-		queryKey: ["executions", executionId],
-		queryFn: () => fetchExecution(executionId),
 		enabled: !!executionId,
+		queryFn: () => fetchExecution(executionId),
+		queryKey: ["executions", executionId],
 	});
 }
 
@@ -548,9 +586,7 @@ export function useCreateExecution() {
 			contextData?: Record<string, unknown>;
 		}) => createExecution(processId, triggerItemId, contextData),
 		onSuccess: (_, { processId }) => {
-			void queryClient.invalidateQueries({
-				queryKey: ["processExecutions", processId],
-			});
+			undefined;
 		},
 	});
 }
@@ -560,8 +596,8 @@ export function useStartExecution() {
 	return useMutation({
 		mutationFn: startExecution,
 		onSuccess: (_, executionId) => {
-			void queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
-			void queryClient.invalidateQueries({ queryKey: ["processExecutions"] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -577,7 +613,7 @@ export function useAdvanceExecution() {
 			stageId: string;
 		}) => advanceExecution(executionId, stageId),
 		onSuccess: (_, { executionId }) => {
-			void queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
+			undefined;
 		},
 	});
 }
@@ -595,8 +631,8 @@ export function useCompleteExecution() {
 			outputItemIds?: string[];
 		}) => completeExecution(executionId, resultSummary, outputItemIds),
 		onSuccess: (_, { executionId }) => {
-			void queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
-			void queryClient.invalidateQueries({ queryKey: ["processExecutions"] });
+			undefined;
+			undefined;
 		},
 	});
 }

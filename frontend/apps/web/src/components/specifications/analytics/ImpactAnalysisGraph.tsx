@@ -30,17 +30,17 @@ interface ImpactAnalysisGraphProps {
 
 const severityColors = {
 	high: "bg-red-500",
-	medium: "bg-yellow-500",
 	low: "bg-green-500",
+	medium: "bg-yellow-500",
 };
 
 const typeIcons: Record<string, string> = {
-	requirement: "📋",
-	test: "🧪",
+	defect: "🐛",
 	epic: "🏔",
+	requirement: "📋",
 	story: "📖",
 	task: "✅",
-	defect: "🐛",
+	test: "🧪",
 };
 
 export function ImpactAnalysisGraph({

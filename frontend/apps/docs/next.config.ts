@@ -9,24 +9,28 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig: NextConfig = {
+  // Disable Turbopack to avoid Next.js 16 + fumadocs-mdx compatibility issues
+  // See: https://github.com/vercel/next.js/issues/84748
+  turbo: false,
+
   reactStrictMode: true,
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
 
   images: {
-    unoptimized: process.env.NODE_ENV === 'development',
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
-    dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    dangerouslyAllowSVG: true,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    formats: ['image/avif', 'image/webp'],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'api.tracertm.com',
       },
     ],
+    unoptimized: process.env.NODE_ENV === 'development',
   },
 
   trailingSlash: false,
@@ -59,7 +63,6 @@ const nextConfig: NextConfig = {
 
         // Manual chunk splitting for better caching
         splitChunks: {
-          chunks: 'all',
           cacheGroups: {
             // Separate React into its own chunk
             react: {
@@ -90,6 +93,7 @@ const nextConfig: NextConfig = {
               reuseExistingChunk: true,
             },
           },
+          chunks: 'all',
         },
       };
     }
@@ -102,27 +106,26 @@ const nextConfig: NextConfig = {
     return [
       {
         // Cache static assets immutably
-        source: '/_next/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
         ],
+        source: '/_next/static/:path*',
       },
       {
         // Cache images for 1 year
-        source: '/images/:path*',
         headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
         ],
+        source: '/images/:path*',
       },
       {
         // Cache HTML pages with revalidation
-        source: '/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -141,6 +144,7 @@ const nextConfig: NextConfig = {
             value: '1; mode=block',
           },
         ],
+        source: '/:path*',
       },
     ];
   },

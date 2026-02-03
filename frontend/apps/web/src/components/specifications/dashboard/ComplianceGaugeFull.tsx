@@ -18,20 +18,40 @@ interface ComplianceGaugeFullProps {
 }
 
 function getGaugeColor(value: number): string {
-	if (value >= 90) return "#10b981"; // emerald
-	if (value >= 80) return "#06b6d4"; // cyan
-	if (value >= 70) return "#3b82f6"; // blue
-	if (value >= 60) return "#f59e0b"; // amber
-	if (value >= 40) return "#f97316"; // orange
-	return "#ef4444"; // red
+	if (value >= 90) {
+		return "#10b981";
+	} // Emerald
+	if (value >= 80) {
+		return "#06b6d4";
+	} // Cyan
+	if (value >= 70) {
+		return "#3b82f6";
+	} // Blue
+	if (value >= 60) {
+		return "#f59e0b";
+	} // Amber
+	if (value >= 40) {
+		return "#f97316";
+	} // Orange
+	return "#ef4444"; // Red
 }
 
 function getStatus(value: number): string {
-	if (value >= 90) return "Excellent";
-	if (value >= 80) return "Very Good";
-	if (value >= 70) return "Good";
-	if (value >= 60) return "Fair";
-	if (value >= 40) return "Poor";
+	if (value >= 90) {
+		return "Excellent";
+	}
+	if (value >= 80) {
+		return "Very Good";
+	}
+	if (value >= 70) {
+		return "Good";
+	}
+	if (value >= 60) {
+		return "Fair";
+	}
+	if (value >= 40) {
+		return "Poor";
+	}
 	return "Critical";
 }
 
@@ -87,7 +107,7 @@ export function ComplianceGaugeFull({
 			transition={{ duration: 0.5 }}
 		>
 			{/* SVG Gauge */}
-			<div style={{ width: size, height: size }}>
+			<div style={{ height: size, width: size }}>
 				<svg
 					width={size}
 					height={size}

@@ -74,7 +74,7 @@ function MockSpecCreation({
 		setIsSubmitting(true);
 
 		try {
-			const spec = { name: specName, type: specType, content: specContent };
+			const spec = { content: specContent, name: specName, type: specType };
 			await new Promise((resolve) => setTimeout(resolve, 100));
 			onSpecCreate(spec);
 			setSpecName("");
@@ -152,9 +152,9 @@ function MockSpecCreation({
 // Mock Project Edit Component
 function MockProjectEdit({
 	initialProject = {
+		description: "Test project",
 		id: "proj-1",
 		name: "Project 1",
-		description: "Test project",
 	},
 	onSave = vi.fn(),
 }: {
@@ -169,8 +169,11 @@ function MockProjectEdit({
 	const [isSaving, setIsSaving] = React.useState(false);
 
 	const handleChange = (field: string, value: string) => {
-		if (field === "name") setName(value);
-		else setDescription(value);
+		if (field === "name") {
+			setName(value);
+		} else {
+			setDescription(value);
+		}
 		setIsModified(true);
 	};
 
@@ -180,7 +183,7 @@ function MockProjectEdit({
 
 		try {
 			await new Promise((resolve) => setTimeout(resolve, 100));
-			onSave({ name, description });
+			onSave({ description, name });
 			setIsModified(false);
 		} finally {
 			setIsSaving(false);
@@ -244,7 +247,7 @@ function MockProjectEdit({
 
 // Mock Reports Generation Component
 function MockReportsGeneration({
-    projectId: _projectId = "proj-1",
+	projectId: _projectId = "proj-1",
 	onGenerateReport = vi.fn(),
 }: {
 	projectId?: string;
@@ -259,7 +262,7 @@ function MockReportsGeneration({
 
 		try {
 			await new Promise((resolve) => setTimeout(resolve, 200));
-			onGenerateReport({ type: reportType, format });
+			onGenerateReport({ format, type: reportType });
 		} finally {
 			setIsGenerating(false);
 		}
@@ -363,7 +366,7 @@ describe("Link Sharing - Basic Functionality", () => {
 	});
 
 	it("should open shared link in new tab", async () => {
-		const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
+		const openSpy = vi.spyOn(globalThis, "open").mockReturnValue(null);
 
 		render(<MockLinkSharing itemId="item-1" />);
 
@@ -439,9 +442,9 @@ describe("Spec Creation - Submission", () => {
 		await waitFor(() => {
 			expect(handleCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
+					content: "openapi: 3.0.0",
 					name: "Test API",
 					type: "openapi",
-					content: "openapi: 3.0.0",
 				}),
 			);
 		});
@@ -466,7 +469,6 @@ describe("Spec Creation - Submission", () => {
 	});
 
 	it("should clear form after successful submission", async () => {
-
 		render(<MockSpecCreation />);
 
 		const nameInput = screen.getByLabelText("Specification Name");
@@ -489,9 +491,9 @@ describe("Project Edit - Form Functionality", () => {
 		render(
 			<MockProjectEdit
 				initialProject={{
+					description: "A test project",
 					id: "proj-1",
 					name: "Test Project",
-					description: "A test project",
 				}}
 			/>,
 		);
@@ -501,13 +503,12 @@ describe("Project Edit - Form Functionality", () => {
 	});
 
 	it("should track field modifications", async () => {
-
 		render(
 			<MockProjectEdit
 				initialProject={{
+					description: "Original desc",
 					id: "proj-1",
 					name: "Original",
-					description: "Original desc",
 				}}
 			/>,
 		);
@@ -528,13 +529,12 @@ describe("Project Edit - Form Functionality", () => {
 	});
 
 	it("should reset changes", async () => {
-
 		render(
 			<MockProjectEdit
 				initialProject={{
+					description: "Original desc",
 					id: "proj-1",
 					name: "Original",
-					description: "Original desc",
 				}}
 			/>,
 		);
@@ -556,9 +556,9 @@ describe("Project Edit - Form Functionality", () => {
 		render(
 			<MockProjectEdit
 				initialProject={{
+					description: "Desc",
 					id: "proj-1",
 					name: "Original",
-					description: "Desc",
 				}}
 				onSave={handleSave}
 			/>,
@@ -573,8 +573,8 @@ describe("Project Edit - Form Functionality", () => {
 
 		await waitFor(() => {
 			expect(handleSave).toHaveBeenCalledWith({
-				name: "Updated",
 				description: "Desc",
+				name: "Updated",
 			});
 		});
 	});
@@ -620,8 +620,8 @@ describe("Reports Generation - Options", () => {
 
 		await waitFor(() => {
 			expect(handleGenerate).toHaveBeenCalledWith({
-				type: "traceability",
 				format: "excel",
+				type: "traceability",
 			});
 		});
 	});
@@ -646,13 +646,13 @@ describe("Contract and Compliance Features", () => {
 	/* eslint-disable-next-line unicorn/consistent-function-scoping -- test mock component */
 	function MockComplianceChecklist({
 		items = [
-			{ id: "1", name: "Security Review", completed: false },
-			{ id: "2", name: "Performance Test", completed: false },
-			{ id: "3", name: "Documentation", completed: false },
+			{ completed: false, id: "1", name: "Security Review" },
+			{ completed: false, id: "2", name: "Performance Test" },
+			{ completed: false, id: "3", name: "Documentation" },
 		],
 		onCheck = vi.fn(),
 	}: {
-		items?: Array<{ id: string; name: string; completed: boolean }>;
+		items?: { id: string; name: string; completed: boolean }[];
 		onCheck?: (id: string, completed: boolean) => void;
 	}) {
 		return (
@@ -681,7 +681,6 @@ describe("Contract and Compliance Features", () => {
 	}
 
 	it("should track compliance items", async () => {
-
 		render(<MockComplianceChecklist />);
 
 		const checkboxes = screen.getAllByRole("checkbox");
@@ -695,9 +694,9 @@ describe("Contract and Compliance Features", () => {
 		render(
 			<MockComplianceChecklist
 				items={[
-					{ id: "1", name: "Item 1", completed: true },
-					{ id: "2", name: "Item 2", completed: true },
-					{ id: "3", name: "Item 3", completed: false },
+					{ completed: true, id: "1", name: "Item 1" },
+					{ completed: true, id: "2", name: "Item 2" },
+					{ completed: false, id: "3", name: "Item 3" },
 				]}
 			/>,
 		);

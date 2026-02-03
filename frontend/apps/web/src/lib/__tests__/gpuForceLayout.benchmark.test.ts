@@ -21,7 +21,10 @@ import {
 /**
  * Generate random graph for benchmarking
  */
-function generateRandomGraph(nodeCount: number, edgeDensity = 0.01): {
+function generateRandomGraph(
+	nodeCount: number,
+	edgeDensity = 0.01,
+): {
 	nodes: Node[];
 	edges: Edge[];
 } {
@@ -55,7 +58,10 @@ function generateRandomGraph(nodeCount: number, edgeDensity = 0.01): {
  * Generate scale-free graph (more realistic)
  * Uses Barabási–Albert model
  */
-function generateScaleFreeGraph(nodeCount: number, m = 2): {
+function generateScaleFreeGraph(
+	nodeCount: number,
+	m = 2,
+): {
 	nodes: Node[];
 	edges: Edge[];
 } {

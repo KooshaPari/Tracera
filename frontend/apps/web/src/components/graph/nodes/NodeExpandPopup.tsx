@@ -31,15 +31,15 @@ export function NodeExpandPopup({ data }: NodeExpandPopupProps) {
 
 	const tabs = [
 		{
-			id: "artifacts",
-			icon: Camera,
-			label: "Artifacts",
 			badge: data.artifacts?.length,
+			icon: Camera,
+			id: "artifacts",
+			label: "Artifacts",
 		},
-		{ id: "demo", icon: Play, label: "Demo" },
-		{ id: "tests", icon: FileText, label: "Tests" },
-		{ id: "metrics", icon: BarChart3, label: "Metrics" },
-		{ id: "actions", icon: Settings, label: "Actions" },
+		{ icon: Play, id: "demo", label: "Demo" },
+		{ icon: FileText, id: "tests", label: "Tests" },
+		{ icon: BarChart3, id: "metrics", label: "Metrics" },
+		{ icon: Settings, id: "actions", label: "Actions" },
 	];
 
 	return (
@@ -116,7 +116,7 @@ function ArtifactsTab({ artifacts }: { artifacts?: QANodeArtifact[] }) {
 								alt={artifact.type}
 								className="w-full h-32 object-cover"
 							/>
-						) : artifact.type === "video" ? (
+						) : (artifact.type === "video" ? (
 							<div className="w-full h-32 bg-muted flex items-center justify-center">
 								<Video className="h-8 w-8 text-muted-foreground" />
 							</div>
@@ -124,7 +124,7 @@ function ArtifactsTab({ artifacts }: { artifacts?: QANodeArtifact[] }) {
 							<div className="w-full h-32 bg-muted flex items-center justify-center">
 								<FileText className="h-8 w-8 text-muted-foreground" />
 							</div>
-						)}
+						))}
 						<div className="p-2">
 							<div className="flex items-center justify-between">
 								<Badge variant="outline" className="text-xs">
@@ -265,9 +265,9 @@ function MetricsTab({ metrics }: { metrics?: QANodeMetrics }) {
 							className={`h-2 rounded-full ${
 								metrics.passRate >= 90
 									? "bg-green-500"
-									: metrics.passRate >= 70
+									: (metrics.passRate >= 70
 										? "bg-yellow-500"
-										: "bg-red-500"
+										: "bg-red-500")
 							}`}
 							style={{ width: `${metrics.passRate}%` }}
 						/>

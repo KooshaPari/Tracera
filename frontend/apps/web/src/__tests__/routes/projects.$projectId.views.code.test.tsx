@@ -28,24 +28,26 @@ describe("Code View Route", () => {
 	it("supports code file metadata", () => {
 		const mockCodeFile = {
 			id: "file-1",
-			title: "main.ts",
-			type: "code",
 			language: "typescript",
 			lines: 150,
+			title: "main.ts",
+			type: "code",
 		};
 
-		expect(mockCodeFile.language).toMatch(/^(typescript|javascript|python|go|rust|java)$/);
+		expect(mockCodeFile.language).toMatch(
+			/^(typescript|javascript|python|go|rust|java)$/,
+		);
 		expect(mockCodeFile.lines).toBeGreaterThan(0);
 	});
 
 	it("handles multiple code files", () => {
 		const mockFiles = [
-			{ id: "f1", title: "main.ts", language: "typescript" },
-			{ id: "f2", title: "utils.ts", language: "typescript" },
-			{ id: "f3", title: "types.ts", language: "typescript" },
+			{ id: "f1", language: "typescript", title: "main.ts" },
+			{ id: "f2", language: "typescript", title: "utils.ts" },
+			{ id: "f3", language: "typescript", title: "types.ts" },
 		];
 
 		expect(mockFiles).toHaveLength(3);
-		expect(mockFiles.every(f => f.language === "typescript")).toBe(true);
+		expect(mockFiles.every((f) => f.language === "typescript")).toBe(true);
 	});
 });

@@ -30,14 +30,14 @@ vi.mock("../../hooks/useProjects", () => ({
 	useProjects: vi.fn(),
 }));
 
-describe("ItemsTreeView", () => {
+describe(ItemsTreeView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -47,32 +47,32 @@ describe("ItemsTreeView", () => {
 		const mockItems = [
 			{
 				id: "item-1",
+				parentId: null,
+				status: "todo",
 				title: "Parent Item",
 				type: "feature",
-				status: "todo",
-				parentId: null,
 			},
 			{
 				id: "item-2",
+				parentId: "item-1",
+				status: "done",
 				title: "Child Item",
 				type: "feature",
-				status: "done",
-				parentId: "item-1",
 			},
 		];
 
 		vi.mocked(useItems).mockReturnValue({
 			data: mockItems,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useProjects).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -87,9 +87,9 @@ describe("ItemsTreeView", () => {
 	it("displays loading state", () => {
 		vi.mocked(useItems).mockReturnValue({
 			data: undefined,
-			isLoading: true,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: true,
 		} as any);
 
 		render(
@@ -105,32 +105,32 @@ describe("ItemsTreeView", () => {
 		const mockItems = [
 			{
 				id: "item-1",
+				parentId: null,
+				status: "todo",
 				title: "Parent Item",
 				type: "feature",
-				status: "todo",
-				parentId: null,
 			},
 			{
 				id: "item-2",
+				parentId: "item-1",
+				status: "done",
 				title: "Child Item",
 				type: "feature",
-				status: "done",
-				parentId: "item-1",
 			},
 		];
 
 		vi.mocked(useItems).mockReturnValue({
 			data: mockItems,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useProjects).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -150,19 +150,18 @@ describe("ItemsTreeView", () => {
 	});
 
 	it("displays search functionality", async () => {
-
 		vi.mocked(useItems).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useProjects).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(

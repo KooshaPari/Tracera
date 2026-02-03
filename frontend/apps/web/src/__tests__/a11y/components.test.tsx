@@ -9,17 +9,15 @@ import { describe, expect, it } from "vitest";
 import { axe } from "./setup";
 
 // Mock Dialog and Tooltip to avoid hook violations
-const Dialog = ({ open, onOpenChange: _onOpenChange, children }: any) => {
-	return (
-		<div data-testid="dialog" data-open={open}>
-			{children}
-		</div>
-	);
-};
+const Dialog = ({ open, onOpenChange: _onOpenChange, children }: any) => (
+	<div data-testid="dialog" data-open={open}>
+		{children}
+	</div>
+);
 
-const Tooltip = ({ children }: any) => {
-	return <div data-testid="tooltip">{children}</div>;
-};
+const Tooltip = ({ children }: any) => (
+	<div data-testid="tooltip">{children}</div>
+);
 
 describe("Button Accessibility", () => {
 	it("should not have accessibility violations with text", async () => {

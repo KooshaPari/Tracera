@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { requireAuth } from "@/lib/route-guards";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 const DashboardView = lazy(() =>
 	import("@/views/DashboardView").then((m) => {
@@ -52,9 +52,9 @@ export const Route = createFileRoute("/home")({
 				fetchProjects().catch(() => []),
 				fetchRecentItems().catch(() => []),
 				fetchSystemStatus().catch(() => ({
+					queuedJobs: 0,
 					status: "healthy" as const,
 					uptime: 99.9,
-					queuedJobs: 0,
 				})),
 			]);
 
@@ -65,9 +65,9 @@ export const Route = createFileRoute("/home")({
 				projects: [],
 				recentItems: [],
 				systemStatus: {
+					queuedJobs: 0,
 					status: "healthy" as const,
 					uptime: 99.9,
-					queuedJobs: 0,
 				},
 			};
 		}

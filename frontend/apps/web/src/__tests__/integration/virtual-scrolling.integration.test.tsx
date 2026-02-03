@@ -8,15 +8,15 @@ describe("Virtual Scrolling Integration Tests", () => {
 	describe("Table Rendering with Virtual Scrolling", () => {
 		it("should render only visible rows in DOM", async () => {
 			// Virtual scrolling should only render visible items
-			// not all items in the dataset
+			// Not all items in the dataset
 
 			// This would be a real integration test with a test component
 			// For now, we document the expected behavior
 
 			const expectedBehavior = {
+				expectedVisibleRowRatio: 50 / 1000,
 				totalItems: 1000,
 				visibleRowsInDOM: 50,
-				expectedVisibleRowRatio: 50 / 1000,
 			};
 
 			expect(expectedBehavior.expectedVisibleRowRatio).toBeLessThan(0.1);
@@ -24,11 +24,11 @@ describe("Virtual Scrolling Integration Tests", () => {
 
 		it("should efficiently update visible rows on scroll", async () => {
 			// When scrolling, only affected rows should update
-			// not entire table
+			// Not entire table
 
 			const scrollEvent = {
-				previousVisibleRange: { start: 0, end: 20 },
 				newVisibleRange: { start: 100, end: 120 },
+				previousVisibleRange: { start: 0, end: 20 },
 				rowsToUpdate: 20,
 				totalRowsInDataset: 1000,
 			};
@@ -42,11 +42,11 @@ describe("Virtual Scrolling Integration Tests", () => {
 
 		it("should maintain scrollbar position accuracy", async () => {
 			// Virtual scrolling should maintain accurate scrollbar
-			// indicating true position in dataset
+			// Indicating true position in dataset
 
 			const scrollMetrics = {
-				totalHeight: 68000, // 1000 items * 68px
-				currentScroll: 34000, // Halfway
+				totalHeight: 68_000, // 1000 items * 68px
+				currentScroll: 34_000, // Halfway
 				expectedScrollPercentage: 50,
 			};
 
@@ -67,8 +67,8 @@ describe("Virtual Scrolling Integration Tests", () => {
 			const filterOperation = {
 				totalItems: 1000,
 				filteredItems: 250,
-				renderTime: 50, // ms
-				threshold: 100, // ms
+				renderTime: 50, // Ms
+				threshold: 100, // Ms
 			};
 
 			expect(filterOperation.renderTime).toBeLessThan(
@@ -81,12 +81,12 @@ describe("Virtual Scrolling Integration Tests", () => {
 
 		it("should sort filtered results efficiently", async () => {
 			// Sorting should work on filtered items
-			// and complete quickly
+			// And complete quickly
 
 			const sortOperation = {
 				itemsToSort: 250,
-				sortTime: 75, // ms
-				threshold: 150, // ms
+				sortTime: 75, // Ms
+				threshold: 150, // Ms
 			};
 
 			expect(sortOperation.sortTime).toBeLessThan(sortOperation.threshold);
@@ -94,11 +94,11 @@ describe("Virtual Scrolling Integration Tests", () => {
 
 		it("should update row count indicator on filter", async () => {
 			// When filtering, row count should update
-			// showing accurate count
+			// Showing accurate count
 
 			const filterResult = {
-				before: 1000,
 				after: 250,
+				before: 1000,
 				indicatorUpdated: true,
 			};
 
@@ -109,12 +109,12 @@ describe("Virtual Scrolling Integration Tests", () => {
 
 	describe("Scroll-to-Item Functionality", () => {
 		it("should scroll to specific item without blocking UI", async () => {
-			// scrollToItem should complete quickly
+			// ScrollToItem should complete quickly
 
 			const scrollToOperation = {
 				itemIndex: 500,
-				executionTime: 10, // ms
-				threshold: 50, // ms
+				executionTime: 10, // Ms
+				threshold: 50, // Ms
 			};
 
 			expect(scrollToOperation.executionTime).toBeLessThan(
@@ -124,7 +124,7 @@ describe("Virtual Scrolling Integration Tests", () => {
 
 		it("should center item in viewport when scrolling", async () => {
 			// Scroll-to-item should align target to center
-			// for better UX
+			// For better UX
 
 			const alignment = "center";
 
@@ -144,7 +144,7 @@ describe("Virtual Scrolling Integration Tests", () => {
 	describe("Dynamic Row Heights", () => {
 		it("should measure actual row heights for accuracy", async () => {
 			// Virtual scroller should measure real row heights
-			// not just estimate
+			// Not just estimate
 
 			const heightMeasurement = {
 				estimated: 68,
@@ -161,8 +161,8 @@ describe("Virtual Scrolling Integration Tests", () => {
 			// Heights should be recalculated if content changes
 
 			const rowHeightRecalculation = {
-				triggered: true,
 				triggerReason: "data-update",
+				triggered: true,
 			};
 
 			expect(rowHeightRecalculation.triggered).toBe(true);
@@ -172,12 +172,12 @@ describe("Virtual Scrolling Integration Tests", () => {
 	describe("Overscan and Rendering Buffer", () => {
 		it("should render extra rows for smooth scrolling", async () => {
 			// Overscan ensures rows are pre-rendered
-			// preventing white space on fast scrolls
+			// Preventing white space on fast scrolls
 
 			const overscanConfig = {
-				visibleRows: 9,
 				overscan: 15,
-				totalRendered: 39, // 9 + 15 + 15
+				totalRendered: 39,
+				visibleRows: 9, // 9 + 15 + 15
 			};
 
 			expect(overscanConfig.totalRendered).toBe(
@@ -244,8 +244,8 @@ describe("Virtual Scrolling Integration Tests", () => {
 			// Old DOM nodes should be cleaned up
 
 			const memoryProfile = {
-				initialMemory: 10000, // KB
-				afterLongScroll: 10200, // KB (small increase acceptable)
+				initialMemory: 10_000, // KB
+				afterLongScroll: 10_200, // KB (small increase acceptable)
 				acceptableIncrease: 500, // KB
 			};
 
@@ -256,7 +256,7 @@ describe("Virtual Scrolling Integration Tests", () => {
 
 		it("should clean up event listeners on unmount", async () => {
 			// Component should clean up properly
-			// no dangling listeners or references
+			// No dangling listeners or references
 
 			const cleanup = {
 				listenersRemoved: true,
@@ -274,8 +274,8 @@ describe("Virtual Scrolling Integration Tests", () => {
 
 			const emptyState = {
 				itemCount: 0,
-				showsEmptyMessage: true,
 				noErrors: true,
+				showsEmptyMessage: true,
 			};
 
 			expect(emptyState.showsEmptyMessage).toBe(true);
@@ -297,9 +297,9 @@ describe("Virtual Scrolling Integration Tests", () => {
 			// Should handle massive datasets efficiently
 
 			const largeDataset = {
-				itemCount: 10000,
-				renderTime: 400, // ms
-				threshold: 500, // ms
+				itemCount: 10_000,
+				renderTime: 400, // Ms
+				threshold: 500, // Ms
 				memoryUsage: 100, // KB (constant)
 			};
 
@@ -310,8 +310,8 @@ describe("Virtual Scrolling Integration Tests", () => {
 			// Should recalculate on viewport change
 
 			const resize = {
-				oldViewport: 600,
 				newViewport: 800,
+				oldViewport: 600,
 				recalculated: true,
 			};
 

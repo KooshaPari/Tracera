@@ -31,15 +31,15 @@ describe("authStore", () => {
 
 			act(() => {
 				result.current.setUser({
-					id: "1",
 					email: "test@example.com",
+					id: "1",
 					name: "Test User",
 				});
 			});
 
 			expect(result.current.user).toEqual({
-				id: "1",
 				email: "test@example.com",
+				id: "1",
 				name: "Test User",
 			});
 			expect(result.current.isAuthenticated).toBe(true);
@@ -51,8 +51,8 @@ describe("authStore", () => {
 			// First set a user
 			act(() => {
 				result.current.setUser({
-					id: "1",
 					email: "test@example.com",
+					id: "1",
 				});
 			});
 
@@ -106,8 +106,8 @@ describe("authStore", () => {
 
 			expect(result.current.isAuthenticated).toBe(true);
 			expect(result.current.user).toEqual({
-				id: "1",
 				email: "test@example.com",
+				id: "1",
 				name: "test",
 			});
 			expect(result.current.token).toBe("mock-jwt-token");
@@ -159,16 +159,16 @@ describe("authStore", () => {
 			// Update profile
 			act(() => {
 				result.current.updateProfile({
-					name: "Updated Name",
 					avatar: "avatar.jpg",
+					name: "Updated Name",
 				});
 			});
 
 			expect(result.current.user).toEqual({
-				id: "1",
-				email: "test@example.com",
-				name: "Updated Name",
 				avatar: "avatar.jpg",
+				email: "test@example.com",
+				id: "1",
+				name: "Updated Name",
 			});
 		});
 

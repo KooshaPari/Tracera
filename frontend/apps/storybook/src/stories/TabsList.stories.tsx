@@ -4,9 +4,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { TabsList } from "@tracertm/ui";
 
 const meta: Meta<typeof TabsList> = {
-	title: "Components/TabsList",
 	component: TabsList,
 	tags: ["autodocs"],
+	title: "Components/TabsList",
 };
 
 export default meta;

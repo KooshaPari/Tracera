@@ -7,30 +7,30 @@ import type {
 import { describe, expect, it } from "vitest";
 import componentLibraryApi from "../../api/component-library";
 
-type CreateComponentLibraryInput = {
+interface CreateComponentLibraryInput {
 	projectId: string;
 	name: string;
 	description?: string;
 	version?: string;
-};
+}
 
-type CreateLibraryComponentInput = {
+interface CreateLibraryComponentInput {
 	libraryId: string;
 	name: string;
 	description?: string;
 	category: string;
 	properties?: Record<string, unknown>;
 	variant?: string;
-};
+}
 
-type CreateDesignTokenInput = {
+interface CreateDesignTokenInput {
 	libraryId: string;
 	name: string;
 	type: string;
 	value: unknown;
 	category: string;
 	description?: string;
-};
+}
 
 const { componentLibraryQueryKeys } = componentLibraryApi;
 
@@ -75,18 +75,18 @@ describe("component library API hooks", () => {
 	describe("ComponentLibrary type", () => {
 		it("should validate component library structure", () => {
 			const library: ComponentLibrary = {
-				id: "library-1",
-				projectId: "project-1",
-				name: "UI Components",
-				slug: "ui-components",
+				componentCount: 25,
+				createdAt: "2024-01-01T00:00:00Z",
 				description: "Core UI component library",
-				version: "1.0.0",
+				id: "library-1",
+				name: "UI Components",
+				projectId: "project-1",
+				slug: "ui-components",
 				source: "manual",
 				syncStatus: "synced",
-				componentCount: 25,
 				tokenCount: 10,
-				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-02T00:00:00Z",
+				version: "1.0.0",
 			};
 
 			expect(library.id).toBeDefined();
@@ -98,17 +98,17 @@ describe("component library API hooks", () => {
 
 		it("should allow optional description", () => {
 			const library: ComponentLibrary = {
+				componentCount: 0,
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "library-1",
-				projectId: "project-1",
 				name: "UI Components",
+				projectId: "project-1",
 				slug: "ui-components",
-				version: "1.0.0",
 				source: "manual",
 				syncStatus: "synced",
-				componentCount: 0,
 				tokenCount: 0,
-				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
+				version: "1.0.0",
 			};
 
 			expect(library.description).toBeUndefined();
@@ -118,17 +118,17 @@ describe("component library API hooks", () => {
 	describe("LibraryComponent type", () => {
 		it("should validate library component structure", () => {
 			const component: LibraryComponent = {
+				category: "atom",
+				createdAt: "2024-01-01T00:00:00Z",
+				description: "Primary action button",
+				displayName: "Primary Button",
 				id: "component-1",
 				libraryId: "library-1",
-				projectId: "project-1",
 				name: "Button",
-				displayName: "Primary Button",
-				description: "Primary action button",
-				category: "atom",
-				usageCount: 150,
+				projectId: "project-1",
 				status: "stable",
-				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-02T00:00:00Z",
+				usageCount: 150,
 			};
 
 			expect(component.id).toBeDefined();
@@ -140,16 +140,16 @@ describe("component library API hooks", () => {
 
 		it("should allow optional variant", () => {
 			const component: LibraryComponent = {
+				category: "atom",
+				createdAt: "2024-01-01T00:00:00Z",
+				displayName: "Button",
 				id: "component-1",
 				libraryId: "library-1",
-				projectId: "project-1",
 				name: "Button",
-				displayName: "Button",
-				category: "atom",
-				usageCount: 0,
+				projectId: "project-1",
 				status: "stable",
-				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
+				usageCount: 0,
 			};
 
 			expect(component.variant).toBeUndefined();
@@ -159,12 +159,12 @@ describe("component library API hooks", () => {
 	describe("ComponentUsage type", () => {
 		it("should validate component usage structure", () => {
 			const usage: ComponentUsage = {
-				id: "usage-1",
-				projectId: "project-1",
-				libraryId: "library-1",
 				componentId: "component-1",
-				usedInItemId: "item-1",
 				detectedAt: "2024-01-02T00:00:00Z",
+				id: "usage-1",
+				libraryId: "library-1",
+				projectId: "project-1",
+				usedInItemId: "item-1",
 			};
 
 			expect(usage.usedInItemId).toBeDefined();
@@ -176,17 +176,17 @@ describe("component library API hooks", () => {
 	describe("DesignToken type", () => {
 		it("should validate design token structure", () => {
 			const token: DesignToken = {
+				createdAt: "2024-01-01T00:00:00Z",
+				description: "Primary brand color",
 				id: "token-1",
 				libraryId: "library-1",
-				projectId: "project-1",
 				name: "colors.primary.500",
 				path: ["colors", "primary", "500"],
+				projectId: "project-1",
 				type: "color",
-				value: "#0066CC",
-				usageCount: 5,
-				description: "Primary brand color",
-				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-02T00:00:00Z",
+				usageCount: 5,
+				value: "#0066CC",
 			};
 
 			expect(token.id).toBeDefined();
@@ -199,42 +199,42 @@ describe("component library API hooks", () => {
 
 		it("should store design token values as strings", () => {
 			const colorToken: DesignToken = {
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "token-1",
 				libraryId: "library-1",
-				projectId: "project-1",
 				name: "colors.primary.500",
 				path: ["colors", "primary", "500"],
+				projectId: "project-1",
 				type: "color",
-				value: "#0066CC",
-				usageCount: 0,
-				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
+				usageCount: 0,
+				value: "#0066CC",
 			};
 
 			const spacingToken: DesignToken = {
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "token-2",
 				libraryId: "library-1",
-				projectId: "project-1",
 				name: "spacing.sm",
 				path: ["spacing", "sm"],
+				projectId: "project-1",
 				type: "spacing",
-				value: "8",
-				usageCount: 0,
-				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
+				usageCount: 0,
+				value: "8",
 			};
 
 			const typographyToken: DesignToken = {
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "token-3",
 				libraryId: "library-1",
-				projectId: "project-1",
 				name: "typography.body",
 				path: ["typography", "body"],
+				projectId: "project-1",
 				type: "typography",
-				value: "Inter/16/1.5",
-				usageCount: 0,
-				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
+				usageCount: 0,
+				value: "Inter/16/1.5",
 			};
 
 			expect(typeof colorToken.value).toBe("string");
@@ -246,9 +246,9 @@ describe("component library API hooks", () => {
 	describe("Input types", () => {
 		it("should validate CreateComponentLibraryInput", () => {
 			const input: CreateComponentLibraryInput = {
-				projectId: "project-1",
-				name: "Design System",
 				description: "Complete design system",
+				name: "Design System",
+				projectId: "project-1",
 				version: "2.0.0",
 			};
 
@@ -258,10 +258,10 @@ describe("component library API hooks", () => {
 
 		it("should validate CreateLibraryComponentInput", () => {
 			const input: CreateLibraryComponentInput = {
+				category: "layout",
+				description: "Container component",
 				libraryId: "library-1",
 				name: "Card",
-				description: "Container component",
-				category: "layout",
 				properties: { padding: "16px" },
 				variant: "default",
 			};
@@ -273,12 +273,12 @@ describe("component library API hooks", () => {
 
 		it("should validate CreateDesignTokenInput", () => {
 			const input: CreateDesignTokenInput = {
+				category: "radius",
+				description: "Small border radius",
 				libraryId: "library-1",
 				name: "radius-sm",
 				type: "radius",
 				value: "4",
-				category: "radius",
-				description: "Small border radius",
 			};
 
 			expect(input.libraryId).toBeDefined();

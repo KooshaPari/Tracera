@@ -9,15 +9,15 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { logger } from '@/lib/logger';
-import {
-	createMCPClient,
-	type MCPClient,
-	type MCPClientConfig,
-	type MCPPrompt,
-	type MCPResource,
-	type MCPTool,
-	type ProgressNotification,
+import { logger } from "@/lib/logger";
+import { createMCPClient } from "../api/mcp-client";
+import type {
+	MCPClient,
+	MCPClientConfig,
+	MCPPrompt,
+	MCPResource,
+	MCPTool,
+	ProgressNotification,
 } from "../api/mcp-client";
 
 /**
@@ -61,9 +61,9 @@ export interface UseProgressState {
 export function useMCP(config: MCPClientConfig): UseMCPState {
 	const [state, setState] = useState<UseMCPState>({
 		client: null,
+		error: null,
 		isInitialized: false,
 		isInitializing: false,
-		error: null,
 		serverInfo: null,
 	});
 
@@ -80,28 +80,28 @@ export function useMCP(config: MCPClientConfig): UseMCPState {
 				clientRef.current = client;
 
 				const response = await client.initialize({
-					protocolVersion: "2024-11-05",
 					capabilities: {
-						tools: true,
-						resources: true,
 						prompts: true,
+						resources: true,
+						tools: true,
 					},
 					clientInfo: {
 						name: "TraceRTM Web Client",
 						version: "1.0.0",
 					},
+					protocolVersion: "2024-11-05",
 				});
 
 				if (mounted) {
 					setState({
 						client,
+						error: null,
 						isInitialized: true,
 						isInitializing: false,
-						error: null,
 						serverInfo: {
-							name: response['serverInfo'].name,
-							version: response['serverInfo'].version,
-							protocolVersion: response['protocolVersion'],
+							name: response["serverInfo"].name,
+							protocolVersion: response["protocolVersion"],
+							version: response["serverInfo"].version,
 						},
 					});
 				}
@@ -119,7 +119,7 @@ export function useMCP(config: MCPClientConfig): UseMCPState {
 			}
 		}
 
-		void initializeClient();
+		undefined;
 
 		return () => {
 			mounted = false;
@@ -147,27 +147,27 @@ export function useTool<T = unknown>(
 		error: Error | null;
 	}>({
 		data: null,
-		isLoading: false,
 		error: null,
+		isLoading: false,
 	});
 
 	const execute = useCallback(
 		async (args?: Record<string, unknown>): Promise<T | null> => {
 			if (!client) {
 				const error = new Error("MCP client not initialized");
-				setState({ data: null, isLoading: false, error });
+				setState({ data: null, error, isLoading: false });
 				return null;
 			}
 
 			try {
-				setState({ data: null, isLoading: true, error: null });
+				setState({ data: null, error: null, isLoading: true });
 				const result = await client.callTool<T>(toolName, args);
-				setState({ data: result, isLoading: false, error: null });
+				setState({ data: result, error: null, isLoading: false });
 				return result;
 			} catch (error) {
 				const err =
 					error instanceof Error ? error : new Error("Tool execution failed");
-				setState({ data: null, isLoading: false, error: err });
+				setState({ data: null, error: err, isLoading: false });
 				return null;
 			}
 		},
@@ -203,19 +203,21 @@ export function useTools(client: MCPClient | null): {
 			setIsLoading(true);
 			setError(null);
 			const response = await client.listTools();
-			setTools(response['tools']);
+			setTools(response["tools"]);
 		} catch (error) {
-			setError(error instanceof Error ? error : new Error("Failed to list tools"));
+			setError(
+				error instanceof Error ? error : new Error("Failed to list tools"),
+			);
 		} finally {
 			setIsLoading(false);
 		}
 	}, [client]);
 
 	useEffect(() => {
-		void refresh();
+		undefined;
 	}, [refresh]);
 
-	return { tools, isLoading, error, refresh };
+	return { error, isLoading, refresh, tools };
 }
 
 /**
@@ -241,7 +243,7 @@ export function useResources(client: MCPClient | null): {
 			setIsLoading(true);
 			setError(null);
 			const response = await client.listResources();
-			setResources(response['resources']);
+			setResources(response["resources"]);
 		} catch (error) {
 			setError(
 				error instanceof Error ? error : new Error("Failed to list resources"),
@@ -252,10 +254,10 @@ export function useResources(client: MCPClient | null): {
 	}, [client]);
 
 	useEffect(() => {
-		void refresh();
+		undefined;
 	}, [refresh]);
 
-	return { resources, isLoading, error, refresh };
+	return { error, isLoading, refresh, resources };
 }
 
 /**
@@ -281,7 +283,7 @@ export function usePrompts(client: MCPClient | null): {
 			setIsLoading(true);
 			setError(null);
 			const response = await client.listPrompts();
-			setPrompts(response['prompts']);
+			setPrompts(response["prompts"]);
 		} catch (error) {
 			setError(
 				error instanceof Error ? error : new Error("Failed to list prompts"),
@@ -292,10 +294,10 @@ export function usePrompts(client: MCPClient | null): {
 	}, [client]);
 
 	useEffect(() => {
-		void refresh();
+		undefined;
 	}, [refresh]);
 
-	return { prompts, isLoading, error, refresh };
+	return { error, isLoading, prompts, refresh };
 }
 
 /**
@@ -306,24 +308,26 @@ export function useProgress(client: MCPClient | null): UseProgressState & {
 	stopTracking: () => void;
 } {
 	const [state, setState] = useState<UseProgressState>({
+		isTracking: false,
+		message: null,
 		progress: 0,
 		total: null,
-		message: null,
-		isTracking: false,
 	});
 
 	const unsubscribeRef = useRef<(() => void) | null>(null);
 
 	const startTracking = useCallback(() => {
-		if (!client || state.isTracking) return;
+		if (!client || state.isTracking) {
+			return;
+		}
 
 		const unsubscribe = client.subscribeToProgress(
 			(notification: ProgressNotification) => {
 				setState({
+					isTracking: true,
+					message: notification.message || null,
 					progress: notification.progress,
 					total: notification.total || null,
-					message: notification.message || null,
-					isTracking: true,
 				});
 			},
 			(error: Error) => {
@@ -342,20 +346,21 @@ export function useProgress(client: MCPClient | null): UseProgressState & {
 			unsubscribeRef.current = null;
 		}
 		setState({
+			isTracking: false,
+			message: null,
 			progress: 0,
 			total: null,
-			message: null,
-			isTracking: false,
 		});
 	}, []);
 
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			if (unsubscribeRef.current) {
 				unsubscribeRef.current();
 			}
-		};
-	}, []);
+		},
+		[],
+	);
 
 	return {
 		...state,

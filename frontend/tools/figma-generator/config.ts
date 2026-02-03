@@ -90,16 +90,16 @@ export function loadFigmaConfig(): FigmaConfig {
 		},
 
 		components: {
-			paths: [
-				"packages/ui/src/components/**/*.tsx",
-				"apps/web/src/components/**/*.tsx",
-				"apps/desktop/src/components/**/*.tsx",
-			],
 			exclude: [
 				"**/node_modules/**",
 				"**/*.test.tsx",
 				"**/*.spec.tsx",
 				"**/*.stories.tsx",
+			],
+			paths: [
+				"packages/ui/src/components/**/*.tsx",
+				"apps/web/src/components/**/*.tsx",
+				"apps/desktop/src/components/**/*.tsx",
 			],
 		},
 
@@ -114,22 +114,22 @@ export function loadFigmaConfig(): FigmaConfig {
 
 		storyToDesign: process.env.STORY_TO_DESIGN_URL
 			? {
-					url: process.env.STORY_TO_DESIGN_URL,
 					enabled: process.env.STORY_TO_DESIGN_ENABLED !== "false",
+					url: process.env.STORY_TO_DESIGN_URL,
 				}
 			: undefined,
 
-		tokens: getDefaultTokens(),
-
 		sync: {
-			metaFilePath: ".trace/.meta/designs.yaml",
 			autoSync: process.env.FIGMA_AUTO_SYNC === "true",
 			conflictResolution:
 				(process.env.FIGMA_CONFLICT_RESOLUTION as
 					| "local"
 					| "remote"
 					| "manual") || "manual",
+			metaFilePath: ".trace/.meta/designs.yaml",
 		},
+
+		tokens: getDefaultTokens(),
 	};
 }
 
@@ -138,6 +138,18 @@ export function loadFigmaConfig(): FigmaConfig {
  */
 function getDefaultTokens() {
 	return {
+		borderRadius: {
+			"2xl": 16,
+			"3xl": 24,
+			DEFAULT: 4,
+			full: 9999,
+			lg: 8,
+			md: 6,
+			none: 0,
+			sm: 2,
+			xl: 12,
+		},
+
 		colors: {
 			// Primary colors
 			"primary-50": "#eff6ff",
@@ -179,9 +191,21 @@ function getDefaultTokens() {
 			transparent: "transparent",
 		},
 
+		shadows: {
+			"2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+			DEFAULT:
+				"0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+			inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)",
+			lg: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+			md: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
+			none: "none",
+			sm: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+			xl: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+			xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+		},
+
 		spacing: {
 			"0": 0,
-			px: 1,
 			"0.5": 2,
 			"1": 4,
 			"1.5": 6,
@@ -215,6 +239,7 @@ function getDefaultTokens() {
 			"72": 288,
 			"80": 320,
 			"96": 384,
+			px: 1,
 		},
 
 		typography: {
@@ -223,29 +248,29 @@ function getDefaultTokens() {
 				fontFamily: "Inter",
 				fontSize: 72,
 				fontWeight: 700,
-				lineHeight: 90,
 				letterSpacing: -2,
+				lineHeight: 90,
 			},
 			"display-xl": {
 				fontFamily: "Inter",
 				fontSize: 60,
 				fontWeight: 700,
-				lineHeight: 72,
 				letterSpacing: -2,
+				lineHeight: 72,
 			},
 			"display-lg": {
 				fontFamily: "Inter",
 				fontSize: 48,
 				fontWeight: 700,
-				lineHeight: 60,
 				letterSpacing: -2,
+				lineHeight: 60,
 			},
 			"display-md": {
 				fontFamily: "Inter",
 				fontSize: 36,
 				fontWeight: 700,
-				lineHeight: 44,
 				letterSpacing: -2,
+				lineHeight: 44,
 			},
 			"display-sm": {
 				fontFamily: "Inter",
@@ -291,31 +316,6 @@ function getDefaultTokens() {
 				fontWeight: 400,
 				lineHeight: 18,
 			},
-		},
-
-		borderRadius: {
-			none: 0,
-			sm: 2,
-			DEFAULT: 4,
-			md: 6,
-			lg: 8,
-			xl: 12,
-			"2xl": 16,
-			"3xl": 24,
-			full: 9999,
-		},
-
-		shadows: {
-			xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-			sm: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
-			DEFAULT:
-				"0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
-			md: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
-			lg: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-			xl: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-			"2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-			inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)",
-			none: "none",
 		},
 	};
 }

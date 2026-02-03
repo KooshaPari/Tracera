@@ -1,7 +1,9 @@
-/* oxlint-disable import/no-named-export, promise/prefer-await-to-callbacks, eslint/max-lines */
+/* oxlint-disable import/no-named-export, promise/prefer-await-to-callbacks, promise/prefer-await-to-then, eslint/max-lines, eslint/no-undefined, oxc/no-async-await */
 // WebSocket Real-time Connection Manager
-import { API_BASE_URL } from "./client";
+import client from "./client";
 import { logger } from "@/lib/logger";
+
+const { API_BASE_URL } = client;
 
 const AUTH_CLOSE_CODE = 1008;
 const AUTH_TIMEOUT_MS = 5000;
@@ -128,7 +130,7 @@ class WebSocketManager {
 
 	private resolveToken(): Promise<string | undefined> {
 		if (!this.getToken) {
-			return Promise.resolve(undefined);
+			return Promise.resolve();
 		}
 
 		try {
@@ -136,7 +138,10 @@ class WebSocketManager {
 			if (tokenResult instanceof Promise) {
 				return tokenResult.then((token) => token || undefined);
 			}
-			return Promise.resolve(tokenResult || undefined);
+			if (tokenResult) {
+				return Promise.resolve(tokenResult);
+			}
+			return Promise.resolve();
 		} catch (error) {
 			return Promise.reject(error);
 		}
@@ -222,9 +227,9 @@ class WebSocketManager {
 		}
 
 		try {
-			const parsed = JSON.parse(data) as unknown;
+			const parsed = JSON.parse(data);
 			if (parsed && typeof parsed === "object") {
-				return parsed as ParsedMessage;
+				return parsed as unknown as ParsedMessage;
 			}
 		} catch (parseError) {
 			logger.error("[WebSocket] Failed to parse message:", parseError);
@@ -235,7 +240,7 @@ class WebSocketManager {
 	}
 
 	private handleAuthMessage(message: ParsedMessage): boolean {
-		const messageType = message.type;
+		const messageType = message["type"];
 		if (messageType === "auth_success") {
 			this.handleAuthSuccess();
 			return true;
@@ -251,8 +256,9 @@ class WebSocketManager {
 	private static extractAuthFailureMessage(
 		message: ParsedMessage,
 	): string | undefined {
-		if (typeof message.message === "string") {
-			return message.message;
+		const msg = message["message"];
+		if (typeof msg === "string") {
+			return msg;
 		}
 		return undefined;
 	}
@@ -275,13 +281,15 @@ class WebSocketManager {
 	}
 
 	private handleBatchMessage(message: ParsedMessage): boolean {
-		if (message.type !== "batch" || !Array.isArray(message.messages)) {
+		const msgType = message["type"];
+		const msgList = message["messages"];
+		if (msgType !== "batch" || !Array.isArray(msgList)) {
 			return false;
 		}
 
-		for (const msg of message.messages) {
-			if (this.isAuthenticated) {
-				const realtimeEvent = msg as RealtimeEvent;
+		for (const msg of msgList) {
+			if (this.isAuthenticated && msg && typeof msg === "object") {
+				const realtimeEvent = msg as unknown as RealtimeEvent;
 				this.handleEvent(realtimeEvent);
 			}
 		}
@@ -293,12 +301,15 @@ class WebSocketManager {
 			return;
 		}
 
-		if (message.type === "auth") {
+		const msgType = message["type"];
+		if (msgType === "auth") {
 			return;
 		}
 
-		const realtimeEvent = message as RealtimeEvent;
-		this.handleEvent(realtimeEvent);
+		if (message && typeof message === "object") {
+			const realtimeEvent = message as unknown as RealtimeEvent;
+			this.handleEvent(realtimeEvent);
+		}
 	}
 
 	private handleError(error: unknown): void {
@@ -384,17 +395,17 @@ class WebSocketManager {
 
 	private startAuthTimeout(): void {
 		this.clearAuthTimeout();
-		this.authTimeout = globalThis.setTimeout((): void => {
+		this.authTimeout = window.setTimeout((): void => {
 			logger.error("[WebSocket] Authentication timeout");
 			this.closeSocketWithAuthError("Authentication timeout");
-		}, AUTH_TIMEOUT_MS);
+		}, AUTH_TIMEOUT_MS) as unknown as number;
 	}
 
 	private clearAuthTimeout(): void {
 		if (this.authTimeout === undefined) {
 			return;
 		}
-		clearTimeout(this.authTimeout);
+		window.clearTimeout(this.authTimeout);
 		this.authTimeout = undefined;
 	}
 
@@ -500,7 +511,9 @@ class WebSocketManager {
 			return;
 		}
 
-		logger.info(`[WebSocket] Flushing ${this.messageQueue.length} queued messages`);
+		logger.info(
+			`[WebSocket] Flushing ${this.messageQueue.length} queued messages`,
+		);
 
 		const messages = [...this.messageQueue];
 		this.messageQueue = [];
@@ -515,18 +528,18 @@ class WebSocketManager {
 			return;
 		}
 
-		this.heartbeatInterval = globalThis.setInterval((): void => {
+		this.heartbeatInterval = window.setInterval((): void => {
 			if (this.isSocketOpen()) {
 				this.send({ type: "ping" });
 			}
-		}, DEFAULT_HEARTBEAT_INTERVAL_MS);
+		}, DEFAULT_HEARTBEAT_INTERVAL_MS) as unknown as number;
 	}
 
 	private stopHeartbeat(): void {
 		if (this.heartbeatInterval === undefined) {
 			return;
 		}
-		clearInterval(this.heartbeatInterval);
+		window.clearInterval(this.heartbeatInterval);
 		this.heartbeatInterval = undefined;
 	}
 
@@ -552,7 +565,8 @@ class WebSocketManager {
 
 	private getReconnectDelay(): number {
 		const exponent = this.reconnectAttempts - RECONNECT_ATTEMPT_OFFSET;
-		const exponentialDelay = this.reconnectDelay * RECONNECT_BACKOFF_BASE ** exponent;
+		const exponentialDelay =
+			this.reconnectDelay * RECONNECT_BACKOFF_BASE ** exponent;
 		const jitter = Math.random() * RECONNECT_JITTER_MS;
 		return Math.min(exponentialDelay + jitter, this.maxReconnectDelay);
 	}
@@ -563,7 +577,8 @@ class WebSocketManager {
 }
 
 // Singleton instance
-let wsManager: WebSocketManager | undefined = undefined;
+// oxlint-disable-next-line eslint/init-declarations
+let wsManager: WebSocketManager | undefined;
 
 const getWebSocketManager = (getToken?: TokenGetter): WebSocketManager => {
 	if (!wsManager) {

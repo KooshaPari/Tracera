@@ -187,7 +187,7 @@ describe("ErrorBoundary Component", () => {
 		it("should reset error state when Try again is clicked", () => {
 			render(
 				<ErrorBoundary>
-					<ThrowError shouldThrow={true} />
+					<ThrowError shouldThrow />
 				</ErrorBoundary>,
 			);
 
@@ -223,7 +223,7 @@ describe("ErrorBoundary Component", () => {
 	describe("Reload Page Button", () => {
 		it("should reload page when Reload page is clicked", () => {
 			const mockReload = vi.fn();
-			Object.defineProperty(window, "location", {
+			Object.defineProperty(globalThis, "location", {
 				value: { reload: mockReload },
 				writable: true,
 			});
@@ -236,7 +236,7 @@ describe("ErrorBoundary Component", () => {
 
 			fireEvent.click(screen.getByText("Reload page"));
 
-			expect(mockReload).toHaveBeenCalledTimes(1);
+			expect(mockReload).toHaveBeenCalledOnce();
 		});
 
 		it("should handle undefined window gracefully", () => {
@@ -255,9 +255,9 @@ describe("ErrorBoundary Component", () => {
 
 			// Restore window
 			Object.defineProperty(globalThis, "window", {
+				configurable: true,
 				value: originalWindow,
 				writable: true,
-				configurable: true,
 			});
 		});
 	});
@@ -360,7 +360,7 @@ describe("ErrorBoundary Component", () => {
 				</ErrorBoundary>,
 			);
 
-			expect(onError).toHaveBeenCalledTimes(1);
+			expect(onError).toHaveBeenCalledOnce();
 		});
 
 		it("should provide error to onError callback", () => {
@@ -526,7 +526,8 @@ describe("ErrorBoundary Component", () => {
 				</ErrorBoundary>,
 			);
 
-			const background = container.querySelector(".dark\\:bg-gray-900");
+			const background =
+				container.querySelector(String.raw`.dark\:bg-gray-900`);
 			expect(background).toBeInTheDocument();
 		});
 
@@ -537,7 +538,7 @@ describe("ErrorBoundary Component", () => {
 				</ErrorBoundary>,
 			);
 
-			const card = container.querySelector(".dark\\:bg-gray-800");
+			const card = container.querySelector(String.raw`.dark\:bg-gray-800`);
 			expect(card).toBeInTheDocument();
 		});
 
@@ -548,7 +549,7 @@ describe("ErrorBoundary Component", () => {
 				</ErrorBoundary>,
 			);
 
-			const iconBg = container.querySelector(".dark\\:bg-red-900");
+			const iconBg = container.querySelector(String.raw`.dark\:bg-red-900`);
 			expect(iconBg).toBeInTheDocument();
 		});
 
@@ -559,7 +560,7 @@ describe("ErrorBoundary Component", () => {
 				</ErrorBoundary>,
 			);
 
-			const title = container.querySelector(".dark\\:text-gray-100");
+			const title = container.querySelector(String.raw`.dark\:text-gray-100`);
 			expect(title).toBeInTheDocument();
 		});
 	});
@@ -639,7 +640,7 @@ describe("ErrorBoundary Component", () => {
 				</ErrorBoundary>,
 			);
 
-			// componentDidCatch logs to console
+			// ComponentDidCatch logs to console
 			expect(consoleErrorSpy).toHaveBeenCalled();
 
 			consoleErrorSpy.mockRestore();

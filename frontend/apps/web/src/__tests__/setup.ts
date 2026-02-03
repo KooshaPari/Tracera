@@ -14,16 +14,17 @@ type TestGlobals = typeof globalThis & {
 // Mock WebGL2RenderingContext FIRST before any imports
 if (typeof globalThis !== "undefined") {
 	const WebGL2RenderingContextMock = {
-		BOOL: 35670,
+		BOOL: 35_670,
 		BYTE: 5120,
-		UNSIGNED_BYTE: 5121,
-		SHORT: 5122,
-		UNSIGNED_SHORT: 5123,
-		INT: 5124,
-		UNSIGNED_INT: 5125,
 		FLOAT: 5126,
+		INT: 5124,
+		SHORT: 5122,
+		UNSIGNED_BYTE: 5121,
+		UNSIGNED_INT: 5125,
+		UNSIGNED_SHORT: 5123,
 	};
-	(globalThis as TestGlobals).WebGL2RenderingContext = WebGL2RenderingContextMock;
+	(globalThis as TestGlobals).WebGL2RenderingContext =
+		WebGL2RenderingContextMock;
 }
 
 import { cleanup } from "@testing-library/react";
@@ -62,8 +63,8 @@ vi.mock("sigma", () => ({
 		off = vi.fn();
 		kill = vi.fn();
 		getGraph = vi.fn(() => ({
-			nodes: vi.fn(() => []),
 			edges: vi.fn(() => []),
+			nodes: vi.fn(() => []),
 		}));
 	},
 }));
@@ -72,28 +73,28 @@ vi.mock("sigma", () => ({
 const localStorageMock = (() => {
 	let store: Record<string, string> = {};
 	return {
-		getItem: (key: string) => store[key] || null,
-		setItem: (key: string, value: string) => {
-			store[key] = value.toString();
-		},
-		removeItem: (key: string) => {
-			delete store[key];
-		},
 		clear: () => {
 			store = {};
 		},
-		length: 0,
+		getItem: (key: string) => store[key] || null,
 		key: (index: number) => {
 			const keys = Object.keys(store);
 			return keys[index] || null;
 		},
+		length: 0,
+		removeItem: (key: string) => {
+			delete store[key];
+		},
+		setItem: (key: string, value: string) => {
+			store[key] = value.toString();
+		},
 	};
 })();
 
-Object.defineProperty(global, "localStorage", {
+Object.defineProperty(globalThis, "localStorage", {
+	configurable: true,
 	value: localStorageMock,
 	writable: true,
-	configurable: true,
 });
 
 // Cleanup after each test
@@ -105,7 +106,6 @@ afterEach(() => {
 // Mock window.matchMedia
 if (typeof globalThis.window !== "undefined") {
 	Object.defineProperty(globalThis.window, "matchMedia", {
-		writable: true,
 		value: vi.fn().mockImplementation((query) => ({
 			matches: false,
 			media: query,
@@ -116,17 +116,18 @@ if (typeof globalThis.window !== "undefined") {
 			removeEventListener: vi.fn(),
 			dispatchEvent: vi.fn(),
 		})),
+		writable: true,
 	});
 }
 
 // Mock navigator.clipboard
 if (typeof navigator !== "undefined") {
 	Object.defineProperty(navigator, "clipboard", {
-		writable: true,
 		value: {
 			writeText: vi.fn(() => Promise.resolve()),
 			readText: vi.fn(() => Promise.resolve("")),
 		},
+		writable: true,
 	});
 }
 // Mock IntersectionObserver
@@ -198,42 +199,44 @@ class MockWebSocket {
 	}
 }
 
-(globalThis as TestGlobals).WebSocket = MockWebSocket as (new (url: string) => unknown);
+(globalThis as TestGlobals).WebSocket = MockWebSocket as new (
+	url: string,
+) => unknown;
 
 // Mock HTMLCanvasElement for graph visualization
 if (typeof globalThis !== "undefined") {
 	const MockCanvas = class {
-		width: number = 300;
-		height: number = 150;
+		width = 300;
+		height = 150;
 
 		getContext(_type: string) {
 			return {
-				fillRect: vi.fn(),
-				clearRect: vi.fn(),
-				getImageData: vi.fn(() => ({ data: Array.from({ length: 4 }) })),
-				putImageData: vi.fn(),
-				createImageData: vi.fn(() => ({ data: Array.from({ length: 4 }) })),
-				setTransform: vi.fn(),
-				drawImage: vi.fn(),
-				save: vi.fn(),
-				fillText: vi.fn(),
-				restore: vi.fn(),
-				beginPath: vi.fn(),
-				moveTo: vi.fn(),
-				lineTo: vi.fn(),
-				closePath: vi.fn(),
-				stroke: vi.fn(),
-				translate: vi.fn(),
-				scale: vi.fn(),
-				rotate: vi.fn(),
 				arc: vi.fn(),
-				fill: vi.fn(),
-				measureText: vi.fn(() => ({ width: 0 })),
-				transform: vi.fn(),
-				rect: vi.fn(),
+				beginPath: vi.fn(),
+				clearRect: vi.fn(),
 				clip: vi.fn(),
+				closePath: vi.fn(),
+				createImageData: vi.fn(() => ({ data: Array.from({ length: 4 }) })),
 				createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
 				createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+				drawImage: vi.fn(),
+				fill: vi.fn(),
+				fillRect: vi.fn(),
+				fillText: vi.fn(),
+				getImageData: vi.fn(() => ({ data: Array.from({ length: 4 }) })),
+				lineTo: vi.fn(),
+				measureText: vi.fn(() => ({ width: 0 })),
+				moveTo: vi.fn(),
+				putImageData: vi.fn(),
+				rect: vi.fn(),
+				restore: vi.fn(),
+				rotate: vi.fn(),
+				save: vi.fn(),
+				scale: vi.fn(),
+				setTransform: vi.fn(),
+				stroke: vi.fn(),
+				transform: vi.fn(),
+				translate: vi.fn(),
 			};
 		}
 
@@ -245,47 +248,48 @@ if (typeof globalThis !== "undefined") {
 			callback(new Blob());
 		}
 	};
-	(globalThis as TestGlobals).HTMLCanvasElement = MockCanvas as new (...args: unknown[]) => unknown;
+	(globalThis as TestGlobals).HTMLCanvasElement = MockCanvas as new (
+		...args: unknown[]
+	) => unknown;
 }
 
 // Mock fetch globally for API tests
 // Use a delegating mock so tests can override it in beforeEach
 let globalFetchImpl: typeof fetch = async (url) => {
 	console.warn(`[WARN] Unmocked fetch to ${url}`);
-	return new Response(JSON.stringify({ error: "Not mocked" }), {
-		status: 404,
-		headers: { "Content-Type": "application/json" },
-	});
+	return Response.json(
+		{ error: "Not mocked" },
+		{
+			headers: { "Content-Type": "application/json" },
+			status: 404,
+		},
+	);
 };
 
-global.fetch = vi.fn(async (url: string | URL | Request, options?: RequestInit) => {
-	return globalFetchImpl(url, options);
-}) as typeof fetch;
+globalThis.fetch = vi.fn(
+	async (url: string | URL | Request, options?: RequestInit) =>
+		globalFetchImpl(url, options),
+) as typeof fetch;
 
 // Export so tests can replace the implementation
 (globalThis as TestGlobals).__setFetchImpl__ = (impl: typeof fetch) => {
 	globalFetchImpl = impl;
 };
 
-import {
-	type RenderOptions,
-	render as rtlRender,
-} from "@testing-library/react";
+import { render as rtlRender } from "@testing-library/react";
+import type { RenderOptions } from "@testing-library/react";
 // Add React testing utilities wrapper for provider-based tests
 import React from "react";
 
 // Create test wrapper with all necessary providers
-const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
-	return React.createElement(React.Fragment, null, children);
-};
+const AllTheProviders = ({ children }: { children: React.ReactNode }) =>
+	React.createElement(React.Fragment, null, children);
 
 // Custom render function that wraps components with providers
 export const render = (
 	ui: React.ReactElement,
 	options?: Omit<RenderOptions, "wrapper">,
-) => {
-	return rtlRender(ui, { wrapper: AllTheProviders, ...options });
-};
+) => rtlRender(ui, { wrapper: AllTheProviders, ...options });
 
 // Re-export everything from testing library
 export * from "@testing-library/react";

@@ -8,8 +8,6 @@
 import type { Item, Link } from "@tracertm/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-	type ClusterNode,
-	type ClusteringResult,
 	adaptiveClustering,
 	calculateClusteringQuality,
 	expandCluster,
@@ -17,6 +15,7 @@ import {
 	labelPropagationClustering,
 	louvainClustering,
 } from "../lib/graphClustering";
+import type { ClusterNode, ClusteringResult } from "../lib/graphClustering";
 
 /**
  * Clustering algorithm type
@@ -87,10 +86,10 @@ export interface UseClusteringResult {
  */
 const DEFAULT_CONFIG: ClusteringConfig = {
 	algorithm: "adaptive",
-	targetClusters: 500,
-	resolution: 1.0,
-	minClusterSize: 2,
 	enableCache: true,
+	minClusterSize: 2,
+	resolution: 1.0,
+	targetClusters: 500,
 };
 
 /**
@@ -108,9 +107,9 @@ export function useClustering(
 
 	const [clustering, setClustering] = useState<ClusteringResult | null>(null);
 	const [expansionState, setExpansionState] = useState<ExpansionState>({
+		activeClusters: new Set(),
 		expandedClusters: new Set(),
 		visibleItems: new Set(),
-		activeClusters: new Set(),
 	});
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
@@ -129,27 +128,30 @@ export function useClustering(
 			let result: ClusteringResult;
 
 			switch (config.algorithm) {
-				case "louvain":
+				case "louvain": {
 					result = louvainClustering(items, links, config.resolution || 1.0);
 					break;
-				case "labelProp":
+				}
+				case "labelProp": {
 					result = labelPropagationClustering(items, links, 100);
 					break;
+				}
 				case "adaptive":
-				default:
+				default: {
 					result = adaptiveClustering(items, links, config.targetClusters);
 					break;
+				}
 			}
 
 			setClustering(result);
 
 			// Initialize active clusters at highest level
-			const highestLevel = result['maxLevel'];
-			const topLevelClusters = result['hierarchy'].get(highestLevel) || [];
+			const highestLevel = result["maxLevel"];
+			const topLevelClusters = result["hierarchy"].get(highestLevel) || [];
 			setExpansionState({
+				activeClusters: new Set(topLevelClusters.map((c) => c.id)),
 				expandedClusters: new Set(),
 				visibleItems: new Set(),
-				activeClusters: new Set(topLevelClusters.map((c) => c.id)),
 			});
 		} catch (error) {
 			setError(error instanceof Error ? error : new Error(String(error)));
@@ -165,28 +167,64 @@ export function useClustering(
 	}, [performClustering]);
 
 	// Toggle cluster expansion
-	const toggleCluster = useCallback((clusterId: string) => {
-		setExpansionState((prev) => {
-			const expanded = new Set(prev.expandedClusters);
-			const visible = new Set(prev.visibleItems);
-			const active = new Set(prev.activeClusters);
+	const toggleCluster = useCallback(
+		(clusterId: string) => {
+			setExpansionState((prev) => {
+				const expanded = new Set(prev.expandedClusters);
+				const visible = new Set(prev.visibleItems);
+				const active = new Set(prev.activeClusters);
 
-			if (expanded.has(clusterId)) {
-				// Collapse: remove from expanded, hide items, show cluster
-				expanded.delete(clusterId);
+				if (expanded.has(clusterId)) {
+					// Collapse: remove from expanded, hide items, show cluster
+					expanded.delete(clusterId);
 
-				if (clustering) {
-					const cluster = clustering.clusters.get(clusterId);
-					if (cluster) {
-						for (const itemId of cluster.itemIds) {
-							visible.delete(itemId);
+					if (clustering) {
+						const cluster = clustering.clusters.get(clusterId);
+						if (cluster) {
+							for (const itemId of cluster.itemIds) {
+								visible.delete(itemId);
+							}
+						}
+					}
+
+					active.add(clusterId);
+				} else {
+					// Expand: add to expanded, show items, hide cluster
+					expanded.add(clusterId);
+					active.delete(clusterId);
+
+					if (clustering) {
+						const cluster = clustering.clusters.get(clusterId);
+						if (cluster) {
+							for (const itemId of cluster.itemIds) {
+								visible.add(itemId);
+							}
 						}
 					}
 				}
 
-				active.add(clusterId);
-			} else {
-				// Expand: add to expanded, show items, hide cluster
+				return {
+					activeClusters: active,
+					expandedClusters: expanded,
+					visibleItems: visible,
+				};
+			});
+		},
+		[clustering],
+	);
+
+	// Expand cluster
+	const expandClusterById = useCallback(
+		(clusterId: string) => {
+			setExpansionState((prev) => {
+				if (prev.expandedClusters.has(clusterId)) {
+					return prev;
+				}
+
+				const expanded = new Set(prev.expandedClusters);
+				const visible = new Set(prev.visibleItems);
+				const active = new Set(prev.activeClusters);
+
 				expanded.add(clusterId);
 				active.delete(clusterId);
 
@@ -198,65 +236,56 @@ export function useClustering(
 						}
 					}
 				}
-			}
 
-			return { expandedClusters: expanded, visibleItems: visible, activeClusters: active };
-		});
-	}, [clustering]);
-
-	// Expand cluster
-	const expandClusterById = useCallback((clusterId: string) => {
-		setExpansionState((prev) => {
-			if (prev.expandedClusters.has(clusterId)) return prev;
-
-			const expanded = new Set(prev.expandedClusters);
-			const visible = new Set(prev.visibleItems);
-			const active = new Set(prev.activeClusters);
-
-			expanded.add(clusterId);
-			active.delete(clusterId);
-
-			if (clustering) {
-				const cluster = clustering.clusters.get(clusterId);
-				if (cluster) {
-					for (const itemId of cluster.itemIds) {
-						visible.add(itemId);
-					}
-				}
-			}
-
-			return { expandedClusters: expanded, visibleItems: visible, activeClusters: active };
-		});
-	}, [clustering]);
+				return {
+					activeClusters: active,
+					expandedClusters: expanded,
+					visibleItems: visible,
+				};
+			});
+		},
+		[clustering],
+	);
 
 	// Collapse cluster
-	const collapseCluster = useCallback((clusterId: string) => {
-		setExpansionState((prev) => {
-			if (!prev.expandedClusters.has(clusterId)) return prev;
+	const collapseCluster = useCallback(
+		(clusterId: string) => {
+			setExpansionState((prev) => {
+				if (!prev.expandedClusters.has(clusterId)) {
+					return prev;
+				}
 
-			const expanded = new Set(prev.expandedClusters);
-			const visible = new Set(prev.visibleItems);
-			const active = new Set(prev.activeClusters);
+				const expanded = new Set(prev.expandedClusters);
+				const visible = new Set(prev.visibleItems);
+				const active = new Set(prev.activeClusters);
 
-			expanded.delete(clusterId);
-			active.add(clusterId);
+				expanded.delete(clusterId);
+				active.add(clusterId);
 
-			if (clustering) {
-				const cluster = clustering.clusters.get(clusterId);
-				if (cluster) {
-					for (const itemId of cluster.itemIds) {
-						visible.delete(itemId);
+				if (clustering) {
+					const cluster = clustering.clusters.get(clusterId);
+					if (cluster) {
+						for (const itemId of cluster.itemIds) {
+							visible.delete(itemId);
+						}
 					}
 				}
-			}
 
-			return { expandedClusters: expanded, visibleItems: visible, activeClusters: active };
-		});
-	}, [clustering]);
+				return {
+					activeClusters: active,
+					expandedClusters: expanded,
+					visibleItems: visible,
+				};
+			});
+		},
+		[clustering],
+	);
 
 	// Expand all clusters
 	const expandAll = useCallback(() => {
-		if (!clustering) return;
+		if (!clustering) {
+			return;
+		}
 
 		const expanded = new Set<string>();
 		const visible = new Set<string>();
@@ -269,12 +298,18 @@ export function useClustering(
 			}
 		}
 
-		setExpansionState({ expandedClusters: expanded, visibleItems: visible, activeClusters: active });
+		setExpansionState({
+			activeClusters: active,
+			expandedClusters: expanded,
+			visibleItems: visible,
+		});
 	}, [clustering]);
 
 	// Collapse all clusters
 	const collapseAll = useCallback(() => {
-		if (!clustering) return;
+		if (!clustering) {
+			return;
+		}
 
 		const active = new Set<string>();
 		const highestLevel = clustering.maxLevel;
@@ -285,26 +320,37 @@ export function useClustering(
 		}
 
 		setExpansionState({
+			activeClusters: active,
 			expandedClusters: new Set(),
 			visibleItems: new Set(),
-			activeClusters: active,
 		});
 	}, [clustering]);
 
 	// Drill down to specific cluster
-	const drillDownToCluster = useCallback((clusterId: string) => {
-		if (!clustering) return;
+	const drillDownToCluster = useCallback(
+		(clusterId: string) => {
+			if (!clustering) {
+				return;
+			}
 
-		const cluster = clustering.clusters.get(clusterId);
-		if (!cluster) return;
+			const cluster = clustering.clusters.get(clusterId);
+			if (!cluster) {
+				return;
+			}
 
-		// Expand this cluster and collapse all others at same level
-		const expanded = new Set([clusterId]);
-		const visible = new Set(cluster.itemIds);
-		const active = new Set<string>();
+			// Expand this cluster and collapse all others at same level
+			const expanded = new Set([clusterId]);
+			const visible = new Set(cluster.itemIds);
+			const active = new Set<string>();
 
-		setExpansionState({ expandedClusters: expanded, visibleItems: visible, activeClusters: active });
-	}, [clustering]);
+			setExpansionState({
+				activeClusters: active,
+				expandedClusters: expanded,
+				visibleItems: visible,
+			});
+		},
+		[clustering],
+	);
 
 	// Update configuration
 	const updateConfig = useCallback((newConfig: Partial<ClusteringConfig>) => {
@@ -318,21 +364,26 @@ export function useClustering(
 
 	// Get visible clusters
 	const visibleClusters = useMemo(() => {
-		if (!clustering) return [];
+		if (!clustering) {
+			return [];
+		}
 
-		return Array.from(expansionState.activeClusters)
+		return [...expansionState.activeClusters]
 			.map((id) => clustering.clusters.get(id))
 			.filter((c): c is ClusterNode => c !== undefined);
 	}, [clustering, expansionState.activeClusters]);
 
 	// Get visible items
-	const visibleItems = useMemo(() => {
-		return items.filter((item) => expansionState.visibleItems.has(item.id));
-	}, [items, expansionState.visibleItems]);
+	const visibleItems = useMemo(
+		() => items.filter((item) => expansionState.visibleItems.has(item.id)),
+		[items, expansionState.visibleItems],
+	);
 
 	// Calculate quality metrics
 	const quality = useMemo(() => {
-		if (!clustering) return null;
+		if (!clustering) {
+			return null;
+		}
 		return calculateClusteringQuality(clustering, links);
 	}, [clustering, links]);
 
@@ -341,23 +392,23 @@ export function useClustering(
 	const clusterCount = clustering?.totalClusters || 0;
 
 	return {
+		clusterCount,
 		clustering,
+		collapseAll,
+		collapseCluster,
+		compressionRatio,
+		drillDownToCluster,
+		error,
+		expandAll,
+		expandClusterById,
 		expandedClusters: expansionState.expandedClusters,
+		isProcessing,
+		quality,
+		recluster,
+		toggleCluster,
+		updateConfig,
 		visibleClusters,
 		visibleItems,
-		toggleCluster,
-		expandClusterById,
-		collapseCluster,
-		expandAll,
-		collapseAll,
-		drillDownToCluster,
-		updateConfig,
-		recluster,
-		compressionRatio,
-		clusterCount,
-		quality,
-		isProcessing,
-		error,
 	};
 }
 
@@ -367,10 +418,12 @@ export function useClustering(
 export function useClusterEdges(
 	clustering: ClusteringResult | null,
 	links: Link[],
-	level: number = 0,
+	level = 0,
 ) {
 	return useMemo(() => {
-		if (!clustering) return [];
+		if (!clustering) {
+			return [];
+		}
 		return extractClusterEdges(clustering, links, level);
 	}, [clustering, links, level]);
 }
@@ -384,7 +437,9 @@ export function useExpandedClusterItems(
 	items: Item[],
 ) {
 	return useMemo(() => {
-		if (!clusterId || !clustering) return [];
+		if (!clusterId || !clustering) {
+			return [];
+		}
 		return expandCluster(clusterId, clustering, items);
 	}, [clusterId, clustering, items]);
 }

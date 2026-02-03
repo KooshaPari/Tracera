@@ -2,15 +2,12 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { UnifiedGraphView } from "../UnifiedGraphView";
 
 const meta: Meta<typeof UnifiedGraphView> = {
-	title: "Components/Graph/UnifiedGraphView",
-	component: UnifiedGraphView,
-	tags: ["autodocs"],
 	args: {
 		items: [],
 		links: [],
 	},
+	component: UnifiedGraphView,
 	parameters: {
-		layout: "fullscreen",
 		chromatic: {
 			modes: {
 				light: { query: "[data-theme='light']" },
@@ -19,10 +16,13 @@ const meta: Meta<typeof UnifiedGraphView> = {
 			delay: 500,
 			pauseAnimationAtEnd: true,
 		},
+		layout: "fullscreen",
 		viewport: {
 			defaultViewport: "desktop",
 		},
 	},
+	tags: ["autodocs"],
+	title: "Components/Graph/UnifiedGraphView",
 };
 
 export default meta;
@@ -36,16 +36,16 @@ export const Default: Story = {
 		items: [],
 		links: [],
 	},
-	render: (args) => (
-		<div className="w-full h-screen">
-			<UnifiedGraphView {...args} />
-		</div>
-	),
 	parameters: {
 		viewport: {
 			defaultViewport: "desktop",
 		},
 	},
+	render: (args) => (
+		<div className="w-full h-screen">
+			<UnifiedGraphView {...args} />
+		</div>
+	),
 };
 
 /**
@@ -53,16 +53,16 @@ export const Default: Story = {
  */
 export const TabletView: Story = {
 	args: { items: [], links: [] },
-	render: (args) => (
-		<div className="w-full h-screen">
-			<UnifiedGraphView {...args} />
-		</div>
-	),
 	parameters: {
 		viewport: {
 			defaultViewport: "tablet",
 		},
 	},
+	render: (args) => (
+		<div className="w-full h-screen">
+			<UnifiedGraphView {...args} />
+		</div>
+	),
 };
 
 /**
@@ -70,16 +70,16 @@ export const TabletView: Story = {
  */
 export const MobileView: Story = {
 	args: { items: [], links: [] },
-	render: (args) => (
-		<div className="w-full h-screen">
-			<UnifiedGraphView {...args} />
-		</div>
-	),
 	parameters: {
 		viewport: {
 			defaultViewport: "mobile",
 		},
 	},
+	render: (args) => (
+		<div className="w-full h-screen">
+			<UnifiedGraphView {...args} />
+		</div>
+	),
 };
 
 /**
@@ -87,16 +87,16 @@ export const MobileView: Story = {
  */
 export const WidescreenView: Story = {
 	args: { items: [], links: [] },
-	render: (args) => (
-		<div className="w-full h-screen">
-			<UnifiedGraphView {...args} />
-		</div>
-	),
 	parameters: {
 		viewport: {
 			defaultViewport: "widescreen",
 		},
 	},
+	render: (args) => (
+		<div className="w-full h-screen">
+			<UnifiedGraphView {...args} />
+		</div>
+	),
 };
 
 /**
@@ -104,11 +104,6 @@ export const WidescreenView: Story = {
  */
 export const DarkMode: Story = {
 	args: { items: [], links: [] },
-	render: (args) => (
-		<div className="w-full h-screen dark" data-theme="dark">
-			<UnifiedGraphView {...args} />
-		</div>
-	),
 	parameters: {
 		chromatic: {
 			modes: {
@@ -116,6 +111,11 @@ export const DarkMode: Story = {
 			},
 		},
 	},
+	render: (args) => (
+		<div className="w-full h-screen dark" data-theme="dark">
+			<UnifiedGraphView {...args} />
+		</div>
+	),
 };
 
 /**
@@ -123,11 +123,6 @@ export const DarkMode: Story = {
  */
 export const LightMode: Story = {
 	args: { items: [], links: [] },
-	render: (args) => (
-		<div className="w-full h-screen" data-theme="light">
-			<UnifiedGraphView {...args} />
-		</div>
-	),
 	parameters: {
 		chromatic: {
 			modes: {
@@ -135,4 +130,9 @@ export const LightMode: Story = {
 			},
 		},
 	},
+	render: (args) => (
+		<div className="w-full h-screen" data-theme="light">
+			<UnifiedGraphView {...args} />
+		</div>
+	),
 };

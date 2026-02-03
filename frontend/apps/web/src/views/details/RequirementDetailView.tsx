@@ -6,8 +6,8 @@
  * Implements ISO 29148 quality visualization.
  */
 
-import { isRequirementItem } from '@tracertm/types';
-import type { RequirementItem } from '@tracertm/types';
+import { isRequirementItem } from "@tracertm/types";
+import type { RequirementItem } from "@tracertm/types";
 import {
 	Badge,
 	Button,

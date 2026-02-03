@@ -54,9 +54,9 @@ test.describe("Authentication Flow - Login", () => {
 		await expect(page).toHaveURL("/");
 
 		// And: User state should be updated in localStorage
-		const userState = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const userState = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(userState).toBeTruthy();
 
 		// And: Dashboard content should be visible
@@ -87,9 +87,7 @@ test.describe("Authentication Flow - Login", () => {
 		await expect(errorMessage).toContainText(/invalid|error/i);
 
 		// And: No auth token should be stored
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 		expect(token).toBeNull();
 	});
 
@@ -166,9 +164,7 @@ test.describe("Authentication Flow - Login", () => {
 		await page.waitForURL("/", { timeout: 5000 }).catch(() => null);
 
 		// Verify token was stored (successful login)
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 
 		// If token exists, login succeeded with trimming
 		if (token != null && token !== "") {
@@ -200,9 +196,9 @@ test.describe("Authentication Flow - Session Management", () => {
 		await expect(page).toHaveURL("/");
 
 		// When: Get the current auth token
-		const tokenBefore = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const tokenBefore = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(tokenBefore).toBeTruthy();
 
 		// And: Page is reloaded
@@ -210,9 +206,9 @@ test.describe("Authentication Flow - Session Management", () => {
 		await page.waitForLoadState("domcontentloaded");
 
 		// Then: Auth token should still exist
-		const tokenAfter = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const tokenAfter = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(tokenAfter).toBe(tokenBefore);
 
 		// And: User should still be on dashboard (authenticated)
@@ -224,9 +220,9 @@ test.describe("Authentication Flow - Session Management", () => {
 	}) => {
 		// Given: User is logged in
 		await expect(page).toHaveURL("/");
-		const initialToken = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const initialToken = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 
 		// When: User navigates to different routes
 		const routes = ["/", "/projects", "/items"];
@@ -236,9 +232,9 @@ test.describe("Authentication Flow - Session Management", () => {
 			await page.waitForLoadState("domcontentloaded");
 
 			// Then: Token should remain the same
-			const currentToken = await page.evaluate(() => {
-				return localStorage.getItem("authToken");
-			});
+			const currentToken = await page.evaluate(() =>
+				localStorage.getItem("authToken"),
+			);
 			expect(currentToken).toBe(initialToken);
 		}
 	});
@@ -273,9 +269,9 @@ test.describe("Authentication Flow - Session Management", () => {
 
 	test("should keep session alive during active use", async ({ page }) => {
 		// Given: User is logged in
-		const initialToken = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const initialToken = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 
 		// When: User performs multiple actions
 		for (let i = 0; i < 3; i++) {
@@ -285,9 +281,9 @@ test.describe("Authentication Flow - Session Management", () => {
 		}
 
 		// Then: Session should still be active
-		const finalToken = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const finalToken = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(finalToken).toBe(initialToken);
 		expect(finalToken).toBeTruthy();
 	});
@@ -333,9 +329,9 @@ test.describe("Authentication Flow - Logout", () => {
 		await expect(page).toHaveURL("/");
 
 		// When: User gets auth token before logout
-		const tokenBefore = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const tokenBefore = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(tokenBefore).toBeTruthy();
 
 		// And: We simulate logout by clearing auth (app would have logout button)
@@ -348,21 +344,19 @@ test.describe("Authentication Flow - Logout", () => {
 		await page.waitForLoadState("domcontentloaded");
 
 		// Then: Token should be cleared
-		const tokenAfter = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const tokenAfter = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(tokenAfter).toBeNull();
 	});
 
 	test("should clear all session-related data on logout", async ({ page }) => {
 		// Given: User is logged in and has session data
-		const initialData = await page.evaluate(() => {
-			return {
-				token: localStorage.getItem("authToken"),
-				user: localStorage.getItem("user"),
-				sessionId: sessionStorage.getItem("sessionId"),
-			};
-		});
+		const initialData = await page.evaluate(() => ({
+			sessionId: sessionStorage.getItem("sessionId"),
+			token: localStorage.getItem("authToken"),
+			user: localStorage.getItem("user"),
+		}));
 
 		// Verify data exists
 		expect(initialData.token).toBeTruthy();
@@ -375,13 +369,11 @@ test.describe("Authentication Flow - Logout", () => {
 		});
 
 		// Then: All auth-related data should be cleared
-		const clearedData = await page.evaluate(() => {
-			return {
-				token: localStorage.getItem("authToken"),
-				user: localStorage.getItem("user"),
-				sessionId: sessionStorage.getItem("sessionId"),
-			};
-		});
+		const clearedData = await page.evaluate(() => ({
+			sessionId: sessionStorage.getItem("sessionId"),
+			token: localStorage.getItem("authToken"),
+			user: localStorage.getItem("user"),
+		}));
 
 		expect(clearedData.token).toBeNull();
 		expect(clearedData.user).toBeNull();
@@ -414,9 +406,7 @@ test.describe("Authentication Flow - Logout", () => {
 		page,
 	}) => {
 		// Given: User is logged in
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 		expect(token).toBeTruthy();
 
 		// When: User logs out
@@ -430,9 +420,9 @@ test.describe("Authentication Flow - Logout", () => {
 
 		// Then: Should not be able to access items route
 		// Either redirected or shows error
-		const tokenAfterLogout = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const tokenAfterLogout = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(tokenAfterLogout).toBeNull();
 	});
 
@@ -447,7 +437,7 @@ test.describe("Authentication Flow - Logout", () => {
 		);
 
 		// Note: In this mock setup, we don't have actual cookies,
-		// but in real scenario, auth cookie would be present
+		// But in real scenario, auth cookie would be present
 
 		// And: User logs out
 		await page.evaluate(() => {
@@ -456,9 +446,7 @@ test.describe("Authentication Flow - Logout", () => {
 
 		// Then: Auth-related cookies should be cleared
 		// This is verified by the app clearing localStorage
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 		expect(token).toBeNull();
 	});
 });
@@ -479,9 +467,7 @@ test.describe("Authentication Flow - Token Management", () => {
 		await expect(page).toHaveURL("/");
 
 		// When: Check for auth token
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 
 		// Then: Token should exist and be truthy
 		expect(token).toBeTruthy();
@@ -491,7 +477,10 @@ test.describe("Authentication Flow - Token Management", () => {
 		expect(token?.length).toBeGreaterThan(0);
 	});
 
-	test("should include token in API requests", async ({ page, context: _context }) => {
+	test("should include token in API requests", async ({
+		page,
+		context: _context,
+	}) => {
 		// Given: User is logged in
 		await expect(page).toHaveURL("/");
 
@@ -518,17 +507,17 @@ test.describe("Authentication Flow - Token Management", () => {
 
 		// Then: Authorization should be included
 		// Note: Depends on actual API implementation
-		const hasToken = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const hasToken = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(hasToken).toBeTruthy();
 	});
 
 	test("should handle token refresh on demand", async ({ page }) => {
 		// Given: User is logged in
-		const initialToken = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const initialToken = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(initialToken).toBeTruthy();
 
 		// When: Force a token refresh scenario
@@ -561,17 +550,15 @@ test.describe("Authentication Flow - Token Management", () => {
 		await page.waitForLoadState("domcontentloaded");
 
 		// Then: User should no longer have auth token
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 		expect(token).toBeNull();
 	});
 
 	test("should handle concurrent token refresh requests", async ({ page }) => {
 		// Given: User is logged in
-		const initialToken = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const initialToken = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(initialToken).toBeTruthy();
 
 		// When: Simulate multiple concurrent refresh requests
@@ -584,9 +571,9 @@ test.describe("Authentication Flow - Token Management", () => {
 		});
 
 		// Then: Should have only the latest token
-		const finalToken = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const finalToken = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 		expect(finalToken).toBeTruthy();
 		expect(finalToken?.includes("token-")).toBeTruthy();
 	});
@@ -608,9 +595,9 @@ test.describe("Authentication Flow - Cookie Security", () => {
 		await expect(page).toHaveURL("/");
 
 		// When: Check localStorage content
-		const storageContent = await page.evaluate(() => {
-			return JSON.stringify(localStorage);
-		});
+		const storageContent = await page.evaluate(() =>
+			JSON.stringify(localStorage),
+		);
 
 		// Then: Password should not be stored anywhere
 		expect(storageContent).not.toContain("password");
@@ -625,9 +612,7 @@ test.describe("Authentication Flow - Cookie Security", () => {
 		await expect(page).toHaveURL("/");
 
 		// When: Check localStorage keys
-		const keys = await page.evaluate(() => {
-			return Object.keys(localStorage);
-		});
+		const keys = await page.evaluate(() => Object.keys(localStorage));
 
 		// Then: Should have authToken key
 		const hasAuthToken = keys.includes("authToken");
@@ -649,16 +634,16 @@ test.describe("Authentication Flow - Cookie Security", () => {
 		await expect(page).toHaveURL("/");
 
 		// When: Try to access auth token from JavaScript
-		const tokenFromStorage = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const tokenFromStorage = await page.evaluate(() =>
+			localStorage.getItem("authToken"),
+		);
 
 		// Then: Token is accessible (localStorage is JavaScript-accessible)
 		// In production, secure tokens should be in HttpOnly cookies
 		expect(tokenFromStorage).toBeTruthy();
 
 		// Note: In real production app, sensitive tokens should be in HttpOnly cookies
-		// which are NOT accessible to JavaScript
+		// Which are NOT accessible to JavaScript
 	});
 
 	test("should verify CORS and origin policies are respected", async ({
@@ -668,9 +653,7 @@ test.describe("Authentication Flow - Cookie Security", () => {
 		await expect(page).toHaveURL("/");
 
 		// When: Check that cross-origin requests would be rejected
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 
 		// Then: Token exists (would be used for same-origin requests only)
 		expect(token).toBeTruthy();
@@ -744,8 +727,8 @@ test.describe("Authentication Flow - Error Handling", () => {
 		// When: Intercept login to return invalid JSON
 		await page.route("**/api/**/auth/login", (route) => {
 			void route.fulfill({
-				status: 200,
 				body: "invalid json{",
+				status: 200,
 			});
 		});
 
@@ -756,9 +739,7 @@ test.describe("Authentication Flow - Error Handling", () => {
 
 		// Then: App should handle gracefully
 		await page.waitForTimeout(1000);
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 		// Should not have logged in with invalid response
 		expect(token).toBeNull();
 	});
@@ -777,12 +758,12 @@ test.describe("Authentication Flow - Error Handling", () => {
 		// Intercept to return server error
 		await page.route("**/api/**/auth/login", (route) => {
 			void route.fulfill({
-				status: 401,
-				contentType: "application/json",
 				body: JSON.stringify({
 					error: "Invalid credentials",
 					message: "Email or password is incorrect",
 				}),
+				contentType: "application/json",
+				status: 401,
 			});
 		});
 
@@ -822,9 +803,7 @@ test.describe("Authentication Flow - Error Handling", () => {
 		await page.waitForLoadState("domcontentloaded");
 
 		// Then: Should handle expired session gracefully
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 		expect(token).toBeNull();
 	});
 
@@ -849,9 +828,9 @@ test.describe("Authentication Flow - Error Handling", () => {
 				});
 			} else {
 				void route.fulfill({
-					status: 401,
-					contentType: "application/json",
 					body: JSON.stringify({ error: "Invalid credentials" }),
+					contentType: "application/json",
+					status: 401,
 				});
 			}
 		});
@@ -866,9 +845,7 @@ test.describe("Authentication Flow - Error Handling", () => {
 
 		// Then: Eventually should encounter rate limit
 		// (in this test, would need proper error handling)
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 		expect(token).toBeNull();
 	});
 });
@@ -914,9 +891,7 @@ test.describe("Authentication Flow - Protected Routes", () => {
 		await page.waitForLoadState("domcontentloaded");
 
 		// Then: Should be able to access
-		const token = await page.evaluate(() => {
-			return localStorage.getItem("authToken");
-		});
+		const token = await page.evaluate(() => localStorage.getItem("authToken"));
 		expect(token).toBeTruthy();
 	});
 
@@ -938,9 +913,9 @@ test.describe("Authentication Flow - Protected Routes", () => {
 			await page.waitForLoadState("domcontentloaded");
 
 			// Should not be able to access (or be redirected)
-			const token = await page.evaluate(() => {
-				return localStorage.getItem("authToken");
-			});
+			const token = await page.evaluate(() =>
+				localStorage.getItem("authToken"),
+			);
 			expect(token).toBeNull();
 		}
 	});

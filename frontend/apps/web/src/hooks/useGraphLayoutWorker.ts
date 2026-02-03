@@ -14,16 +14,16 @@
  * @module useGraphLayoutWorker
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import * as Comlink from 'comlink';
-import { logger } from '@/lib/logger';
-import type { GraphLayoutWorkerAPI } from '@/workers/graphLayout.worker';
+import { useCallback, useEffect, useRef, useState } from "react";
+import * as Comlink from "comlink";
+import { logger } from "@/lib/logger";
+import type { GraphLayoutWorkerAPI } from "@/workers/graphLayout.worker";
 import type {
-	LayoutNode,
 	LayoutEdge,
+	LayoutNode,
 	LayoutOptions,
 	LayoutResult,
-} from '@/workers/graphLayout.worker';
+} from "@/workers/graphLayout.worker";
 
 // ============================================================================
 // TYPES
@@ -47,7 +47,7 @@ interface UseGraphLayoutWorkerResult {
 	computeLayout: (
 		nodes: LayoutNode[],
 		edges: LayoutEdge[],
-		options: LayoutOptions
+		options: LayoutOptions,
 	) => Promise<LayoutResult>;
 	/** Whether worker is ready */
 	isReady: boolean;
@@ -70,7 +70,7 @@ interface UseGraphLayoutWorkerResult {
  */
 function fallbackGridLayout(
 	nodes: LayoutNode[],
-	options: LayoutOptions
+	options: LayoutOptions,
 ): LayoutResult {
 	const {
 		nodeWidth = 200,
@@ -95,7 +95,7 @@ function fallbackGridLayout(
 
 	return {
 		positions,
-		size: { width: maxWidth, height: maxHeight },
+		size: { height: maxHeight, width: maxWidth },
 	};
 }
 
@@ -127,13 +127,13 @@ function fallbackGridLayout(
  * ```
  */
 export function useGraphLayoutWorker(
-	options: UseGraphLayoutWorkerOptions = {}
+	options: UseGraphLayoutWorkerOptions = {},
 ): UseGraphLayoutWorkerResult {
 	const {
 		enabled = true,
 		progressive = true,
 		batchSize = 100,
-		timeout = 30000,
+		timeout = 30_000,
 		onProgress,
 	} = options;
 
@@ -146,7 +146,7 @@ export function useGraphLayoutWorker(
 
 	// Initialize worker
 	useEffect(() => {
-		if (!enabled || typeof window === 'undefined') {
+		if (!enabled || typeof globalThis.window === "undefined") {
 			return;
 		}
 
@@ -156,8 +156,8 @@ export function useGraphLayoutWorker(
 			try {
 				// Create worker
 				const worker = new Worker(
-					new URL('../workers/graphLayout.worker.ts', import.meta.url),
-					{ type: 'module' }
+					new URL("../workers/graphLayout.worker.ts", import.meta.url),
+					{ type: "module" },
 				);
 
 				// Wrap with Comlink
@@ -170,9 +170,12 @@ export function useGraphLayoutWorker(
 					setIsReady(true);
 					setError(null);
 				}
-			} catch (err) {
-				const error = err instanceof Error ? err : new Error(String(err));
-				logger.error('[useGraphLayoutWorker] Failed to initialize worker:', error);
+			} catch (error) {
+				const error = error instanceof Error ? error : new Error(String(error));
+				logger.error(
+					"[useGraphLayoutWorker] Failed to initialize worker:",
+					error,
+				);
 				if (mounted) {
 					setError(error);
 					setIsReady(false);
@@ -180,7 +183,7 @@ export function useGraphLayoutWorker(
 			}
 		}
 
-		void initWorker();
+		undefined;
 
 		return () => {
 			mounted = false;
@@ -200,16 +203,18 @@ export function useGraphLayoutWorker(
 		async (
 			nodes: LayoutNode[],
 			edges: LayoutEdge[],
-			layoutOptions: LayoutOptions
+			layoutOptions: LayoutOptions,
 		): Promise<LayoutResult> => {
 			// Guard: No nodes
 			if (nodes.length === 0) {
-				return { positions: {}, size: { width: 0, height: 0 } };
+				return { positions: {}, size: { height: 0, width: 0 } };
 			}
 
 			// Guard: Worker not available - use fallback
 			if (!isReady || !apiRef.current) {
-				logger.warn('[useGraphLayoutWorker] Worker not ready, using fallback layout');
+				logger.warn(
+					"[useGraphLayoutWorker] Worker not ready, using fallback layout",
+				);
 				return fallbackGridLayout(nodes, layoutOptions);
 			}
 
@@ -224,8 +229,8 @@ export function useGraphLayoutWorker(
 				const shouldUseProgressive =
 					progressive &&
 					nodes.length > 500 &&
-					(layoutOptions.algorithm === 'grid' ||
-						layoutOptions.algorithm === 'circular');
+					(layoutOptions.algorithm === "grid" ||
+						layoutOptions.algorithm === "circular");
 
 				if (shouldUseProgressive) {
 					// Progressive layout with streaming results
@@ -238,7 +243,7 @@ export function useGraphLayoutWorker(
 					const generator = api.computeLayoutProgressive(
 						nodes,
 						edges,
-						progressiveOptions
+						progressiveOptions,
 					);
 
 					let finalResult: LayoutResult | null = null;
@@ -246,43 +251,47 @@ export function useGraphLayoutWorker(
 					// Consume async generator (Comlink proxy is async iterable at runtime)
 					for await (const result of generator as AsyncIterable<LayoutResult>) {
 						finalResult = result;
-						setProgress(result['progress'] || 0);
+						setProgress(result["progress"] || 0);
 
 						// Notify progress callback
-						if (onProgress && result['isPartial']) {
+						if (onProgress && result["isPartial"]) {
 							onProgress(result);
 						}
 					}
 
 					return finalResult!;
-				} else {
-					// Standard single-shot layout
-					const timeoutPromise = new Promise<never>((_, reject) => {
-						setTimeout(
-							() => reject(new Error('Layout computation timeout')),
-							timeout
-						);
-					});
-
-					const layoutPromise = api.computeLayout(nodes, edges, layoutOptions);
-
-					const result = await Promise.race([layoutPromise, timeoutPromise]);
-					setProgress(1);
-					return result;
 				}
-			} catch (err) {
-				const error = err instanceof Error ? err : new Error(String(err));
-				logger.error('[useGraphLayoutWorker] Layout computation failed:', error);
+				// Standard single-shot layout
+				const timeoutPromise = new Promise<never>((_, reject) => {
+					setTimeout(
+						() => reject(new Error("Layout computation timeout")),
+						timeout,
+					);
+				});
+
+				const layoutPromise = api.computeLayout(nodes, edges, layoutOptions);
+
+				const result = await Promise.race([layoutPromise, timeoutPromise]);
+				setProgress(1);
+				return result;
+			} catch (error) {
+				const error = error instanceof Error ? error : new Error(String(error));
+				logger.error(
+					"[useGraphLayoutWorker] Layout computation failed:",
+					error,
+				);
 				setError(error);
 
 				// Fallback to synchronous layout
-				logger.warn('[useGraphLayoutWorker] Falling back to synchronous layout');
+				logger.warn(
+					"[useGraphLayoutWorker] Falling back to synchronous layout",
+				);
 				return fallbackGridLayout(nodes, layoutOptions);
 			} finally {
 				setIsComputing(false);
 			}
 		},
-		[isReady, progressive, batchSize, timeout, onProgress]
+		[isReady, progressive, batchSize, timeout, onProgress],
 	);
 
 	// Terminate worker manually
@@ -301,9 +310,9 @@ export function useGraphLayoutWorker(
 
 	return {
 		computeLayout,
-		isReady,
-		isComputing,
 		error,
+		isComputing,
+		isReady,
 		progress,
 		terminate,
 	};
@@ -322,11 +331,13 @@ export function useGraphLayoutBenchmark() {
 	const [isReady, setIsReady] = useState(false);
 
 	useEffect(() => {
-		if (typeof window === 'undefined') return;
+		if (typeof globalThis.window === "undefined") {
+			return;
+		}
 
 		const worker = new Worker(
-			new URL('../workers/graphLayout.worker.ts', import.meta.url),
-			{ type: 'module' }
+			new URL("../workers/graphLayout.worker.ts", import.meta.url),
+			{ type: "module" },
 		);
 		const api = Comlink.wrap<GraphLayoutWorkerAPI>(worker);
 
@@ -344,16 +355,21 @@ export function useGraphLayoutBenchmark() {
 		async (
 			nodes: LayoutNode[],
 			edges: LayoutEdge[],
-			algorithm: LayoutOptions['algorithm'],
-			iterations: number = 5
+			algorithm: LayoutOptions["algorithm"],
+			iterations = 5,
 		) => {
 			if (!isReady || !apiRef.current) {
-				throw new Error('Worker not ready');
+				throw new Error("Worker not ready");
 			}
 
-			return apiRef.current.benchmarkLayout(nodes, edges, algorithm, iterations);
+			return apiRef.current.benchmarkLayout(
+				nodes,
+				edges,
+				algorithm,
+				iterations,
+			);
 		},
-		[isReady]
+		[isReady],
 	);
 
 	return { benchmark, isReady };

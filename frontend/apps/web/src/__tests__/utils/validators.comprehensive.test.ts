@@ -20,7 +20,7 @@ import {
 	validateProject,
 } from "../../utils/validators";
 
-describe("isEmail", () => {
+describe(isEmail, () => {
 	it("should validate correct email", () => {
 		expect(isEmail("test@example.com")).toBe(true);
 	});
@@ -70,7 +70,7 @@ describe("isEmail", () => {
 	});
 });
 
-describe("isUrl", () => {
+describe(isUrl, () => {
 	it("should validate HTTP URL", () => {
 		expect(isUrl("http://example.com")).toBe(true);
 	});
@@ -124,7 +124,7 @@ describe("isUrl", () => {
 	});
 });
 
-describe("isValidProjectName", () => {
+describe(isValidProjectName, () => {
 	it("should validate valid project name", () => {
 		expect(isValidProjectName("My Project")).toBe(true);
 	});
@@ -174,7 +174,7 @@ describe("isValidProjectName", () => {
 	});
 });
 
-describe("isValidItemTitle", () => {
+describe(isValidItemTitle, () => {
 	it("should validate valid title", () => {
 		expect(isValidItemTitle("My Task")).toBe(true);
 	});
@@ -208,7 +208,7 @@ describe("isValidItemTitle", () => {
 	});
 });
 
-describe("isValidId", () => {
+describe(isValidId, () => {
 	it("should validate UUID v4", () => {
 		expect(isValidId("123e4567-e89b-12d3-a456-426614174000")).toBe(true);
 	});
@@ -246,7 +246,7 @@ describe("isValidId", () => {
 	});
 });
 
-describe("isNumeric", () => {
+describe(isNumeric, () => {
 	it("should validate integer string", () => {
 		expect(isNumeric("123")).toBe(true);
 	});
@@ -292,7 +292,7 @@ describe("isNumeric", () => {
 	});
 });
 
-describe("isInRange", () => {
+describe(isInRange, () => {
 	it("should validate value in range", () => {
 		expect(isInRange(5, 0, 10)).toBe(true);
 	});
@@ -326,7 +326,7 @@ describe("isInRange", () => {
 	});
 });
 
-describe("hasMinLength", () => {
+describe(hasMinLength, () => {
 	it("should validate string meeting minimum", () => {
 		expect(hasMinLength("hello", 3)).toBe(true);
 	});
@@ -352,7 +352,7 @@ describe("hasMinLength", () => {
 	});
 });
 
-describe("hasMaxLength", () => {
+describe(hasMaxLength, () => {
 	it("should validate string under maximum", () => {
 		expect(hasMaxLength("hello", 10)).toBe(true);
 	});
@@ -375,7 +375,7 @@ describe("hasMaxLength", () => {
 	});
 });
 
-describe("matchesPattern", () => {
+describe(matchesPattern, () => {
 	it("should validate matching pattern", () => {
 		expect(matchesPattern("abc123", /^[a-z0-9]+$/)).toBe(true);
 	});
@@ -399,11 +399,11 @@ describe("matchesPattern", () => {
 	});
 });
 
-describe("validateProject", () => {
+describe(validateProject, () => {
 	it("should validate valid project", () => {
 		const result = validateProject({
-			name: "My Project",
 			description: "A test project",
+			name: "My Project",
 		});
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
@@ -427,8 +427,8 @@ describe("validateProject", () => {
 
 	it("should reject project with description too long", () => {
 		const result = validateProject({
-			name: "My Project",
 			description: "a".repeat(501),
+			name: "My Project",
 		});
 		expect(result.valid).toBe(false);
 		expect(result.errors).toContain(
@@ -445,8 +445,8 @@ describe("validateProject", () => {
 
 	it("should validate project with empty description", () => {
 		const result = validateProject({
-			name: "My Project",
 			description: "",
+			name: "My Project",
 		});
 		expect(result.valid).toBe(true);
 	});
@@ -469,14 +469,14 @@ describe("validateProject", () => {
 	});
 });
 
-describe("validateItem", () => {
+describe(validateItem, () => {
 	it("should validate valid item", () => {
 		const result = validateItem({
-			title: "My Task",
-			view: "features",
-			type: "feature",
-			status: "todo",
 			priority: "medium",
+			status: "todo",
+			title: "My Task",
+			type: "feature",
+			view: "features",
 		});
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
@@ -484,10 +484,10 @@ describe("validateItem", () => {
 
 	it("should reject item without title", () => {
 		const result = validateItem({
-			view: "features",
-			type: "feature",
-			status: "todo",
 			priority: "medium",
+			status: "todo",
+			type: "feature",
+			view: "features",
 		});
 		expect(result.valid).toBe(false);
 		expect(result.errors).toContain("Item title is required");
@@ -507,10 +507,10 @@ describe("validateItem", () => {
 
 	it("should reject item without view", () => {
 		const result = validateItem({
+			priority: "medium",
+			status: "todo",
 			title: "My Task",
 			type: "feature",
-			status: "todo",
-			priority: "medium",
 		});
 		expect(result.valid).toBe(false);
 		expect(result.errors).toContain("View type is required");
@@ -518,10 +518,10 @@ describe("validateItem", () => {
 
 	it("should reject item without type", () => {
 		const result = validateItem({
+			priority: "medium",
+			status: "todo",
 			title: "My Task",
 			view: "features",
-			status: "todo",
-			priority: "medium",
 		});
 		expect(result.valid).toBe(false);
 		expect(result.errors).toContain("Item type is required");
@@ -529,10 +529,10 @@ describe("validateItem", () => {
 
 	it("should reject item without status", () => {
 		const result = validateItem({
-			title: "My Task",
-			view: "features",
-			type: "feature",
 			priority: "medium",
+			title: "My Task",
+			type: "feature",
+			view: "features",
 		});
 		expect(result.valid).toBe(false);
 		expect(result.errors).toContain("Status is required");
@@ -540,10 +540,10 @@ describe("validateItem", () => {
 
 	it("should reject item without priority", () => {
 		const result = validateItem({
-			title: "My Task",
-			view: "features",
-			type: "feature",
 			status: "todo",
+			title: "My Task",
+			type: "feature",
+			view: "features",
 		});
 		expect(result.valid).toBe(false);
 		expect(result.errors).toContain("Priority is required");
@@ -557,11 +557,11 @@ describe("validateItem", () => {
 
 	it("should reject title over 200 characters", () => {
 		const result = validateItem({
-			title: "a".repeat(201),
-			view: "features",
-			type: "feature",
-			status: "todo",
 			priority: "medium",
+			status: "todo",
+			title: "a".repeat(201),
+			type: "feature",
+			view: "features",
 		});
 		expect(result.valid).toBe(false);
 		expect(result.errors).toContain("Item title must be 1-200 characters");
@@ -569,17 +569,17 @@ describe("validateItem", () => {
 
 	it("should validate title at boundary", () => {
 		const result = validateItem({
-			title: "a".repeat(200),
-			view: "features",
-			type: "feature",
-			status: "todo",
 			priority: "medium",
+			status: "todo",
+			title: "a".repeat(200),
+			type: "feature",
+			view: "features",
 		});
 		expect(result.valid).toBe(true);
 	});
 });
 
-describe("validateLink", () => {
+describe(validateLink, () => {
 	it("should validate valid link", () => {
 		const result = validateLink({
 			sourceId: "item-1",
@@ -632,7 +632,7 @@ describe("validateLink", () => {
 	it("should accumulate all validation errors", () => {
 		const result = validateLink({});
 		expect(result.valid).toBe(false);
-		// sourceId, targetId, type required, plus undefined === undefined triggers same-item check
+		// SourceId, targetId, type required, plus undefined === undefined triggers same-item check
 		expect(result.errors.length).toBe(4);
 	});
 
@@ -642,6 +642,6 @@ describe("validateLink", () => {
 			targetId: "item-1",
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.length).toBe(2); // same item + type required
+		expect(result.errors.length).toBe(2); // Same item + type required
 	});
 });

@@ -27,11 +27,11 @@ describe("Database View Route", () => {
 
 	it("supports database schema metadata", () => {
 		const mockSchema = {
+			column_count: 15,
 			id: "schema-1",
+			table_count: 10,
 			title: "Users Table",
 			type: "database",
-			table_count: 10,
-			column_count: 15,
 		};
 
 		expect(mockSchema.table_count).toBeGreaterThan(0);
@@ -46,6 +46,6 @@ describe("Database View Route", () => {
 		];
 
 		expect(mockTables).toHaveLength(3);
-		expect(mockTables.every(t => t.name)).toBe(true);
+		expect(mockTables.every((t) => t.name)).toBe(true);
 	});
 });

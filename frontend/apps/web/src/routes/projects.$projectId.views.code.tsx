@@ -23,8 +23,5 @@ export const CODE_VIEW = CodeView;
 
 export const Route = createFileRoute("/projects/$projectId/views/code")({
 	component: CodeView,
-	loader: async () => {
-		// ItemsTableView fetches its own data
-		return {};
-	},
+	loader: async () => ({}),
 });

@@ -23,7 +23,7 @@ export default defineConfig({
 	fullyParallel: true,
 
 	// Fail on CI if test.only is accidentally left
-	forbidOnly: !!process.env.CI,
+	forbidOnly: Boolean(process.env.CI),
 
 	// Retry failed tests on CI
 	retries: process.env.CI ? 2 : 0,
@@ -84,7 +84,7 @@ export default defineConfig({
 			name: "chromium-desktop",
 			use: {
 				...devices["Desktop Chrome"],
-				viewport: { width: 1920, height: 1080 },
+				viewport: { height: 1080, width: 1920 },
 			},
 		},
 
@@ -93,7 +93,7 @@ export default defineConfig({
 			name: "firefox-desktop",
 			use: {
 				...devices["Desktop Firefox"],
-				viewport: { width: 1920, height: 1080 },
+				viewport: { height: 1080, width: 1920 },
 			},
 		},
 
@@ -102,7 +102,7 @@ export default defineConfig({
 			name: "webkit-desktop",
 			use: {
 				...devices["Desktop Safari"],
-				viewport: { width: 1920, height: 1080 },
+				viewport: { height: 1080, width: 1920 },
 			},
 		},
 
@@ -144,8 +144,8 @@ export default defineConfig({
 	// Run dev server before tests
 	webServer: {
 		command: "bun run dev",
-		url: "http://localhost:5173",
 		reuseExistingServer: !process.env.CI,
 		timeout: 120 * 1000,
+		url: "http://localhost:5173",
 	},
 });

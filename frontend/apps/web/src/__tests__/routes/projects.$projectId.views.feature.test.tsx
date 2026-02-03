@@ -28,10 +28,10 @@ describe("Feature View Route", () => {
 	it("supports feature metadata", () => {
 		const mockFeature = {
 			id: "feat-1",
+			priority: "high",
+			status: "todo",
 			title: "Feature 1",
 			type: "feature",
-			status: "todo",
-			priority: "high",
 		};
 
 		expect(mockFeature.priority).toMatch(/^(low|medium|high|critical)$/);
@@ -40,9 +40,9 @@ describe("Feature View Route", () => {
 
 	it("handles multiple features with priorities", () => {
 		const mockFeatures = [
-			{ id: "f1", title: "Feature 1", priority: "high" },
-			{ id: "f2", title: "Feature 2", priority: "medium" },
-			{ id: "f3", title: "Feature 3", priority: "low" },
+			{ id: "f1", priority: "high", title: "Feature 1" },
+			{ id: "f2", priority: "medium", title: "Feature 2" },
+			{ id: "f3", priority: "low", title: "Feature 3" },
 		];
 
 		expect(mockFeatures).toHaveLength(3);
@@ -56,7 +56,7 @@ describe("Feature View Route", () => {
 			{ id: "f3", status: "todo" },
 		];
 
-		const completed = mockFeatures.filter(f => f.status === "done").length;
+		const completed = mockFeatures.filter((f) => f.status === "done").length;
 		expect(completed).toBe(1);
 	});
 });

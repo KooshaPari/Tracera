@@ -25,66 +25,66 @@ interface Wireframe {
 
 const wireframes: Wireframe[] = [
 	{
-		id: "1",
-		name: "Dashboard",
 		description: "Main dashboard with stats and quick actions",
+		id: "1",
+		linkedFeatures: ["Dashboard Feature", "Analytics"],
+		name: "Dashboard",
 		screen: "desktop",
 		status: "approved",
 		thumbnail: BarChart,
-		linkedFeatures: ["Dashboard Feature", "Analytics"],
 	},
 	{
-		id: "2",
-		name: "Project List",
 		description: "Grid view of all projects",
+		id: "2",
+		linkedFeatures: ["Project Management"],
+		name: "Project List",
 		screen: "desktop",
 		status: "approved",
 		thumbnail: Folder,
-		linkedFeatures: ["Project Management"],
 	},
 	{
-		id: "3",
-		name: "Graph View",
 		description: "Traceability visualization",
+		id: "3",
+		linkedFeatures: ["Graph Visualization", "Traceability"],
+		name: "Graph View",
 		screen: "desktop",
 		status: "review",
 		thumbnail: LinkIcon,
-		linkedFeatures: ["Graph Visualization", "Traceability"],
 	},
 	{
-		id: "4",
-		name: "Item Detail",
 		description: "Single item view with metadata",
+		id: "4",
+		linkedFeatures: ["Item CRUD"],
+		name: "Item Detail",
 		screen: "desktop",
 		status: "draft",
 		thumbnail: FileText,
-		linkedFeatures: ["Item CRUD"],
 	},
 	{
-		id: "5",
-		name: "Mobile Dashboard",
 		description: "Responsive dashboard for mobile",
+		id: "5",
+		linkedFeatures: ["Mobile Support"],
+		name: "Mobile Dashboard",
 		screen: "mobile",
 		status: "draft",
 		thumbnail: Smartphone,
-		linkedFeatures: ["Mobile Support"],
 	},
 	{
-		id: "6",
-		name: "Settings",
 		description: "User and project settings",
+		id: "6",
+		linkedFeatures: ["Settings Management"],
+		name: "Settings",
 		screen: "desktop",
 		status: "approved",
 		thumbnail: Settings,
-		linkedFeatures: ["Settings Management"],
 	},
 ];
 
-const screenIcons = { desktop: Monitor, tablet: Tablet, mobile: Smartphone };
+const screenIcons = { desktop: Monitor, mobile: Smartphone, tablet: Tablet };
 const statusColors = {
+	approved: "bg-green-100 text-green-600",
 	draft: "bg-gray-100 text-gray-600",
 	review: "bg-yellow-100 text-yellow-600",
-	approved: "bg-green-100 text-green-600",
 };
 
 export function WireframeView() {

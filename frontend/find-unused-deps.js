@@ -1,17 +1,17 @@
 #!/usr/bin/env bun
 
-import { readdir, readFile } from "fs/promises";
-import { join } from "path";
+import { readFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
 
 async function findPackageJsons(dir, depth = 0) {
-	if (depth > 3) return [];
+	if (depth > 3) {return [];}
 
 	const files = [];
 	try {
 		const entries = await readdir(dir, { withFileTypes: true });
 
 		for (const entry of entries) {
-			if (entry.name === "node_modules" || entry.name === ".git") continue;
+			if (entry.name === "node_modules" || entry.name === ".git") {continue;}
 
 			const fullPath = join(dir, entry.name);
 
@@ -49,7 +49,7 @@ async function main() {
 
 	for (const pkgPath of packageJsons) {
 		try {
-			const content = await readFile(pkgPath, "utf-8");
+			const content = await readFile(pkgPath, "utf8");
 			const pkg = JSON.parse(content);
 			const relativePath = pkgPath.replace(process.cwd(), ".");
 
@@ -65,8 +65,8 @@ async function main() {
 					}
 					usageMap.get(binary).push({
 						path: relativePath,
-						version: allDeps[binary],
 						type: pkg.dependencies?.[binary] ? "dependency" : "devDependency",
+						version: allDeps[binary],
 					});
 				}
 			}
@@ -75,19 +75,19 @@ async function main() {
 		}
 	}
 
-	console.log("=== LARGE BINARY PACKAGE USAGE ===\n");
+	
 
 	for (const [pkg, locations] of usageMap.entries()) {
-		console.log(`${pkg}:`);
+		
 		locations.forEach(({ path, version, type }) => {
-			console.log(`  ${path} (${type}): ${version}`);
+			
 		});
-		console.log("");
+		
 	}
 
 	if (usageMap.size === 0) {
-		console.log("No large binary packages found in direct dependencies!");
-		console.log("They may be pulled in as transitive dependencies.");
+		
+		
 	}
 }
 

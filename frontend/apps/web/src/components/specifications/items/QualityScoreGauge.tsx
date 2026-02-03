@@ -46,47 +46,53 @@ const dimensionIcons: Record<
 > = {
 	ambiguity: Eye,
 	completeness: Target,
-	testability: CheckCircle2,
 	consistency: Shield,
 	feasibility: Zap,
-	verifiability: CheckCircle2,
+	testability: CheckCircle2,
 	traceability: Target,
+	verifiability: CheckCircle2,
 };
 
 const severityStyles = {
 	error: {
 		bg: "bg-red-500/10",
-		text: "text-red-600",
 		border: "border-red-500/20",
 		icon: AlertCircle,
-	},
-	warning: {
-		bg: "bg-yellow-500/10",
-		text: "text-yellow-600",
-		border: "border-yellow-500/20",
-		icon: AlertTriangle,
+		text: "text-red-600",
 	},
 	info: {
 		bg: "bg-blue-500/10",
-		text: "text-blue-600",
 		border: "border-blue-500/20",
 		icon: Info,
+		text: "text-blue-600",
+	},
+	warning: {
+		bg: "bg-yellow-500/10",
+		border: "border-yellow-500/20",
+		icon: AlertTriangle,
+		text: "text-yellow-600",
 	},
 };
 
 function getScoreColor(score: number): string {
-	if (score >= 90) return "text-green-500";
-	if (score >= 70) return "text-yellow-500";
-	if (score >= 50) return "text-orange-500";
+	if (score >= 90) {
+		return "text-green-500";
+	}
+	if (score >= 70) {
+		return "text-yellow-500";
+	}
+	if (score >= 50) {
+		return "text-orange-500";
+	}
 	return "text-red-500";
 }
 
 // Progress color can be used for custom Progress component styling
-// function getProgressColor(score: number): string {
-// 	if (score >= 90) return "bg-green-500";
-// 	if (score >= 70) return "bg-yellow-500";
-// 	if (score >= 50) return "bg-orange-500";
-// 	return "bg-red-500";
+// Function getProgressColor(score: number): string {
+// 	If (score >= 90) return "bg-green-500";
+// 	If (score >= 70) return "bg-yellow-500";
+// 	If (score >= 50) return "bg-orange-500";
+// 	Return "bg-red-500";
 // }
 
 export function QualityScoreGauge({
@@ -99,9 +105,9 @@ export function QualityScoreGauge({
 }: QualityScoreGaugeProps) {
 	const score = overallScore ?? 0;
 	const sizeClasses = {
-		sm: "text-2xl",
-		md: "text-4xl",
 		lg: "text-6xl",
+		md: "text-4xl",
+		sm: "text-2xl",
 	};
 
 	return (

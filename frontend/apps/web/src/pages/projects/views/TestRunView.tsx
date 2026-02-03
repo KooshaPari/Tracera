@@ -12,27 +12,27 @@ import { useState } from "react";
 import { useTestRunStats, useTestRuns } from "../../../hooks/useTestRuns";
 
 const statusColors: Record<TestRunStatus, string> = {
-	pending: "bg-gray-100 text-gray-700",
-	running: "bg-blue-100 text-blue-700",
-	passed: "bg-green-100 text-green-700",
-	failed: "bg-red-100 text-red-700",
 	blocked: "bg-yellow-100 text-yellow-700",
 	cancelled: "bg-gray-200 text-gray-600",
+	failed: "bg-red-100 text-red-700",
+	passed: "bg-green-100 text-green-700",
+	pending: "bg-gray-100 text-gray-700",
+	running: "bg-blue-100 text-blue-700",
 };
 
 const statusLabels: Record<TestRunStatus, string> = {
-	pending: "Pending",
-	running: "Running",
-	passed: "Passed",
-	failed: "Failed",
 	blocked: "Blocked",
 	cancelled: "Cancelled",
+	failed: "Failed",
+	passed: "Passed",
+	pending: "Pending",
+	running: "Running",
 };
 
 const typeLabels: Record<TestRunType, string> = {
-	manual: "Manual",
 	automated: "Automated",
 	ci_cd: "CI/CD",
+	manual: "Manual",
 	scheduled: "Scheduled",
 };
 
@@ -182,7 +182,7 @@ export function TestRunView({ projectId }: TestRunViewProps) {
 				<div className="flex items-center justify-center py-12">
 					<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 				</div>
-			) : filteredRuns.length === 0 ? (
+			) : (filteredRuns.length === 0 ? (
 				<div className="rounded-lg border border-dashed p-12 text-center">
 					<Play className="mx-auto h-12 w-12 text-muted-foreground" />
 					<h3 className="mt-4 text-lg font-semibold">No test runs found</h3>
@@ -237,7 +237,7 @@ export function TestRunView({ projectId }: TestRunViewProps) {
 						</table>
 					</div>
 				</div>
-			)}
+			))}
 
 			{/* Create Modal - placeholder */}
 			{showCreateModal && (
@@ -367,9 +367,9 @@ function TestRunRow({ run }: { run: TestRun }) {
 								className={`h-2 rounded-full ${
 									run.passRate >= 90
 										? "bg-green-500"
-										: run.passRate >= 70
+										: (run.passRate >= 70
 											? "bg-yellow-500"
-											: "bg-red-500"
+											: "bg-red-500")
 								}`}
 								style={{ width: `${run.passRate}%` }}
 							/>

@@ -1,6 +1,6 @@
 import {
-	createRootRoute,
 	Link as RouterLink,
+	createRootRoute,
 	useLocation,
 	useRouter,
 } from "@tanstack/react-router";
@@ -83,7 +83,7 @@ function RootErrorComponent({ error }: { error: Error }) {
 					</Button>
 					<Button
 						variant="outline"
-						onClick={() => (window.location.href = "/")}
+						onClick={() => (globalThis.location.href = "/")}
 						className="flex-1 gap-2"
 					>
 						<Home className="w-4 h-4" />
@@ -114,11 +114,11 @@ const RootComponent = () => {
 						// Only preload graph if user is on a project-related page
 						location.pathname.includes("/projects/") &&
 							router.preloadRoute({
-								to: "/projects/$projectId/views/$viewType",
 								params: {
 									projectId: location.pathname.split("/")[2] || "",
 									viewType: "graph",
 								},
+								to: "/projects/$projectId/views/$viewType",
 							}),
 					].filter(Boolean),
 				);
@@ -143,11 +143,17 @@ const RootComponent = () => {
 };
 
 export const Route = createRootRoute({
+	beforeLoad: () => {},
 	component: RootComponent,
 	errorComponent: RootErrorComponent,
-	notFoundComponent: NotFoundComponent,
-	beforeLoad: () => {},
 	head: () => ({
+		links: [
+			{
+				rel: "icon",
+				href: "/favicon.svg",
+				type: "image/svg+xml",
+			},
+		],
 		meta: [
 			{
 				charSet: "utf-8",
@@ -165,12 +171,6 @@ export const Route = createRootRoute({
 					"Enterprise-grade requirements traceability and project management system with 16 professional views and intelligent CRUD operations.",
 			},
 		],
-		links: [
-			{
-				rel: "icon",
-				href: "/favicon.svg",
-				type: "image/svg+xml",
-			},
-		],
 	}),
+	notFoundComponent: NotFoundComponent,
 });

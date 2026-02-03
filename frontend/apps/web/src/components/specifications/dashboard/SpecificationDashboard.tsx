@@ -37,7 +37,7 @@ import { HealthScoreRing } from "./HealthScoreRing";
 
 interface SpecificationDashboardProps {
 	summary: SpecificationSummary;
-	coverageData?: Array<{
+	coverageData?: {
 		id: string;
 		label: string;
 		coverage: number;
@@ -45,8 +45,8 @@ interface SpecificationDashboardProps {
 		adrs?: number;
 		contracts?: number;
 		linked?: boolean;
-	}>;
-	gapItems?: Array<{
+	}[];
+	gapItems?: {
 		id: string;
 		label: string;
 		priority: "critical" | "high" | "medium" | "low";
@@ -59,43 +59,49 @@ interface SpecificationDashboardProps {
 			id: string;
 			label: string;
 		}>;
-	}>;
-	recentActivity?: Array<{
+	}[];
+	recentActivity?: {
 		id: string;
 		type: string;
 		title: string;
 		timestamp: string;
 		actor: string;
-	}>;
+	}[];
 	onNavigate?: (section: string, id?: string) => void;
 	onCreateNew?: (type: string) => void;
-	onGapAction?: (gap: { id: string; [key: string]: unknown }, resourceType: string) => void;
+	onGapAction?: (
+		gap: { id: string; [key: string]: unknown },
+		resourceType: string,
+	) => void;
 	className?: string;
 }
 
 function getHealthStatus(score: number) {
-	if (score >= 90)
+	if (score >= 90) {
 		return {
-			text: "Excellent",
-			color: "text-green-600",
 			bg: "bg-green-50 dark:bg-green-900/20",
+			color: "text-green-600",
+			text: "Excellent",
 		};
-	if (score >= 70)
+	}
+	if (score >= 70) {
 		return {
-			text: "Good",
-			color: "text-blue-600",
 			bg: "bg-blue-50 dark:bg-blue-900/20",
+			color: "text-blue-600",
+			text: "Good",
 		};
-	if (score >= 50)
+	}
+	if (score >= 50) {
 		return {
-			text: "Fair",
-			color: "text-amber-600",
 			bg: "bg-amber-50 dark:bg-amber-900/20",
+			color: "text-amber-600",
+			text: "Fair",
 		};
+	}
 	return {
-		text: "Poor",
-		color: "text-red-600",
 		bg: "bg-red-50 dark:bg-red-900/20",
+		color: "text-red-600",
+		text: "Poor",
 	};
 }
 
@@ -111,7 +117,9 @@ export function SpecificationDashboard({
 }: SpecificationDashboardProps) {
 	// Calculate coverage stats (for future use in analytics)
 	useMemo(() => {
-		if (coverageData.length === 0) return null;
+		if (coverageData.length === 0) {
+			return null;
+		}
 		const avgCoverage =
 			coverageData.reduce((sum, c) => sum + c.coverage, 0) /
 			coverageData.length;
@@ -362,8 +370,8 @@ export function SpecificationDashboard({
 								<HealthScoreRing
 									score={summary.healthScore}
 									size={250}
-									showAnimation={true}
-									showLegend={true}
+									showAnimation
+									showLegend
 								/>
 							</CardContent>
 						</Card>
@@ -378,7 +386,7 @@ export function SpecificationDashboard({
 								<ComplianceGaugeFull
 									score={summary.healthScore}
 									size={180}
-									showAnimation={true}
+									showAnimation
 									label="Compliance"
 								/>
 							</CardContent>
@@ -389,67 +397,72 @@ export function SpecificationDashboard({
 					<div className="mt-6 space-y-4">
 						<h3 className="text-lg font-semibold">Issues by Category</h3>
 						<div className="grid gap-4 md:grid-cols-2">
-							{summary.healthDetails.map((detail: { category: string; score: number; issues: string[] }, i: number) => (
-								<motion.div
-									key={i}
-									initial={{ opacity: 0, y: 10 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ delay: i * 0.1 }}
-								>
-									<Card>
-										<CardHeader className="pb-3">
-											<div className="flex justify-between items-start">
-												<div>
-													<CardTitle className="text-base">
-														{detail.category}
-													</CardTitle>
-													<CardDescription>
-														Score: {detail.score}
-														/100
-													</CardDescription>
+							{summary.healthDetails.map(
+								(
+									detail: { category: string; score: number; issues: string[] },
+									i: number,
+								) => (
+									<motion.div
+										key={i}
+										initial={{ opacity: 0, y: 10 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: i * 0.1 }}
+									>
+										<Card>
+											<CardHeader className="pb-3">
+												<div className="flex justify-between items-start">
+													<div>
+														<CardTitle className="text-base">
+															{detail.category}
+														</CardTitle>
+														<CardDescription>
+															Score: {detail.score}
+															/100
+														</CardDescription>
+													</div>
+													<motion.span
+														className={cn(
+															"text-lg font-bold px-3 py-1 rounded-full",
+															detail.score >= 80
+																? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
+																: (detail.score >= 60
+																	? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200"
+																	: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200"),
+														)}
+														initial={{ scale: 0 }}
+														animate={{ scale: 1 }}
+														transition={{
+															type: "spring",
+														}}
+													>
+														{detail.score}%
+													</motion.span>
 												</div>
-												<motion.span
-													className={cn(
-														"text-lg font-bold px-3 py-1 rounded-full",
-														detail.score >= 80
-															? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
-															: detail.score >= 60
-																? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200"
-																: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200",
-													)}
-													initial={{ scale: 0 }}
-													animate={{ scale: 1 }}
-													transition={{
-														type: "spring",
-													}}
-												>
-													{detail.score}%
-												</motion.span>
-											</div>
-										</CardHeader>
-										<CardContent>
-											{detail.issues.length > 0 ? (
-												<ul className="space-y-2">
-													{detail.issues.map((issue: string, j: number) => (
-														<li
-															key={j}
-															className="text-sm text-muted-foreground flex items-start gap-2"
-														>
-															<AlertCircle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
-															{issue}
-														</li>
-													))}
-												</ul>
-											) : (
-												<div className="flex items-center gap-2 text-sm text-green-600">
-													<CheckCircle2 className="w-4 h-4 shrink-0" />
-													No issues detected
-												</div>
-											)}
-										</CardContent>
-									</Card>
-								</motion.div>
-							))}
+											</CardHeader>
+											<CardContent>
+												{detail.issues.length > 0 ? (
+													<ul className="space-y-2">
+														{detail.issues.map((issue: string, j: number) => (
+															<li
+																key={j}
+																className="text-sm text-muted-foreground flex items-start gap-2"
+															>
+																<AlertCircle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+																{issue}
+															</li>
+														))}
+													</ul>
+												) : (
+													<div className="flex items-center gap-2 text-sm text-green-600">
+														<CheckCircle2 className="w-4 h-4 shrink-0" />
+														No issues detected
+													</div>
+												)}
+											</CardContent>
+										</Card>
+									</motion.div>
+								),
+							)}
 						</div>
 					</div>
 				</TabsContent>

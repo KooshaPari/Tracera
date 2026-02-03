@@ -5,54 +5,54 @@ import { FormInput, FormSelect, FormTextarea } from "./index";
 
 // Status and Priority options (matching Item model)
 const statusOptions = [
-	{ value: "todo", label: "Todo" },
-	{ value: "in_progress", label: "In Progress" },
-	{ value: "done", label: "Done" },
-	{ value: "blocked", label: "Blocked" },
-	{ value: "cancelled", label: "Cancelled" },
+	{ label: "Todo", value: "todo" },
+	{ label: "In Progress", value: "in_progress" },
+	{ label: "Done", value: "done" },
+	{ label: "Blocked", value: "blocked" },
+	{ label: "Cancelled", value: "cancelled" },
 ] as const;
 
 const priorityOptions = [
-	{ value: "low", label: "Low" },
-	{ value: "medium", label: "Medium" },
-	{ value: "high", label: "High" },
-	{ value: "critical", label: "Critical" },
+	{ label: "Low", value: "low" },
+	{ label: "Medium", value: "medium" },
+	{ label: "High", value: "high" },
+	{ label: "Critical", value: "critical" },
 ] as const;
 
 // Test Spec specific options (matching TestSpec model)
 const testTypeOptions = [
-	{ value: "unit", label: "Unit" },
-	{ value: "integration", label: "Integration" },
-	{ value: "e2e", label: "End-to-End" },
-	{ value: "performance", label: "Performance" },
-	{ value: "security", label: "Security" },
-	{ value: "smoke", label: "Smoke" },
-	{ value: "regression", label: "Regression" },
-	{ value: "acceptance", label: "Acceptance" },
+	{ label: "Unit", value: "unit" },
+	{ label: "Integration", value: "integration" },
+	{ label: "End-to-End", value: "e2e" },
+	{ label: "Performance", value: "performance" },
+	{ label: "Security", value: "security" },
+	{ label: "Smoke", value: "smoke" },
+	{ label: "Regression", value: "regression" },
+	{ label: "Acceptance", value: "acceptance" },
 ] as const;
 
 const oracleTypeOptions = [
-	{ value: "assertion", label: "Assertion" },
-	{ value: "golden", label: "Golden (Reference)" },
-	{ value: "metamorphic", label: "Metamorphic" },
-	{ value: "property", label: "Property-Based" },
-	{ value: "differential", label: "Differential" },
+	{ label: "Assertion", value: "assertion" },
+	{ label: "Golden (Reference)", value: "golden" },
+	{ label: "Metamorphic", value: "metamorphic" },
+	{ label: "Property-Based", value: "property" },
+	{ label: "Differential", value: "differential" },
 ] as const;
 
 const coverageTypeOptions = [
-	{ value: "statement", label: "Statement" },
-	{ value: "branch", label: "Branch" },
-	{ value: "mcdc", label: "MC/DC" },
-	{ value: "path", label: "Path" },
-	{ value: "condition", label: "Condition" },
+	{ label: "Statement", value: "statement" },
+	{ label: "Branch", value: "branch" },
+	{ label: "MC/DC", value: "mcdc" },
+	{ label: "Path", value: "path" },
+	{ label: "Condition", value: "condition" },
 ] as const;
 
 const safetyLevelOptions = [
-	{ value: "DAL-A", label: "DAL-A (Catastrophic)" },
-	{ value: "DAL-B", label: "DAL-B (Hazardous)" },
-	{ value: "DAL-C", label: "DAL-C (Major)" },
-	{ value: "DAL-D", label: "DAL-D (Minor)" },
-	{ value: "DAL-E", label: "DAL-E (No Effect)" },
+	{ label: "DAL-A (Catastrophic)", value: "DAL-A" },
+	{ label: "DAL-B (Hazardous)", value: "DAL-B" },
+	{ label: "DAL-C (Major)", value: "DAL-C" },
+	{ label: "DAL-D (Minor)", value: "DAL-D" },
+	{ label: "DAL-E (No Effect)", value: "DAL-E" },
 ] as const;
 
 // Zod schema matching backend TestSpec fields
@@ -108,14 +108,14 @@ export function CreateTestItemForm({
 		handleSubmit,
 		formState: { errors, isSubmitting },
 	} = useForm<TestItemFormData>({
-		resolver: zodResolver(testItemSchema),
 		defaultValues: {
-			status: "todo",
-			priority: "medium",
-			test_type: "unit",
 			is_critical_path: false,
+			priority: "medium",
+			status: "todo",
+			test_type: "unit",
 		},
 		mode: "onBlur",
+		resolver: zodResolver(testItemSchema),
 	});
 
 	const handleFormSubmit = (data: TestItemFormData) => {
@@ -156,7 +156,7 @@ export function CreateTestItemForm({
 							label="Title"
 							name="title"
 							register={register}
-							error={!!errors.title}
+							error={Boolean(errors.title)}
 							placeholder="Enter test title"
 							required
 						/>
@@ -165,7 +165,7 @@ export function CreateTestItemForm({
 							label="Description"
 							name="description"
 							register={register}
-							error={!!errors.description}
+							error={Boolean(errors.description)}
 							placeholder="Describe this test..."
 							rows={3}
 						/>
@@ -175,7 +175,7 @@ export function CreateTestItemForm({
 								label="Status"
 								name="status"
 								register={register}
-								error={!!errors.status}
+								error={Boolean(errors.status)}
 								options={statusOptions}
 								required
 							/>
@@ -184,7 +184,7 @@ export function CreateTestItemForm({
 								label="Priority"
 								name="priority"
 								register={register}
-								error={!!errors.priority}
+								error={Boolean(errors.priority)}
 								options={priorityOptions}
 								required
 							/>
@@ -194,7 +194,7 @@ export function CreateTestItemForm({
 							label="Owner"
 							name="owner"
 							register={register}
-							error={!!errors.owner}
+							error={Boolean(errors.owner)}
 							placeholder="Assigned to..."
 						/>
 					</div>
@@ -210,7 +210,7 @@ export function CreateTestItemForm({
 								label="Test Type"
 								name="test_type"
 								register={register}
-								error={!!errors.test_type}
+								error={Boolean(errors.test_type)}
 								options={testTypeOptions}
 								required
 							/>
@@ -219,7 +219,7 @@ export function CreateTestItemForm({
 								label="Test Framework"
 								name="test_framework"
 								register={register}
-								error={!!errors.test_framework}
+								error={Boolean(errors.test_framework)}
 								placeholder="e.g., Vitest, Jest, Pytest"
 							/>
 						</div>
@@ -229,7 +229,7 @@ export function CreateTestItemForm({
 								label="Language"
 								name="language"
 								register={register}
-								error={!!errors.language}
+								error={Boolean(errors.language)}
 								placeholder="e.g., TypeScript, Python"
 							/>
 
@@ -237,7 +237,7 @@ export function CreateTestItemForm({
 								label="Oracle Type"
 								name="oracle_type"
 								register={register}
-								error={!!errors.oracle_type}
+								error={Boolean(errors.oracle_type)}
 								options={oracleTypeOptions}
 							/>
 						</div>
@@ -247,7 +247,7 @@ export function CreateTestItemForm({
 								label="Coverage Type"
 								name="coverage_type"
 								register={register}
-								error={!!errors.coverage_type}
+								error={Boolean(errors.coverage_type)}
 								options={coverageTypeOptions}
 							/>
 
@@ -255,7 +255,7 @@ export function CreateTestItemForm({
 								label="Safety Level (DO-178C)"
 								name="safety_level"
 								register={register}
-								error={!!errors.safety_level}
+								error={Boolean(errors.safety_level)}
 								options={safetyLevelOptions}
 							/>
 						</div>
@@ -266,7 +266,7 @@ export function CreateTestItemForm({
 								name="expected_duration_ms"
 								type="number"
 								register={register}
-								error={!!errors.expected_duration_ms}
+								error={Boolean(errors.expected_duration_ms)}
 								placeholder="Expected execution time"
 							/>
 

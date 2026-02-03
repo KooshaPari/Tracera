@@ -1,9 +1,9 @@
-// useTemporal hooks tests
+// UseTemporal hooks tests
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("useTemporal hooks", () => {
 	beforeEach(() => {
-		global.fetch = vi.fn();
+		globalThis.fetch = vi.fn();
 	});
 
 	describe("Query key structure", () => {

@@ -3,12 +3,7 @@
  * Borrows ideas from agent/chat history UIs: search, sort (newest/oldest), per-item delete, click to open.
  */
 
-import {
-	Button,
-	cn,
-	Input,
-	ScrollArea,
-} from "@tracertm/ui";
+import { Button, Input, ScrollArea, cn } from "@tracertm/ui";
 import {
 	Select,
 	SelectContent,
@@ -36,10 +31,9 @@ function formatDate(iso: string) {
 		});
 	}
 	return d.toLocaleDateString(undefined, {
-		month: "short",
 		day: "numeric",
-		year:
-			d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+		month: "short",
+		year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
 	});
 }
 
@@ -79,9 +73,7 @@ export function ChatHistoryPanel({
 				(c) =>
 					c.title.toLowerCase().includes(q) ||
 					c.messages.some(
-						(m) =>
-							m.content &&
-							m.content.toLowerCase().includes(q),
+						(m) => m.content && m.content.toLowerCase().includes(q),
 					),
 			);
 		}
@@ -133,10 +125,7 @@ export function ChatHistoryPanel({
 					/>
 				</div>
 				<div className="flex items-center gap-2">
-					<Select
-						value={sort}
-						onValueChange={(v) => setSort(v as SortOption)}
-					>
+					<Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
 						<SelectTrigger className="h-8 text-xs flex-1 min-w-0">
 							<SelectValue />
 						</SelectTrigger>

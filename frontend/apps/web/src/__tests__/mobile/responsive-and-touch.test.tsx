@@ -120,7 +120,9 @@ function MockBottomSheet({
 	onClose?: () => void;
 	children?: React.ReactNode;
 }) {
-	if (!isOpen) return null;
+	if (!isOpen) {
+		return null;
+	}
 
 	return (
 		<div
@@ -239,8 +241,8 @@ describe("Touch Target Sizes", () => {
 	it("should have sufficient padding on buttons for touch", () => {
 		render(<MockResponsiveCard />);
 
-        const button = screen.getByRole("button");
-        const _styles = window.getComputedStyle(button);
+		const button = screen.getByRole("button");
+		const _styles = globalThis.getComputedStyle(button);
 
 		// Should have visible padding
 		expect(button.className).toContain("px-4");
@@ -277,9 +279,7 @@ describe("Touch Target Sizes", () => {
 	it("should use large text size for mobile inputs", () => {
 		render(<MockMobileForm />);
 
-		const emailInput = container.querySelector(
-			"input[type='email']",
-		);
+		const emailInput = container.querySelector("input[type='email']");
 		expect(emailInput).toBeInTheDocument();
 		if (emailInput instanceof HTMLElement) {
 			expect(emailInput.className).toContain("text-base");
@@ -289,9 +289,7 @@ describe("Touch Target Sizes", () => {
 	it("should show appropriate keyboard for email input", () => {
 		render(<MockMobileForm />);
 
-		const emailInput = screen.getByPlaceholderText(
-			"your@email.com",
-		);
+		const emailInput = screen.getByPlaceholderText("your@email.com");
 		expect(emailInput).toHaveAttribute("type", "email");
 	});
 });
@@ -340,7 +338,7 @@ describe("Mobile Forms - Input Sizing", () => {
 describe("Bottom Sheet - Mobile Pattern", () => {
 	it("should render bottom sheet when open", () => {
 		render(
-			<MockBottomSheet isOpen={true} title="Menu">
+			<MockBottomSheet isOpen title="Menu">
 				<button>Option 1</button>
 				<button>Option 2</button>
 			</MockBottomSheet>,
@@ -352,7 +350,7 @@ describe("Bottom Sheet - Mobile Pattern", () => {
 
 	it("should have proper dialog semantics", () => {
 		render(
-			<MockBottomSheet isOpen={true} title="Menu">
+			<MockBottomSheet isOpen title="Menu">
 				Content
 			</MockBottomSheet>,
 		);
@@ -366,13 +364,15 @@ describe("Bottom Sheet - Mobile Pattern", () => {
 		const handleClose = vi.fn();
 
 		render(
-			<MockBottomSheet isOpen={true} title="Menu" onClose={handleClose}>
+			<MockBottomSheet isOpen title="Menu" onClose={handleClose}>
 				Content
 			</MockBottomSheet>,
 		);
 
-		const backdrop = container.querySelector(".bg-black\\/50");
-		if (backdrop) await user.click(backdrop);
+		const backdrop = container.querySelector(String.raw`.bg-black\/50`);
+		if (backdrop) {
+			await user.click(backdrop);
+		}
 
 		expect(handleClose).toHaveBeenCalled();
 	});
@@ -381,7 +381,7 @@ describe("Bottom Sheet - Mobile Pattern", () => {
 		const handleClose = vi.fn();
 
 		render(
-			<MockBottomSheet isOpen={true} title="Menu" onClose={handleClose}>
+			<MockBottomSheet isOpen title="Menu" onClose={handleClose}>
 				Content
 			</MockBottomSheet>,
 		);
@@ -396,13 +396,15 @@ describe("Bottom Sheet - Mobile Pattern", () => {
 		const handleClose = vi.fn();
 
 		render(
-			<MockBottomSheet isOpen={true} title="Menu" onClose={handleClose}>
+			<MockBottomSheet isOpen title="Menu" onClose={handleClose}>
 				<button>Option</button>
 			</MockBottomSheet>,
 		);
 
 		const content = container.querySelector(".bg-white");
-		if (content) await user.click(content);
+		if (content) {
+			await user.click(content);
+		}
 
 		expect(handleClose).not.toHaveBeenCalled();
 	});
@@ -442,7 +444,7 @@ describe("Swipe Gestures - Touch Interactions", () => {
 
 		const item = container.querySelector(".touch-pan-y");
 		expect(item).toBeInTheDocument();
-		// touch-pan-y allows vertical scrolling while swiping horizontally
+		// Touch-pan-y allows vertical scrolling while swiping horizontally
 	});
 });
 
@@ -586,9 +588,7 @@ describe("Mobile Accessibility", () => {
 
 describe("Orientation Change Handling", () => {
 	it("should handle viewport resize", () => {
-		render(
-			<div className="w-full sm:max-w-md">Content</div>,
-		);
+		render(<div className="w-full sm:max-w-md">Content</div>);
 
 		expect(container.querySelector(".w-full")).toBeInTheDocument();
 	});

@@ -87,9 +87,7 @@ export const itemsApi = {
 		params?: PaginationParams & { project_id?: string },
 	): Promise<Item[] | CursorPaginationResponse<Item>> => {
 		const response = await handleApiResponse<
-			| { total: number; items: Item[] }
-			| CursorPaginationResponse<Item>
-			| Item[]
+			{ total: number; items: Item[] } | CursorPaginationResponse<Item> | Item[]
 		>(
 			apiClient.GET("/api/v1/items", {
 				params: { query: params },
@@ -417,8 +415,21 @@ export const healthCheck = async (): Promise<{
 
 /** Canonical full export: project + items + links (TraceRTM canonical format) */
 export interface CanonicalExport {
-	project: { id: string; name: string; description?: string; created_at?: string };
-	items: Array<{ id: string; title: string; view: string; type: string; status: string; description?: string; version?: number }>;
+	project: {
+		id: string;
+		name: string;
+		description?: string;
+		created_at?: string;
+	};
+	items: Array<{
+		id: string;
+		title: string;
+		view: string;
+		type: string;
+		status: string;
+		description?: string;
+		version?: number;
+	}>;
 	links: Array<{ source_id: string; target_id: string; type: string }>;
 }
 
@@ -434,18 +445,31 @@ export const exportImportApi = {
 		projectId: string,
 		format: "json" | "csv" | "markdown" | "full" = "json",
 	): Promise<Blob | CanonicalExport> => {
-		const response = await handleApiResponse(
+		const response = await handleApiResponse<Record<string, unknown>>(
 			apiClient.GET("/api/v1/projects/{project_id}/export", {
 				params: { path: { project_id: projectId }, query: { format } },
 			}),
 		);
-		if (format === "full" && typeof response === "object" && response !== null && "project" in response && "items" in response && "links" in response) {
-			return response as CanonicalExport;
+		if (
+			format === "full" &&
+			typeof response === "object" &&
+			response !== null &&
+			"project" in response &&
+			"items" in response &&
+			"links" in response
+		) {
+			return response as unknown as CanonicalExport;
 		}
 		// Backend returns object; build Blob for download (json/csv/markdown)
-		const obj = response as Record<string, unknown>;
-		if (obj && typeof obj['content'] === "string") {
-			return new Blob([obj['content']], { type: format === "csv" ? "text/csv" : "text/markdown" });
+		if (
+			response &&
+			typeof response === "object" &&
+			"content" in response &&
+			typeof response.content === "string"
+		) {
+			return new Blob([response.content], {
+				type: format === "csv" ? "text/csv" : "text/markdown",
+			});
 		}
 		return new Blob([JSON.stringify(response)], { type: "application/json" });
 	},
@@ -453,7 +477,16 @@ export const exportImportApi = {
 	/** Export one project as canonical JSON (project + items + links). */
 	exportFull: async (projectId: string): Promise<CanonicalExport> => {
 		const out = await exportImportApi.export(projectId, "full");
-		return out as CanonicalExport;
+		if (
+			out &&
+			typeof out === "object" &&
+			"project" in out &&
+			"items" in out &&
+			"links" in out
+		) {
+			return out as unknown as CanonicalExport;
+		}
+		throw new Error("Expected canonical export format");
 	},
 
 	import: async (
@@ -475,10 +508,12 @@ export const exportImportApi = {
 	},
 
 	/** Import canonical JSON as a new project (POST /api/v1/import). */
-	importFull: async (canonicalJson: CanonicalExport): Promise<ImportFullResult> => {
+	importFull: async (
+		canonicalJson: CanonicalExport,
+	): Promise<ImportFullResult> => {
 		return handleApiResponse(
 			apiClient.POST("/api/v1/import", {
-				body: canonicalJson as unknown as Record<string, unknown>,
+				body: canonicalJson as unknown,
 			}),
 		);
 	},
@@ -489,7 +524,10 @@ export const exportImportApi = {
 		format: "json" | "csv" | "markdown" = "json",
 	): Promise<Blob> => {
 		const out = await exportImportApi.export(projectId, format);
-		return out as Blob;
+		if (out instanceof Blob) {
+			return out;
+		}
+		throw new Error("Expected Blob format");
 	},
 
 	importProject: async (

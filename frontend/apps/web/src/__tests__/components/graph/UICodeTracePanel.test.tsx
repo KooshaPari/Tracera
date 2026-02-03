@@ -6,10 +6,10 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import type { CanonicalConcept, CodeReference } from "@tracertm/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	type TraceLevel,
-	type UICodeTraceChain,
-	UICodeTracePanel,
+import { UICodeTracePanel } from "../../../components/graph/UICodeTracePanel";
+import type {
+	TraceLevel,
+	UICodeTraceChain,
 } from "../../../components/graph/UICodeTracePanel";
 
 // =============================================================================
@@ -17,105 +17,105 @@ import {
 // =============================================================================
 
 const mockCodeReference: CodeReference = {
-	id: "code-ref-1",
-	repositoryUrl: "https://github.com/example/repo",
-	filePath: "src/components/LoginForm.tsx",
-	startLine: 42,
+	commitSha: "abc123def456",
 	endLine: 128,
+	filePath: "src/components/LoginForm.tsx",
+	id: "code-ref-1",
+	language: "typescript",
+	lastSyncedAt: new Date().toISOString(),
+	parentSymbol: "AuthModule",
+	repositoryUrl: "https://github.com/example/repo",
+	signature: "function LoginForm(props: LoginFormProps): ReactNode",
+	startLine: 42,
 	symbolName: "LoginForm",
 	symbolType: "component",
-	language: "typescript",
-	signature: "function LoginForm(props: LoginFormProps): ReactNode",
-	parentSymbol: "AuthModule",
-	lastSyncedAt: new Date().toISOString(),
-	commitSha: "abc123def456",
 };
 
 const mockCanonicalConcept: CanonicalConcept = {
-	id: "concept-1",
-	projectId: "project-1",
-	name: "User Authentication",
-	slug: "user-authentication",
+	category: "authentication",
+	confidence: 0.95,
+	createdAt: new Date().toISOString(),
 	description: "User login and authentication flow",
 	domain: "security",
-	category: "authentication",
-	tags: ["critical", "auth", "user-facing"],
+	id: "concept-1",
+	name: "User Authentication",
+	projectId: "project-1",
 	projectionCount: 3,
-	confidence: 0.95,
+	slug: "user-authentication",
 	source: "inferred",
-	createdAt: new Date().toISOString(),
+	tags: ["critical", "auth", "user-facing"],
 	updatedAt: new Date().toISOString(),
 	version: 1,
 };
 
 const mockUiTraceLevel: TraceLevel = {
-	id: "level-1",
-	type: "ui",
-	title: "Login Form Component",
-	description: "User-facing login form",
-	perspective: "ui",
 	componentName: "LoginForm",
 	componentPath: "src/components/LoginForm.tsx",
-	confidence: 1.0,
-	strategy: "explicit_annotation",
+	confidence: 1,
+	description: "User-facing login form",
+	id: "level-1",
 	isConfirmed: true,
+	perspective: "ui",
+	strategy: "explicit_annotation",
+	title: "Login Form Component",
+	type: "ui",
 };
 
 const mockCodeTraceLevel: TraceLevel = {
-	id: "level-2",
-	type: "code",
-	title: "LoginForm Implementation",
-	description: "React component implementing login form",
-	perspective: "technical",
 	codeRef: mockCodeReference,
 	confidence: 0.95,
-	strategy: "manual_link",
+	description: "React component implementing login form",
+	id: "level-2",
 	isConfirmed: true,
+	perspective: "technical",
+	strategy: "manual_link",
+	title: "LoginForm Implementation",
+	type: "code",
 };
 
 const mockRequirementTraceLevel: TraceLevel = {
-	id: "level-3",
-	type: "requirement",
-	title: "User Authentication Requirement",
-	description: "Users must be able to authenticate with email/password",
-	perspective: "business",
-	requirementId: "req-auth-001",
 	businessValue: "Enable secure user access to the platform",
 	confidence: 0.9,
-	strategy: "shared_canonical",
+	description: "Users must be able to authenticate with email/password",
+	id: "level-3",
 	isConfirmed: true,
+	perspective: "business",
+	requirementId: "req-auth-001",
+	strategy: "shared_canonical",
+	title: "User Authentication Requirement",
+	type: "requirement",
 };
 
 const mockConceptTraceLevel: TraceLevel = {
-	id: "level-4",
-	type: "concept",
-	title: "User Authentication Concept",
-	description: "Abstract representation of user authentication",
 	canonicalId: "concept-1",
 	confidence: 0.95,
+	description: "Abstract representation of user authentication",
+	id: "level-4",
 	strategy: "manual_link",
+	title: "User Authentication Concept",
+	type: "concept",
 };
 
 const mockTraceChain: UICodeTraceChain = {
-	id: "trace-1",
-	name: "Login Form → Authentication",
+	canonicalConcept: mockCanonicalConcept,
 	description: "Complete traceability from UI component to requirements",
+	id: "trace-1",
+	lastUpdated: new Date().toISOString(),
 	levels: [
 		mockUiTraceLevel,
 		mockCodeTraceLevel,
 		mockRequirementTraceLevel,
 		mockConceptTraceLevel,
 	],
+	name: "Login Form → Authentication",
 	overallConfidence: 0.95,
-	canonicalConcept: mockCanonicalConcept,
-	lastUpdated: new Date().toISOString(),
 };
 
 // =============================================================================
 // TESTS
 // =============================================================================
 
-describe("UICodeTracePanel", () => {
+describe(UICodeTracePanel, () => {
 	const mockOnOpenCode = vi.fn();
 	const mockOnOpenRequirement = vi.fn();
 	const mockOnNavigateToUI = vi.fn();
@@ -142,15 +142,13 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should render loading state when isLoading is true", () => {
-			render(<UICodeTracePanel traceChain={null} isLoading={true} />);
+			render(<UICodeTracePanel traceChain={null} isLoading />);
 
 			expect(screen.getByText("Loading trace chain...")).toBeInTheDocument();
 		});
 
 		it("should render trace chain header with name and confidence", () => {
-			render(
-				<UICodeTracePanel traceChain={mockTraceChain} />,
-			);
+			render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
 			const text = container.textContent || "";
 			expect(text).toContain(mockTraceChain.name);
@@ -177,9 +175,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should render canonical concept card", () => {
-			render(
-				<UICodeTracePanel traceChain={mockTraceChain} />,
-			);
+			render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
 			const text = container.textContent || "";
 			expect(text).toContain("Canonical Concept");
@@ -206,9 +202,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should render code level with file and line information", () => {
-			render(
-				<UICodeTracePanel traceChain={mockTraceChain} />,
-			);
+			render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
 			const text = container.textContent || "";
 			expect(text).toContain("src/components/LoginForm.tsx");
@@ -234,9 +228,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should display perspective badges for each level", () => {
-			render(
-				<UICodeTracePanel traceChain={mockTraceChain} />,
-			);
+			render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
 			const text = container.textContent || "";
 			expect(text).toContain("ui");
@@ -258,9 +250,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should display overall confidence in header", () => {
-			render(
-				<UICodeTracePanel traceChain={mockTraceChain} />,
-			);
+			render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
 			// The overall confidence should appear somewhere in the document
 			const text = container.textContent || "";
@@ -399,23 +389,21 @@ describe("UICodeTracePanel", () => {
 
 		it("should handle trace level without optional fields", () => {
 			const minimalLevel: TraceLevel = {
-				id: "minimal-1",
-				type: "code",
-				title: "Minimal Code Level",
 				confidence: 0.5,
+				id: "minimal-1",
+				title: "Minimal Code Level",
+				type: "code",
 			};
 
 			const chainWithMinimal: UICodeTraceChain = {
 				id: "trace-2",
-				name: "Minimal Trace",
-				levels: [minimalLevel],
-				overallConfidence: 0.5,
 				lastUpdated: new Date().toISOString(),
+				levels: [minimalLevel],
+				name: "Minimal Trace",
+				overallConfidence: 0.5,
 			};
 
-			render(
-				<UICodeTracePanel traceChain={chainWithMinimal} />,
-			);
+			render(<UICodeTracePanel traceChain={chainWithMinimal} />);
 
 			expect(screen.getByText("Minimal Code Level")).toBeInTheDocument();
 			// Check that 50% appears in the document (may appear multiple times)
@@ -426,10 +414,10 @@ describe("UICodeTracePanel", () => {
 		it("should handle empty trace levels", () => {
 			const emptyChain: UICodeTraceChain = {
 				id: "trace-3",
-				name: "Empty Trace",
-				levels: [],
-				overallConfidence: 0,
 				lastUpdated: new Date().toISOString(),
+				levels: [],
+				name: "Empty Trace",
+				overallConfidence: 0,
 			};
 
 			render(<UICodeTracePanel traceChain={emptyChain} />);
@@ -439,24 +427,22 @@ describe("UICodeTracePanel", () => {
 
 		it("should handle trace level with low confidence", () => {
 			const lowConfidenceLevel: TraceLevel = {
-				id: "level-low",
-				type: "code",
-				title: "Low Confidence Match",
 				confidence: 0.3,
+				id: "level-low",
 				strategy: "co_occurrence",
+				title: "Low Confidence Match",
+				type: "code",
 			};
 
 			const lowConfidenceChain: UICodeTraceChain = {
 				id: "trace-4",
-				name: "Low Confidence Trace",
-				levels: [lowConfidenceLevel],
-				overallConfidence: 0.3,
 				lastUpdated: new Date().toISOString(),
+				levels: [lowConfidenceLevel],
+				name: "Low Confidence Trace",
+				overallConfidence: 0.3,
 			};
 
-			render(
-				<UICodeTracePanel traceChain={lowConfidenceChain} />,
-			);
+			render(<UICodeTracePanel traceChain={lowConfidenceChain} />);
 
 			const allText = document.body.textContent || "";
 			expect(allText).toContain("30%");
@@ -464,28 +450,26 @@ describe("UICodeTracePanel", () => {
 
 		it("should handle long file paths with truncation", () => {
 			const longPathLevel: TraceLevel = {
-				id: "level-long",
-				type: "code",
-				title: "Long Path Code",
 				codeRef: {
 					...mockCodeReference,
 					filePath:
 						"src/very/deeply/nested/path/with/many/directories/components/LoginForm.tsx",
 				},
 				confidence: 0.9,
+				id: "level-long",
+				title: "Long Path Code",
+				type: "code",
 			};
 
 			const chainWithLongPath: UICodeTraceChain = {
 				id: "trace-5",
-				name: "Long Path Trace",
-				levels: [longPathLevel],
-				overallConfidence: 0.9,
 				lastUpdated: new Date().toISOString(),
+				levels: [longPathLevel],
+				name: "Long Path Trace",
+				overallConfidence: 0.9,
 			};
 
-			render(
-				<UICodeTracePanel traceChain={chainWithLongPath} />,
-			);
+			render(<UICodeTracePanel traceChain={chainWithLongPath} />);
 
 			// Path should be present (even if truncated)
 			expect(container.textContent).toContain("components/LoginForm.tsx");
@@ -557,9 +541,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should display code reference metadata", () => {
-			render(
-				<UICodeTracePanel traceChain={mockTraceChain} />,
-			);
+			render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
 			const allText = document.body.textContent || "";
 			expect(allText).toContain(mockCodeReference.symbolName);
@@ -573,9 +555,7 @@ describe("UICodeTracePanel", () => {
 
 	describe("scrolling behavior", () => {
 		it("should have scroll area for trace levels", () => {
-			render(
-				<UICodeTracePanel traceChain={mockTraceChain} />,
-			);
+			render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
 			// Check for scroll container
 			const _scrollArea = container.querySelector("[class*='scroll']");

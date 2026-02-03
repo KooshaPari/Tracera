@@ -1,10 +1,8 @@
-import {
-	extractCSRFTokenFromResponse,
-	handleCSRFError,
-} from "../lib/csrf";
-import { logger } from "@/lib/logger";
-import { useConnectionStatusStore } from "../stores/connectionStatusStore";
+/* eslint-disable promise/prefer-await-to-then */
 import apiConstants from "./client-constants";
+import { extractCSRFTokenFromResponse, handleCSRFError } from "../lib/csrf";
+import { logger } from "@/lib/logger";
+import { useConnectionStatusStore } from "../stores/connection-status-store";
 
 interface ToastAction {
 	label: string;
@@ -26,48 +24,43 @@ interface RateLimitBody {
 	retry_after?: number;
 }
 
-const parseJson = async <TData>(response: Response): Promise<TData> => {
-	try {
-		return (await response.clone().json()) as TData;
-	} catch {
-		return {} as TData;
-	}
+const parseJson = <TData>(response: Response): Promise<TData> => {
+	const clone = response.clone();
+	return clone.json().catch(() => ({}) as TData) as Promise<TData>;
 };
 
-const showToast = async (
+const showToast = (
 	title: string,
 	description: string,
 	action?: ToastAction,
 ): Promise<boolean> => {
-	if (globalThis.window) {
-		const { toast } = await import("sonner");
-		const toastOptions: ToastOptions = {
-			description,
-		};
+	if (!globalThis.window) {
+		return Promise.resolve(false);
+	}
 
+	return import("sonner").then(({ toast }) => {
+		const toastOptions: ToastOptions = { description };
 		if (action) {
 			toastOptions.action = action;
 		}
-
 		toast.error(title, toastOptions);
 		return true;
-	}
-
-	return false;
+	});
 };
 
-const handleCsrf = async (response: Response): Promise<boolean> => {
+const handleCsrf = (response: Response): Promise<boolean> => {
 	if (response.status !== apiConstants.statusForbidden) {
-		return false;
+		return Promise.resolve(false);
 	}
 
-	const wasCsrfError = await handleCSRFError(response.clone());
-	if (wasCsrfError) {
-		logger.warn(
-			"[API Client] CSRF token was refreshed, request may need to be retried",
-		);
-	}
-	return wasCsrfError;
+	return handleCSRFError(response.clone()).then((wasCsrfError) => {
+		if (wasCsrfError) {
+			logger.warn(
+				"[API Client] CSRF token was refreshed, request may need to be retried",
+			);
+		}
+		return wasCsrfError;
+	});
 };
 
 const showIntegrationAuthToast = (detail: string): Promise<boolean> =>
@@ -82,32 +75,43 @@ const showIntegrationAuthToast = (detail: string): Promise<boolean> =>
 
 const getIntegrationAuthDetail = (body: IntegrationAuthBody): string | null => {
 	if (body.code === "integration_auth_required") {
-		return body.detail || "Reconnect this integration in Settings.";
+		return body.detail ?? "Reconnect this integration in Settings.";
 	}
 	return null;
 };
 
-const handleUnauthorized = async (
+const isUnauthorizedResponse = (response: Response): boolean =>
+	response.status === apiConstants.statusUnauthorized;
+
+const isLoginFailureResponse = (response: Response): boolean =>
+	response.url.includes(apiConstants.authLoginPath);
+
+const handleUnauthorizedBody = (
 	response: Response,
 	handleLogout: () => void,
 ): Promise<boolean> => {
-	if (response.status !== apiConstants.statusUnauthorized) {
-		return false;
-	}
-
-	if (response.url.includes(apiConstants.authLoginPath)) {
+	return parseJson<IntegrationAuthBody>(response).then((body) => {
+		const detail = getIntegrationAuthDetail(body);
+		if (detail) {
+			return showIntegrationAuthToast(detail);
+		}
+		logger.warn("[Auth] Session expired or invalid - redirecting to login");
+		handleLogout();
 		return true;
-	}
+	});
+};
 
-	const body = await parseJson<IntegrationAuthBody>(response);
-	const detail = getIntegrationAuthDetail(body);
-	if (detail) {
-		return showIntegrationAuthToast(detail);
+const handleUnauthorized = (
+	response: Response,
+	handleLogout: () => void,
+): Promise<boolean> => {
+	if (!isUnauthorizedResponse(response)) {
+		return Promise.resolve(false);
 	}
-
-	logger.warn("[Auth] Session expired or invalid - redirecting to login");
-	handleLogout();
-	return true;
+	if (isLoginFailureResponse(response)) {
+		return Promise.resolve(true);
+	}
+	return handleUnauthorizedBody(response, handleLogout);
 };
 
 const buildRateLimitMessage = (seconds: number): string => {
@@ -124,91 +128,88 @@ const resolveRateLimitSeconds = (
 	if (retryAfterHeader !== "") {
 		return Number.parseInt(retryAfterHeader, 10);
 	}
-	if (body.retry_after) {
-		return body.retry_after;
-	}
-	return apiConstants.defaultRateLimitSeconds;
+	return body.retry_after ?? apiConstants.defaultRateLimitSeconds;
 };
 
-const handleRateLimited = async (response: Response): Promise<boolean> => {
-	if (response.status !== apiConstants.statusRateLimited) {
-		return false;
-	}
-
-	const body = await parseJson<RateLimitBody>(response);
-	const retryAfterHeader =
-		response.headers.get(apiConstants.retryAfterHeader) || "";
-	const seconds = resolveRateLimitSeconds(retryAfterHeader, body);
-
+const buildRateLimitDetail = (seconds: number, body: RateLimitBody): string => {
 	const message = buildRateLimitMessage(seconds);
-	const detail = body.detail || message;
-	await showToast("Rate limited", detail);
-	return true;
+	return body.detail ?? message;
 };
 
-const handleForbidden = async (
+const handleRateLimited = (response: Response): Promise<boolean> => {
+	if (response.status !== apiConstants.statusRateLimited) {
+		return Promise.resolve(false);
+	}
+	return parseJson<RateLimitBody>(response).then((body) => {
+		const retryAfterHeader =
+			response.headers.get(apiConstants.retryAfterHeader) ?? "";
+		const seconds = resolveRateLimitSeconds(retryAfterHeader, body);
+		const detail = buildRateLimitDetail(seconds, body);
+		return showToast("Rate limited", detail).then(() => true);
+	});
+};
+
+const handleForbidden = (
 	response: Response,
 	wasCsrfError: boolean,
 ): Promise<boolean> => {
 	if (response.status === apiConstants.statusForbidden && !wasCsrfError) {
-		await showToast(
+		return showToast(
 			"Access denied",
 			"You don't have permission for this action.",
-		);
-		return true;
+		).then(() => true);
 	}
-
-	return false;
+	return Promise.resolve(false);
 };
 
-const handleNotFound = async (response: Response): Promise<boolean> => {
+const handleNotFound = (response: Response): Promise<boolean> => {
 	if (response.status !== apiConstants.statusNotFound) {
+		return Promise.resolve(false);
+	}
+	return parseJson<IntegrationAuthBody>(response).then((body) => {
+		if (body.code === "integration_not_found") {
+			const detail = body.detail ?? "The requested item was not found.";
+			return showToast("Resource not found", detail);
+		}
 		return false;
-	}
-
-	const body = await parseJson<IntegrationAuthBody>(response);
-	if (body.code === "integration_not_found") {
-		const detail = body.detail || "The requested item was not found.";
-		return showToast("Resource not found", detail);
-	}
-
-	return false;
+	});
 };
 
-const handleServerError = async (response: Response): Promise<boolean> => {
+const handleServerError = (response: Response): Promise<boolean> => {
 	if (response.status < apiConstants.statusServerError) {
-		return false;
+		return Promise.resolve(false);
 	}
-
 	const message = `Backend error ${response.status}`;
 	useConnectionStatusStore.getState().setLost(message);
-	await showToast(
+	return showToast(
 		"Server error",
 		"Connection issue. We'll retry; check back in a moment.",
-	);
-	return true;
+	).then(() => true);
 };
 
-const handleNonCsrfResponses = async (
+const handleNonCsrfResponses = (
 	response: Response,
 	wasCsrfError: boolean,
 	handleLogout: () => void,
 ): Promise<void> => {
-	await handleUnauthorized(response, handleLogout);
-	await handleRateLimited(response);
-	await handleForbidden(response, wasCsrfError);
-	await handleNotFound(response);
-	await handleServerError(response);
+	return handleUnauthorized(response, handleLogout)
+		.then(() => handleRateLimited(response))
+		.then(() => handleForbidden(response, wasCsrfError))
+		.then(() => handleNotFound(response))
+		.then(() => handleServerError(response))
+		.then(() => undefined);
 };
 
-const handleResponse = async (
+const handleResponse = (
 	response: Response,
 	handleLogout: () => void,
 ): Promise<Response> => {
 	extractCSRFTokenFromResponse(response);
-	const wasCsrfError = await handleCsrf(response);
-	await handleNonCsrfResponses(response, wasCsrfError, handleLogout);
-	return response;
+	return handleCsrf(response).then((wasCsrfError) =>
+		handleNonCsrfResponses(response, wasCsrfError, handleLogout).then(
+			() => response,
+		),
+	);
 };
 
 const responseHandlers = {

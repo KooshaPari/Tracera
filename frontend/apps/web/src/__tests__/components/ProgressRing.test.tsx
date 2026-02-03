@@ -7,7 +7,7 @@ import {
 	ProgressRing,
 } from "../../components/temporal/ProgressRing";
 
-describe("ProgressRing", () => {
+describe(ProgressRing, () => {
 	it("renders with correct percentage", () => {
 		const { container } = render(<ProgressRing percentage={50} />);
 		const circles = container.querySelectorAll("circle");
@@ -15,7 +15,7 @@ describe("ProgressRing", () => {
 	});
 
 	it("displays percentage label", () => {
-		render(<ProgressRing percentage={75} showLabel={true} />);
+		render(<ProgressRing percentage={75} showLabel />);
 		expect(screen.getByText("75%")).toBeInTheDocument();
 	});
 
@@ -67,29 +67,29 @@ describe("ProgressRing", () => {
 	});
 
 	it("rounds percentage correctly", () => {
-		render(<ProgressRing percentage={75.6} showLabel={true} />);
+		render(<ProgressRing percentage={75.6} showLabel />);
 		expect(screen.getByText("76%")).toBeInTheDocument();
 	});
 
 	it("handles 0% progress", () => {
-		render(<ProgressRing percentage={0} showLabel={true} />);
+		render(<ProgressRing percentage={0} showLabel />);
 		expect(screen.getByText("0%")).toBeInTheDocument();
 	});
 
 	it("handles 100% progress", () => {
-		render(<ProgressRing percentage={100} showLabel={true} />);
+		render(<ProgressRing percentage={100} showLabel />);
 		expect(screen.getByText("100%")).toBeInTheDocument();
 	});
 });
 
-describe("ProgressBar", () => {
+describe(ProgressBar, () => {
 	it("renders progress bar", () => {
 		const { container } = render(<ProgressBar percentage={50} />);
 		expect(container.querySelector(".h-2")).toBeInTheDocument();
 	});
 
 	it("displays label with percentage", () => {
-		render(<ProgressBar percentage={60} showLabel={true} />);
+		render(<ProgressBar percentage={60} showLabel />);
 		expect(screen.getByText("60%")).toBeInTheDocument();
 	});
 
@@ -144,14 +144,12 @@ describe("ProgressBar", () => {
 	});
 
 	it("caps percentage at 100", () => {
-		render(<ProgressBar percentage={150} showLabel={true} />);
+		render(<ProgressBar percentage={150} showLabel />);
 		expect(screen.getByText("100%")).toBeInTheDocument();
 	});
 
 	it("handles animation prop", () => {
-		const { rerender } = render(
-			<ProgressBar percentage={50} animated={true} />,
-		);
+		const { rerender } = render(<ProgressBar percentage={50} animated />);
 		expect(screen.getByText("50%")).toBeInTheDocument();
 
 		rerender(<ProgressBar percentage={75} animated={false} />);
@@ -159,23 +157,19 @@ describe("ProgressBar", () => {
 	});
 });
 
-describe("LinearProgress", () => {
+describe(LinearProgress, () => {
 	it("renders with label", () => {
 		render(<LinearProgress value={5} max={10} label="Progress" />);
 		expect(screen.getByText("Progress")).toBeInTheDocument();
 	});
 
 	it("displays value and max", () => {
-		render(
-			<LinearProgress value={5} max={10} label="Progress" showLabel={true} />,
-		);
+		render(<LinearProgress value={5} max={10} label="Progress" showLabel />);
 		expect(screen.getByText("5/10")).toBeInTheDocument();
 	});
 
 	it("calculates correct percentage", () => {
-		render(
-			<LinearProgress value={5} max={10} label="Progress" showLabel={true} />,
-		);
+		render(<LinearProgress value={5} max={10} label="Progress" showLabel />);
 		expect(screen.getByText("5/10")).toBeInTheDocument();
 	});
 
@@ -185,17 +179,13 @@ describe("LinearProgress", () => {
 	});
 
 	it("handles zero progress", () => {
-		render(
-			<LinearProgress value={0} max={10} label="Empty" showLabel={true} />,
-		);
+		render(<LinearProgress value={0} max={10} label="Empty" showLabel />);
 		expect(screen.getByText("Empty")).toBeInTheDocument();
 		expect(screen.getByText("0/10")).toBeInTheDocument();
 	});
 
 	it("handles complete progress", () => {
-		render(
-			<LinearProgress value={10} max={10} label="Complete" showLabel={true} />,
-		);
+		render(<LinearProgress value={10} max={10} label="Complete" showLabel />);
 		expect(screen.getByText("Complete")).toBeInTheDocument();
 		expect(screen.getByText("10/10")).toBeInTheDocument();
 	});

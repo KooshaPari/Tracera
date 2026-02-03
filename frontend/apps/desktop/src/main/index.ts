@@ -1,15 +1,14 @@
-import { app, BrowserWindow, ipcMain, Menu, shell } from "electron";
+import { BrowserWindow, Menu, app, ipcMain, shell } from "electron";
 import { autoUpdater } from "electron-updater";
-import path from "path";
+import path from "node:path";
 
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
 	mainWindow = new BrowserWindow({
-		width: 1400,
 		height: 900,
-		minWidth: 800,
 		minHeight: 600,
+		minWidth: 800,
 		titleBarStyle: "hiddenInset",
 		webPreferences: {
 			preload: path.join(__dirname, "../preload/index.js"),
@@ -17,6 +16,7 @@ function createWindow() {
 			contextIsolation: true,
 			sandbox: true,
 		},
+		width: 1400,
 	});
 
 	// Load the web app
@@ -53,23 +53,23 @@ function createMenu() {
 			label: "File",
 			submenu: [
 				{
-					label: "New Project",
 					accelerator: "CmdOrCtrl+N",
 					click: () => mainWindow?.webContents.send("menu:new-project"),
+					label: "New Project",
 				},
 				{
-					label: "Open Project",
 					accelerator: "CmdOrCtrl+O",
 					click: () => mainWindow?.webContents.send("menu:open-project"),
+					label: "Open Project",
 				},
 				{ type: "separator" },
 				{
-					label: "Import...",
 					click: () => mainWindow?.webContents.send("menu:import"),
+					label: "Import...",
 				},
 				{
-					label: "Export...",
 					click: () => mainWindow?.webContents.send("menu:export"),
+					label: "Export...",
 				},
 			],
 		},
@@ -112,13 +112,13 @@ function createMenu() {
 			label: "Help",
 			submenu: [
 				{
-					label: "Documentation",
 					click: () => shell.openExternal("https://tracertm.dev/docs"),
+					label: "Documentation",
 				},
 				{
-					label: "Report Issue",
 					click: () =>
 						shell.openExternal("https://github.com/tracertm/tracertm/issues"),
+					label: "Report Issue",
 				},
 			],
 		},

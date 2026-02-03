@@ -45,7 +45,7 @@ test.describe("Authentication Flows", () => {
 		await page.waitForLoadState("networkidle");
 
 		// Check that localStorage or sessionStorage has been set
-		const localStorage = await page.evaluate(() => window.localStorage);
+		const localStorage = await page.evaluate(() => globalThis.localStorage);
 		expect(localStorage).toBeDefined();
 	});
 
@@ -58,7 +58,7 @@ test.describe("Authentication Flows", () => {
 		const heading = page.getByRole("heading", {
 			name: /traceability dashboard/i,
 		});
-		await expect(heading).toBeVisible({ timeout: 10000 });
+		await expect(heading).toBeVisible({ timeout: 10_000 });
 
 		// Reload the page
 		await page.reload();
@@ -66,7 +66,7 @@ test.describe("Authentication Flows", () => {
 
 		// Should still be on dashboard with content
 		await expect(page).toHaveURL("/");
-		await expect(heading).toBeVisible({ timeout: 10000 });
+		await expect(heading).toBeVisible({ timeout: 10_000 });
 	});
 });
 

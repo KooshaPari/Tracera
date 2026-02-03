@@ -44,7 +44,9 @@ export function ScenarioActivityView() {
 	const streamPageSize = 12;
 
 	const streamSince = useMemo(() => {
-		if (streamRange === "all") {return;}
+		if (streamRange === "all") {
+			return;
+		}
 		const now = new Date();
 		const days =
 			streamRange === "24h"
@@ -67,7 +69,9 @@ export function ScenarioActivityView() {
 			...(streamSince ? { since: streamSince } : {}),
 		},
 	);
-	const projectActivities = Array.isArray(projectActivityData) ? projectActivityData : [];
+	const projectActivities = Array.isArray(projectActivityData)
+		? projectActivityData
+		: [];
 	const projectActivityTotal = projectActivities.length;
 	const featureMap = useMemo(() => {
 		const map = new Map<string, string>();
@@ -79,10 +83,11 @@ export function ScenarioActivityView() {
 
 	const filteredScenarios = useMemo(() => {
 		const query = searchQuery.toLowerCase();
-		return scenarios.filter((scenario: Scenario) => (
+		return scenarios.filter(
+			(scenario: Scenario) =>
 				scenario.title.toLowerCase().includes(query) ||
-				scenario.scenarioNumber.toLowerCase().includes(query)
-			));
+				scenario.scenarioNumber.toLowerCase().includes(query),
+		);
 	}, [scenarios, searchQuery]);
 
 	const groupedScenarios = useMemo(() => {
@@ -102,7 +107,9 @@ export function ScenarioActivityView() {
 
 	const activitiesList = activities?.activities ?? [];
 	const sortedActivities = useMemo(() => {
-		if (activitiesList.length === 0) {return [];}
+		if (activitiesList.length === 0) {
+			return [];
+		}
 		const sorted = [...activitiesList].toSorted((a, b) => {
 			const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
 			const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -182,16 +189,7 @@ export function ScenarioActivityView() {
 						</SelectContent>
 					</Select>
 					{selectedScenarioId && (
-						<button
-							className="text-sm text-primary"
-							onClick={() => {
-								const selected = scenarios.find(
-									(s) => s.id === selectedScenarioId,
-								);
-								if (!selected) {return;}
-								undefined;
-							}}
-						>
+						<button className="text-sm text-primary" onClick={() => {}}>
 							Open scenario
 						</button>
 					)}
@@ -206,8 +204,11 @@ export function ScenarioActivityView() {
 									onClick={() => {
 										setCollapsedGroups((prev) => {
 											const next = new Set(prev);
-											if (next.has(featureId)) {next.delete(featureId);}
-											else {next.add(featureId);}
+											if (next.has(featureId)) {
+												next.delete(featureId);
+											} else {
+												next.add(featureId);
+											}
 											return next;
 										});
 									}}

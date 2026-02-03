@@ -5,14 +5,11 @@
  * Supports both Figma plugin format and story.to.design API pattern
  */
 
-import * as fs from "fs/promises";
+import * as fs from "node:fs/promises";
 import { glob } from "glob";
-import * as path from "path";
-import {
-	type ComponentDefinition,
-	ComponentParser,
-	type DesignToken,
-} from "./code-to-design";
+import * as path from "node:path";
+import { ComponentParser } from './code-to-design';
+import type { ComponentDefinition, DesignToken } from './code-to-design';
 
 export interface GeneratorConfig {
 	componentPaths: string[];
@@ -91,15 +88,15 @@ export class FigmaGenerator {
 	 * Generate Figma-compatible output from components
 	 */
 	async generate(): Promise<void> {
-		console.log("🎨 Starting Figma generation...");
+		
 
 		// Find all component files
 		const componentFiles = await this.findComponentFiles();
-		console.log(`📁 Found ${componentFiles.length} component files`);
+		
 
 		// Parse components
 		const definitions = await this.parseComponents(componentFiles);
-		console.log(`🔍 Parsed ${definitions.length} components`);
+		
 
 		// Generate output based on format
 		if (
@@ -107,7 +104,7 @@ export class FigmaGenerator {
 			this.config.outputFormat === "both"
 		) {
 			await this.generatePluginOutput(definitions);
-			console.log("✅ Plugin output generated");
+			
 		}
 
 		if (
@@ -115,10 +112,10 @@ export class FigmaGenerator {
 			this.config.outputFormat === "both"
 		) {
 			await this.generateStoryToDesignOutput(definitions);
-			console.log("✅ Story to Design output generated");
+			
 		}
 
-		console.log("🎉 Generation complete!");
+		
 	}
 
 	/**
@@ -150,7 +147,7 @@ export class FigmaGenerator {
 				const componentDefs = await this.parser.parseFile(file);
 				definitions.push(...componentDefs);
 			} catch (error) {
-				console.error(`⚠️  Error parsing ${file}:`, error);
+				
 			}
 		}
 
@@ -164,9 +161,9 @@ export class FigmaGenerator {
 		definitions: ComponentDefinition[],
 	): Promise<void> {
 		const output: FigmaPluginOutput = {
-			version: "1.0.0",
 			components: definitions.map((def) => this.toPluginComponent(def)),
 			tokens: this.config.tokens || this.getDefaultTokens(),
+			version: "1.0.0",
 		};
 
 		const outputPath = path.join(this.config.outputDir, "figma-plugin.json");
@@ -184,10 +181,7 @@ export class FigmaGenerator {
 		definitions: ComponentDefinition[],
 	): Promise<void> {
 		const output: StoryToDesignOutput = {
-			stories: definitions.map((def) => this.toStoryDefinition(def)),
 			config: {
-				framework: "react",
-				stories: "../src/**/*.stories.tsx",
 				addons: ["@storybook/addon-links", "@storybook/addon-essentials"],
 				features: {
 					design: {
@@ -197,7 +191,10 @@ export class FigmaGenerator {
 							: "https://story.to.design",
 					},
 				},
+				framework: "react",
+				stories: "../src/**/*.stories.tsx",
 			},
+			stories: definitions.map((def) => this.toStoryDefinition(def)),
 		};
 
 		const outputPath = path.join(this.config.outputDir, "story-to-design.json");
@@ -213,16 +210,7 @@ export class FigmaGenerator {
 	 */
 	private toPluginComponent(def: ComponentDefinition): FigmaPluginComponent {
 		return {
-			id: this.generateComponentId(def.name),
-			name: def.name,
-			description: `Generated from ${path.basename(def.filePath)}`,
-			type: "COMPONENT",
 			children: def.nodes.map((node) => ({
-				id: node.id,
-				name: node.name,
-				type: node.type,
-				properties: node.properties,
-				styles: node.styles,
 				children: node.children?.map((child) => ({
 					id: child.id,
 					name: child.name,
@@ -230,7 +218,16 @@ export class FigmaGenerator {
 					properties: child.properties,
 					styles: child.styles,
 				})),
+				id: node.id,
+				name: node.name,
+				properties: node.properties,
+				styles: node.styles,
+				type: node.type,
 			})),
+			description: `Generated from ${path.basename(def.filePath)}`,
+			id: this.generateComponentId(def.name),
+			name: def.name,
+			type: "COMPONENT",
 		};
 	}
 
@@ -239,9 +236,9 @@ export class FigmaGenerator {
 	 */
 	private toStoryDefinition(def: ComponentDefinition): StoryDefinition {
 		return {
-			id: this.generateComponentId(def.name),
-			title: `Components/${def.name}`,
+			args: this.extractDefaultArgs(def),
 			component: def.name,
+			id: this.generateComponentId(def.name),
 			parameters: {
 				design: {
 					type: "figma",
@@ -250,7 +247,7 @@ export class FigmaGenerator {
 						: undefined,
 				},
 			},
-			args: this.extractDefaultArgs(def),
+			title: `Components/${def.name}`,
 		};
 	}
 
@@ -259,17 +256,17 @@ export class FigmaGenerator {
 	 */
 	private async generatePluginManifest(dataPath: string): Promise<void> {
 		const manifest = {
-			name: "TracerTM Design Sync",
-			id: "tracertm-design-sync",
 			api: "1.0.0",
-			main: "code.js",
-			ui: "ui.html",
 			capabilities: ["read", "write"],
 			editorType: ["figma"],
+			id: "tracertm-design-sync",
+			main: "code.js",
+			name: "TracerTM Design Sync",
 			networkAccess: {
 				allowedDomains: ["none"],
 				devAllowedDomains: ["*"],
 			},
+			ui: "ui.html",
 		};
 
 		const manifestPath = path.join(this.config.outputDir, "manifest.json");
@@ -502,15 +499,18 @@ type Story = StoryObj<typeof ${def.name}>;
 			} else {
 				// Provide sensible defaults based on type
 				switch (prop.type) {
-					case "string":
+					case "string": {
 						args[prop.name] = `Sample ${prop.name}`;
 						break;
-					case "number":
+					}
+					case "number": {
 						args[prop.name] = 0;
 						break;
-					case "boolean":
+					}
+					case "boolean": {
 						args[prop.name] = false;
 						break;
+					}
 				}
 			}
 		}
@@ -519,24 +519,33 @@ type Story = StoryObj<typeof ${def.name}>;
 	}
 
 	private generateComponentId(name: string): string {
-		return name.toLowerCase().replace(/[^a-z0-9]/g, "-");
+		return name.toLowerCase().replaceAll(/[^a-z0-9]/g, "-");
 	}
 
 	private getDefaultTokens(): DesignToken {
 		return {
+			borderRadius: {
+				lg: 16,
+				md: 8,
+				sm: 4,
+			},
 			colors: {
+				error: "#EF4444",
 				primary: "#0066FF",
 				secondary: "#6B7280",
 				success: "#10B981",
-				error: "#EF4444",
 				warning: "#F59E0B",
 			},
+			shadows: {
+				md: "0 4px 6px rgba(0, 0, 0, 0.1)",
+				sm: "0 1px 2px rgba(0, 0, 0, 0.05)",
+			},
 			spacing: {
-				xs: 4,
-				sm: 8,
-				md: 16,
 				lg: 24,
+				md: 16,
+				sm: 8,
 				xl: 32,
+				xs: 4,
 			},
 			typography: {
 				body: {
@@ -551,15 +560,6 @@ type Story = StoryObj<typeof ${def.name}>;
 					fontWeight: 600,
 					lineHeight: 32,
 				},
-			},
-			borderRadius: {
-				sm: 4,
-				md: 8,
-				lg: 16,
-			},
-			shadows: {
-				sm: "0 1px 2px rgba(0, 0, 0, 0.05)",
-				md: "0 4px 6px rgba(0, 0, 0, 0.1)",
 			},
 		};
 	}
@@ -584,5 +584,5 @@ export async function runGenerator(): Promise<void> {
 
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-	runGenerator().catch(console.error);
+	
 }

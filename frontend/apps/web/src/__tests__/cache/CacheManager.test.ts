@@ -9,10 +9,10 @@
  * - Optimistic updates
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { CacheManager, CacheKeys } from '@/lib/cache';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { CacheKeys, CacheManager } from "@/lib/cache";
 
-describe('CacheManager', () => {
+describe(CacheManager, () => {
 	let cacheManager: CacheManager;
 
 	beforeEach(() => {
@@ -29,10 +29,10 @@ describe('CacheManager', () => {
 		await cacheManager.close();
 	});
 
-	describe('Basic Operations', () => {
-		it('should set and get values', async () => {
-			const key = 'test:key';
-			const value = { data: 'test' };
+	describe("Basic Operations", () => {
+		it("should set and get values", async () => {
+			const key = "test:key";
+			const value = { data: "test" };
 
 			await cacheManager.set(key, value);
 			const retrieved = await cacheManager.get(key);
@@ -40,22 +40,22 @@ describe('CacheManager', () => {
 			expect(retrieved).toEqual(value);
 		});
 
-		it('should return null for missing keys', async () => {
-			const retrieved = await cacheManager.get('nonexistent');
+		it("should return null for missing keys", async () => {
+			const retrieved = await cacheManager.get("nonexistent");
 			expect(retrieved).toBeNull();
 		});
 
-		it('should check key existence', async () => {
-			const key = 'test:exists';
+		it("should check key existence", async () => {
+			const key = "test:exists";
 			expect(await cacheManager.has(key)).toBe(false);
 
-			await cacheManager.set(key, 'value');
+			await cacheManager.set(key, "value");
 			expect(await cacheManager.has(key)).toBe(true);
 		});
 
-		it('should delete values', async () => {
-			const key = 'test:delete';
-			await cacheManager.set(key, 'value');
+		it("should delete values", async () => {
+			const key = "test:delete";
+			await cacheManager.set(key, "value");
 
 			const deleted = await cacheManager.delete(key);
 			expect(deleted).toBe(true);
@@ -63,13 +63,13 @@ describe('CacheManager', () => {
 		});
 	});
 
-	describe('TTL and Expiration', () => {
-		it('should expire entries after TTL', async () => {
-			const key = 'test:ttl';
-			await cacheManager.set(key, 'value', { ttl: 100 }); // 100ms
+	describe("TTL and Expiration", () => {
+		it("should expire entries after TTL", async () => {
+			const key = "test:ttl";
+			await cacheManager.set(key, "value", { ttl: 100 }); // 100ms
 
 			// Should exist immediately
-			expect(await cacheManager.get(key)).toBe('value');
+			expect(await cacheManager.get(key)).toBe("value");
 
 			// Wait for expiration
 			await new Promise((resolve) => setTimeout(resolve, 150));
@@ -78,62 +78,62 @@ describe('CacheManager', () => {
 			expect(await cacheManager.get(key)).toBeNull();
 		});
 
-		it('should handle null TTL (never expires)', async () => {
-			const key = 'test:no-ttl';
-			await cacheManager.set(key, 'value', { ttl: null });
+		it("should handle null TTL (never expires)", async () => {
+			const key = "test:no-ttl";
+			await cacheManager.set(key, "value", { ttl: null });
 
 			await new Promise((resolve) => setTimeout(resolve, 100));
-			expect(await cacheManager.get(key)).toBe('value');
+			expect(await cacheManager.get(key)).toBe("value");
 		});
 	});
 
-	describe('Invalidation', () => {
-		it('should invalidate by pattern', async () => {
-			await cacheManager.set('project:1', { id: 1 });
-			await cacheManager.set('project:2', { id: 2 });
-			await cacheManager.set('item:1', { id: 1 });
+	describe("Invalidation", () => {
+		it("should invalidate by pattern", async () => {
+			await cacheManager.set("project:1", { id: 1 });
+			await cacheManager.set("project:2", { id: 2 });
+			await cacheManager.set("item:1", { id: 1 });
 
-			const count = await cacheManager.invalidate({ pattern: 'project:*' });
-
-			expect(count).toBe(2);
-			expect(await cacheManager.has('project:1')).toBe(false);
-			expect(await cacheManager.has('project:2')).toBe(false);
-			expect(await cacheManager.has('item:1')).toBe(true);
-		});
-
-		it('should invalidate by tags', async () => {
-			await cacheManager.set('key1', 'value1', { tags: ['tag1', 'tag2'] });
-			await cacheManager.set('key2', 'value2', { tags: ['tag2'] });
-			await cacheManager.set('key3', 'value3', { tags: ['tag3'] });
-
-			const count = await cacheManager.invalidate({ tags: ['tag2'] });
+			const count = await cacheManager.invalidate({ pattern: "project:*" });
 
 			expect(count).toBe(2);
-			expect(await cacheManager.has('key1')).toBe(false);
-			expect(await cacheManager.has('key2')).toBe(false);
-			expect(await cacheManager.has('key3')).toBe(true);
+			expect(await cacheManager.has("project:1")).toBe(false);
+			expect(await cacheManager.has("project:2")).toBe(false);
+			expect(await cacheManager.has("item:1")).toBe(true);
 		});
 
-		it('should clear all entries', async () => {
-			await cacheManager.set('key1', 'value1');
-			await cacheManager.set('key2', 'value2');
+		it("should invalidate by tags", async () => {
+			await cacheManager.set("key1", "value1", { tags: ["tag1", "tag2"] });
+			await cacheManager.set("key2", "value2", { tags: ["tag2"] });
+			await cacheManager.set("key3", "value3", { tags: ["tag3"] });
+
+			const count = await cacheManager.invalidate({ tags: ["tag2"] });
+
+			expect(count).toBe(2);
+			expect(await cacheManager.has("key1")).toBe(false);
+			expect(await cacheManager.has("key2")).toBe(false);
+			expect(await cacheManager.has("key3")).toBe(true);
+		});
+
+		it("should clear all entries", async () => {
+			await cacheManager.set("key1", "value1");
+			await cacheManager.set("key2", "value2");
 
 			await cacheManager.clear();
 
-			expect(await cacheManager.has('key1')).toBe(false);
-			expect(await cacheManager.has('key2')).toBe(false);
+			expect(await cacheManager.has("key1")).toBe(false);
+			expect(await cacheManager.has("key2")).toBe(false);
 		});
 	});
 
-	describe('Cache Hit/Miss Ratio', () => {
-		it('should track hits and misses', async () => {
-			const key = 'test:ratio';
+	describe("Cache Hit/Miss Ratio", () => {
+		it("should track hits and misses", async () => {
+			const key = "test:ratio";
 
 			// Miss
 			await cacheManager.get(key);
 
 			// Set
-			await cacheManager.set(key, 'value');
+			await cacheManager.set(key, "value");
 
 			// Hits
 			await cacheManager.get(key);
@@ -148,7 +148,7 @@ describe('CacheManager', () => {
 			expect(stats.overall.hitRatio).toBeCloseTo(0.75, 2);
 		});
 
-		it('should achieve >80% hit rate for repeated queries', async () => {
+		it("should achieve >80% hit rate for repeated queries", async () => {
 			const keys = Array.from({ length: 100 }, (_, i) => `key:${i % 20}`);
 
 			// Prewarm cache
@@ -166,22 +166,22 @@ describe('CacheManager', () => {
 		});
 	});
 
-	describe('Memory Usage', () => {
-		it('should track memory usage', async () => {
+	describe("Memory Usage", () => {
+		it("should track memory usage", async () => {
 			const largeObject = {
-				data: Array(1000).fill('test'),
+				data: Array(1000).fill("test"),
 			};
 
-			await cacheManager.set('large', largeObject);
+			await cacheManager.set("large", largeObject);
 
 			const stats = await cacheManager.getStats();
 			expect(stats.memory?.totalMemory).toBeGreaterThan(0);
 		});
 
-		it('should evict entries when memory limit reached', async () => {
+		it("should evict entries when memory limit reached", async () => {
 			// Fill cache to capacity
 			for (let i = 0; i < 1500; i++) {
-				await cacheManager.set(`key:${i}`, { data: 'x'.repeat(100) });
+				await cacheManager.set(`key:${i}`, { data: "x".repeat(100) });
 			}
 
 			const stats = await cacheManager.getStats();
@@ -192,9 +192,9 @@ describe('CacheManager', () => {
 		});
 	});
 
-	describe('Optimistic Updates', () => {
-		it('should perform optimistic update successfully', async () => {
-			const key = 'test:optimistic';
+	describe("Optimistic Updates", () => {
+		it("should perform optimistic update successfully", async () => {
+			const key = "test:optimistic";
 			await cacheManager.set(key, { value: 1 });
 
 			const mockUpdate = vi.fn(async () => ({ value: 2 }));
@@ -212,13 +212,13 @@ describe('CacheManager', () => {
 			expect(await cacheManager.get(key)).toEqual({ value: 2 });
 		});
 
-		it('should rollback on error', async () => {
-			const key = 'test:rollback';
+		it("should rollback on error", async () => {
+			const key = "test:rollback";
 			const original = { value: 1 };
 			await cacheManager.set(key, original);
 
 			const mockUpdate = vi.fn(async () => {
-				throw new Error('Update failed');
+				throw new Error("Update failed");
 			});
 
 			await expect(
@@ -229,38 +229,42 @@ describe('CacheManager', () => {
 					}),
 					mockUpdate,
 				),
-			).rejects.toThrow('Update failed');
+			).rejects.toThrow("Update failed");
 
 			// Should have rolled back
 			expect(await cacheManager.get(key)).toEqual(original);
 		});
 	});
 
-	describe('Cache Keys Utility', () => {
-		it('should generate consistent keys', () => {
-			const projectKey1 = CacheKeys.project.byId('123');
-			const projectKey2 = CacheKeys.project.byId('123');
+	describe("Cache Keys Utility", () => {
+		it("should generate consistent keys", () => {
+			const projectKey1 = CacheKeys.project.byId("123");
+			const projectKey2 = CacheKeys.project.byId("123");
 
 			expect(projectKey1).toBe(projectKey2);
-			expect(projectKey1).toBe('project:123');
+			expect(projectKey1).toBe("project:123");
 		});
 
-		it('should generate hierarchical keys', () => {
-			expect(CacheKeys.project.byId('123')).toBe('project:123');
-			expect(CacheKeys.project.list('user-1', 0)).toBe('projects:user:user-1:page:0');
-			expect(CacheKeys.item.byType('proj-1', 'epic')).toBe('items:project:proj-1:type:epic');
+		it("should generate hierarchical keys", () => {
+			expect(CacheKeys.project.byId("123")).toBe("project:123");
+			expect(CacheKeys.project.list("user-1", 0)).toBe(
+				"projects:user:user-1:page:0",
+			);
+			expect(CacheKeys.item.byType("proj-1", "epic")).toBe(
+				"items:project:proj-1:type:epic",
+			);
 		});
 	});
 
-	describe('Performance Benchmarks', () => {
-		it('should have <10ms lookup latency', async () => {
-			await cacheManager.set('benchmark', { data: 'test' });
+	describe("Performance Benchmarks", () => {
+		it("should have <10ms lookup latency", async () => {
+			await cacheManager.set("benchmark", { data: "test" });
 
 			const iterations = 1000;
 			const start = performance.now();
 
 			for (let i = 0; i < iterations; i++) {
-				await cacheManager.get('benchmark');
+				await cacheManager.get("benchmark");
 			}
 
 			const duration = performance.now() - start;
@@ -269,7 +273,7 @@ describe('CacheManager', () => {
 			expect(avgLatency).toBeLessThan(10);
 		});
 
-		it('should handle 1000+ entries efficiently', async () => {
+		it("should handle 1000+ entries efficiently", async () => {
 			const start = performance.now();
 
 			// Insert 1000 entries
@@ -292,43 +296,43 @@ describe('CacheManager', () => {
 		});
 	});
 
-	describe('Edge Cases', () => {
-		it('should handle undefined values', async () => {
-			await cacheManager.set('undefined', undefined);
-			expect(await cacheManager.get('undefined')).toBe(undefined);
+	describe("Edge Cases", () => {
+		it("should handle undefined values", async () => {
+			await cacheManager.set("undefined", undefined);
+			expect(await cacheManager.get("undefined")).toBe(undefined);
 		});
 
-		it('should handle null values', async () => {
-			await cacheManager.set('null', null);
+		it("should handle null values", async () => {
+			await cacheManager.set("null", null);
 			// Note: null is used for cache miss, so this will return null
 			// This is expected behavior
-			const result = await cacheManager.get('null');
+			const result = await cacheManager.get("null");
 			expect(result === null || result === undefined).toBe(true);
 		});
 
-		it('should handle circular references gracefully', async () => {
+		it("should handle circular references gracefully", async () => {
 			const circular: any = { a: 1 };
 			circular.self = circular;
 
 			// Should not throw
-			await expect(cacheManager.set('circular', circular)).rejects.toThrow();
+			await expect(cacheManager.set("circular", circular)).rejects.toThrow();
 		});
 
-		it('should handle very large objects', async () => {
+		it("should handle very large objects", async () => {
 			const large = {
-				data: Array(10000)
+				data: Array(10_000)
 					.fill(0)
-					.map((_, i) => ({ id: i, data: 'x'.repeat(100) })),
+					.map((_, i) => ({ data: "x".repeat(100), id: i })),
 			};
 
-			await cacheManager.set('large', large);
-			const retrieved = await cacheManager.get('large');
+			await cacheManager.set("large", large);
+			const retrieved = await cacheManager.get("large");
 
 			expect(retrieved).toBeDefined();
 		});
 
-		it('should handle concurrent access', async () => {
-			const key = 'concurrent';
+		it("should handle concurrent access", async () => {
+			const key = "concurrent";
 
 			// Concurrent sets and gets
 			await Promise.all([
@@ -344,12 +348,12 @@ describe('CacheManager', () => {
 		});
 	});
 
-	describe('Statistics', () => {
-		it('should provide detailed statistics', async () => {
-			await cacheManager.set('key1', 'value1');
-			await cacheManager.set('key2', 'value2');
-			await cacheManager.get('key1');
-			await cacheManager.get('nonexistent');
+	describe("Statistics", () => {
+		it("should provide detailed statistics", async () => {
+			await cacheManager.set("key1", "value1");
+			await cacheManager.set("key2", "value2");
+			await cacheManager.get("key1");
+			await cacheManager.get("nonexistent");
 
 			const stats = await cacheManager.getStats();
 
@@ -361,7 +365,7 @@ describe('CacheManager', () => {
 	});
 });
 
-describe('Cache Integration Scenarios', () => {
+describe("Cache Integration Scenarios", () => {
 	let cache: CacheManager;
 
 	beforeEach(() => {
@@ -373,11 +377,11 @@ describe('Cache Integration Scenarios', () => {
 		await cache.close();
 	});
 
-	it('should handle project workflow', async () => {
-		const projectId = '123';
+	it("should handle project workflow", async () => {
+		const projectId = "123";
 
 		// Create project
-		const project = { id: projectId, name: 'Test Project' };
+		const project = { id: projectId, name: "Test Project" };
 		await cache.set(CacheKeys.project.byId(projectId), project, {
 			tags: [`project:${projectId}`],
 		});
@@ -409,26 +413,26 @@ describe('Cache Integration Scenarios', () => {
 		}
 	});
 
-	it('should handle graph caching workflow', async () => {
-		const graphId = 'graph-123';
+	it("should handle graph caching workflow", async () => {
+		const graphId = "graph-123";
 
 		// Cache layout
 		await cache.set(
-			CacheKeys.graph.layout(graphId, 'dagre'),
+			CacheKeys.graph.layout(graphId, "dagre"),
 			{ positions: {} },
 			{ tags: [`graph:${graphId}`] },
 		);
 
 		// Cache grouping
 		await cache.set(
-			CacheKeys.graph.grouping(graphId, 'type'),
+			CacheKeys.graph.grouping(graphId, "type"),
 			{ groups: [] },
 			{ tags: [`graph:${graphId}`] },
 		);
 
 		// Cache search
 		await cache.set(
-			CacheKeys.search.query(graphId, 'test'),
+			CacheKeys.search.query(graphId, "test"),
 			{ results: [] },
 			{ tags: [`graph:${graphId}`] },
 		);
@@ -437,8 +441,14 @@ describe('Cache Integration Scenarios', () => {
 		await cache.invalidate({ tags: [`graph:${graphId}`] });
 
 		// Verify all invalidated
-		expect(await cache.has(CacheKeys.graph.layout(graphId, 'dagre'))).toBe(false);
-		expect(await cache.has(CacheKeys.graph.grouping(graphId, 'type'))).toBe(false);
-		expect(await cache.has(CacheKeys.search.query(graphId, 'test'))).toBe(false);
+		expect(await cache.has(CacheKeys.graph.layout(graphId, "dagre"))).toBe(
+			false,
+		);
+		expect(await cache.has(CacheKeys.graph.grouping(graphId, "type"))).toBe(
+			false,
+		);
+		expect(await cache.has(CacheKeys.search.query(graphId, "test"))).toBe(
+			false,
+		);
 	});
 });

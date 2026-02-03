@@ -2,29 +2,29 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { EditAffordances } from "../EditAffordances";
 
 const meta: Meta<typeof EditAffordances> = {
-	title: "Components/Graph/EditAffordances",
-	component: EditAffordances,
-	tags: ["autodocs"],
-	parameters: {
-		chromatic: {
-			modes: {
-				light: { query: "[data-theme='light']" },
-				dark: { query: "[data-theme='dark']" },
-			},
-			delay: 300,
-		},
-		layout: "fullscreen",
-	},
 	argTypes: {
+		compact: { control: "boolean" },
 		editType: {
 			control: "select",
 			options: ["instant", "agent_required", "manual"],
 		},
-		onEdit: { action: "edit clicked" },
 		isEditing: { control: "boolean" },
-		compact: { control: "boolean" },
+		onEdit: { action: "edit clicked" },
 		showLabel: { control: "boolean" },
 	},
+	component: EditAffordances,
+	parameters: {
+		chromatic: {
+			delay: 300,
+			modes: {
+				light: { query: "[data-theme='light']" },
+				dark: { query: "[data-theme='dark']" },
+			},
+		},
+		layout: "fullscreen",
+	},
+	tags: ["autodocs"],
+	title: "Components/Graph/EditAffordances",
 };
 
 export default meta;

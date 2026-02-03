@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import type { Item, Link } from "@tracertm/types";
 import { useState } from "react";
 import { CrossPerspectiveSearch } from "../CrossPerspectiveSearch";
 
 const meta = {
-	title: "Graph/CrossPerspectiveSearch",
 	component: CrossPerspectiveSearch,
 	parameters: {
 		layout: "padded",
 	},
 	tags: ["autodocs"],
+	title: "Graph/CrossPerspectiveSearch",
 } satisfies Meta<typeof CrossPerspectiveSearch>;
 
 export default meta;
@@ -21,228 +21,228 @@ type Story = StoryObj<typeof meta>;
  */
 const createSampleItems = (): Item[] => [
 	{
-		id: "feat-auth",
-		projectId: "proj-1",
-		view: "feature",
-		type: "Feature",
-		title: "User Authentication System",
+		createdAt: "2025-01-01",
 		description:
 			"Implement OAuth 2.0 based user authentication with social login support",
-		status: "in_progress",
-		priority: "critical",
-		perspective: "feature",
-		version: 1,
-		createdAt: "2025-01-01",
-		updatedAt: "2025-01-28",
+		id: "feat-auth",
 		owner: "alice@example.com",
+		perspective: "feature",
+		priority: "critical",
+		projectId: "proj-1",
+		status: "in_progress",
+		title: "User Authentication System",
+		type: "Feature",
+		updatedAt: "2025-01-28",
+		version: 1,
+		view: "feature",
 	},
 	{
-		id: "code-auth-service",
-		projectId: "proj-1",
-		view: "code",
-		type: "Service",
-		title: "AuthenticationService",
+		createdAt: "2025-01-05",
 		description:
 			"Core service implementing OAuth 2.0 flows and token management",
-		status: "done",
-		priority: "critical",
-		perspective: "code",
-		version: 2,
-		createdAt: "2025-01-05",
-		updatedAt: "2025-01-27",
 		equivalentItemIds: ["feat-auth"],
+		id: "code-auth-service",
+		perspective: "code",
+		priority: "critical",
+		projectId: "proj-1",
+		status: "done",
+		title: "AuthenticationService",
+		type: "Service",
+		updatedAt: "2025-01-27",
+		version: 2,
+		view: "code",
 	},
 	{
-		id: "code-login-component",
-		projectId: "proj-1",
-		view: "code",
-		type: "Component",
-		title: "LoginForm",
+		createdAt: "2025-01-10",
 		description:
 			"React component for user login interface with form validation",
-		status: "done",
-		priority: "high",
+		id: "code-login-component",
 		perspective: "code",
-		version: 3,
-		createdAt: "2025-01-10",
+		priority: "high",
+		projectId: "proj-1",
+		status: "done",
+		title: "LoginForm",
+		type: "Component",
 		updatedAt: "2025-01-25",
+		version: 3,
+		view: "code",
 	},
 	{
-		id: "test-auth",
-		projectId: "proj-1",
-		view: "test",
-		type: "TestSuite",
-		title: "Authentication Integration Tests",
-		description: "Comprehensive tests for auth flows including edge cases",
-		status: "in_progress",
-		priority: "high",
-		perspective: "test",
-		version: 1,
 		createdAt: "2025-01-12",
+		description: "Comprehensive tests for auth flows including edge cases",
+		id: "test-auth",
+		perspective: "test",
+		priority: "high",
+		projectId: "proj-1",
+		status: "in_progress",
+		title: "Authentication Integration Tests",
+		type: "TestSuite",
 		updatedAt: "2025-01-28",
+		version: 1,
+		view: "test",
 	},
 	{
-		id: "api-login",
-		projectId: "proj-1",
-		view: "api",
-		type: "Endpoint",
-		title: "POST /api/auth/login",
+		createdAt: "2025-01-01",
 		description: "User login endpoint accepting email and password",
-		status: "done",
-		priority: "critical",
-		perspective: "api",
-		version: 1,
-		createdAt: "2025-01-01",
-		updatedAt: "2025-01-20",
 		equivalentItemIds: ["feat-auth"],
-	},
-	{
-		id: "api-refresh",
-		projectId: "proj-1",
-		view: "api",
-		type: "Endpoint",
-		title: "POST /api/auth/refresh",
-		description: "Token refresh endpoint",
-		status: "done",
-		priority: "high",
+		id: "api-login",
 		perspective: "api",
-		version: 1,
-		createdAt: "2025-01-02",
-		updatedAt: "2025-01-20",
-	},
-	{
-		id: "db-users",
-		projectId: "proj-1",
-		view: "database",
-		type: "Table",
-		title: "users_table",
-		description: "Stores user account information and auth credentials",
-		status: "done",
 		priority: "critical",
-		perspective: "database",
+		projectId: "proj-1",
+		status: "done",
+		title: "POST /api/auth/login",
+		type: "Endpoint",
+		updatedAt: "2025-01-20",
 		version: 1,
-		createdAt: "2025-01-01",
-		updatedAt: "2025-01-15",
+		view: "api",
 	},
 	{
-		id: "db-sessions",
-		projectId: "proj-1",
-		view: "database",
-		type: "Table",
-		title: "sessions_table",
-		description: "Stores active user sessions and tokens",
-		status: "done",
+		createdAt: "2025-01-02",
+		description: "Token refresh endpoint",
+		id: "api-refresh",
+		perspective: "api",
 		priority: "high",
-		perspective: "database",
-		version: 1,
-		createdAt: "2025-01-03",
-		updatedAt: "2025-01-15",
-	},
-	{
-		id: "wire-login",
 		projectId: "proj-1",
-		view: "wireframe",
-		type: "Wireframe",
-		title: "Login Page Layout",
-		description: "Wireframe showing login form layout and components",
 		status: "done",
-		priority: "medium",
-		perspective: "wireframe",
-		version: 2,
-		createdAt: "2025-01-08",
-		updatedAt: "2025-01-22",
+		title: "POST /api/auth/refresh",
+		type: "Endpoint",
+		updatedAt: "2025-01-20",
+		version: 1,
+		view: "api",
 	},
 	{
-		id: "sec-auth",
+		createdAt: "2025-01-01",
+		description: "Stores user account information and auth credentials",
+		id: "db-users",
+		perspective: "database",
+		priority: "critical",
 		projectId: "proj-1",
-		view: "security",
-		type: "SecurityControl",
-		title: "Authentication Security Hardening",
+		status: "done",
+		title: "users_table",
+		type: "Table",
+		updatedAt: "2025-01-15",
+		version: 1,
+		view: "database",
+	},
+	{
+		createdAt: "2025-01-03",
+		description: "Stores active user sessions and tokens",
+		id: "db-sessions",
+		perspective: "database",
+		priority: "high",
+		projectId: "proj-1",
+		status: "done",
+		title: "sessions_table",
+		type: "Table",
+		updatedAt: "2025-01-15",
+		version: 1,
+		view: "database",
+	},
+	{
+		createdAt: "2025-01-08",
+		description: "Wireframe showing login form layout and components",
+		id: "wire-login",
+		perspective: "wireframe",
+		priority: "medium",
+		projectId: "proj-1",
+		status: "done",
+		title: "Login Page Layout",
+		type: "Wireframe",
+		updatedAt: "2025-01-22",
+		version: 2,
+		view: "wireframe",
+	},
+	{
+		createdAt: "2025-01-20",
 		description:
 			"Implement rate limiting, CSRF protection, and secure token storage",
-		status: "blocked",
-		priority: "critical",
+		id: "sec-auth",
 		perspective: "security",
-		version: 1,
-		createdAt: "2025-01-20",
+		priority: "critical",
+		projectId: "proj-1",
+		status: "blocked",
+		title: "Authentication Security Hardening",
+		type: "SecurityControl",
 		updatedAt: "2025-01-28",
+		version: 1,
+		view: "security",
 	},
 	{
-		id: "perf-auth",
-		projectId: "proj-1",
-		view: "performance",
-		type: "PerformanceOptimization",
-		title: "Auth Endpoint Optimization",
-		description: "Optimize login endpoint response time (target: <200ms)",
-		status: "todo",
-		priority: "medium",
-		perspective: "performance",
-		version: 1,
 		createdAt: "2025-01-25",
+		description: "Optimize login endpoint response time (target: <200ms)",
+		id: "perf-auth",
+		perspective: "performance",
+		priority: "medium",
+		projectId: "proj-1",
+		status: "todo",
+		title: "Auth Endpoint Optimization",
+		type: "PerformanceOptimization",
 		updatedAt: "2025-01-25",
+		version: 1,
+		view: "performance",
 	},
 ];
 
 const createSampleLinks = (): Link[] => [
 	{
+		confidence: 0.95,
+		createdAt: "2025-01-10",
 		id: "link-1",
 		projectId: "proj-1",
 		sourceId: "feat-auth",
+		status: "confirmed",
 		targetId: "code-auth-service",
 		type: "represents",
-		confidence: 0.95,
-		status: "confirmed",
-		createdAt: "2025-01-10",
 	},
 	{
+		confidence: 0.98,
+		createdAt: "2025-01-10",
 		id: "link-2",
 		projectId: "proj-1",
 		sourceId: "feat-auth",
+		status: "confirmed",
 		targetId: "api-login",
 		type: "same_as",
-		confidence: 0.98,
-		status: "confirmed",
-		createdAt: "2025-01-10",
 	},
 	{
+		confidence: 1,
+		createdAt: "2025-01-10",
 		id: "link-3",
 		projectId: "proj-1",
 		sourceId: "code-auth-service",
+		status: "auto",
 		targetId: "db-users",
 		type: "depends_on",
-		confidence: 1.0,
-		status: "auto",
-		createdAt: "2025-01-10",
 	},
 	{
+		confidence: 0.9,
+		createdAt: "2025-01-15",
 		id: "link-4",
 		projectId: "proj-1",
 		sourceId: "test-auth",
+		status: "confirmed",
 		targetId: "feat-auth",
 		type: "tests",
-		confidence: 0.9,
-		status: "confirmed",
-		createdAt: "2025-01-15",
 	},
 	{
+		confidence: 0.85,
+		createdAt: "2025-01-20",
 		id: "link-5",
 		projectId: "proj-1",
 		sourceId: "wire-login",
+		status: "suggested",
 		targetId: "code-login-component",
 		type: "represents",
-		confidence: 0.85,
-		status: "suggested",
-		createdAt: "2025-01-20",
 	},
 	{
+		confidence: 0.8,
+		createdAt: "2025-01-25",
 		id: "link-6",
 		projectId: "proj-1",
 		sourceId: "sec-auth",
+		status: "confirmed",
 		targetId: "feat-auth",
 		type: "related_to",
-		confidence: 0.8,
-		status: "confirmed",
-		createdAt: "2025-01-25",
 	},
 ];
 
@@ -297,7 +297,7 @@ export const Compact: Story = {
 						links={createSampleLinks()}
 						onSelect={(itemId) => setSelectedId(itemId)}
 						onHighlight={() => {}}
-						compact={true}
+						compact
 					/>
 				</div>
 				{selectedId && (
@@ -397,38 +397,34 @@ export const CrossPerspectiveExample: Story = {
  * Empty state
  */
 export const EmptyState: Story = {
-	render: () => {
-		return (
-			<div className="max-w-4xl mx-auto">
-				<CrossPerspectiveSearch
-					items={[]}
-					links={[]}
-					onSelect={() => {}}
-					onHighlight={() => {}}
-				/>
-			</div>
-		);
-	},
+	render: () => (
+		<div className="max-w-4xl mx-auto">
+			<CrossPerspectiveSearch
+				items={[]}
+				links={[]}
+				onSelect={() => {}}
+				onHighlight={() => {}}
+			/>
+		</div>
+	),
 };
 
 /**
  * With custom max results per perspective
  */
 export const CustomMaxResults: Story = {
-	render: () => {
-		return (
-			<div className="max-w-4xl mx-auto space-y-4">
-				<p className="text-sm text-muted-foreground">
-					Showing only 2 results per perspective (normally 5)
-				</p>
-				<CrossPerspectiveSearch
-					items={createSampleItems()}
-					links={createSampleLinks()}
-					onSelect={(id) => logger.info("Selected:", id)}
-					onHighlight={() => {}}
-					maxResultsPerPerspective={2}
-				/>
-			</div>
-		);
-	},
+	render: () => (
+		<div className="max-w-4xl mx-auto space-y-4">
+			<p className="text-sm text-muted-foreground">
+				Showing only 2 results per perspective (normally 5)
+			</p>
+			<CrossPerspectiveSearch
+				items={createSampleItems()}
+				links={createSampleLinks()}
+				onSelect={(id) => logger.info("Selected:", id)}
+				onHighlight={() => {}}
+				maxResultsPerPerspective={2}
+			/>
+		</div>
+	),
 };

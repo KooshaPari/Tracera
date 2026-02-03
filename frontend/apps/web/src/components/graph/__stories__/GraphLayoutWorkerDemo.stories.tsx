@@ -5,18 +5,18 @@
  * Shows performance comparison between synchronous and worker-based layouts.
  */
 
-import type { Meta, StoryObj } from '@storybook/react';
-import { useEffect, useState } from 'react';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card } from '@tracertm/ui/components/Card';
-import { useGraphLayoutWorker } from '@/hooks/useGraphLayoutWorker';
+import type { Meta, StoryObj } from "@storybook/react";
+import { useEffect, useState } from "react";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
+import { useGraphLayoutWorker } from "@/hooks/useGraphLayoutWorker";
 import {
-	generateTestGraph,
 	formatBenchmarkResult,
-	type BenchmarkResult,
-} from '@/lib/graphLayoutBenchmark';
-import type { LayoutOptions } from '@/workers/graphLayout.worker';
-import { logger } from '@/lib/logger';
+	generateTestGraph,
+} from "@/lib/graphLayoutBenchmark";
+import type { BenchmarkResult } from "@/lib/graphLayoutBenchmark";
+import type { LayoutOptions } from "@/workers/graphLayout.worker";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // DEMO COMPONENT
@@ -24,19 +24,22 @@ import { logger } from '@/lib/logger';
 
 function GraphLayoutWorkerDemo() {
 	const [nodeCount, setNodeCount] = useState(1000);
-	const [algorithm, setAlgorithm] = useState<LayoutOptions['algorithm']>('elk');
+	const [algorithm, setAlgorithm] = useState<LayoutOptions["algorithm"]>("elk");
 	const [isRunning, setIsRunning] = useState(false);
 	const [syncResult, setSyncResult] = useState<BenchmarkResult | null>(null);
-	const [workerResult, setWorkerResult] = useState<BenchmarkResult | null>(null);
+	const [workerResult, setWorkerResult] = useState<BenchmarkResult | null>(
+		null,
+	);
 	const [mainThreadFPS, setMainThreadFPS] = useState(60);
 
-	const { computeLayout, isReady, isComputing, progress } = useGraphLayoutWorker({
-		progressive: nodeCount > 500,
-		batchSize: 100,
-		onProgress: (result) => {
-			logger.info(`Progress: ${(result.progress || 0) * 100}%`);
-		},
-	});
+	const { computeLayout, isReady, isComputing, progress } =
+		useGraphLayoutWorker({
+			batchSize: 100,
+			onProgress: (result) => {
+				logger.info(`Progress: ${(result.progress || 0) * 100}%`);
+			},
+			progressive: nodeCount > 500,
+		});
 
 	// Simulate FPS monitoring
 	useEffect(() => {
@@ -98,7 +101,8 @@ function GraphLayoutWorkerDemo() {
 
 	const improvement =
 		syncResult && workerResult
-			? ((syncResult.duration - workerResult.duration) / syncResult.duration) * 100
+			? ((syncResult.duration - workerResult.duration) / syncResult.duration) *
+				100
 			: 0;
 
 	return (
@@ -132,7 +136,7 @@ function GraphLayoutWorkerDemo() {
 						<select
 							value={algorithm}
 							onChange={(e) =>
-								setAlgorithm(e.target.value as LayoutOptions['algorithm'])
+								setAlgorithm(e.target.value as LayoutOptions["algorithm"])
 							}
 							disabled={isRunning}
 							className="flex-1 p-2 rounded border"
@@ -153,7 +157,7 @@ function GraphLayoutWorkerDemo() {
 						disabled={!isReady || isRunning}
 						className="w-full"
 					>
-						{isRunning ? 'Running...' : 'Run Benchmark'}
+						{isRunning ? "Running..." : "Run Benchmark"}
 					</Button>
 				</div>
 
@@ -185,10 +189,10 @@ function GraphLayoutWorkerDemo() {
 							<span
 								className={`text-2xl font-mono font-bold ${
 									mainThreadFPS > 50
-										? 'text-green-500'
-										: mainThreadFPS > 30
-											? 'text-yellow-500'
-											: 'text-red-500'
+										? "text-green-500"
+										: (mainThreadFPS > 30
+											? "text-yellow-500"
+											: "text-red-500")
 								}`}
 							>
 								{mainThreadFPS.toFixed(0)}
@@ -198,10 +202,10 @@ function GraphLayoutWorkerDemo() {
 							<div
 								className={`h-full transition-all duration-100 ${
 									mainThreadFPS > 50
-										? 'bg-green-500'
-										: mainThreadFPS > 30
-											? 'bg-yellow-500'
-											: 'bg-red-500'
+										? "bg-green-500"
+										: (mainThreadFPS > 30
+											? "bg-yellow-500"
+											: "bg-red-500")
 								}`}
 								style={{ width: `${(mainThreadFPS / 60) * 100}%` }}
 							/>
@@ -221,7 +225,9 @@ function GraphLayoutWorkerDemo() {
 						<div className="space-y-2 text-sm font-mono">
 							<div className="flex justify-between">
 								<span className="text-muted-foreground">Duration:</span>
-								<span className="font-bold">{syncResult.duration.toFixed(2)}ms</span>
+								<span className="font-bold">
+									{syncResult.duration.toFixed(2)}ms
+								</span>
 							</div>
 							<div className="flex justify-between">
 								<span className="text-muted-foreground">FPS:</span>
@@ -232,7 +238,9 @@ function GraphLayoutWorkerDemo() {
 								<span className="font-bold text-red-500">BLOCKED</span>
 							</div>
 							<div className="flex justify-between">
-								<span className="text-muted-foreground">User Can Interact:</span>
+								<span className="text-muted-foreground">
+									User Can Interact:
+								</span>
 								<span className="font-bold text-red-500">NO</span>
 							</div>
 						</div>
@@ -246,18 +254,24 @@ function GraphLayoutWorkerDemo() {
 						<div className="space-y-2 text-sm font-mono">
 							<div className="flex justify-between">
 								<span className="text-muted-foreground">Duration:</span>
-								<span className="font-bold">{workerResult.duration.toFixed(2)}ms</span>
+								<span className="font-bold">
+									{workerResult.duration.toFixed(2)}ms
+								</span>
 							</div>
 							<div className="flex justify-between">
 								<span className="text-muted-foreground">FPS:</span>
-								<span className="font-bold text-green-500">{workerResult.fps}</span>
+								<span className="font-bold text-green-500">
+									{workerResult.fps}
+								</span>
 							</div>
 							<div className="flex justify-between">
 								<span className="text-muted-foreground">Main Thread:</span>
 								<span className="font-bold text-green-500">FREE</span>
 							</div>
 							<div className="flex justify-between">
-								<span className="text-muted-foreground">User Can Interact:</span>
+								<span className="text-muted-foreground">
+									User Can Interact:
+								</span>
 								<span className="font-bold text-green-500">YES</span>
 							</div>
 						</div>
@@ -268,7 +282,9 @@ function GraphLayoutWorkerDemo() {
 			{/* Improvement Summary */}
 			{syncResult && workerResult && (
 				<Card className="p-6 bg-primary/5">
-					<h3 className="text-lg font-semibold mb-4">📊 Performance Analysis</h3>
+					<h3 className="text-lg font-semibold mb-4">
+						📊 Performance Analysis
+					</h3>
 					<div className="space-y-4">
 						<div>
 							<div className="flex items-center justify-between mb-2">
@@ -276,13 +292,13 @@ function GraphLayoutWorkerDemo() {
 									Computation Time Difference:
 								</span>
 								<span className="text-lg font-bold">
-									{improvement > 0 ? '+' : ''}
+									{improvement > 0 ? "+" : ""}
 									{improvement.toFixed(1)}%
 								</span>
 							</div>
 							<p className="text-xs text-muted-foreground">
-								Worker may be slightly slower due to message passing overhead, but this
-								is negligible compared to the UX benefit.
+								Worker may be slightly slower due to message passing overhead,
+								but this is negligible compared to the UX benefit.
 							</p>
 						</div>
 
@@ -313,13 +329,15 @@ function GraphLayoutWorkerDemo() {
 							<p className="text-sm">
 								{nodeCount < 500 ? (
 									<>
-										For graphs with <strong>&lt;500 nodes</strong>, worker overhead may
-										outweigh benefits. Consider using synchronous layout.
+										For graphs with <strong>&lt;500 nodes</strong>, worker
+										overhead may outweigh benefits. Consider using synchronous
+										layout.
 									</>
 								) : (
 									<>
-										For graphs with <strong>500+ nodes</strong>, worker-based layout is
-										strongly recommended to maintain UI responsiveness.
+										For graphs with <strong>500+ nodes</strong>, worker-based
+										layout is strongly recommended to maintain UI
+										responsiveness.
 									</>
 								)}
 							</p>
@@ -336,18 +354,18 @@ function GraphLayoutWorkerDemo() {
 // ============================================================================
 
 const meta: Meta<typeof GraphLayoutWorkerDemo> = {
-	title: 'Graph/Layout Worker Demo',
 	component: GraphLayoutWorkerDemo,
 	parameters: {
-		layout: 'fullscreen',
 		docs: {
 			description: {
 				component:
-					'Interactive demonstration of Web Worker-based graph layout computation. ' +
-					'Shows performance comparison and benefits of off-main-thread layout.',
+					"Interactive demonstration of Web Worker-based graph layout computation. " +
+					"Shows performance comparison and benefits of off-main-thread layout.",
 			},
 		},
+		layout: "fullscreen",
 	},
+	title: "Graph/Layout Worker Demo",
 };
 
 export default meta;
@@ -360,49 +378,49 @@ type Story = StoryObj<typeof GraphLayoutWorkerDemo>;
 export const Default: Story = {};
 
 export const SmallGraph: Story = {
-	render: () => {
-		const Demo = GraphLayoutWorkerDemo;
-		return <Demo />;
-	},
 	parameters: {
 		docs: {
 			description: {
 				story:
-					'Small graph (100-500 nodes) where worker overhead may be noticeable. ' +
-					'Synchronous layout is often sufficient for this size.',
+					"Small graph (100-500 nodes) where worker overhead may be noticeable. " +
+					"Synchronous layout is often sufficient for this size.",
 			},
 		},
+	},
+	render: () => {
+		const Demo = GraphLayoutWorkerDemo;
+		return <Demo />;
 	},
 };
 
 export const MediumGraph: Story = {
-	render: () => {
-		const Demo = GraphLayoutWorkerDemo;
-		return <Demo />;
-	},
 	parameters: {
 		docs: {
 			description: {
 				story:
-					'Medium graph (500-5000 nodes) where worker provides clear benefits. ' +
-					'UI stays responsive during layout computation.',
+					"Medium graph (500-5000 nodes) where worker provides clear benefits. " +
+					"UI stays responsive during layout computation.",
 			},
 		},
+	},
+	render: () => {
+		const Demo = GraphLayoutWorkerDemo;
+		return <Demo />;
 	},
 };
 
 export const LargeGraph: Story = {
-	render: () => {
-		const Demo = GraphLayoutWorkerDemo;
-		return <Demo />;
-	},
 	parameters: {
 		docs: {
 			description: {
 				story:
-					'Large graph (5000+ nodes) where worker is essential. ' +
-					'Progressive layout provides incremental updates.',
+					"Large graph (5000+ nodes) where worker is essential. " +
+					"Progressive layout provides incremental updates.",
 			},
 		},
+	},
+	render: () => {
+		const Demo = GraphLayoutWorkerDemo;
+		return <Demo />;
 	},
 };

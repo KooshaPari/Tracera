@@ -162,7 +162,6 @@ test.describe("Traceability Links", () => {
 					// Check if there are any links
 					const linkItems = page.locator("div").filter({ hasText: /→/ });
 					const count = await linkItems.count().catch(() => 0);
-
 				}
 			}
 		});
@@ -269,7 +268,6 @@ test.describe("Traceability Links", () => {
 						.locator("span")
 						.filter({ hasText: /item-|[a-f0-9]{8}-/ });
 					const count = await linkItems.count().catch(() => 0);
-
 				}
 			}
 		});

@@ -12,14 +12,14 @@ vi.mock("../../hooks/useItems", () => ({
 	useItems: vi.fn(),
 }));
 
-describe("EventsTimelineView", () => {
+describe(EventsTimelineView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -28,9 +28,9 @@ describe("EventsTimelineView", () => {
 	it("renders events timeline interface", () => {
 		vi.mocked(useItems).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -45,9 +45,9 @@ describe("EventsTimelineView", () => {
 	it("displays loading state", () => {
 		vi.mocked(useItems).mockReturnValue({
 			data: undefined,
-			isLoading: true,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: true,
 		} as any);
 
 		render(
@@ -62,24 +62,24 @@ describe("EventsTimelineView", () => {
 	it("displays events in timeline", () => {
 		const events = [
 			{
+				created_at: new Date().toISOString(),
 				id: "event-1",
 				title: "Event 1",
 				type: "event",
-				created_at: new Date().toISOString(),
 			},
 			{
+				created_at: new Date().toISOString(),
 				id: "event-2",
 				title: "Event 2",
 				type: "event",
-				created_at: new Date().toISOString(),
 			},
 		];
 
 		vi.mocked(useItems).mockReturnValue({
 			data: events,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(

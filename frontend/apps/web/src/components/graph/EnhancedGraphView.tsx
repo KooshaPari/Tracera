@@ -14,7 +14,8 @@ import {
 } from "@tracertm/ui/components/Select";
 import { Separator } from "@tracertm/ui/components/Separator";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import cytoscape, { type Core } from "cytoscape";
+import cytoscape from "cytoscape";
+import type { Core } from "cytoscape";
 import {
 	Download,
 	Layers,
@@ -115,35 +116,35 @@ function EnhancedGraphViewComponent({
 			let depth = 0;
 			let currentId = item.parentId;
 			while (currentId && depth < 10) {
-				depth++;
+				depth += 1;
 				const parent = itemMap.get(currentId);
 				currentId = parent?.parentId;
 			}
 
 			return {
-				id: item.id,
-				item,
-				type: itemType,
-				status: item.status,
-				label: item.title || "Untitled",
-				perspective: perspectives,
 				connections: {
+					byType:
+						connectionsByType.get(item.id) || ({} as Record<LinkType, number>),
 					incoming,
 					outgoing,
 					total: incoming + outgoing,
-					byType:
-						connectionsByType.get(item.id) || ({} as Record<LinkType, number>),
 				},
 				depth,
 				hasChildren,
+				id: item.id,
+				item,
+				label: item.title || "Untitled",
 				parentId: item.parentId,
-				uiPreview: item.metadata?.['screenshotUrl']
+				perspective: perspectives,
+				status: item.status,
+				type: itemType,
+				uiPreview: item.metadata?.["screenshotUrl"]
 					? {
-							screenshotUrl: item.metadata['screenshotUrl'] as string,
-							interactiveWidgetUrl: item.metadata['interactiveUrl'] as
+							componentCode: item.metadata["code"] as string | undefined,
+							interactiveWidgetUrl: item.metadata["interactiveUrl"] as
 								| string
 								| undefined,
-							componentCode: item.metadata['code'] as string | undefined,
+							screenshotUrl: item.metadata["screenshotUrl"] as string,
 						}
 					: undefined,
 			} as EnhancedNodeData;
@@ -152,10 +153,14 @@ function EnhancedGraphViewComponent({
 
 	// Filter nodes by perspective
 	const filteredNodes = useMemo(() => {
-		if (perspective === "all") return enhancedNodes;
+		if (perspective === "all") {
+			return enhancedNodes;
+		}
 
 		const config = PERSPECTIVE_CONFIGS.find((c) => c.id === perspective);
-		if (!config || config.includeTypes.length === 0) return enhancedNodes;
+		if (!config || config.includeTypes.length === 0) {
+			return enhancedNodes;
+		}
 
 		return enhancedNodes.filter((node) => {
 			const nodeType = node.type.toLowerCase();
@@ -180,12 +185,12 @@ function EnhancedGraphViewComponent({
 	const perspectiveCounts = useMemo(() => {
 		const counts: Record<GraphPerspective, number> = {
 			all: enhancedNodes.length,
-			product: 0,
 			business: 0,
+			performance: 0,
+			product: 0,
+			security: 0,
 			technical: 0,
 			ui: 0,
-			security: 0,
-			performance: 0,
 		};
 
 		for (const node of enhancedNodes) {
@@ -201,7 +206,9 @@ function EnhancedGraphViewComponent({
 
 	// Selected node data
 	const selectedNode = useMemo(() => {
-		if (!selectedNodeId) return null;
+		if (!selectedNodeId) {
+			return null;
+		}
 		return filteredNodes.find((n) => n.id === selectedNodeId) || null;
 	}, [filteredNodes, selectedNodeId]);
 
@@ -228,7 +235,9 @@ function EnhancedGraphViewComponent({
 
 	// Initialize Cytoscape
 	const initCytoscape = useCallback(() => {
-		if (!containerRef.current || filteredNodes.length === 0) return;
+		if (!containerRef.current || filteredNodes.length === 0) {
+			return;
+		}
 
 		// Destroy existing instance
 		if (cyRef.current) {
@@ -238,21 +247,21 @@ function EnhancedGraphViewComponent({
 		// Convert to Cytoscape format
 		const cytoscapeNodes = filteredNodes.map((node) => ({
 			data: {
+				connectionCount: node.connections.total,
 				id: node.id,
 				label: node.label,
-				type: node.type,
 				status: node.status,
-				connectionCount: node.connections.total,
+				type: node.type,
 			},
 		}));
 
 		const cytoscapeEdges = filteredLinks.map((link) => ({
 			data: {
 				id: link.id,
+				label: link.type.replace(/_/g, " "),
 				source: link.sourceId,
 				target: link.targetId,
 				type: link.type,
-				label: link.type.replace(/_/g, " "),
 			},
 		}));
 
@@ -264,6 +273,28 @@ function EnhancedGraphViewComponent({
 		cyRef.current = cytoscape({
 			container: containerRef.current,
 			elements: [...cytoscapeNodes, ...cytoscapeEdges],
+			layout: {
+				name: layout === "elk" ? "breadthfirst" : layout,
+				animate: true,
+				animationDuration: 500,
+				...(layout === "breadthfirst" || layout === "elk"
+					? {
+							directed: true,
+							padding: 50,
+							spacingFactor: 1.5,
+						}
+					: {}),
+				...(layout === "cose"
+					? {
+							edgeElasticity: () => 100,
+							gravity: 0.25,
+							idealEdgeLength: () => 100,
+							nodeRepulsion: () => 8000,
+						}
+					: {}),
+			},
+			maxZoom: 4,
+			minZoom: 0.1,
 			style: [
 				{
 					selector: "node",
@@ -328,33 +359,33 @@ function EnhancedGraphViewComponent({
 				{
 					selector: "node:selected",
 					style: {
-						"border-width": 4,
 						"border-color": "#fff",
 						"border-opacity": 1,
-						"overlay-opacity": 0.1,
+						"border-width": 4,
 						"overlay-color": "#fff",
+						"overlay-opacity": 0.1,
 					},
 				},
 				{
 					selector: "edge:selected",
 					style: {
-						width: 4,
 						opacity: 1,
+						width: 4,
 					},
 				},
 				{
 					selector: "node.highlighted",
 					style: {
-						"border-width": 3,
 						"border-color": perspectiveConfig?.color || "#fff",
 						"border-opacity": 1,
+						"border-width": 3,
 					},
 				},
 				{
 					selector: "edge.highlighted",
 					style: {
-						width: 3,
 						opacity: 1,
+						width: 3,
 					},
 				},
 				{
@@ -370,28 +401,6 @@ function EnhancedGraphViewComponent({
 					},
 				},
 			],
-			layout: {
-				name: layout === "elk" ? "breadthfirst" : layout,
-				animate: true,
-				animationDuration: 500,
-				...(layout === "breadthfirst" || layout === "elk"
-					? {
-							directed: true,
-							spacingFactor: 1.5,
-							padding: 50,
-						}
-					: {}),
-				...(layout === "cose"
-					? {
-							nodeRepulsion: () => 8000,
-							idealEdgeLength: () => 100,
-							edgeElasticity: () => 100,
-							gravity: 0.25,
-						}
-					: {}),
-			},
-			minZoom: 0.1,
-			maxZoom: 4,
 			wheelSensitivity: 0.3,
 		});
 
@@ -466,8 +475,10 @@ function EnhancedGraphViewComponent({
 
 	// Export
 	const handleExport = () => {
-		if (!cyRef.current) return;
-		const png = cyRef.current.png({ full: true, scale: 2, bg: "#1a1a2e" });
+		if (!cyRef.current) {
+			return;
+		}
+		const png = cyRef.current.png({ bg: "#1a1a2e", full: true, scale: 2 });
 		const link = document.createElement("a");
 		link.download = `graph-${perspective}-${new Date().toISOString()}.png`;
 		link.href = png;
@@ -483,8 +494,8 @@ function EnhancedGraphViewComponent({
 			// Center on node
 			cyRef.current?.animate({
 				center: { eles: node },
-				zoom: 1.5,
 				duration: 300,
+				zoom: 1.5,
 			});
 
 			// Highlight
@@ -720,7 +731,7 @@ function EnhancedGraphViewComponent({
 									className="h-3 w-6 rounded"
 									style={{ backgroundColor: color }}
 								/>
-								<span className="capitalize">{type.replace(/_/g, " ")}</span>
+								<span className="capitalize">{type.replaceAll(/_/g, " ")}</span>
 							</div>
 						))}
 
@@ -738,7 +749,7 @@ function EnhancedGraphViewComponent({
 										borderStyle: style.dashed ? "dashed" : "solid",
 									}}
 								/>
-								<span>{type.replace(/_/g, " ")}</span>
+								<span>{type.replaceAll(/_/g, " ")}</span>
 							</div>
 						))}
 				</div>

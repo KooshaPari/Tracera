@@ -22,13 +22,23 @@ export interface TimelineViewProps {
 function getDaysAgo(timestamp: Date): string {
 	const now = new Date();
 	const diff = now.getTime() - timestamp.getTime();
-	const days = Math.floor(diff / 86400000);
+	const days = Math.floor(diff / 86_400_000);
 
-	if (days === 0) return "Today";
-	if (days === 1) return "Yesterday";
-	if (days < 7) return `${days} days ago`;
-	if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-	if (days < 365) return `${Math.floor(days / 30)} months ago`;
+	if (days === 0) {
+		return "Today";
+	}
+	if (days === 1) {
+		return "Yesterday";
+	}
+	if (days < 7) {
+		return `${days} days ago`;
+	}
+	if (days < 30) {
+		return `${Math.floor(days / 7)} weeks ago`;
+	}
+	if (days < 365) {
+		return `${Math.floor(days / 30)} months ago`;
+	}
 	return `${Math.floor(days / 365)} years ago`;
 }
 
@@ -42,20 +52,20 @@ export function TimelineView({
 
 	const sortedVersions = useMemo(
 		() =>
-			[...versions].sort(
+			[...versions].toSorted(
 				(a: { timestamp: Date }, b: { timestamp: Date }) =>
 					a.timestamp.getTime() - b.timestamp.getTime(),
 			),
 		[versions],
 	);
 
-	// const timeRange = useMemo(() => {
-	// 	if (sortedVersions.length === 0) {
-	// 		return { min: 0, max: 0, span: 1 };
+	// Const timeRange = useMemo(() => {
+	// 	If (sortedVersions.length === 0) {
+	// 		Return { min: 0, max: 0, span: 1 };
 	// 	}
-	// 	const min = sortedVersions[0].timestamp.getTime();
-	// 	const max = sortedVersions[sortedVersions.length - 1].timestamp.getTime();
-	// 	return { min, max, span: max - min };
+	// 	Const min = sortedVersions[0].timestamp.getTime();
+	// 	Const max = sortedVersions[sortedVersions.length - 1].timestamp.getTime();
+	// 	Return { min, max, span: max - min };
 	// }, [sortedVersions]);
 
 	const handleScroll = (direction: "left" | "right") => {
@@ -135,7 +145,9 @@ export function TimelineView({
 								}}
 								onClick={() => onVersionChange(version.id)}
 								onKeyDown={(e) => {
-									if (e.key === "Enter") onVersionChange(version.id);
+									if (e.key === "Enter") {
+										onVersionChange(version.id);
+									}
 								}}
 								role="button"
 								tabIndex={0}
@@ -184,9 +196,9 @@ export function TimelineView({
 											variant={
 												version.status === "published"
 													? "default"
-													: version.status === "draft"
+													: (version.status === "draft"
 														? "secondary"
-														: "outline"
+														: "outline")
 											}
 											className="text-xs"
 										>
@@ -210,9 +222,7 @@ export function TimelineView({
 				<div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-800">
 					<span>
 						{sortedVersions[0].timestamp.toLocaleDateString()} -
-						{sortedVersions[
-							sortedVersions.length - 1
-						].timestamp.toLocaleDateString()}
+						{sortedVersions.at(-1).timestamp.toLocaleDateString()}
 					</span>
 					<span>
 						{sortedVersions.length} version

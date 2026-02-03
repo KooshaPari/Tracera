@@ -2,9 +2,7 @@
  * Environment variable manager for TraceRTM frontend
  */
 
-export interface EnvConfig {
-	[key: string]: string | number | boolean | undefined;
-}
+export type EnvConfig = Record<string, string | number | boolean | undefined>;
 
 export class EnvManager {
 	private vars: Map<string, string>;
@@ -67,7 +65,7 @@ export class EnvManager {
 		if (!value) return defaultValue;
 		const num = Number(value);
 		if (Number.isNaN(num)) {
-			throw new Error(
+			throw new TypeError(
 				`Environment variable ${key} is not a valid number: ${value}`,
 			);
 		}
@@ -77,7 +75,7 @@ export class EnvManager {
 	/**
 	 * Get environment variable as boolean
 	 */
-	getBoolean(key: string, defaultValue: boolean = false): boolean {
+	getBoolean(key: string, defaultValue = false): boolean {
 		const value = this.vars.get(key);
 		if (!value) return defaultValue;
 		return ["true", "1", "yes", "on"].includes(value.toLowerCase());
@@ -86,7 +84,7 @@ export class EnvManager {
 	/**
 	 * Get environment variable as array
 	 */
-	getArray(key: string, separator: string = ","): string[] {
+	getArray(key: string, separator = ","): string[] {
 		const value = this.vars.get(key);
 		if (!value) return [];
 		return value.split(separator).map((item) => item.trim());

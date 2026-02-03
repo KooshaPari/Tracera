@@ -201,11 +201,11 @@ export interface EpicSpec {
 	out_of_scope?: string[];
 	constraints: string[];
 	assumptions: string[];
-	risks: Array<{
+	risks: {
 		description: string;
 		mitigation: string;
 		impact: RiskLevel;
-	}>;
+	}[];
 	themes: string[];
 	metrics: Record<string, number>;
 	spec_metadata: Record<string, unknown>;
@@ -221,11 +221,11 @@ export interface UserStorySpec {
 	as_a: string;
 	i_want: string;
 	so_that: string;
-	acceptance_criteria: Array<{
+	acceptance_criteria: {
 		criterion: string;
 		completed: boolean;
 		verified_at?: string;
-	}>;
+	}[];
 	definition_of_done: string[];
 	edge_cases: string[];
 	dependencies: string[];
@@ -254,25 +254,25 @@ export interface TaskSpec {
 	actual_hours?: number;
 	priority: number;
 	parent_story?: string;
-	subtasks: Array<{
+	subtasks: {
 		id: string;
 		title: string;
 		completed: boolean;
 		completed_at?: string;
-	}>;
+	}[];
 	dependencies: string[];
 	blocking: string[];
-	checklist: Array<{
+	checklist: {
 		item: string;
 		completed: boolean;
 		completed_by?: string;
 		completed_at?: string;
-	}>;
-	code_changes?: Array<{
+	}[];
+	code_changes?: {
 		file: string;
 		lines_added: number;
 		lines_deleted: number;
-	}>;
+	}[];
 	review_comments?: string[];
 	labels: string[];
 	spec_metadata: Record<string, unknown>;
@@ -300,11 +300,11 @@ export interface DefectSpec {
 	verification_notes?: string;
 	related_defects: string[];
 	related_requirements: string[];
-	attachments: Array<{
+	attachments: {
 		url: string;
 		description?: string;
 		type: string;
-	}>;
+	}[];
 	regression_risk: RiskLevel;
 	time_to_fix_estimate?: number;
 	priority: number;
@@ -372,7 +372,7 @@ export interface UserStorySpecCreate {
 	i_want: string;
 	so_that: string;
 	story_points?: number;
-	acceptance_criteria?: Array<{ criterion: string }>;
+	acceptance_criteria?: { criterion: string }[];
 	definition_of_done?: string[];
 	priority?: number;
 	parent_epic?: string;
@@ -460,7 +460,7 @@ export interface UserStorySpecUpdate {
 	so_that?: string;
 	story_points?: number;
 	status?: UserStoryStatus;
-	acceptance_criteria?: Array<{ criterion: string; completed?: boolean }>;
+	acceptance_criteria?: { criterion: string; completed?: boolean }[];
 	definition_of_done?: string[];
 	priority?: number;
 	spec_metadata?: Record<string, unknown>;
@@ -597,13 +597,21 @@ async function fetchRequirementSpecs(
 	},
 ): Promise<{ specs: RequirementSpec[]; total: number }> {
 	const params = new URLSearchParams();
-	if (options?.requirementType)
+	if (options?.requirementType) {
 		params.append("requirement_type", options.requirementType);
-	if (options?.riskLevel) params.append("risk_level", options.riskLevel);
-	if (options?.verificationStatus)
+	}
+	if (options?.riskLevel) {
+		params.append("risk_level", options.riskLevel);
+	}
+	if (options?.verificationStatus) {
 		params.append("verification_status", options.verificationStatus);
-	if (options?.limit) params.append("limit", String(options.limit));
-	if (options?.offset) params.append("offset", String(options.offset));
+	}
+	if (options?.limit) {
+		params.append("limit", String(options.limit));
+	}
+	if (options?.offset) {
+		params.append("offset", String(options.offset));
+	}
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements?${params}`,
@@ -626,7 +634,9 @@ async function fetchRequirementSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch requirement spec");
+	if (!res.ok) {
+		throw new Error("Failed to fetch requirement spec");
+	}
 	return res.json();
 }
 
@@ -638,7 +648,9 @@ async function fetchRequirementSpecByItem(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/by-item/${itemId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch requirement spec by item");
+	if (!res.ok) {
+		throw new Error("Failed to fetch requirement spec by item");
+	}
 	return res.json();
 }
 
@@ -650,7 +662,9 @@ async function fetchUnverifiedRequirements(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/unverified?limit=${limit}`,
 		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
-	if (!res.ok) throw new Error("Failed to fetch unverified requirements");
+	if (!res.ok) {
+		throw new Error("Failed to fetch unverified requirements");
+	}
 	return res.json();
 }
 
@@ -662,7 +676,9 @@ async function fetchHighRiskRequirements(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/high-risk?limit=${limit}`,
 		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
-	if (!res.ok) throw new Error("Failed to fetch high-risk requirements");
+	if (!res.ok) {
+		throw new Error("Failed to fetch high-risk requirements");
+	}
 	return res.json();
 }
 
@@ -673,12 +689,14 @@ async function createRequirementSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create requirement spec");
+	if (!res.ok) {
+		throw new Error("Failed to create requirement spec");
+	}
 	return res.json();
 }
 
@@ -690,12 +708,14 @@ async function updateRequirementSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}`,
 		{
-			method: "PATCH",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "PATCH",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to update requirement spec");
+	if (!res.ok) {
+		throw new Error("Failed to update requirement spec");
+	}
 	return res.json();
 }
 
@@ -705,9 +725,11 @@ async function deleteRequirementSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}`,
-		{ method: "DELETE", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "DELETE" },
 	);
-	if (!res.ok) throw new Error("Failed to delete requirement spec");
+	if (!res.ok) {
+		throw new Error("Failed to delete requirement spec");
+	}
 }
 
 async function analyzeRequirementQuality(
@@ -716,9 +738,11 @@ async function analyzeRequirementQuality(
 ): Promise<RequirementSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}/analyze-quality`,
-		{ method: "POST", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "POST" },
 	);
-	if (!res.ok) throw new Error("Failed to analyze requirement quality");
+	if (!res.ok) {
+		throw new Error("Failed to analyze requirement quality");
+	}
 	return res.json();
 }
 
@@ -728,9 +752,11 @@ async function analyzeRequirementImpact(
 ): Promise<RequirementSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}/analyze-impact`,
-		{ method: "POST", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "POST" },
 	);
-	if (!res.ok) throw new Error("Failed to analyze requirement impact");
+	if (!res.ok) {
+		throw new Error("Failed to analyze requirement impact");
+	}
 	return res.json();
 }
 
@@ -742,15 +768,17 @@ async function verifyRequirement(
 	description: string,
 ): Promise<RequirementSpec> {
 	const params = new URLSearchParams({
-		evidence_type: evidenceType,
-		evidence_reference: evidenceReference,
 		description,
+		evidence_reference: evidenceReference,
+		evidence_type: evidenceType,
 	});
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}/verify?${params}`,
-		{ method: "POST", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "POST" },
 	);
-	if (!res.ok) throw new Error("Failed to verify requirement");
+	if (!res.ok) {
+		throw new Error("Failed to verify requirement");
+	}
 	return res.json();
 }
 
@@ -765,11 +793,18 @@ async function fetchTestSpecs(
 	},
 ): Promise<{ specs: TestSpec[]; total: number }> {
 	const params = new URLSearchParams();
-	if (options?.testType) params.append("test_type", options.testType);
-	if (options?.isQuarantined !== undefined)
+	if (options?.testType) {
+		params.append("test_type", options.testType);
+	}
+	if (options?.isQuarantined !== undefined) {
 		params.append("is_quarantined", String(options.isQuarantined));
-	if (options?.limit) params.append("limit", String(options.limit));
-	if (options?.offset) params.append("offset", String(options.offset));
+	}
+	if (options?.limit) {
+		params.append("limit", String(options.limit));
+	}
+	if (options?.offset) {
+		params.append("offset", String(options.offset));
+	}
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests?${params}`,
@@ -790,7 +825,9 @@ async function fetchTestSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch test spec");
+	if (!res.ok) {
+		throw new Error("Failed to fetch test spec");
+	}
 	return res.json();
 }
 
@@ -802,7 +839,9 @@ async function fetchTestSpecByItem(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/by-item/${itemId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch test spec by item");
+	if (!res.ok) {
+		throw new Error("Failed to fetch test spec by item");
+	}
 	return res.json();
 }
 
@@ -815,7 +854,9 @@ async function fetchFlakyTests(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/flaky?threshold=${threshold}&limit=${limit}`,
 		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
-	if (!res.ok) throw new Error("Failed to fetch flaky tests");
+	if (!res.ok) {
+		throw new Error("Failed to fetch flaky tests");
+	}
 	return res.json();
 }
 
@@ -827,7 +868,9 @@ async function fetchQuarantinedTests(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/quarantined?limit=${limit}`,
 		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
-	if (!res.ok) throw new Error("Failed to fetch quarantined tests");
+	if (!res.ok) {
+		throw new Error("Failed to fetch quarantined tests");
+	}
 	return res.json();
 }
 
@@ -844,7 +887,9 @@ async function fetchTestHealthReport(projectId: string): Promise<{
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/health-report`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch test health report");
+	if (!res.ok) {
+		throw new Error("Failed to fetch test health report");
+	}
 	return res.json();
 }
 
@@ -855,12 +900,14 @@ async function createTestSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create test spec");
+	if (!res.ok) {
+		throw new Error("Failed to create test spec");
+	}
 	return res.json();
 }
 
@@ -872,12 +919,14 @@ async function updateTestSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}`,
 		{
-			method: "PATCH",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "PATCH",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to update test spec");
+	if (!res.ok) {
+		throw new Error("Failed to update test spec");
+	}
 	return res.json();
 }
 
@@ -887,9 +936,11 @@ async function deleteTestSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}`,
-		{ method: "DELETE", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "DELETE" },
 	);
-	if (!res.ok) throw new Error("Failed to delete test spec");
+	if (!res.ok) {
+		throw new Error("Failed to delete test spec");
+	}
 }
 
 async function recordTestRun(
@@ -901,17 +952,23 @@ async function recordTestRun(
 	environment?: string,
 ): Promise<TestSpec> {
 	const params = new URLSearchParams({
-		status,
 		duration_ms: String(durationMs),
+		status,
 	});
-	if (errorMessage) params.append("error_message", errorMessage);
-	if (environment) params.append("environment", environment);
+	if (errorMessage) {
+		params.append("error_message", errorMessage);
+	}
+	if (environment) {
+		params.append("environment", environment);
+	}
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}/record-run?${params}`,
-		{ method: "POST", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "POST" },
 	);
-	if (!res.ok) throw new Error("Failed to record test run");
+	if (!res.ok) {
+		throw new Error("Failed to record test run");
+	}
 	return res.json();
 }
 
@@ -922,9 +979,11 @@ async function quarantineTest(
 ): Promise<TestSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}/quarantine?reason=${encodeURIComponent(reason)}`,
-		{ method: "POST", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "POST" },
 	);
-	if (!res.ok) throw new Error("Failed to quarantine test");
+	if (!res.ok) {
+		throw new Error("Failed to quarantine test");
+	}
 	return res.json();
 }
 
@@ -934,9 +993,11 @@ async function unquarantineTest(
 ): Promise<TestSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}/unquarantine`,
-		{ method: "POST", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "POST" },
 	);
-	if (!res.ok) throw new Error("Failed to unquarantine test");
+	if (!res.ok) {
+		throw new Error("Failed to unquarantine test");
+	}
 	return res.json();
 }
 
@@ -950,9 +1011,15 @@ async function fetchEpicSpecs(
 	},
 ): Promise<{ specs: EpicSpec[]; total: number }> {
 	const params = new URLSearchParams();
-	if (options?.status) params.append("status", options.status);
-	if (options?.limit) params.append("limit", String(options.limit));
-	if (options?.offset) params.append("offset", String(options.offset));
+	if (options?.status) {
+		params.append("status", options.status);
+	}
+	if (options?.limit) {
+		params.append("limit", String(options.limit));
+	}
+	if (options?.offset) {
+		params.append("offset", String(options.offset));
+	}
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics?${params}`,
@@ -973,7 +1040,9 @@ async function fetchEpicSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/${specId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch epic spec");
+	if (!res.ok) {
+		throw new Error("Failed to fetch epic spec");
+	}
 	return res.json();
 }
 
@@ -985,7 +1054,9 @@ async function fetchEpicSpecByItem(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/by-item/${itemId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch epic spec by item");
+	if (!res.ok) {
+		throw new Error("Failed to fetch epic spec by item");
+	}
 	return res.json();
 }
 
@@ -996,12 +1067,14 @@ async function createEpicSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create epic spec");
+	if (!res.ok) {
+		throw new Error("Failed to create epic spec");
+	}
 	return res.json();
 }
 
@@ -1013,12 +1086,14 @@ async function updateEpicSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/${specId}`,
 		{
-			method: "PATCH",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "PATCH",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to update epic spec");
+	if (!res.ok) {
+		throw new Error("Failed to update epic spec");
+	}
 	return res.json();
 }
 
@@ -1028,9 +1103,11 @@ async function deleteEpicSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/${specId}`,
-		{ method: "DELETE", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "DELETE" },
 	);
-	if (!res.ok) throw new Error("Failed to delete epic spec");
+	if (!res.ok) {
+		throw new Error("Failed to delete epic spec");
+	}
 }
 
 // User Story Specs
@@ -1044,10 +1121,18 @@ async function fetchUserStorySpecs(
 	},
 ): Promise<{ specs: UserStorySpec[]; total: number }> {
 	const params = new URLSearchParams();
-	if (options?.status) params.append("status", options.status);
-	if (options?.epicId) params.append("epic_id", options.epicId);
-	if (options?.limit) params.append("limit", String(options.limit));
-	if (options?.offset) params.append("offset", String(options.offset));
+	if (options?.status) {
+		params.append("status", options.status);
+	}
+	if (options?.epicId) {
+		params.append("epic_id", options.epicId);
+	}
+	if (options?.limit) {
+		params.append("limit", String(options.limit));
+	}
+	if (options?.offset) {
+		params.append("offset", String(options.offset));
+	}
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories?${params}`,
@@ -1070,7 +1155,9 @@ async function fetchUserStorySpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories/${specId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch user story spec");
+	if (!res.ok) {
+		throw new Error("Failed to fetch user story spec");
+	}
 	return res.json();
 }
 
@@ -1082,7 +1169,9 @@ async function fetchUserStorySpecByItem(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories/by-item/${itemId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch user story spec by item");
+	if (!res.ok) {
+		throw new Error("Failed to fetch user story spec by item");
+	}
 	return res.json();
 }
 
@@ -1093,12 +1182,14 @@ async function createUserStorySpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create user story spec");
+	if (!res.ok) {
+		throw new Error("Failed to create user story spec");
+	}
 	return res.json();
 }
 
@@ -1110,12 +1201,14 @@ async function updateUserStorySpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories/${specId}`,
 		{
-			method: "PATCH",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "PATCH",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to update user story spec");
+	if (!res.ok) {
+		throw new Error("Failed to update user story spec");
+	}
 	return res.json();
 }
 
@@ -1125,9 +1218,11 @@ async function deleteUserStorySpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories/${specId}`,
-		{ method: "DELETE", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "DELETE" },
 	);
-	if (!res.ok) throw new Error("Failed to delete user story spec");
+	if (!res.ok) {
+		throw new Error("Failed to delete user story spec");
+	}
 }
 
 // Task Specs
@@ -1141,10 +1236,18 @@ async function fetchTaskSpecs(
 	},
 ): Promise<{ specs: TaskSpec[]; total: number }> {
 	const params = new URLSearchParams();
-	if (options?.status) params.append("status", options.status);
-	if (options?.storyId) params.append("story_id", options.storyId);
-	if (options?.limit) params.append("limit", String(options.limit));
-	if (options?.offset) params.append("offset", String(options.offset));
+	if (options?.status) {
+		params.append("status", options.status);
+	}
+	if (options?.storyId) {
+		params.append("story_id", options.storyId);
+	}
+	if (options?.limit) {
+		params.append("limit", String(options.limit));
+	}
+	if (options?.offset) {
+		params.append("offset", String(options.offset));
+	}
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks?${params}`,
@@ -1165,7 +1268,9 @@ async function fetchTaskSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks/${specId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch task spec");
+	if (!res.ok) {
+		throw new Error("Failed to fetch task spec");
+	}
 	return res.json();
 }
 
@@ -1177,7 +1282,9 @@ async function fetchTaskSpecByItem(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks/by-item/${itemId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch task spec by item");
+	if (!res.ok) {
+		throw new Error("Failed to fetch task spec by item");
+	}
 	return res.json();
 }
 
@@ -1188,12 +1295,14 @@ async function createTaskSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create task spec");
+	if (!res.ok) {
+		throw new Error("Failed to create task spec");
+	}
 	return res.json();
 }
 
@@ -1205,12 +1314,14 @@ async function updateTaskSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks/${specId}`,
 		{
-			method: "PATCH",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "PATCH",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to update task spec");
+	if (!res.ok) {
+		throw new Error("Failed to update task spec");
+	}
 	return res.json();
 }
 
@@ -1220,9 +1331,11 @@ async function deleteTaskSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks/${specId}`,
-		{ method: "DELETE", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "DELETE" },
 	);
-	if (!res.ok) throw new Error("Failed to delete task spec");
+	if (!res.ok) {
+		throw new Error("Failed to delete task spec");
+	}
 }
 
 // Defect Specs
@@ -1236,10 +1349,18 @@ async function fetchDefectSpecs(
 	},
 ): Promise<{ specs: DefectSpec[]; total: number }> {
 	const params = new URLSearchParams();
-	if (options?.severity) params.append("severity", options.severity);
-	if (options?.status) params.append("status", options.status);
-	if (options?.limit) params.append("limit", String(options.limit));
-	if (options?.offset) params.append("offset", String(options.offset));
+	if (options?.severity) {
+		params.append("severity", options.severity);
+	}
+	if (options?.status) {
+		params.append("status", options.status);
+	}
+	if (options?.limit) {
+		params.append("limit", String(options.limit));
+	}
+	if (options?.offset) {
+		params.append("offset", String(options.offset));
+	}
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects?${params}`,
@@ -1260,7 +1381,9 @@ async function fetchDefectSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/${specId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch defect spec");
+	if (!res.ok) {
+		throw new Error("Failed to fetch defect spec");
+	}
 	return res.json();
 }
 
@@ -1272,7 +1395,9 @@ async function fetchDefectSpecByItem(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/by-item/${itemId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch defect spec by item");
+	if (!res.ok) {
+		throw new Error("Failed to fetch defect spec by item");
+	}
 	return res.json();
 }
 
@@ -1283,12 +1408,14 @@ async function createDefectSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create defect spec");
+	if (!res.ok) {
+		throw new Error("Failed to create defect spec");
+	}
 	return res.json();
 }
 
@@ -1300,12 +1427,14 @@ async function updateDefectSpec(
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/${specId}`,
 		{
-			method: "PATCH",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "PATCH",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to update defect spec");
+	if (!res.ok) {
+		throw new Error("Failed to update defect spec");
+	}
 	return res.json();
 }
 
@@ -1315,9 +1444,11 @@ async function deleteDefectSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/${specId}`,
-		{ method: "DELETE", headers: getAuthHeaders() },
+		{ headers: getAuthHeaders(), method: "DELETE" },
 	);
-	if (!res.ok) throw new Error("Failed to delete defect spec");
+	if (!res.ok) {
+		throw new Error("Failed to delete defect spec");
+	}
 }
 
 // =============================================================================
@@ -1335,41 +1466,41 @@ export function useRequirementSpecs(
 	},
 ) {
 	return useQuery({
-		queryKey: [...itemSpecKeys.requirements(projectId), options],
-		queryFn: () => fetchRequirementSpecs(projectId, options),
 		enabled: !!projectId,
+		queryFn: () => fetchRequirementSpecs(projectId, options),
+		queryKey: [...itemSpecKeys.requirements(projectId), options],
 	});
 }
 
 export function useRequirementSpec(projectId: string, specId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.requirement(projectId, specId),
-		queryFn: () => fetchRequirementSpec(projectId, specId),
 		enabled: !!projectId && !!specId,
+		queryFn: () => fetchRequirementSpec(projectId, specId),
+		queryKey: itemSpecKeys.requirement(projectId, specId),
 	});
 }
 
 export function useRequirementSpecByItem(projectId: string, itemId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.requirementByItem(projectId, itemId),
-		queryFn: () => fetchRequirementSpecByItem(projectId, itemId),
 		enabled: !!projectId && !!itemId,
+		queryFn: () => fetchRequirementSpecByItem(projectId, itemId),
+		queryKey: itemSpecKeys.requirementByItem(projectId, itemId),
 	});
 }
 
 export function useUnverifiedRequirements(projectId: string, limit = 100) {
 	return useQuery({
-		queryKey: itemSpecKeys.unverifiedRequirements(projectId),
-		queryFn: () => fetchUnverifiedRequirements(projectId, limit),
 		enabled: !!projectId,
+		queryFn: () => fetchUnverifiedRequirements(projectId, limit),
+		queryKey: itemSpecKeys.unverifiedRequirements(projectId),
 	});
 }
 
 export function useHighRiskRequirements(projectId: string, limit = 100) {
 	return useQuery({
-		queryKey: itemSpecKeys.highRiskRequirements(projectId),
-		queryFn: () => fetchHighRiskRequirements(projectId, limit),
 		enabled: !!projectId,
+		queryFn: () => fetchHighRiskRequirements(projectId, limit),
+		queryKey: itemSpecKeys.highRiskRequirements(projectId),
 	});
 }
 
@@ -1380,12 +1511,8 @@ export function useCreateRequirementSpec(projectId: string) {
 		mutationFn: (data: RequirementSpecCreate) =>
 			createRequirementSpec(projectId, data),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.requirements(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1402,16 +1529,12 @@ export function useUpdateRequirementSpec(projectId: string) {
 			data: RequirementSpecUpdate;
 		}) => updateRequirementSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.requirements(projectId),
-			});
+			undefined;
 			queryClient.setQueryData(
-				itemSpecKeys.requirement(projectId, data['id']),
+				itemSpecKeys.requirement(projectId, data["id"]),
 				data,
 			);
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.requirementByItem(projectId, data['item_id']),
-			});
+			undefined;
 		},
 	});
 }
@@ -1422,12 +1545,8 @@ export function useDeleteRequirementSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteRequirementSpec(projectId, specId),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.requirements(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1440,7 +1559,7 @@ export function useAnalyzeRequirementQuality(projectId: string) {
 			analyzeRequirementQuality(projectId, specId),
 		onSuccess: (data) => {
 			queryClient.setQueryData(
-				itemSpecKeys.requirement(projectId, data['id']),
+				itemSpecKeys.requirement(projectId, data["id"]),
 				data,
 			);
 		},
@@ -1454,7 +1573,7 @@ export function useAnalyzeRequirementImpact(projectId: string) {
 		mutationFn: (specId: string) => analyzeRequirementImpact(projectId, specId),
 		onSuccess: (data) => {
 			queryClient.setQueryData(
-				itemSpecKeys.requirement(projectId, data['id']),
+				itemSpecKeys.requirement(projectId, data["id"]),
 				data,
 			);
 		},
@@ -1484,14 +1603,10 @@ export function useVerifyRequirement(projectId: string) {
 				description,
 			),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.requirements(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.unverifiedRequirements(projectId),
-			});
+			undefined;
+			undefined;
 			queryClient.setQueryData(
-				itemSpecKeys.requirement(projectId, data['id']),
+				itemSpecKeys.requirement(projectId, data["id"]),
 				data,
 			);
 		},
@@ -1512,49 +1627,49 @@ export function useTestSpecs(
 	},
 ) {
 	return useQuery({
-		queryKey: [...itemSpecKeys.tests(projectId), options],
-		queryFn: () => fetchTestSpecs(projectId, options),
 		enabled: !!projectId,
+		queryFn: () => fetchTestSpecs(projectId, options),
+		queryKey: [...itemSpecKeys.tests(projectId), options],
 	});
 }
 
 export function useTestSpec(projectId: string, specId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.test(projectId, specId),
-		queryFn: () => fetchTestSpec(projectId, specId),
 		enabled: !!projectId && !!specId,
+		queryFn: () => fetchTestSpec(projectId, specId),
+		queryKey: itemSpecKeys.test(projectId, specId),
 	});
 }
 
 export function useTestSpecByItem(projectId: string, itemId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.testByItem(projectId, itemId),
-		queryFn: () => fetchTestSpecByItem(projectId, itemId),
 		enabled: !!projectId && !!itemId,
+		queryFn: () => fetchTestSpecByItem(projectId, itemId),
+		queryKey: itemSpecKeys.testByItem(projectId, itemId),
 	});
 }
 
 export function useFlakyTests(projectId: string, threshold = 0.2, limit = 50) {
 	return useQuery({
-		queryKey: [...itemSpecKeys.flakyTests(projectId), threshold],
-		queryFn: () => fetchFlakyTests(projectId, threshold, limit),
 		enabled: !!projectId,
+		queryFn: () => fetchFlakyTests(projectId, threshold, limit),
+		queryKey: [...itemSpecKeys.flakyTests(projectId), threshold],
 	});
 }
 
 export function useQuarantinedTests(projectId: string, limit = 50) {
 	return useQuery({
-		queryKey: itemSpecKeys.quarantinedTests(projectId),
-		queryFn: () => fetchQuarantinedTests(projectId, limit),
 		enabled: !!projectId,
+		queryFn: () => fetchQuarantinedTests(projectId, limit),
+		queryKey: itemSpecKeys.quarantinedTests(projectId),
 	});
 }
 
 export function useTestHealthReport(projectId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.testHealthReport(projectId),
-		queryFn: () => fetchTestHealthReport(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchTestHealthReport(projectId),
+		queryKey: itemSpecKeys.testHealthReport(projectId),
 	});
 }
 
@@ -1564,15 +1679,9 @@ export function useCreateTestSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (data: TestSpecCreate) => createTestSpec(projectId, data),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.tests(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.testHealthReport(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1584,13 +1693,9 @@ export function useUpdateTestSpec(projectId: string) {
 		mutationFn: ({ specId, data }: { specId: string; data: TestSpecUpdate }) =>
 			updateTestSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.tests(projectId),
-			});
-			queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.testByItem(projectId, data['item_id']),
-			});
+			undefined;
+			queryClient.setQueryData(itemSpecKeys.test(projectId, data["id"]), data);
+			undefined;
 		},
 	});
 }
@@ -1601,15 +1706,9 @@ export function useDeleteTestSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteTestSpec(projectId, specId),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.tests(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.testHealthReport(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1640,16 +1739,10 @@ export function useRecordTestRun(projectId: string) {
 				environment,
 			),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.tests(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.flakyTests(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.testHealthReport(projectId),
-			});
-			queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
+			undefined;
+			undefined;
+			undefined;
+			queryClient.setQueryData(itemSpecKeys.test(projectId, data["id"]), data);
 		},
 	});
 }
@@ -1661,16 +1754,10 @@ export function useQuarantineTest(projectId: string) {
 		mutationFn: ({ specId, reason }: { specId: string; reason: string }) =>
 			quarantineTest(projectId, specId, reason),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.tests(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.quarantinedTests(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.testHealthReport(projectId),
-			});
-			queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
+			undefined;
+			undefined;
+			undefined;
+			queryClient.setQueryData(itemSpecKeys.test(projectId, data["id"]), data);
 		},
 	});
 }
@@ -1681,16 +1768,10 @@ export function useUnquarantineTest(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => unquarantineTest(projectId, specId),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.tests(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.quarantinedTests(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.testHealthReport(projectId),
-			});
-			queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
+			undefined;
+			undefined;
+			undefined;
+			queryClient.setQueryData(itemSpecKeys.test(projectId, data["id"]), data);
 		},
 	});
 }
@@ -1708,25 +1789,25 @@ export function useEpicSpecs(
 	},
 ) {
 	return useQuery({
-		queryKey: [...itemSpecKeys.epics(projectId), options],
-		queryFn: () => fetchEpicSpecs(projectId, options),
 		enabled: !!projectId,
+		queryFn: () => fetchEpicSpecs(projectId, options),
+		queryKey: [...itemSpecKeys.epics(projectId), options],
 	});
 }
 
 export function useEpicSpec(projectId: string, specId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.epic(projectId, specId),
-		queryFn: () => fetchEpicSpec(projectId, specId),
 		enabled: !!projectId && !!specId,
+		queryFn: () => fetchEpicSpec(projectId, specId),
+		queryKey: itemSpecKeys.epic(projectId, specId),
 	});
 }
 
 export function useEpicSpecByItem(projectId: string, itemId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.epicByItem(projectId, itemId),
-		queryFn: () => fetchEpicSpecByItem(projectId, itemId),
 		enabled: !!projectId && !!itemId,
+		queryFn: () => fetchEpicSpecByItem(projectId, itemId),
+		queryKey: itemSpecKeys.epicByItem(projectId, itemId),
 	});
 }
 
@@ -1736,12 +1817,8 @@ export function useCreateEpicSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (data: EpicSpecCreate) => createEpicSpec(projectId, data),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.epics(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1753,13 +1830,9 @@ export function useUpdateEpicSpec(projectId: string) {
 		mutationFn: ({ specId, data }: { specId: string; data: EpicSpecUpdate }) =>
 			updateEpicSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.epics(projectId),
-			});
-			queryClient.setQueryData(itemSpecKeys.epic(projectId, data['id']), data);
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.epicByItem(projectId, data['item_id']),
-			});
+			undefined;
+			queryClient.setQueryData(itemSpecKeys.epic(projectId, data["id"]), data);
+			undefined;
 		},
 	});
 }
@@ -1770,12 +1843,8 @@ export function useDeleteEpicSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteEpicSpec(projectId, specId),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.epics(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1794,25 +1863,25 @@ export function useUserStorySpecs(
 	},
 ) {
 	return useQuery({
-		queryKey: [...itemSpecKeys.userStories(projectId), options],
-		queryFn: () => fetchUserStorySpecs(projectId, options),
 		enabled: !!projectId,
+		queryFn: () => fetchUserStorySpecs(projectId, options),
+		queryKey: [...itemSpecKeys.userStories(projectId), options],
 	});
 }
 
 export function useUserStorySpec(projectId: string, specId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.userStory(projectId, specId),
-		queryFn: () => fetchUserStorySpec(projectId, specId),
 		enabled: !!projectId && !!specId,
+		queryFn: () => fetchUserStorySpec(projectId, specId),
+		queryKey: itemSpecKeys.userStory(projectId, specId),
 	});
 }
 
 export function useUserStorySpecByItem(projectId: string, itemId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.userStoryByItem(projectId, itemId),
-		queryFn: () => fetchUserStorySpecByItem(projectId, itemId),
 		enabled: !!projectId && !!itemId,
+		queryFn: () => fetchUserStorySpecByItem(projectId, itemId),
+		queryKey: itemSpecKeys.userStoryByItem(projectId, itemId),
 	});
 }
 
@@ -1823,20 +1892,11 @@ export function useCreateUserStorySpec(projectId: string) {
 		mutationFn: (data: UserStorySpecCreate) =>
 			createUserStorySpec(projectId, data),
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.userStories(projectId),
-			});
+			undefined;
 			if (variables.parent_epic) {
-				void queryClient.invalidateQueries({
-					queryKey: itemSpecKeys.userStoriesByEpic(
-						projectId,
-						variables.parent_epic,
-					),
-				});
+				undefined;
 			}
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
 		},
 	});
 }
@@ -1853,16 +1913,12 @@ export function useUpdateUserStorySpec(projectId: string) {
 			data: UserStorySpecUpdate;
 		}) => updateUserStorySpec(projectId, specId, data),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.userStories(projectId),
-			});
+			undefined;
 			queryClient.setQueryData(
-				itemSpecKeys.userStory(projectId, data['id']),
+				itemSpecKeys.userStory(projectId, data["id"]),
 				data,
 			);
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.userStoryByItem(projectId, data['item_id']),
-			});
+			undefined;
 		},
 	});
 }
@@ -1873,12 +1929,8 @@ export function useDeleteUserStorySpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteUserStorySpec(projectId, specId),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.userStories(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1897,25 +1949,25 @@ export function useTaskSpecs(
 	},
 ) {
 	return useQuery({
-		queryKey: [...itemSpecKeys.tasks(projectId), options],
-		queryFn: () => fetchTaskSpecs(projectId, options),
 		enabled: !!projectId,
+		queryFn: () => fetchTaskSpecs(projectId, options),
+		queryKey: [...itemSpecKeys.tasks(projectId), options],
 	});
 }
 
 export function useTaskSpec(projectId: string, specId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.task(projectId, specId),
-		queryFn: () => fetchTaskSpec(projectId, specId),
 		enabled: !!projectId && !!specId,
+		queryFn: () => fetchTaskSpec(projectId, specId),
+		queryKey: itemSpecKeys.task(projectId, specId),
 	});
 }
 
 export function useTaskSpecByItem(projectId: string, itemId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.taskByItem(projectId, itemId),
-		queryFn: () => fetchTaskSpecByItem(projectId, itemId),
 		enabled: !!projectId && !!itemId,
+		queryFn: () => fetchTaskSpecByItem(projectId, itemId),
+		queryKey: itemSpecKeys.taskByItem(projectId, itemId),
 	});
 }
 
@@ -1925,20 +1977,11 @@ export function useCreateTaskSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (data: TaskSpecCreate) => createTaskSpec(projectId, data),
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.tasks(projectId),
-			});
+			undefined;
 			if (variables.parent_story) {
-				void queryClient.invalidateQueries({
-					queryKey: itemSpecKeys.tasksByStory(
-						projectId,
-						variables.parent_story,
-					),
-				});
+				undefined;
 			}
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
 		},
 	});
 }
@@ -1950,13 +1993,9 @@ export function useUpdateTaskSpec(projectId: string) {
 		mutationFn: ({ specId, data }: { specId: string; data: TaskSpecUpdate }) =>
 			updateTaskSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.tasks(projectId),
-			});
-			queryClient.setQueryData(itemSpecKeys.task(projectId, data['id']), data);
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.taskByItem(projectId, data['item_id']),
-			});
+			undefined;
+			queryClient.setQueryData(itemSpecKeys.task(projectId, data["id"]), data);
+			undefined;
 		},
 	});
 }
@@ -1967,12 +2006,8 @@ export function useDeleteTaskSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteTaskSpec(projectId, specId),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.tasks(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1991,25 +2026,25 @@ export function useDefectSpecs(
 	},
 ) {
 	return useQuery({
-		queryKey: [...itemSpecKeys.defects(projectId), options],
-		queryFn: () => fetchDefectSpecs(projectId, options),
 		enabled: !!projectId,
+		queryFn: () => fetchDefectSpecs(projectId, options),
+		queryKey: [...itemSpecKeys.defects(projectId), options],
 	});
 }
 
 export function useDefectSpec(projectId: string, specId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.defect(projectId, specId),
-		queryFn: () => fetchDefectSpec(projectId, specId),
 		enabled: !!projectId && !!specId,
+		queryFn: () => fetchDefectSpec(projectId, specId),
+		queryKey: itemSpecKeys.defect(projectId, specId),
 	});
 }
 
 export function useDefectSpecByItem(projectId: string, itemId: string) {
 	return useQuery({
-		queryKey: itemSpecKeys.defectByItem(projectId, itemId),
-		queryFn: () => fetchDefectSpecByItem(projectId, itemId),
 		enabled: !!projectId && !!itemId,
+		queryFn: () => fetchDefectSpecByItem(projectId, itemId),
+		queryKey: itemSpecKeys.defectByItem(projectId, itemId),
 	});
 }
 
@@ -2019,12 +2054,8 @@ export function useCreateDefectSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (data: DefectSpecCreate) => createDefectSpec(projectId, data),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.defects(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -2041,13 +2072,12 @@ export function useUpdateDefectSpec(projectId: string) {
 			data: DefectSpecUpdate;
 		}) => updateDefectSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.defects(projectId),
-			});
-			queryClient.setQueryData(itemSpecKeys.defect(projectId, data['id']), data);
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.defectByItem(projectId, data['item_id']),
-			});
+			undefined;
+			queryClient.setQueryData(
+				itemSpecKeys.defect(projectId, data["id"]),
+				data,
+			);
+			undefined;
 		},
 	});
 }
@@ -2058,12 +2088,8 @@ export function useDeleteDefectSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteDefectSpec(projectId, specId),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.defects(projectId),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.stats(projectId),
-			});
+			undefined;
+			undefined;
 		},
 	});
 }

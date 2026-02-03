@@ -14,14 +14,14 @@ export function useAuth() {
 	} = useAuthStore();
 
 	return {
-		user,
-		token,
 		isAuthenticated,
 		isLoading,
 		login,
 		logout,
 		refreshToken,
+		token,
 		updateProfile,
+		user,
 	};
 }
 

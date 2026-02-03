@@ -1,3 +1,4 @@
+/* eslint-disable oxc/no-async-await */
 /**
  * GitHub API client functions.
  * Sends Bearer token via getAuthHeaders() for backend auth.
@@ -19,7 +20,7 @@ function authHeaders(): RequestInit["headers"] {
 	};
 }
 
-export interface GitHubRepo {
+interface GitHubRepo {
 	id: number;
 	name: string;
 	full_name: string;
@@ -34,13 +35,13 @@ export interface GitHubRepo {
 	updated_at?: string;
 }
 
-export interface GitHubRepoListResponse {
+interface GitHubRepoListResponse {
 	repos: GitHubRepo[];
 	page: number;
 	per_page: number;
 }
 
-export interface GitHubAppInstallation {
+interface GitHubAppInstallation {
 	id: string;
 	installation_id: number;
 	account_login: string;
@@ -51,12 +52,12 @@ export interface GitHubAppInstallation {
 	created_at: string;
 }
 
-export interface GitHubAppInstallationListResponse {
+interface GitHubAppInstallationListResponse {
 	installations: GitHubAppInstallation[];
 	total: number;
 }
 
-export interface CreateRepoRequest {
+interface CreateRepoRequest {
 	installation_id: string;
 	account_id: string;
 	name: string;
@@ -65,46 +66,41 @@ export interface CreateRepoRequest {
 	org?: string;
 }
 
-/**
- * Get GitHub App installation URL for an account.
- */
-export async function getGitHubAppInstallUrl(
+async function getGitHubAppInstallUrl(
 	accountId: string,
 ): Promise<{ install_url: string; state: string }> {
 	const headers = authHeaders();
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/app/install-url?account_id=${accountId}`,
 		{
+			headers,
 			method: "GET",
-			...(headers && { headers }),
 		},
 	);
-	if (!res.ok) throw new Error("Failed to get installation URL");
-	return res.json();
+	if (!res.ok) {
+		throw new Error("Failed to get installation URL");
+	}
+	return res.json() as Promise<{ install_url: string; state: string }>;
 }
 
-/**
- * List GitHub App installations for an account.
- */
-export async function listGitHubAppInstallations(
+async function listGitHubAppInstallations(
 	accountId: string,
 ): Promise<GitHubAppInstallationListResponse> {
 	const headers = authHeaders();
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/app/installations?account_id=${accountId}`,
 		{
+			headers,
 			method: "GET",
-			...(headers && { headers }),
 		},
 	);
-	if (!res.ok) throw new Error("Failed to list installations");
-	return res.json();
+	if (!res.ok) {
+		throw new Error("Failed to list installations");
+	}
+	return res.json() as Promise<GitHubAppInstallationListResponse>;
 }
 
-/**
- * Link a GitHub App installation to an account.
- */
-export async function linkGitHubAppInstallation(
+async function linkGitHubAppInstallation(
 	installationId: string,
 	accountId: string,
 ): Promise<{ status: string; installation_id: string; account_id: string }> {
@@ -112,37 +108,39 @@ export async function linkGitHubAppInstallation(
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/app/installations/${installationId}/link`,
 		{
-			method: "POST",
-			...(headers && { headers }),
 			body: JSON.stringify({ account_id: accountId }),
+			headers,
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to link installation");
-	return res.json();
+	if (!res.ok) {
+		throw new Error("Failed to link installation");
+	}
+	return res.json() as Promise<{
+		status: string;
+		installation_id: string;
+		account_id: string;
+	}>;
 }
 
-/**
- * Delete a GitHub App installation.
- */
-export async function deleteGitHubAppInstallation(
+async function deleteGitHubAppInstallation(
 	installationId: string,
 ): Promise<{ status: string }> {
 	const headers = authHeaders();
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/app/installations/${installationId}`,
 		{
+			headers,
 			method: "DELETE",
-			...(headers && { headers }),
 		},
 	);
-	if (!res.ok) throw new Error("Failed to delete installation");
-	return res.json();
+	if (!res.ok) {
+		throw new Error("Failed to delete installation");
+	}
+	return res.json() as Promise<{ status: string }>;
 }
 
-/**
- * List GitHub repositories.
- */
-export async function listGitHubRepos(params: {
+async function listGitHubRepos(params: {
 	accountId?: string;
 	installationId?: string;
 	credentialId?: string;
@@ -151,44 +149,65 @@ export async function listGitHubRepos(params: {
 	page?: number;
 }): Promise<GitHubRepoListResponse> {
 	const searchParams = new URLSearchParams();
-	if (params.accountId) searchParams.set("account_id", params.accountId);
-	if (params.installationId)
+	if (params.accountId) {
+		searchParams.set("account_id", params.accountId);
+	}
+	if (params.installationId) {
 		searchParams.set("installation_id", params.installationId);
-	if (params.credentialId)
+	}
+	if (params.credentialId) {
 		searchParams.set("credential_id", params.credentialId);
-	if (params.search) searchParams.set("search", params.search);
-	if (params.perPage) searchParams.set("per_page", String(params.perPage));
-	if (params.page) searchParams.set("page", String(params.page));
+	}
+	if (params.search) {
+		searchParams.set("search", params.search);
+	}
+	if (params.perPage) {
+		searchParams.set("per_page", String(params.perPage));
+	}
+	if (params.page) {
+		searchParams.set("page", String(params.page));
+	}
 
 	const headers = authHeaders();
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/repos?${searchParams.toString()}`,
 		{
+			headers,
 			method: "GET",
-			...(headers && { headers }),
 		},
 	);
-	if (!res.ok) throw new Error("Failed to list repos");
-	return res.json();
+	if (!res.ok) {
+		throw new Error("Failed to list repos");
+	}
+	return res.json() as Promise<GitHubRepoListResponse>;
 }
 
-/**
- * Create a GitHub repository.
- */
-export async function createGitHubRepo(
-	data: CreateRepoRequest,
-): Promise<GitHubRepo> {
+async function createGitHubRepo(data: CreateRepoRequest): Promise<GitHubRepo> {
 	const headers = authHeaders();
 	const res = await fetch(`${API_URL}/api/v1/integrations/github/repos`, {
-		method: "POST",
-		...(headers && { headers }),
 		body: JSON.stringify(data),
+		headers,
+		method: "POST",
 	});
 	if (!res.ok) {
 		const error = await res
 			.json()
 			.catch(() => ({ detail: "Failed to create repo" }));
-		throw new Error(error.detail || "Failed to create repo");
+		throw new Error(
+			(error as { detail?: string }).detail || "Failed to create repo",
+		);
 	}
-	return res.json();
+	return res.json() as Promise<GitHubRepo>;
 }
+
+const githubApi = {
+	createGitHubRepo,
+	deleteGitHubAppInstallation,
+	getGitHubAppInstallUrl,
+	linkGitHubAppInstallation,
+	listGitHubAppInstallations,
+	listGitHubRepos,
+};
+
+// eslint-disable-next-line import/no-default-export
+export default githubApi;

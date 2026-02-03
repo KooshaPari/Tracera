@@ -54,8 +54,8 @@ describe("useKeyPress Hook", () => {
 		});
 
 		it("should not match when ctrl not pressed but required", () => {
-			const ctrlRequired: boolean = true;
-			const ctrlPressed: boolean = false;
+			const ctrlRequired = true;
+			const ctrlPressed = false;
 			const matches =
 				ctrlRequired === undefined || ctrlPressed === ctrlRequired;
 			expect(matches).toBe(false);
@@ -115,7 +115,7 @@ describe("useKeyPress Hook", () => {
 
 	describe("Event Listener Logic", () => {
 		it("should check window availability", () => {
-			const windowAvailable = typeof window !== "undefined";
+			const windowAvailable = typeof globalThis.window !== "undefined";
 			expect(typeof windowAvailable).toBe("boolean");
 		});
 
@@ -132,10 +132,14 @@ describe("useKeyPress Hook", () => {
 		it("should support event listener registration", () => {
 			// Mock addEventListener
 			const listeners = {} as Record<string, any[]>;
-			const mockAddEventListener = vi.fn((event: string, handler: EventListener) => {
-				if (!listeners[event]) listeners[event] = [];
-				listeners[event].push(handler);
-			});
+			const mockAddEventListener = vi.fn(
+				(event: string, handler: EventListener) => {
+					if (!listeners[event]) {
+						listeners[event] = [];
+					}
+					listeners[event].push(handler);
+				},
+			);
 
 			mockAddEventListener("keydown", () => {});
 			mockAddEventListener("keyup", () => {});
@@ -209,11 +213,11 @@ describe("useKeyPress Hook", () => {
 			const callback = vi.fn();
 			const options = { ctrl: true };
 			const event = {
-				key: "S",
-				ctrlKey: true,
-				shiftKey: false,
 				altKey: false,
+				ctrlKey: true,
+				key: "S",
 				metaKey: false,
+				shiftKey: false,
 			};
 
 			const eventKey = event.key.toLowerCase();

@@ -14,11 +14,11 @@ import {
 // Mock endpoints
 vi.mock("@/api/endpoints", () => ({
 	linksApi: {
-		list: vi.fn(),
-		get: vi.fn(),
 		create: vi.fn(),
-		update: vi.fn(),
 		delete: vi.fn(),
+		get: vi.fn(),
+		list: vi.fn(),
+		update: vi.fn(),
 	},
 }));
 
@@ -30,7 +30,7 @@ describe("Links API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchLinks", () => {
+	describe(fetchLinks, () => {
 		it("should fetch links", async () => {
 			vi.mocked(linksApi.list).mockResolvedValue(mockLinks);
 
@@ -48,7 +48,7 @@ describe("Links API", () => {
 		});
 	});
 
-	describe("fetchLink", () => {
+	describe(fetchLink, () => {
 		it("should fetch a single link", async () => {
 			vi.mocked(linksApi.get).mockResolvedValue(mockLinks[0]);
 
@@ -58,7 +58,7 @@ describe("Links API", () => {
 		});
 	});
 
-	describe("createLink", () => {
+	describe(createLink, () => {
 		it("should create a link", async () => {
 			const newLink = {
 				source_id: "item-1",
@@ -74,7 +74,7 @@ describe("Links API", () => {
 		});
 	});
 
-	describe("updateLink", () => {
+	describe(updateLink, () => {
 		it("should update a link", async () => {
 			const updates = { type: "tests" as const };
 			const updated = { ...mockLinks[0], ...updates };
@@ -86,9 +86,9 @@ describe("Links API", () => {
 		});
 	});
 
-	describe("deleteLink", () => {
+	describe(deleteLink, () => {
 		it("should delete a link", async () => {
-			vi.mocked(linksApi.delete).mockResolvedValue(undefined);
+			vi.mocked(linksApi.delete).mockResolvedValue();
 
 			await expect(deleteLink("link-1")).resolves.toBeUndefined();
 			expect(linksApi.delete).toHaveBeenCalledWith("link-1");

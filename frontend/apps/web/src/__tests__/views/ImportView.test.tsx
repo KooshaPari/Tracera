@@ -7,24 +7,24 @@ import { ImportView } from "../../views/ImportView";
 // Mock the API
 vi.mock("../../api/endpoints", () => ({
 	api: {
-		projects: {
-			list: vi.fn(),
-		},
 		exportImport: {
 			import: vi.fn(),
+		},
+		projects: {
+			list: vi.fn(),
 		},
 	},
 }));
 
-describe("ImportView", () => {
+describe(ImportView, () => {
 	let queryClient: QueryClient;
 	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		user = userEvent.setup();
@@ -54,7 +54,7 @@ describe("ImportView", () => {
 		);
 
 		// Click format select to open dropdown
-		const formatSelect = document.getElementById("format-select");
+		const formatSelect = document.querySelector("#format-select");
 		await user.click(formatSelect!);
 
 		// Wait for options to appear
@@ -81,7 +81,7 @@ describe("ImportView", () => {
 			</QueryClientProvider>,
 		);
 
-		const formatSelect = document.getElementById("format-select");
+		const formatSelect = document.querySelector("#format-select");
 		expect(formatSelect).toBeInTheDocument();
 
 		// Click to open dropdown
@@ -169,7 +169,7 @@ describe("ImportView", () => {
 		});
 
 		// Select a project
-		const projectSelect = document.getElementById("project-select");
+		const projectSelect = document.querySelector("#project-select");
 		await user.click(projectSelect!);
 		await waitFor(() => {
 			expect(
@@ -192,10 +192,10 @@ describe("ImportView", () => {
 	it("shows success message after successful import", async () => {
 		const { api } = await import("../../api/endpoints");
 		(api.exportImport.import as any).mockResolvedValue({
-			success: true,
-			imported_count: 5,
 			error_count: 0,
 			errors: [],
+			imported_count: 5,
+			success: true,
 		});
 		(api.projects.list as any).mockResolvedValue([
 			{ id: "proj-1", name: "Test Project" },
@@ -212,7 +212,7 @@ describe("ImportView", () => {
 			expect(screen.getByText("Project")).toBeInTheDocument();
 		});
 
-		const projectSelect = document.getElementById("project-select");
+		const projectSelect = document.querySelector("#project-select");
 		await user.click(projectSelect!);
 		await waitFor(() => {
 			expect(
@@ -239,7 +239,9 @@ describe("ImportView", () => {
 
 	it("shows error message on import failure", async () => {
 		const { api } = await import("../../api/endpoints");
-		const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
+		const alertMock = vi
+			.spyOn(globalThis, "alert")
+			.mockImplementation(() => {});
 
 		(api.exportImport.import as any).mockRejectedValue(
 			new Error("Import failed"),
@@ -259,7 +261,7 @@ describe("ImportView", () => {
 			expect(screen.getByText("Project")).toBeInTheDocument();
 		});
 
-		const projectSelect = document.getElementById("project-select");
+		const projectSelect = document.querySelector("#project-select");
 		await user.click(projectSelect!);
 		await waitFor(() => {
 			expect(
@@ -289,10 +291,10 @@ describe("ImportView", () => {
 	it("displays import errors when present", async () => {
 		const { api } = await import("../../api/endpoints");
 		(api.exportImport.import as any).mockResolvedValue({
-			success: true,
-			imported_count: 3,
 			error_count: 2,
 			errors: ["Error 1", "Error 2"],
+			imported_count: 3,
+			success: true,
 		});
 		(api.projects.list as any).mockResolvedValue([
 			{ id: "proj-1", name: "Test Project" },
@@ -309,7 +311,7 @@ describe("ImportView", () => {
 			expect(screen.getByText("Project")).toBeInTheDocument();
 		});
 
-		const projectSelect = document.getElementById("project-select");
+		const projectSelect = document.querySelector("#project-select");
 		await user.click(projectSelect!);
 		await waitFor(() => {
 			expect(

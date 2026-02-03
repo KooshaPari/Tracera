@@ -3,19 +3,20 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createMCPClient, type MCPClient } from "../../api/mcp-client";
+import { createMCPClient } from "../../api/mcp-client";
+import type { MCPClient } from "../../api/mcp-client";
 
 // Mock fetch globally
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
-describe("MCPClient", () => {
+describe(MCPClient, () => {
 	let client: MCPClient;
 
 	beforeEach(() => {
 		client = createMCPClient({
 			baseUrl: "http://localhost:4000",
-			token: "test-token",
 			timeout: 5000,
+			token: "test-token",
 		});
 
 		// Reset fetch mock
@@ -24,9 +25,9 @@ describe("MCPClient", () => {
 
 	afterEach(async () => {
 		// Mock close call to prevent errors
-		(global.fetch as any).mockResolvedValueOnce({
-			ok: true,
+		(globalThis.fetch as any).mockResolvedValueOnce({
 			json: async () => ({}),
+			ok: true,
 		});
 		await client.close();
 	});
@@ -38,8 +39,8 @@ describe("MCPClient", () => {
 
 		it("should initialize with server", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: {
 					protocolVersion: "2024-11-05",
 					serverInfo: {
@@ -54,23 +55,23 @@ describe("MCPClient", () => {
 				},
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			const result = await client.initialize();
 
 			expect(result.serverInfo.name).toBe("TraceRTM MCP Server");
 			expect(result.protocolVersion).toBe("2024-11-05");
-			expect(global.fetch).toHaveBeenCalledWith(
+			expect(globalThis.fetch).toHaveBeenCalledWith(
 				"http://localhost:4000/mcp/rpc",
 				expect.objectContaining({
-					method: "POST",
 					headers: expect.objectContaining({
 						"Content-Type": "application/json",
 						Authorization: "Bearer test-token",
 					}),
+					method: "POST",
 				}),
 			);
 		});
@@ -79,8 +80,8 @@ describe("MCPClient", () => {
 	describe("tools", () => {
 		it("should list available tools", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: {
 					tools: [
 						{
@@ -92,9 +93,9 @@ describe("MCPClient", () => {
 				},
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			const result = await client.listTools();
@@ -105,16 +106,16 @@ describe("MCPClient", () => {
 
 		it("should call a tool with parameters", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: {
 					projects: [{ id: "1", name: "Test Project" }],
 				},
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			const result = await client.callTool("project_manage", {
@@ -129,8 +130,8 @@ describe("MCPClient", () => {
 	describe("resources", () => {
 		it("should list available resources", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: {
 					resources: [
 						{
@@ -142,9 +143,9 @@ describe("MCPClient", () => {
 				},
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			const result = await client.listResources();
@@ -155,16 +156,16 @@ describe("MCPClient", () => {
 
 		it("should read a resource by URI", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: {
 					contents: { id: "1", name: "Test Project" },
 				},
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			const result = await client.readResource("tracertm://project/1");
@@ -177,8 +178,8 @@ describe("MCPClient", () => {
 	describe("prompts", () => {
 		it("should list available prompts", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: {
 					prompts: [
 						{
@@ -189,9 +190,9 @@ describe("MCPClient", () => {
 				},
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			const result = await client.listPrompts();
@@ -202,16 +203,16 @@ describe("MCPClient", () => {
 
 		it("should get a prompt with arguments", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: {
 					messages: [{ role: "user", content: "Analyze this requirement" }],
 				},
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			const result = await client.getPrompt("analyze_requirements", {
@@ -224,7 +225,7 @@ describe("MCPClient", () => {
 
 	describe("error handling", () => {
 		it("should handle HTTP errors", async () => {
-			(global.fetch as any).mockResolvedValueOnce({
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				ok: false,
 				status: 404,
 				statusText: "Not Found",
@@ -235,17 +236,17 @@ describe("MCPClient", () => {
 
 		it("should handle JSON-RPC errors", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
-				id: 1,
 				error: {
-					code: -32602,
+					code: -32_602,
 					message: "Invalid params",
 				},
+				id: 1,
+				jsonrpc: "2.0",
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			await expect(client.listTools()).rejects.toThrow(
@@ -255,13 +256,13 @@ describe("MCPClient", () => {
 
 		it("should handle missing result", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			await expect(client.listTools()).rejects.toThrow(
@@ -276,7 +277,7 @@ describe("MCPClient", () => {
 				// Never resolves
 			});
 
-			(global.fetch as any).mockReturnValueOnce(fetchPromise);
+			(globalThis.fetch as any).mockReturnValueOnce(fetchPromise);
 
 			const callPromise = client.listTools();
 			const expectation = expect(callPromise).rejects.toThrow();
@@ -292,19 +293,19 @@ describe("MCPClient", () => {
 	describe("authentication", () => {
 		it("should include bearer token in requests", async () => {
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: { tools: [] },
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			await client.listTools();
 
-			expect(global.fetch).toHaveBeenCalledWith(
+			expect(globalThis.fetch).toHaveBeenCalledWith(
 				expect.any(String),
 				expect.objectContaining({
 					headers: expect.objectContaining({
@@ -320,19 +321,19 @@ describe("MCPClient", () => {
 			});
 
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: { tools: [] },
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			await clientNoToken.listTools();
 
-			expect(global.fetch).toHaveBeenCalledWith(
+			expect(globalThis.fetch).toHaveBeenCalledWith(
 				expect.any(String),
 				expect.objectContaining({
 					headers: expect.not.objectContaining({
@@ -348,19 +349,19 @@ describe("MCPClient", () => {
 			client.setToken("new-token");
 
 			const mockResponse = {
-				jsonrpc: "2.0",
 				id: 1,
+				jsonrpc: "2.0",
 				result: { tools: [] },
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
-				ok: true,
+			(globalThis.fetch as any).mockResolvedValueOnce({
 				json: async () => mockResponse,
+				ok: true,
 			});
 
 			await client.listTools();
 
-			expect(global.fetch).toHaveBeenCalledWith(
+			expect(globalThis.fetch).toHaveBeenCalledWith(
 				expect.any(String),
 				expect.objectContaining({
 					headers: expect.objectContaining({

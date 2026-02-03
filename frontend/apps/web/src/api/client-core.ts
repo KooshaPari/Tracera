@@ -1,9 +1,10 @@
-import { logger } from "@/lib/logger";
-import { getCSRFHeaders } from "../lib/csrf";
-import { useAuthStore } from "../stores/authStore";
-import createClient from "openapi-fetch";
+/* eslint-disable promise/prefer-await-to-then */
 import apiConstants from "./client-constants";
+import createClient from "openapi-fetch";
 import responseHandlers from "./client-response-handlers";
+import { getCSRFHeaders } from "../lib/csrf";
+import { logger } from "@/lib/logger";
+import { useAuthStore } from "../stores/authStore";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyPaths = any;
@@ -38,7 +39,12 @@ if (!apiClient) {
 	throw new Error("API client initialization failed");
 }
 
-const normalizeToken = (token: string): string => (token === "" ? "" : token.trim());
+const normalizeToken = (token: string): string => {
+	if (token === "") {
+		return "";
+	}
+	return token.trim();
+};
 
 const getLocalStorageToken = (): string => {
 	if (!globalThis.window) {
@@ -47,12 +53,12 @@ const getLocalStorageToken = (): string => {
 	const localToken = globalThis.window.localStorage.getItem(
 		apiConstants.authTokenKey,
 	);
-	return localToken || "";
+	return localToken ?? "";
 };
 
 const getStoreToken = (): string => {
 	const storeToken = useAuthStore.getState().token;
-	return storeToken || "";
+	return storeToken ?? "";
 };
 
 const getStoredToken = (): string => {
@@ -100,10 +106,10 @@ const handleSessionError = (error: unknown): boolean => {
 	return false;
 };
 
-const validateSession = async (): Promise<boolean> => {
+const validateSession = (): Promise<boolean> => {
 	const token = getStoredToken();
 	if (token === "") {
-		return false;
+		return Promise.resolve(false);
 	}
 
 	const headers: Record<string, string> = {
@@ -118,13 +124,13 @@ const validateSession = async (): Promise<boolean> => {
 	};
 
 	try {
-		const response = await fetch(
+		const response = fetch(
 			`${API_BASE_URL}${apiConstants.authMePath}`,
 			requestInit,
 		);
-		return handleSessionResponse(response);
+		return response.then(handleSessionResponse);
 	} catch (error) {
-		return handleSessionError(error);
+		return Promise.resolve(handleSessionError(error));
 	}
 };
 
@@ -167,7 +173,8 @@ const rewriteRequestOrigin = (request: Request): Request => {
 	if (import.meta.env.PROD) {
 		return request;
 	}
-	return tryRewriteRequest(request) || request;
+	const rewritten = tryRewriteRequest(request);
+	return rewritten ?? request;
 };
 
 const applyCsrfHeaders = (request: Request): void => {
@@ -182,7 +189,8 @@ const applyAuthHeaders = (request: Request): void => {
 		return;
 	}
 
-	if (!request.url.includes(apiConstants.apiPathSegment)) {
+	const url = request.url;
+	if (!url.includes(apiConstants.apiPathSegment)) {
 		return;
 	}
 
@@ -207,12 +215,10 @@ apiClient.use({
 	onResponse,
 });
 
-const clientCore = {
+export const clientCore = {
 	API_BASE_URL,
 	apiClient,
 	getAuthHeaders,
 	getBackendURL,
 	validateSession,
 };
-
-export default clientCore;

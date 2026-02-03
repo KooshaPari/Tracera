@@ -77,9 +77,12 @@ export function CreateRepoModal({
 			const message =
 				error instanceof Error
 					? error.message
-					: (error && typeof error === "object" && "message" in error && typeof (error as ApiErrorResponse).message === "string")
+					: (error &&
+							typeof error === "object" &&
+							"message" in error &&
+							typeof (error as ApiErrorResponse).message === "string"
 						? (error as ApiErrorResponse).message
-						: "Failed to create repository";
+						: "Failed to create repository");
 			toast.error(message);
 		}
 	};

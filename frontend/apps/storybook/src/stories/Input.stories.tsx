@@ -4,9 +4,7 @@ import type { Meta } from "@storybook/react-vite";
 import { Input } from "@tracertm/ui";
 
 const meta: Meta<typeof Input> = {
-	title: "Components/Input",
 	component: Input,
-	tags: ["autodocs"],
 	parameters: {
 		design: {
 			type: "figma",
@@ -17,6 +15,8 @@ const meta: Meta<typeof Input> = {
 			storyId: "story-input-001",
 		},
 	},
+	tags: ["autodocs"],
+	title: "Components/Input",
 };
 
 export default meta;

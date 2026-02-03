@@ -125,7 +125,7 @@ export function useSearchWorker(): UseSearchWorkerReturn {
         type: 'init',
         indexData,
       }, worker.location.origin);
-    } catch (_err) {
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load search index';
       setError(errorMessage);
       console.error('❌ Failed to load search index:', err);

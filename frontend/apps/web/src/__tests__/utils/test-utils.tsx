@@ -21,8 +21,19 @@ vi.mock("@tanstack/react-router", async () => {
 		}),
 		useLocation: () => ({ pathname: "/" }),
 		useParams: () => ({}),
-		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string; [key: string]: unknown }) => (
-			<a href={typeof to === "string" ? to : String((to as unknown) ?? "")} {...props}>
+		Link: ({
+			children,
+			to,
+			...props
+		}: {
+			children: React.ReactNode;
+			to: string;
+			[key: string]: unknown;
+		}) => (
+			<a
+				href={typeof to === "string" ? to : String((to as unknown) ?? "")}
+				{...props}
+			>
 				{children}
 			</a>
 		),
@@ -33,13 +44,13 @@ vi.mock("@tanstack/react-router", async () => {
 const createTestQueryClient = () =>
 	new QueryClient({
 		defaultOptions: {
+			mutations: {
+				retry: false,
+			},
 			queries: {
 				retry: false,
 				gcTime: 0,
 				staleTime: 0,
-			},
-			mutations: {
-				retry: false,
 			},
 		},
 	});
@@ -62,9 +73,7 @@ const AllProviders = ({ children }: AllProvidersProps) => {
 const customRender = (
 	ui: ReactElement,
 	options?: Omit<RenderOptions, "wrapper">,
-) => {
-	return render(ui, { wrapper: AllProviders, ...options });
-};
+) => render(ui, { wrapper: AllProviders, ...options });
 
 /**
  * Create a wrapper with providers for hooks testing

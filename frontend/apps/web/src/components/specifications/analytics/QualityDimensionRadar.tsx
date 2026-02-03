@@ -18,25 +18,25 @@ interface QualityDimensionRadarProps {
 }
 
 const dimensionLabels: Record<QualityDimension, string> = {
-	unambiguity: "Unambiguity",
 	completeness: "Completeness",
-	verifiability: "Verifiability",
 	consistency: "Consistency",
+	feasibility: "Feasibility",
 	necessity: "Necessity",
 	singularity: "Singularity",
-	feasibility: "Feasibility",
 	traceability: "Traceability",
+	unambiguity: "Unambiguity",
+	verifiability: "Verifiability",
 };
 
 const gradeColors: Record<
 	QualityGrade,
 	{ bg: string; text: string; ring: string }
 > = {
-	A: { bg: "bg-green-100", text: "text-green-800", ring: "ring-green-500" },
-	B: { bg: "bg-blue-100", text: "text-blue-800", ring: "ring-blue-500" },
-	C: { bg: "bg-yellow-100", text: "text-yellow-800", ring: "ring-yellow-500" },
-	D: { bg: "bg-orange-100", text: "text-orange-800", ring: "ring-orange-500" },
-	F: { bg: "bg-red-100", text: "text-red-800", ring: "ring-red-500" },
+	A: { bg: "bg-green-100", ring: "ring-green-500", text: "text-green-800" },
+	B: { bg: "bg-blue-100", ring: "ring-blue-500", text: "text-blue-800" },
+	C: { bg: "bg-yellow-100", ring: "ring-yellow-500", text: "text-yellow-800" },
+	D: { bg: "bg-orange-100", ring: "ring-orange-500", text: "text-orange-800" },
+	F: { bg: "bg-red-100", ring: "ring-red-500", text: "text-red-800" },
 };
 
 export function QualityDimensionRadar({

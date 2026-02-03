@@ -4,10 +4,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import type { Item, Link } from "@tracertm/types";
 import { describe, expect, it, vi } from "vitest";
-import {
-	type DerivedJourney,
-	JourneyExplorer,
-} from "@/components/graph/JourneyExplorer";
+import { JourneyExplorer } from "@/components/graph/JourneyExplorer";
+import type { DerivedJourney } from "@/components/graph/JourneyExplorer";
 
 // =============================================================================
 // TEST DATA
@@ -15,124 +13,124 @@ import {
 
 const mockItems: Item[] = [
 	{
+		createdAt: new Date().toISOString(),
 		id: "item-1",
+		priority: "high" as any,
 		projectId: "proj-1",
-		view: "product" as any,
+		status: "done",
 		title: "Login Page",
 		type: "page",
-		status: "done",
-		priority: "high" as any,
-		version: 1,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "product" as any,
 	},
 	{
+		createdAt: new Date().toISOString(),
 		id: "item-2",
+		priority: "high" as any,
 		projectId: "proj-1",
-		view: "product" as any,
+		status: "done",
 		title: "Dashboard",
 		type: "page",
-		status: "done",
-		priority: "high" as any,
-		version: 1,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "product" as any,
 	},
 	{
+		createdAt: new Date().toISOString(),
 		id: "item-3",
+		priority: "high" as any,
 		projectId: "proj-1",
-		view: "technical" as any,
+		status: "done",
 		title: "Auth API",
 		type: "api",
-		status: "done",
-		priority: "high" as any,
-		version: 1,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "technical" as any,
 	},
 	{
+		createdAt: new Date().toISOString(),
 		id: "item-4",
+		priority: "high" as any,
 		projectId: "proj-1",
-		view: "technical" as any,
+		status: "done",
 		title: "User Database",
 		type: "database",
-		status: "done",
-		priority: "high" as any,
-		version: 1,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "technical" as any,
 	},
 	{
+		createdAt: new Date().toISOString(),
 		id: "item-5",
+		priority: "high" as any,
 		projectId: "proj-1",
-		view: "product" as any,
+		status: "in_progress",
 		title: "Checkout Flow",
 		type: "user_story",
-		status: "in_progress",
-		priority: "high" as any,
-		version: 1,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "product" as any,
 	},
 ];
 
 const mockLinks: Link[] = [
 	{
+		createdAt: new Date().toISOString(),
 		id: "link-1",
+		projectId: "proj-1",
 		sourceId: "item-1",
 		targetId: "item-3",
 		type: "implements",
-		projectId: "proj-1",
-		createdAt: new Date().toISOString(),
 	},
 	{
+		createdAt: new Date().toISOString(),
 		id: "link-2",
+		projectId: "proj-1",
 		sourceId: "item-3",
 		targetId: "item-4",
 		type: "depends_on",
-		projectId: "proj-1",
-		createdAt: new Date().toISOString(),
 	},
 	{
+		createdAt: new Date().toISOString(),
 		id: "link-3",
+		projectId: "proj-1",
 		sourceId: "item-1",
 		targetId: "item-2",
 		type: "related_to",
-		projectId: "proj-1",
-		createdAt: new Date().toISOString(),
 	},
 ];
 
 const mockJourneys: DerivedJourney[] = [
 	{
+		color: "#9333ea",
 		id: "journey-1",
-		name: "Login Flow",
-		type: "user_flow",
-		nodeIds: ["item-1", "item-3", "item-4"],
 		links: [
 			{ sourceId: "item-1", targetId: "item-3", type: "implements" },
 			{ sourceId: "item-3", targetId: "item-4", type: "depends_on" },
 		],
-		color: "#9333ea",
+		name: "Login Flow",
+		nodeIds: ["item-1", "item-3", "item-4"],
+		type: "user_flow",
 	},
 	{
-		id: "journey-2",
-		name: "Data Flow",
-		type: "data_path",
-		nodeIds: ["item-3", "item-4"],
-		links: [{ sourceId: "item-3", targetId: "item-4", type: "data_flow" }],
 		color: "#3b82f6",
+		id: "journey-2",
+		links: [{ sourceId: "item-3", targetId: "item-4", type: "data_flow" }],
+		name: "Data Flow",
+		nodeIds: ["item-3", "item-4"],
+		type: "data_path",
 	},
 	{
+		color: "#22c55e",
 		id: "journey-3",
-		name: "Test Coverage",
-		type: "test_trace",
-		nodeIds: ["item-1", "item-2", "item-3"],
 		links: [
 			{ sourceId: "item-1", targetId: "item-2", type: "tests" },
 			{ sourceId: "item-2", targetId: "item-3", type: "validates" },
 		],
-		color: "#22c55e",
+		name: "Test Coverage",
+		nodeIds: ["item-1", "item-2", "item-3"],
+		type: "test_trace",
 	},
 ];
 
@@ -140,7 +138,7 @@ const mockJourneys: DerivedJourney[] = [
 // TESTS
 // =============================================================================
 
-describe("JourneyExplorer", () => {
+describe(JourneyExplorer, () => {
 	describe("Rendering and Display", () => {
 		it("should render with journeys", () => {
 			render(
@@ -462,7 +460,6 @@ describe("JourneyExplorer", () => {
 
 	describe("Export Functionality", () => {
 		it("should open export dialog when export button clicked", async () => {
-
 			render(
 				<JourneyExplorer
 					items={mockItems}
@@ -518,7 +515,6 @@ describe("JourneyExplorer", () => {
 
 	describe("Create Journey", () => {
 		it("should open create journey dialog", async () => {
-
 			render(
 				<JourneyExplorer
 					items={mockItems}
@@ -564,17 +560,16 @@ describe("JourneyExplorer", () => {
 
 				expect(onJourneyCreate).toHaveBeenCalledWith(
 					expect.objectContaining({
-						name: "My Journey",
-						type: "user_flow",
-						nodeIds: [],
 						links: [],
+						name: "My Journey",
+						nodeIds: [],
+						type: "user_flow",
 					}),
 				);
 			}
 		});
 
 		it("should disable create button when name is empty", async () => {
-
 			render(
 				<JourneyExplorer
 					items={mockItems}
@@ -608,7 +603,7 @@ describe("JourneyExplorer", () => {
 					items={mockItems}
 					links={mockLinks}
 					journeys={mockJourneys}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -621,7 +616,7 @@ describe("JourneyExplorer", () => {
 					items={mockItems}
 					links={mockLinks}
 					journeys={[]}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -652,7 +647,7 @@ describe("JourneyExplorer", () => {
 					items={mockItems}
 					links={mockLinks}
 					journeys={mockJourneys}
-					isLoading={true}
+					isLoading
 				/>,
 			);
 

@@ -4,20 +4,17 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	ApiError,
-	apiClient,
-	handleApiResponse,
-	safeApiCall,
-} from "@/api/client";
+import client from "@/api/client";
+
+const { ApiError, apiClient, handleApiResponse, safeApiCall } = client;
 
 // Mock openapi-fetch
 vi.mock("openapi-fetch", () => {
 	const mockClient = {
+		DELETE: vi.fn(),
 		GET: vi.fn(),
 		POST: vi.fn(),
 		PUT: vi.fn(),
-		DELETE: vi.fn(),
 		use: vi.fn(),
 	};
 	return {
@@ -27,12 +24,12 @@ vi.mock("openapi-fetch", () => {
 
 // Mock localStorage
 const localStorageMock = {
-	getItem: vi.fn(),
-	setItem: vi.fn(),
-	removeItem: vi.fn(),
 	clear: vi.fn(),
+	getItem: vi.fn(),
+	removeItem: vi.fn(),
+	setItem: vi.fn(),
 };
-global.localStorage = localStorageMock as any;
+globalThis.localStorage = localStorageMock as any;
 
 describe("API Client", () => {
 	beforeEach(() => {
@@ -54,7 +51,7 @@ describe("API Client", () => {
 		});
 	});
 
-	describe("safeApiCall", () => {
+	describe(safeApiCall, () => {
 		it("should return promise when valid", async () => {
 			const mockPromise = Promise.resolve({
 				data: "test",
@@ -77,11 +74,11 @@ describe("API Client", () => {
 		});
 
 		it("should reject when promise is undefined", async () => {
-			await expect(safeApiCall(undefined)).rejects.toThrow(ApiError);
+			await expect(safeApiCall()).rejects.toThrow(ApiError);
 		});
 	});
 
-	describe("handleApiResponse", () => {
+	describe(handleApiResponse, () => {
 		it("should return data when successful", async () => {
 			const mockPromise = Promise.resolve({
 				data: { id: "1", name: "Test" },
@@ -101,7 +98,7 @@ describe("API Client", () => {
 		});
 
 		it("should throw ApiError when promise is undefined", async () => {
-			await expect(handleApiResponse(undefined)).rejects.toThrow(ApiError);
+			await expect(handleApiResponse()).rejects.toThrow(ApiError);
 		});
 
 		it("should throw ApiError when error is present", async () => {

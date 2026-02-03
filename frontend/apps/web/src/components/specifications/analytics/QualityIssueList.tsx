@@ -19,34 +19,34 @@ interface QualityIssueListProps {
 
 const severityConfig = {
 	error: {
-		label: "Error",
-		icon: "✕",
 		color: "text-red-600 bg-red-50 border-red-200",
+		icon: "✕",
 		iconColor: "text-red-600",
-	},
-	warning: {
-		label: "Warning",
-		icon: "⚠",
-		color: "text-yellow-700 bg-yellow-50 border-yellow-200",
-		iconColor: "text-yellow-600",
+		label: "Error",
 	},
 	info: {
-		label: "Info",
-		icon: "ℹ",
 		color: "text-blue-600 bg-blue-50 border-blue-200",
+		icon: "ℹ",
 		iconColor: "text-blue-600",
+		label: "Info",
+	},
+	warning: {
+		color: "text-yellow-700 bg-yellow-50 border-yellow-200",
+		icon: "⚠",
+		iconColor: "text-yellow-600",
+		label: "Warning",
 	},
 };
 
 const dimensionLabels: Record<QualityDimension, string> = {
-	unambiguity: "Unambiguity",
 	completeness: "Completeness",
-	verifiability: "Verifiability",
 	consistency: "Consistency",
+	feasibility: "Feasibility",
 	necessity: "Necessity",
 	singularity: "Singularity",
-	feasibility: "Feasibility",
 	traceability: "Traceability",
+	unambiguity: "Unambiguity",
+	verifiability: "Verifiability",
 };
 
 export function QualityIssueList({
@@ -63,7 +63,9 @@ export function QualityIssueList({
 		const grouped = displayIssues.reduce(
 			(acc, issue) => {
 				const dim = issue.dimension;
-				if (!acc[dim]) acc[dim] = [];
+				if (!acc[dim]) {
+					acc[dim] = [];
+				}
 				acc[dim].push(issue);
 				return acc;
 			},

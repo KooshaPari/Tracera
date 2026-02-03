@@ -28,7 +28,7 @@ test.describe("Virtual Scrolling Performance", () => {
 		const initialCount = await initialRows.count();
 
 		// With virtual scrolling and 600px height, should render roughly 8-12 rows max
-		// much fewer than total items (100+)
+		// Much fewer than total items (100+)
 		expect(initialCount).toBeLessThan(20);
 		expect(initialCount).toBeGreaterThan(5);
 	});
@@ -98,8 +98,8 @@ test.describe("Virtual Scrolling Performance", () => {
 
 	test("should display row count indicator", async ({ page }) => {
 		// Look for item count display in filter bar
-		await page.waitForSelector("text=/Showing \\d+ of \\d+ items/");
-		const countText = page.locator("text=/Showing \\d+ of \\d+ items/");
+		await page.waitForSelector(String.raw`text=/Showing \d+ of \d+ items/`);
+		const countText = page.locator(String.raw`text=/Showing \d+ of \d+ items/`);
 		const isVisible = await countText.isVisible();
 
 		expect(isVisible).toBe(true);
@@ -109,8 +109,8 @@ test.describe("Virtual Scrolling Performance", () => {
 		const match = text?.match(/Showing (\d+) of (\d+) items/);
 
 		if (match) {
-			const showing = parseInt(match[1], 10);
-			const total = parseInt(match[2], 10);
+			const showing = Number.parseInt(match[1], 10);
+			const total = Number.parseInt(match[2], 10);
 
 			// Showing should be <= total
 			expect(showing).toBeLessThanOrEqual(total);
@@ -236,7 +236,7 @@ test.describe("Virtual Scrolling Edge Cases", () => {
 		const _initialRowCount = await page.locator("table tbody tr").count();
 
 		// Resize window
-		await page.setViewportSize({ width: 1200, height: 800 });
+		await page.setViewportSize({ height: 800, width: 1200 });
 
 		await page.waitForTimeout(500);
 

@@ -15,15 +15,19 @@
 		"react-dom": "^19.0.0"
 	},
 	"devDependencies": {
-		"@chromatic-com/storybook": "^3.0.0",
-		"@storybook/addon-docs": "^8.0.0",
-		"@storybook/addon-links": "^8.0.0",
-		"@storybook/react": "^8.0.0",
-		"@storybook/react-vite": "^8.0.0",
+		"@chromatic-com/storybook": "^5.0.0",
+		"@storybook/addon-a11y": "^10.2.4",
+		"@storybook/addon-coverage": "^3.0.0",
+		"@storybook/addon-designs": "^11.1.1",
+		"@storybook/addon-docs": "^10.2.4",
+		"@storybook/addon-links": "^10.2.4",
+		"@storybook/react": "^10.2.4",
+		"@storybook/react-vite": "^10.2.4",
 		"@storybook/test-runner": "^0.24.2",
 		"@types/react": "^19.0.1",
-		"chromatic": "^11.0.0",
-		"storybook": "^8.0.0",
+		"chromatic": "^15.0.0",
+		"rollup": "^4.30.0",
+		"storybook": "^10.2.4",
 		"typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
 		"vite": "^6.0.1"
 	}

@@ -5,18 +5,19 @@
  */
 
 import { useCallback, useState } from "react";
-import ReactFlow, {
-	ReactFlowProvider,
-	useReactFlow,
-	type OnViewportChange,
-} from "@xyflow/react";
+import ReactFlow, { ReactFlowProvider, useReactFlow } from "@xyflow/react";
+import type { OnViewportChange } from "@xyflow/react";
 import { useViewportGraph } from "./useViewportGraph";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 /**
  * Example 1: Basic viewport-based loading
  */
-export function BasicViewportGraphExample({ projectId }: { projectId: string }) {
+export function BasicViewportGraphExample({
+	projectId,
+}: {
+	projectId: string;
+}) {
 	// Initialize the viewport graph hook
 	const { nodes, edges, loadViewport, isLoading, totalCount, hasMore } =
 		useViewportGraph(projectId);
@@ -38,13 +39,13 @@ export function BasicViewportGraphExample({ projectId }: { projectId: string }) 
 			const maxY = minY + height / zoom;
 
 			// Load data for this viewport
-			void loadViewport({ minX, minY, maxX, maxY, zoom });
+			undefined;
 		},
 		[reactFlowInstance, loadViewport],
 	);
 
 	return (
-		<div style={{ width: "100%", height: "600px" }}>
+		<div style={{ height: "600px", width: "100%" }}>
 			<ReactFlow
 				nodes={nodes}
 				edges={edges}
@@ -54,13 +55,13 @@ export function BasicViewportGraphExample({ projectId }: { projectId: string }) 
 				{isLoading && (
 					<div
 						style={{
-							position: "absolute",
-							top: 16,
-							right: 16,
-							padding: "8px 16px",
 							background: "rgba(0,0,0,0.8)",
-							color: "white",
 							borderRadius: 4,
+							color: "white",
+							padding: "8px 16px",
+							position: "absolute",
+							right: 16,
+							top: 16,
 						}}
 					>
 						Loading region...
@@ -68,22 +69,28 @@ export function BasicViewportGraphExample({ projectId }: { projectId: string }) 
 				)}
 				<div
 					style={{
-						position: "absolute",
-						top: 16,
+						background: "rgba(0,0,0,0.7)",
+						borderRadius: 4,
+						color: "white",
 						left: 16,
 						padding: "8px 16px",
-						background: "rgba(0,0,0,0.7)",
-						color: "white",
-						borderRadius: 4,
+						position: "absolute",
+						top: 16,
 					}}
 				>
-					<div>Loaded: {nodes.length} / {totalCount} nodes</div>
+					<div>
+						Loaded: {nodes.length} / {totalCount} nodes
+					</div>
 					<div style={{ fontSize: "0.8em", marginTop: 4 }}>
 						{hasMore.north && "⬆️ "}
 						{hasMore.south && "⬇️ "}
 						{hasMore.east && "➡️ "}
 						{hasMore.west && "⬅️ "}
-						{!hasMore.north && !hasMore.south && !hasMore.east && !hasMore.west && "✓ All loaded"}
+						{!hasMore.north &&
+							!hasMore.south &&
+							!hasMore.east &&
+							!hasMore.west &&
+							"✓ All loaded"}
 					</div>
 				</div>
 			</ReactFlow>
@@ -102,34 +109,31 @@ export function ViewportGraphWithCallbackExample({
 	// Track loading stats
 	const [_stats, setStats] = useState({
 		regionsLoaded: 0,
-		totalNodes: 0,
 		totalEdges: 0,
+		totalNodes: 0,
 	});
 
-	const { nodes, edges, loadedRegionCount } = useViewportGraph(
-		projectId,
-		{
-			bufferPx: 1000, // Larger buffer for smoother panning
-			onRegionLoaded: (regionKey, nodeCount, edgeCount) => {
-				logger.info(
-					`Loaded region ${regionKey}: ${nodeCount} nodes, ${edgeCount} edges`,
-				);
-				setStats((prev) => ({
-					regionsLoaded: prev.regionsLoaded + 1,
-					totalNodes: prev.totalNodes + nodeCount,
-					totalEdges: prev.totalEdges + edgeCount,
-				}));
-			},
+	const { nodes, edges, loadedRegionCount } = useViewportGraph(projectId, {
+		bufferPx: 1000, // Larger buffer for smoother panning
+		onRegionLoaded: (regionKey, nodeCount, edgeCount) => {
+			logger.info(
+				`Loaded region ${regionKey}: ${nodeCount} nodes, ${edgeCount} edges`,
+			);
+			setStats((prev) => ({
+				regionsLoaded: prev.regionsLoaded + 1,
+				totalEdges: prev.totalEdges + edgeCount,
+				totalNodes: prev.totalNodes + nodeCount,
+			}));
 		},
-	);
+	});
 
 	return (
 		<div>
 			<div
 				style={{
-					padding: 16,
 					background: "#f5f5f5",
 					borderBottom: "1px solid #ddd",
+					padding: 16,
 				}}
 			>
 				<h3>Loading Statistics</h3>
@@ -137,7 +141,7 @@ export function ViewportGraphWithCallbackExample({
 				<p>Total nodes: {nodes.length}</p>
 				<p>Total edges: {edges.length}</p>
 			</div>
-			<div style={{ width: "100%", height: "600px" }}>
+			<div style={{ height: "600px", width: "100%" }}>
 				<ReactFlow nodes={nodes} edges={edges} fitView />
 			</div>
 		</div>
@@ -147,7 +151,11 @@ export function ViewportGraphWithCallbackExample({
 /**
  * Example 3: Manual viewport loading
  */
-export function ManualViewportLoadExample({ projectId }: { projectId: string }) {
+export function ManualViewportLoadExample({
+	projectId,
+}: {
+	projectId: string;
+}) {
 	const { nodes, edges, loadViewport, isLoading, hasMore } =
 		useViewportGraph(projectId);
 
@@ -166,30 +174,34 @@ export function ManualViewportLoadExample({ projectId }: { projectId: string }) 
 		// Shift viewport in the specified direction
 		const shift = 2000; // 2000px shift
 		switch (direction) {
-			case "north":
+			case "north": {
 				minY -= shift;
 				maxY -= shift;
 				break;
-			case "south":
+			}
+			case "south": {
 				minY += shift;
 				maxY += shift;
 				break;
-			case "east":
+			}
+			case "east": {
 				minX += shift;
 				maxX += shift;
 				break;
-			case "west":
+			}
+			case "west": {
 				minX -= shift;
 				maxX -= shift;
 				break;
+			}
 		}
 
-		void loadViewport({ minX, minY, maxX, maxY, zoom });
+		undefined;
 	};
 
 	return (
 		<div>
-			<div style={{ padding: 16, display: "flex", gap: 8 }}>
+			<div style={{ display: "flex", gap: 8, padding: 16 }}>
 				<button
 					onClick={() => handleLoadMore("north")}
 					disabled={!hasMore.north || isLoading}
@@ -215,7 +227,7 @@ export function ManualViewportLoadExample({ projectId }: { projectId: string }) 
 					Load West ⬅️
 				</button>
 			</div>
-			<div style={{ width: "100%", height: "600px" }}>
+			<div style={{ height: "600px", width: "100%" }}>
 				<ReactFlow nodes={nodes} edges={edges} fitView />
 			</div>
 		</div>

@@ -6,8 +6,8 @@
  * Deep purple theme (#7c3aed) for epic-specific UI elements.
  */
 
-import { isEpicItem } from '@tracertm/types';
-import type { EpicItem } from '@tracertm/types';
+import { isEpicItem } from "@tracertm/types";
+import type { EpicItem } from "@tracertm/types";
 import {
 	Badge,
 	Card,
@@ -35,8 +35,8 @@ import {
 import { useMemo } from "react";
 import { useEpicSpecByItem } from "@/hooks/useItemSpecs";
 import { cn } from "@/lib/utils";
-import { BaseDetailView } from './BaseDetailView';
-import type { DetailTab } from './BaseDetailView';
+import { BaseDetailView } from "./BaseDetailView";
+import type { DetailTab } from "./BaseDetailView";
 
 interface EpicDetailViewProps {
 	item: EpicItem;
@@ -85,7 +85,9 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 	const StatusIcon = statusStyle.icon;
 
 	const completionPercentage = useMemo(() => {
-		if (!epicSpec || epicSpec.child_stories_count === 0) {return 0;}
+		if (!epicSpec || epicSpec.child_stories_count === 0) {
+			return 0;
+		}
 		// This is a placeholder - in reality, you'd calculate based on completed stories
 		return Math.round(
 			(epicSpec.user_stories.length / epicSpec.child_stories_count) * 100,
@@ -93,7 +95,9 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 	}, [epicSpec]);
 
 	const timelineProgress = useMemo(() => {
-		if (!epicSpec?.start_date || !epicSpec?.end_date) {return 0;}
+		if (!epicSpec?.start_date || !epicSpec?.end_date) {
+			return 0;
+		}
 		const now = new Date();
 		const start = new Date(epicSpec.start_date);
 		const end = new Date(epicSpec.end_date);

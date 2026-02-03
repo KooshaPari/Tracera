@@ -7,10 +7,9 @@ import { GraphToolbar } from "../GraphToolbar";
 import { useState } from "react";
 import type { LayoutType } from "../layouts/useDAGLayout";
 import type { GraphPerspective } from "../types";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 const meta: Meta<typeof GraphToolbar> = {
-	title: "Graph/GraphToolbar",
 	component: GraphToolbar,
 	decorators: [
 		(Story) => (
@@ -25,13 +24,18 @@ const meta: Meta<typeof GraphToolbar> = {
 		layout: "fullscreen",
 	},
 	tags: ["autodocs"],
+	title: "Graph/GraphToolbar",
 };
 
 export default meta;
 type Story = StoryObj<typeof GraphToolbar>;
 
 // Interactive wrapper for stateful toolbar
-function ToolbarWrapper({ variant }: { variant?: "full" | "compact" | "minimal" }) {
+function ToolbarWrapper({
+	variant,
+}: {
+	variant?: "full" | "compact" | "minimal";
+}) {
 	const [layout, setLayout] = useState<LayoutType>("flow-chart");
 	const [perspective, setPerspective] = useState<GraphPerspective>("all");
 	const [showDetailPanel, setShowDetailPanel] = useState(true);
@@ -76,7 +80,6 @@ function ToolbarWrapper({ variant }: { variant?: "full" | "compact" | "minimal" 
 
 // Full variant with all features
 export const Full: Story = {
-	render: () => <ToolbarWrapper variant="full" />,
 	parameters: {
 		docs: {
 			description: {
@@ -85,11 +88,11 @@ export const Full: Story = {
 			},
 		},
 	},
+	render: () => <ToolbarWrapper variant="full" />,
 };
 
 // Compact variant
 export const Compact: Story = {
-	render: () => <ToolbarWrapper variant="compact" />,
 	parameters: {
 		docs: {
 			description: {
@@ -98,11 +101,11 @@ export const Compact: Story = {
 			},
 		},
 	},
+	render: () => <ToolbarWrapper variant="compact" />,
 };
 
 // Minimal variant
 export const Minimal: Story = {
-	render: () => <ToolbarWrapper variant="minimal" />,
 	parameters: {
 		docs: {
 			description: {
@@ -111,13 +114,23 @@ export const Minimal: Story = {
 			},
 		},
 	},
+	render: () => <ToolbarWrapper variant="minimal" />,
 };
 
 // With active filters
 export const WithFilters: Story = {
+	parameters: {
+		docs: {
+			description: {
+				story:
+					"Toolbar with active filters showing how it displays selected perspectives and node types.",
+			},
+		},
+	},
 	render: () => {
 		const [layout, setLayout] = useState<LayoutType>("flow-chart");
-		const [perspective, setPerspective] = useState<GraphPerspective>("technical");
+		const [perspective, setPerspective] =
+			useState<GraphPerspective>("technical");
 		const [selectedNodeTypes, setSelectedNodeTypes] = useState<string[]>([
 			"api",
 			"database",
@@ -153,36 +166,36 @@ export const WithFilters: Story = {
 			/>
 		);
 	},
-	parameters: {
-		docs: {
-			description: {
-				story:
-					"Toolbar with active filters showing how it displays selected perspectives and node types.",
-			},
-		},
-	},
 };
 
 // Large dataset
 export const LargeDataset: Story = {
-	render: () => <ToolbarWrapper variant="full" />,
 	args: {
-		totalNodes: 5000,
-		visibleNodes: 500,
 		totalEdges: 12000,
+		totalNodes: 5000,
 		visibleEdges: 1200,
+		visibleNodes: 500,
 	},
 	parameters: {
 		docs: {
 			description: {
-				story: "Toolbar with large dataset statistics showing culling information.",
+				story:
+					"Toolbar with large dataset statistics showing culling information.",
 			},
 		},
 	},
+	render: () => <ToolbarWrapper variant="full" />,
 };
 
 // Disabled state
 export const Disabled: Story = {
+	parameters: {
+		docs: {
+			description: {
+				story: "Toolbar with no data (disabled state).",
+			},
+		},
+	},
 	render: () => (
 		<GraphToolbar
 			layout="flow-chart"
@@ -196,17 +209,17 @@ export const Disabled: Story = {
 			variant="full"
 		/>
 	),
-	parameters: {
-		docs: {
-			description: {
-				story: "Toolbar with no data (disabled state).",
-			},
-		},
-	},
 };
 
 // Fullscreen mode
 export const Fullscreen: Story = {
+	parameters: {
+		docs: {
+			description: {
+				story: "Toolbar in fullscreen mode showing exit fullscreen button.",
+			},
+		},
+	},
 	render: () => {
 		const [isFullscreen, setIsFullscreen] = useState(true);
 
@@ -224,17 +237,18 @@ export const Fullscreen: Story = {
 			/>
 		);
 	},
-	parameters: {
-		docs: {
-			description: {
-				story: "Toolbar in fullscreen mode showing exit fullscreen button.",
-			},
-		},
-	},
 };
 
 // Keyboard shortcuts documentation
 export const KeyboardShortcuts: Story = {
+	parameters: {
+		docs: {
+			description: {
+				story:
+					"Complete keyboard shortcuts reference for the graph toolbar. All shortcuts work when the graph has focus.",
+			},
+		},
+	},
 	render: () => (
 		<div className="space-y-4">
 			<h2 className="text-2xl font-bold">Keyboard Shortcuts</h2>
@@ -306,12 +320,4 @@ export const KeyboardShortcuts: Story = {
 			</div>
 		</div>
 	),
-	parameters: {
-		docs: {
-			description: {
-				story:
-					"Complete keyboard shortcuts reference for the graph toolbar. All shortcuts work when the graph has focus.",
-			},
-		},
-	},
 };

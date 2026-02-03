@@ -8,31 +8,36 @@ import { exportMatrix, fetchMatrix } from "@/api/matrix";
 
 // Mock the API client
 vi.mock("@/api/client", () => ({
-	apiClient: {
-		GET: vi.fn(),
+	__esModule: true,
+	default: {
+		apiClient: {
+			GET: vi.fn(),
+		},
+		safeApiCall: vi.fn((promise) => promise),
 	},
-	safeApiCall: vi.fn((promise) => promise),
 }));
 
-import { apiClient, safeApiCall } from "@/api/client";
+import client from "@/api/client";
 import { mockItems, mockLinks } from "../mocks/data";
+
+const { apiClient, safeApiCall } = client;
 
 describe("Traceability Matrix API", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchMatrix", () => {
+	describe(fetchMatrix, () => {
 		it("should fetch matrix for a project", async () => {
 			const mockMatrix: TraceabilityMatrix = {
-				items: mockItems,
-				links: mockLinks,
 				coverage: {
 					total: 3,
 					traced: 2,
 					untraced: 1,
 					percentage: 66.67,
 				},
+				items: mockItems,
+				links: mockLinks,
 			};
 
 			vi.mocked(safeApiCall).mockResolvedValue({
@@ -59,9 +64,9 @@ describe("Traceability Matrix API", () => {
 			const result = await fetchMatrix("proj-empty");
 
 			expect(result).toEqual({
+				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
 				items: [],
 				links: [],
-				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
 			});
 		});
 
@@ -71,22 +76,22 @@ describe("Traceability Matrix API", () => {
 			const result = await fetchMatrix("proj-1");
 
 			expect(result).toEqual({
+				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
 				items: [],
 				links: [],
-				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
 			});
 		});
 
 		it("should include traced/untraced coverage statistics", async () => {
 			const mockMatrix: TraceabilityMatrix = {
-				items: mockItems.slice(0, 2),
-				links: mockLinks,
 				coverage: {
 					total: 2,
 					traced: 2,
 					untraced: 0,
 					percentage: 100,
 				},
+				items: mockItems.slice(0, 2),
+				links: mockLinks,
 			};
 
 			vi.mocked(safeApiCall).mockResolvedValue({
@@ -105,9 +110,9 @@ describe("Traceability Matrix API", () => {
 		it("should call API with correct project ID", async () => {
 			vi.mocked(safeApiCall).mockResolvedValue({
 				data: {
+					coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
 					items: [],
 					links: [],
-					coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
 				},
 				error: undefined,
 				response: new Response(),
@@ -125,7 +130,7 @@ describe("Traceability Matrix API", () => {
 		});
 	});
 
-	describe("exportMatrix", () => {
+	describe(exportMatrix, () => {
 		it("should export matrix as CSV", async () => {
 			const mockData = { items: mockItems, links: mockLinks };
 			vi.mocked(safeApiCall).mockResolvedValue({
@@ -219,7 +224,7 @@ describe("Traceability Matrix API", () => {
 				response: new Response(),
 			});
 
-			const formats: Array<"csv" | "json" | "xlsx"> = ["csv", "json", "xlsx"];
+			const formats: ("csv" | "json" | "xlsx")[] = ["csv", "json", "xlsx"];
 
 			for (const format of formats) {
 				const result = await exportMatrix("proj-1", format);
@@ -271,16 +276,16 @@ describe("Traceability Matrix API", () => {
 			const result = await fetchMatrix("proj-1");
 
 			expect(result).toEqual({
+				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
 				items: [],
 				links: [],
-				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
 			});
 		});
 
 		it("should handle partial matrix data", async () => {
 			const partialMatrix: Partial<TraceabilityMatrix> = {
 				items: mockItems,
-				// links is missing
+				// Links is missing
 			};
 
 			vi.mocked(safeApiCall).mockResolvedValue({

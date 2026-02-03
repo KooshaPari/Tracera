@@ -38,19 +38,27 @@ interface UserStorySpecCardProps {
 }
 
 const statusStyles = {
-	backlog: { bg: "bg-muted", text: "text-muted-foreground", icon: Circle },
-	ready: { bg: "bg-blue-500/10", text: "text-blue-600", icon: Target },
-	in_progress: { bg: "bg-yellow-500/10", text: "text-yellow-600", icon: Play },
-	review: { bg: "bg-purple-500/10", text: "text-purple-600", icon: Search },
-	done: { bg: "bg-green-500/10", text: "text-green-600", icon: CheckCircle2 },
-	archived: { bg: "bg-gray-500/10", text: "text-gray-600", icon: FileCheck },
+	archived: { bg: "bg-gray-500/10", icon: FileCheck, text: "text-gray-600" },
+	backlog: { bg: "bg-muted", icon: Circle, text: "text-muted-foreground" },
+	done: { bg: "bg-green-500/10", icon: CheckCircle2, text: "text-green-600" },
+	in_progress: { bg: "bg-yellow-500/10", icon: Play, text: "text-yellow-600" },
+	ready: { bg: "bg-blue-500/10", icon: Target, text: "text-blue-600" },
+	review: { bg: "bg-purple-500/10", icon: Search, text: "text-purple-600" },
 };
 
 function getPointsColor(points: number | undefined): string {
-	if (points === undefined) return "bg-muted text-muted-foreground";
-	if (points <= 2) return "bg-green-500/20 text-green-700";
-	if (points <= 5) return "bg-yellow-500/20 text-yellow-700";
-	if (points <= 8) return "bg-orange-500/20 text-orange-700";
+	if (points === undefined) {
+		return "bg-muted text-muted-foreground";
+	}
+	if (points <= 2) {
+		return "bg-green-500/20 text-green-700";
+	}
+	if (points <= 5) {
+		return "bg-yellow-500/20 text-yellow-700";
+	}
+	if (points <= 8) {
+		return "bg-orange-500/20 text-orange-700";
+	}
 	return "bg-red-500/20 text-red-700";
 }
 

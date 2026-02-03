@@ -35,7 +35,16 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 	const MAX_EDGES = 250;
 
 	const itemsQuery = useInfiniteQuery<{ items?: unknown[]; total?: number }>({
-		queryKey: ["graph-items", resolvedProjectId],
+		enabled: Boolean(resolvedProjectId),
+		getNextPageParam: (lastPage, allPages) => {
+			const loaded = allPages.reduce(
+				(sum: number, p) => sum + (p.items?.length || 0),
+				0,
+			);
+			const total = lastPage.total || 0;
+			return loaded < total ? loaded : undefined;
+		},
+		initialPageParam: 0,
 		queryFn: async ({ pageParam }) => {
 			const base = getGraphBackendURL();
 			const res = await fetch(
@@ -50,20 +59,20 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 			if (!res.ok) throw new Error("Failed to fetch items");
 			return res.json();
 		},
-		initialPageParam: 0,
+		queryKey: ["graph-items", resolvedProjectId],
+	});
+
+	const linksQuery = useInfiniteQuery<{ links?: unknown[]; total?: number }>({
+		enabled: Boolean(resolvedProjectId),
 		getNextPageParam: (lastPage, allPages) => {
 			const loaded = allPages.reduce(
-				(sum: number, p) => sum + (p.items?.length || 0),
+				(sum: number, p) => sum + (p.links?.length || 0),
 				0,
 			);
 			const total = lastPage.total || 0;
 			return loaded < total ? loaded : undefined;
 		},
-		enabled: Boolean(resolvedProjectId),
-	});
-
-	const linksQuery = useInfiniteQuery<{ links?: unknown[]; total?: number }>({
-		queryKey: ["graph-links", resolvedProjectId],
+		initialPageParam: 0,
 		queryFn: async ({ pageParam }) => {
 			const base = getGraphBackendURL();
 			const res = await fetch(
@@ -78,22 +87,15 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 			if (!res.ok) throw new Error("Failed to fetch links");
 			return res.json();
 		},
-		initialPageParam: 0,
-		getNextPageParam: (lastPage, allPages) => {
-			const loaded = allPages.reduce(
-				(sum: number, p) => sum + (p.links?.length || 0),
-				0,
-			);
-			const total = lastPage.total || 0;
-			return loaded < total ? loaded : undefined;
-		},
-		enabled: Boolean(resolvedProjectId),
+		queryKey: ["graph-links", resolvedProjectId],
 	});
 
 	// OPTIMIZATION: Parallel prefetch of first pages on mount
 	// This reduces initial load time by ~30-40%
 	useEffect(() => {
-		if (!resolvedProjectId || itemsQuery.data || linksQuery.data) return;
+		if (!resolvedProjectId || itemsQuery.data || linksQuery.data) {
+			return;
+		}
 
 		// Fetch initial pages in parallel instead of sequentially
 		Promise.all([itemsQuery.fetchNextPage(), linksQuery.fetchNextPage()]).catch(
@@ -112,7 +114,7 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 	// Continue fetching next pages as user explores
 	useEffect(() => {
 		if (itemsQuery.hasNextPage && !itemsQuery.isFetchingNextPage) {
-			void itemsQuery.fetchNextPage();
+			undefined;
 		}
 	}, [
 		itemsQuery.hasNextPage,
@@ -122,7 +124,7 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 
 	useEffect(() => {
 		if (linksQuery.hasNextPage && !linksQuery.isFetchingNextPage) {
-			void linksQuery.fetchNextPage();
+			undefined;
 		}
 	}, [
 		linksQuery.hasNextPage,
@@ -133,39 +135,41 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 	const items = itemsQuery.data?.pages.flatMap((p: any) => p.items || []) || [];
 	const rawLinks =
 		linksQuery.data?.pages.flatMap((p: any) => p.links || []) || [];
-	// const _itemsTotal = itemsQuery.data?.pages?.[itemsQuery.data.pages.length - 1]?.total ?? 0;
-	// const _linksTotal = linksQuery.data?.pages?.[linksQuery.data.pages.length - 1]?.total ?? 0;
+	// Const _itemsTotal = itemsQuery.data?.pages?.[itemsQuery.data.pages.length - 1]?.total ?? 0;
+	// Const _linksTotal = linksQuery.data?.pages?.[linksQuery.data.pages.length - 1]?.total ?? 0;
 	const itemsLoading = itemsQuery.isLoading || itemsQuery.isFetching;
 	const linksLoading = linksQuery.isLoading || linksQuery.isFetching;
 	const isPriming = (itemsLoading || linksLoading) && items.length === 0;
 
 	// Map snake_case API response to camelCase for graph components
-	const links = rawLinks.map((link: any) => ({
-		...link,
-		sourceId: link.source_id || link.sourceId,
-		targetId: link.target_id || link.targetId,
-		type: link.link_type || link.type,
-	}));
+	const links = rawLinks.map((link: any) =>
+		Object.assign(link, {
+			sourceId: link.source_id || link.sourceId,
+			targetId: link.target_id || link.targetId,
+			type: link.link_type || link.type,
+		}),
+	);
 
 	// Silent cap: only pass first N nodes and edges that connect them (no UI, no "load more")
 	const visibleItems = items.slice(0, MAX_NODES);
 	const visibleNodeIds = new Set(visibleItems.map((i: any) => i.id));
-	const visibleLinks = links.filter(
-		(l: any) =>
-			visibleNodeIds.has(l.sourceId) && visibleNodeIds.has(l.targetId),
-	).slice(0, MAX_EDGES);
+	const visibleLinks = links
+		.filter(
+			(l: any) =>
+				visibleNodeIds.has(l.sourceId) && visibleNodeIds.has(l.targetId),
+		)
+		.slice(0, MAX_EDGES);
 
 	const handleNavigateToItem = (itemId: string) => {
 		if (!resolvedProjectId) {
-			void navigate({ to: "/projects" });
+			undefined;
 			return;
 		}
-		const item = visibleItems.find((node: any) => node.id === itemId) ?? items.find((node: any) => node.id === itemId);
+		const item =
+			visibleItems.find((node: any) => node.id === itemId) ??
+			items.find((node: any) => node.id === itemId);
 		const viewType = String(item?.view || "feature").toLowerCase();
-		void navigate({
-			to: "/projects/$projectId/views/$viewType/$itemId",
-			params: { projectId: resolvedProjectId, viewType, itemId },
-		});
+		undefined;
 	};
 
 	return (

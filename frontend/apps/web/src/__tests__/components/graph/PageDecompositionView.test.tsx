@@ -14,62 +14,62 @@ import { PageDecompositionView } from "@/components/graph/PageDecompositionView"
 // =============================================================================
 
 const mockSite: Item = {
+	createdAt: "2024-01-01T00:00:00Z",
 	id: "site-1",
 	projectId: "proj-1",
-	type: "site",
-	title: "E-commerce Platform",
 	status: "active",
-	createdAt: "2024-01-01T00:00:00Z",
+	title: "E-commerce Platform",
+	type: "site",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockPage: Item = {
+	createdAt: "2024-01-01T00:00:00Z",
 	id: "page-1",
 	projectId: "proj-1",
-	type: "page",
-	title: "Product Listing",
 	status: "active",
-	createdAt: "2024-01-01T00:00:00Z",
+	title: "Product Listing",
+	type: "page",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockLayout: Item = {
+	createdAt: "2024-01-01T00:00:00Z",
 	id: "layout-1",
 	projectId: "proj-1",
-	type: "layout",
-	title: "Main Layout",
 	status: "active",
-	createdAt: "2024-01-01T00:00:00Z",
+	title: "Main Layout",
+	type: "layout",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockSection: Item = {
+	createdAt: "2024-01-01T00:00:00Z",
 	id: "section-1",
 	projectId: "proj-1",
-	type: "section",
-	title: "Product Grid",
 	status: "active",
-	createdAt: "2024-01-01T00:00:00Z",
+	title: "Product Grid",
+	type: "section",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockComponent: Item = {
+	createdAt: "2024-01-01T00:00:00Z",
 	id: "component-1",
 	projectId: "proj-1",
-	type: "component",
-	title: "Product Card",
 	status: "active",
-	createdAt: "2024-01-01T00:00:00Z",
+	title: "Product Card",
+	type: "component",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockElement: Item = {
+	createdAt: "2024-01-01T00:00:00Z",
 	id: "element-1",
 	projectId: "proj-1",
-	type: "element",
-	title: "Product Title",
 	status: "active",
-	createdAt: "2024-01-01T00:00:00Z",
+	title: "Product Title",
+	type: "element",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
@@ -84,44 +84,44 @@ const mockItems = [
 
 const mockLinks: Link[] = [
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "link-1",
 		projectId: "proj-1",
 		sourceItemId: "site-1",
 		targetItemId: "page-1",
 		type: "contains",
-		createdAt: "2024-01-01T00:00:00Z",
 	} as any,
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "link-2",
 		projectId: "proj-1",
 		sourceItemId: "page-1",
 		targetItemId: "layout-1",
 		type: "contains",
-		createdAt: "2024-01-01T00:00:00Z",
 	} as any,
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "link-3",
 		projectId: "proj-1",
 		sourceItemId: "layout-1",
 		targetItemId: "section-1",
 		type: "contains",
-		createdAt: "2024-01-01T00:00:00Z",
 	} as any,
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "link-4",
 		projectId: "proj-1",
 		sourceItemId: "section-1",
 		targetItemId: "component-1",
 		type: "contains",
-		createdAt: "2024-01-01T00:00:00Z",
 	} as any,
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "link-5",
 		projectId: "proj-1",
 		sourceItemId: "component-1",
 		targetItemId: "element-1",
 		type: "contains",
-		createdAt: "2024-01-01T00:00:00Z",
 	} as any,
 ];
 
@@ -599,12 +599,12 @@ describe("PageDecompositionView Component", () => {
 		it("handles broken hierarchy", () => {
 			const brokenLinks: Link[] = [
 				{
+					createdAt: "2024-01-01T00:00:00Z",
 					id: "link-1",
 					projectId: "proj-1",
 					sourceItemId: "nonexistent",
 					targetItemId: "page-1",
 					type: "contains",
-					createdAt: "2024-01-01T00:00:00Z",
 				} as any,
 			];
 

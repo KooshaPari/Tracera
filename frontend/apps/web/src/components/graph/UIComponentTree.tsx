@@ -94,13 +94,13 @@ function buildUITree(items: Item[], links: Link[]): TreeNode[] {
 		const linkedPages = interactionMap.get(item.id) || [];
 
 		return {
-			id: item.id,
-			item,
 			children: children
 				.toSorted((a, b) => (a.title || "").localeCompare(b.title || ""))
 				.map((child) => buildNode(child, depth + 1)),
 			depth,
 			hasInteraction: linkedPages.length > 0,
+			id: item.id,
+			item,
 			linkedPages,
 		};
 	}
@@ -207,7 +207,12 @@ interface InteractionRowProps {
 	onSelectItem: (itemId: string) => void;
 }
 
-function InteractionRow({ from, to, linkType, onSelectItem }: InteractionRowProps) {
+function InteractionRow({
+	from,
+	to,
+	linkType,
+	onSelectItem,
+}: InteractionRowProps) {
 	return (
 		<div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg text-sm">
 			<Button
@@ -249,12 +254,12 @@ function TreeItem({
 
 	const typeIcon =
 		{
+			component: Component,
+			layout: Layers,
 			page: Monitor,
 			screen: Monitor,
-			component: Component,
 			ui_component: Component,
 			wireframe: LayoutGrid,
-			layout: Layers,
 		}[node.item.type || ""] || FileCode;
 
 	const Icon = typeIcon;
@@ -352,7 +357,6 @@ function TreeItem({
 							expandedIds={expandedIds}
 							onToggle={onToggle}
 							onSelect={onSelect}
-							
 						/>
 					))}
 				</div>
@@ -376,7 +380,9 @@ function UIComponentTreeComponent({
 
 	// Filter tree by search
 	const filteredTree = useMemo(() => {
-		if (!searchQuery) return tree;
+		if (!searchQuery) {
+			return tree;
+		}
 
 		const query = searchQuery.toLowerCase();
 
@@ -391,7 +397,7 @@ function UIComponentTreeComponent({
 				.filter((n): n is TreeNode => n !== undefined);
 
 			if (matchesTitle || matchesType || filteredChildren.length > 0) {
-				return Object.assign({}, node, { children: filteredChildren });
+				return { ...node, children: filteredChildren };
 			}
 			return undefined;
 		}
@@ -416,7 +422,7 @@ function UIComponentTreeComponent({
 				const targetIsUI = UI_TYPES.has(tgtType);
 
 				if (sourceIsUI && targetIsUI) {
-					matrix.push({ from: source, to: target, linkType: link.type });
+					matrix.push({ from: source, linkType: link.type, to: target });
 				}
 			}
 		}
@@ -427,8 +433,11 @@ function UIComponentTreeComponent({
 	const handleToggle = useCallback((id: string) => {
 		setExpandedIds((prev) => {
 			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
+			if (next.has(id)) {
+				next.delete(id);
+			} else {
+				next.add(id);
+			}
 			return next;
 		});
 	}, []);
@@ -437,9 +446,13 @@ function UIComponentTreeComponent({
 		const allIds = new Set<string>();
 		function collectIds(node: TreeNode) {
 			allIds.add(node.id);
-			for (const child of node.children) collectIds(child);
+			for (const child of node.children) {
+				collectIds(child);
+			}
 		}
-		for (const node of tree) collectIds(node);
+		for (const node of tree) {
+			collectIds(node);
+		}
 		setExpandedIds(allIds);
 	}, [tree]);
 
@@ -454,22 +467,26 @@ function UIComponentTreeComponent({
 		let wireframes = 0;
 
 		function countNode(node: TreeNode) {
-			if (node.item.type === "page" || node.item.type === "screen") pages++;
+			if (node.item.type === "page" || node.item.type === "screen") pages += 1;
 			else if (
 				node.item.type === "component" ||
 				node.item.type === "ui_component"
 			)
-				components++;
-			else if (node.item.type === "wireframe") wireframes++;
-			for (const child of node.children) countNode(child);
+				components += 1;
+			else if (node.item.type === "wireframe") wireframes += 1;
+			for (const child of node.children) {
+				countNode(child);
+			}
 		}
 
-		for (const node of tree) countNode(node);
+		for (const node of tree) {
+			countNode(node);
+		}
 		return {
-			pages,
 			components,
-			wireframes,
 			interactions: interactionMatrix.length,
+			pages,
+			wireframes,
 		};
 	}, [tree, interactionMatrix]);
 

@@ -4,14 +4,14 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsView } from "../../views/SettingsView";
 
-describe("SettingsView", () => {
+describe(SettingsView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -104,7 +104,7 @@ describe("SettingsView", () => {
 		await user.click(screen.getByText("Appearance"));
 
 		// Radix UI Select uses button triggers, not native selects
-		const themeSelect = document.getElementById("theme-select");
+		const themeSelect = document.querySelector("#theme-select");
 		expect(themeSelect).toBeInTheDocument();
 
 		// Click to open the dropdown
@@ -135,8 +135,8 @@ describe("SettingsView", () => {
 		// Click on Notifications tab
 		await user.click(screen.getByText("Notifications"));
 
-		const emailNotifications = document.getElementById(
-			"email-notifications",
+		const emailNotifications = document.querySelector(
+			"#email-notifications",
 		) as HTMLInputElement;
 		expect(emailNotifications).toBeChecked();
 
@@ -154,8 +154,8 @@ describe("SettingsView", () => {
 			</QueryClientProvider>,
 		);
 
-		const displayNameInput = document.getElementById(
-			"display-name",
+		const displayNameInput = document.querySelector(
+			"#display-name",
 		) as HTMLInputElement;
 		await user.type(displayNameInput, "Test User");
 
@@ -166,7 +166,7 @@ describe("SettingsView", () => {
 		await user.click(saveButton);
 
 		// Since the mutation resolves immediately in tests, verify that the alert was called
-		// or that the button returns to its normal state
+		// Or that the button returns to its normal state
 		await waitFor(() => {
 			// The mutation resolves quickly, so the button should be back to "Save Changes"
 			expect(screen.getByText("Save Changes")).toBeInTheDocument();
@@ -181,12 +181,12 @@ describe("SettingsView", () => {
 			</QueryClientProvider>,
 		);
 
-		const displayNameInput = document.getElementById(
-			"display-name",
+		const displayNameInput = document.querySelector(
+			"#display-name",
 		) as HTMLInputElement;
 		await user.type(displayNameInput, "John Doe");
 
-		const emailInput = document.getElementById("email") as HTMLInputElement;
+		const emailInput = document.querySelector("#email") as HTMLInputElement;
 		await user.type(emailInput, "john@example.com");
 
 		expect(displayNameInput).toHaveValue("John Doe");

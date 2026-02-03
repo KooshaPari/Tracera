@@ -29,17 +29,20 @@ interface ScenarioCardProps {
 
 const statusColors: Record<ScenarioStatus, string> = {
 	draft: "bg-gray-500/10 text-gray-500 border-gray-500/20",
-	pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-	passing: "bg-green-500/10 text-green-500 border-green-500/20",
 	failing: "bg-red-500/10 text-red-500 border-red-500/20",
+	passing: "bg-green-500/10 text-green-500 border-green-500/20",
+	pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
 	skipped: "bg-muted text-muted-foreground border-border",
 };
 
-const statusIcons: Record<ScenarioStatus, React.ComponentType<{ className?: string }>> = {
+const statusIcons: Record<
+	ScenarioStatus,
+	React.ComponentType<{ className?: string }>
+> = {
 	draft: FileText,
-	pending: Clock,
-	passing: CheckCircle2,
 	failing: XCircle,
+	passing: CheckCircle2,
+	pending: Clock,
 	skipped: Clock,
 };
 
@@ -53,11 +56,7 @@ export function ScenarioCard({
 }: ScenarioCardProps) {
 	const StatusIcon = statusIcons[scenario.status] || FileText;
 	// Compute total steps but mark as intentionally unused
-	void (
-		(scenario.givenSteps?.length || 0) +
-		(scenario.whenSteps?.length || 0) +
-		(scenario.thenSteps?.length || 0)
-	);
+	undefined;
 	const executionCount = scenario.executionCount || 0;
 	const lastExecuted = scenario.lastRunAt
 		? new Date(scenario.lastRunAt).toLocaleDateString()

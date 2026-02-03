@@ -9,9 +9,10 @@ import {
 	PopoverTrigger,
 } from "@tracertm/ui/components/Popover";
 import { Separator } from "@tracertm/ui/components/Separator";
-import { X, Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { PERSPECTIVE_CONFIGS, type GraphPerspective, ENHANCED_TYPE_COLORS } from "./types";
+import { ENHANCED_TYPE_COLORS, PERSPECTIVE_CONFIGS } from "./types";
+import type { GraphPerspective } from "./types";
 
 interface FilterControlsProps {
 	// Perspective filter
@@ -61,7 +62,9 @@ export function FilterControls({
 	// Handle node type toggle
 	const handleNodeTypeToggle = useCallback(
 		(type: string) => {
-			if (!onNodeTypeFilterChange) return;
+			if (!onNodeTypeFilterChange) {
+				return;
+			}
 
 			const newTypes = selectedNodeTypes.includes(type)
 				? selectedNodeTypes.filter((t) => t !== type)
@@ -75,7 +78,9 @@ export function FilterControls({
 	// Handle status toggle
 	const handleStatusToggle = useCallback(
 		(status: string) => {
-			if (!onStatusFilterChange) return;
+			if (!onStatusFilterChange) {
+				return;
+			}
 
 			const newStatuses = selectedStatuses.includes(status)
 				? selectedStatuses.filter((s) => s !== status)
@@ -96,16 +101,19 @@ export function FilterControls({
 	// Active filter count
 	const activeFilterCount = useMemo(() => {
 		let count = 0;
-		if (perspective && perspective !== "all") count++;
-		if (selectedNodeTypes.length > 0) count++;
-		if (selectedStatuses.length > 0) count++;
+		if (perspective && perspective !== "all") count += 1;
+		if (selectedNodeTypes.length > 0) count += 1;
+		if (selectedStatuses.length > 0) count += 1;
 		return count;
 	}, [perspective, selectedNodeTypes, selectedStatuses]);
 
 	// Current perspective config
-	const currentPerspective = useMemo(() => {
-		return PERSPECTIVE_CONFIGS.find((c) => c.id === perspective) || PERSPECTIVE_CONFIGS[0];
-	}, [perspective]);
+	const currentPerspective = useMemo(
+		() =>
+			PERSPECTIVE_CONFIGS.find((c) => c.id === perspective) ||
+			PERSPECTIVE_CONFIGS[0],
+		[perspective],
+	);
 
 	return (
 		<div className={`flex flex-col gap-3 ${className || ""}`}>
@@ -223,7 +231,7 @@ export function FilterControls({
 												style={{ backgroundColor: color }}
 											/>
 											<span className="flex-1 text-sm capitalize">
-												{type.replace(/_/g, " ")}
+												{type.replaceAll(/_/g, " ")}
 											</span>
 											{isSelected && (
 												<Check className="h-4 w-4 text-primary shrink-0" />
@@ -246,7 +254,10 @@ export function FilterControls({
 									<span className="text-xs font-medium">
 										Status
 										{selectedStatuses.length > 0 && (
-											<Badge variant="secondary" className="ml-1.5 text-xs px-1">
+											<Badge
+												variant="secondary"
+												className="ml-1.5 text-xs px-1"
+											>
 												{selectedStatuses.length}
 											</Badge>
 										)}
@@ -266,7 +277,7 @@ export function FilterControls({
 												className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md hover:bg-accent text-left transition-colors"
 											>
 												<span className="flex-1 text-sm capitalize">
-													{status.replace(/_/g, " ")}
+													{status.replaceAll(/_/g, " ")}
 												</span>
 												{isSelected && (
 													<Check className="h-4 w-4 text-primary shrink-0" />
@@ -315,7 +326,7 @@ export function FilterControls({
 									color: color,
 								}}
 							>
-								<span className="capitalize">{type.replace(/_/g, " ")}</span>
+								<span className="capitalize">{type.replaceAll(/_/g, " ")}</span>
 								<button
 									onClick={() => handleNodeTypeToggle(type)}
 									className="hover:opacity-70"
@@ -328,7 +339,7 @@ export function FilterControls({
 
 					{selectedStatuses.map((status) => (
 						<Badge key={status} variant="secondary" className="text-xs gap-1">
-							<span className="capitalize">{status.replace(/_/g, " ")}</span>
+							<span className="capitalize">{status.replaceAll(/_/g, " ")}</span>
 							<button
 								onClick={() => handleStatusToggle(status)}
 								className="hover:opacity-70"

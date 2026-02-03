@@ -5,9 +5,9 @@
 
 import { QueryClient } from "@tanstack/react-query";
 import {
+	RouterProvider,
 	createMemoryHistory,
 	createRouter,
-	RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -15,9 +15,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { routeTree } from "@/routeTree.gen";
 
 vi.mock("@/api/projects", () => ({
-	fetchProjects: vi.fn(),
 	createProject: vi.fn(),
 	deleteProject: vi.fn(),
+	fetchProjects: vi.fn(),
 	updateProject: vi.fn(),
 }));
 
@@ -29,8 +29,8 @@ describe("Projects List Page", () => {
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false, gcTime: 0 },
 				mutations: { retry: false },
+				queries: { retry: false, gcTime: 0 },
 			},
 		});
 
@@ -39,9 +39,9 @@ describe("Projects List Page", () => {
 		});
 
 		router = createRouter({
-			routeTree,
-			history,
 			context: { queryClient },
+			history,
+			routeTree,
 		});
 
 		vi.clearAllMocks();
@@ -70,9 +70,9 @@ describe("Projects List Page", () => {
 						status: "active",
 					},
 				],
-				total: 2,
 				page: 1,
 				pageSize: 50,
+				total: 2,
 			});
 
 			render(<RouterProvider router={router} />);
@@ -93,13 +93,13 @@ describe("Projects List Page", () => {
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [
 					{
-						id: "proj-1",
-						name: "E-Commerce Platform",
+						created_at: "2024-01-15T10:00:00Z",
 						description: "Online shopping system",
-						status: "active",
+						id: "proj-1",
 						itemCount: 45,
 						linkCount: 120,
-						created_at: "2024-01-15T10:00:00Z",
+						name: "E-Commerce Platform",
+						status: "active",
 						updated_at: "2024-02-20T14:30:00Z",
 					},
 				],
@@ -284,8 +284,8 @@ describe("Projects List Page", () => {
 
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [{ id: "1", name: "Project 1" }],
-				total: 1,
 				error: "Some items could not be loaded",
+				total: 1,
 			});
 
 			render(<RouterProvider router={router} />);
@@ -337,8 +337,8 @@ describe("Projects List Page", () => {
 
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [
-					{ id: "1", name: "Old Project", created_at: "2023-01-01" },
-					{ id: "2", name: "New Project", created_at: "2024-06-01" },
+					{ created_at: "2023-01-01", id: "1", name: "Old Project" },
+					{ created_at: "2024-06-01", id: "2", name: "New Project" },
 				],
 				total: 2,
 			});
@@ -369,22 +369,22 @@ describe("Projects List Page", () => {
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [
 					{
+						created_at: "2024-06-01",
 						id: "1",
 						name: "Active New",
 						status: "active",
-						created_at: "2024-06-01",
 					},
 					{
+						created_at: "2023-01-01",
 						id: "2",
 						name: "Active Old",
 						status: "active",
-						created_at: "2023-01-01",
 					},
 					{
+						created_at: "2024-06-01",
 						id: "3",
 						name: "Archived New",
 						status: "archived",
-						created_at: "2024-06-01",
 					},
 				],
 				total: 3,
@@ -497,9 +497,9 @@ describe("Projects List Page", () => {
 
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [
-					{ id: "1", name: "Oldest", created_at: "2024-01-01" },
-					{ id: "2", name: "Newest", created_at: "2024-03-01" },
-					{ id: "3", name: "Middle", created_at: "2024-02-01" },
+					{ created_at: "2024-01-01", id: "1", name: "Oldest" },
+					{ created_at: "2024-03-01", id: "2", name: "Newest" },
+					{ created_at: "2024-02-01", id: "3", name: "Middle" },
 				],
 				total: 3,
 			});
@@ -529,9 +529,9 @@ describe("Projects List Page", () => {
 
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [
-					{ id: "1", name: "Small", itemCount: 10 },
-					{ id: "2", name: "Large", itemCount: 100 },
-					{ id: "3", name: "Medium", itemCount: 50 },
+					{ id: "1", itemCount: 10, name: "Small" },
+					{ id: "2", itemCount: 100, name: "Large" },
+					{ id: "3", itemCount: 50, name: "Medium" },
 				],
 				total: 3,
 			});
@@ -566,9 +566,9 @@ describe("Projects List Page", () => {
 					id: `${i}`,
 					name: `Project ${i}`,
 				})),
-				total: 150,
 				page: 1,
 				pageSize: 50,
+				total: 150,
 				totalPages: 3,
 			});
 
@@ -591,9 +591,9 @@ describe("Projects List Page", () => {
 
 			vi.mocked(fetchProjects).mockResolvedValueOnce({
 				data: [{ id: "1", name: "Page 1 Project" }],
-				total: 100,
 				page: 1,
 				pageSize: 50,
+				total: 100,
 				totalPages: 2,
 			});
 
@@ -605,9 +605,9 @@ describe("Projects List Page", () => {
 
 			vi.mocked(fetchProjects).mockResolvedValueOnce({
 				data: [{ id: "51", name: "Page 2 Project" }],
-				total: 100,
 				page: 2,
 				pageSize: 50,
+				total: 100,
 				totalPages: 2,
 			});
 
@@ -627,9 +627,9 @@ describe("Projects List Page", () => {
 					id: `${i}`,
 					name: `Project ${i}`,
 				})),
-				total: 150,
 				page: 1,
 				pageSize: 50,
+				total: 150,
 			});
 
 			render(<RouterProvider router={router} />);
@@ -700,7 +700,7 @@ describe("Projects List Page", () => {
 			await userEvent.type(searchInput, "test");
 
 			// Search should not trigger immediately
-			expect(fetchProjects).toHaveBeenCalledTimes(1); // Initial load only
+			expect(fetchProjects).toHaveBeenCalledOnce(); // Initial load only
 
 			vi.advanceTimersByTime(300); // Debounce delay
 
@@ -774,9 +774,9 @@ describe("Projects List Page", () => {
 
 			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
 			vi.mocked(createProject).mockResolvedValue({
+				description: "Test description",
 				id: "new-proj",
 				name: "New Project",
-				description: "Test description",
 			});
 
 			render(<RouterProvider router={router} />);
@@ -886,7 +886,7 @@ describe("Projects List Page", () => {
 			});
 
 			const projectCard = screen.getByTestId("project-card-proj-123");
-			await userEvent.pointer({ target: projectCard, keys: "[MouseRight]" });
+			await userEvent.pointer({ keys: "[MouseRight]", target: projectCard });
 
 			await waitFor(() => {
 				expect(screen.getByRole("menu")).toBeInTheDocument();

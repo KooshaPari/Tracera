@@ -1,6 +1,12 @@
 // Re-export graph API from endpoints
 import { graphApi } from "./endpoints";
 
-export const fetchGraph = graphApi.get;
-export const fetchImpactAnalysis = graphApi.getImpactAnalysis;
-export const fetchDependencyAnalysis = graphApi.getDependencyAnalysis;
+export {
+	fetchGraph,
+	fetchImpactAnalysis,
+	fetchDependencyAnalysis,
+};
+
+const fetchGraph = graphApi.get;
+const fetchImpactAnalysis = graphApi.getImpactAnalysis;
+const fetchDependencyAnalysis = graphApi.getDependencyAnalysis;

@@ -41,17 +41,19 @@ class MockWebSocket {
 }
 
 // Mock window and WebSocket
-global.window = {
+globalThis.window = {
+	clearInterval: vi.fn(),
 	location: {
 		protocol: "ws:",
 		host: "localhost:4000",
 	},
-	setInterval: vi.fn((_fn: TimerHandler, _delay?: number) => 1 as ReturnType<typeof setInterval>),
-	clearInterval: vi.fn(),
+	setInterval: vi.fn(
+		(_fn: TimerHandler, _delay?: number) => 1 as ReturnType<typeof setInterval>,
+	),
 } as any;
 
-global.WebSocket = MockWebSocket as any;
-globalThis.window = global.window;
+globalThis.WebSocket = MockWebSocket as any;
+globalThis.window = globalThis.window;
 
 describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 	beforeEach(() => {
@@ -71,10 +73,10 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			// Verify heartbeat interval was set
-			expect(global.window.setInterval).toHaveBeenCalled();
+			expect(globalThis.window.setInterval).toHaveBeenCalled();
 
 			// Simulate heartbeat tick
-			const heartbeatFn = vi.mocked(global.window.setInterval).mock
+			const heartbeatFn = vi.mocked(globalThis.window.setInterval).mock
 				.calls[0]?.[0];
 			if (heartbeatFn && typeof heartbeatFn === "function") {
 				heartbeatFn();
@@ -99,7 +101,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 				}
 			}
 
-			global.WebSocket = ConnectingWebSocket as any;
+			globalThis.WebSocket = ConnectingWebSocket as any;
 
 			await connectWebSocket();
 
@@ -107,7 +109,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			// Simulate heartbeat tick
-			const heartbeatFn = vi.mocked(global.window.setInterval).mock
+			const heartbeatFn = vi.mocked(globalThis.window.setInterval).mock
 				.calls[0]?.[0];
 			if (heartbeatFn && typeof heartbeatFn === "function") {
 				heartbeatFn();
@@ -115,7 +117,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 
 			// Should not send ping when not open
 			await new Promise((resolve) => setTimeout(resolve, 10));
-			// sendSpy might not be called if readyState check fails
+			// SendSpy might not be called if readyState check fails
 		});
 	});
 
@@ -139,7 +141,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 				}
 			}
 
-			global.WebSocket = FailingWebSocket as any;
+			globalThis.WebSocket = FailingWebSocket as any;
 
 			await connectWebSocket();
 
@@ -171,7 +173,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 				}
 			}
 
-			global.WebSocket = AlwaysFailingWebSocket as any;
+			globalThis.WebSocket = AlwaysFailingWebSocket as any;
 
 			// Trigger multiple connection attempts
 			for (let i = 0; i < maxAttempts + 1; i++) {
@@ -208,8 +210,8 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 	describe("Connection state management", () => {
 		it("should handle connection in non-browser environment", async () => {
 			// Temporarily remove window
-			const originalWindow = global.window;
-			(global as any).window = undefined;
+			const originalWindow = globalThis.window;
+			(globalThis as any).window = undefined;
 			(globalThis as any).window = undefined;
 
 			const manager = getWebSocketManager();
@@ -219,7 +221,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			await connectWebSocket();
 
 			// Restore window
-			global.window = originalWindow;
+			globalThis.window = originalWindow;
 			globalThis.window = originalWindow;
 
 			disconnectWebSocket();
@@ -236,7 +238,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 
 			// Should have stopped heartbeat
 			expect(stopHeartbeatSpy).toHaveBeenCalled();
-			expect(global.window.clearInterval).toHaveBeenCalled();
+			expect(globalThis.window.clearInterval).toHaveBeenCalled();
 		});
 	});
 

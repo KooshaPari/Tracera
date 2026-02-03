@@ -1,4 +1,5 @@
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /**
  * Critical Path Test Helpers
@@ -36,13 +37,6 @@ export async function authenticateAndNavigate(
 	route: string,
 ): Promise<void> {
 	const authState = {
-		user: {
-			id: "test-user",
-			email: "test@example.com",
-			name: "Test User",
-			role: "admin",
-		},
-		token: "test-token",
 		account: {
 			id: "test-account",
 			name: "Test Account",
@@ -50,6 +44,13 @@ export async function authenticateAndNavigate(
 			account_type: "personal",
 		},
 		isAuthenticated: true,
+		token: "test-token",
+		user: {
+			id: "test-user",
+			email: "test@example.com",
+			name: "Test User",
+			role: "admin",
+		},
 	};
 
 	await page.addInitScript((state) => {
@@ -459,17 +460,13 @@ export async function expectPageUrl(page: Page, urlPattern: RegExp | string) {
 export async function expectElementVisible(
 	page: Page,
 	selector: string,
-	timeout: number = 5000,
+	timeout = 5000,
 ) {
 	const element = page.locator(selector);
 	await expect(element).toBeVisible({ timeout });
 }
 
-export async function expectText(
-	page: Page,
-	text: string,
-	timeout: number = 5000,
-) {
+export async function expectText(page: Page, text: string, timeout = 5000) {
 	const element = page.getByText(text);
 	await expect(element).toBeVisible({ timeout });
 }
@@ -483,13 +480,11 @@ export async function waitForLoadComplete(page: Page): Promise<void> {
 	await page.waitForTimeout(500);
 }
 
-export function generateUniqueId(prefix: string = ""): string {
-	return `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+export function generateUniqueId(prefix = ""): string {
+	return `${prefix}${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
-export function generateProject(
-	overrides?: Partial<TestProject>,
-): TestProject {
+export function generateProject(overrides?: Partial<TestProject>): TestProject {
 	return {
 		name: `Test Project ${Date.now()}`,
 		description: "Test project created via critical path test",

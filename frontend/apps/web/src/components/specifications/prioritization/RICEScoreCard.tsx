@@ -22,23 +22,29 @@ interface RICEScoreCardProps {
 }
 
 const impactLevels = [
-	{ value: 3, label: "Massive", description: "3x improvement" },
-	{ value: 2, label: "High", description: "2x improvement" },
-	{ value: 1, label: "Medium", description: "Notable improvement" },
-	{ value: 0.5, label: "Low", description: "Minor improvement" },
-	{ value: 0.25, label: "Minimal", description: "Barely noticeable" },
+	{ description: "3x improvement", label: "Massive", value: 3 },
+	{ description: "2x improvement", label: "High", value: 2 },
+	{ description: "Notable improvement", label: "Medium", value: 1 },
+	{ description: "Minor improvement", label: "Low", value: 0.5 },
+	{ description: "Barely noticeable", label: "Minimal", value: 0.25 },
 ];
 
 const confidenceLevels = [
-	{ value: 100, label: "High", description: "Strong evidence" },
-	{ value: 80, label: "Medium", description: "Some evidence" },
-	{ value: 50, label: "Low", description: "Limited evidence" },
+	{ description: "Strong evidence", label: "High", value: 100 },
+	{ description: "Some evidence", label: "Medium", value: 80 },
+	{ description: "Limited evidence", label: "Low", value: 50 },
 ];
 
 function getScoreColor(score: number): string {
-	if (score >= 1000) return "text-green-600";
-	if (score >= 500) return "text-blue-600";
-	if (score >= 100) return "text-yellow-600";
+	if (score >= 1000) {
+		return "text-green-600";
+	}
+	if (score >= 500) {
+		return "text-blue-600";
+	}
+	if (score >= 100) {
+		return "text-yellow-600";
+	}
 	return "text-gray-600";
 }
 
@@ -60,10 +66,10 @@ export function RICEScoreCard({
 	const handleCalculate = () => {
 		if (onCalculate) {
 			onCalculate({
-				reach,
-				impact,
 				confidence,
 				effort,
+				impact,
+				reach,
 				rice_score: riceScore,
 			});
 		}
@@ -111,7 +117,7 @@ export function RICEScoreCard({
 							type="number"
 							value={reach}
 							onChange={(e) =>
-								setReach(Math.max(0, parseInt(e.target.value, 10) || 0))
+								setReach(Math.max(0, Number.parseInt(e.target.value, 10) || 0))
 							}
 							className="w-full px-3 py-2 border rounded-md text-sm"
 							min={0}
@@ -120,7 +126,7 @@ export function RICEScoreCard({
 						<div className="h-2 bg-muted rounded-full overflow-hidden">
 							<div
 								className="h-full bg-blue-500 rounded-full"
-								style={{ width: `${Math.min((reach / 10000) * 100, 100)}%` }}
+								style={{ width: `${Math.min((reach / 10_000) * 100, 100)}%` }}
 							/>
 						</div>
 					)}
@@ -211,7 +217,9 @@ export function RICEScoreCard({
 							type="number"
 							value={effort}
 							onChange={(e) =>
-								setEffort(Math.max(0.1, parseFloat(e.target.value) || 0.1))
+								setEffort(
+									Math.max(0.1, Number.parseFloat(e.target.value) || 0.1),
+								)
 							}
 							className="w-full px-3 py-2 border rounded-md text-sm"
 							min={0.1}
@@ -262,9 +270,9 @@ export function RICEScoreBadge({
 					: "bg-gray-100 text-gray-700 border-gray-300";
 
 	const sizeClass = {
-		sm: "text-xs px-1.5 py-0.5",
-		md: "text-sm px-2 py-1",
 		lg: "text-base px-3 py-1.5",
+		md: "text-sm px-2 py-1",
+		sm: "text-xs px-1.5 py-0.5",
 	}[size];
 
 	return (

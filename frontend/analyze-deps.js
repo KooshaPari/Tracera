@@ -1,17 +1,17 @@
 #!/usr/bin/env bun
 
-import { readdir, readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 async function findPackageJsons(dir, depth = 0, maxDepth = 3) {
-	if (depth > maxDepth) return [];
+	if (depth > maxDepth) {return [];}
 
 	const files = [];
 	try {
 		const entries = await readdir(dir, { withFileTypes: true });
 
 		for (const entry of entries) {
-			if (entry.name === "node_modules" || entry.name === ".git") continue;
+			if (entry.name === "node_modules" || entry.name === ".git") {continue;}
 
 			const fullPath = join(dir, entry.name);
 
@@ -67,82 +67,82 @@ async function analyzeDependencies() {
 	for (const [name, versions] of allDeps.entries()) {
 		if (versions.size > 1) {
 			duplicates.push({
+				locations: locations.get(name),
 				name,
 				versions: [...versions],
-				locations: locations.get(name),
 			});
 		}
 
 		if (name.includes("react") || name.includes("@types/react")) {
 			reactDeps.push({
+				locations: locations.get(name),
 				name,
 				versions: [...versions],
-				locations: locations.get(name),
 			});
 		}
 
 		if (name.includes("typescript") || name === "ts-node" || name === "tsx") {
 			typescriptDeps.push({
+				locations: locations.get(name),
 				name,
 				versions: [...versions],
-				locations: locations.get(name),
 			});
 		}
 	}
 
-	console.log("=== DEPENDENCY ANALYSIS ===\n");
-	console.log(`Total unique packages: ${allDeps.size}`);
-	console.log(`Packages with version conflicts: ${duplicates.length}\n`);
+	
+	
+	
 
-	console.log("=== TOP 20 DUPLICATE DEPENDENCIES ===");
+	
 	duplicates
 		.toSorted((a, b) => b.versions.length - a.versions.length)
 		.slice(0, 20)
 		.forEach(({ name, versions, locations }) => {
-			console.log(`\n${name}:`);
+			
 			versions.forEach((v) => {
 				const locs = locations.filter((l) => l.version === v);
-				console.log(`  ${v} (${locs.length} locations)`);
+				
 			});
 		});
 
-	console.log("\n\n=== REACT DEPENDENCIES ===");
+	
 	reactDeps.forEach(({ name, versions, locations }) => {
-		console.log(`\n${name}:`);
+		
 		versions.forEach((v) => {
 			const locs = locations.filter((l) => l.version === v);
-			console.log(`  ${v}: ${locs.map((l) => l.path).join(", ")}`);
+			
 		});
 	});
 
-	console.log("\n\n=== TYPESCRIPT DEPENDENCIES ===");
+	
 	typescriptDeps.forEach(({ name, versions, locations }) => {
-		console.log(`\n${name}:`);
+		
 		versions.forEach((v) => {
 			const locs = locations.filter((l) => l.version === v);
-			console.log(`  ${v}: ${locs.map((l) => l.path).join(", ")}`);
+			
 		});
 	});
 
 	// Generate report file
 	const report = {
-		summary: {
-			totalPackages: allDeps.size,
-			duplicates: duplicates.length,
-			timestamp: new Date().toISOString(),
-		},
 		duplicates,
 		reactDeps,
+		summary: {
+			duplicates: duplicates.length,
+			timestamp: new Date().toISOString(),
+			totalPackages: allDeps.size,
+		},
 		typescriptDeps,
 	};
 
 	await Bun.write("dependency-analysis.json", JSON.stringify(report, undefined, 2));
-	console.log("\n\nDetailed report saved to: dependency-analysis.json");
+	
 }
 
 try {
 	await analyzeDependencies();
-} catch (err) {
-	console.error(err);
+} catch (error) {
+	console.error(error);
 	process.exitCode = 1;
 }

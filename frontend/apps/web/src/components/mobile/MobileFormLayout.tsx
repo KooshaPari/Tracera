@@ -1,4 +1,5 @@
-import React, { type ReactNode } from "react";
+import React from "react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface MobileFormLayoutProps {
@@ -133,10 +134,10 @@ export function FormActions({
 	stacked = false,
 }: FormActionsProps) {
 	const justifyClass = {
-		start: "justify-start",
-		end: "justify-end",
-		center: "justify-center",
 		between: "justify-between",
+		center: "justify-center",
+		end: "justify-end",
+		start: "justify-start",
 	}[justify];
 
 	return (

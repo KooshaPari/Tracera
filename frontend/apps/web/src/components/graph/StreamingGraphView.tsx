@@ -9,301 +9,311 @@
  * - Predictive prefetch
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useIncrementalGraph, calculatePanDirection, calculatePanVelocity } from '../../hooks/useIncrementalGraph';
-import { GraphLoadingProgress, GraphLoadingProgressCompact } from './GraphLoadingProgress';
-import type { ViewportBounds } from '../../lib/graph/IncrementalGraphBuilder';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+	calculatePanDirection,
+	calculatePanVelocity,
+	useIncrementalGraph,
+} from "../../hooks/useIncrementalGraph";
+import {
+	GraphLoadingProgress,
+	GraphLoadingProgressCompact,
+} from "./GraphLoadingProgress";
+import type { ViewportBounds } from "../../lib/graph/IncrementalGraphBuilder";
+import { Card } from "../ui/card";
+import { Button } from "../ui/button";
+import { RefreshCw, ZoomIn, ZoomOut } from "lucide-react";
 
 export interface StreamingGraphViewProps {
-  projectId: string;
-  initialViewport?: ViewportBounds;
-  onViewportChange?: (viewport: ViewportBounds) => void;
-  showProgress?: boolean;
-  enablePrefetch?: boolean;
-  className?: string;
+	projectId: string;
+	initialViewport?: ViewportBounds;
+	onViewportChange?: (viewport: ViewportBounds) => void;
+	showProgress?: boolean;
+	enablePrefetch?: boolean;
+	className?: string;
 }
 
 export function StreamingGraphView({
-  projectId,
-  initialViewport = { minX: 0, minY: 0, maxX: 1000, maxY: 1000 },
-  onViewportChange,
-  showProgress = true,
-  enablePrefetch = true,
-  className = '',
+	projectId,
+	initialViewport = { maxX: 1000, maxY: 1000, minX: 0, minY: 0 },
+	onViewportChange,
+	showProgress = true,
+	enablePrefetch = true,
+	className = "",
 }: StreamingGraphViewProps) {
-  const [viewport, setViewport] = useState<ViewportBounds>(initialViewport);
-  const [zoom, setZoom] = useState(1);
-  const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState<{ x: number; y: number } | null>(null);
+	const [viewport, setViewport] = useState<ViewportBounds>(initialViewport);
+	const [zoom, setZoom] = useState(1);
+	const [isPanning, setIsPanning] = useState(false);
+	const [panStart, setPanStart] = useState<{ x: number; y: number } | null>(
+		null,
+	);
 
-  const previousViewportRef = useRef<ViewportBounds>(viewport);
-  const lastMoveTimeRef = useRef<number>(Date.now());
+	const previousViewportRef = useRef<ViewportBounds>(viewport);
+	const lastMoveTimeRef = useRef<number>(Date.now());
 
-  // Calculate pan direction and velocity
-  const panDirection = calculatePanDirection(previousViewportRef.current, viewport);
-  const panVelocity = calculatePanVelocity(
-    previousViewportRef.current,
-    viewport,
-    Date.now() - lastMoveTimeRef.current
-  );
+	// Calculate pan direction and velocity
+	const panDirection = calculatePanDirection(
+		previousViewportRef.current,
+		viewport,
+	);
+	const panVelocity = calculatePanVelocity(
+		previousViewportRef.current,
+		viewport,
+		Date.now() - lastMoveTimeRef.current,
+	);
 
-  // Use incremental graph hook
-  const {
-    state,
-    loadGraph,
-    loadViewport,
-    abort,
-    reset,
-  } = useIncrementalGraph({
-    projectId,
-    viewport,
-    zoom,
-    enablePrefetch,
-    prefetchDirection: panDirection || undefined,
-    prefetchVelocity: panVelocity,
-  });
+	// Use incremental graph hook
+	const { state, loadGraph, loadViewport, abort, reset } = useIncrementalGraph({
+		enablePrefetch,
+		prefetchDirection: panDirection || undefined,
+		prefetchVelocity: panVelocity,
+		projectId,
+		viewport,
+		zoom,
+	});
 
-  // Load graph on mount and viewport change
-  useEffect(() => {
-    void loadGraph();
-  }, [loadGraph]);
+	// Load graph on mount and viewport change
+	useEffect(() => {
+		undefined;
+	}, [loadGraph]);
 
-  // Update previous viewport reference
-  useEffect(() => {
-    previousViewportRef.current = viewport;
-    lastMoveTimeRef.current = Date.now();
-  }, [viewport]);
+	// Update previous viewport reference
+	useEffect(() => {
+		previousViewportRef.current = viewport;
+		lastMoveTimeRef.current = Date.now();
+	}, [viewport]);
 
-  // Handle viewport changes
-  const handleViewportChange = useCallback(
-    (newViewport: ViewportBounds) => {
-      setViewport(newViewport);
-      onViewportChange?.(newViewport);
-      void loadViewport(newViewport);
-    },
-    [onViewportChange, loadViewport]
-  );
+	// Handle viewport changes
+	const handleViewportChange = useCallback(
+		(newViewport: ViewportBounds) => {
+			setViewport(newViewport);
+			onViewportChange?.(newViewport);
+			undefined;
+		},
+		[onViewportChange, loadViewport],
+	);
 
-  // Pan handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    setIsPanning(true);
-    setPanStart({ x: e.clientX, y: e.clientY });
-  }, []);
+	// Pan handlers
+	const handleMouseDown = useCallback((e: React.MouseEvent) => {
+		setIsPanning(true);
+		setPanStart({ x: e.clientX, y: e.clientY });
+	}, []);
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      if (!isPanning || !panStart) return;
+	const handleMouseMove = useCallback(
+		(e: React.MouseEvent) => {
+			if (!isPanning || !panStart) {
+				return;
+			}
 
-      const dx = (e.clientX - panStart.x) / zoom;
-      const dy = (e.clientY - panStart.y) / zoom;
+			const dx = (e.clientX - panStart.x) / zoom;
+			const dy = (e.clientY - panStart.y) / zoom;
 
-      const newViewport = {
-        minX: viewport.minX - dx,
-        minY: viewport.minY - dy,
-        maxX: viewport.maxX - dx,
-        maxY: viewport.maxY - dy,
-      };
+			const newViewport = {
+				maxX: viewport.maxX - dx,
+				maxY: viewport.maxY - dy,
+				minX: viewport.minX - dx,
+				minY: viewport.minY - dy,
+			};
 
-      handleViewportChange(newViewport);
-      setPanStart({ x: e.clientX, y: e.clientY });
-    },
-    [isPanning, panStart, viewport, zoom, handleViewportChange]
-  );
+			handleViewportChange(newViewport);
+			setPanStart({ x: e.clientX, y: e.clientY });
+		},
+		[isPanning, panStart, viewport, zoom, handleViewportChange],
+	);
 
-  const handleMouseUp = useCallback(() => {
-    setIsPanning(false);
-    setPanStart(null);
-  }, []);
+	const handleMouseUp = useCallback(() => {
+		setIsPanning(false);
+		setPanStart(null);
+	}, []);
 
-  // Zoom handlers
-  const handleZoomIn = useCallback(() => {
-    setZoom((z) => Math.min(z * 1.5, 10));
-  }, []);
+	// Zoom handlers
+	const handleZoomIn = useCallback(() => {
+		setZoom((z) => Math.min(z * 1.5, 10));
+	}, []);
 
-  const handleZoomOut = useCallback(() => {
-    setZoom((z) => Math.max(z / 1.5, 0.1));
-  }, []);
+	const handleZoomOut = useCallback(() => {
+		setZoom((z) => Math.max(z / 1.5, 0.1));
+	}, []);
 
-  // Reset handler
-  const handleReset = useCallback(() => {
-    reset();
-    setViewport(initialViewport);
-    setZoom(1);
-    void loadGraph();
-  }, [reset, initialViewport, loadGraph]);
+	// Reset handler
+	const handleReset = useCallback(() => {
+		reset();
+		setViewport(initialViewport);
+		setZoom(1);
+		undefined;
+	}, [reset, initialViewport, loadGraph]);
 
-  return (
-    <div className={`relative ${className}`}>
-      {/* Progress UI */}
-      {showProgress && state.isLoading && (
-        <div className="absolute top-4 right-4 z-10 w-80">
-          <GraphLoadingProgress
-            progress={state.progress}
-            metadata={state.metadata}
-            isLoading={state.isLoading}
-            onCancel={abort}
-          />
-        </div>
-      )}
+	return (
+		<div className={`relative ${className}`}>
+			{/* Progress UI */}
+			{showProgress && state.isLoading && (
+				<div className="absolute top-4 right-4 z-10 w-80">
+					<GraphLoadingProgress
+						progress={state.progress}
+						metadata={state.metadata}
+						isLoading={state.isLoading}
+						onCancel={abort}
+					/>
+				</div>
+			)}
 
-      {/* Controls */}
-      <div className="absolute top-4 left-4 z-10 flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleZoomIn}
-          title="Zoom In"
-        >
-          <ZoomIn className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleZoomOut}
-          title="Zoom Out"
-        >
-          <ZoomOut className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleReset}
-          title="Reset View"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-      </div>
+			{/* Controls */}
+			<div className="absolute top-4 left-4 z-10 flex gap-2">
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={handleZoomIn}
+					title="Zoom In"
+				>
+					<ZoomIn className="h-4 w-4" />
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={handleZoomOut}
+					title="Zoom Out"
+				>
+					<ZoomOut className="h-4 w-4" />
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={handleReset}
+					title="Reset View"
+				>
+					<RefreshCw className="h-4 w-4" />
+				</Button>
+			</div>
 
-      {/* Compact progress at bottom */}
-      {showProgress && state.isLoading && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-          <GraphLoadingProgressCompact
-            progress={state.progress}
-            isLoading={state.isLoading}
-            onCancel={abort}
-          />
-        </div>
-      )}
+			{/* Compact progress at bottom */}
+			{showProgress && state.isLoading && (
+				<div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+					<GraphLoadingProgressCompact
+						progress={state.progress}
+						isLoading={state.isLoading}
+						onCancel={abort}
+					/>
+				</div>
+			)}
 
-      {/* Graph Canvas */}
-      <Card
-        className={`w-full h-full min-h-[600px] cursor-${isPanning ? 'grabbing' : 'grab'} overflow-hidden`}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
-        <svg
-          className="w-full h-full"
-          viewBox={`${viewport.minX} ${viewport.minY} ${viewport.maxX - viewport.minX} ${viewport.maxY - viewport.minY}`}
-        >
-          {/* Render edges */}
-          <g className="edges">
-            {state.edges.map((edge) => {
-              const source = state.nodes.find((n) => n.id === edge.sourceId);
-              const target = state.nodes.find((n) => n.id === edge.targetId);
+			{/* Graph Canvas */}
+			<Card
+				className={`w-full h-full min-h-[600px] cursor-${isPanning ? "grabbing" : "grab"} overflow-hidden`}
+				onMouseDown={handleMouseDown}
+				onMouseMove={handleMouseMove}
+				onMouseUp={handleMouseUp}
+				onMouseLeave={handleMouseUp}
+			>
+				<svg
+					className="w-full h-full"
+					viewBox={`${viewport.minX} ${viewport.minY} ${viewport.maxX - viewport.minX} ${viewport.maxY - viewport.minY}`}
+				>
+					{/* Render edges */}
+					<g className="edges">
+						{state.edges.map((edge) => {
+							const source = state.nodes.find((n) => n.id === edge.sourceId);
+							const target = state.nodes.find((n) => n.id === edge.targetId);
 
-              if (!source || !target) return null;
+							if (!source || !target) {
+								return null;
+							}
 
-              return (
-                <line
-                  key={edge.id}
-                  x1={source.position.x}
-                  y1={source.position.y}
-                  x2={target.position.x}
-                  y2={target.position.y}
-                  stroke="currentColor"
-                  strokeWidth={2 / zoom}
-                  className="text-muted-foreground/30"
-                />
-              );
-            })}
-          </g>
+							return (
+								<line
+									key={edge.id}
+									x1={source.position.x}
+									y1={source.position.y}
+									x2={target.position.x}
+									y2={target.position.y}
+									stroke="currentColor"
+									strokeWidth={2 / zoom}
+									className="text-muted-foreground/30"
+								/>
+							);
+						})}
+					</g>
 
-          {/* Render nodes */}
-          <g className="nodes">
-            {state.nodes.map((node) => (
-              <g
-                key={node.id}
-                transform={`translate(${node.position.x}, ${node.position.y})`}
-              >
-                <circle
-                  r={20 / zoom}
-                  fill="currentColor"
-                  className="text-primary"
-                  stroke="white"
-                  strokeWidth={2 / zoom}
-                />
-                <text
-                  y={30 / zoom}
-                  textAnchor="middle"
-                  fontSize={12 / zoom}
-                  fill="currentColor"
-                  className="text-foreground select-none"
-                >
-                  {node.label}
-                </text>
-              </g>
-            ))}
-          </g>
-        </svg>
-      </Card>
+					{/* Render nodes */}
+					<g className="nodes">
+						{state.nodes.map((node) => (
+							<g
+								key={node.id}
+								transform={`translate(${node.position.x}, ${node.position.y})`}
+							>
+								<circle
+									r={20 / zoom}
+									fill="currentColor"
+									className="text-primary"
+									stroke="white"
+									strokeWidth={2 / zoom}
+								/>
+								<text
+									y={30 / zoom}
+									textAnchor="middle"
+									fontSize={12 / zoom}
+									fill="currentColor"
+									className="text-foreground select-none"
+								>
+									{node.label}
+								</text>
+							</g>
+						))}
+					</g>
+				</svg>
+			</Card>
 
-      {/* Stats */}
-      <div className="mt-4 flex justify-between text-xs text-muted-foreground">
-        <div>
-          Nodes: <span className="font-mono">{state.nodes.length}</span> | Edges:{' '}
-          <span className="font-mono">{state.edges.length}</span>
-        </div>
-        <div>
-          Zoom: <span className="font-mono">{zoom.toFixed(2)}x</span>
-        </div>
-        {state.metadata && (
-          <div>
-            Total: <span className="font-mono">{state.metadata.totalNodes}</span> nodes,{' '}
-            <span className="font-mono">{state.metadata.totalEdges}</span> edges
-          </div>
-        )}
-      </div>
+			{/* Stats */}
+			<div className="mt-4 flex justify-between text-xs text-muted-foreground">
+				<div>
+					Nodes: <span className="font-mono">{state.nodes.length}</span> |
+					Edges: <span className="font-mono">{state.edges.length}</span>
+				</div>
+				<div>
+					Zoom: <span className="font-mono">{zoom.toFixed(2)}x</span>
+				</div>
+				{state.metadata && (
+					<div>
+						Total:{" "}
+						<span className="font-mono">{state.metadata.totalNodes}</span>{" "}
+						nodes,{" "}
+						<span className="font-mono">{state.metadata.totalEdges}</span> edges
+					</div>
+				)}
+			</div>
 
-      {/* Error display */}
-      {state.error && (
-        <div className="mt-4 p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
-          <strong>Error loading graph:</strong> {state.error.message}
-        </div>
-      )}
-    </div>
-  );
+			{/* Error display */}
+			{state.error && (
+				<div className="mt-4 p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
+					<strong>Error loading graph:</strong> {state.error.message}
+				</div>
+			)}
+		</div>
+	);
 }
 
 /**
  * Example usage in a page component
  */
 export function StreamingGraphViewExample() {
-  const [projectId] = useState('example-project-id');
+	const [projectId] = useState("example-project-id");
 
-  return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Streaming Graph View</h1>
-        <p className="text-muted-foreground">
-          Real-time incremental loading with predictive prefetch
-        </p>
-      </div>
+	return (
+		<div className="container mx-auto p-6">
+			<div className="mb-6">
+				<h1 className="text-2xl font-bold mb-2">Streaming Graph View</h1>
+				<p className="text-muted-foreground">
+					Real-time incremental loading with predictive prefetch
+				</p>
+			</div>
 
-      <StreamingGraphView
-        projectId={projectId}
-        showProgress={true}
-        enablePrefetch={true}
-        onViewportChange={(viewport) => {
-          console.log('Viewport changed:', viewport);
-        }}
-      />
-    </div>
-  );
+			<StreamingGraphView
+				projectId={projectId}
+				showProgress
+				enablePrefetch
+				onViewportChange={(viewport) => {}}
+			/>
+		</div>
+	);
 }
 
 export default StreamingGraphView;

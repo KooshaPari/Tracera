@@ -22,24 +22,18 @@ const statusOptions = [
 const priorityOptions = ["low", "medium", "high", "critical"] as const;
 
 const taskSchema = z.object({
-	title: z.string().min(1, "Title is required").max(500, "Title too long"),
-	description: z.string().max(5000).optional(),
-	status: z.enum(statusOptions),
-	priority: z.enum(priorityOptions),
-	owner: z.string().max(255).optional(),
-	estimated_hours: z
-		.union([z.number(), z.string()])
-		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
-		.pipe(z.number().min(0, "Estimated hours must be non-negative"))
-		.optional(),
 	actual_hours: z
 		.union([z.number(), z.string()])
-		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.transform((val) =>
+			typeof val === "string" ? Number.parseFloat(val) : val,
+		)
 		.pipe(z.number().min(0, "Actual hours must be non-negative"))
 		.optional(),
 	completion_percentage: z
 		.union([z.number(), z.string()])
-		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.transform((val) =>
+			typeof val === "string" ? Number.parseFloat(val) : val,
+		)
 		.pipe(
 			z
 				.number()
@@ -47,7 +41,19 @@ const taskSchema = z.object({
 				.max(100, "Completion percentage cannot exceed 100"),
 		)
 		.optional(),
+	description: z.string().max(5000).optional(),
+	estimated_hours: z
+		.union([z.number(), z.string()])
+		.transform((val) =>
+			typeof val === "string" ? Number.parseFloat(val) : val,
+		)
+		.pipe(z.number().min(0, "Estimated hours must be non-negative"))
+		.optional(),
+	owner: z.string().max(255).optional(),
+	priority: z.enum(priorityOptions),
+	status: z.enum(statusOptions),
 	subtasks: z.array(z.string().min(1, "Subtask cannot be empty")),
+	title: z.string().min(1, "Title is required").max(500, "Title too long"),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -74,13 +80,13 @@ export function CreateTaskItemForm({
 		control,
 		formState: { errors, isSubmitting },
 	} = useForm<TaskFormData>({
-		resolver: zodResolver(taskSchema),
 		defaultValues: {
-			status: "todo",
 			priority: "medium",
+			status: "todo",
 			subtasks: [],
 		},
 		mode: "onBlur",
+		resolver: zodResolver(taskSchema),
 	});
 
 	const onSubmitWithAnnouncement = useCallback(
@@ -191,7 +197,7 @@ export function CreateTaskItemForm({
 								placeholder="Enter task title"
 								aria-describedby={errors.title ? "title-error" : "title-help"}
 								aria-required="true"
-								aria-invalid={!!errors.title}
+								aria-invalid={Boolean(errors.title)}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							/>
 							{errors.title ? (
@@ -332,7 +338,7 @@ export function CreateTaskItemForm({
 											? "estimated_hours-error"
 											: "estimated_hours-help"
 									}
-									aria-invalid={!!errors.estimated_hours}
+									aria-invalid={Boolean(errors.estimated_hours)}
 									className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 								/>
 								{errors.estimated_hours ? (
@@ -373,7 +379,7 @@ export function CreateTaskItemForm({
 											? "actual_hours-error"
 											: "actual_hours-help"
 									}
-									aria-invalid={!!errors.actual_hours}
+									aria-invalid={Boolean(errors.actual_hours)}
 									className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 								/>
 								{errors.actual_hours ? (
@@ -416,7 +422,7 @@ export function CreateTaskItemForm({
 										? "completion_percentage-error"
 										: "completion_percentage-help"
 								}
-								aria-invalid={!!errors.completion_percentage}
+								aria-invalid={Boolean(errors.completion_percentage)}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							/>
 							{errors.completion_percentage ? (

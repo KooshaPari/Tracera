@@ -17,10 +17,10 @@ import { requireAuth } from "@/lib/route-guards";
 
 export const Route = createFileRoute("/projects/$projectId/specifications")({
 	beforeLoad: () => requireAuth(),
+	component: SpecificationsRoute,
 	validateSearch: (search: Record<string, unknown>) => ({
 		tab: typeof search["tab"] === "string" ? search["tab"] : "overview",
 	}),
-	component: SpecificationsRoute,
 });
 
 function SpecificationsRoute() {
@@ -38,9 +38,7 @@ function SpecificationsRoute() {
 	const currentTab = allowedTabs.has(tab) ? tab : "overview";
 
 	const handleTabChange = (value: string) => {
-		void navigate({
-			search: (prev: { tab?: string }) => ({ ...prev, tab: value }),
-		});
+		undefined;
 	};
 
 	return (

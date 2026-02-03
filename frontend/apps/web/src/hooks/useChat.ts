@@ -1,11 +1,11 @@
 /**
- * useChat Hook - SSE streaming for AI chat with tool use support
+ * UseChat Hook - SSE streaming for AI chat with tool use support
  */
 
 import { useCallback, useRef } from "react";
 import { createAgentSession } from "@/api/agent";
 import { buildSystemPrompt } from "@/lib/ai/systemPrompt";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import type { SSEEvent, ToolCall } from "@/lib/ai/types";
 import { useChatStore } from "@/stores/chatStore";
 import client from "@/api/client";
@@ -96,12 +96,12 @@ export function useChat() {
 			const messagesForApi = conv.messages
 				.filter((m) => m.id !== assistantMessageId)
 				.map((m) => ({
-					role: m.role,
 					content: m.content,
+					role: m.role,
 				}));
 
 			// Add the new user message
-			messagesForApi.push({ role: "user", content });
+			messagesForApi.push({ content, role: "user" });
 
 			// Build system prompt: override if set, else built-in with context
 			const systemPrompt =
@@ -117,17 +117,7 @@ export function useChat() {
 
 			try {
 				const response = await fetch(`${API_URL}/api/v1/chat/stream`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						...getAuthHeaders(),
-					},
 					body: JSON.stringify({
-						messages: messagesForApi,
-						model: selectedModel.id,
-						provider: selectedModel.provider,
-						system_prompt: systemPrompt,
-						max_tokens: selectedModel.maxOutput || 4096,
 						context: context
 							? {
 									project_id: context.project?.id,
@@ -135,8 +125,18 @@ export function useChat() {
 									current_view: context.currentView,
 								}
 							: undefined,
+						max_tokens: selectedModel.maxOutput || 4096,
+						messages: messagesForApi,
+						model: selectedModel.id,
+						provider: selectedModel.provider,
 						session_id: conv.sessionId ?? undefined,
+						system_prompt: systemPrompt,
 					}),
+					headers: {
+						"Content-Type": "application/json",
+						...getAuthHeaders(),
+					},
+					method: "POST",
 					signal: abortController.signal,
 				});
 
@@ -144,7 +144,7 @@ export function useChat() {
 					throw new Error(`HTTP error! status: ${response.status}`);
 				}
 
-				const reader = response['body']?.getReader();
+				const reader = response["body"]?.getReader();
 				if (!reader) {
 					throw new Error("No response body");
 				}
@@ -153,14 +153,14 @@ export function useChat() {
 				let buffer = "";
 
 				const processSSELine = (line: string) => {
-					if (!line.startsWith("data: ")) return;
+					if (!line.startsWith("data: ")) {
+						return;
+					}
 					const data = line.slice(6).trim();
 					if (data === "[DONE]") {
-						updateMessageToolCalls(
-							conversationId,
-							assistantMessageId,
-							Array.from(toolCalls.current.values()),
-						);
+						updateMessageToolCalls(conversationId, assistantMessageId, [
+							...toolCalls.current.values(),
+						]);
 						setMessageStreaming(conversationId, assistantMessageId, false);
 						options?.onComplete?.(accumulatedContent.current);
 						return;
@@ -168,9 +168,9 @@ export function useChat() {
 					try {
 						const event: SSEEvent = JSON.parse(data);
 						switch (event.type) {
-							case "text":
-								if (event.data['content']) {
-									accumulatedContent.current += event.data['content'];
+							case "text": {
+								if (event.data["content"]) {
+									accumulatedContent.current += event.data["content"];
 									updateMessage(
 										conversationId,
 										assistantMessageId,
@@ -179,18 +179,19 @@ export function useChat() {
 											toolCalls.current,
 										),
 									);
-									options?.onChunk?.(event.data['content']);
+									options?.onChunk?.(event.data["content"]);
 								}
 								break;
-							case "tool_use_start":
-								if (event.data['tool_name'] && event.data['tool_use_id']) {
+							}
+							case "tool_use_start": {
+								if (event.data["tool_name"] && event.data["tool_use_id"]) {
 									const toolCall: ToolCall = {
-										id: event.data['tool_use_id'],
-										name: event.data['tool_name'],
+										id: event.data["tool_use_id"],
 										input: {},
 										isExecuting: true,
+										name: event.data["tool_name"],
 									};
-									toolCalls.current.set(event.data['tool_use_id'], toolCall);
+									toolCalls.current.set(event.data["tool_use_id"], toolCall);
 									updateMessage(
 										conversationId,
 										assistantMessageId,
@@ -202,23 +203,24 @@ export function useChat() {
 									updateMessageToolCalls(
 										conversationId,
 										assistantMessageId,
-										Array.from(toolCalls.current.values()),
+										[...toolCalls.current.values()],
 									);
 									options?.onToolStart?.(
-										event.data['tool_name'],
-										event.data['tool_use_id'],
+										event.data["tool_name"],
+										event.data["tool_use_id"],
 									);
 								}
 								break;
-							case "tool_use_input":
-								if (event.data['tool_use_id'] && event.data['input']) {
+							}
+							case "tool_use_input": {
+								if (event.data["tool_use_id"] && event.data["input"]) {
 									const existingCall = toolCalls.current.get(
-										event.data['tool_use_id'],
+										event.data["tool_use_id"],
 									);
 									if (existingCall) {
-										existingCall.input = event.data['input'];
+										existingCall.input = event.data["input"];
 										toolCalls.current.set(
-											event.data['tool_use_id'],
+											event.data["tool_use_id"],
 											existingCall,
 										);
 										updateMessage(
@@ -232,21 +234,22 @@ export function useChat() {
 										updateMessageToolCalls(
 											conversationId,
 											assistantMessageId,
-											Array.from(toolCalls.current.values()),
+											[...toolCalls.current.values()],
 										);
 									}
 								}
 								break;
-							case "tool_result":
-								if (event.data['tool_use_id'] && event.data['result']) {
+							}
+							case "tool_result": {
+								if (event.data["tool_use_id"] && event.data["result"]) {
 									const existingCall = toolCalls.current.get(
-										event.data['tool_use_id'],
+										event.data["tool_use_id"],
 									);
 									if (existingCall) {
-										existingCall.result = event.data['result'];
+										existingCall.result = event.data["result"];
 										existingCall.isExecuting = false;
 										toolCalls.current.set(
-											event.data['tool_use_id'],
+											event.data["tool_use_id"],
 											existingCall,
 										);
 										updateMessage(
@@ -260,33 +263,32 @@ export function useChat() {
 										updateMessageToolCalls(
 											conversationId,
 											assistantMessageId,
-											Array.from(toolCalls.current.values()),
+											[...toolCalls.current.values()],
 										);
 										options?.onToolResult?.(
-											event.data['tool_use_id'],
-											event.data['result'],
+											event.data["tool_use_id"],
+											event.data["result"],
 										);
 									}
 								}
 								break;
-							case "error":
-								if (event.data['error']) {
-									throw new Error(event.data['error']);
+							}
+							case "error": {
+								if (event.data["error"]) {
+									throw new Error(event.data["error"]);
 								}
 								break;
-							case "done":
+							}
+							case "done": {
 								updateMessageToolCalls(
 									conversationId,
 									assistantMessageId,
-									Array.from(toolCalls.current.values()),
+									[...toolCalls.current.values()],
 								);
-								setMessageStreaming(
-									conversationId,
-									assistantMessageId,
-									false,
-								);
+								setMessageStreaming(conversationId, assistantMessageId, false);
 								options?.onComplete?.(accumulatedContent.current);
 								break;
+							}
 						}
 					} catch {
 						try {
@@ -313,7 +315,9 @@ export function useChat() {
 						// Process any remaining buffer (last SSE event may be in here)
 						const lines = buffer.split("\n");
 						for (const line of lines) {
-							if (line.trim()) processSSELine(line);
+							if (line.trim()) {
+								processSSELine(line);
+							}
 						}
 						break;
 					}
@@ -323,16 +327,16 @@ export function useChat() {
 					buffer = lines.pop() || "";
 
 					for (const line of lines) {
-						if (line.trim()) processSSELine(line);
+						if (line.trim()) {
+							processSSELine(line);
+						}
 					}
 				}
 
 				// Ensure streaming state is cleaned up and tool calls persisted
-				updateMessageToolCalls(
-					conversationId,
-					assistantMessageId,
-					Array.from(toolCalls.current.values()),
-				);
+				updateMessageToolCalls(conversationId, assistantMessageId, [
+					...toolCalls.current.values(),
+				]);
 				setMessageStreaming(conversationId, assistantMessageId, false);
 				// If we never got any content, show a fallback so the user knows the request finished
 				if (!accumulatedContent.current) {
@@ -343,11 +347,9 @@ export function useChat() {
 					);
 				}
 			} catch (error) {
-				updateMessageToolCalls(
-					conversationId,
-					assistantMessageId,
-					Array.from(toolCalls.current.values()),
-				);
+				updateMessageToolCalls(conversationId, assistantMessageId, [
+					...toolCalls.current.values(),
+				]);
 				if ((error as Error).name === "AbortError") {
 					// Request was aborted, mark as complete
 					setMessageStreaming(conversationId, assistantMessageId, false);
@@ -397,9 +399,9 @@ export function useChat() {
 		}
 
 		// Find last user message (search from end)
-		const messages = conversation.messages;
+		const { messages } = conversation;
 		let lastUserMessage: (typeof messages)[number] | undefined;
-		for (let i = messages.length - 1; i >= 0; i--) {
+		for (let i = messages.length - 1; i >= 0; i -= 1) {
 			const msg = messages[i];
 			if (msg && msg.role === "user") {
 				lastUserMessage = msg;
@@ -485,13 +487,13 @@ function formatMessageContent(
 		}
 
 		if (toolCall.result) {
-			if (toolCall.result['success']) {
+			if (toolCall.result["success"]) {
 				parts.push("**Result:**");
 				parts.push("```json");
-				parts.push(JSON.stringify(toolCall.result['result'], null, 2));
+				parts.push(JSON.stringify(toolCall.result["result"], null, 2));
 				parts.push("```");
 			} else {
-				parts.push(`**Error:** ${toolCall.result['error']}`);
+				parts.push(`**Error:** ${toolCall.result["error"]}`);
 			}
 		}
 	}

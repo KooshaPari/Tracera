@@ -14,16 +14,14 @@ import {
 	Background,
 	BackgroundVariant,
 	Controls,
-	type Edge,
 	MarkerType,
-	type Node,
-	type NodeTypes,
 	Panel,
 	ReactFlow,
 	useEdgesState,
 	useNodesState,
 	useReactFlow,
 } from "@xyflow/react";
+import type { Edge, Node, NodeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
 	Activity,
@@ -38,22 +36,22 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ClusterNode as _ClusterNodeType } from "../../lib/graphClustering";
-import {
-	type ClusteringAlgorithm,
-	useClusterEdges,
-	useClustering,
-} from "../../hooks/useClustering";
-import { ClusterNode, type ClusterNodeData } from "./ClusterNode";
+import { useClusterEdges, useClustering } from "../../hooks/useClustering";
+import type { ClusteringAlgorithm } from "../../hooks/useClustering";
+import { ClusterNode } from "./ClusterNode";
+import type { ClusterNodeData } from "./ClusterNode";
 import { LayoutSelector } from "./layouts/LayoutSelector";
-import { type LayoutType, useDAGLayout } from "./layouts/useDAGLayout";
+import { useDAGLayout } from "./layouts/useDAGLayout";
+import type { LayoutType } from "./layouts/useDAGLayout";
 import { NodeDetailPanel } from "./NodeDetailPanel";
-import { type RichNodeData, RichNodePill } from "./RichNodePill";
+import { RichNodePill } from "./RichNodePill";
+import type { RichNodeData } from "./RichNodePill";
 import type { EnhancedNodeData } from "./types";
 import { ENHANCED_TYPE_COLORS } from "./types";
 
 const customNodeTypes = {
-	richPill: RichNodePill,
 	clusterNode: ClusterNode,
+	richPill: RichNodePill,
 } as const satisfies NodeTypes;
 
 interface ClusteredGraphViewProps {
@@ -114,47 +112,59 @@ export function ClusteredGraphView({
 			const clusterItems = items.filter((item) => cluster.itemIds.has(item.id));
 
 			nodes.push({
-				id: cluster.id,
-				type: "clusterNode",
-				position: { x: 0, y: 0 },
 				data: {
 					cluster,
+					isExpanded: false,
 					items: clusterItems,
+					level: cluster.level,
 					links: links.filter(
 						(link) =>
-							cluster.itemIds.has(link.sourceId) || cluster.itemIds.has(link.targetId),
+							cluster.itemIds.has(link.sourceId) ||
+							cluster.itemIds.has(link.targetId),
 					),
-					isExpanded: false,
-					level: cluster.level,
-					onToggle: toggleCluster,
 					onDrillDown: drillDownToCluster,
 					onItemSelect: setSelectedNodeId,
+					onToggle: toggleCluster,
 				} as ClusterNodeData,
+				id: cluster.id,
+				position: { x: 0, y: 0 },
+				type: "clusterNode",
 			});
 		}
 
 		// Add individual item nodes
 		for (const item of visibleItems) {
 			nodes.push({
-				id: item.id,
-				type: "richPill",
-				position: { x: 0, y: 0 },
 				data: {
 					id: item.id,
 					item,
-					type: item.type || "item",
-					status: item.status,
 					label: item.title || "Untitled",
 					onSelect: setSelectedNodeId,
+					status: item.status,
+					type: item.type || "item",
 				} as RichNodeData,
+				id: item.id,
+				position: { x: 0, y: 0 },
+				type: "richPill",
 			});
 		}
 
 		return nodes;
-	}, [visibleClusters, visibleItems, items, links, toggleCluster, drillDownToCluster]);
+	}, [
+		visibleClusters,
+		visibleItems,
+		items,
+		links,
+		toggleCluster,
+		drillDownToCluster,
+	]);
 
 	// Create edges
-	const edgesForLayout = useMemo((): { id: string; source: string; target: string }[] => {
+	const edgesForLayout = useMemo((): {
+		id: string;
+		source: string;
+		target: string;
+	}[] => {
 		const edges: { id: string; source: string; target: string }[] = [];
 
 		// Add cluster edges
@@ -169,7 +179,10 @@ export function ClusteredGraphView({
 		// Add item edges (only for visible items)
 		const visibleItemIds = new Set(visibleItems.map((i) => i.id));
 		for (const link of links) {
-			if (visibleItemIds.has(link.sourceId) && visibleItemIds.has(link.targetId)) {
+			if (
+				visibleItemIds.has(link.sourceId) &&
+				visibleItemIds.has(link.targetId)
+			) {
 				edges.push({
 					id: link.id,
 					source: link.sourceId,
@@ -187,66 +200,68 @@ export function ClusteredGraphView({
 		edgesForLayout,
 		layout,
 		{
-			nodeWidth: 200,
-			nodeHeight: 120,
-			rankSep: 120,
-			nodeSep: 80,
 			marginX: 50,
 			marginY: 50,
+			nodeHeight: 120,
+			nodeSep: 80,
+			nodeWidth: 200,
+			rankSep: 120,
 		},
 	);
 
 	// Create final edges with styling
-	const initialEdges = useMemo((): Edge[] => {
-		return edgesForLayout.map((edge) => {
-			// Find if this is a cluster edge
-			const clusterEdge = clusterEdges.find(
-				(ce) =>
-					(ce.source === edge.source && ce.target === edge.target) ||
-					(ce.source === edge.target && ce.target === edge.source),
-			);
+	const initialEdges = useMemo(
+		(): Edge[] =>
+			edgesForLayout.map((edge) => {
+				// Find if this is a cluster edge
+				const clusterEdge = clusterEdges.find(
+					(ce) =>
+						(ce.source === edge.source && ce.target === edge.target) ||
+						(ce.source === edge.target && ce.target === edge.source),
+				);
 
-			if (clusterEdge) {
-				// Style cluster edges differently
+				if (clusterEdge) {
+					// Style cluster edges differently
+					return {
+						animated: false,
+						id: edge.id,
+						label: `${clusterEdge.weight}`,
+						labelBgPadding: [4, 2] as [number, number],
+						labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
+						labelStyle: { fontSize: 10, fill: "#8b5cf6", fontWeight: "bold" },
+						markerEnd: {
+							type: MarkerType.ArrowClosed,
+							color: "#8b5cf6",
+						},
+						source: edge.source,
+						style: {
+							stroke: "#8b5cf6",
+							strokeWidth: Math.min(clusterEdge.weight / 10, 5),
+						},
+						target: edge.target,
+						type: "smoothstep",
+					} as Edge;
+				}
+
+				// Regular item edge
 				return {
-					id: edge.id,
-					source: edge.source,
-					target: edge.target,
-					type: "smoothstep",
 					animated: false,
-					style: {
-						stroke: "#8b5cf6",
-						strokeWidth: Math.min(clusterEdge.weight / 10, 5),
-					},
-					label: `${clusterEdge.weight}`,
-					labelStyle: { fontSize: 10, fill: "#8b5cf6", fontWeight: "bold" },
-					labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
-					labelBgPadding: [4, 2] as [number, number],
+					id: edge.id,
 					markerEnd: {
 						type: MarkerType.ArrowClosed,
-						color: "#8b5cf6",
+						color: "#64748b",
 					},
+					source: edge.source,
+					style: {
+						stroke: "#64748b",
+						strokeWidth: 1,
+					},
+					target: edge.target,
+					type: "smoothstep",
 				} as Edge;
-			}
-
-			// Regular item edge
-			return {
-				id: edge.id,
-				source: edge.source,
-				target: edge.target,
-				type: "smoothstep",
-				animated: false,
-				style: {
-					stroke: "#64748b",
-					strokeWidth: 1,
-				},
-				markerEnd: {
-					type: MarkerType.ArrowClosed,
-					color: "#64748b",
-				},
-			} as Edge;
-		});
-	}, [edgesForLayout, clusterEdges]);
+			}),
+		[edgesForLayout, clusterEdges],
+	);
 
 	const [nodes, setNodes, onNodesChange] = useNodesState(laidoutNodes);
 	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -264,16 +279,18 @@ export function ClusteredGraphView({
 	useEffect(() => {
 		if (autoFit && nodes.length > 0) {
 			const timer = setTimeout(() => {
-				void fitView({ padding: 0.2, duration: 300 });
+				undefined;
 			}, 100);
 			return () => clearTimeout(timer);
 		}
-		return undefined;
+		return;
 	}, [autoFit, fitView, nodes.length]);
 
 	// Selected node data
 	const selectedNode = useMemo(() => {
-		if (!selectedNodeId) return null;
+		if (!selectedNodeId) {
+			return null;
+		}
 		return items.find((i) => i.id === selectedNodeId) || null;
 	}, [items, selectedNodeId]);
 
@@ -298,7 +315,7 @@ export function ClusteredGraphView({
 	}, [selectedNodeId, links, items]);
 
 	// Handlers
-	const handleFit = () => void fitView({ padding: 0.2, duration: 300 });
+	const handleFit = () => undefined;
 	const handleReset = () => {
 		setLayout("flow-chart");
 		setSelectedNodeId(null);
@@ -309,7 +326,7 @@ export function ClusteredGraphView({
 		setSelectedNodeId(nodeId);
 		const node = nodes.find((n) => n.id === nodeId);
 		if (node) {
-			void fitView({ nodes: [node], padding: 0.5, duration: 300 });
+			undefined;
 		}
 	};
 
@@ -467,20 +484,20 @@ export function ClusteredGraphView({
 					<NodeDetailPanel
 						node={
 							{
-								id: selectedNode.id,
-								item: selectedNode,
-								type: selectedNode.type || "item",
-								status: selectedNode.status,
-								label: selectedNode.title || "Untitled",
-								perspective: [],
 								connections: {
+									byType: {},
 									incoming: incomingLinks.length,
 									outgoing: outgoingLinks.length,
 									total: incomingLinks.length + outgoingLinks.length,
-									byType: {},
 								},
 								depth: 0,
 								hasChildren: false,
+								id: selectedNode.id,
+								item: selectedNode,
+								label: selectedNode.title || "Untitled",
+								perspective: [],
+								status: selectedNode.status,
+								type: selectedNode.type || "item",
 							} as EnhancedNodeData
 						}
 						relatedItems={relatedItems}

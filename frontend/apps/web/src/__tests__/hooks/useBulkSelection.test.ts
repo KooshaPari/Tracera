@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { useBulkSelection } from "@/hooks/useBulkSelection";
 
-describe("useBulkSelection", () => {
+describe(useBulkSelection, () => {
 	it("initializes with empty selection", () => {
 		const { result } = renderHook(() => useBulkSelection());
 

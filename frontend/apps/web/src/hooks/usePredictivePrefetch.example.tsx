@@ -7,8 +7,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { graphCache } from "@/lib/graphCache";
-import { logger } from '@/lib/logger';
-import { usePredictivePrefetch, viewportToCacheKey } from "./usePredictivePrefetch";
+import { logger } from "@/lib/logger";
+import {
+	usePredictivePrefetch,
+	viewportToCacheKey,
+} from "./usePredictivePrefetch";
 import type { PredictedViewport, Viewport } from "./usePredictivePrefetch";
 
 /**
@@ -18,11 +21,11 @@ import type { PredictedViewport, Viewport } from "./usePredictivePrefetch";
  */
 export function ExampleBasicGraphView() {
 	const [viewport, setViewport] = useState<Viewport>({
+		height: 900,
+		width: 1200,
 		x: 0,
 		y: 0,
 		zoom: 1,
-		width: 1200,
-		height: 900,
 	});
 
 	const loadViewportData = useCallback(async (predicted: PredictedViewport) => {
@@ -44,11 +47,11 @@ export function ExampleBasicGraphView() {
 	}, []);
 
 	const { isPredicting, speed, predictedViewport } = usePredictivePrefetch({
-		viewport,
-		loadViewport: loadViewportData,
 		enabled: true,
-		velocityThreshold: 15,
+		loadViewport: loadViewportData,
 		predictionHorizon: 500,
+		velocityThreshold: 15,
+		viewport,
 	});
 
 	return (
@@ -90,27 +93,29 @@ export function ExampleBasicGraphView() {
 export function ExampleReactFlowIntegration() {
 	const [reactFlowInstance, _setReactFlowInstance] = useState<any>(null);
 	const [viewport, _setViewport] = useState<Viewport>({
+		height: 0,
+		width: 0,
 		x: 0,
 		y: 0,
 		zoom: 1,
-		width: 0,
-		height: 0,
 	});
 
 	// Update viewport from ReactFlow
 	useEffect(() => {
-		if (!reactFlowInstance) return;
+		if (!reactFlowInstance) {
+			return;
+		}
 
 		const updateViewport = () => {
 			const rfViewport = reactFlowInstance.getViewport();
 			const bounds = reactFlowInstance.getBounds();
 
 			_setViewport({
+				height: bounds.height,
+				width: bounds.width,
 				x: -rfViewport.x / rfViewport.zoom,
 				y: -rfViewport.y / rfViewport.zoom,
 				zoom: rfViewport.zoom,
-				width: bounds.width,
-				height: bounds.height,
 			});
 		};
 
@@ -145,12 +150,12 @@ export function ExampleReactFlowIntegration() {
 	);
 
 	usePredictivePrefetch({
-		viewport,
-		loadViewport: loadViewportNodes,
-		enabled: true,
-		velocityThreshold: 20,
-		predictionHorizon: 600,
 		debounceDelay: 150,
+		enabled: true,
+		loadViewport: loadViewportNodes,
+		predictionHorizon: 600,
+		velocityThreshold: 20,
+		viewport,
 	});
 
 	return (
@@ -168,11 +173,11 @@ export function ExampleReactFlowIntegration() {
  */
 export function ExampleAdaptivePrefetching() {
 	const [viewport, _setViewport] = useState<Viewport>({
+		height: 900,
+		width: 1200,
 		x: 0,
 		y: 0,
 		zoom: 1,
-		width: 1200,
-		height: 900,
 	});
 
 	const [predictionHorizon, setPredictionHorizon] = useState(500);
@@ -184,7 +189,7 @@ export function ExampleAdaptivePrefetching() {
 		let frames = 0;
 
 		const measureFps = () => {
-			frames++;
+			frames += 1;
 			const now = performance.now();
 			const elapsed = now - lastTime;
 
@@ -223,11 +228,11 @@ export function ExampleAdaptivePrefetching() {
 	}, []);
 
 	const { isPredicting } = usePredictivePrefetch({
-		viewport,
-		loadViewport: loadViewportData,
 		enabled: true,
+		loadViewport: loadViewportData,
 		predictionHorizon,
 		velocityThreshold: 15,
+		viewport,
 	});
 
 	return (
@@ -248,11 +253,11 @@ export function ExampleAdaptivePrefetching() {
  */
 export function ExampleMultiLayerPrefetching() {
 	const [viewport, _setViewport] = useState<Viewport>({
+		height: 900,
+		width: 1200,
 		x: 0,
 		y: 0,
 		zoom: 1,
-		width: 1200,
-		height: 900,
 	});
 
 	// Near-horizon: Prefetch node details
@@ -277,18 +282,18 @@ export function ExampleMultiLayerPrefetching() {
 
 	// Near prefetch (300ms ahead)
 	usePredictivePrefetch({
-		viewport,
 		loadViewport: loadNearData,
 		predictionHorizon: 300,
 		velocityThreshold: 15,
+		viewport,
 	});
 
 	// Far prefetch (800ms ahead)
 	usePredictivePrefetch({
-		viewport,
 		loadViewport: loadFarData,
 		predictionHorizon: 800,
-		velocityThreshold: 20, // Higher threshold for far prefetch
+		velocityThreshold: 20,
+		viewport, // Higher threshold for far prefetch
 	});
 
 	return <div>{/* Graph content */}</div>;
@@ -301,11 +306,11 @@ export function ExampleMultiLayerPrefetching() {
  */
 export function ExampleDirectionalPrefetching() {
 	const [viewport, _setViewport] = useState<Viewport>({
+		height: 900,
+		width: 1200,
 		x: 0,
 		y: 0,
 		zoom: 1,
-		width: 1200,
-		height: 900,
 	});
 
 	const loadDirectionalData = useCallback(
@@ -315,10 +320,10 @@ export function ExampleDirectionalPrefetching() {
 			const deltaY = predicted.minY - viewport.y;
 
 			const expandedBounds: PredictedViewport = {
-				minX: deltaX > 0 ? predicted.minX : predicted.minX - 200,
-				minY: deltaY > 0 ? predicted.minY : predicted.minY - 200,
 				maxX: deltaX > 0 ? predicted.maxX + 200 : predicted.maxX,
 				maxY: deltaY > 0 ? predicted.maxY + 200 : predicted.maxY,
+				minX: deltaX > 0 ? predicted.minX : predicted.minX - 200,
+				minY: deltaY > 0 ? predicted.minY : predicted.minY - 200,
 				zoom: predicted.zoom,
 			};
 
@@ -333,10 +338,10 @@ export function ExampleDirectionalPrefetching() {
 	);
 
 	usePredictivePrefetch({
-		viewport,
 		loadViewport: loadDirectionalData,
 		predictionHorizon: 500,
 		velocityThreshold: 15,
+		viewport,
 	});
 
 	return <div>{/* Graph content */}</div>;
@@ -346,7 +351,7 @@ export function ExampleDirectionalPrefetching() {
 async function fetchGraphData(_predicted: PredictedViewport): Promise<any> {
 	// Simulate API call
 	await new Promise((resolve) => setTimeout(resolve, 100));
-	return { nodes: [], edges: [] };
+	return { edges: [], nodes: [] };
 }
 
 async function fetchNodesInBounds(_bounds: PredictedViewport): Promise<any[]> {
@@ -358,7 +363,9 @@ async function preloadNodeAssets(_nodes: any[]): Promise<void> {
 	await new Promise((resolve) => setTimeout(resolve, 50));
 }
 
-async function fetchDetailedNodeData(_predicted: PredictedViewport): Promise<any> {
+async function fetchDetailedNodeData(
+	_predicted: PredictedViewport,
+): Promise<any> {
 	await new Promise((resolve) => setTimeout(resolve, 80));
 	return { detailedNodes: [] };
 }

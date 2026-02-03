@@ -4,17 +4,17 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { Edge, Node } from "@xyflow/react";
 import { useGPUForceLayout } from "../useGPUForceLayout";
 
 function createNodes(count: number): Node[] {
 	return Array.from({ length: count }, (_, i) => ({
-		id: `node-${i}`,
-		type: "default",
-		position: { x: 0, y: 0 },
 		data: {},
+		id: `node-${i}`,
+		position: { x: 0, y: 0 },
+		type: "default",
 	}));
 }
 
@@ -26,7 +26,7 @@ function createEdges(count: number): Edge[] {
 	}));
 }
 
-describe("useGPUForceLayout", () => {
+describe(useGPUForceLayout, () => {
 	describe("basic functionality", () => {
 		it("should initialize with empty nodes", () => {
 			const { result } = renderHook(() => useGPUForceLayout([], []));
@@ -107,7 +107,7 @@ describe("useGPUForceLayout", () => {
 				() => {
 					expect(result.current.isComputing).toBe(false);
 				},
-				{ timeout: 10000 },
+				{ timeout: 10_000 },
 			);
 
 			expect(result.current.nodes.length).toBe(1500);
@@ -123,9 +123,9 @@ describe("useGPUForceLayout", () => {
 				useGPUForceLayout(nodes, edges, {
 					animateTransitions: false,
 					config: {
-						iterations: 50,
-						repulsionStrength: 10000,
 						attractionStrength: 0.2,
+						iterations: 50,
+						repulsionStrength: 10_000,
 					},
 				}),
 			);
@@ -163,10 +163,7 @@ describe("useGPUForceLayout", () => {
 				useGPUForceLayout([], [], { enabled: false }),
 			);
 
-			const layoutedNodes = await result.current.calculateLayout(
-				nodes,
-				edges,
-			);
+			const layoutedNodes = await result.current.calculateLayout(nodes, edges);
 
 			expect(layoutedNodes).toHaveLength(5);
 			expect(layoutedNodes[0].position.x).not.toBe(0);
@@ -180,10 +177,7 @@ describe("useGPUForceLayout", () => {
 				useGPUForceLayout([], [], { enabled: false }),
 			);
 
-			const layoutedNodes = await result.current.calculateLayout(
-				nodes,
-				edges,
-			);
+			const layoutedNodes = await result.current.calculateLayout(nodes, edges);
 
 			expect(layoutedNodes).toEqual(nodes);
 		});
@@ -202,10 +196,10 @@ describe("useGPUForceLayout", () => {
 		it("should preserve node data on error", async () => {
 			const nodes: Node[] = [
 				{
-					id: "1",
-					type: "custom",
-					position: { x: 0, y: 0 },
 					data: { label: "Test" },
+					id: "1",
+					position: { x: 0, y: 0 },
+					type: "custom",
 				},
 			];
 
@@ -228,8 +222,8 @@ describe("useGPUForceLayout", () => {
 					useGPUForceLayout(nodes, edges, { animateTransitions: false }),
 				{
 					initialProps: {
-						nodes: createNodes(5),
 						edges: createEdges(5),
+						nodes: createNodes(5),
 					},
 				},
 			);
@@ -242,8 +236,8 @@ describe("useGPUForceLayout", () => {
 
 			// Update with new nodes
 			rerender({
-				nodes: createNodes(10),
 				edges: createEdges(10),
+				nodes: createNodes(10),
 			});
 
 			await waitFor(() => {
@@ -261,7 +255,7 @@ describe("useGPUForceLayout", () => {
 				({ nodes, edges }) =>
 					useGPUForceLayout(nodes, edges, { animateTransitions: false }),
 				{
-					initialProps: { nodes, edges },
+					initialProps: { edges, nodes },
 				},
 			);
 
@@ -272,7 +266,7 @@ describe("useGPUForceLayout", () => {
 			const firstDuration = result.current.duration;
 
 			// Re-render with same props
-			rerender({ nodes, edges });
+			rerender({ edges, nodes });
 
 			// Duration should not change (no recalculation)
 			expect(result.current.duration).toBe(firstDuration);
@@ -294,7 +288,7 @@ describe("useGPUForceLayout", () => {
 				() => {
 					expect(result.current.isComputing).toBe(false);
 				},
-				{ timeout: 10000 },
+				{ timeout: 10_000 },
 			);
 
 			expect(result.current.nodes.length).toBe(1500);

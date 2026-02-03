@@ -110,7 +110,7 @@ export function RepoSearchCombobox({
 						<div className="flex items-center justify-center p-4">
 							<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
 						</div>
-					) : repos.length === 0 ? (
+					) : (repos.length === 0 ? (
 						<div className="p-4 text-sm text-muted-foreground text-center">
 							{searchQuery
 								? "No repositories found"
@@ -149,7 +149,7 @@ export function RepoSearchCombobox({
 								</button>
 							))}
 						</div>
-					)}
+					))}
 				</div>
 			)}
 

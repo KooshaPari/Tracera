@@ -2,15 +2,15 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { BranchExplorer } from "../BranchExplorer";
 import type { Branch } from "../TemporalNavigator";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 const meta = {
-	title: "Temporal/BranchExplorer",
 	component: BranchExplorer,
 	parameters: {
 		layout: "centered",
 	},
 	tags: ["autodocs"],
+	title: "Temporal/BranchExplorer",
 } satisfies Meta<typeof BranchExplorer>;
 
 export default meta;
@@ -18,68 +18,68 @@ type Story = StoryObj<typeof meta>;
 
 const mockBranches: Branch[] = [
 	{
-		id: "main",
-		name: "main",
-		description: "Production branch",
-		status: "active",
 		createdAt: new Date("2024-01-01"),
-		updatedAt: new Date("2024-01-20"),
+		description: "Production branch",
+		id: "main",
 		mergeRequestCount: 3,
-	},
-	{
-		id: "develop",
-		name: "develop",
-		description: "Development branch",
+		name: "main",
 		status: "active",
-		parentId: "main",
+		updatedAt: new Date("2024-01-20"),
+	},
+	{
 		createdAt: new Date("2024-01-05"),
-		updatedAt: new Date("2024-01-19"),
+		description: "Development branch",
+		id: "develop",
 		mergeRequestCount: 5,
-	},
-	{
-		id: "feature-auth",
-		name: "feature/authentication",
-		status: "review",
-		parentId: "develop",
-		createdAt: new Date("2024-01-10"),
-		updatedAt: new Date("2024-01-15"),
-		mergeRequestCount: 1,
-	},
-	{
-		id: "feature-db",
-		name: "feature/database",
-		status: "review",
-		parentId: "develop",
-		createdAt: new Date("2024-01-08"),
-		updatedAt: new Date("2024-01-18"),
-		mergeRequestCount: 2,
-	},
-	{
-		id: "hotfix-security",
-		name: "hotfix/security-patch",
-		status: "merged",
+		name: "develop",
 		parentId: "main",
-		createdAt: new Date("2024-01-12"),
-		updatedAt: new Date("2024-01-14"),
-		mergeRequestCount: 0,
+		status: "active",
+		updatedAt: new Date("2024-01-19"),
 	},
 	{
-		id: "old-feature",
-		name: "old-feature/deprecated",
-		status: "abandoned",
+		createdAt: new Date("2024-01-10"),
+		id: "feature-auth",
+		mergeRequestCount: 1,
+		name: "feature/authentication",
 		parentId: "develop",
-		createdAt: new Date("2023-12-01"),
-		updatedAt: new Date("2024-01-01"),
+		status: "review",
+		updatedAt: new Date("2024-01-15"),
+	},
+	{
+		createdAt: new Date("2024-01-08"),
+		id: "feature-db",
+		mergeRequestCount: 2,
+		name: "feature/database",
+		parentId: "develop",
+		status: "review",
+		updatedAt: new Date("2024-01-18"),
+	},
+	{
+		createdAt: new Date("2024-01-12"),
+		id: "hotfix-security",
 		mergeRequestCount: 0,
+		name: "hotfix/security-patch",
+		parentId: "main",
+		status: "merged",
+		updatedAt: new Date("2024-01-14"),
+	},
+	{
+		createdAt: new Date("2023-12-01"),
+		id: "old-feature",
+		mergeRequestCount: 0,
+		name: "old-feature/deprecated",
+		parentId: "develop",
+		status: "abandoned",
+		updatedAt: new Date("2024-01-01"),
 	},
 ];
 
 export const Default: Story = {
 	args: {
-		projectId: "proj-123",
 		branches: mockBranches,
 		currentBranchId: "main",
 		onBranchChange: (branchId) => logger.info("Branch changed to:", branchId),
+		projectId: "proj-123",
 	},
 };
 

@@ -2,26 +2,26 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { ProgressDashboard } from "@/components/temporal/ProgressDashboard";
 
 const meta: Meta<typeof ProgressDashboard> = {
-	title: "Components/Graph/ProgressDashboard",
+	argTypes: {
+		isLoading: { control: "boolean" },
+		onMilestoneClick: { action: "milestoneClick" },
+		onSprintClick: { action: "sprintClick" },
+		projectId: { control: "text" },
+	},
 	component: ProgressDashboard,
-	tags: ["autodocs"],
 	parameters: {
 		chromatic: {
+			delay: 400,
 			modes: {
 				light: { query: "[data-theme='light']" },
 				dark: { query: "[data-theme='dark']" },
 			},
-			delay: 400,
 			pauseAnimationAtEnd: true,
 		},
 		layout: "fullscreen",
 	},
-	argTypes: {
-		projectId: { control: "text" },
-		isLoading: { control: "boolean" },
-		onMilestoneClick: { action: "milestoneClick" },
-		onSprintClick: { action: "sprintClick" },
-	},
+	tags: ["autodocs"],
+	title: "Components/Graph/ProgressDashboard",
 };
 
 export default meta;
@@ -29,48 +29,48 @@ type Story = StoryObj<typeof meta>;
 
 const mockMilestones = [
 	{
-		id: "m1",
-		projectId: "proj-1",
-		name: "v1.0 Release",
-		slug: "v1-0-release",
-		targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-		status: "in_progress" as const,
+		createdAt: new Date().toISOString(),
 		health: "green" as const,
+		id: "m1",
+		itemCount: 10,
+		itemIds: ["item-1", "item-2"],
+		name: "v1.0 Release",
 		progress: {
-			totalItems: 10,
+			blockedItems: 0,
 			completedItems: 7,
 			inProgressItems: 2,
-			blockedItems: 0,
 			notStartedItems: 1,
 			percentage: 70,
+			totalItems: 10,
 		},
-		itemIds: ["item-1", "item-2"],
-		itemCount: 10,
-		createdAt: new Date().toISOString(),
+		projectId: "proj-1",
+		slug: "v1-0-release",
+		status: "in_progress" as const,
+		targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
 		updatedAt: new Date().toISOString(),
 	},
 ];
 
 const mockSprints = [
 	{
+		addedPoints: 0,
+		completedItemIds: [] as string[],
+		completedPoints: 35,
+		createdAt: new Date().toISOString(),
+		durationDays: 14,
+		endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+		health: "green" as const,
 		id: "s1",
-		projectId: "proj-1",
+		itemCount: 10,
+		itemIds: [] as string[],
 		name: "Sprint 1",
+		plannedPoints: 50,
+		projectId: "proj-1",
+		remainingPoints: 15,
+		removedPoints: 0,
 		slug: "sprint-1",
 		startDate: new Date().toISOString(),
-		endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-		durationDays: 14,
 		status: "active" as const,
-		health: "green" as const,
-		plannedPoints: 50,
-		completedPoints: 35,
-		remainingPoints: 15,
-		addedPoints: 0,
-		removedPoints: 0,
-		itemIds: [] as string[],
-		itemCount: 10,
-		completedItemIds: [] as string[],
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	},
 ];
@@ -80,10 +80,10 @@ const mockSprints = [
  */
 export const Default: Story = {
 	args: {
-		projectId: "proj-1",
-		milestones: mockMilestones,
-		sprints: mockSprints,
 		isLoading: false,
+		milestones: mockMilestones,
+		projectId: "proj-1",
+		sprints: mockSprints,
 	},
 };
 
@@ -92,10 +92,10 @@ export const Default: Story = {
  */
 export const Loading: Story = {
 	args: {
-		projectId: "proj-1",
-		milestones: [],
-		sprints: [],
 		isLoading: true,
+		milestones: [],
+		projectId: "proj-1",
+		sprints: [],
 	},
 };
 
@@ -104,10 +104,10 @@ export const Loading: Story = {
  */
 export const Empty: Story = {
 	args: {
-		projectId: "proj-1",
-		milestones: [],
-		sprints: [],
 		isLoading: false,
+		milestones: [],
+		projectId: "proj-1",
+		sprints: [],
 	},
 };
 
@@ -116,10 +116,10 @@ export const Empty: Story = {
  */
 export const Tablet: Story = {
 	args: {
-		projectId: "proj-1",
-		milestones: mockMilestones,
-		sprints: mockSprints,
 		isLoading: false,
+		milestones: mockMilestones,
+		projectId: "proj-1",
+		sprints: mockSprints,
 	},
 	parameters: {
 		viewport: {
@@ -133,10 +133,10 @@ export const Tablet: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		projectId: "proj-1",
-		milestones: mockMilestones,
-		sprints: mockSprints,
 		isLoading: false,
+		milestones: mockMilestones,
+		projectId: "proj-1",
+		sprints: mockSprints,
 	},
 	decorators: [
 		(Story: React.ComponentType) => (

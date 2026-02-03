@@ -1,8 +1,8 @@
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AppProviders } from "@/providers/app-providers";
-import { ThemeProvider } from "@/providers/theme-provider";
+import AppProviders from "@/providers/app-providers";
+import ThemeProvider from "@/providers/theme-provider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { createRetryFetch } from "@/lib/fetch-retry";
 import { renderPreflightFailure, runFrontendPreflight } from "@/lib/preflight";
@@ -16,10 +16,8 @@ initSentry();
 // Patch global fetch with wait+retry so all API and preflight calls use robust retry
 if (typeof globalThis.fetch !== "undefined") {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- intentional global fetch override
-	(globalThis as unknown as Window & { fetch: typeof fetch }).fetch = createRetryFetch(
-		globalThis.fetch,
-		{ maxRetries: 3, timeoutMs: 15_000 },
-	);
+	(globalThis as unknown as Window & { fetch: typeof fetch }).fetch =
+		createRetryFetch(globalThis.fetch, { maxRetries: 3, timeoutMs: 15_000 });
 }
 
 // Initialize MSW in development mode - DISABLED to use real backend
@@ -50,7 +48,7 @@ router.update({
 			</h1>
 			<p className="text-muted-foreground mb-4">{error.message}</p>
 			<button
-				onClick={() => window.location.reload()}
+				onClick={() => globalThis.location.reload()}
 				className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
 			>
 				Try again
@@ -59,27 +57,4 @@ router.update({
 	),
 });
 
-void prepare()
-	.then((ready) => {
-		if (!ready) {
-			return undefined;
-		}
-		const rootElement = document.getElementById("root");
-		if (!rootElement) throw new Error("Root element not found");
-		const root = createRoot(rootElement);
-		root.render(
-			<ErrorBoundary name="AppRoot" showDetails={false}>
-				<ThemeProvider>
-					<AppProviders>
-						<TooltipProvider>
-							<RouterProvider router={router} />
-						</TooltipProvider>
-					</AppProviders>
-				</ThemeProvider>
-			</ErrorBoundary>,
-		);
-		return undefined;
-	})
-	.catch(() => {
-		// Preflight or render failed; preflight UI or error boundary handles it
-	});
+undefined;

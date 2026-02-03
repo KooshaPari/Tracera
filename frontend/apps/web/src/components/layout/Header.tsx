@@ -35,14 +35,18 @@ import { Breadcrumbs } from "./Breadcrumb";
 
 function getNotificationIcon(type: string) {
 	switch (type) {
-		case "success":
+		case "success": {
 			return <CheckCircle className="h-4 w-4 text-green-500" />;
-		case "warning":
+		}
+		case "warning": {
 			return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-		case "error":
+		}
+		case "error": {
 			return <XCircle className="h-4 w-4 text-red-500" />;
-		default:
+		}
+		default: {
 			return <Info className="h-4 w-4 text-blue-500" />;
+		}
 	}
 }
 
@@ -50,16 +54,11 @@ export function Header() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const params = useParams({ strict: false });
-	const { user, logout } = useAuthStore();
+	const { user } = useAuthStore();
 	const { notifications, unreadCount, markAsRead, markAllRead } =
 		useNotifications();
 	const projectId = params.projectId as string | undefined;
 	const { data: project } = useProject(projectId || "");
-
-	const handleLogout = () => {
-		void logout();
-		void navigate({ to: "/home" });
-	};
 
 	// Get initials for avatar
 	const initials = user?.name
@@ -79,43 +78,43 @@ export function Header() {
 			if (path.includes("/views/")) {
 				const viewType = path.split("/views/")[1]?.split("/")[0];
 				return {
-					type: "project-view",
 					project,
-					viewType,
-					title: project?.name || "Project",
 					subtitle: viewType
 						? `${viewType.charAt(0).toUpperCase() + viewType.slice(1)} View`
 						: undefined,
+					title: project?.name || "Project",
+					type: "project-view",
+					viewType,
 				};
 			}
 			return {
-				type: "project",
 				project,
-				title: project?.name || "Project",
 				subtitle: project?.description || undefined,
+				title: project?.name || "Project",
+				type: "project",
 			};
 		}
 
 		if (path === "/projects") {
 			return {
-				type: "projects-list",
-				title: "Projects",
 				subtitle: "",
+				title: "Projects",
+				type: "projects-list",
 			};
 		}
 
 		if (path === "/" || path === "/home") {
 			return {
-				type: "dashboard",
-				title: "Dashboard",
 				subtitle: undefined,
+				title: "Dashboard",
+				type: "dashboard",
 			};
 		}
 
 		return {
-			type: "default",
-			title: "TraceRTM",
 			subtitle: undefined,
+			title: "TraceRTM",
+			type: "default",
 		};
 	}, [location.pathname, project, projectId]);
 
@@ -231,10 +230,12 @@ export function Header() {
 												!notification.read_at && "bg-muted/30",
 											)}
 											onClick={() => {
-												if (!notification.read_at)
+												if (!notification.read_at) {
 													markAsRead.mutate(notification.id);
-												if (notification.link)
+												}
+												if (notification.link) {
 													void navigate({ to: notification.link });
+												}
 											}}
 										>
 											<div className="mt-1 shrink-0">

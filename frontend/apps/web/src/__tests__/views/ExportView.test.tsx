@@ -7,25 +7,25 @@ import { ExportView } from "../../views/ExportView";
 // Mock the API
 vi.mock("../../api/endpoints", () => ({
 	api: {
-		projects: {
-			list: vi.fn().mockResolvedValue([]),
-		},
 		exportImport: {
 			export: vi.fn(),
+		},
+		projects: {
+			list: vi.fn().mockResolvedValue([]),
 		},
 	},
 }));
 
 const user = userEvent.setup();
 
-describe("ExportView", () => {
+describe(ExportView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -145,8 +145,8 @@ describe("ExportView", () => {
 
 		// Now set up URL and document spies (after render)
 		const mockUrl = "blob:test-url";
-		vi.spyOn(window.URL, "createObjectURL").mockReturnValue(mockUrl);
-		vi.spyOn(window.URL, "revokeObjectURL").mockImplementation(() => {});
+		vi.spyOn(globalThis.URL, "createObjectURL").mockReturnValue(mockUrl);
+		vi.spyOn(globalThis.URL, "revokeObjectURL").mockImplementation(() => {});
 
 		// Select a project
 		const projectSelect = screen.getByRole("combobox", { name: /Project/i });

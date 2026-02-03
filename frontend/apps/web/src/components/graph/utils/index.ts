@@ -80,4 +80,11 @@ export {
 	shouldUseSimplifiedNode,
 } from "./lod";
 // Type styles (existing)
-export { getTypeColor, getTypeIcon, getTypeCategory, getCategoryColor, getStatusColor, getPriorityColor } from "./typeStyles";
+export {
+	getTypeColor,
+	getTypeIcon,
+	getTypeCategory,
+	getCategoryColor,
+	getStatusColor,
+	getPriorityColor,
+} from "./typeStyles";

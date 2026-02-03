@@ -93,50 +93,50 @@ const ENTITY_ICONS: Record<
 	UIEntityType,
 	React.ComponentType<{ className?: string }>
 > = {
-	site: Globe,
-	page: Monitor,
-	layout: LayoutPanelLeft,
-	section: Grid3x3,
-	subsection: SquareStack,
 	component: Component,
-	subcomponent: Box,
-	element: Square,
-	modal: Maximize2,
-	popup: MousePointer2,
-	toast: PanelLeft,
 	drawer: LayoutPanelLeft,
+	element: Square,
+	layout: LayoutPanelLeft,
+	modal: Maximize2,
+	page: Monitor,
+	popup: MousePointer2,
+	section: Grid3x3,
+	site: Globe,
+	subcomponent: Box,
+	subsection: SquareStack,
+	toast: PanelLeft,
 };
 
 // Colors for entity types
 const ENTITY_COLORS: Record<UIEntityType, string> = {
-	site: "#3b82f6",
-	page: "#8b5cf6",
-	layout: "#ec4899",
-	section: "#f59e0b",
-	subsection: "#f97316",
 	component: "#22c55e",
-	subcomponent: "#10b981",
-	element: "#64748b",
-	modal: "#6366f1",
-	popup: "#a855f7",
-	toast: "#14b8a6",
 	drawer: "#0ea5e9",
+	element: "#64748b",
+	layout: "#ec4899",
+	modal: "#6366f1",
+	page: "#8b5cf6",
+	popup: "#a855f7",
+	section: "#f59e0b",
+	site: "#3b82f6",
+	subcomponent: "#10b981",
+	subsection: "#f97316",
+	toast: "#14b8a6",
 };
 
 // Label mapping
 const ENTITY_LABELS: Record<UIEntityType, string> = {
-	site: "Site",
-	page: "Page",
-	layout: "Layout",
-	section: "Section",
-	subsection: "Subsection",
 	component: "Component",
-	subcomponent: "Sub-component",
-	element: "Element",
-	modal: "Modal",
-	popup: "Popup",
-	toast: "Toast",
 	drawer: "Drawer",
+	element: "Element",
+	layout: "Layout",
+	modal: "Modal",
+	page: "Page",
+	popup: "Popup",
+	section: "Section",
+	site: "Site",
+	subcomponent: "Sub-component",
+	subsection: "Subsection",
+	toast: "Toast",
 };
 
 // =============================================================================
@@ -160,13 +160,16 @@ function PageDecompositionViewComponent({
 	const [showDepthIndicator, setShowDepthIndicator] = useState(true);
 
 	// Build decomposition tree
-	const { tree, stats, /* _itemMap */ } = useMemo(() => {
-		return buildDecompositionTree(items, links, rootId);
-	}, [items, links, rootId]);
+	const { tree, stats /* _itemMap */ } = useMemo(
+		() => buildDecompositionTree(items, links, rootId),
+		[items, links, rootId],
+	);
 
 	// Filter tree by search
 	const filteredTree = useMemo(() => {
-		if (!searchQuery) return tree;
+		if (!searchQuery) {
+			return tree;
+		}
 		return filterTree(tree, searchQuery.toLowerCase());
 	}, [tree, searchQuery]);
 
@@ -388,7 +391,9 @@ interface StatBadgeProps {
 }
 
 function StatBadge({ icon: Icon, count, label, color }: StatBadgeProps) {
-	if (count === 0) return null;
+	if (count === 0) {
+		return null;
+	}
 	return (
 		<div className="flex items-center gap-1">
 			<Icon className="h-3 w-3" style={{ color }} />
@@ -415,8 +420,8 @@ function DecompositionTreeItem({
 	selectedId,
 	expandedIds,
 	onToggle,
-    onSelect,
-    onViewInCodeIndicator: _onViewInCodeIndicator,
+	onSelect,
+	onViewInCodeIndicator: _onViewInCodeIndicator,
 	viewMode,
 }: DecompositionTreeItemProps) {
 	const isExpanded = expandedIds.has(node.id);
@@ -582,7 +587,6 @@ function DecompositionTreeItem({
 							onToggle={onToggle}
 							onSelect={onSelect}
 							onViewInCode={onViewInCode}
-							
 							showDepthIndicator={showDepthIndicator}
 							viewMode={viewMode}
 						/>
@@ -635,13 +639,13 @@ function buildDecompositionTree(
 	const itemMap = new Map(items.map((i) => [i.id, i]));
 	const childrenMap = new Map<string, Item[]>();
 	const stats: DecompositionStats = {
-		sites: 0,
-		pages: 0,
-		layouts: 0,
-		sections: 0,
 		components: 0,
 		elements: 0,
+		layouts: 0,
 		modals: 0,
+		pages: 0,
+		sections: 0,
+		sites: 0,
 		total: 0,
 	};
 
@@ -687,29 +691,31 @@ function buildDecompositionTree(
 				// Sort by entity depth, then by title
 				const depthA = ENTITY_DEPTH_LEVELS[inferEntityType(a)] || 0;
 				const depthB = ENTITY_DEPTH_LEVELS[inferEntityType(b)] || 0;
-				if (depthA !== depthB) return depthA - depthB;
+				if (depthA !== depthB) {
+					return depthA - depthB;
+				}
 				return (a.title || "").localeCompare(b.title || "");
 			})
 			.map((child) => buildNode(child, depth + 1));
 
 		// Count stats
 		updateStats(entityType, stats);
-		stats.total++;
+		stats.total += 1;
 
 		// Get metadata
 		const metadata = item.metadata as Record<string, unknown> | undefined;
 
 		return {
-			id: item.id,
-			item,
-			entityType,
-			depth,
-			children,
-			route: (metadata?.route as string) || undefined,
-			componentPath: (metadata?.componentPath as string) || undefined,
-			hasScreenshot: !!(metadata?.screenshotUrl || metadata?.thumbnailUrl),
-			interactionCount: interactionCounts.get(item.id) || 0,
 			childCount: countAllChildren(children),
+			children,
+			componentPath: (metadata?.componentPath as string) || undefined,
+			depth,
+			entityType,
+			hasScreenshot: !!(metadata?.screenshotUrl || metadata?.thumbnailUrl),
+			id: item.id,
+			interactionCount: interactionCounts.get(item.id) || 0,
+			item,
+			route: (metadata?.route as string) || undefined,
 		};
 	}
 
@@ -727,13 +733,15 @@ function buildDecompositionTree(
 		const typeOrder = ["site", "page", "screen", "layout", "wireframe"];
 		const aOrder = typeOrder.indexOf(a.type?.toLowerCase() || "");
 		const bOrder = typeOrder.indexOf(b.type?.toLowerCase() || "");
-		if (aOrder !== bOrder) return aOrder - bOrder;
+		if (aOrder !== bOrder) {
+			return aOrder - bOrder;
+		}
 		return (a.title || "").localeCompare(b.title || "");
 	});
 
 	const tree = sortedRoots.map((item) => buildNode(item, 0));
 
-	return { tree, stats, itemMap };
+	return { itemMap, stats, tree };
 }
 
 function inferEntityType(item: Item): UIEntityType {
@@ -741,37 +749,37 @@ function inferEntityType(item: Item): UIEntityType {
 
 	// Direct mappings
 	const typeMap: Record<string, UIEntityType> = {
-		site: "site",
-		application: "site",
 		app: "site",
-		page: "page",
-		screen: "page",
-		view: "page",
-		route: "page",
-		layout: "layout",
-		template: "layout",
-		frame: "layout",
-		section: "section",
-		region: "section",
+		application: "site",
 		area: "section",
-		subsection: "subsection",
-		component: "component",
-		widget: "component",
-		block: "component",
-		ui_component: "component",
-		subcomponent: "subcomponent",
-		element: "element",
 		atom: "element",
-		primitive: "element",
-		modal: "modal",
+		block: "component",
+		component: "component",
 		dialog: "modal",
-		popup: "popup",
-		popover: "popup",
-		toast: "toast",
-		notification: "toast",
 		drawer: "drawer",
-		sidebar: "drawer",
+		element: "element",
+		frame: "layout",
+		layout: "layout",
+		modal: "modal",
+		notification: "toast",
+		page: "page",
 		panel: "drawer",
+		popover: "popup",
+		popup: "popup",
+		primitive: "element",
+		region: "section",
+		route: "page",
+		screen: "page",
+		section: "section",
+		sidebar: "drawer",
+		site: "site",
+		subcomponent: "subcomponent",
+		subsection: "subsection",
+		template: "layout",
+		toast: "toast",
+		ui_component: "component",
+		view: "page",
+		widget: "component",
 	};
 
 	return typeMap[type] || "component";
@@ -817,32 +825,39 @@ function isValidUIType(type: string): boolean {
 
 function updateStats(entityType: UIEntityType, stats: DecompositionStats) {
 	switch (entityType) {
-		case "site":
+		case "site": {
 			stats.sites++;
 			break;
-		case "page":
+		}
+		case "page": {
 			stats.pages++;
 			break;
-		case "layout":
+		}
+		case "layout": {
 			stats.layouts++;
 			break;
+		}
 		case "section":
-		case "subsection":
+		case "subsection": {
 			stats.sections++;
 			break;
+		}
 		case "component":
-		case "subcomponent":
+		case "subcomponent": {
 			stats.components++;
 			break;
-		case "element":
+		}
+		case "element": {
 			stats.elements++;
 			break;
+		}
 		case "modal":
 		case "popup":
 		case "drawer":
-		case "toast":
+		case "toast": {
 			stats.modals++;
 			break;
+		}
 	}
 }
 

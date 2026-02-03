@@ -15,11 +15,11 @@ import {
 // Mock endpoints
 vi.mock("@/api/endpoints", () => ({
 	itemsApi: {
-		list: vi.fn(),
-		get: vi.fn(),
 		create: vi.fn(),
-		update: vi.fn(),
 		delete: vi.fn(),
+		get: vi.fn(),
+		list: vi.fn(),
+		update: vi.fn(),
 	},
 }));
 
@@ -31,13 +31,13 @@ describe("Items API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchItems", () => {
+	describe(fetchItems, () => {
 		it("should fetch items", async () => {
 			vi.mocked(itemsApi.list).mockResolvedValue(mockItems);
 
 			const result = await fetchItems();
 			expect(result).toEqual(mockItems);
-			// list can be called with no args (optional parameter)
+			// List can be called with no args (optional parameter)
 			expect(itemsApi.list).toHaveBeenCalled();
 		});
 
@@ -53,7 +53,7 @@ describe("Items API", () => {
 		});
 	});
 
-	describe("fetchItem", () => {
+	describe(fetchItem, () => {
 		it("should fetch a single item", async () => {
 			vi.mocked(itemsApi.get).mockResolvedValue(mockItems[0]);
 
@@ -63,7 +63,7 @@ describe("Items API", () => {
 		});
 	});
 
-	describe("fetchRecentItems", () => {
+	describe(fetchRecentItems, () => {
 		it("should fetch recent items (first 10)", async () => {
 			const manyItems = Array.from({ length: 20 }, (_, i) => ({
 				...mockItems[0],
@@ -86,13 +86,13 @@ describe("Items API", () => {
 		});
 	});
 
-	describe("createItem", () => {
+	describe(createItem, () => {
 		it("should create an item", async () => {
 			const newItem = {
 				project_id: "proj-1",
-				type: "feature" as const,
-				title: "New Item",
 				status: "pending" as const,
+				title: "New Item",
+				type: "feature" as const,
 			};
 			const created = { ...mockItems[0], ...newItem, id: "new-id" };
 			vi.mocked(itemsApi.create).mockResolvedValue(created);
@@ -103,7 +103,7 @@ describe("Items API", () => {
 		});
 	});
 
-	describe("updateItem", () => {
+	describe(updateItem, () => {
 		it("should update an item", async () => {
 			const updates = { title: "Updated Item" };
 			const updated = { ...mockItems[0], ...updates };
@@ -115,9 +115,9 @@ describe("Items API", () => {
 		});
 	});
 
-	describe("deleteItem", () => {
+	describe(deleteItem, () => {
 		it("should delete an item", async () => {
-			vi.mocked(itemsApi.delete).mockResolvedValue(undefined);
+			vi.mocked(itemsApi.delete).mockResolvedValue();
 
 			await expect(deleteItem("item-1")).resolves.toBeUndefined();
 			expect(itemsApi.delete).toHaveBeenCalledWith("item-1");

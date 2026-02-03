@@ -83,28 +83,28 @@ interface EquivalenceItemDisplay {
 // =============================================================================
 
 const STRATEGY_LABELS: Record<EquivalenceStrategy, string> = {
+	api_contract: "API Contract",
+	co_occurrence: "Co-occurrence",
 	explicit_annotation: "Explicit Annotation",
 	manual_link: "Manual Link",
-	api_contract: "API Contract",
-	shared_canonical: "Shared Concept",
 	naming_pattern: "Naming Pattern",
 	semantic_similarity: "Semantic Similarity",
+	shared_canonical: "Shared Concept",
 	structural: "Structural",
 	temporal: "Temporal",
-	co_occurrence: "Co-occurrence",
 };
 
 // Strategy icons mapping (available for future icon support)
-// const STRATEGY_ICONS: Record<EquivalenceStrategy, string> = {
-// 	explicit_annotation: "annotation",
-// 	manual_link: "link",
-// 	api_contract: "api",
-// 	shared_canonical: "concept",
-// 	naming_pattern: "naming",
-// 	semantic_similarity: "semantic",
-// 	structural: "structural",
-// 	temporal: "temporal",
-// 	co_occurrence: "co-occurrence",
+// Const STRATEGY_ICONS: Record<EquivalenceStrategy, string> = {
+// 	Explicit_annotation: "annotation",
+// 	Manual_link: "link",
+// 	Api_contract: "api",
+// 	Shared_canonical: "concept",
+// 	Naming_pattern: "naming",
+// 	Semantic_similarity: "semantic",
+// 	Structural: "structural",
+// 	Temporal: "temporal",
+// 	Co_occurrence: "co-occurrence",
 // };
 
 // =============================================================================
@@ -206,7 +206,7 @@ function EquivalencePanelComponent({
 							<div className="flex items-center justify-center py-8">
 								<div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
 							</div>
-						) : equivalenceItems.length === 0 ? (
+						) : (equivalenceItems.length === 0 ? (
 							<div className="text-center py-6 text-muted-foreground">
 								<Link2 className="h-6 w-6 mx-auto mb-2 opacity-50" />
 								<p className="text-sm">No equivalences found</p>
@@ -288,7 +288,7 @@ function EquivalencePanelComponent({
 									)}
 								</div>
 							</ScrollArea>
-						)}
+						))}
 					</CardContent>
 				)}
 			</Card>
@@ -420,16 +420,28 @@ interface ConfidenceBadgeProps {
 }
 
 function getConfidenceColor(conf: number): string {
-	if (conf >= 0.9) return "text-green-600 bg-green-100";
-	if (conf >= 0.7) return "text-amber-600 bg-amber-100";
-	if (conf >= 0.5) return "text-orange-600 bg-orange-100";
+	if (conf >= 0.9) {
+		return "text-green-600 bg-green-100";
+	}
+	if (conf >= 0.7) {
+		return "text-amber-600 bg-amber-100";
+	}
+	if (conf >= 0.5) {
+		return "text-orange-600 bg-orange-100";
+	}
 	return "text-red-600 bg-red-100";
 }
 
 function getConfidenceLabel(conf: number): string {
-	if (conf >= 0.9) return "High";
-	if (conf >= 0.7) return "Medium";
-	if (conf >= 0.5) return "Low";
+	if (conf >= 0.9) {
+		return "High";
+	}
+	if (conf >= 0.7) {
+		return "Medium";
+	}
+	if (conf >= 0.5) {
+		return "Low";
+	}
 	return "Very Low";
 }
 
@@ -470,7 +482,9 @@ function buildEquivalenceItems(
 	projections: CanonicalProjection[],
 	items: Item[],
 ): EquivalenceItemDisplay[] {
-	if (!selectedItem) return [];
+	if (!selectedItem) {
+		return [];
+	}
 
 	const itemsMap = new Map(items.map((i) => [i.id, i]));
 	const results: EquivalenceItemDisplay[] = [];
@@ -482,52 +496,62 @@ function buildEquivalenceItems(
 			link.sourceItemId === selectedItem.id
 				? link.targetItemId
 				: link.sourceItemId;
-		if (seenIds.has(targetId)) continue;
+		if (seenIds.has(targetId)) {
+			continue;
+		}
 		seenIds.add(targetId);
 
 		const item = itemsMap.get(targetId);
-		if (!item) continue;
+		if (!item) {
+			continue;
+		}
 
 		const perspective = getPerspectiveForItem(item);
 
 		results.push({
+			confidence: link.confidence,
 			item,
 			link,
-			confidence: link.confidence,
-			strategy: link.strategies[0]?.strategy,
-			status: link.status,
-			perspectiveId: perspective.id,
 			perspectiveColor: perspective.color,
+			perspectiveId: perspective.id,
 			perspectiveLabel: perspective.label,
+			status: link.status,
+			strategy: link.strategies[0]?.strategy,
 		});
 	}
 
 	// Add items from canonical projections
 	for (const projection of projections) {
-		if (projection.itemId === selectedItem.id) continue;
-		if (seenIds.has(projection.itemId)) continue;
+		if (projection.itemId === selectedItem.id) {
+			continue;
+		}
+		if (seenIds.has(projection.itemId)) {
+			continue;
+		}
 		seenIds.add(projection.itemId);
 
 		const item = itemsMap.get(projection.itemId);
-		if (!item) continue;
+		if (!item) {
+			continue;
+		}
 
 		const perspective =
 			PERSPECTIVE_CONFIGS.find((p) => p.id === projection.perspective) ||
 			getPerspectiveForItem(item);
 
 		results.push({
-			item,
-			projection,
 			confidence: projection.confidence,
-			strategy: projection.strategy,
+			item,
+			perspectiveColor: perspective.color,
+			perspectiveId: perspective.id,
+			perspectiveLabel: perspective.label,
+			projection,
 			status: projection.isConfirmed
 				? "confirmed"
-				: projection.isRejected
+				: (projection.isRejected
 					? "rejected"
-					: "suggested",
-			perspectiveId: perspective.id,
-			perspectiveColor: perspective.color,
-			perspectiveLabel: perspective.label,
+					: "suggested"),
+			strategy: projection.strategy,
 		});
 	}
 
@@ -544,7 +568,7 @@ function getPerspectiveForItem(item: Item): {
 	if (item.perspective) {
 		const config = PERSPECTIVE_CONFIGS.find((p) => p.id === item.perspective);
 		if (config) {
-			return { id: config.id, color: config.color, label: config.label };
+			return { color: config.color, id: config.id, label: config.label };
 		}
 	}
 
@@ -559,8 +583,8 @@ function getPerspectiveForItem(item: Item): {
 	) {
 		const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "technical");
 		return config
-			? { id: config.id, color: config.color, label: config.label }
-			: { id: "technical", color: "#22c55e", label: "Technical" };
+			? { color: config.color, id: config.id, label: config.label }
+			: { color: "#22c55e", id: "technical", label: "Technical" };
 	}
 
 	// UI types
@@ -576,8 +600,8 @@ function getPerspectiveForItem(item: Item): {
 	) {
 		const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "ui");
 		return config
-			? { id: config.id, color: config.color, label: config.label }
-			: { id: "ui", color: "#ec4899", label: "UI" };
+			? { color: config.color, id: config.id, label: config.label }
+			: { color: "#ec4899", id: "ui", label: "UI" };
 	}
 
 	// Product types
@@ -588,28 +612,28 @@ function getPerspectiveForItem(item: Item): {
 	) {
 		const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "product");
 		return config
-			? { id: config.id, color: config.color, label: config.label }
-			: { id: "product", color: "#9333ea", label: "Product" };
+			? { color: config.color, id: config.id, label: config.label }
+			: { color: "#9333ea", id: "product", label: "Product" };
 	}
 
 	// Business types
 	if (["epic", "task", "bug"].includes(itemType)) {
 		const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "business");
 		return config
-			? { id: config.id, color: config.color, label: config.label }
-			: { id: "business", color: "#3b82f6", label: "Business" };
+			? { color: config.color, id: config.id, label: config.label }
+			: { color: "#3b82f6", id: "business", label: "Business" };
 	}
 
 	// Security types
 	if (["security", "vulnerability", "audit"].includes(itemType)) {
 		const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "security");
 		return config
-			? { id: config.id, color: config.color, label: config.label }
-			: { id: "security", color: "#ef4444", label: "Security" };
+			? { color: config.color, id: config.id, label: config.label }
+			: { color: "#ef4444", id: "security", label: "Security" };
 	}
 
 	// Default
-	return { id: "all", color: "#64748b", label: "All" };
+	return { color: "#64748b", id: "all", label: "All" };
 }
 
 // =============================================================================

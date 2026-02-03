@@ -48,7 +48,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ItemSpecTabs } from "@/components/specifications/items/ItemSpecTabs";
 import { cn } from "@/lib/utils";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import {
 	useCreateDefectSpec,
 	useCreateEpicSpec,
@@ -93,9 +93,15 @@ const integrationKeys = new Set([
 ]);
 
 function formatValue(value: unknown) {
-	if (Array.isArray(value)) {return value.join(", ");}
-	if (value && typeof value === "object") {return JSON.stringify(value);}
-	if (value === null || value === undefined) {return "–";}
+	if (Array.isArray(value)) {
+		return value.join(", ");
+	}
+	if (value && typeof value === "object") {
+		return JSON.stringify(value);
+	}
+	if (value === null || value === undefined) {
+		return "–";
+	}
 	return String(value);
 }
 
@@ -125,7 +131,9 @@ export function ItemDetailView() {
 	});
 
 	useEffect(() => {
-		if (!item) {return;}
+		if (!item) {
+			return;
+		}
 		setDraft({
 			description: item.description ?? "",
 			owner: item.owner ?? "",
@@ -146,13 +154,7 @@ export function ItemDetailView() {
 			? `/projects/${projectId}/views/${defaultViewType}/${id}`
 			: "/projects";
 
-	const handleBack = () => {
-		if (projectId) {
-			undefined;
-			return;
-		}
-		undefined;
-	};
+	const handleBack = () => {};
 
 	const { data: sourceLinksData } = useLinks({
 		projectId: item?.projectId,
@@ -169,10 +171,15 @@ export function ItemDetailView() {
 		return { sourceLinks: s, targetLinks: t };
 	}, [sourceLinksData, targetLinksData]);
 
-	const metadataEntries = useMemo(() => Object.entries(item?.metadata ?? {}), [item?.metadata]);
+	const metadataEntries = useMemo(
+		() => Object.entries(item?.metadata ?? {}),
+		[item?.metadata],
+	);
 
 	const filteredMetadata = useMemo(() => {
-		if (!metadataSearch.trim()) {return metadataEntries;}
+		if (!metadataSearch.trim()) {
+			return metadataEntries;
+		}
 		const query = metadataSearch.trim().toLowerCase();
 		return metadataEntries.filter(([key, value]) => {
 			const haystack = `${key} ${formatValue(value)}`.toLowerCase();
@@ -191,15 +198,22 @@ export function ItemDetailView() {
 	);
 
 	const dimensionEntries = useMemo(() => {
-		if (!item?.dimensions) {return [] as [string, unknown][];}
+		if (!item?.dimensions) {
+			return [] as [string, unknown][];
+		}
 		const entries: [string, unknown][] = [];
-		if (item.dimensions.maturity)
-			{entries.push(["Maturity", item.dimensions.maturity]);}
-		if (item.dimensions.complexity)
-			{entries.push(["Complexity", item.dimensions.complexity]);}
-		if (item.dimensions.risk) {entries.push(["Risk", item.dimensions.risk]);}
-		if (item.dimensions.coverage)
-			{entries.push(["Coverage", item.dimensions.coverage]);}
+		if (item.dimensions.maturity) {
+			entries.push(["Maturity", item.dimensions.maturity]);
+		}
+		if (item.dimensions.complexity) {
+			entries.push(["Complexity", item.dimensions.complexity]);
+		}
+		if (item.dimensions.risk) {
+			entries.push(["Risk", item.dimensions.risk]);
+		}
+		if (item.dimensions.coverage) {
+			entries.push(["Coverage", item.dimensions.coverage]);
+		}
 		if (item.dimensions.custom) {
 			Object.entries(item.dimensions.custom).forEach(([key, value]) => {
 				entries.push([key, value]);
@@ -209,10 +223,10 @@ export function ItemDetailView() {
 	}, [item?.dimensions]);
 
 	const timelineEvents = useMemo(() => {
-		if (!item)
-			{return [] as { label: string; timestamp: string; detail?: string }[];}
-		const events: { label: string; timestamp: string; detail?: string }[] =
-			[];
+		if (!item) {
+			return [] as { label: string; timestamp: string; detail?: string }[];
+		}
+		const events: { label: string; timestamp: string; detail?: string }[] = [];
 		if (item.createdAt) {
 			events.push({
 				detail: `Status: ${item.status}`,
@@ -266,7 +280,9 @@ export function ItemDetailView() {
 		: "Unknown";
 
 	const handleDelete = async () => {
-		if (!itemId) {return;}
+		if (!itemId) {
+			return;
+		}
 		try {
 			await deleteItem.mutateAsync(itemId);
 			toast.success("Item deleted successfully");
@@ -290,7 +306,9 @@ export function ItemDetailView() {
 	};
 
 	const handleSave = async () => {
-		if (!itemId) {return;}
+		if (!itemId) {
+			return;
+		}
 		try {
 			await updateItem.mutateAsync({
 				data: {
@@ -309,7 +327,11 @@ export function ItemDetailView() {
 		}
 	};
 
-	const handleCreateSpec = async (specType: string, itemId: string, _projectId?: string) => {
+	const handleCreateSpec = async (
+		specType: string,
+		itemId: string,
+		_projectId?: string,
+	) => {
 		try {
 			switch (specType) {
 				case "requirement": {
@@ -409,746 +431,800 @@ export function ItemDetailView() {
 			<div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(15,23,42,0.08),transparent_55%,rgba(2,132,199,0.08))]" />
 			<div className="relative flex min-h-0 w-full max-w-[1600px] flex-1 flex-col px-6 py-6 mx-auto animate-in-fade-up md:py-10">
 				<header className="shrink-0 pb-6 border-b border-border/50">
-				<div className="flex items-center justify-between">
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => globalThis.history.back()}
-						className="gap-2 text-muted-foreground hover:text-foreground"
-					>
-						<ArrowLeft className="h-4 w-4" />
-						Back
-					</Button>
-					<div className="flex items-center gap-2">
+					<div className="flex items-center justify-between">
 						<Button
-							variant="outline"
+							variant="ghost"
 							size="sm"
-							className="gap-2 rounded-full"
-							onClick={() => {
-								const shareUrl = `${globalThis.location.origin}${globalThis.location.pathname}`;
-								undefined;
-								toast.success("Share link copied to clipboard");
-							}}
+							onClick={() => globalThis.history.back()}
+							className="gap-2 text-muted-foreground hover:text-foreground"
 						>
-							<ExternalLink className="h-3.5 w-3.5" />
-							Share
+							<ArrowLeft className="h-4 w-4" />
+							Back
 						</Button>
-						{isEditing ? (
-							<>
-								<Button
-									size="sm"
-									className="gap-2 rounded-full"
-									onClick={handleSave}
-								>
-									<ChevronRight className="h-4 w-4" />
-									Save
-								</Button>
-								<Button
-									variant="outline"
-									size="sm"
-									className="gap-2 rounded-full"
-									onClick={handleCancelEdit}
-								>
-									<X className="h-4 w-4" />
-									Cancel
-								</Button>
-							</>
-						) : (
+						<div className="flex items-center gap-2">
 							<Button
 								variant="outline"
 								size="sm"
 								className="gap-2 rounded-full"
-								onClick={() => setIsEditing(true)}
+								onClick={() => {}}
 							>
-								<Edit3 className="h-3.5 w-3.5" />
-								Edit
+								<ExternalLink className="h-3.5 w-3.5" />
+								Share
 							</Button>
-						)}
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<span>
-									<Button variant="ghost" size="icon" className="rounded-full">
-										<MoreVertical className="h-4 w-4" />
-									</Button>
-								</span>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-48">
-								<DropdownMenuItem className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors">
-									<ChevronRight className="h-4 w-4" /> Open in New Tab
-								</DropdownMenuItem>
-								<Separator className="my-1" />
-								<DropdownMenuItem
-									className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
-									onClick={handleDelete}
-								>
-									<Trash2 className="h-4 w-4" /> Delete Item
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
-				</div>
-				</header>
-
-				<main className="min-h-0 flex-1 overflow-auto pt-6 md:pt-8">
-				<Card className="border-0 bg-card/60 backdrop-blur-sm shadow-xl shadow-primary/10 overflow-hidden">
-					<div className="p-8 space-y-6">
-						<div className="flex flex-wrap items-center gap-2">
-							<Badge
-								variant="outline"
-								className="font-black uppercase tracking-[0.35em] text-[10px]"
-							>
-								{item.view || "general"}
-							</Badge>
-							<Badge
-								variant="outline"
-								className="font-black uppercase tracking-[0.35em] text-[10px]"
-							>
-								{item.type}
-							</Badge>
-							<Badge
-								className={cn(
-									"text-[10px] font-black uppercase tracking-[0.35em]",
-									statusColors[displayStatus],
-								)}
-							>
-								{displayStatus.replace("_", " ")}
-							</Badge>
-							<Badge
-								className={cn(
-									"text-[10px] font-black",
-									priorityColors[displayPriority || "medium"],
-								)}
-							>
-								{displayPriority || "medium"}
-							</Badge>
-							<Badge
-								variant="secondary"
-								className="gap-1 text-[10px] uppercase tracking-[0.35em]"
-							>
-								<Hash className="h-3 w-3" />
-								{item.id}
-							</Badge>
-						</div>
-
-						<div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8">
-							<div className="space-y-4">
-								{isEditing ? (
-									<div className="space-y-3">
-										<Input
-											value={draft.title}
-											onChange={(event) =>
-												setDraft((prev) => ({
-													...prev,
-													title: event.target.value,
-												}))
-											}
-											placeholder="Item title"
-											className="h-12 text-2xl font-black"
-										/>
-										<Textarea
-											value={draft.description}
-											onChange={(event) =>
-												setDraft((prev) => ({
-													...prev,
-													description: event.target.value,
-												}))
-											}
-											placeholder="Describe the item..."
-											className="min-h-[120px]"
-										/>
-									</div>
-								) : (
-									<>
-										<p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-1">
-											{item.view
-												? `${String(item.view).charAt(0).toUpperCase()}${String(item.view).slice(1).toLowerCase()} · ${item.type}`
-												: item.type}
-										</p>
-										<h1
-											className="text-4xl md:text-5xl font-black leading-tight tracking-tight"
-											style={{
-												fontFamily:
-													'"Space Grotesk","Sora","IBM Plex Sans",sans-serif',
-											}}
-										>
-											{item.title}
-										</h1>
-										<p className="text-lg text-muted-foreground leading-relaxed">
-											{item.description ||
-												"No description provided for this item."}
-										</p>
-									</>
-								)}
-								<div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-									<span className="inline-flex items-center gap-2">
-										<CalendarClock className="h-3.5 w-3.5" />
-										Created {createdAtLabel}
-									</span>
-									<span className="inline-flex items-center gap-2">
-										<CircleDot className="h-3.5 w-3.5" />
-										Updated {updatedAtLabel}
-									</span>
-									<span className="inline-flex items-center gap-2">
-										<Link2 className="h-3.5 w-3.5" />
-										{upstreamCount + downstreamCount} total links
-									</span>
-								</div>
-							</div>
-
-							<div className="grid gap-3">
-								<Card className="border-0 bg-muted/40 px-4 py-3 space-y-3">
-									<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-										Status & Priority
-									</p>
-									{isEditing ? (
-										<div className="grid grid-cols-2 gap-2">
-											<Select
-												value={draft.status}
-												onValueChange={(value) =>
-													setDraft((prev) => ({ ...prev, status: value }))
-												}
-											>
-												<SelectTrigger className="h-8 text-xs">
-													<SelectValue placeholder="Status" />
-												</SelectTrigger>
-												<SelectContent>
-													{statusOptions.map((status) => (
-														<SelectItem key={status} value={status}>
-															{status.replace("_", " ")}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<Select
-												value={draft.priority}
-												onValueChange={(value) =>
-													setDraft((prev) => ({ ...prev, priority: value }))
-												}
-											>
-												<SelectTrigger className="h-8 text-xs">
-													<SelectValue placeholder="Priority" />
-												</SelectTrigger>
-												<SelectContent>
-													{priorityOptions.map((priority) => (
-														<SelectItem key={priority} value={priority}>
-															{priority}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										</div>
-									) : (
-										<div className="flex items-center gap-2">
-											<Badge
-												className={cn(
-													"text-[10px] font-black uppercase tracking-widest",
-													statusColors[displayStatus],
-												)}
-											>
-												{displayStatus.replace("_", " ")}
-											</Badge>
-											<Badge
-												className={cn(
-													"text-[10px] font-black uppercase tracking-widest",
-													priorityColors[displayPriority || "medium"],
-												)}
-											>
-												{displayPriority || "medium"}
-											</Badge>
-										</div>
-									)}
-								</Card>
-								<Card className="border-0 bg-muted/40 px-4 py-3">
-									<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-										Owner
-									</p>
-									<div className="mt-2 flex items-center gap-2">
-										<div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
-											<User className="h-3 w-3 text-primary" />
-										</div>
-										{isEditing ? (
-											<Input
-												value={draft.owner}
-												onChange={(event) =>
-													setDraft((prev) => ({
-														...prev,
-														owner: event.target.value,
-													}))
-												}
-												placeholder="Owner name"
-												className="h-8 text-xs"
-											/>
-										) : (
-											<span className="text-xs font-bold">
-												{item.owner || "Unassigned"}
-											</span>
-										)}
-									</div>
-								</Card>
-								<Card className="border-0 bg-muted/40 px-4 py-3">
-									<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-										Version & Perspective
-									</p>
-									<div className="mt-2 flex items-center justify-between text-xs font-bold">
-										<span>v{item.version}</span>
-										<span className="text-muted-foreground">
-											{item.perspective || "default"}
-										</span>
-									</div>
-								</Card>
-								<Card className="border-0 bg-muted/40 px-4 py-3">
-									<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-										Canonical & Parent
-									</p>
-									<div className="mt-2 flex items-center justify-between text-xs font-bold">
-										<span className="truncate">{item.canonicalId || "—"}</span>
-										<span className="text-muted-foreground">
-											{item.parentId ? item.parentId.slice(0, 8) : "Root"}
-										</span>
-									</div>
-								</Card>
-							</div>
-						</div>
-					</div>
-				</Card>
-
-				<div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-8">
-					<div className="space-y-8">
-						<Card className="border-0 bg-card/50 shadow-lg shadow-slate-950/5">
-							<div className="p-6 space-y-6">
-								<div className="flex items-center justify-between">
-									<div className="space-y-1">
-										<p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-black">
-											Traceability
-										</p>
-										<h2 className="text-lg font-black tracking-tight">
-											Relationship map
-										</h2>
-									</div>
+							{isEditing ? (
+								<>
 									<Button
 										size="sm"
 										className="gap-2 rounded-full"
-										onClick={() => {
-											if (
-												sourceLinks.length === 0 &&
-												targetLinks.length === 0
-											) {
-												toast.info("No relationships to analyze");
-											} else {
-												const total = sourceLinks.length + targetLinks.length;
-												toast.success(`Analyzed ${total} relationships`);
-											}
-										}}
+										onClick={handleSave}
 									>
-										<Sparkles className="h-4 w-4" />
-										Run analysis
+										<ChevronRight className="h-4 w-4" />
+										Save
 									</Button>
-								</div>
+									<Button
+										variant="outline"
+										size="sm"
+										className="gap-2 rounded-full"
+										onClick={handleCancelEdit}
+									>
+										<X className="h-4 w-4" />
+										Cancel
+									</Button>
+								</>
+							) : (
+								<Button
+									variant="outline"
+									size="sm"
+									className="gap-2 rounded-full"
+									onClick={() => setIsEditing(true)}
+								>
+									<Edit3 className="h-3.5 w-3.5" />
+									Edit
+								</Button>
+							)}
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<span>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="rounded-full"
+										>
+											<MoreVertical className="h-4 w-4" />
+										</Button>
+									</span>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end" className="w-48">
+									<DropdownMenuItem className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors">
+										<ChevronRight className="h-4 w-4" /> Open in New Tab
+									</DropdownMenuItem>
+									<Separator className="my-1" />
+									<DropdownMenuItem
+										className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+										onClick={handleDelete}
+									>
+										<Trash2 className="h-4 w-4" /> Delete Item
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					</div>
+				</header>
 
-								<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-									<Card className="border-0 bg-muted/40 p-4 space-y-2">
-										<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-											Upstream
-										</p>
-										<p className="text-2xl font-black">{upstreamCount}</p>
-										<p className="text-xs text-muted-foreground">
-											Dependencies tied in
-										</p>
-									</Card>
-									<Card className="border-0 bg-muted/40 p-4 space-y-2">
-										<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-											Downstream
-										</p>
-										<p className="text-2xl font-black">{downstreamCount}</p>
-										<p className="text-xs text-muted-foreground">
-											Impacted items
-										</p>
-									</Card>
-									<Card className="border-0 bg-muted/40 p-4 space-y-2">
-										<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-											Metadata
-										</p>
-										<p className="text-2xl font-black">{metadataCount}</p>
-										<p className="text-xs text-muted-foreground">
-											Context signals
-										</p>
-									</Card>
-								</div>
+				<main className="min-h-0 flex-1 overflow-auto pt-6 md:pt-8">
+					<Card className="border-0 bg-card/60 backdrop-blur-sm shadow-xl shadow-primary/10 overflow-hidden">
+						<div className="p-8 space-y-6">
+							<div className="flex flex-wrap items-center gap-2">
+								<Badge
+									variant="outline"
+									className="font-black uppercase tracking-[0.35em] text-[10px]"
+								>
+									{item.view || "general"}
+								</Badge>
+								<Badge
+									variant="outline"
+									className="font-black uppercase tracking-[0.35em] text-[10px]"
+								>
+									{item.type}
+								</Badge>
+								<Badge
+									className={cn(
+										"text-[10px] font-black uppercase tracking-[0.35em]",
+										statusColors[displayStatus],
+									)}
+								>
+									{displayStatus.replace("_", " ")}
+								</Badge>
+								<Badge
+									className={cn(
+										"text-[10px] font-black",
+										priorityColors[displayPriority || "medium"],
+									)}
+								>
+									{displayPriority || "medium"}
+								</Badge>
+								<Badge
+									variant="secondary"
+									className="gap-1 text-[10px] uppercase tracking-[0.35em]"
+								>
+									<Hash className="h-3 w-3" />
+									{item.id}
+								</Badge>
+							</div>
 
-								<Separator />
-
-								<Tabs defaultValue="specs" className="w-full">
-									<TabsList className="bg-muted/60 p-1 rounded-xl">
-										<TabsTrigger value="specs" className="rounded-lg">
-											Specifications
-										</TabsTrigger>
-										<TabsTrigger value="links" className="rounded-lg">
-											Relationships
-										</TabsTrigger>
-										<TabsTrigger value="metadata" className="rounded-lg">
-											Metadata
-										</TabsTrigger>
-									</TabsList>
-
-									<TabsContent value="specs" className="pt-6 space-y-4">
-										{item.projectId && itemId && (
-											<ItemSpecTabs
-												projectId={item.projectId}
-												itemId={itemId}
-												itemType={item.type}
-												onCreateSpec={(specType) => {
-													undefined;
-												}}
-											/>
-										)}
-									</TabsContent>
-
-									<TabsContent value="links" className="pt-6 space-y-6">
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<Card className="border-0 bg-muted/40 p-5 space-y-4">
-												<div className="flex items-center gap-2">
-													<div className="h-9 w-9 rounded-xl bg-orange-500/15 flex items-center justify-center">
-														<ArrowLeft className="h-4 w-4 text-orange-600" />
-													</div>
-													<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-														Upstream
-													</h3>
-												</div>
-												<div className="space-y-3">
-													{targetLinks.length > 0 ? (
-														targetLinks.map((link) => (
-															<Link
-																key={link.id}
-																to={buildItemLink(link.sourceId)}
-																className="flex items-center gap-4 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm transition-all hover:border-orange-500/30 hover:bg-muted/50 hover:shadow-md"
-															>
-																<div className="h-10 w-10 shrink-0 rounded-xl bg-orange-500/10 flex items-center justify-center">
-																	<ArrowLeft className="h-5 w-5 text-orange-500" />
-																</div>
-																<div className="min-w-0 flex-1 space-y-1">
-																	<Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider">
-																		{link.type}
-																	</Badge>
-																	<p className="font-mono text-xs font-medium text-foreground truncate" title={link.sourceId}>
-																		{link.sourceId.slice(0, 8)}…
-																	</p>
-																</div>
-																<span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">View</span>
-																<ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
-															</Link>
-														))
-													) : (
-														<div className="rounded-xl border-2 border-dashed border-border/50 bg-background/50 py-8 text-center">
-															<p className="text-sm font-medium text-muted-foreground">No upstream dependencies</p>
-															<p className="mt-1 text-xs text-muted-foreground/80">Links from other items will appear here</p>
-														</div>
-													)}
-												</div>
-											</Card>
-											<Card className="border-0 bg-muted/40 p-5 space-y-4">
-												<div className="flex items-center gap-2">
-													<div className="h-9 w-9 rounded-xl bg-sky-500/15 flex items-center justify-center">
-														<ArrowLeft className="h-4 w-4 text-sky-600 rotate-180" />
-													</div>
-													<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-														Downstream
-													</h3>
-												</div>
-												<div className="space-y-3">
-													{sourceLinks.length > 0 ? (
-														sourceLinks.map((link) => (
-															<Link
-																key={link.id}
-																to={buildItemLink(link.targetId)}
-																className="flex items-center gap-4 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm transition-all hover:border-sky-500/30 hover:bg-muted/50 hover:shadow-md"
-															>
-																<div className="h-10 w-10 shrink-0 rounded-xl bg-sky-500/10 flex items-center justify-center">
-																	<ArrowLeft className="h-5 w-5 text-sky-500 rotate-180" />
-																</div>
-																<div className="min-w-0 flex-1 space-y-1">
-																	<Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider">
-																		{link.type}
-																	</Badge>
-																	<p className="font-mono text-xs font-medium text-foreground truncate" title={link.targetId}>
-																		{link.targetId.slice(0, 8)}…
-																	</p>
-																</div>
-																<span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">View</span>
-																<ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
-															</Link>
-														))
-													) : (
-														<div className="rounded-xl border-2 border-dashed border-border/50 bg-background/50 py-8 text-center">
-															<p className="text-sm font-medium text-muted-foreground">No downstream impact</p>
-															<p className="mt-1 text-xs text-muted-foreground/80">Items that depend on this will appear here</p>
-														</div>
-													)}
-												</div>
-											</Card>
-										</div>
-									</TabsContent>
-
-									<TabsContent value="metadata" className="pt-6 space-y-6">
-										<div className="flex flex-wrap items-center gap-3">
+							<div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8">
+								<div className="space-y-4">
+									{isEditing ? (
+										<div className="space-y-3">
 											<Input
-												value={metadataSearch}
+												value={draft.title}
 												onChange={(event) =>
-													setMetadataSearch(event.target.value)
+													setDraft((prev) => ({
+														...prev,
+														title: event.target.value,
+													}))
 												}
-												placeholder="Search metadata keys or values..."
-												className="h-10 max-w-sm rounded-xl"
+												placeholder="Item title"
+												className="h-12 text-2xl font-black"
 											/>
-											<Badge
-												variant="secondary"
-												className="text-[10px] font-semibold uppercase tracking-widest px-3 py-1"
-											>
-												{filteredMetadata.length} entries
-											</Badge>
+											<Textarea
+												value={draft.description}
+												onChange={(event) =>
+													setDraft((prev) => ({
+														...prev,
+														description: event.target.value,
+													}))
+												}
+												placeholder="Describe the item..."
+												className="min-h-[120px]"
+											/>
 										</div>
-										{integrationEntries.length > 0 && (
-											<div className="space-y-4">
-												<div className="flex items-center gap-2">
-													<div className="h-9 w-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
-														<Orbit className="h-4 w-4 text-amber-600" />
-													</div>
-													<span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-														Integration context
-													</span>
-												</div>
-												<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-													{integrationEntries.map(([key, value]) => (
-														<Card
-															key={key}
-															className="border border-border/50 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
-														>
-															<p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2">
-																{key.replaceAll('_', " ")}
-															</p>
-															<p className="text-sm font-semibold text-foreground truncate" title={formatValue(value)}>
-																{formatValue(value)}
-															</p>
-														</Card>
-													))}
-												</div>
-											</div>
-										)}
+									) : (
+										<>
+											<p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+												{item.view
+													? `${String(item.view).charAt(0).toUpperCase()}${String(item.view).slice(1).toLowerCase()} · ${item.type}`
+													: item.type}
+											</p>
+											<h1
+												className="text-4xl md:text-5xl font-black leading-tight tracking-tight"
+												style={{
+													fontFamily:
+														'"Space Grotesk","Sora","IBM Plex Sans",sans-serif',
+												}}
+											>
+												{item.title}
+											</h1>
+											<p className="text-lg text-muted-foreground leading-relaxed">
+												{item.description ||
+													"No description provided for this item."}
+											</p>
+										</>
+									)}
+									<div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+										<span className="inline-flex items-center gap-2">
+											<CalendarClock className="h-3.5 w-3.5" />
+											Created {createdAtLabel}
+										</span>
+										<span className="inline-flex items-center gap-2">
+											<CircleDot className="h-3.5 w-3.5" />
+											Updated {updatedAtLabel}
+										</span>
+										<span className="inline-flex items-center gap-2">
+											<Link2 className="h-3.5 w-3.5" />
+											{upstreamCount + downstreamCount} total links
+										</span>
+									</div>
+								</div>
 
-										{generalMetadata.length > 0 ? (
-											<div className="space-y-4">
-												<span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-													Custom metadata
-												</span>
-												<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-													{generalMetadata.map(([key, value]) => (
-														<Card
-															key={key}
-															className="border border-border/50 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
-														>
-															<p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2">
-																{key.replaceAll('_', " ")}
-															</p>
-															<p className="text-sm font-semibold text-foreground truncate" title={formatValue(value)}>
-																{formatValue(value)}
-															</p>
-														</Card>
-													))}
-												</div>
+								<div className="grid gap-3">
+									<Card className="border-0 bg-muted/40 px-4 py-3 space-y-3">
+										<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+											Status & Priority
+										</p>
+										{isEditing ? (
+											<div className="grid grid-cols-2 gap-2">
+												<Select
+													value={draft.status}
+													onValueChange={(value) =>
+														setDraft((prev) => ({ ...prev, status: value }))
+													}
+												>
+													<SelectTrigger className="h-8 text-xs">
+														<SelectValue placeholder="Status" />
+													</SelectTrigger>
+													<SelectContent>
+														{statusOptions.map((status) => (
+															<SelectItem key={status} value={status}>
+																{status.replace("_", " ")}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<Select
+													value={draft.priority}
+													onValueChange={(value) =>
+														setDraft((prev) => ({ ...prev, priority: value }))
+													}
+												>
+													<SelectTrigger className="h-8 text-xs">
+														<SelectValue placeholder="Priority" />
+													</SelectTrigger>
+													<SelectContent>
+														{priorityOptions.map((priority) => (
+															<SelectItem key={priority} value={priority}>
+																{priority}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
 											</div>
 										) : (
-											<Card className="border-2 border-dashed border-border/50 bg-muted/20 p-10 text-center">
-												<p className="text-sm font-medium text-muted-foreground">No custom metadata defined</p>
-												<p className="mt-1 text-xs text-muted-foreground/80">Add metadata to attach context to this item</p>
-											</Card>
+											<div className="flex items-center gap-2">
+												<Badge
+													className={cn(
+														"text-[10px] font-black uppercase tracking-widest",
+														statusColors[displayStatus],
+													)}
+												>
+													{displayStatus.replace("_", " ")}
+												</Badge>
+												<Badge
+													className={cn(
+														"text-[10px] font-black uppercase tracking-widest",
+														priorityColors[displayPriority || "medium"],
+													)}
+												>
+													{displayPriority || "medium"}
+												</Badge>
+											</div>
 										)}
-									</TabsContent>
-								</Tabs>
+									</Card>
+									<Card className="border-0 bg-muted/40 px-4 py-3">
+										<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+											Owner
+										</p>
+										<div className="mt-2 flex items-center gap-2">
+											<div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+												<User className="h-3 w-3 text-primary" />
+											</div>
+											{isEditing ? (
+												<Input
+													value={draft.owner}
+													onChange={(event) =>
+														setDraft((prev) => ({
+															...prev,
+															owner: event.target.value,
+														}))
+													}
+													placeholder="Owner name"
+													className="h-8 text-xs"
+												/>
+											) : (
+												<span className="text-xs font-bold">
+													{item.owner || "Unassigned"}
+												</span>
+											)}
+										</div>
+									</Card>
+									<Card className="border-0 bg-muted/40 px-4 py-3">
+										<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+											Version & Perspective
+										</p>
+										<div className="mt-2 flex items-center justify-between text-xs font-bold">
+											<span>v{item.version}</span>
+											<span className="text-muted-foreground">
+												{item.perspective || "default"}
+											</span>
+										</div>
+									</Card>
+									<Card className="border-0 bg-muted/40 px-4 py-3">
+										<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+											Canonical & Parent
+										</p>
+										<div className="mt-2 flex items-center justify-between text-xs font-bold">
+											<span className="truncate">
+												{item.canonicalId || "—"}
+											</span>
+											<span className="text-muted-foreground">
+												{item.parentId ? item.parentId.slice(0, 8) : "Root"}
+											</span>
+										</div>
+									</Card>
+								</div>
 							</div>
-						</Card>
-					</div>
+						</div>
+					</Card>
 
-					<div className="space-y-6">
-						<Card className="border-0 bg-card/60 shadow-lg shadow-slate-950/5 p-6 space-y-4">
-							<div className="flex items-center justify-between">
-								<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-									Signal stack
-								</h3>
-								<ShieldAlert className="h-4 w-4 text-orange-500" />
-							</div>
-							<div className="flex items-center gap-3">
-								<div className="h-10 w-10 rounded-2xl bg-amber-500/15 flex items-center justify-center">
-									<Target className="h-4 w-4 text-amber-600" />
-								</div>
-								<div>
-									<p className="text-2xl font-black">
-										{upstreamCount + downstreamCount}
-									</p>
-									<p className="text-xs text-muted-foreground">
-										Connected items affecting delivery
-									</p>
-								</div>
-							</div>
-							<Button
-								variant="outline"
-								size="sm"
-								className="w-full gap-2"
-								onClick={() => {
-									const impactCount = upstreamCount + downstreamCount;
-									if (impactCount === 0) {
-										toast.info("No impact relationships detected");
-									} else {
-										toast.success(
-											`Impact analysis: ${impactCount} affected items`,
-										);
-									}
-								}}
-							>
-								<Target className="h-4 w-4" />
-								Open impact analysis
-							</Button>
-						</Card>
+					<div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-8">
+						<div className="space-y-8">
+							<Card className="border-0 bg-card/50 shadow-lg shadow-slate-950/5">
+								<div className="p-6 space-y-6">
+									<div className="flex items-center justify-between">
+										<div className="space-y-1">
+											<p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-black">
+												Traceability
+											</p>
+											<h2 className="text-lg font-black tracking-tight">
+												Relationship map
+											</h2>
+										</div>
+										<Button
+											size="sm"
+											className="gap-2 rounded-full"
+											onClick={() => {
+												if (
+													sourceLinks.length === 0 &&
+													targetLinks.length === 0
+												) {
+													toast.info("No relationships to analyze");
+												} else {
+													const total = sourceLinks.length + targetLinks.length;
+													toast.success(`Analyzed ${total} relationships`);
+												}
+											}}
+										>
+											<Sparkles className="h-4 w-4" />
+											Run analysis
+										</Button>
+									</div>
 
-						<Card className="border-0 bg-muted/40 p-6 space-y-4 shadow-sm">
-							<div className="flex items-center gap-2">
-								<div className="h-9 w-9 rounded-xl bg-sky-500/15 flex items-center justify-center">
-									<GitBranch className="h-4 w-4 text-sky-600" />
+									<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+										<Card className="border-0 bg-muted/40 p-4 space-y-2">
+											<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+												Upstream
+											</p>
+											<p className="text-2xl font-black">{upstreamCount}</p>
+											<p className="text-xs text-muted-foreground">
+												Dependencies tied in
+											</p>
+										</Card>
+										<Card className="border-0 bg-muted/40 p-4 space-y-2">
+											<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+												Downstream
+											</p>
+											<p className="text-2xl font-black">{downstreamCount}</p>
+											<p className="text-xs text-muted-foreground">
+												Impacted items
+											</p>
+										</Card>
+										<Card className="border-0 bg-muted/40 p-4 space-y-2">
+											<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+												Metadata
+											</p>
+											<p className="text-2xl font-black">{metadataCount}</p>
+											<p className="text-xs text-muted-foreground">
+												Context signals
+											</p>
+										</Card>
+									</div>
+
+									<Separator />
+
+									<Tabs defaultValue="specs" className="w-full">
+										<TabsList className="bg-muted/60 p-1 rounded-xl">
+											<TabsTrigger value="specs" className="rounded-lg">
+												Specifications
+											</TabsTrigger>
+											<TabsTrigger value="links" className="rounded-lg">
+												Relationships
+											</TabsTrigger>
+											<TabsTrigger value="metadata" className="rounded-lg">
+												Metadata
+											</TabsTrigger>
+										</TabsList>
+
+										<TabsContent value="specs" className="pt-6 space-y-4">
+											{item.projectId && itemId && (
+												<ItemSpecTabs
+													projectId={item.projectId}
+													itemId={itemId}
+													itemType={item.type}
+													onCreateSpec={(specType) => {}}
+												/>
+											)}
+										</TabsContent>
+
+										<TabsContent value="links" className="pt-6 space-y-6">
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+												<Card className="border-0 bg-muted/40 p-5 space-y-4">
+													<div className="flex items-center gap-2">
+														<div className="h-9 w-9 rounded-xl bg-orange-500/15 flex items-center justify-center">
+															<ArrowLeft className="h-4 w-4 text-orange-600" />
+														</div>
+														<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+															Upstream
+														</h3>
+													</div>
+													<div className="space-y-3">
+														{targetLinks.length > 0 ? (
+															targetLinks.map((link) => (
+																<Link
+																	key={link.id}
+																	to={buildItemLink(link.sourceId)}
+																	className="flex items-center gap-4 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm transition-all hover:border-orange-500/30 hover:bg-muted/50 hover:shadow-md"
+																>
+																	<div className="h-10 w-10 shrink-0 rounded-xl bg-orange-500/10 flex items-center justify-center">
+																		<ArrowLeft className="h-5 w-5 text-orange-500" />
+																	</div>
+																	<div className="min-w-0 flex-1 space-y-1">
+																		<Badge
+																			variant="secondary"
+																			className="text-[10px] font-semibold uppercase tracking-wider"
+																		>
+																			{link.type}
+																		</Badge>
+																		<p
+																			className="font-mono text-xs font-medium text-foreground truncate"
+																			title={link.sourceId}
+																		>
+																			{link.sourceId.slice(0, 8)}…
+																		</p>
+																	</div>
+																	<span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">
+																		View
+																	</span>
+																	<ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
+																</Link>
+															))
+														) : (
+															<div className="rounded-xl border-2 border-dashed border-border/50 bg-background/50 py-8 text-center">
+																<p className="text-sm font-medium text-muted-foreground">
+																	No upstream dependencies
+																</p>
+																<p className="mt-1 text-xs text-muted-foreground/80">
+																	Links from other items will appear here
+																</p>
+															</div>
+														)}
+													</div>
+												</Card>
+												<Card className="border-0 bg-muted/40 p-5 space-y-4">
+													<div className="flex items-center gap-2">
+														<div className="h-9 w-9 rounded-xl bg-sky-500/15 flex items-center justify-center">
+															<ArrowLeft className="h-4 w-4 text-sky-600 rotate-180" />
+														</div>
+														<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+															Downstream
+														</h3>
+													</div>
+													<div className="space-y-3">
+														{sourceLinks.length > 0 ? (
+															sourceLinks.map((link) => (
+																<Link
+																	key={link.id}
+																	to={buildItemLink(link.targetId)}
+																	className="flex items-center gap-4 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm transition-all hover:border-sky-500/30 hover:bg-muted/50 hover:shadow-md"
+																>
+																	<div className="h-10 w-10 shrink-0 rounded-xl bg-sky-500/10 flex items-center justify-center">
+																		<ArrowLeft className="h-5 w-5 text-sky-500 rotate-180" />
+																	</div>
+																	<div className="min-w-0 flex-1 space-y-1">
+																		<Badge
+																			variant="secondary"
+																			className="text-[10px] font-semibold uppercase tracking-wider"
+																		>
+																			{link.type}
+																		</Badge>
+																		<p
+																			className="font-mono text-xs font-medium text-foreground truncate"
+																			title={link.targetId}
+																		>
+																			{link.targetId.slice(0, 8)}…
+																		</p>
+																	</div>
+																	<span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">
+																		View
+																	</span>
+																	<ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
+																</Link>
+															))
+														) : (
+															<div className="rounded-xl border-2 border-dashed border-border/50 bg-background/50 py-8 text-center">
+																<p className="text-sm font-medium text-muted-foreground">
+																	No downstream impact
+																</p>
+																<p className="mt-1 text-xs text-muted-foreground/80">
+																	Items that depend on this will appear here
+																</p>
+															</div>
+														)}
+													</div>
+												</Card>
+											</div>
+										</TabsContent>
+
+										<TabsContent value="metadata" className="pt-6 space-y-6">
+											<div className="flex flex-wrap items-center gap-3">
+												<Input
+													value={metadataSearch}
+													onChange={(event) =>
+														setMetadataSearch(event.target.value)
+													}
+													placeholder="Search metadata keys or values..."
+													className="h-10 max-w-sm rounded-xl"
+												/>
+												<Badge
+													variant="secondary"
+													className="text-[10px] font-semibold uppercase tracking-widest px-3 py-1"
+												>
+													{filteredMetadata.length} entries
+												</Badge>
+											</div>
+											{integrationEntries.length > 0 && (
+												<div className="space-y-4">
+													<div className="flex items-center gap-2">
+														<div className="h-9 w-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
+															<Orbit className="h-4 w-4 text-amber-600" />
+														</div>
+														<span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+															Integration context
+														</span>
+													</div>
+													<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+														{integrationEntries.map(([key, value]) => (
+															<Card
+																key={key}
+																className="border border-border/50 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
+															>
+																<p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2">
+																	{key.replaceAll("_", " ")}
+																</p>
+																<p
+																	className="text-sm font-semibold text-foreground truncate"
+																	title={formatValue(value)}
+																>
+																	{formatValue(value)}
+																</p>
+															</Card>
+														))}
+													</div>
+												</div>
+											)}
+
+											{generalMetadata.length > 0 ? (
+												<div className="space-y-4">
+													<span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+														Custom metadata
+													</span>
+													<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+														{generalMetadata.map(([key, value]) => (
+															<Card
+																key={key}
+																className="border border-border/50 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
+															>
+																<p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2">
+																	{key.replaceAll("_", " ")}
+																</p>
+																<p
+																	className="text-sm font-semibold text-foreground truncate"
+																	title={formatValue(value)}
+																>
+																	{formatValue(value)}
+																</p>
+															</Card>
+														))}
+													</div>
+												</div>
+											) : (
+												<Card className="border-2 border-dashed border-border/50 bg-muted/20 p-10 text-center">
+													<p className="text-sm font-medium text-muted-foreground">
+														No custom metadata defined
+													</p>
+													<p className="mt-1 text-xs text-muted-foreground/80">
+														Add metadata to attach context to this item
+													</p>
+												</Card>
+											)}
+										</TabsContent>
+									</Tabs>
 								</div>
+							</Card>
+						</div>
+
+						<div className="space-y-6">
+							<Card className="border-0 bg-card/60 shadow-lg shadow-slate-950/5 p-6 space-y-4">
+								<div className="flex items-center justify-between">
+									<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+										Signal stack
+									</h3>
+									<ShieldAlert className="h-4 w-4 text-orange-500" />
+								</div>
+								<div className="flex items-center gap-3">
+									<div className="h-10 w-10 rounded-2xl bg-amber-500/15 flex items-center justify-center">
+										<Target className="h-4 w-4 text-amber-600" />
+									</div>
+									<div>
+										<p className="text-2xl font-black">
+											{upstreamCount + downstreamCount}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											Connected items affecting delivery
+										</p>
+									</div>
+								</div>
+								<Button
+									variant="outline"
+									size="sm"
+									className="w-full gap-2"
+									onClick={() => {
+										const impactCount = upstreamCount + downstreamCount;
+										if (impactCount === 0) {
+											toast.info("No impact relationships detected");
+										} else {
+											toast.success(
+												`Impact analysis: ${impactCount} affected items`,
+											);
+										}
+									}}
+								>
+									<Target className="h-4 w-4" />
+									Open impact analysis
+								</Button>
+							</Card>
+
+							<Card className="border-0 bg-muted/40 p-6 space-y-4 shadow-sm">
+								<div className="flex items-center gap-2">
+									<div className="h-9 w-9 rounded-xl bg-sky-500/15 flex items-center justify-center">
+										<GitBranch className="h-4 w-4 text-sky-600" />
+									</div>
+									<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+										Dimensions
+									</h3>
+								</div>
+								{dimensionEntries.length > 0 ? (
+									<div className="space-y-3">
+										{dimensionEntries.map(([label, value]) => (
+											<div
+												key={label}
+												className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm"
+											>
+												<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+													{label}
+												</span>
+												<span
+													className="text-sm font-semibold text-foreground truncate max-w-[60%]"
+													title={formatValue(value)}
+												>
+													{formatValue(value)}
+												</span>
+											</div>
+										))}
+									</div>
+								) : (
+									<p className="rounded-xl border border-dashed border-border/50 bg-background/50 py-4 text-center text-xs text-muted-foreground italic">
+										No dimensions configured.
+									</p>
+								)}
+							</Card>
+
+							<Card className="border-0 bg-card/60 shadow-lg shadow-slate-950/5 p-6 space-y-4">
+								<div className="flex items-center justify-between">
+									<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+										References
+									</h3>
+									<BookText className="h-4 w-4 text-emerald-500" />
+								</div>
+								<div className="space-y-3 text-xs">
+									<div className="flex items-start gap-2">
+										<Code2 className="h-4 w-4 text-slate-500" />
+										<div>
+											<p className="font-bold">Code reference</p>
+											<p className="text-muted-foreground">
+												{item.codeRef
+													? `${item.codeRef.filePath} · ${item.codeRef.symbolName}`
+													: "No code reference attached"}
+											</p>
+										</div>
+									</div>
+									<div className="flex items-start gap-2">
+										<BookText className="h-4 w-4 text-slate-500" />
+										<div>
+											<p className="font-bold">Documentation</p>
+											<p className="text-muted-foreground">
+												{item.docRef
+													? `${item.docRef.documentTitle} · ${item.docRef.sectionTitle || item.docRef.documentPath}`
+													: "No doc reference attached"}
+											</p>
+										</div>
+									</div>
+								</div>
+							</Card>
+
+							<Card className="border-0 bg-muted/40 p-6 space-y-4 shadow-sm">
 								<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-									Dimensions
+									Change log
 								</h3>
-							</div>
-							{dimensionEntries.length > 0 ? (
+								{timelineEvents.length > 0 ? (
+									<div className="relative space-y-0">
+										{/* Vertical line */}
+										<div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
+										{timelineEvents.map((event) => (
+											<div
+												key={`${event.label}-${event.timestamp}`}
+												className="relative flex items-start gap-4 pb-6 last:pb-0"
+											>
+												<div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary/40 bg-primary/10">
+													<div className="h-1.5 w-1.5 rounded-full bg-primary" />
+												</div>
+												<div className="min-w-0 flex-1 rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
+													<p className="text-sm font-semibold text-foreground">
+														{event.label}
+													</p>
+													{event.detail && (
+														<p className="mt-1 text-xs text-muted-foreground">
+															{event.detail}
+														</p>
+													)}
+													<p className="mt-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+														{new Date(event.timestamp).toLocaleDateString(
+															undefined,
+															{
+																day: "numeric",
+																hour: "2-digit",
+																minute: "2-digit",
+																month: "short",
+																year: "numeric",
+															},
+														)}
+													</p>
+												</div>
+											</div>
+										))}
+									</div>
+								) : (
+									<p className="rounded-xl border border-dashed border-border/50 bg-background/50 py-6 text-center text-xs text-muted-foreground italic">
+										No change events recorded.
+									</p>
+								)}
+							</Card>
+
+							<Card className="border-0 bg-muted/40 p-6 space-y-4 shadow-sm">
+								<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+									Activity timeline
+								</h3>
 								<div className="space-y-3">
-									{dimensionEntries.map(([label, value]) => (
-										<div
-											key={label}
-											className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm"
-										>
-											<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-												{label}
-											</span>
-											<span className="text-sm font-semibold text-foreground truncate max-w-[60%]" title={formatValue(value)}>
-												{formatValue(value)}
-											</span>
-										</div>
-									))}
-								</div>
-							) : (
-								<p className="rounded-xl border border-dashed border-border/50 bg-background/50 py-4 text-center text-xs text-muted-foreground italic">
-									No dimensions configured.
-								</p>
-							)}
-						</Card>
-
-						<Card className="border-0 bg-card/60 shadow-lg shadow-slate-950/5 p-6 space-y-4">
-							<div className="flex items-center justify-between">
-								<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-									References
-								</h3>
-								<BookText className="h-4 w-4 text-emerald-500" />
-							</div>
-							<div className="space-y-3 text-xs">
-								<div className="flex items-start gap-2">
-									<Code2 className="h-4 w-4 text-slate-500" />
-									<div>
-										<p className="font-bold">Code reference</p>
-										<p className="text-muted-foreground">
-											{item.codeRef
-												? `${item.codeRef.filePath} · ${item.codeRef.symbolName}`
-												: "No code reference attached"}
-										</p>
+									<div className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
+										<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+											Created
+										</span>
+										<span className="text-sm font-semibold text-foreground">
+											{createdAtLabel}
+										</span>
+									</div>
+									<div className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
+										<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+											Updated
+										</span>
+										<span className="text-sm font-semibold text-foreground">
+											{updatedAtLabel}
+										</span>
+									</div>
+									<div className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
+										<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+											System lag
+										</span>
+										<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+											<Timer className="h-3.5 w-3.5 text-primary" />
+											recent
+										</span>
 									</div>
 								</div>
-								<div className="flex items-start gap-2">
-									<BookText className="h-4 w-4 text-slate-500" />
-									<div>
-										<p className="font-bold">Documentation</p>
-										<p className="text-muted-foreground">
-											{item.docRef
-												? `${item.docRef.documentTitle} · ${item.docRef.sectionTitle || item.docRef.documentPath}`
-												: "No doc reference attached"}
-										</p>
-									</div>
-								</div>
-							</div>
-						</Card>
+							</Card>
 
-						<Card className="border-0 bg-muted/40 p-6 space-y-4 shadow-sm">
-							<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-								Change log
-							</h3>
-							{timelineEvents.length > 0 ? (
-								<div className="relative space-y-0">
-									{/* Vertical line */}
-									<div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
-									{timelineEvents.map((event) => (
-										<div
-											key={`${event.label}-${event.timestamp}`}
-											className="relative flex items-start gap-4 pb-6 last:pb-0"
-										>
-											<div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary/40 bg-primary/10">
-												<div className="h-1.5 w-1.5 rounded-full bg-primary" />
-											</div>
-											<div className="min-w-0 flex-1 rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
-												<p className="text-sm font-semibold text-foreground">{event.label}</p>
-												{event.detail && (
-													<p className="mt-1 text-xs text-muted-foreground">{event.detail}</p>
-												)}
-												<p className="mt-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-													{new Date(event.timestamp).toLocaleDateString(undefined, {
-														day: "numeric",
-														hour: "2-digit",
-														minute: "2-digit",
-														month: "short",
-														year: "numeric",
-													})}
-												</p>
-											</div>
-										</div>
-									))}
+							<Card className="border-0 bg-primary text-primary-foreground shadow-lg shadow-primary/20 p-6 space-y-3">
+								<div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest opacity-80">
+									<Sparkles className="h-4 w-4" />
+									Insight snapshot
 								</div>
-							) : (
-								<p className="rounded-xl border border-dashed border-border/50 bg-background/50 py-6 text-center text-xs text-muted-foreground italic">
-									No change events recorded.
+								<p className="text-sm font-medium leading-relaxed italic">
+									"This item touches {downstreamCount} downstream links,{" "}
+									{upstreamCount} upstream dependencies, and {metadataCount}{" "}
+									metadata signals. Lock a baseline before major edits."
 								</p>
-							)}
-						</Card>
-
-						<Card className="border-0 bg-muted/40 p-6 space-y-4 shadow-sm">
-							<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-								Activity timeline
-							</h3>
-							<div className="space-y-3">
-								<div className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
-									<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Created</span>
-									<span className="text-sm font-semibold text-foreground">{createdAtLabel}</span>
-								</div>
-								<div className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
-									<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Updated</span>
-									<span className="text-sm font-semibold text-foreground">{updatedAtLabel}</span>
-								</div>
-								<div className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
-									<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">System lag</span>
-									<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
-										<Timer className="h-3.5 w-3.5 text-primary" />
-										recent
-									</span>
-								</div>
-							</div>
-						</Card>
-
-						<Card className="border-0 bg-primary text-primary-foreground shadow-lg shadow-primary/20 p-6 space-y-3">
-							<div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest opacity-80">
-								<Sparkles className="h-4 w-4" />
-								Insight snapshot
-							</div>
-							<p className="text-sm font-medium leading-relaxed italic">
-								"This item touches {downstreamCount} downstream links,{" "}
-								{upstreamCount} upstream dependencies, and {metadataCount}{" "}
-								metadata signals. Lock a baseline before major edits."
-							</p>
-						</Card>
+							</Card>
+						</div>
 					</div>
-				</div>
 				</main>
 			</div>
 		</div>

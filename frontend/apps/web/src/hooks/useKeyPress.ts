@@ -39,16 +39,16 @@ export function useKeyPress(
 			}
 		};
 
-		if (typeof window === "undefined") {
+		if (typeof globalThis.window === "undefined") {
 			return;
 		}
 
-		window.addEventListener("keydown", downHandler);
-		window.addEventListener("keyup", upHandler);
+		globalThis.addEventListener("keydown", downHandler);
+		globalThis.addEventListener("keyup", upHandler);
 
 		return () => {
-			window.removeEventListener("keydown", downHandler);
-			window.removeEventListener("keyup", upHandler);
+			globalThis.removeEventListener("keydown", downHandler);
+			globalThis.removeEventListener("keyup", upHandler);
 		};
 	}, [targetKey, options]);
 
@@ -81,11 +81,11 @@ export function useKeyboardShortcut(
 			}
 		};
 
-		if (typeof window === "undefined") {
+		if (typeof globalThis.window === "undefined") {
 			return;
 		}
 
-		window.addEventListener("keydown", handler);
-		return () => window.removeEventListener("keydown", handler);
+		globalThis.addEventListener("keydown", handler);
+		return () => globalThis.removeEventListener("keydown", handler);
 	}, [key, callback, options]);
 }

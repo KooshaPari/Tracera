@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { ChunkLoadingSkeleton } from "@/lib/lazy-loading";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { requireAuth } from "@/lib/route-guards";
 
 const ProjectsListView = lazy(() =>
@@ -24,10 +24,7 @@ const ProjectsListView = lazy(() =>
 export const Route = createFileRoute("/projects/")({
 	beforeLoad: () => requireAuth(),
 	component: ProjectsComponent,
-	loader: async () => {
-		// ProjectsListView fetches its own data
-		return {};
-	},
+	loader: async () => ({}),
 });
 
 function ProjectsComponent() {

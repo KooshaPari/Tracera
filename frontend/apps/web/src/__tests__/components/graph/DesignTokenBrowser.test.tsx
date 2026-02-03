@@ -13,111 +13,111 @@ import { DesignTokenBrowser } from "@/components/graph";
 
 const mockColorTokens: DesignToken[] = [
 	{
+		createdAt: "2024-01-01T00:00:00Z",
+		description: "Primary brand color",
 		id: "color-1",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "primary",
 		path: ["colors", "primary", "500"],
-		description: "Primary brand color",
-		type: "color",
-		value: "#3B82F6",
+		projectId: "proj-1",
 		resolvedValue: "#3B82F6",
+		tags: ["brand", "interactive"],
+		type: "color",
+		updatedAt: "2024-01-01T00:00:00Z",
 		usageCount: 12,
 		usedByComponentIds: ["btn-1", "btn-2"],
-		tags: ["brand", "interactive"],
-		createdAt: "2024-01-01T00:00:00Z",
-		updatedAt: "2024-01-01T00:00:00Z",
+		value: "#3B82F6",
 	},
 	{
+		createdAt: "2024-01-01T00:00:00Z",
+		figmaStyleId: "figma-style-1",
 		id: "color-2",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "secondary",
 		path: ["colors", "secondary", "500"],
-		type: "color",
-		value: "#10B981",
+		projectId: "proj-1",
 		resolvedValue: "#10B981",
-		usageCount: 8,
-		figmaStyleId: "figma-style-1",
 		tags: ["status"],
-		createdAt: "2024-01-01T00:00:00Z",
+		type: "color",
 		updatedAt: "2024-01-01T00:00:00Z",
+		usageCount: 8,
+		value: "#10B981",
 	},
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "color-3",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "error",
 		path: ["colors", "error", "500"],
-		type: "color",
-		value: "#EF4444",
+		projectId: "proj-1",
 		resolvedValue: "#EF4444",
-		usageCount: 0,
-		createdAt: "2024-01-01T00:00:00Z",
+		type: "color",
 		updatedAt: "2024-01-01T00:00:00Z",
+		usageCount: 0,
+		value: "#EF4444",
 	},
 ];
 
 const mockSpacingTokens: DesignToken[] = [
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "spacing-1",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "sm",
 		path: ["spacing", "sm"],
-		type: "spacing",
-		value: "0.5rem",
+		projectId: "proj-1",
 		resolvedValue: "0.5rem",
+		type: "spacing",
+		updatedAt: "2024-01-01T00:00:00Z",
 		usageCount: 20,
 		usedByComponentIds: ["btn-1"],
-		createdAt: "2024-01-01T00:00:00Z",
-		updatedAt: "2024-01-01T00:00:00Z",
+		value: "0.5rem",
 	},
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "spacing-2",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "md",
 		path: ["spacing", "md"],
-		type: "spacing",
-		value: "1rem",
+		projectId: "proj-1",
 		resolvedValue: "1rem",
-		usageCount: 15,
-		createdAt: "2024-01-01T00:00:00Z",
+		type: "spacing",
 		updatedAt: "2024-01-01T00:00:00Z",
+		usageCount: 15,
+		value: "1rem",
 	},
 ];
 
 const mockTypographyTokens: DesignToken[] = [
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "typo-1",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "body-regular",
 		path: ["typography", "body", "regular"],
-		type: "typography",
-		value: '16px/1.5 "Inter", sans-serif',
+		projectId: "proj-1",
 		resolvedValue: '16px/1.5 "Inter", sans-serif',
-		usageCount: 25,
-		createdAt: "2024-01-01T00:00:00Z",
+		type: "typography",
 		updatedAt: "2024-01-01T00:00:00Z",
+		usageCount: 25,
+		value: '16px/1.5 "Inter", sans-serif',
 	},
 ];
 
 const mockTokensWithReferences: DesignToken[] = [
 	{
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "token-ref-1",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "primary-light",
 		path: ["colors", "primary", "light"],
-		type: "color",
-		value: "{colors.primary.500}",
-		resolvedValue: "#3B82F6",
+		projectId: "proj-1",
 		referencesTokenId: "color-1",
-		usageCount: 5,
-		createdAt: "2024-01-01T00:00:00Z",
+		resolvedValue: "#3B82F6",
+		type: "color",
 		updatedAt: "2024-01-01T00:00:00Z",
+		usageCount: 5,
+		value: "{colors.primary.500}",
 	},
 ];
 
@@ -125,7 +125,7 @@ const mockTokensWithReferences: DesignToken[] = [
 // TESTS
 // =============================================================================
 
-describe("DesignTokenBrowser", () => {
+describe(DesignTokenBrowser, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -379,7 +379,7 @@ describe("DesignTokenBrowser", () => {
 			render(
 				<DesignTokenBrowser
 					tokens={tokens}
-					showComponentUsage={true}
+					showComponentUsage
 					componentMap={componentMap}
 				/>,
 			);

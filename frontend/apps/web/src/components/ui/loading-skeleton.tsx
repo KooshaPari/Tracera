@@ -13,21 +13,20 @@ interface SkeletonProps {
 	animate?: boolean;
 }
 
-export const Skeleton = ({ className, animate = true }: SkeletonProps) => {
-	return (
-		<motion.div
-			className={cn(
-				"animate-pulse rounded-md bg-muted",
-				animate && "shimmer-effect",
-				className,
-			)}
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.15 }}
-		>
-			<style
-				dangerouslySetInnerHTML={{
-					__html: `
+export const Skeleton = ({ className, animate = true }: SkeletonProps) => (
+	<motion.div
+		className={cn(
+			"animate-pulse rounded-md bg-muted",
+			animate && "shimmer-effect",
+			className,
+		)}
+		initial={{ opacity: 0 }}
+		animate={{ opacity: 1 }}
+		transition={{ duration: 0.15 }}
+	>
+		<style
+			dangerouslySetInnerHTML={{
+				__html: `
         .shimmer-effect {
           background: linear-gradient(
             90deg,
@@ -44,11 +43,10 @@ export const Skeleton = ({ className, animate = true }: SkeletonProps) => {
           100% { background-position: 200% 0; }
         }
       `,
-				}}
-			/>
-		</motion.div>
-	);
-};
+			}}
+		/>
+	</motion.div>
+);
 
 // Card skeleton for projects/items
 export function CardSkeleton() {
@@ -101,7 +99,7 @@ export function TableSkeleton({
 						className="py-2 border-b"
 						initial={{ opacity: 0, x: -10 }}
 						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.15, delay: rowIndex * 0.02 }}
+						transition={{ delay: rowIndex * 0.02, duration: 0.15 }}
 					>
 						<div
 							className="grid gap-4"
@@ -132,7 +130,7 @@ export function KanbanSkeleton({ columns = 4 }: { columns?: number }) {
 					className="flex-1 min-w-0"
 					initial={{ opacity: 0, scale: 0.95 }}
 					animate={{ opacity: 1, scale: 1 }}
-					transition={{ duration: 0.2, delay: i * 0.1 }}
+					transition={{ delay: i * 0.1, duration: 0.2 }}
 				>
 					<div className="rounded-lg border bg-muted/30 p-4">
 						<Skeleton className="h-4 w-3/4 mb-4" animate={false} />
@@ -171,10 +169,10 @@ export function GraphSkeleton() {
 						initial={{ scale: 0 }}
 						animate={{ scale: [0, 1.2, 1] }}
 						transition={{
+							delay: i * 0.1,
 							duration: 0.5,
 							repeat: Infinity,
 							repeatType: "reverse",
-							delay: i * 0.1,
 						}}
 					>
 						<Skeleton className="h-8 w-8 rounded-full" animate={false} />
@@ -264,8 +262,8 @@ export function LoadingOverlay({ message }: { message?: string }) {
 		>
 			<motion.div
 				className="flex flex-col items-center space-y-4 p-6 rounded-lg border bg-card shadow-lg"
-				initial={{ scale: 0.9, opacity: 0 }}
-				animate={{ scale: 1, opacity: 1 }}
+				initial={{ opacity: 0, scale: 0.9 }}
+				animate={{ opacity: 1, scale: 1 }}
 			>
 				<div className="relative">
 					<div className="h-12 w-12 rounded-full border-4 border-primary border-t-transparent animate-spin" />

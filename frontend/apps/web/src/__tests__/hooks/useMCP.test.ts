@@ -10,6 +10,8 @@ import { useMCP, useTool, useTools } from "../../hooks/useMCP";
 // Mock MCP client
 vi.mock("../../api/mcp-client", () => ({
 	createMCPClient: vi.fn(() => ({
+		callTool: vi.fn().mockResolvedValue({ success: true }),
+		close: vi.fn().mockResolvedValue(),
 		initialize: vi.fn().mockResolvedValue({
 			protocolVersion: "2024-11-05",
 			serverInfo: {
@@ -27,12 +29,10 @@ vi.mock("../../api/mcp-client", () => ({
 				},
 			],
 		}),
-		callTool: vi.fn().mockResolvedValue({ success: true }),
-		close: vi.fn().mockResolvedValue(undefined),
 	})),
 }));
 
-describe("useMCP", () => {
+describe(useMCP, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -59,8 +59,8 @@ describe("useMCP", () => {
 		expect(result.current.client).toBeDefined();
 		expect(result.current.serverInfo).toEqual({
 			name: "TraceRTM MCP Server",
-			version: "1.0.0",
 			protocolVersion: "2024-11-05",
+			version: "1.0.0",
 		});
 		expect(result.current.error).toBeNull();
 	});
@@ -69,8 +69,8 @@ describe("useMCP", () => {
 		const { createMCPClient } = await import("../../api/mcp-client");
 
 		(createMCPClient as any).mockReturnValueOnce({
+			close: vi.fn().mockResolvedValue(),
 			initialize: vi.fn().mockRejectedValue(new Error("Connection failed")),
-			close: vi.fn().mockResolvedValue(undefined),
 		});
 
 		const { result } = renderHook(() =>
@@ -90,16 +90,16 @@ describe("useMCP", () => {
 	});
 
 	it("should cleanup on unmount", async () => {
-		const closeMock = vi.fn().mockResolvedValue(undefined);
+		const closeMock = vi.fn().mockResolvedValue();
 		const { createMCPClient } = await import("../../api/mcp-client");
 
 		(createMCPClient as any).mockReturnValueOnce({
+			close: closeMock,
 			initialize: vi.fn().mockResolvedValue({
 				protocolVersion: "2024-11-05",
 				serverInfo: { name: "Test", version: "1.0" },
 				capabilities: {},
 			}),
-			close: closeMock,
 		});
 
 		const { unmount } = renderHook(() =>
@@ -119,7 +119,7 @@ describe("useMCP", () => {
 	});
 });
 
-describe("useTool", () => {
+describe(useTool, () => {
 	let mockClient: Partial<MCPClient>;
 
 	beforeEach(() => {
@@ -187,15 +187,15 @@ describe("useTool", () => {
 	});
 });
 
-describe("useTools", () => {
+describe(useTools, () => {
 	let mockClient: Partial<MCPClient>;
 
 	beforeEach(() => {
 		mockClient = {
 			listTools: vi.fn().mockResolvedValue({
 				tools: [
-					{ name: "tool1", description: "Tool 1", parameters: [] },
-					{ name: "tool2", description: "Tool 2", parameters: [] },
+					{ description: "Tool 1", name: "tool1", parameters: [] },
+					{ description: "Tool 2", name: "tool2", parameters: [] },
 				],
 			}),
 		};
@@ -252,8 +252,8 @@ describe("useTools", () => {
 		});
 
 		await waitFor(() => {
-			expect(initialListTools).toHaveBeenCalledTimes(1);
-			expect(mockClient.listTools).toHaveBeenCalledTimes(1);
+			expect(initialListTools).toHaveBeenCalledOnce();
+			expect(mockClient.listTools).toHaveBeenCalledOnce();
 		});
 	});
 

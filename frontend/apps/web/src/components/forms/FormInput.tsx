@@ -11,9 +11,7 @@ export interface FormInputProps
 
 export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
 	({ className, error, errorMessage, required, ...props }, ref) => {
-		const errorId = errorMessage
-			? `${props.id || "input"}-error`
-			: undefined;
+		const errorId = errorMessage ? `${props.id || "input"}-error` : undefined;
 
 		return (
 			<>

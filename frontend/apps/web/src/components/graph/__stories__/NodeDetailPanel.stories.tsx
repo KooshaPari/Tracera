@@ -4,29 +4,29 @@ import { NodeDetailPanel } from "../NodeDetailPanel";
 import type { EnhancedNodeData } from "../types";
 
 const mockItem: Item = {
-	id: "item-1",
-	projectId: "proj-1",
-	view: "technical",
-	type: "feature",
-	title: "Button Component",
-	description: "A reusable button component with multiple variants",
-	status: "todo",
-	priority: "medium",
-	version: 1,
 	createdAt: new Date().toISOString(),
+	description: "A reusable button component with multiple variants",
+	id: "item-1",
+	priority: "medium",
+	projectId: "proj-1",
+	status: "todo",
+	title: "Button Component",
+	type: "feature",
 	updatedAt: new Date().toISOString(),
+	version: 1,
+	view: "technical",
 };
 
 const mockNode: EnhancedNodeData = {
-	id: "node-1",
-	item: mockItem,
-	type: "component",
-	status: "todo",
-	label: "Button Component",
-	perspective: ["technical"],
-	connections: { incoming: 2, outgoing: 3, total: 5, byType: {} },
+	connections: { byType: {}, incoming: 2, outgoing: 3, total: 5 },
 	depth: 0,
 	hasChildren: true,
+	id: "node-1",
+	item: mockItem,
+	label: "Button Component",
+	perspective: ["technical"],
+	status: "todo",
+	type: "component",
 };
 
 const relatedItems: Item[] = [
@@ -40,24 +40,24 @@ const outgoingLinks: Link[] = [];
 const noop = () => {};
 
 const meta: Meta<typeof NodeDetailPanel> = {
-	title: "Components/Graph/NodeDetailPanel",
+	argTypes: {
+		onClose: { action: "closed" },
+		onFocusNode: { action: "focusNode" },
+		onNavigateToItem: { action: "navigate" },
+	},
 	component: NodeDetailPanel,
-	tags: ["autodocs"],
 	parameters: {
 		chromatic: {
+			delay: 300,
 			modes: {
 				light: { query: "[data-theme='light']" },
 				dark: { query: "[data-theme='dark']" },
 			},
-			delay: 300,
 		},
 		layout: "fullscreen",
 	},
-	argTypes: {
-		onClose: { action: "closed" },
-		onNavigateToItem: { action: "navigate" },
-		onFocusNode: { action: "focusNode" },
-	},
+	tags: ["autodocs"],
+	title: "Components/Graph/NodeDetailPanel",
 };
 
 export default meta;
@@ -68,13 +68,13 @@ type Story = StoryObj<typeof meta>;
  */
 export const Open: Story = {
 	args: {
-		node: mockNode,
-		relatedItems,
 		incomingLinks,
-		outgoingLinks,
+		node: mockNode,
 		onClose: noop,
-		onNavigateToItem: noop,
 		onFocusNode: noop,
+		onNavigateToItem: noop,
+		outgoingLinks,
+		relatedItems,
 	},
 };
 
@@ -83,13 +83,13 @@ export const Open: Story = {
  */
 export const Closed: Story = {
 	args: {
-		node: null,
-		relatedItems: [],
 		incomingLinks: [],
-		outgoingLinks: [],
+		node: null,
 		onClose: noop,
-		onNavigateToItem: noop,
 		onFocusNode: noop,
+		onNavigateToItem: noop,
+		outgoingLinks: [],
+		relatedItems: [],
 	},
 };
 
@@ -98,13 +98,13 @@ export const Closed: Story = {
  */
 export const Tablet: Story = {
 	args: {
-		node: mockNode,
-		relatedItems,
 		incomingLinks,
-		outgoingLinks,
+		node: mockNode,
 		onClose: noop,
-		onNavigateToItem: noop,
 		onFocusNode: noop,
+		onNavigateToItem: noop,
+		outgoingLinks,
+		relatedItems,
 	},
 	parameters: {
 		viewport: {
@@ -118,13 +118,13 @@ export const Tablet: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		node: mockNode,
-		relatedItems,
 		incomingLinks,
-		outgoingLinks,
+		node: mockNode,
 		onClose: noop,
-		onNavigateToItem: noop,
 		onFocusNode: noop,
+		onNavigateToItem: noop,
+		outgoingLinks,
+		relatedItems,
 	},
 	decorators: [
 		(Story) => (
@@ -147,16 +147,16 @@ export const DarkMode: Story = {
  */
 export const ManyRelated: Story = {
 	args: {
+		incomingLinks,
 		node: { ...mockNode, connections: { ...mockNode.connections, total: 12 } },
+		onClose: noop,
+		onFocusNode: noop,
+		onNavigateToItem: noop,
+		outgoingLinks,
 		relatedItems: [
 			...relatedItems,
 			{ ...mockItem, id: "item-4", title: "Card" },
 			{ ...mockItem, id: "item-5", title: "Modal" },
 		],
-		incomingLinks,
-		outgoingLinks,
-		onClose: noop,
-		onNavigateToItem: noop,
-		onFocusNode: noop,
 	},
 };

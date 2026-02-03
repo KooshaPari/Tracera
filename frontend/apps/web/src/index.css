@@ -74,41 +74,67 @@
    Utility classes for entrance animations (use on page/section wrappers)
    --------------------------------------------------------------------------- */
 .animate-in-fade {
-	animation: fade-in var(--duration-normal, 200ms) var(--ease-out-smooth, ease-out) forwards;
+	animation: fade-in var(--duration-normal, 200ms)
+		var(--ease-out-smooth, ease-out) forwards;
 }
 
 .animate-in-fade-up {
-	animation: fade-in-up var(--duration-slow, 300ms) var(--ease-out-expo, ease-out) forwards;
+	animation: fade-in-up var(--duration-slow, 300ms)
+		var(--ease-out-expo, ease-out) forwards;
 }
 
 .animate-in-fade-down {
-	animation: fade-in-down var(--duration-slow, 300ms) var(--ease-out-expo, ease-out) forwards;
+	animation: fade-in-down var(--duration-slow, 300ms)
+		var(--ease-out-expo, ease-out) forwards;
 }
 
 .animate-in-scale {
-	animation: scale-in var(--duration-normal, 200ms) var(--ease-out-expo, ease-out) forwards;
+	animation: scale-in var(--duration-normal, 200ms)
+		var(--ease-out-expo, ease-out) forwards;
 }
 
 .animate-in-slide-right {
-	animation: slide-in-right var(--duration-normal, 200ms) var(--ease-out-smooth, ease-out) forwards;
+	animation: slide-in-right var(--duration-normal, 200ms)
+		var(--ease-out-smooth, ease-out) forwards;
 }
 
 /* Stagger children (add delay to nth-child) */
 .stagger-children > * {
-	animation: fade-in-up var(--duration-slow, 300ms) var(--ease-out-expo, ease-out) forwards;
+	animation: fade-in-up var(--duration-slow, 300ms)
+		var(--ease-out-expo, ease-out) forwards;
 	opacity: 0;
 }
 
-.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2) { animation-delay: 40ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 80ms; }
-.stagger-children > *:nth-child(4) { animation-delay: 120ms; }
-.stagger-children > *:nth-child(5) { animation-delay: 160ms; }
-.stagger-children > *:nth-child(6) { animation-delay: 200ms; }
-.stagger-children > *:nth-child(7) { animation-delay: 240ms; }
-.stagger-children > *:nth-child(8) { animation-delay: 280ms; }
-.stagger-children > *:nth-child(9) { animation-delay: 320ms; }
-.stagger-children > *:nth-child(10) { animation-delay: 360ms; }
+.stagger-children > *:nth-child(1) {
+	animation-delay: 0ms;
+}
+.stagger-children > *:nth-child(2) {
+	animation-delay: 40ms;
+}
+.stagger-children > *:nth-child(3) {
+	animation-delay: 80ms;
+}
+.stagger-children > *:nth-child(4) {
+	animation-delay: 120ms;
+}
+.stagger-children > *:nth-child(5) {
+	animation-delay: 160ms;
+}
+.stagger-children > *:nth-child(6) {
+	animation-delay: 200ms;
+}
+.stagger-children > *:nth-child(7) {
+	animation-delay: 240ms;
+}
+.stagger-children > *:nth-child(8) {
+	animation-delay: 280ms;
+}
+.stagger-children > *:nth-child(9) {
+	animation-delay: 320ms;
+}
+.stagger-children > *:nth-child(10) {
+	animation-delay: 360ms;
+}
 
 /* Initial state for entrance animations */
 .animate-in-fade,
@@ -122,7 +148,8 @@
 
 /* Section/row wrappers: optional entrance for content blocks */
 .section-entrance {
-	animation: fade-in-up var(--duration-slow, 300ms) var(--ease-out-expo, ease-out) forwards;
+	animation: fade-in-up var(--duration-slow, 300ms)
+		var(--ease-out-expo, ease-out) forwards;
 	opacity: 0;
 }
 
@@ -314,7 +341,8 @@ a[href]:hover {
 	textarea:focus-visible,
 	[role="button"]:focus-visible,
 	[role="tab"]:focus-visible {
-		transition: outline-offset var(--duration-fast, 150ms) ease,
+		transition:
+			outline-offset var(--duration-fast, 150ms) ease,
 			box-shadow var(--duration-fast, 150ms) ease;
 	}
 }

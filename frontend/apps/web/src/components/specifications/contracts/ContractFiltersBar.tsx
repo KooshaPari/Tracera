@@ -1,16 +1,26 @@
-import { useCallback, useMemo, type FC } from "react";
+import { type FC, useCallback, useMemo } from "react";
 import type { Contract, ContractStatus } from "../../..";
-import { Card, Filter, Input, Search, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Shield, type LucideIcon } from "@tracertm/ui";
-import "lucide-react";
+import {
+	Card,
+	Filter,
+	Input,
+	Search,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Shield,
+} from "lucide-react";
 
 interface ContractFiltersBarProps {
-	searchQuery: string;
-	setSearchQuery: (query: string) => void;
-	statusFilter: ContractStatus | "all";
-	setStatusFilter: (filter: ContractStatus | "all") => void;
-	typeFilter: string;
-	setTypeFilter: (filter: string) => void;
-	contracts: Contract[];
+	readonly searchQuery: string;
+	readonly setSearchQuery: (query: string) => void;
+	readonly statusFilter: ContractStatus | "all";
+	readonly setStatusFilter: (filter: ContractStatus | "all") => void;
+	readonly typeFilter: string;
+	readonly setTypeFilter: (filter: string) => void;
+	readonly contracts: readonly Contract[];
 }
 
 export const ContractFiltersBar: FC<ContractFiltersBarProps> = ({
@@ -24,12 +34,12 @@ export const ContractFiltersBar: FC<ContractFiltersBarProps> = ({
 }) => {
 	const statusCounts = useMemo(
 		() => ({
+			active: contracts.filter((c) => c.status === "active").length,
 			all: contracts.length,
-			draft: contracts.filter((contract) => contract.status === "draft").length,
-			active: contracts.filter((contract) => contract.status === "active").length,
-			verified: contracts.filter((contract) => contract.status === "verified").length,
-			violated: contracts.filter((contract) => contract.status === "violated").length,
-			deprecated: contracts.filter((contract) => contract.status === "deprecated").length,
+			deprecated: contracts.filter((c) => c.status === "deprecated").length,
+			draft: contracts.filter((c) => c.status === "draft").length,
+			verified: contracts.filter((c) => c.status === "verified").length,
+			violated: contracts.filter((c) => c.status === "violated").length,
 		}),
 		[contracts],
 	);
@@ -43,17 +53,21 @@ export const ContractFiltersBar: FC<ContractFiltersBarProps> = ({
 		return counts;
 	}, [contracts]);
 
-	const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-		setSearchQuery(event.target.value);
-	}, [setSearchQuery]);
+	const handleSearchChange = useCallback(
+		(event: React.ChangeEvent<HTMLInputElement>) =>
+			setSearchQuery(event.target.value),
+		[setSearchQuery],
+	);
 
-	const handleStatusChange = useCallback((value: string) => {
-		setStatusFilter(value as ContractStatus | "all");
-	}, [setStatusFilter]);
+	const handleStatusChange = useCallback(
+		(value: string) => setStatusFilter(value as ContractStatus | "all"),
+		[setStatusFilter],
+	);
 
-	const handleTypeChange = useCallback((value: string) => {
-		setTypeFilter(value);
-	}, [setTypeFilter]);
+	const handleTypeChange = useCallback(
+		(value: string) => setTypeFilter(value),
+		[setTypeFilter],
+	);
 
 	return (
 		<Card className="p-3 border-none bg-muted/30 rounded-2xl flex flex-wrap items-center gap-3">
@@ -79,9 +93,7 @@ export const ContractFiltersBar: FC<ContractFiltersBarProps> = ({
 				<SelectContent>
 					<SelectItem value="all">All ({statusCounts.all})</SelectItem>
 					<SelectItem value="draft">Draft ({statusCounts.draft})</SelectItem>
-					<SelectItem value="active">
-						Active ({statusCounts.active})
-					</SelectItem>
+					<SelectItem value="active">Active ({statusCounts.active})</SelectItem>
 					<SelectItem value="verified">
 						Verified ({statusCounts.verified})
 					</SelectItem>

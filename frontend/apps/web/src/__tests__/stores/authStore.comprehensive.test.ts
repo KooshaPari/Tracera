@@ -4,28 +4,29 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { type User, useAuthStore } from "../../stores/authStore";
+import { useAuthStore } from "../../stores/authStore";
+import type { User } from "../../stores/authStore";
 
 describe("AuthStore", () => {
 	beforeEach(() => {
 		// Reset store before each test
 		useAuthStore.setState({
-			user: null,
-			token: null,
 			isAuthenticated: false,
 			isLoading: false,
+			token: null,
+			user: null,
 		});
 		// Clear localStorage
 		localStorage.clear();
 	});
 
 	const mockUser: User = {
-		id: "user-1",
-		email: "test@example.com",
-		name: "Test User",
 		avatar: "https://example.com/avatar.jpg",
-		role: "admin",
+		email: "test@example.com",
+		id: "user-1",
 		metadata: { department: "Engineering" },
+		name: "Test User",
+		role: "admin",
 	};
 
 	describe("initial state", () => {
@@ -79,8 +80,8 @@ describe("AuthStore", () => {
 		it("should handle partial user data", () => {
 			const { setUser } = useAuthStore.getState();
 			const partialUser: User = {
-				id: "user-1",
 				email: "test@example.com",
+				id: "user-1",
 			};
 			setUser(partialUser);
 
@@ -94,8 +95,8 @@ describe("AuthStore", () => {
 			setUser(mockUser);
 
 			const newUser: User = {
-				id: "user-2",
 				email: "new@example.com",
+				id: "user-2",
 			};
 			setUser(newUser);
 
@@ -152,7 +153,7 @@ describe("AuthStore", () => {
 			const { login } = useAuthStore.getState();
 
 			// Note: In the mock implementation, login completes synchronously
-			// so we can only verify the final state after completion
+			// So we can only verify the final state after completion
 			await login("test@example.com", "password");
 
 			// Loading should be false after completion
@@ -317,8 +318,8 @@ describe("AuthStore", () => {
 			setUser(mockUser);
 
 			updateProfile({
-				name: "New Name",
 				avatar: "https://example.com/new-avatar.jpg",
+				name: "New Name",
 				role: "user",
 			});
 
@@ -398,7 +399,7 @@ describe("AuthStore", () => {
 			const { setUser } = useAuthStore.getState();
 
 			for (let i = 0; i < 100; i++) {
-				setUser({ id: `user-${i}`, email: `user${i}@example.com` });
+				setUser({ email: `user${i}@example.com`, id: `user-${i}` });
 			}
 
 			const { user } = useAuthStore.getState();
@@ -421,8 +422,8 @@ describe("AuthStore", () => {
 		it("should handle user with minimal data", () => {
 			const { setUser } = useAuthStore.getState();
 			const minimalUser: User = {
-				id: "1",
 				email: "user@example.com",
+				id: "1",
 			};
 
 			setUser(minimalUser);
@@ -435,11 +436,9 @@ describe("AuthStore", () => {
 		it("should handle user with maximum data", () => {
 			const { setUser } = useAuthStore.getState();
 			const maximalUser: User = {
-				id: "1",
-				email: "user@example.com",
-				name: "Test User",
 				avatar: "https://example.com/avatar.jpg",
-				role: "super_admin",
+				email: "user@example.com",
+				id: "1",
 				metadata: {
 					department: "Engineering",
 					team: "Platform",
@@ -448,6 +447,8 @@ describe("AuthStore", () => {
 					custom_field_1: "value1",
 					custom_field_2: "value2",
 				},
+				name: "Test User",
+				role: "super_admin",
 			};
 
 			setUser(maximalUser);
@@ -482,8 +483,8 @@ describe("AuthStore", () => {
 			// Valid user
 			expect(() =>
 				setUser({
-					id: "1",
 					email: "test@example.com",
+					id: "1",
 				}),
 			).not.toThrow();
 
@@ -495,8 +496,8 @@ describe("AuthStore", () => {
 			const { setUser } = useAuthStore.getState();
 
 			const userWithoutOptional: User = {
-				id: "1",
 				email: "test@example.com",
+				id: "1",
 			};
 
 			expect(() => setUser(userWithoutOptional)).not.toThrow();

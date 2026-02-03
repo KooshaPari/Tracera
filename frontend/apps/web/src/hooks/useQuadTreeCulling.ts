@@ -1,5 +1,5 @@
 /**
- * useQuadTreeCulling Hook
+ * UseQuadTreeCulling Hook
  *
  * Integrates quad-tree spatial indexing with React Flow viewport culling.
  * Replaces O(n) distance checks with O(log n) rectangle queries.
@@ -19,24 +19,24 @@
  * ```
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { logger } from '@/lib/logger';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { logger } from "@/lib/logger";
 import {
 	QuadTreeNodeIndex,
-	type QuadTreeNode,
-	createViewportRectangle,
 	convertToQuadTreeNodes,
-} from '@/lib/quadTreeIndex';
+	createViewportRectangle,
+} from "@/lib/quadTreeIndex";
+import type { QuadTreeNode } from "@/lib/quadTreeIndex";
 
 export interface UseQuadTreeCullingOptions {
 	/** All nodes in the graph */
-	nodes: Array<{
+	nodes: {
 		id: string;
 		position: { x: number; y: number };
 		width?: number;
 		height?: number;
 		data?: any;
-	}>;
+	}[];
 
 	/** Current viewport state */
 	viewport: {
@@ -76,7 +76,11 @@ export interface UseQuadTreeCullingResult {
 	stats: QuadTreeCullingStats;
 
 	/** Query nodes in viewport */
-	queryViewport: (viewport: { x: number; y: number; zoom: number }) => QuadTreeNode[];
+	queryViewport: (viewport: {
+		x: number;
+		y: number;
+		zoom: number;
+	}) => QuadTreeNode[];
 
 	/** Find nearest node to point */
 	findNearest: (x: number, y: number, radius?: number) => QuadTreeNode | null;
@@ -95,17 +99,19 @@ export function useQuadTreeCulling({
 }: UseQuadTreeCullingOptions): UseQuadTreeCullingResult {
 	const indexRef = useRef<QuadTreeNodeIndex>(new QuadTreeNodeIndex());
 	const [stats, setStats] = useState<QuadTreeCullingStats>({
-		totalNodes: 0,
-		visibleNodes: 0,
 		culledNodes: 0,
 		cullingRatio: 0,
-		queryTimeMs: 0,
 		indexDepth: 0,
+		queryTimeMs: 0,
+		totalNodes: 0,
+		visibleNodes: 0,
 	});
 
 	// Build/rebuild index when nodes change
 	useEffect(() => {
-		if (!enabled || nodes.length === 0) return;
+		if (!enabled || nodes.length === 0) {
+			return;
+		}
 
 		const startTime = performance.now();
 
@@ -127,7 +133,7 @@ export function useQuadTreeCulling({
 			indexDepth: indexStats.depth,
 		}));
 
-		if (process.env.NODE_ENV === 'development') {
+		if (process.env.NODE_ENV === "development") {
 			logger.info(
 				`[QuadTree] Built index for ${nodes.length} nodes in ${buildTime.toFixed(2)}ms (depth: ${indexStats.depth})`,
 			);
@@ -144,10 +150,17 @@ export function useQuadTreeCulling({
 		const startTime = performance.now();
 
 		// Create viewport rectangle
-		const viewportRect = createViewportRectangle(viewport, screenWidth, screenHeight);
+		const viewportRect = createViewportRectangle(
+			viewport,
+			screenWidth,
+			screenHeight,
+		);
 
 		// Query nodes in viewport + buffer
-		const visible = indexRef.current.queryViewportWithBuffer(viewportRect, bufferZone);
+		const visible = indexRef.current.queryViewportWithBuffer(
+			viewportRect,
+			bufferZone,
+		);
 
 		const queryTime = performance.now() - startTime;
 
@@ -157,21 +170,22 @@ export function useQuadTreeCulling({
 		const culledCount = totalNodes - visibleCount;
 
 		setStats({
-			totalNodes,
-			visibleNodes: visibleCount,
 			culledNodes: culledCount,
 			cullingRatio: totalNodes > 0 ? (culledCount / totalNodes) * 100 : 0,
-			queryTimeMs: queryTime,
 			indexDepth: indexRef.current.getStats().depth,
+			queryTimeMs: queryTime,
+			totalNodes,
+			visibleNodes: visibleCount,
 		});
 
 		return visible;
 	}, [nodes, viewport, bufferZone, enabled, screenWidth, screenHeight]);
 
 	// Create set of visible node IDs for fast lookup
-	const visibleNodeIds = useMemo(() => {
-		return new Set(visibleNodes.map((n) => n.id));
-	}, [visibleNodes]);
+	const visibleNodeIds = useMemo(
+		() => new Set(visibleNodes.map((n) => n.id)),
+		[visibleNodes],
+	);
 
 	// Helper to query viewport programmatically
 	const queryViewport = (vp: { x: number; y: number; zoom: number }) => {
@@ -180,16 +194,15 @@ export function useQuadTreeCulling({
 	};
 
 	// Helper to find nearest node
-	const findNearest = (x: number, y: number, radius?: number) => {
-		return indexRef.current.findNearest(x, y, radius);
-	};
+	const findNearest = (x: number, y: number, radius?: number) =>
+		indexRef.current.findNearest(x, y, radius);
 
 	return {
-		visibleNodes,
-		visibleNodeIds,
-		stats,
-		queryViewport,
 		findNearest,
+		queryViewport,
+		stats,
+		visibleNodeIds,
+		visibleNodes,
 	};
 }
 
@@ -197,11 +210,13 @@ export function useQuadTreeCulling({
  * Hook for tracking quad-tree culling performance
  */
 export function useQuadTreeCullingStats(stats: QuadTreeCullingStats) {
-	const [history, setHistory] = useState<Array<{ time: number; queryTimeMs: number }>>([]);
+	const [history, setHistory] = useState<
+		{ time: number; queryTimeMs: number }[]
+	>([]);
 
 	useEffect(() => {
 		setHistory((prev) => {
-			const newEntry = { time: Date.now(), queryTimeMs: stats.queryTimeMs };
+			const newEntry = { queryTimeMs: stats.queryTimeMs, time: Date.now() };
 			const updated = [...prev, newEntry];
 			// Keep last 100 entries
 			return updated.slice(-100);
@@ -209,19 +224,23 @@ export function useQuadTreeCullingStats(stats: QuadTreeCullingStats) {
 	}, [stats.queryTimeMs]);
 
 	const averageQueryTime = useMemo(() => {
-		if (history.length === 0) return 0;
+		if (history.length === 0) {
+			return 0;
+		}
 		const sum = history.reduce((acc, entry) => acc + entry.queryTimeMs, 0);
 		return sum / history.length;
 	}, [history]);
 
 	const maxQueryTime = useMemo(() => {
-		if (history.length === 0) return 0;
+		if (history.length === 0) {
+			return 0;
+		}
 		return Math.max(...history.map((entry) => entry.queryTimeMs));
 	}, [history]);
 
 	return {
-		current: stats.queryTimeMs,
 		average: averageQueryTime,
+		current: stats.queryTimeMs,
 		max: maxQueryTime,
 		samples: history.length,
 	};

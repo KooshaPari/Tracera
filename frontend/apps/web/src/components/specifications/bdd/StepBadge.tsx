@@ -18,41 +18,41 @@ const stepConfig: Record<
 		description: string;
 	}
 > = {
-	Given: {
-		color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-		bgColor: "bg-blue-500/5",
-		icon: AlertCircle,
-		description: "Precondition",
-	},
-	When: {
-		color: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-		bgColor: "bg-amber-500/5",
-		icon: Zap,
-		description: "Action",
-	},
-	Then: {
-		color: "bg-green-500/10 text-green-600 border-green-500/20",
-		bgColor: "bg-green-500/5",
-		icon: CheckCircle2,
-		description: "Outcome",
-	},
 	And: {
-		color: "bg-gray-500/10 text-gray-600 border-gray-500/20",
 		bgColor: "bg-gray-500/5",
-		icon: GitBranch,
+		color: "bg-gray-500/10 text-gray-600 border-gray-500/20",
 		description: "Additional",
-	},
-	But: {
-		color: "bg-gray-500/10 text-gray-600 border-gray-500/20",
-		bgColor: "bg-gray-500/5",
 		icon: GitBranch,
-		description: "Alternative",
 	},
 	Background: {
-		color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
 		bgColor: "bg-purple-500/5",
-		icon: GitBranch,
+		color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
 		description: "Setup",
+		icon: GitBranch,
+	},
+	But: {
+		bgColor: "bg-gray-500/5",
+		color: "bg-gray-500/10 text-gray-600 border-gray-500/20",
+		description: "Alternative",
+		icon: GitBranch,
+	},
+	Given: {
+		bgColor: "bg-blue-500/5",
+		color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+		description: "Precondition",
+		icon: AlertCircle,
+	},
+	Then: {
+		bgColor: "bg-green-500/5",
+		color: "bg-green-500/10 text-green-600 border-green-500/20",
+		description: "Outcome",
+		icon: CheckCircle2,
+	},
+	When: {
+		bgColor: "bg-amber-500/5",
+		color: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+		description: "Action",
+		icon: Zap,
 	},
 };
 

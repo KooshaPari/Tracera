@@ -7,9 +7,9 @@ import { ItemsTreeView } from "../../views/ItemsTreeView";
 
 // Mock react router
 vi.mock("@tanstack/react-router", () => ({
+	Link: ({ to, children }: any) => <a href={to}>{children}</a>,
 	useNavigate: vi.fn(() => vi.fn()),
 	useSearch: vi.fn(() => ({})),
-	Link: ({ to, children }: any) => <a href={to}>{children}</a>,
 }));
 
 // Mock hooks
@@ -63,7 +63,7 @@ describe("ItemsTreeView Performance", () => {
 		const { rerender } = render(<WrappedView />);
 
 		// Initial render
-		expect(renderSpy).toHaveBeenCalledTimes(1);
+		expect(renderSpy).toHaveBeenCalledOnce();
 
 		// Re-render with same props should not increase count significantly
 		rerender(<WrappedView />);
@@ -84,7 +84,7 @@ describe("ItemsTreeView Performance", () => {
 
 		// Find expand buttons
 		const expandButtons = container.querySelectorAll("button");
-		const chevronButtons = Array.from(expandButtons).filter((btn: Element) =>
+		const chevronButtons = [...expandButtons].filter((btn: Element) =>
 			btn.querySelector("svg"),
 		);
 
@@ -173,7 +173,7 @@ describe("ItemsTreeView Performance", () => {
 
 		// Toggle expand state
 		const expandButtons = container.querySelectorAll("button");
-		const chevronButtons = Array.from(expandButtons).filter((btn: Element) =>
+		const chevronButtons = [...expandButtons].filter((btn: Element) =>
 			btn.querySelector("svg"),
 		);
 

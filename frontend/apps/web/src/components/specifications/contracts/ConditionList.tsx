@@ -52,36 +52,36 @@ interface VerificationStatusIconMap {
 const conditionSeverityStyles: ConditionSeverityStyleMap = {
 	critical: {
 		bg: "bg-red-500/10",
-		text: "text-red-600",
 		icon: AlertCircle,
+		text: "text-red-600",
 	},
 	high: {
 		bg: "bg-orange-500/10",
-		text: "text-orange-600",
 		icon: AlertTriangle,
-	},
-	medium: {
-		bg: "bg-yellow-500/10",
-		text: "text-yellow-600",
-		icon: Circle,
+		text: "text-orange-600",
 	},
 	low: {
 		bg: "bg-blue-500/10",
-		text: "text-blue-600",
 		icon: Circle,
+		text: "text-blue-600",
+	},
+	medium: {
+		bg: "bg-yellow-500/10",
+		icon: Circle,
+		text: "text-yellow-600",
 	},
 };
 
 const verificationStatusIcons: VerificationStatusIconMap = {
-	pass: CheckCircle,
 	fail: AlertCircle,
+	pass: CheckCircle,
 	skip: Circle,
 	undefined: Circle,
 };
 
 const verificationStatusColors: Record<string, string> = {
-	pass: "text-green-600",
 	fail: "text-red-600",
+	pass: "text-green-600",
 	skip: "text-gray-600",
 	undefined: "text-gray-400",
 };
@@ -93,7 +93,9 @@ interface ConditionItemProps {
 }
 
 function ConditionItem({ condition, type, onClick }: ConditionItemProps) {
-	const severity = (condition as ContractCondition & { severity?: string }).severity || "medium";
+	const severity =
+		(condition as ContractCondition & { severity?: string }).severity ||
+		"medium";
 	const status = condition.lastVerifiedResult || "undefined";
 	const StatusIcon = verificationStatusIcons[status] || Circle;
 	const severityStyle = conditionSeverityStyles[severity];
@@ -165,9 +167,9 @@ function ConditionItem({ condition, type, onClick }: ConditionItemProps) {
 						<span className={`font-medium ${verificationStatusColors[status]}`}>
 							{status === "pass"
 								? "✓ Verified"
-								: status === "fail"
+								: (status === "fail"
 									? "✗ Failed"
-									: "⊘ Skipped"}
+									: "⊘ Skipped")}
 						</span>
 					)}
 				</div>

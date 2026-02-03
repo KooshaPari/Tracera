@@ -27,11 +27,11 @@ describe("Documentation View Route", () => {
 
 	it("supports documentation metadata", () => {
 		const mockDoc = {
+			format: "markdown",
 			id: "doc-1",
+			status: "done",
 			title: "API Documentation",
 			type: "documentation",
-			status: "done",
-			format: "markdown",
 		};
 
 		expect(mockDoc.format).toMatch(/^(markdown|html|pdf|docx)$/);
@@ -40,12 +40,12 @@ describe("Documentation View Route", () => {
 
 	it("handles multiple documentation files", () => {
 		const mockDocs = [
-			{ id: "d1", title: "README.md", format: "markdown" },
-			{ id: "d2", title: "API.md", format: "markdown" },
-			{ id: "d3", title: "GUIDE.md", format: "markdown" },
+			{ format: "markdown", id: "d1", title: "README.md" },
+			{ format: "markdown", id: "d2", title: "API.md" },
+			{ format: "markdown", id: "d3", title: "GUIDE.md" },
 		];
 
 		expect(mockDocs).toHaveLength(3);
-		expect(mockDocs.every(d => d.format === "markdown")).toBe(true);
+		expect(mockDocs.every((d) => d.format === "markdown")).toBe(true);
 	});
 });

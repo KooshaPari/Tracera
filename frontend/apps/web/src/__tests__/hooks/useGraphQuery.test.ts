@@ -71,19 +71,19 @@ describe("useGraph Hooks - Query Keys and Patterns", () => {
 
 	describe("Graph Query Hooks Configuration", () => {
 		it("should have full graph staleTime of 60 seconds", () => {
-			const staleTime = 60000;
-			expect(staleTime).toBe(60000);
+			const staleTime = 60_000;
+			expect(staleTime).toBe(60_000);
 		});
 
 		it("should enable ancestors query when ID provided", () => {
 			const id = "item-123";
-			const enabled = !!id;
+			const enabled = Boolean(id);
 			expect(enabled).toBe(true);
 		});
 
 		it("should disable ancestors query when ID missing", () => {
 			const id = "";
-			const enabled = !!id;
+			const enabled = Boolean(id);
 			expect(enabled).toBe(false);
 		});
 
@@ -124,8 +124,8 @@ describe("useGraph Hooks - Query Keys and Patterns", () => {
 		});
 
 		it("should find paths between items", () => {
-			const source: string = "item-1";
-			const target: string = "item-2";
+			const source = "item-1";
+			const target = "item-2";
 			expect(source !== target).toBe(true);
 		});
 
@@ -165,11 +165,11 @@ describe("useGraph Hooks - Query Keys and Patterns", () => {
 		it("should call graph API methods with optional parameters", () => {
 			const api = {
 				graph: {
-					getImpact: vi.fn(),
-					getDependencies: vi.fn(),
-					findPath: vi.fn(),
 					detectCycles: vi.fn(),
 					findOrphans: vi.fn(),
+					findPath: vi.fn(),
+					getDependencies: vi.fn(),
+					getImpact: vi.fn(),
 				},
 			};
 			api.graph.getImpact("item-1", 3);
@@ -210,25 +210,25 @@ describe("useGraph Hooks - Query Keys and Patterns", () => {
 	describe("Conditional Query Enabling", () => {
 		it("should enable query with valid ID", () => {
 			const id = "item-valid";
-			const enabled = !!id;
+			const enabled = Boolean(id);
 			expect(enabled).toBe(true);
 		});
 
 		it("should disable query with empty ID", () => {
 			const id = "";
-			const enabled = !!id;
+			const enabled = Boolean(id);
 			expect(enabled).toBe(false);
 		});
 
 		it("should disable query with null ID", () => {
 			const id = null;
-			const enabled = !!id;
+			const enabled = Boolean(id);
 			expect(enabled).toBe(false);
 		});
 
 		it("should disable query with undefined ID", () => {
 			const id = undefined;
-			const enabled = !!id;
+			const enabled = Boolean(id);
 			expect(enabled).toBe(false);
 		});
 	});

@@ -9,23 +9,23 @@
  * - Only processes ~100-500 visible nodes instead of all 100k
  */
 
-import { useMemo } from 'react';
-import { useReactFlow } from '@xyflow/react';
-import { useQuadTreeCulling } from '@/hooks/useQuadTreeCulling';
-import { determineLODLevel } from '@/components/graph/utils/lod';
-import { getNodeType } from '@/components/graph/nodeRegistry';
-import type { Node } from '@xyflow/react';
-import type { RichNodeData } from '@/components/graph/types';
-import { logger } from '@/lib/logger';
+import { useMemo } from "react";
+import { useReactFlow } from "@xyflow/react";
+import { useQuadTreeCulling } from "@/hooks/useQuadTreeCulling";
+import { determineLODLevel } from "@/components/graph/utils/lod";
+import { getNodeType } from "@/components/graph/nodeRegistry";
+import type { Node } from "@xyflow/react";
+import type { RichNodeData } from "@/components/graph/types";
+import { logger } from "@/lib/logger";
 
 interface QuadTreeCullingExampleProps {
-	items: Array<{
+	items: {
 		id: string;
 		title: string;
 		type: string;
 		status?: string;
 		position?: { x: number; y: number };
-	}>;
+	}[];
 	selectedNodeId?: string | null;
 }
 
@@ -40,45 +40,47 @@ export function QuadTreeCullingExample({
 	const viewport = getViewport();
 
 	// Convert items to nodes with positions
-	const allNodes = useMemo(() => {
-		return items.map((item) => ({
-			id: item.id,
-			position: item.position ?? { x: 0, y: 0 },
-			width: 200,
-			height: 120,
-			data: {
+	const allNodes = useMemo(
+		() =>
+			items.map((item) => ({
+				data: {
+					id: item.id,
+					label: item.title,
+					type: item.type,
+					status: item.status,
+				},
+				height: 120,
 				id: item.id,
-				label: item.title,
-				type: item.type,
-				status: item.status,
-			},
-		}));
-	}, [items]);
+				position: item.position ?? { x: 0, y: 0 },
+				width: 200,
+			})),
+		[items],
+	);
 
 	// ============================================
 	// QUAD-TREE CULLING: Replace O(n) with O(log n)
 	// ============================================
 
 	const { visibleNodes, stats } = useQuadTreeCulling({
-		nodes: allNodes,
-		viewport,
 		bufferZone: 200,
-		enabled: allNodes.length > 1000, // Only enable for large graphs
+		enabled: allNodes.length > 1000,
+		nodes: allNodes,
+		viewport, // Only enable for large graphs
 	});
 
-	logger.info('[QuadTree Stats]', {
+	logger.info("[QuadTree Stats]", {
+		culled: stats.culledNodes,
+		queryTime: `${stats.queryTimeMs.toFixed(3)}ms`,
+		ratio: `${stats.cullingRatio.toFixed(1)}%`,
 		total: stats.totalNodes,
 		visible: stats.visibleNodes,
-		culled: stats.culledNodes,
-		ratio: `${stats.cullingRatio.toFixed(1)}%`,
-		queryTime: `${stats.queryTimeMs.toFixed(3)}ms`,
 	});
 
 	// ============================================
 	// OLD APPROACH (O(n) - processes ALL nodes)
 	// ============================================
 	/*
-	const nodesForLayout = useMemo(() => {
+	Const nodesForLayout = useMemo(() => {
 		const totalCount = items.length;
 		const lodLevel = determineLODLevel(viewport.zoom, { nodeCount: totalCount });
 
@@ -116,7 +118,9 @@ export function QuadTreeCullingExample({
 		// Use quad-tree culled nodes instead of all nodes
 		const nodesToProcess = visibleNodes;
 		const totalCount = allNodes.length;
-		const lodLevel = determineLODLevel(viewport.zoom, { nodeCount: totalCount });
+		const lodLevel = determineLODLevel(viewport.zoom, {
+			nodeCount: totalCount,
+		});
 
 		// ✅ O(visible) where visible << total
 		// Only processes ~100-500 nodes instead of 100k
@@ -124,8 +128,11 @@ export function QuadTreeCullingExample({
 			// Optional: Calculate distance only for visible nodes
 			// This is much cheaper since we only have ~500 nodes
 			const viewportCenter = {
-				x: -viewport.x / viewport.zoom + window.innerWidth / (2 * viewport.zoom),
-				y: -viewport.y / viewport.zoom + window.innerHeight / (2 * viewport.zoom),
+				x:
+					-viewport.x / viewport.zoom + window.innerWidth / (2 * viewport.zoom),
+				y:
+					-viewport.y / viewport.zoom +
+					window.innerHeight / (2 * viewport.zoom),
 			};
 
 			const distance = Math.sqrt(
@@ -134,31 +141,33 @@ export function QuadTreeCullingExample({
 			);
 
 			const lodNodeType = getNodeType(node.data.type, {
+				distance,
+				isFocused: false,
+				isSelected: selectedNodeId === node.id,
 				totalNodeCount: totalCount,
 				zoom: viewport.zoom,
-				isSelected: selectedNodeId === node.id,
-				isFocused: false,
-				distance,
 			});
 
 			return {
-				id: node.id,
-				type: lodNodeType,
-				position: { x: node.x, y: node.y },
 				data: {
 					...node.data,
 					lodLevel,
 				},
+				id: node.id,
+				position: { x: node.x, y: node.y },
+				type: lodNodeType,
 			} as Node<RichNodeData>;
 		});
 	}, [visibleNodes, allNodes.length, viewport, selectedNodeId]);
 
 	// For demonstration purposes - showing the optimized processing
-	void nodesForLayout;
+	undefined;
 
 	// Performance comparison
 	const performanceGain = useMemo(() => {
-		if (stats.totalNodes === 0) return 0;
+		if (stats.totalNodes === 0) {
+			return 0;
+		}
 		// Assume O(n) takes ~0.01ms per node
 		const oldTime = stats.totalNodes * 0.01;
 		const newTime = stats.queryTimeMs + stats.visibleNodes * 0.01;
@@ -180,22 +189,22 @@ export function QuadTreeCullingExample({
 					{stats.cullingRatio.toFixed(1)}%)
 				</div>
 				<div>
-					<span className="font-semibold">Query Time:</span>{' '}
+					<span className="font-semibold">Query Time:</span>{" "}
 					{stats.queryTimeMs.toFixed(3)}ms
 				</div>
 				<div>
 					<span className="font-semibold">Tree Depth:</span> {stats.indexDepth}
 				</div>
 				<div className="col-span-2">
-					<span className="font-semibold">Performance Gain:</span>{' '}
+					<span className="font-semibold">Performance Gain:</span>{" "}
 					{performanceGain.toFixed(1)}x faster
 				</div>
 			</div>
 
 			<div className="mt-4 p-2 bg-green-100 rounded">
 				<p className="text-xs text-green-800">
-					✅ Processing {stats.visibleNodes} nodes instead of {stats.totalNodes} (
-					{((stats.visibleNodes / stats.totalNodes) * 100).toFixed(1)}%)
+					✅ Processing {stats.visibleNodes} nodes instead of {stats.totalNodes}{" "}
+					({((stats.visibleNodes / stats.totalNodes) * 100).toFixed(1)}%)
 				</p>
 			</div>
 		</div>

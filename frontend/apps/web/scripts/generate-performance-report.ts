@@ -451,19 +451,16 @@ async function main() {
 		);
 
 		if (jsonFiles.length === 0) {
-			console.error("No benchmark results found!");
 			process.exit(1);
 		}
 
 		// Sort by timestamp and get the latest
 		jsonFiles.sort();
-		const latestFile = jsonFiles[jsonFiles.length - 1];
+		const latestFile = jsonFiles.at(-1);
 		const resultsPath = path.join(resultsDir, latestFile);
 
-		console.log(`📊 Reading results from: ${latestFile}`);
-
 		// Read results
-		const resultsContent = await fs.readFile(resultsPath, "utf-8");
+		const resultsContent = await fs.readFile(resultsPath, "utf8");
 		const results: BenchmarkResults = JSON.parse(resultsContent);
 
 		// Generate HTML report
@@ -472,15 +469,9 @@ async function main() {
 			latestFile.replace(".json", ".html"),
 		);
 		await generateHTMLReport(results, reportPath);
-
-		console.log(`✅ HTML report generated: ${reportPath}`);
-		console.log(
-			`\nOverall Score: ${results.summary.overallScore}/100 (${results.summary.performanceGrade})`,
-		);
 	} catch (error) {
-		console.error("Error generating report:", error);
 		process.exit(1);
 	}
 }
 
-void main();
+undefined;

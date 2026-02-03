@@ -62,12 +62,12 @@ export function useVirtualization(
 	// Performance tracking
 	const renderStartRef = useRef<number>(0);
 	const [metrics, setMetrics] = useState<VirtualizationMetrics>({
-		visibleNodeCount: 0,
-		totalNodeCount: nodes.length,
 		culledNodeCount: nodes.length,
 		lodLevel: "medium",
-		viewportArea: 0,
 		renderTime: 0,
+		totalNodeCount: nodes.length,
+		viewportArea: 0,
+		visibleNodeCount: 0,
 	});
 
 	// Calculate viewport bounds with padding
@@ -77,15 +77,21 @@ export function useVirtualization(
 		const right = viewport.x + viewport.width / viewport.zoom + padding;
 		const bottom = viewport.y + viewport.height / viewport.zoom + padding;
 
-		return { minX: left, maxX: right, minY: top, maxY: bottom };
+		return { maxX: right, maxY: bottom, minX: left, minY: top };
 	}, [viewport, padding]);
 
 	// Determine LOD level based on zoom
 	const lodLevel = useMemo((): LODLevel => {
-		if (!enableLOD) return "high";
+		if (!enableLOD) {
+			return "high";
+		}
 
-		if (viewport.zoom >= lodThresholds.zoomHigh) return "high";
-		if (viewport.zoom >= lodThresholds.zoomMedium) return "medium";
+		if (viewport.zoom >= lodThresholds.zoomHigh) {
+			return "high";
+		}
+		if (viewport.zoom >= lodThresholds.zoomMedium) {
+			return "medium";
+		}
 		return "low";
 	}, [viewport.zoom, enableLOD, lodThresholds]);
 
@@ -106,19 +112,19 @@ export function useVirtualization(
 			if (isVisible) {
 				visible.push(node);
 			} else {
-				culled++;
+				culled += 1;
 			}
 		}
 
 		const renderTime = performance.now() - renderStartRef.current;
 
 		setMetrics({
-			visibleNodeCount: visible.length,
-			totalNodeCount: nodes.length,
 			culledNodeCount: culled,
 			lodLevel,
-			viewportArea: viewport.width * viewport.height,
 			renderTime,
+			totalNodeCount: nodes.length,
+			viewportArea: viewport.width * viewport.height,
+			visibleNodeCount: visible.length,
 		});
 
 		return visible;
@@ -139,16 +145,17 @@ export function useVirtualization(
 					// Show ID, type, and label
 					return {
 						id: nodeId,
-						type: data.type,
 						label: data.label,
+						type: data.type,
 					};
 				}
 				case "high": {
 					// Show full node data
 					return data;
 				}
-				default:
+				default: {
 					return data;
+				}
 			}
 		},
 		[lodLevel],
@@ -157,14 +164,18 @@ export function useVirtualization(
 	// Get simplified node renderer based on LOD level
 	const getSimplifiedNodeComponent = useCallback(() => {
 		switch (lodLevel) {
-			case "low":
+			case "low": {
 				return "simplifiedPill";
-			case "medium":
+			}
+			case "medium": {
 				return "mediumPill";
-			case "high":
+			}
+			case "high": {
 				return "richPill";
-			default:
+			}
+			default: {
 				return "richPill";
+			}
 		}
 	}, [lodLevel]);
 
@@ -211,14 +222,16 @@ export function useIntersectionVisibility(
 	const nodeRefsMap = useRef<Map<string, Element>>(new Map());
 
 	useEffect(() => {
-		if (!containerRef.current) return;
+		if (!containerRef.current) {
+			return;
+		}
 
 		const observer = new IntersectionObserver(
 			(entries) => {
 				setVisibleIds((prev) => {
 					const next = new Set(prev);
 					for (const entry of entries) {
-						const nodeId = (entry.target as HTMLElement).dataset.nodeId;
+						const { nodeId } = (entry.target as HTMLElement).dataset;
 						if (nodeId) {
 							if (entry.isIntersecting) {
 								next.add(nodeId);
@@ -260,9 +273,9 @@ export function useIntersectionVisibility(
 	}, []);
 
 	return {
-		visibleIds,
 		registerNode,
 		unregisterNode,
+		visibleIds,
 	};
 }
 
@@ -271,16 +284,18 @@ export function useIntersectionVisibility(
  */
 export function useProgressiveLoading<T extends { id: string }>(
 	items: T[],
-	batchSize: number = 50,
-	delay: number = 100,
+	batchSize = 50,
+	delay = 100,
 ) {
 	const [loadedItems, setLoadedItems] = useState<Set<string>>(new Set());
 	const loaderRef = useRef<number>();
 
 	useEffect(() => {
-		if (loadedItems.size >= items.length) return;
+		if (loadedItems.size >= items.length) {
+			return;
+		}
 
-		loaderRef.current = window.setTimeout(() => {
+		loaderRef.current = globalThis.setTimeout(() => {
 			setLoadedItems((prev) => {
 				const next = new Set(prev);
 				const itemsToLoad = items
@@ -293,7 +308,9 @@ export function useProgressiveLoading<T extends { id: string }>(
 		}, delay);
 
 		return () => {
-			if (loaderRef.current) clearTimeout(loaderRef.current);
+			if (loaderRef.current) {
+				clearTimeout(loaderRef.current);
+			}
 		};
 	}, [items, batchSize, delay, loadedItems]);
 
@@ -302,9 +319,7 @@ export function useProgressiveLoading<T extends { id: string }>(
 	}, []);
 
 	const isLoaded = useCallback(
-		(itemId: string) => {
-			return loadedItems.has(itemId);
-		},
+		(itemId: string) => loadedItems.has(itemId),
 		[loadedItems],
 	);
 
@@ -312,10 +327,10 @@ export function useProgressiveLoading<T extends { id: string }>(
 		items.length > 0 ? (loadedItems.size / items.length) * 100 : 100;
 
 	return {
-		loadedItems,
-		isLoaded,
-		progress,
 		allLoaded: loadedItems.size === items.length,
+		isLoaded,
+		loadedItems,
+		progress,
 		resetLoading,
 	};
 }

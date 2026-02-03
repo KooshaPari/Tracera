@@ -23,23 +23,23 @@ vi.mock("@tanstack/react-router", async () => {
 });
 
 vi.mock("../../hooks/useItems", () => ({
+	useDeleteItem: vi.fn(),
 	useItems: vi.fn(),
 	useUpdateItem: vi.fn(),
-	useDeleteItem: vi.fn(),
 }));
 
 vi.mock("../../hooks/useProjects", () => ({
 	useProjects: vi.fn(),
 }));
 
-describe("ItemsTableView", () => {
+describe(ItemsTableView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -48,21 +48,21 @@ describe("ItemsTableView", () => {
 	it("renders table with items", () => {
 		const mockItems = [
 			{
+				created_at: new Date().toISOString(),
 				id: "item-1",
+				owner: "user1",
+				priority: "high",
+				status: "todo",
 				title: "Item 1",
 				type: "feature",
-				status: "todo",
-				priority: "high",
-				owner: "user1",
-				created_at: new Date().toISOString(),
 			},
 		];
 
 		vi.mocked(useItems).mockReturnValue({
 			data: mockItems,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useUpdateItem).mockReturnValue({
@@ -75,9 +75,9 @@ describe("ItemsTableView", () => {
 
 		vi.mocked(useProjects).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -92,7 +92,7 @@ describe("ItemsTableView", () => {
 	it("displays loading state", () => {
 		render(
 			<QueryClientProvider client={queryClient}>
-				<ItemsTableView items={[]} type="feature" loading={true} />
+				<ItemsTableView items={[]} type="feature" loading />
 			</QueryClientProvider>,
 		);
 
@@ -102,28 +102,28 @@ describe("ItemsTableView", () => {
 	it("handles sorting", async () => {
 		const mockItems = [
 			{
+				created_at: new Date("2024-01-01").toISOString(),
 				id: "item-1",
+				priority: "low",
+				status: "todo",
 				title: "Item A",
 				type: "feature",
-				status: "todo",
-				priority: "low",
-				created_at: new Date("2024-01-01").toISOString(),
 			},
 			{
+				created_at: new Date("2024-01-02").toISOString(),
 				id: "item-2",
+				priority: "high",
+				status: "done",
 				title: "Item B",
 				type: "feature",
-				status: "done",
-				priority: "high",
-				created_at: new Date("2024-01-02").toISOString(),
 			},
 		];
 
 		vi.mocked(useItems).mockReturnValue({
 			data: mockItems,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useUpdateItem).mockReturnValue({
@@ -136,9 +136,9 @@ describe("ItemsTableView", () => {
 
 		vi.mocked(useProjects).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -164,25 +164,25 @@ describe("ItemsTableView", () => {
 		const mockItems = [
 			{
 				id: "item-1",
+				priority: "high",
+				status: "todo",
 				title: "Item 1",
 				type: "feature",
-				status: "todo",
-				priority: "high",
 			},
 			{
 				id: "item-2",
+				priority: "low",
+				status: "done",
 				title: "Item 2",
 				type: "feature",
-				status: "done",
-				priority: "low",
 			},
 		];
 
 		vi.mocked(useItems).mockReturnValue({
 			data: mockItems,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useUpdateItem).mockReturnValue({
@@ -195,9 +195,9 @@ describe("ItemsTableView", () => {
 
 		vi.mocked(useProjects).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -225,15 +225,15 @@ describe("ItemsTableView", () => {
 		const mockItems = [
 			{
 				id: "item-1",
+				status: "todo",
 				title: "Item 1",
 				type: "feature",
-				status: "todo",
 			},
 			{
 				id: "item-2",
+				status: "done",
 				title: "Item 2",
 				type: "feature",
-				status: "done",
 			},
 		];
 

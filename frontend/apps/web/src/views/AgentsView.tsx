@@ -58,45 +58,20 @@ const statusVariant = (status: AgentStatus) => {
 };
 
 const formatLastRun = (iso?: string) => {
-	if (!iso) {return "Last run: —";}
+	if (!iso) {
+		return "Last run: —";
+	}
 	const date = new Date(iso);
-	if (Number.isNaN(date.getTime())) {return "Last run: —";}
+	if (Number.isNaN(date.getTime())) {
+		return "Last run: —";
+	}
 	return `Last run: ${date.toLocaleString()}`;
 };
 
 export function AgentsView() {
 	const [agents, setAgents] = useState<AgentSummary[]>(fallbackAgents);
 
-	useEffect(() => {
-		let active = true;
-		const load = async () => {
-			try {
-				const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/v1/agents`);
-				if (!response.ok) {return;}
-				const data = await response.json();
-				const list = Array.isArray(data) ? data : data?.agents;
-				if (active && Array.isArray(list) && list.length > 0) {
-					setAgents(
-						list.map((agent: any) => ({
-							capabilities: agent.capabilities ?? [],
-							id: String(agent.id ?? agent.agent_id ?? agent.name),
-							lastRun: agent.lastRun ?? agent.last_run ?? agent.lastHeartbeat,
-							name: String(agent.name ?? "Agent"),
-							status: (agent.status ?? "idle") as AgentStatus,
-							tasksCompleted: agent.tasksCompleted ?? agent.tasks_completed ?? 0,
-						})),
-					);
-				}
-			} catch {
-				// Fall back to static data
-			}
-		};
-
-		undefined;
-		return () => {
-			active = false;
-		};
-	}, []);
+	useEffect(() => {}, []);
 
 	return (
 		<div className="space-y-6">

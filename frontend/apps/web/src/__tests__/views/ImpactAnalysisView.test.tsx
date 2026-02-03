@@ -17,14 +17,14 @@ vi.mock("../../hooks/useLinks", () => ({
 	useLinks: vi.fn(),
 }));
 
-describe("ImpactAnalysisView", () => {
+describe(ImpactAnalysisView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -33,16 +33,16 @@ describe("ImpactAnalysisView", () => {
 	it("renders impact analysis interface", () => {
 		vi.mocked(useItems).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -88,16 +88,16 @@ describe("ImpactAnalysisView", () => {
 
 		vi.mocked(useItems).mockReturnValue({
 			data: items,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: links,
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(

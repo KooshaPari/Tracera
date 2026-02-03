@@ -321,11 +321,11 @@ describe("Landmark Regions", () => {
 		const results = await axe(container);
 		expect(results).toHaveNoViolations();
 
-		expect(screen.getByRole("banner")).toBeInTheDocument(); // header
+		expect(screen.getByRole("banner")).toBeInTheDocument(); // Header
 		expect(screen.getByRole("navigation")).toBeInTheDocument();
 		expect(screen.getByRole("main")).toBeInTheDocument();
-		expect(screen.getByRole("complementary")).toBeInTheDocument(); // aside
-		expect(screen.getByRole("contentinfo")).toBeInTheDocument(); // footer
+		expect(screen.getByRole("complementary")).toBeInTheDocument(); // Aside
+		expect(screen.getByRole("contentinfo")).toBeInTheDocument(); // Footer
 	});
 
 	it("should label multiple navigation regions", async () => {
@@ -427,7 +427,7 @@ describe("Custom Controls Keyboard Support", () => {
 		customButton.focus();
 
 		await user.keyboard("{Enter}");
-		expect(handleClick).toHaveBeenCalledTimes(1);
+		expect(handleClick).toHaveBeenCalledOnce();
 
 		await user.keyboard(" ");
 		expect(handleClick).toHaveBeenCalledTimes(2);

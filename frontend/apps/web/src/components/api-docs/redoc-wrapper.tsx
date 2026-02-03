@@ -29,7 +29,7 @@ function downloadOpenApiJSON(data: unknown): void {
 	const a = document.createElement("a");
 	a.href = url;
 	a.download = "openapi-spec.json";
-	document.body.appendChild(a);
+	document.body.append(a);
 	a.click();
 	document.body.removeChild(a);
 	URL.revokeObjectURL(url);
@@ -63,7 +63,7 @@ export function RedocWrapper({
 		// Check for dark mode preference
 		const isDark =
 			document.documentElement.classList.contains("dark") ||
-			window.matchMedia("(prefers-color-scheme: dark)").matches;
+			globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
 		setDarkMode(isDark);
 
 		// Load spec if URL is provided and no spec object
@@ -71,7 +71,7 @@ export function RedocWrapper({
 			fetch(specUrl)
 				.then((res) => res.json())
 				.then((data) => setSpecData(data))
-				.catch((err) => logger.error("Failed to load OpenAPI spec:", err));
+				.catch((error) => logger.error("Failed to load OpenAPI spec:", error));
 		} else if (spec) {
 			setSpecData(spec);
 		}
@@ -96,25 +96,22 @@ export function RedocWrapper({
 	};
 
 	const copySpecUrl = () => {
-		const fullUrl = window.location.origin + specUrl;
-		void navigator.clipboard.writeText(fullUrl).then(() => {
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-		});
+		const fullUrl = globalThis.location.origin + specUrl;
+		undefined;
 	};
 
 	const redocOptions = {
-		scrollYOffset,
-		hideDownloadButton,
 		disableSearch,
 		expandResponses,
-		requiredPropsFirst,
-		sortPropsAlphabetically,
-		showExtensions,
+		expandSingleSchemaField,
+		hideDownloadButton,
+		hideHostname,
 		nativeScrollbars,
 		pathInMiddlePanel,
-		hideHostname,
-		expandSingleSchemaField,
+		requiredPropsFirst,
+		scrollYOffset,
+		showExtensions,
+		sortPropsAlphabetically,
 		theme: {
 			colors: darkMode
 				? {
@@ -165,6 +162,16 @@ export function RedocWrapper({
 							head: "#c167e4",
 						},
 					},
+			rightPanel: {
+				backgroundColor: darkMode ? "#1a1a1a" : "#263238",
+				textColor: "#ffffff",
+			},
+			sidebar: {
+				backgroundColor: darkMode ? "#2d2d2d" : "#fafafa",
+				textColor: darkMode ? "#f0f0f0" : "#333",
+				activeTextColor: "#4a90e2",
+				width: "280px",
+			},
 			typography: {
 				fontSize: "16px",
 				fontFamily:
@@ -179,16 +186,6 @@ export function RedocWrapper({
 					fontFamily: '"Fira Code", "Courier New", monospace',
 					fontWeight: "400",
 				},
-			},
-			sidebar: {
-				backgroundColor: darkMode ? "#2d2d2d" : "#fafafa",
-				textColor: darkMode ? "#f0f0f0" : "#333",
-				activeTextColor: "#4a90e2",
-				width: "280px",
-			},
-			rightPanel: {
-				backgroundColor: darkMode ? "#1a1a1a" : "#263238",
-				textColor: "#ffffff",
 			},
 		},
 	};

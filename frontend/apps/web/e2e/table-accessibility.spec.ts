@@ -86,7 +86,7 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 		}
 
 		// Focus a cell
-		await cells[cells.length - 1].focus();
+		await cells.at(-1).focus();
 
 		// Press Home to go to first column
 		await page.keyboard.press("Home");
@@ -122,7 +122,7 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 		}
 
 		// Focus last cell
-		const lastCell = cells[cells.length - 1];
+		const lastCell = cells.at(-1);
 		await lastCell.focus();
 
 		// Press Ctrl+Home (or Cmd+Home on Mac)
@@ -204,9 +204,9 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 
 	test("should announce navigation to screen readers", async ({ page }) => {
 		// Check for aria-live region
-			const liveRegion = page
-				.locator('[role="status"][aria-live="polite"]')
-				.first();
+		const liveRegion = page
+			.locator('[role="status"][aria-live="polite"]')
+			.first();
 		await expect(liveRegion).toBeInTheDocument();
 
 		// Should have aria-atomic for announcement
@@ -288,9 +288,7 @@ test.describe("Table Accessibility - Screen Reader Support", () => {
 	});
 
 	test("should have accessible create button", async ({ page }) => {
-			const createButton = page.locator(
-				'button[aria-label*="Create new node"]',
-			);
+		const createButton = page.locator('button[aria-label*="Create new node"]');
 		await expect(createButton).toBeInTheDocument();
 	});
 
@@ -445,8 +443,10 @@ test.describe("Table Accessibility - Focus Management", () => {
 		// Check for focus indicator
 		const hasOutline = await page.evaluate(() => {
 			const focused = document.activeElement;
-			if (!focused) return false;
-			const styles = window.getComputedStyle(focused);
+			if (!focused) {
+				return false;
+			}
+			const styles = globalThis.getComputedStyle(focused);
 			const className = "className" in focused ? String(focused.className) : "";
 			return (
 				styles.outline !== "none" ||
@@ -537,7 +537,7 @@ test.describe("Table Accessibility - WCAG 2.1 AA Compliance", () => {
 		await cell.focus();
 
 		const isFocusVisible = await cell.evaluate((el: Element) => {
-			const styles = window.getComputedStyle(el);
+			const styles = globalThis.getComputedStyle(el);
 			const className = (el as HTMLElement).getAttribute("class") ?? "";
 			return (
 				styles.outline !== "none" ||

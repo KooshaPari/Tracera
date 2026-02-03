@@ -10,8 +10,8 @@ import type { GitHubRepo } from "@/api/github";
 import { Button } from "@/components/ui/enterprise-button";
 import {
 	useDeleteGitHubAppInstallation,
-	useGitHubAppInstallations,
 	useGitHubAppInstallUrl,
+	useGitHubAppInstallations,
 } from "@/hooks/useGitHub";
 import { CreateRepoModal } from "./CreateRepoModal";
 import { RepoSearchCombobox } from "./RepoSearchCombobox";
@@ -42,7 +42,7 @@ export function GitHubAppInstall({
 
 	const handleInstall = () => {
 		if (installUrlData?.install_url) {
-			window.location.href = installUrlData.install_url;
+			globalThis.location.href = installUrlData.install_url;
 		}
 	};
 
@@ -62,9 +62,12 @@ export function GitHubAppInstall({
 			const message =
 				error instanceof Error
 					? error.message
-					: (error && typeof error === "object" && "message" in error && typeof (error as { message?: string }).message === "string")
+					: (error &&
+							typeof error === "object" &&
+							"message" in error &&
+							typeof (error as { message?: string }).message === "string"
 						? (error as { message: string }).message
-						: "Failed to remove installation";
+						: "Failed to remove installation");
 			toast.error(message);
 		}
 	};

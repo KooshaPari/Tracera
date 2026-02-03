@@ -8,7 +8,7 @@
 		"packages/*"
 	],
 	"scripts": {
-		"postinstall": "./scripts/patch-jiti.sh && node scripts/patch-compose-refs.js",
+		"postinstall": "./scripts/patch-jiti.sh && node scripts/patch-compose-refs.js && node scripts/patch-doctrine.js",
 		"dev": "turbo dev --filter=@tracertm/web",
 		"dev:all": "turbo dev --parallel",
 		"dev:docs": "turbo dev --filter=@tracertm/docs",
@@ -92,9 +92,10 @@
 		"@radix-ui/react-tabs": "^1.1.13",
 		"@radix-ui/react-toast": "^1.2.2",
 		"@radix-ui/react-tooltip": "^1.2.8",
-		"@storybook/react": "10.2.1",
-		"@storybook/react-dom-shim": "10.2.1",
-		"@storybook/react-vite": "^10.2.1",
+		"@chromatic-com/storybook": "^5.0.0",
+		"@storybook/react": "10.2.3",
+		"@storybook/react-dom-shim": "10.2.3",
+		"@storybook/react-vite": "^10.2.3",
 		"@tanstack/react-query": "^5.90.14",
 		"@tanstack/react-router": "^1.157.16",
 		"@tanstack/react-table": "^8.21.3",

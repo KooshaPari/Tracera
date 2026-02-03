@@ -10,7 +10,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import {
 	Activity,
 	AlertTriangle,
@@ -31,8 +32,8 @@ export interface TestNodeData {
 	status: string;
 
 	// Test-specific fields
-	testType?: string; // unit, integration, e2e, etc.
-	framework?: string; // jest, playwright, vitest, etc.
+	testType?: string; // Unit, integration, e2e, etc.
+	framework?: string; // Jest, playwright, vitest, etc.
 	flakinessScore?: number; // 0-100, higher = more flaky
 	coveragePercent?: number; // 0-100
 	safetyLevel?: "safe" | "quarantined" | "disabled";
@@ -54,17 +55,17 @@ export interface TestNodeData {
 
 // Safety level colors
 const SAFETY_COLORS = {
-	safe: "#22c55e",
-	quarantined: "#f59e0b",
 	disabled: "#ef4444",
+	quarantined: "#f59e0b",
+	safe: "#22c55e",
 };
 
 // Status colors
 const STATUS_COLORS = {
-	passed: "#22c55e",
-	failed: "#ef4444",
-	skipped: "#94a3b8",
 	error: "#dc2626",
+	failed: "#ef4444",
+	passed: "#22c55e",
+	skipped: "#94a3b8",
 };
 
 function TestNodeComponent({
@@ -137,8 +138,8 @@ function TestNodeComponent({
 												className="text-[10px] px-1.5 h-5"
 												style={{
 													backgroundColor: "#22c55e15",
-													color: "#16a34a",
 													borderColor: "#22c55e40",
+													color: "#16a34a",
 												}}
 											>
 												{data.testType}
@@ -165,8 +166,8 @@ function TestNodeComponent({
 											className="text-[10px] px-1 h-5 ml-auto"
 											style={{
 												backgroundColor: `${safetyColor}15`,
-												color: safetyColor,
 												borderColor: `${safetyColor}40`,
+												color: safetyColor,
 											}}
 										>
 											<Shield className="h-3 w-3 mr-0.5" />

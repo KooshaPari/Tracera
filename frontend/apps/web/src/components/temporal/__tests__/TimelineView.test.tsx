@@ -6,35 +6,35 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Version } from "../TemporalNavigator";
 import { TimelineView } from "../TimelineView";
 
-describe("TimelineView", () => {
+describe(TimelineView, () => {
 	const mockVersions: Version[] = [
 		{
-			id: "v-1",
+			author: "Alice",
 			branchId: "branch-1",
-			title: "Initial Release",
+			description: "First stable release",
+			id: "v-1",
+			status: "published",
 			tag: "1.0.0",
 			timestamp: new Date("2024-01-01"),
-			author: "Alice",
-			status: "published",
-			description: "First stable release",
+			title: "Initial Release",
 		},
 		{
-			id: "v-2",
+			author: "Bob",
 			branchId: "branch-1",
-			title: "Patch Release",
+			description: "Bug fixes",
+			id: "v-2",
+			status: "published",
 			tag: "1.0.1",
 			timestamp: new Date("2024-01-08"),
-			author: "Bob",
-			status: "published",
-			description: "Bug fixes",
+			title: "Patch Release",
 		},
 		{
-			id: "v-3",
-			branchId: "branch-1",
-			title: "Development Build",
-			timestamp: new Date("2024-01-15"),
 			author: "Charlie",
+			branchId: "branch-1",
+			id: "v-3",
 			status: "draft",
+			timestamp: new Date("2024-01-15"),
+			title: "Development Build",
 		},
 	];
 

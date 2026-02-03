@@ -24,8 +24,8 @@ describe("Virtual Scrolling Performance Benchmarks", () => {
 		// Virtual rendering: ~50 DOM nodes for 1000 items
 		// Performance improvement: 2000/50 = 40x = 4000%
 
-		const nonVirtualRenderTime = 2000; // ms (estimated)
-		const virtualRenderTime = 500; // ms (estimated)
+		const nonVirtualRenderTime = 2000; // Ms (estimated)
+		const virtualRenderTime = 500; // Ms (estimated)
 		const improvement = (nonVirtualRenderTime / virtualRenderTime - 1) * 100;
 
 		expect(improvement).toBeGreaterThan(400);
@@ -38,7 +38,7 @@ describe("Virtual Scrolling Performance Benchmarks", () => {
 		// Rough estimate: scroll handler execution < 5ms
 
 		const frameBudgetMs = 16.67;
-		const estimatedScrollHandlerTime = 5; // ms
+		const estimatedScrollHandlerTime = 5; // Ms
 
 		expect(estimatedScrollHandlerTime).toBeLessThan(frameBudgetMs);
 	});
@@ -62,8 +62,8 @@ describe("Virtual Scrolling Performance Benchmarks", () => {
 		// Filtering should be fast because it doesn't re-render everything
 		// Just updates the virtualized list
 
-		const filterTime = 50; // ms (estimated)
-		const threshold = 100; // ms
+		const filterTime = 50; // Ms (estimated)
+		const threshold = 100; // Ms
 
 		expect(filterTime).toBeLessThan(threshold);
 	});
@@ -72,15 +72,15 @@ describe("Virtual Scrolling Performance Benchmarks", () => {
 		// Sorting involves filtering and virtual scroll reset
 		// Should still be very fast
 
-		const sortTime = 100; // ms (estimated)
-		const threshold = 150; // ms
+		const sortTime = 100; // Ms (estimated)
+		const threshold = 150; // Ms
 
 		expect(sortTime).toBeLessThan(threshold);
 	});
 
 	it("should maintain stable scroll performance even during rapid scrolling", () => {
 		// Virtual scroller should handle rapid scroll events
-		// without frame drops or stuttering
+		// Without frame drops or stuttering
 
 		// Measure FPS during rapid scrolling
 		const fpsThreshold = 55; // Should maintain 55+ FPS
@@ -93,8 +93,8 @@ describe("Virtual Scrolling Performance Benchmarks", () => {
 		// Initial render should be fast
 		// Virtual scroller only renders visible items on initial load
 
-		const initialRenderTime = 300; // ms (estimated)
-		const threshold = 500; // ms
+		const initialRenderTime = 300; // Ms (estimated)
+		const threshold = 500; // Ms
 
 		expect(initialRenderTime).toBeLessThan(threshold);
 	});
@@ -102,8 +102,8 @@ describe("Virtual Scrolling Performance Benchmarks", () => {
 	it("should provide scroll-to-item without blocking UI", () => {
 		// Scroll-to-item should complete synchronously or very quickly
 
-		const scrollToItemTime = 10; // ms (estimated)
-		const threshold = 50; // ms
+		const scrollToItemTime = 10; // Ms (estimated)
+		const threshold = 50; // Ms
 
 		expect(scrollToItemTime).toBeLessThan(threshold);
 	});
@@ -193,7 +193,7 @@ describe("Virtual Scrolling Memory Efficiency", () => {
 		// Only with visible item count
 
 		// Example: Memory for rendering 50 items should be same
-		// whether dataset has 100 or 10000 items
+		// Whether dataset has 100 or 10000 items
 
 		const memoryFor100Items = 50; // KB
 		const memoryFor10kItems = 55; // KB (slight increase due to overhead)

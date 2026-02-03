@@ -1,6 +1,6 @@
 // DimensionFilters.tsx - Filter/highlight nodes by orthogonal dimensions
 // Dimensions are cross-cutting concerns (maturity, complexity, coverage, risk)
-// that apply to items regardless of their perspective
+// That apply to items regardless of their perspective
 
 import type {
 	ComplexityLevel,
@@ -80,10 +80,10 @@ interface DimensionValues {
 
 const DIMENSION_CONFIGS: DimensionConfig[] = [
 	{
+		color: "#3b82f6",
+		icon: TrendingUp,
 		id: "maturity",
 		label: "Maturity",
-		icon: TrendingUp,
-		color: "#3b82f6",
 		type: "enum",
 		values: [
 			"idea",
@@ -96,27 +96,27 @@ const DIMENSION_CONFIGS: DimensionConfig[] = [
 		],
 	},
 	{
+		color: "#f59e0b",
+		icon: Boxes,
 		id: "complexity",
 		label: "Complexity",
-		icon: Boxes,
-		color: "#f59e0b",
 		type: "enum",
 		values: ["trivial", "simple", "moderate", "complex", "very_complex"],
 	},
 	{
+		color: "#22c55e",
+		icon: Target,
 		id: "coverage",
 		label: "Coverage",
-		icon: Target,
-		color: "#22c55e",
-		type: "range",
-		min: 0,
 		max: 100,
+		min: 0,
+		type: "range",
 	},
 	{
+		color: "#ef4444",
+		icon: AlertTriangle,
 		id: "risk",
 		label: "Risk",
-		icon: AlertTriangle,
-		color: "#ef4444",
 		type: "enum",
 		values: ["none", "low", "medium", "high", "critical"],
 	},
@@ -127,36 +127,36 @@ const DISPLAY_MODE_OPTIONS: {
 	label: string;
 	icon: React.ComponentType<{ className?: string }>;
 }[] = [
-	{ id: "filter", label: "Filter", icon: Filter },
-	{ id: "highlight", label: "Highlight", icon: Highlighter },
-	{ id: "color", label: "Color", icon: Palette },
-	{ id: "size", label: "Size", icon: Layers },
+	{ icon: Filter, id: "filter", label: "Filter" },
+	{ icon: Highlighter, id: "highlight", label: "Highlight" },
+	{ icon: Palette, id: "color", label: "Color" },
+	{ icon: Layers, id: "size", label: "Size" },
 ];
 
 const MATURITY_COLORS: Record<MaturityLevel, string> = {
-	idea: "#94a3b8",
-	draft: "#64748b",
 	defined: "#3b82f6",
-	implemented: "#8b5cf6",
-	verified: "#22c55e",
-	stable: "#10b981",
 	deprecated: "#ef4444",
+	draft: "#64748b",
+	idea: "#94a3b8",
+	implemented: "#8b5cf6",
+	stable: "#10b981",
+	verified: "#22c55e",
 };
 
 const COMPLEXITY_COLORS: Record<ComplexityLevel, string> = {
-	trivial: "#22c55e",
-	simple: "#84cc16",
-	moderate: "#f59e0b",
 	complex: "#ef4444",
+	moderate: "#f59e0b",
+	simple: "#84cc16",
+	trivial: "#22c55e",
 	very_complex: "#dc2626",
 };
 
 const RISK_COLORS: Record<RiskLevel, string> = {
-	none: "#22c55e",
+	critical: "#dc2626",
+	high: "#ef4444",
 	low: "#84cc16",
 	medium: "#f59e0b",
-	high: "#ef4444",
-	critical: "#dc2626",
+	none: "#22c55e",
 };
 
 // =============================================================================
@@ -185,7 +185,7 @@ function DimensionFiltersComponent({
 				value,
 			};
 
-			if (existingIndex >= 0) {
+			if (existingIndex !== -1) {
 				const updated = [...activeFilters];
 				updated[existingIndex] = newFilter;
 				onFiltersChange(updated);
@@ -207,9 +207,8 @@ function DimensionFiltersComponent({
 		onFiltersChange([]);
 	}, [onFiltersChange]);
 
-	const getActiveFilterValue = (dimension: string) => {
-		return activeFilters.find((f) => f.dimension === dimension)?.value;
-	};
+	const getActiveFilterValue = (dimension: string) =>
+		activeFilters.find((f) => f.dimension === dimension)?.value;
 
 	if (compact) {
 		return (
@@ -329,7 +328,9 @@ function DimensionFiltersComponent({
 							const config = DIMENSION_CONFIGS.find(
 								(c) => c.id === filter.dimension,
 							);
-							if (!config) return null;
+							if (!config) {
+								return null;
+							}
 							const Icon = config.icon;
 
 							return (
@@ -423,7 +424,7 @@ function DimensionFilterEditor({
 	}
 
 	// Enum type
-	const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
+	const selectedValues = Array.isArray(value) ? value : (value ? [value] : []);
 
 	return (
 		<div className="space-y-3">
@@ -533,11 +534,15 @@ function CompactDimensionFilters({
 function formatFilterValue(
 	value: string | number | boolean | string[] | number[] | undefined,
 ): string {
-	if (value === undefined) return "";
+	if (value === undefined) {
+		return "";
+	}
 	if (Array.isArray(value)) {
 		return value.length === 1 ? String(value[0]) : `${value.length} selected`;
 	}
-	if (typeof value === "number") return `${value}%`;
+	if (typeof value === "number") {
+		return `${value}%`;
+	}
 	return String(value).replace("_", " ");
 }
 
@@ -570,10 +575,12 @@ export { DIMENSION_CONFIGS, MATURITY_COLORS, COMPLEXITY_COLORS, RISK_COLORS };
 export function applyDimensionFilters<
 	T extends { dimensions?: Record<string, unknown> },
 >(items: T[], filters: DimensionFilter[]): T[] {
-	if (filters.length === 0) return items;
+	if (filters.length === 0) {
+		return items;
+	}
 
-	return items.filter((item) => {
-		return filters.every((filter) => {
+	return items.filter((item) =>
+		filters.every((filter) => {
 			const itemValue = item.dimensions?.[filter.dimension];
 			if (itemValue === undefined) return false;
 
@@ -615,8 +622,8 @@ export function applyDimensionFilters<
 				default:
 					return true;
 			}
-		});
-	});
+		}),
+	);
 }
 
 /**
@@ -626,9 +633,13 @@ export function getDimensionColor(
 	dimensions: Record<string, unknown> | undefined,
 	colorDimension: keyof DimensionValues,
 ): string | undefined {
-	if (!dimensions) return undefined;
+	if (!dimensions) {
+		return undefined;
+	}
 	const value = dimensions[colorDimension];
-	if (value === undefined) return undefined;
+	if (value === undefined) {
+		return undefined;
+	}
 
 	const safeStr =
 		typeof value === "object" && value !== null
@@ -644,9 +655,13 @@ export function getDimensionSize(
 	dimensions: Record<string, unknown> | undefined,
 	sizeDimension: keyof DimensionValues,
 ): number {
-	if (!dimensions) return 0.5;
+	if (!dimensions) {
+		return 0.5;
+	}
 	const value = dimensions[sizeDimension];
-	if (value === undefined) return 0.5;
+	if (value === undefined) {
+		return 0.5;
+	}
 
 	if (typeof value === "number") {
 		// Normalize 0-100 to 0.3-1.0
@@ -657,7 +672,7 @@ export function getDimensionSize(
 	const config = DIMENSION_CONFIGS.find((c) => c.id === sizeDimension);
 	if (config?.values) {
 		const index = config.values.indexOf(value as string);
-		if (index >= 0) {
+		if (index !== -1) {
 			return 0.3 + (index / (config.values.length - 1)) * 0.7;
 		}
 	}

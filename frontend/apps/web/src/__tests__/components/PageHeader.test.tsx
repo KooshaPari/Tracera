@@ -166,8 +166,8 @@ describe("PageHeader Component", () => {
 				<PageHeader
 					title="Project Details"
 					breadcrumbs={[
-						{ label: "Home", href: "/" },
-						{ label: "Projects", href: "/projects" },
+						{ href: "/", label: "Home" },
+						{ href: "/projects", label: "Projects" },
 						{ label: "Project 1" },
 					]}
 				/>,
@@ -182,7 +182,7 @@ describe("PageHeader Component", () => {
 			render(
 				<PageHeader
 					title="Project Details"
-					breadcrumbs={[{ label: "Home", href: "/" }, { label: "Projects" }]}
+					breadcrumbs={[{ href: "/", label: "Home" }, { label: "Projects" }]}
 				/>,
 			);
 
@@ -197,7 +197,7 @@ describe("PageHeader Component", () => {
 				<PageHeader
 					title="Project Details"
 					breadcrumbs={[
-						{ label: "Home", href: "/" },
+						{ href: "/", label: "Home" },
 						{ label: "Current Page" },
 					]}
 				/>,
@@ -213,8 +213,8 @@ describe("PageHeader Component", () => {
 				<PageHeader
 					title="Project Details"
 					breadcrumbs={[
-						{ label: "Home", href: "/" },
-						{ label: "Projects", href: "/projects" },
+						{ href: "/", label: "Home" },
+						{ href: "/projects", label: "Projects" },
 						{ label: "Current" },
 					]}
 				/>,
@@ -233,9 +233,7 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should not render breadcrumbs when empty array", () => {
-			render(
-				<PageHeader title="Dashboard" breadcrumbs={[]} />,
-			);
+			render(<PageHeader title="Dashboard" breadcrumbs={[]} />);
 
 			const nav = container.querySelector('nav[aria-label="Breadcrumb"]');
 			expect(nav).not.toBeInTheDocument();
@@ -245,7 +243,7 @@ describe("PageHeader Component", () => {
 			render(
 				<PageHeader
 					title="Project Details"
-					breadcrumbs={[{ label: "Home", href: "/" }, { label: "Projects" }]}
+					breadcrumbs={[{ href: "/", label: "Home" }, { label: "Projects" }]}
 				/>,
 			);
 
@@ -264,8 +262,8 @@ describe("PageHeader Component", () => {
 					description="View and manage project requirements"
 					icon={<FileText data-testid="project-icon" />}
 					breadcrumbs={[
-						{ label: "Home", href: "/" },
-						{ label: "Projects", href: "/projects" },
+						{ href: "/", label: "Home" },
+						{ href: "/projects", label: "Projects" },
 						{ label: "Project 1" },
 					]}
 					actions={<button data-testid="edit-button">Edit</button>}
@@ -343,14 +341,16 @@ describe("PageHeader Component", () => {
 		it("should have dark mode classes for border", () => {
 			render(<PageHeader title="Dashboard" />);
 
-			const header = container.querySelector(".dark\\:border-gray-800");
+			const header = container.querySelector(
+				String.raw`.dark\:border-gray-800`,
+			);
 			expect(header).toBeInTheDocument();
 		});
 
 		it("should have dark mode classes for background", () => {
 			render(<PageHeader title="Dashboard" />);
 
-			const header = container.querySelector(".dark\\:bg-gray-900");
+			const header = container.querySelector(String.raw`.dark\:bg-gray-900`);
 			expect(header).toBeInTheDocument();
 		});
 
@@ -455,7 +455,7 @@ describe("PageHeader Component", () => {
 			render(
 				<PageHeader
 					title="Page"
-					breadcrumbs={[{ label: "Home", href: "/" }, { label: "Projects" }]}
+					breadcrumbs={[{ href: "/", label: "Home" }, { label: "Projects" }]}
 				/>,
 			);
 
@@ -467,7 +467,7 @@ describe("PageHeader Component", () => {
 			render(
 				<PageHeader
 					title="Page"
-					breadcrumbs={[{ label: "Home", href: "/" }, { label: "Projects" }]}
+					breadcrumbs={[{ href: "/", label: "Home" }, { label: "Projects" }]}
 				/>,
 			);
 
@@ -480,8 +480,8 @@ describe("PageHeader Component", () => {
 				<PageHeader
 					title="Page"
 					breadcrumbs={[
-						{ label: "Home", href: "/" },
-						{ label: "Projects", href: "/projects" },
+						{ href: "/", label: "Home" },
+						{ href: "/projects", label: "Projects" },
 					]}
 				/>,
 			);
@@ -524,9 +524,9 @@ describe("PageHeader Component", () => {
 				<PageHeader
 					title="Feature Details"
 					breadcrumbs={[
-						{ label: "Dashboard", href: "/" },
-						{ label: "Projects", href: "/projects" },
-						{ label: "Project 1", href: "/projects/1" },
+						{ href: "/", label: "Dashboard" },
+						{ href: "/projects", label: "Projects" },
+						{ href: "/projects/1", label: "Project 1" },
 						{ label: "Features" },
 					]}
 					actions={<button>Edit</button>}

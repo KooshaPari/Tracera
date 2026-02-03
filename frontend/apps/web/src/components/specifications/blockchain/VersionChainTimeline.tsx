@@ -125,9 +125,9 @@ interface VersionChainEntryProps {
 function VersionChainEntry({ entry, isHead }: VersionChainEntryProps) {
 	const date = new Date(entry.created_at);
 	const formattedDate = date.toLocaleDateString(undefined, {
-		year: "numeric",
-		month: "short",
 		day: "numeric",
+		month: "short",
+		year: "numeric",
 	});
 	const formattedTime = date.toLocaleTimeString(undefined, {
 		hour: "2-digit",

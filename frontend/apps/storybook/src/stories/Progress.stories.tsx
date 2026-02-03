@@ -4,9 +4,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Progress } from "@tracertm/ui";
 
 const meta: Meta<typeof Progress> = {
-	title: "Components/Progress",
 	component: Progress,
 	tags: ["autodocs"],
+	title: "Components/Progress",
 };
 
 export default meta;

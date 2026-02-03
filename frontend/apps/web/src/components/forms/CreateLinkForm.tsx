@@ -13,10 +13,10 @@ const linkTypes = [
 ] as const;
 
 const linkSchema = z.object({
+	description: z.string().max(1000).optional(),
 	sourceId: z.string().uuid("Select a source item"),
 	targetId: z.string().uuid("Select a target item"),
 	type: z.enum(linkTypes),
-	description: z.string().max(1000).optional(),
 });
 
 type LinkFormData = z.infer<typeof linkSchema>;
@@ -49,8 +49,8 @@ export function CreateLinkForm({
 		watch,
 		formState: { errors },
 	} = useForm<LinkFormData>({
-		resolver: zodResolver(linkSchema),
 		defaultValues: { sourceId: preselectedSource || "", type: "implements" },
+		resolver: zodResolver(linkSchema),
 	});
 
 	const sourceId = watch("sourceId");
@@ -60,7 +60,9 @@ export function CreateLinkForm({
 
 	const groupedItems = items.reduce(
 		(acc: Record<string, Item[]>, item) => {
-			if (!acc[item.view]) acc[item.view] = [];
+			if (!acc[item.view]) {
+				acc[item.view] = [];
+			}
 			acc[item.view]?.push(item);
 			return acc;
 		},

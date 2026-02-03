@@ -5,7 +5,7 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 export interface DeleteConfig {
 	/** Item identifier (for logging) */
@@ -92,7 +92,9 @@ export function useConfirmedDelete(
 
 	const executeDelete = useCallback(
 		async (deleteFunction: () => Promise<void> | void) => {
-			if (!pendingDelete) return;
+			if (!pendingDelete) {
+				return;
+			}
 
 			setIsDeleting(true);
 
@@ -140,13 +142,13 @@ export function useConfirmedDelete(
 	}, []);
 
 	return {
-		dialogOpen,
-		pendingDelete,
-		isDeleting,
-		requestDelete,
-		executeDelete,
 		cancelDelete,
 		closeDialog,
+		dialogOpen,
+		executeDelete,
+		isDeleting,
+		pendingDelete,
+		requestDelete,
 	};
 }
 
@@ -192,7 +194,9 @@ export function useConfirmedBulkDelete(
 
 	const executeDelete = useCallback(
 		async (deleteFunction: () => Promise<void> | void) => {
-			if (!pendingDelete) return;
+			if (!pendingDelete) {
+				return;
+			}
 
 			setIsDeleting(true);
 
@@ -240,12 +244,12 @@ export function useConfirmedBulkDelete(
 	}, []);
 
 	return {
-		dialogOpen,
-		pendingDelete,
-		isDeleting,
-		requestDelete,
-		executeDelete,
 		cancelDelete,
 		closeDialog,
+		dialogOpen,
+		executeDelete,
+		isDeleting,
+		pendingDelete,
+		requestDelete,
 	};
 }

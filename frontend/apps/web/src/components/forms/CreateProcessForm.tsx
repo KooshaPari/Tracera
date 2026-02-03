@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { Plus, Trash2, X } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,32 +16,32 @@ const categoryOptions = [
 ] as const;
 
 const stageSchema = z.object({
+	assignedRole: z.string().optional(),
+	description: z.string().optional(),
+	estimatedDurationMinutes: z.coerce.number().optional(),
 	id: z.string(),
 	name: z.string().min(1, "Stage name required"),
-	description: z.string().optional(),
 	order: z.number(),
 	required: z.boolean().default(true),
-	estimatedDurationMinutes: z.coerce.number().optional(),
-	assignedRole: z.string().optional(),
 });
 
 const swimlaneSchema = z.object({
+	description: z.string().optional(),
 	id: z.string(),
 	name: z.string().min(1, "Swimlane name required"),
 	role: z.string().optional(),
-	description: z.string().optional(),
 });
 
 const processSchema = z.object({
-	name: z.string().min(1, "Name is required").max(500, "Name too long"),
-	description: z.string().max(5000).optional(),
-	purpose: z.string().max(2000).optional(),
 	category: z.enum(categoryOptions).optional(),
-	owner: z.string().max(255).optional(),
-	responsibleTeam: z.string().max(255).optional(),
-	expectedDurationHours: z.coerce.number().optional(),
-	slaHours: z.coerce.number().optional(),
+	description: z.string().max(5000).optional(),
 	exitCriteria: z.string().optional(),
+	expectedDurationHours: z.coerce.number().optional(),
+	name: z.string().min(1, "Name is required").max(500, "Name too long"),
+	owner: z.string().max(255).optional(),
+	purpose: z.string().max(2000).optional(),
+	responsibleTeam: z.string().max(255).optional(),
+	slaHours: z.coerce.number().optional(),
 	stages: z.array(stageSchema).optional(),
 	swimlanes: z.array(swimlaneSchema).optional(),
 });
@@ -67,11 +67,11 @@ export function CreateProcessForm({
 		control,
 		formState: { errors },
 	} = useForm<ProcessFormData>({
-		resolver: zodResolver(processSchema),
 		defaultValues: {
 			stages: [],
 			swimlanes: [],
 		},
+		resolver: zodResolver(processSchema),
 	});
 
 	const {
@@ -95,17 +95,30 @@ export function CreateProcessForm({
 	const onSubmit = async (data: ProcessFormData) => {
 		try {
 			const payload: Parameters<typeof createProcess.mutateAsync>[0] = {
-				projectId,
 				name: data.name,
+				projectId,
 			};
-			if (data.description) payload.description = data.description;
-			if (data.purpose) payload.purpose = data.purpose;
-			if (data.category) payload.category = data.category;
-			if (data.owner) payload.owner = data.owner;
-			if (data.responsibleTeam) payload.responsibleTeam = data.responsibleTeam;
-			if (data.expectedDurationHours)
+			if (data.description) {
+				payload.description = data.description;
+			}
+			if (data.purpose) {
+				payload.purpose = data.purpose;
+			}
+			if (data.category) {
+				payload.category = data.category;
+			}
+			if (data.owner) {
+				payload.owner = data.owner;
+			}
+			if (data.responsibleTeam) {
+				payload.responsibleTeam = data.responsibleTeam;
+			}
+			if (data.expectedDurationHours) {
 				payload.expectedDurationHours = data.expectedDurationHours;
-			if (data.slaHours) payload.slaHours = data.slaHours;
+			}
+			if (data.slaHours) {
+				payload.slaHours = data.slaHours;
+			}
 			if (data.exitCriteria) {
 				payload.exitCriteria = data.exitCriteria
 					.split("\n")

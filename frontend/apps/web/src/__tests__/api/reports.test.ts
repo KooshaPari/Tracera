@@ -25,7 +25,7 @@ describe("Reports API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchReportTemplates", () => {
+	describe(fetchReportTemplates, () => {
 		it("should fetch report templates", async () => {
 			const templates = await fetchReportTemplates();
 
@@ -115,7 +115,7 @@ describe("Reports API", () => {
 		});
 	});
 
-	describe("generateReport", () => {
+	describe(generateReport, () => {
 		it("should generate a report with timestamp", async () => {
 			const report = await generateReport("proj-1", "1", "pdf");
 
@@ -185,14 +185,14 @@ describe("Reports API", () => {
 			const report = await generateReport("proj-1", "coverage", "pdf");
 
 			expect(report).toMatchObject({
-				templateId: "coverage",
-				projectId: "proj-1",
 				format: "pdf",
+				projectId: "proj-1",
+				templateId: "coverage",
 			});
 		});
 	});
 
-	describe("exportProject", () => {
+	describe(exportProject, () => {
 		it("should call exportProject endpoint", async () => {
 			vi.mocked(exportImportApi.exportProject).mockResolvedValue({
 				url: "http://example.com/export",
@@ -225,7 +225,7 @@ describe("Reports API", () => {
 		});
 	});
 
-	describe("importProject", () => {
+	describe(importProject, () => {
 		it("should call importProject endpoint", async () => {
 			const mockFile = new File(['{"data": "test"}'], "project.json", {
 				type: "application/json",

@@ -127,20 +127,20 @@ const ConfirmationDialog = React.forwardRef<
 		};
 
 		const severityConfig = {
-			warning: {
-				bgColor: "bg-amber-50 dark:bg-amber-950/20",
-				borderColor: "border-amber-200 dark:border-amber-900/40",
-				iconColor: "text-amber-600 dark:text-amber-500",
+			critical: {
+				bgColor: "bg-rose-50 dark:bg-rose-950/20",
+				borderColor: "border-rose-200 dark:border-rose-900/40",
+				iconColor: "text-rose-600 dark:text-rose-500",
 			},
 			danger: {
 				bgColor: "bg-red-50 dark:bg-red-950/20",
 				borderColor: "border-red-200 dark:border-red-900/40",
 				iconColor: "text-red-600 dark:text-red-500",
 			},
-			critical: {
-				bgColor: "bg-rose-50 dark:bg-rose-950/20",
-				borderColor: "border-rose-200 dark:border-rose-900/40",
-				iconColor: "text-rose-600 dark:text-rose-500",
+			warning: {
+				bgColor: "bg-amber-50 dark:bg-amber-950/20",
+				borderColor: "border-amber-200 dark:border-amber-900/40",
+				iconColor: "text-amber-600 dark:text-amber-500",
 			},
 		};
 
@@ -170,9 +170,9 @@ const ConfirmationDialog = React.forwardRef<
 										initial={{ scale: 0 }}
 										animate={{ scale: 1 }}
 										transition={{
-											type: "spring",
-											stiffness: 400,
 											damping: 10,
+											stiffness: 400,
+											type: "spring",
 										}}
 									>
 										<AlertTriangle
@@ -205,10 +205,10 @@ const ConfirmationDialog = React.forwardRef<
 
 										{showWarning && severity === "critical" && (
 											<motion.div
-												initial={{ opacity: 0, height: 0 }}
-												animate={{ opacity: 1, height: "auto" }}
-												exit={{ opacity: 0, height: 0 }}
-												transition={{ duration: 0.2, delay: 0.1 }}
+												initial={{ height: 0, opacity: 0 }}
+												animate={{ height: "auto", opacity: 1 }}
+												exit={{ height: 0, opacity: 0 }}
+												transition={{ delay: 0.1, duration: 0.2 }}
 												className={cn(
 													"mt-3 p-2 rounded text-xs font-medium",
 													config.bgColor,
@@ -299,29 +299,29 @@ export const BulkConfirmationDialog = React.forwardRef<
 		const pluralItem = itemCount === 1 ? "item" : "items";
 
 		const actionConfig = {
-			delete: {
-				title: `Delete ${itemCount} ${pluralItem}?`,
-				description: `You're about to permanently delete ${itemCount} ${pluralItem}. This cannot be undone.`,
-				confirmText: confirmText || "Delete",
-				severity: "critical" as const,
-			},
-			"status-change": {
-				title: `Change status of ${itemCount} ${pluralItem}?`,
-				description: `You're about to update the status of ${itemCount} ${pluralItem}.`,
-				confirmText: confirmText || "Update",
-				severity: "warning" as const,
-			},
 			archive: {
-				title: `Archive ${itemCount} ${pluralItem}?`,
-				description: `You're about to archive ${itemCount} ${pluralItem}. You can restore them later.`,
 				confirmText: confirmText || "Archive",
+				description: `You're about to archive ${itemCount} ${pluralItem}. You can restore them later.`,
 				severity: "warning" as const,
+				title: `Archive ${itemCount} ${pluralItem}?`,
 			},
 			assign: {
-				title: `Assign ${itemCount} ${pluralItem}?`,
-				description: `You're about to assign ${itemCount} ${pluralItem} to a team member.`,
 				confirmText: confirmText || "Assign",
+				description: `You're about to assign ${itemCount} ${pluralItem} to a team member.`,
 				severity: "warning" as const,
+				title: `Assign ${itemCount} ${pluralItem}?`,
+			},
+			delete: {
+				confirmText: confirmText || "Delete",
+				description: `You're about to permanently delete ${itemCount} ${pluralItem}. This cannot be undone.`,
+				severity: "critical" as const,
+				title: `Delete ${itemCount} ${pluralItem}?`,
+			},
+			"status-change": {
+				confirmText: confirmText || "Update",
+				description: `You're about to update the status of ${itemCount} ${pluralItem}.`,
+				severity: "warning" as const,
+				title: `Change status of ${itemCount} ${pluralItem}?`,
 			},
 		};
 

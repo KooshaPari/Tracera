@@ -82,7 +82,9 @@ type FilterOption = "all" | "active" | "archived";
 
 // Utility function to highlight search text
 const highlightText = (text: string, query: string) => {
-	if (!query.trim()) return text;
+	if (!query.trim()) {
+		return text;
+	}
 	const parts = text.split(new RegExp(`(${query})`, "gi"));
 	return parts.map((part, i) =>
 		part.toLowerCase() === query.toLowerCase() ? (
@@ -115,7 +117,7 @@ function SidebarComponent() {
 	const navItemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 	const nextNavItemIndexRef = useRef(0);
 	const setNavItemRef = useCallback((el: HTMLAnchorElement | null) => {
-		const i = nextNavItemIndexRef.current++;
+		const i = (nextNavItemIndexRef.current += 1);
 		navItemsRef.current[i] = el;
 	}, []);
 
@@ -123,15 +125,12 @@ function SidebarComponent() {
 	const params = useParams({ strict: false });
 	const { currentProject, recentProjects } = useProjectStore();
 	const { data: allProjects } = useProjects();
-	// WorkOS enabled check (unused but kept for future use)
-	void import.meta.env["VITE_WORKOS_CLIENT_ID"];
 
 	const projectId = params.projectId as string | undefined;
-	const isTestEnv =
-		typeof navigator !== "undefined" && navigator.webdriver;
+	const isTestEnv = typeof navigator !== "undefined" && navigator.webdriver;
 	const [sidebarWidth, setSidebarWidth] = useState(() => {
 		const saved = localStorage.getItem("sidebar-width");
-		const parsed = saved ? parseInt(saved, 10) : 320;
+		const parsed = saved ? Number.parseInt(saved, 10) : 320;
 		return Math.max(280, parsed); // Ensure minimum width so content isn't cut off
 	});
 	const [isResizing, setIsResizing] = useState(false);
@@ -139,7 +138,9 @@ function SidebarComponent() {
 	// Load persisted state
 	useEffect(() => {
 		const savedCollapsed = localStorage.getItem("sidebar-collapsed");
-		if (savedCollapsed) setIsCollapsed(savedCollapsed === "true");
+		if (savedCollapsed) {
+			setIsCollapsed(savedCollapsed === "true");
+		}
 
 		const savedGroups = localStorage.getItem("sidebar-collapsed-groups");
 		if (savedGroups) {
@@ -151,10 +152,14 @@ function SidebarComponent() {
 		}
 
 		const savedSort = localStorage.getItem("sidebar-recent-sort");
-		if (savedSort) setRecentSort(savedSort as SortOption);
+		if (savedSort) {
+			setRecentSort(savedSort as SortOption);
+		}
 
 		const savedFilter = localStorage.getItem("sidebar-recent-filter");
-		if (savedFilter) setRecentFilter(savedFilter as FilterOption);
+		if (savedFilter) {
+			setRecentFilter(savedFilter as FilterOption);
+		}
 	}, []);
 
 	// Persist state
@@ -233,8 +238,8 @@ function SidebarComponent() {
 			}
 		};
 
-		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
+		globalThis.addEventListener("keydown", handleKeyDown);
+		return () => globalThis.removeEventListener("keydown", handleKeyDown);
 	}, [isCollapsed, focusedIndex]);
 
 	// Sidebar resize handler with granular drag
@@ -272,26 +277,23 @@ function SidebarComponent() {
 		[sidebarWidth],
 	);
 
-	// Toggle group function is now inlined where used
-	void setCollapsedGroups;
-
 	const navGroups = useMemo(() => {
 		const groups = [
 			{
-				label: "Command",
-				key: "command",
 				collapsible: false,
 				items: [
-					{ title: "Dashboard", href: "/", icon: Home, badge: null },
+					{ badge: null, href: "/", icon: Home, title: "Dashboard" },
 					{
-						title: "Projects",
+						badge: allProjects?.length || null,
 						href: "/projects",
 						icon: FolderOpen,
-						badge: allProjects?.length || null,
+						title: "Projects",
 					},
-					{ title: "Items", href: "/items", icon: ListTodo, badge: null },
-					{ title: "Agents", href: "/agents", icon: Bot, badge: null },
+					{ badge: null, href: "/items", icon: ListTodo, title: "Items" },
+					{ badge: null, href: "/agents", icon: Bot, title: "Agents" },
 				],
+				key: "command",
+				label: "Command",
 			},
 		];
 
@@ -305,96 +307,93 @@ function SidebarComponent() {
 			"";
 		if (activeId) {
 			groups.push({
-				label: "Active Registry",
-				key: "active-registry",
 				collapsible: true,
 				items: [
 					{
-						title: "Overview",
+						badge: null,
 						href: `/projects/${activeId}`,
 						icon: Activity,
-						badge: null,
+						title: "Overview",
 					},
 					{
-						title: "Feature Layer",
+						badge: null,
 						href: `/projects/${activeId}/views/feature`,
 						icon: Layers,
-						badge: null,
+						title: "Feature Layer",
 					},
 					{
-						title: "Source Map",
+						badge: null,
 						href: `/projects/${activeId}/views/code`,
 						icon: Code,
-						badge: null,
+						title: "Source Map",
 					},
 					{
-						title: "Validation",
+						badge: null,
 						href: `/projects/${activeId}/views/test`,
 						icon: Shield,
-						badge: null,
+						title: "Validation",
 					},
 					{
-						title: "Workflow Runs",
+						badge: null,
 						href: `/projects/${activeId}/views/workflows`,
 						icon: Activity,
-						badge: null,
+						title: "Workflow Runs",
 					},
 					{
-						title: "Project Settings",
+						badge: null,
 						href: `/projects/${activeId}/settings`,
 						icon: Link2,
-						badge: null,
+						title: "Project Settings",
 					},
 				],
+				key: "active-registry",
+				label: "Active Registry",
 			});
 
 			groups.push({
-				label: "Specifications",
-				key: "specifications",
 				collapsible: true,
 				items: [
 					{
-						title: "Dashboard",
+						badge: null,
 						href: `/projects/${activeId}/specifications`,
 						icon: FileCode,
-						badge: null,
+						title: "Dashboard",
 					},
 					{
-						title: "Scenario Activity",
+						badge: null,
 						href: `/projects/${activeId}/scenario-activity`,
 						icon: Activity,
-						badge: null,
+						title: "Scenario Activity",
 					},
 					{
-						title: "ADRs",
+						badge: null,
 						href: `/projects/${activeId}/specifications?tab=adrs`,
 						icon: FileText,
-						badge: null,
+						title: "ADRs",
 					},
 					{
-						title: "Contracts",
+						badge: null,
 						href: `/projects/${activeId}/specifications?tab=contracts`,
 						icon: ClipboardCheck,
-						badge: null,
+						title: "Contracts",
 					},
 					{
-						title: "Compliance",
+						badge: null,
 						href: `/projects/${activeId}/specifications?tab=compliance`,
 						icon: Shield,
-						badge: null,
+						title: "Compliance",
 					},
 				],
+				key: "specifications",
+				label: "Specifications",
 			});
 
 			// New "All Views" section with categories
 			groups.push({
-				label: "All Views",
-				key: "all-views",
-				collapsible: true,
 				categories: [
 					{
-						name: "Planning & Requirements",
 						icon: Target,
+						name: "Planning & Requirements",
 						views: [
 							{
 								title: "Features",
@@ -423,8 +422,8 @@ function SidebarComponent() {
 						],
 					},
 					{
-						name: "Development",
 						icon: Code,
+						name: "Development",
 						views: [
 							{
 								title: "Code View",
@@ -459,8 +458,8 @@ function SidebarComponent() {
 						],
 					},
 					{
-						name: "Testing & Quality",
 						icon: TestTube,
+						name: "Testing & Quality",
 						views: [
 							{
 								title: "Test Cases",
@@ -495,8 +494,8 @@ function SidebarComponent() {
 						],
 					},
 					{
-						name: "Project Management",
 						icon: Calendar,
+						name: "Project Management",
 						views: [
 							{
 								title: "Journey Map",
@@ -525,8 +524,8 @@ function SidebarComponent() {
 						],
 					},
 					{
-						name: "Analysis & Tracking",
 						icon: TrendingUp,
+						name: "Analysis & Tracking",
 						views: [
 							{
 								title: "Impact Analysis",
@@ -555,8 +554,8 @@ function SidebarComponent() {
 						],
 					},
 					{
-						name: "Security & Monitoring",
 						icon: Lock,
+						name: "Security & Monitoring",
 						views: [
 							{
 								title: "Security Analysis",
@@ -579,8 +578,8 @@ function SidebarComponent() {
 						],
 					},
 					{
-						name: "Configuration",
 						icon: Settings,
+						name: "Configuration",
 						views: [
 							{
 								title: "Integrations",
@@ -603,17 +602,20 @@ function SidebarComponent() {
 						],
 					},
 				],
-				items: [], // Will be populated from categories
+				collapsible: true,
+				items: [],
+				key: "all-views",
+				label: "All Views", // Will be populated from categories
 			} as any);
 		}
 
 		groups.push({
-			label: "System",
-			key: "system",
 			collapsible: false,
 			items: [
-				{ title: "Settings", href: "/settings", icon: Settings, badge: null },
+				{ badge: null, href: "/settings", icon: Settings, title: "Settings" },
 			],
+			key: "system",
+			label: "System",
 		});
 
 		return groups as any;
@@ -621,32 +623,34 @@ function SidebarComponent() {
 
 	// Filter navigation items based on search
 	const filteredNavGroups = useMemo(() => {
-		if (!searchQuery.trim()) return navGroups as any[];
+		if (!searchQuery.trim()) {
+			return navGroups as any[];
+		}
 
 		const query = searchQuery.toLowerCase();
 		return (navGroups as any[])
 			.map((group) => {
 				// Handle "all-views" group with categories
 				if ((group as any).categories) {
-					const filteredCategories = (group as { categories: Array<{ views: Array<{ title: string }> }> }).categories
-						.map((cat: { views: Array<{ title: string }> }) => ({
-							...cat,
-							views: cat.views.filter((view: { title: string }) =>
-								view.title.toLowerCase().includes(query),
-							),
-						}))
+					const filteredCategories = (
+						group as { categories: { views: Array<{ title: string }> }[] }
+					).categories
+						.map((cat: { views: { title: string }[] }) =>
+							Object.assign(cat, {
+								views: cat.views.filter((view: { title: string }) =>
+									view.title.toLowerCase().includes(query),
+								),
+							}),
+						)
 						.filter((cat: { views: unknown[] }) => cat.views.length > 0);
-					return {
-						...group,
-						categories: filteredCategories,
-					};
+					return Object.assign(group, { categories: filteredCategories });
 				}
 
 				// Handle regular groups with items
 				const filteredItems = group.items.filter((item: { title: string }) =>
 					item.title.toLowerCase().includes(query),
 				);
-				return { ...group, items: filteredItems };
+				return Object.assign(group, { items: filteredItems });
 			})
 			.filter((group) => {
 				// For all-views group, check if it has filtered categories
@@ -663,57 +667,61 @@ function SidebarComponent() {
 	navItemsRef.current = [];
 
 	const isActive = (href: string) => {
-		if (href === "/home" && location.pathname === "/") return false;
+		if (href === "/home" && location.pathname === "/") {
+			return false;
+		}
 		return location.pathname.startsWith(href);
 	};
 
 	// Get full project objects for recent projects
 	const recentProjectObjects = useMemo(() => {
-		if (!allProjects || !Array.isArray(allProjects)) return [];
+		if (!allProjects || !Array.isArray(allProjects)) {
+			return [];
+		}
 		return recentProjects
 			.map((id) => allProjects.find((p) => p.id === id))
 			.filter(
-				(p): p is NonNullable<typeof p> => !!p && p.id !== currentProject?.id,
+				(p): p is NonNullable<typeof p> =>
+					Boolean(p) && p.id !== currentProject?.id,
 			);
 	}, [recentProjects, allProjects, currentProject]);
 
 	// Sort and filter recent projects
 	const sortedRecentProjects = useMemo(() => {
-		void recentFilter;
 		// Note: recentFilter is not implemented since Project type doesn't have status
 		// When status is added to Project type, uncomment the filter logic
 		const filtered = recentProjectObjects;
 
 		// Apply sort
-		const sorted = [...filtered].toSorted((a: { name: string; id: string; updatedAt?: string; createdAt?: string }, b: { name: string; id: string; updatedAt?: string; createdAt?: string }) => {
-			if (recentSort === "alphabetical") {
-				return a.name.localeCompare(b.name);
-			} else if (recentSort === "modified") {
-				const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime();
-				const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
-				return bTime - aTime;
-			} else {
+		const sorted = [...filtered].toSorted(
+			(
+				a: { name: string; id: string; updatedAt?: string; createdAt?: string },
+				b: { name: string; id: string; updatedAt?: string; createdAt?: string },
+			) => {
+				if (recentSort === "alphabetical") {
+					return a.name.localeCompare(b.name);
+				} else if (recentSort === "modified") {
+					const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime();
+					const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
+					return bTime - aTime;
+				}
 				// Recent (by recentProjects order)
 				const aIndex = recentProjects.indexOf(a.id);
 				const bIndex = recentProjects.indexOf(b.id);
 				return aIndex - bIndex;
-			}
-		});
+			},
+		);
 
 		// Filter by search query
 		if (searchQuery.trim()) {
 			const query = searchQuery.toLowerCase();
-			return sorted.filter((p: { name: string }) => p.name.toLowerCase().includes(query));
+			return sorted.filter((p: { name: string }) =>
+				p.name.toLowerCase().includes(query),
+			);
 		}
 
 		return sorted.slice(0, 5);
-	}, [
-		recentProjectObjects,
-		recentSort,
-		recentFilter,
-		searchQuery,
-		recentProjects,
-	]);
+	}, [recentProjectObjects, recentSort, searchQuery, recentProjects]);
 
 	const handleProjectAction = useCallback(
 		(action: "pin" | "remove" | "newtab", projectId: string) => {
@@ -736,16 +744,18 @@ function SidebarComponent() {
 				<nav
 					className={cn(
 						"relative flex h-full max-h-screen flex-col border-r border-white/0 bg-[linear-gradient(155deg,rgba(2,6,23,0.65),rgba(2,6,23,0.35)_55%,rgba(15,23,42,0.25))] backdrop-blur-2xl shadow-[1px_0_0_rgba(15,23,42,0.6)] shrink-0 overflow-x-auto overflow-y-auto box-border",
-						isResizing ? "transition-none" : "transition-all duration-300 ease-in-out",
+						isResizing
+							? "transition-none"
+							: "transition-all duration-300 ease-in-out",
 						isCollapsed && "w-20 min-w-[5rem] max-w-[5rem]",
 					)}
 					style={
 						!isCollapsed
 							? {
-									width: `${sidebarWidth}px`,
-									minWidth: `${sidebarWidth}px`,
 									maxWidth: `min(${sidebarWidth}px, 90vw)`,
+									minWidth: `${sidebarWidth}px`,
 									transition: isResizing ? "none" : undefined,
+									width: `${sidebarWidth}px`,
 								}
 							: undefined
 					}
@@ -806,188 +816,17 @@ function SidebarComponent() {
 					<div className="flex flex-1 flex-col min-h-0 min-w-0 w-full max-w-full overflow-x-auto overflow-y-hidden px-4 py-4">
 						<ScrollArea className="h-full w-full min-h-0 min-w-0 overflow-auto [&>[data-radix-scroll-area-viewport]]:min-w-0 [&>[data-radix-scroll-area-viewport]]:w-full [&>[data-radix-scroll-area-viewport]]:overflow-x-auto [&>[data-radix-scroll-area-viewport]]:overflow-y-auto [&>[data-radix-scroll-area-viewport]]:max-w-full [&>[data-radix-scroll-area-viewport]]:box-border">
 							<div className="space-y-4 min-w-0 w-full max-w-full">
-							{filteredNavGroups.map((group) => {
-								const isGroupCollapsed = collapsedGroups[group.label] ?? false;
-								const groupKey = group.key;
+								{filteredNavGroups.map((group) => {
+									const isGroupCollapsed =
+										collapsedGroups[group.label] ?? false;
+									const groupKey = group.key;
 
-								// Handle tabbed groups
-								if (groupKey === "active-registry" && !isCollapsed) {
-									const overviewItem = group.items[0];
-									const viewsItems = group.items.slice(1, -1);
-									const settingsItem = group.items[group.items.length - 1];
+									// Handle tabbed groups
+									if (groupKey === "active-registry" && !isCollapsed) {
+										const overviewItem = group.items[0];
+										const viewsItems = group.items.slice(1, -1);
+										const settingsItem = group.items.at(-1);
 
-									return (
-										<Collapsible
-											key={group.label}
-											open={!isGroupCollapsed}
-											onOpenChange={(open) =>
-												setCollapsedGroups((prev) => ({
-													...prev,
-													[group.label]: !open,
-												}))
-											}
-											className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
-										>
-											<CollapsibleTrigger className="w-full max-w-full px-3 py-1.5 hover:no-underline min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm box-border">
-												<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
-													{group.label}
-												</h3>
-											</CollapsibleTrigger>
-											<CollapsibleContent className="pt-1 min-w-0 w-full max-w-full overflow-hidden isolate">
-												<Tabs
-													value={activeTab[group.label] || "overview"}
-													onValueChange={(value) =>
-														setActiveTab((prev) => ({
-															...prev,
-															[group.label]: value,
-														}))
-													}
-													className="w-full min-w-0 max-w-full"
-												>
-													<TabsList className="grid w-full grid-cols-3 h-auto p-1 mb-1.5 shrink-0 min-w-0 max-w-full gap-0.5 rounded-lg border border-transparent bg-background/10 box-border">
-														<TabsTrigger
-															value="overview"
-															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
-														>
-															Overview
-														</TabsTrigger>
-														<TabsTrigger
-															value="views"
-															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
-														>
-															Views
-														</TabsTrigger>
-														<TabsTrigger
-															value="settings"
-															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
-														>
-															Settings
-														</TabsTrigger>
-													</TabsList>
-													<TabsContent
-														value="overview"
-														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
-													>
-														{overviewItem && (
-															<NavItem
-																ref={setNavItemRef}
-																item={overviewItem}
-																isActive={isActive(overviewItem.href)}
-																searchQuery={searchQuery}
-															/>
-														)}
-													</TabsContent>
-													<TabsContent
-														value="views"
-														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
-													>
-														{viewsItems.map((item: { href: string }) => (
-															<NavItem
-																key={item.href}
-																ref={setNavItemRef}
-																item={item}
-																isActive={isActive(item.href)}
-																searchQuery={searchQuery}
-															/>
-														))}
-													</TabsContent>
-													<TabsContent
-														value="settings"
-														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
-													>
-														{settingsItem && (
-															<NavItem
-																ref={setNavItemRef}
-																item={settingsItem}
-																isActive={isActive(settingsItem.href)}
-																searchQuery={searchQuery}
-															/>
-														)}
-													</TabsContent>
-												</Tabs>
-											</CollapsibleContent>
-										</Collapsible>
-									);
-								}
-
-								if (groupKey === "specifications" && !isCollapsed) {
-									return (
-										<Collapsible
-											key={group.label}
-											open={!isGroupCollapsed}
-											onOpenChange={(open) =>
-												setCollapsedGroups((prev) => ({
-													...prev,
-													[group.label]: !open,
-												}))
-											}
-											className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
-										>
-											<CollapsibleTrigger className="w-full px-3 py-1.5 hover:no-underline min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm">
-												<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
-													{group.label}
-												</h3>
-											</CollapsibleTrigger>
-											<CollapsibleContent className="pt-1 min-w-0 w-full max-w-full overflow-hidden isolate">
-												<Tabs
-													value={activeTab[group.label] || "dashboard"}
-													onValueChange={(value) =>
-														setActiveTab((prev) => ({
-															...prev,
-															[group.label]: value,
-														}))
-													}
-													className="w-full min-w-0"
-												>
-													<TabsList className="grid w-full grid-cols-2 h-auto p-1 mb-1.5 shrink-0 min-w-0 max-w-full gap-0.5 rounded-lg border border-transparent bg-background/10">
-														<TabsTrigger
-															value="dashboard"
-															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
-														>
-															Dashboard
-														</TabsTrigger>
-														<TabsTrigger
-															value="specs"
-															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
-														>
-															Specs
-														</TabsTrigger>
-													</TabsList>
-													<TabsContent
-														value="dashboard"
-														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
-													>
-														{group.items[0] && (
-															<NavItem
-																item={group.items[0]}
-																isActive={isActive(group.items[0].href)}
-																searchQuery={searchQuery}
-															/>
-														)}
-													</TabsContent>
-													<TabsContent
-														value="specs"
-														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
-													>
-														{group.items.slice(1).map((item: any) => (
-															<NavItem
-																key={item.href}
-																item={item}
-																isActive={isActive(item.href)}
-																searchQuery={searchQuery}
-															/>
-														))}
-													</TabsContent>
-												</Tabs>
-											</CollapsibleContent>
-										</Collapsible>
-									);
-								}
-
-								// Regular collapsible groups
-								if (group.collapsible && !isCollapsed) {
-									// Handle "All Views" with categories
-									if (groupKey === "all-views" && !isCollapsed) {
 										return (
 											<Collapsible
 												key={group.label}
@@ -1000,12 +839,285 @@ function SidebarComponent() {
 												}
 												className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
 											>
+												<CollapsibleTrigger className="w-full max-w-full px-3 py-1.5 hover:no-underline min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm box-border">
+													<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
+														{group.label}
+													</h3>
+												</CollapsibleTrigger>
+												<CollapsibleContent className="pt-1 min-w-0 w-full max-w-full overflow-hidden isolate">
+													<Tabs
+														value={activeTab[group.label] || "overview"}
+														onValueChange={(value) =>
+															setActiveTab((prev) => ({
+																...prev,
+																[group.label]: value,
+															}))
+														}
+														className="w-full min-w-0 max-w-full"
+													>
+														<TabsList className="grid w-full grid-cols-3 h-auto p-1 mb-1.5 shrink-0 min-w-0 max-w-full gap-0.5 rounded-lg border border-transparent bg-background/10 box-border">
+															<TabsTrigger
+																value="overview"
+																className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
+															>
+																Overview
+															</TabsTrigger>
+															<TabsTrigger
+																value="views"
+																className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
+															>
+																Views
+															</TabsTrigger>
+															<TabsTrigger
+																value="settings"
+																className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
+															>
+																Settings
+															</TabsTrigger>
+														</TabsList>
+														<TabsContent
+															value="overview"
+															className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
+														>
+															{overviewItem && (
+																<NavItem
+																	ref={setNavItemRef}
+																	item={overviewItem}
+																	isActive={isActive(overviewItem.href)}
+																	searchQuery={searchQuery}
+																/>
+															)}
+														</TabsContent>
+														<TabsContent
+															value="views"
+															className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
+														>
+															{viewsItems.map((item: { href: string }) => (
+																<NavItem
+																	key={item.href}
+																	ref={setNavItemRef}
+																	item={item}
+																	isActive={isActive(item.href)}
+																	searchQuery={searchQuery}
+																/>
+															))}
+														</TabsContent>
+														<TabsContent
+															value="settings"
+															className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
+														>
+															{settingsItem && (
+																<NavItem
+																	ref={setNavItemRef}
+																	item={settingsItem}
+																	isActive={isActive(settingsItem.href)}
+																	searchQuery={searchQuery}
+																/>
+															)}
+														</TabsContent>
+													</Tabs>
+												</CollapsibleContent>
+											</Collapsible>
+										);
+									}
+
+									if (groupKey === "specifications" && !isCollapsed) {
+										return (
+											<Collapsible
+												key={group.label}
+												open={!isGroupCollapsed}
+												onOpenChange={(open) =>
+													setCollapsedGroups((prev) => ({
+														...prev,
+														[group.label]: !open,
+													}))
+												}
+												className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
+											>
+												<CollapsibleTrigger className="w-full px-3 py-1.5 hover:no-underline min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm">
+													<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
+														{group.label}
+													</h3>
+												</CollapsibleTrigger>
+												<CollapsibleContent className="pt-1 min-w-0 w-full max-w-full overflow-hidden isolate">
+													<Tabs
+														value={activeTab[group.label] || "dashboard"}
+														onValueChange={(value) =>
+															setActiveTab((prev) => ({
+																...prev,
+																[group.label]: value,
+															}))
+														}
+														className="w-full min-w-0"
+													>
+														<TabsList className="grid w-full grid-cols-2 h-auto p-1 mb-1.5 shrink-0 min-w-0 max-w-full gap-0.5 rounded-lg border border-transparent bg-background/10">
+															<TabsTrigger
+																value="dashboard"
+																className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
+															>
+																Dashboard
+															</TabsTrigger>
+															<TabsTrigger
+																value="specs"
+																className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
+															>
+																Specs
+															</TabsTrigger>
+														</TabsList>
+														<TabsContent
+															value="dashboard"
+															className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
+														>
+															{group.items[0] && (
+																<NavItem
+																	item={group.items[0]}
+																	isActive={isActive(group.items[0].href)}
+																	searchQuery={searchQuery}
+																/>
+															)}
+														</TabsContent>
+														<TabsContent
+															value="specs"
+															className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
+														>
+															{group.items.slice(1).map((item: any) => (
+																<NavItem
+																	key={item.href}
+																	item={item}
+																	isActive={isActive(item.href)}
+																	searchQuery={searchQuery}
+																/>
+															))}
+														</TabsContent>
+													</Tabs>
+												</CollapsibleContent>
+											</Collapsible>
+										);
+									}
+
+									// Regular collapsible groups
+									if (group.collapsible && !isCollapsed) {
+										// Handle "All Views" with categories
+										if (groupKey === "all-views" && !isCollapsed) {
+											return (
+												<Collapsible
+													key={group.label}
+													open={!isGroupCollapsed}
+													onOpenChange={(open) =>
+														setCollapsedGroups((prev) => ({
+															...prev,
+															[group.label]: !open,
+														}))
+													}
+													className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
+												>
+													<CollapsibleTrigger
+														className="w-full max-w-full px-3 py-1.5 hover:no-underline flex items-center justify-center group/trigger min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm box-border"
+														aria-label={`Toggle ${group.label} section`}
+													>
+														<div className="flex items-center justify-center gap-2 min-w-0 flex-1 max-w-full overflow-hidden">
+															<LayoutGrid className="h-4 w-4 shrink-0 text-muted-foreground/70" />
+															<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
+																{group.label}
+															</h3>
+															{isGroupCollapsed && (
+																<Badge
+																	variant="secondary"
+																	className="h-4 px-1.5 text-[9px] shrink-0"
+																>
+																	20+
+																</Badge>
+															)}
+														</div>
+													</CollapsibleTrigger>
+													<CollapsibleContent className="pt-1 space-y-2 max-h-[500px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate">
+														{(group as any).categories?.map(
+															(
+																category: {
+																	name: string;
+																	icon: React.ComponentType<{
+																		className?: string;
+																	}>;
+																	views: {
+																		title: string;
+																		href: string;
+																		icon: React.ComponentType<{
+																			className?: string;
+																		}>;
+																		description: string;
+																	}[];
+																},
+																catIdx: number,
+															) => (
+																<div
+																	key={`${category.name}-${catIdx}`}
+																	className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
+																>
+																	<div className="flex items-center justify-center gap-2 px-3 py-1 min-w-0 max-w-full rounded-md border border-transparent bg-background/10 overflow-hidden">
+																		<category.icon className="h-3 w-3 shrink-0 text-primary/60" />
+																		<h4 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 truncate min-w-0 text-center">
+																			{category.name}
+																		</h4>
+																	</div>
+																	<div className="space-y-0.5 pl-0 min-w-0 w-full max-w-full overflow-hidden">
+																		{category.views.map((view) => (
+																			<Tooltip key={view.href}>
+																				<TooltipTrigger asChild>
+																					<Link
+																						to={view.href as any}
+																						className={cn(
+																							"group flex items-center gap-2 rounded-lg px-3 py-1.5 border transition-all duration-200 ease-out cursor-pointer relative min-w-0 w-full max-w-full text-xs overflow-hidden box-border",
+																							"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
+																							"hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]",
+																							isActive(view.href)
+																								? "bg-primary/15 text-primary font-medium border border-primary/50 ring-2 ring-primary/20 shadow-sm"
+																								: "text-muted-foreground border border-transparent bg-background/10 hover:bg-background/20 hover:text-foreground",
+																						)}
+																						aria-current={
+																							isActive(view.href)
+																								? "page"
+																								: undefined
+																						}
+																					>
+																						<view.icon className="h-4 w-4 shrink-0" />
+																						<span className="font-medium truncate min-w-0 flex-1 overflow-hidden">
+																							{view.title}
+																						</span>
+																					</Link>
+																				</TooltipTrigger>
+																				<TooltipContent side="right">
+																					<p className="text-xs">
+																						{view.description}
+																					</p>
+																				</TooltipContent>
+																			</Tooltip>
+																		))}
+																	</div>
+																</div>
+															),
+														)}
+													</CollapsibleContent>
+												</Collapsible>
+											);
+										}
+
+										return (
+											<Collapsible
+												key={group.label}
+												open={!isGroupCollapsed}
+												onOpenChange={(open) =>
+													setCollapsedGroups((prev) => ({
+														...prev,
+														[group.label]: !open,
+													}))
+												}
+												className="space-y-1 min-w-0 w-full"
+											>
 												<CollapsibleTrigger
-													className="w-full max-w-full px-3 py-1.5 hover:no-underline flex items-center justify-center group/trigger min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm box-border"
+													className="w-full px-3 py-1.5 hover:no-underline flex items-center justify-center group/trigger min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm"
 													aria-label={`Toggle ${group.label} section`}
 												>
 													<div className="flex items-center justify-center gap-2 min-w-0 flex-1 max-w-full overflow-hidden">
-														<LayoutGrid className="h-4 w-4 shrink-0 text-muted-foreground/70" />
 														<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
 															{group.label}
 														</h3>
@@ -1014,268 +1126,176 @@ function SidebarComponent() {
 																variant="secondary"
 																className="h-4 px-1.5 text-[9px] shrink-0"
 															>
-																20+
+																{group.items.length}
 															</Badge>
 														)}
 													</div>
 												</CollapsibleTrigger>
-												<CollapsibleContent className="pt-1 space-y-2 max-h-[500px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate">
-													{(group as any).categories?.map(
-														(
-															category: {
-																name: string;
-																icon: React.ComponentType<{ className?: string }>;
-																views: Array<{
-																	title: string;
-																	href: string;
-																	icon: React.ComponentType<{ className?: string }>;
-																	description: string;
-																}>;
-															},
-															catIdx: number,
-														) => (
-															<div
-																key={`${category.name}-${catIdx}`}
-																className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
-															>
-																<div className="flex items-center justify-center gap-2 px-3 py-1 min-w-0 max-w-full rounded-md border border-transparent bg-background/10 overflow-hidden">
-																	<category.icon className="h-3 w-3 shrink-0 text-primary/60" />
-																	<h4 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 truncate min-w-0 text-center">
-																		{category.name}
-																	</h4>
-																</div>
-																<div className="space-y-0.5 pl-0 min-w-0 w-full max-w-full overflow-hidden">
-																	{category.views.map((view) => (
-																		<Tooltip key={view.href}>
-																			<TooltipTrigger asChild>
-																				<Link
-																					to={view.href as any}
-																					className={cn(
-																						"group flex items-center gap-2 rounded-lg px-3 py-1.5 border transition-all duration-200 ease-out cursor-pointer relative min-w-0 w-full max-w-full text-xs overflow-hidden box-border",
-																						"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
-																						"hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]",
-																						isActive(view.href)
-																							? "bg-primary/15 text-primary font-medium border border-primary/50 ring-2 ring-primary/20 shadow-sm"
-																							: "text-muted-foreground border border-transparent bg-background/10 hover:bg-background/20 hover:text-foreground",
-																					)}
-																					aria-current={
-																						isActive(view.href)
-																							? "page"
-																							: undefined
-																					}
-																				>
-																					<view.icon className="h-4 w-4 shrink-0" />
-																					<span className="font-medium truncate min-w-0 flex-1 overflow-hidden">
-																						{view.title}
-																					</span>
-																				</Link>
-																			</TooltipTrigger>
-																			<TooltipContent side="right">
-																				<p className="text-xs">
-																					{view.description}
-																				</p>
-																			</TooltipContent>
-																		</Tooltip>
-																	))}
-																</div>
-															</div>
-														),
-													)}
+												<CollapsibleContent className="pt-1 space-y-1 max-h-[360px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate">
+													{group.items.map((item: { href: string }) => (
+														<NavItem
+															key={item.href}
+															ref={setNavItemRef}
+															item={item}
+															isActive={isActive(item.href)}
+															searchQuery={searchQuery}
+														/>
+													))}
 												</CollapsibleContent>
 											</Collapsible>
 										);
 									}
 
+									// Non-collapsible groups
 									return (
-										<Collapsible
+										<div
 											key={group.label}
-											open={!isGroupCollapsed}
-											onOpenChange={(open) =>
-												setCollapsedGroups((prev) => ({
-													...prev,
-													[group.label]: !open,
-												}))
-											}
-											className="space-y-1 min-w-0 w-full"
+											className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
 										>
-											<CollapsibleTrigger
-												className="w-full px-3 py-1.5 hover:no-underline flex items-center justify-center group/trigger min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm"
-												aria-label={`Toggle ${group.label} section`}
-											>
-												<div className="flex items-center justify-center gap-2 min-w-0 flex-1 max-w-full overflow-hidden">
-													<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
-														{group.label}
-													</h3>
-													{isGroupCollapsed && (
-														<Badge
-															variant="secondary"
-															className="h-4 px-1.5 text-[9px] shrink-0"
-														>
-															{group.items.length}
-														</Badge>
-													)}
-												</div>
-											</CollapsibleTrigger>
-											<CollapsibleContent className="pt-1 space-y-1 max-h-[360px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate">
+											{!isCollapsed && (
+												<h3 className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate rounded-lg border border-transparent bg-background/10">
+													{group.label}
+												</h3>
+											)}
+											<div className="space-y-0.5 min-w-0 w-full" role="list">
 												{group.items.map((item: { href: string }) => (
 													<NavItem
 														key={item.href}
 														ref={setNavItemRef}
 														item={item}
 														isActive={isActive(item.href)}
+														isCollapsed={isCollapsed}
 														searchQuery={searchQuery}
 													/>
 												))}
-											</CollapsibleContent>
-										</Collapsible>
+											</div>
+										</div>
 									);
-								}
+								})}
 
-								// Non-collapsible groups
-								return (
-									<div key={group.label} className="space-y-1 min-w-0 w-full max-w-full overflow-hidden">
-										{!isCollapsed && (
-											<h3 className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate rounded-lg border border-transparent bg-background/10">
-												{group.label}
+								{/* Recently Viewed */}
+								{!isCollapsed && sortedRecentProjects.length > 0 && (
+									<div className="space-y-1 min-w-0 w-full">
+										<div className="flex items-center justify-center gap-2 px-3 py-1.5 min-w-0 max-w-full w-full rounded-lg border border-transparent bg-background/10 overflow-hidden">
+											<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 flex-1 truncate">
+												Recent
 											</h3>
-										)}
-										<div className="space-y-0.5 min-w-0 w-full" role="list">
-											{group.items.map((item: { href: string }) => (
-												<NavItem
-													key={item.href}
-													ref={setNavItemRef}
-													item={item}
-													isActive={isActive(item.href)}
-													isCollapsed={isCollapsed}
-													searchQuery={searchQuery}
-												/>
-											))}
+											<div className="flex items-center gap-1 shrink-0">
+												<Select
+													value={recentSort}
+													onValueChange={(v) => setRecentSort(v as SortOption)}
+												>
+													<SelectTrigger className="h-6 w-6 p-0 border border-transparent bg-background/10 rounded-md hover:bg-background/20 transition-all duration-200 ease-out">
+														<ArrowUpDown className="h-3 w-3" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="recent">
+															Recently Viewed
+														</SelectItem>
+														<SelectItem value="alphabetical">
+															Alphabetical
+														</SelectItem>
+														<SelectItem value="modified">
+															Last Modified
+														</SelectItem>
+													</SelectContent>
+												</Select>
+												<Select
+													value={recentFilter}
+													onValueChange={(v) =>
+														setRecentFilter(v as FilterOption)
+													}
+												>
+													<SelectTrigger className="h-6 w-6 p-0 border border-transparent bg-background/10 rounded-md hover:bg-background/20 transition-all duration-200 ease-out">
+														<Filter className="h-3 w-3" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="all">All Projects</SelectItem>
+														<SelectItem value="active">Active Only</SelectItem>
+														<SelectItem value="archived">Archived</SelectItem>
+													</SelectContent>
+												</Select>
+											</div>
 										</div>
-									</div>
-								);
-							})}
-
-							{/* Recently Viewed */}
-							{!isCollapsed && sortedRecentProjects.length > 0 && (
-								<div className="space-y-1 min-w-0 w-full">
-									<div className="flex items-center justify-center gap-2 px-3 py-1.5 min-w-0 max-w-full w-full rounded-lg border border-transparent bg-background/10 overflow-hidden">
-										<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 flex-1 truncate">
-											Recent
-										</h3>
-										<div className="flex items-center gap-1 shrink-0">
-											<Select
-												value={recentSort}
-												onValueChange={(v) => setRecentSort(v as SortOption)}
-											>
-												<SelectTrigger className="h-6 w-6 p-0 border border-transparent bg-background/10 rounded-md hover:bg-background/20 transition-all duration-200 ease-out">
-													<ArrowUpDown className="h-3 w-3" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="recent">
-														Recently Viewed
-													</SelectItem>
-													<SelectItem value="alphabetical">
-														Alphabetical
-													</SelectItem>
-													<SelectItem value="modified">
-														Last Modified
-													</SelectItem>
-												</SelectContent>
-											</Select>
-											<Select
-												value={recentFilter}
-												onValueChange={(v) =>
-													setRecentFilter(v as FilterOption)
-												}
-											>
-												<SelectTrigger className="h-6 w-6 p-0 border border-transparent bg-background/10 rounded-md hover:bg-background/20 transition-all duration-200 ease-out">
-													<Filter className="h-3 w-3" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="all">All Projects</SelectItem>
-													<SelectItem value="active">Active Only</SelectItem>
-													<SelectItem value="archived">Archived</SelectItem>
-												</SelectContent>
-											</Select>
+										<div className="space-y-0.5 max-h-[260px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full">
+											{sortedRecentProjects.map(
+												(p: { id: string; name: string }) => (
+													<Tooltip key={p.id}>
+														<TooltipTrigger asChild>
+															<div className="group relative flex items-center min-w-0 w-full overflow-hidden">
+																<Link
+																	to={`/projects/${p.id}` as any}
+																	className="flex-1 flex items-center gap-2 rounded-lg px-3 py-1.5 border border-transparent bg-background/10 text-muted-foreground hover:bg-background/20 hover:text-foreground hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 ease-out cursor-pointer group/item min-w-0 max-w-full overflow-hidden"
+																>
+																	<div className="h-2 w-2 rounded-full bg-primary/40 group-hover/item:bg-primary transition-colors shrink-0" />
+																	<span className="text-xs font-bold truncate min-w-0 flex-1">
+																		{highlightText(p.name, searchQuery)}
+																	</span>
+																</Link>
+																<DropdownMenu>
+																	<DropdownMenuTrigger asChild>
+																		<span>
+																			<Button
+																				variant="ghost"
+																				size="icon"
+																				className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+																			>
+																				<MoreVertical className="h-3 w-3" />
+																			</Button>
+																		</span>
+																	</DropdownMenuTrigger>
+																	<DropdownMenuContent align="end">
+																		<DropdownMenuItem
+																			onClick={() =>
+																				handleProjectAction("newtab", p.id)
+																			}
+																		>
+																			<ExternalLink className="h-4 w-4 mr-2" />
+																			Open in new tab
+																		</DropdownMenuItem>
+																		<DropdownMenuItem
+																			onClick={() =>
+																				handleProjectAction("remove", p.id)
+																			}
+																		>
+																			<X className="h-4 w-4 mr-2" />
+																			Remove from recent
+																		</DropdownMenuItem>
+																	</DropdownMenuContent>
+																</DropdownMenu>
+															</div>
+														</TooltipTrigger>
+														<TooltipContent>
+															<p>{p.name}</p>
+														</TooltipContent>
+													</Tooltip>
+												),
+											)}
 										</div>
-									</div>
-									<div className="space-y-0.5 max-h-[260px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full">
-										{sortedRecentProjects.map((p: { id: string; name: string }) => (
-											<Tooltip key={p.id}>
-												<TooltipTrigger asChild>
-													<div className="group relative flex items-center min-w-0 w-full overflow-hidden">
-														<Link
-															to={`/projects/${p.id}` as any}
-															className="flex-1 flex items-center gap-2 rounded-lg px-3 py-1.5 border border-transparent bg-background/10 text-muted-foreground hover:bg-background/20 hover:text-foreground hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 ease-out cursor-pointer group/item min-w-0 max-w-full overflow-hidden"
-														>
-															<div className="h-2 w-2 rounded-full bg-primary/40 group-hover/item:bg-primary transition-colors shrink-0" />
-															<span className="text-xs font-bold truncate min-w-0 flex-1">
-																{highlightText(p.name, searchQuery)}
-															</span>
-														</Link>
-														<DropdownMenu>
-															<DropdownMenuTrigger asChild>
-																<span>
-																	<Button
-																		variant="ghost"
-																		size="icon"
-																		className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-																	>
-																		<MoreVertical className="h-3 w-3" />
-																	</Button>
-																</span>
-															</DropdownMenuTrigger>
-															<DropdownMenuContent align="end">
-																<DropdownMenuItem
-																	onClick={() =>
-																		handleProjectAction("newtab", p.id)
-																	}
-																>
-																	<ExternalLink className="h-4 w-4 mr-2" />
-																	Open in new tab
-																</DropdownMenuItem>
-																<DropdownMenuItem
-																	onClick={() =>
-																		handleProjectAction("remove", p.id)
-																	}
-																>
-																	<X className="h-4 w-4 mr-2" />
-																	Remove from recent
-																</DropdownMenuItem>
-															</DropdownMenuContent>
-														</DropdownMenu>
-													</div>
-												</TooltipTrigger>
-												<TooltipContent>
-													<p>{p.name}</p>
-												</TooltipContent>
-											</Tooltip>
-										))}
-									</div>
-								</div>
-							)}
-
-							{/* No results */}
-							{searchQuery &&
-								filteredNavGroups.length === 0 &&
-								sortedRecentProjects.length === 0 && (
-									<div
-										className="flex flex-col items-center justify-center py-8 text-center"
-										role="status"
-										aria-live="polite"
-									>
-										<Search
-											className="h-8 w-8 text-muted-foreground/50 mb-2"
-											aria-hidden="true"
-										/>
-										<p className="text-sm text-muted-foreground">
-											No results found
-										</p>
-										<p className="text-xs text-muted-foreground/70 mt-1">
-											Try a different search term
-										</p>
 									</div>
 								)}
+
+								{/* No results */}
+								{searchQuery &&
+									filteredNavGroups.length === 0 &&
+									sortedRecentProjects.length === 0 && (
+										<div
+											className="flex flex-col items-center justify-center py-8 text-center"
+											role="status"
+											aria-live="polite"
+										>
+											<Search
+												className="h-8 w-8 text-muted-foreground/50 mb-2"
+												aria-hidden="true"
+											/>
+											<p className="text-sm text-muted-foreground">
+												No results found
+											</p>
+											<p className="text-xs text-muted-foreground/70 mt-1">
+												Try a different search term
+											</p>
+										</div>
+									)}
 							</div>
 						</ScrollArea>
 					</div>

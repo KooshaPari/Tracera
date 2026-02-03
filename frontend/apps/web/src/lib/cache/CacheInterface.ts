@@ -118,7 +118,11 @@ export interface ICache {
 	/**
 	 * Store a value in cache
 	 */
-	set<T = unknown>(key: string, value: T, options?: CacheOptions): Promise<void>;
+	set<T = unknown>(
+		key: string,
+		value: T,
+		options?: CacheOptions,
+	): Promise<void>;
 
 	/**
 	 * Check if a key exists in cache (and is not expired)
@@ -177,14 +181,14 @@ export interface ICache {
  * Cache event types for observability
  */
 export enum CacheEventType {
-	HIT = 'cache:hit',
-	MISS = 'cache:miss',
-	SET = 'cache:set',
-	DELETE = 'cache:delete',
-	INVALIDATE = 'cache:invalidate',
-	CLEAR = 'cache:clear',
-	ERROR = 'cache:error',
-	EVICTION = 'cache:eviction',
+	HIT = "cache:hit",
+	MISS = "cache:miss",
+	SET = "cache:set",
+	DELETE = "cache:delete",
+	INVALIDATE = "cache:invalidate",
+	CLEAR = "cache:clear",
+	ERROR = "cache:error",
+	EVICTION = "cache:eviction",
 }
 
 /**
@@ -230,7 +234,8 @@ export const CacheKeys = {
 	 */
 	project: {
 		byId: (id: string) => `project:${id}`,
-		list: (userId: string, page: number) => `projects:user:${userId}:page:${page}`,
+		list: (userId: string, page: number) =>
+			`projects:user:${userId}:page:${page}`,
 		stats: (id: string) => `project:${id}:stats`,
 	},
 
@@ -239,15 +244,18 @@ export const CacheKeys = {
 	 */
 	item: {
 		byId: (id: string) => `item:${id}`,
-		list: (projectId: string, page: number) => `items:project:${projectId}:page:${page}`,
-		byType: (projectId: string, type: string) => `items:project:${projectId}:type:${type}`,
+		list: (projectId: string, page: number) =>
+			`items:project:${projectId}:page:${page}`,
+		byType: (projectId: string, type: string) =>
+			`items:project:${projectId}:type:${type}`,
 	},
 
 	/**
 	 * Graph-related keys
 	 */
 	graph: {
-		layout: (graphId: string, algorithm: string) => `graph:${graphId}:layout:${algorithm}`,
+		layout: (graphId: string, algorithm: string) =>
+			`graph:${graphId}:layout:${algorithm}`,
 		grouping: (graphId: string, strategy: string) =>
 			`graph:${graphId}:grouping:${strategy}`,
 		pathfinding: (graphId: string, from: string, to: string) =>
@@ -299,7 +307,10 @@ export function isExpired(expiresAt: number | null): boolean {
 /**
  * Helper to calculate expiration timestamp
  */
-export function calculateExpiration(ttl: number | null, jitter?: number): number | null {
+export function calculateExpiration(
+	ttl: number | null,
+	jitter?: number,
+): number | null {
 	if (ttl === null) return null;
 	const finalTTL = jitter ? addJitter(ttl, jitter) : ttl;
 	return Date.now() + finalTTL;
@@ -309,7 +320,9 @@ export function calculateExpiration(ttl: number | null, jitter?: number): number
  * Helper to match key against glob pattern
  */
 export function matchesPattern(key: string, pattern: string): boolean {
-	const regex = new RegExp(`^${pattern.replace(/\*/g, '.*').replace(/\?/g, '.')}$`);
+	const regex = new RegExp(
+		`^${pattern.replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
+	);
 	return regex.test(key);
 }
 
@@ -319,18 +332,18 @@ export function matchesPattern(key: string, pattern: string): boolean {
 export function estimateSize(obj: unknown): number {
 	if (obj === null || obj === undefined) return 8;
 
-	if (typeof obj === 'string') {
+	if (typeof obj === "string") {
 		return obj.length * 2; // UTF-16
 	}
 
-	if (typeof obj === 'number') return 8;
-	if (typeof obj === 'boolean') return 4;
+	if (typeof obj === "number") return 8;
+	if (typeof obj === "boolean") return 4;
 
 	if (Array.isArray(obj)) {
 		return obj.reduce((sum, item) => sum + estimateSize(item), 24);
 	}
 
-	if (typeof obj === 'object') {
+	if (typeof obj === "object") {
 		let size = 24; // Base object size
 		for (const key in obj) {
 			size += key.length * 2; // Key size

@@ -594,9 +594,7 @@ test.describe("View Persistence and State Management", () => {
 		// Store initial perspective state
 		const initialGraphContainer = page.locator(".react-flow");
 		const initialNodeCount = await initialGraphContainer
-			.evaluate((el) => {
-				return el.querySelectorAll("[data-id]").length;
-			})
+			.evaluate((el) => el.querySelectorAll("[data-id]").length)
 			.catch(() => 0);
 
 		if (initialNodeCount > 0) {
@@ -627,9 +625,7 @@ test.describe("View Persistence and State Management", () => {
 						await page.waitForTimeout(500);
 
 						const finalNodeCount = await initialGraphContainer
-							.evaluate((el) => {
-								return el.querySelectorAll("[data-id]").length;
-							})
+							.evaluate((el) => el.querySelectorAll("[data-id]").length)
 							.catch(() => 0);
 
 						if (finalNodeCount === initialNodeCount) {

@@ -13,10 +13,10 @@ function Login() {
 	useEffect(() => {
 		if (user && !isLoading) {
 			// Already logged in, redirect to dashboard
-			window.location.href = "/home";
+			globalThis.location.href = "/home";
 		} else if (!isLoading && !user) {
 			// Not logged in, immediately redirect to WorkOS
-			void signIn();
+			undefined;
 		}
 	}, [user, isLoading, signIn]);
 

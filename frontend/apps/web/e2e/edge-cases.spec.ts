@@ -17,8 +17,8 @@ test.describe("Edge Cases - Empty States", () => {
 		// Mock empty response
 		await page.route("**/api/items**", (route) => {
 			void route.fulfill({
-				status: 200,
 				body: JSON.stringify({ items: [], total: 0 }),
+				status: 200,
 			});
 		});
 
@@ -40,8 +40,8 @@ test.describe("Edge Cases - Empty States", () => {
 	}) => {
 		await page.route("**/api/projects**", (route) => {
 			void route.fulfill({
-				status: 200,
 				body: JSON.stringify({ projects: [], total: 0 }),
+				status: 200,
 			});
 		});
 
@@ -65,8 +65,8 @@ test.describe("Edge Cases - Empty States", () => {
 	test("should handle empty agent list", async ({ page }) => {
 		await page.route("**/api/agents**", (route) => {
 			void route.fulfill({
-				status: 200,
 				body: JSON.stringify({ agents: [], total: 0 }),
+				status: 200,
 			});
 		});
 
@@ -90,7 +90,7 @@ test.describe("Edge Cases - Network Errors", () => {
 
 		// Should show timeout error
 		const error = page.locator('[data-testid="error-message"]');
-		await expect(error).toBeVisible({ timeout: 10000 });
+		await expect(error).toBeVisible({ timeout: 10_000 });
 		await expect(error).toContainText(/timeout|took too long/i);
 
 		// Should offer retry option
@@ -101,8 +101,8 @@ test.describe("Edge Cases - Network Errors", () => {
 	test("should handle 500 server error", async ({ page }) => {
 		await page.route("**/api/items**", (route) => {
 			void route.fulfill({
-				status: 500,
 				body: JSON.stringify({ error: "Internal Server Error" }),
+				status: 500,
 			});
 		});
 
@@ -159,8 +159,8 @@ test.describe("Edge Cases - Network Errors", () => {
 				void route.fulfill({ status: 500 });
 			} else {
 				void route.fulfill({
-					status: 200,
 					body: JSON.stringify({ items: [], total: 0 }),
+					status: 200,
 				});
 			}
 		});
@@ -198,8 +198,8 @@ test.describe("Edge Cases - Boundary Values", () => {
 	test("should handle zero items in pagination", async ({ page }) => {
 		await page.route("**/api/items**", (route) => {
 			void route.fulfill({
-				status: 200,
 				body: JSON.stringify({ items: [], total: 0, page: 1, pageSize: 10 }),
+				status: 200,
 			});
 		});
 
@@ -224,8 +224,8 @@ test.describe("Edge Cases - Boundary Values", () => {
 
 		await page.route("**/api/items**", (route) => {
 			void route.fulfill({
-				status: 200,
 				body: JSON.stringify({ items, total: 100 }),
+				status: 200,
 			});
 		});
 
@@ -243,7 +243,7 @@ test.describe("Edge Cases - Boundary Values", () => {
 	test("should handle special characters in search", async ({ page }) => {
 		await page.goto("/items");
 
-		const specialChars = "!@#$%^&*()[]{}|\\;:\"'<>,.?/";
+		const specialChars = String.raw`!@#$%^&*()[]{}|\;:"'<>,.?/`;
 
 		await page.fill('[data-testid="search-input"]', specialChars);
 		await page.waitForTimeout(500);
@@ -350,13 +350,13 @@ test.describe("Edge Cases - Data Validation", () => {
 	test("should handle null/undefined values gracefully", async ({ page }) => {
 		await page.route("**/api/items/**", (route) => {
 			void route.fulfill({
-				status: 200,
 				body: JSON.stringify({
 					id: "test-id",
 					title: null,
 					description: undefined,
 					type: "task",
 				}),
+				status: 200,
 			});
 		});
 
@@ -377,8 +377,8 @@ test.describe("Edge Cases - Data Validation", () => {
 	test("should handle malformed API responses", async ({ page }) => {
 		await page.route("**/api/items**", (route) => {
 			void route.fulfill({
-				status: 200,
 				body: "Not valid JSON",
+				status: 200,
 			});
 		});
 
@@ -394,13 +394,13 @@ test.describe("Edge Cases - Data Validation", () => {
 	}) => {
 		await page.route("**/api/items**", (route) => {
 			void route.fulfill({
-				status: 200,
 				body: JSON.stringify({
 					items: [
 						{ id: "1" }, // Missing title, type, etc.
 						{ title: "No ID" }, // Missing id
 					],
 				}),
+				status: 200,
 			});
 		});
 
@@ -435,7 +435,7 @@ test.describe("Edge Cases - Browser Compatibility", () => {
 		await page.goto("/items");
 
 		// Resize to mobile
-		await page.setViewportSize({ width: 375, height: 667 });
+		await page.setViewportSize({ height: 667, width: 375 });
 		await page.waitForTimeout(500);
 
 		// Should show mobile layout
@@ -443,7 +443,7 @@ test.describe("Edge Cases - Browser Compatibility", () => {
 		await expect(mobileMenu).toBeVisible();
 
 		// Resize to desktop
-		await page.setViewportSize({ width: 1920, height: 1080 });
+		await page.setViewportSize({ height: 1080, width: 1920 });
 		await page.waitForTimeout(500);
 
 		// Should show desktop layout
@@ -651,9 +651,9 @@ test.describe("Edge Cases - Localization", () => {
 		await page.goto("/items");
 
 		// Layout should adapt to RTL
-		const direction = await page.evaluate(() => {
-			return document.documentElement.getAttribute("dir");
-		});
+		const direction = await page.evaluate(() =>
+			document.documentElement.getAttribute("dir"),
+		);
 
 		expect(direction).toBe("rtl");
 	});

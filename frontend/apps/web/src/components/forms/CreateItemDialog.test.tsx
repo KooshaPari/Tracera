@@ -8,12 +8,12 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { CreateItemDialog } from "./CreateItemDialog";
 
-describe("CreateItemDialog", () => {
+describe(CreateItemDialog, () => {
 	const defaultProps = {
-		open: true,
-		onOpenChange: vi.fn(),
-		projectId: "test-project-123",
 		defaultView: "TEST" as const,
+		onOpenChange: vi.fn(),
+		open: true,
+		projectId: "test-project-123",
 	};
 
 	it("renders type selection dialog when open", () => {
@@ -50,5 +50,5 @@ describe("CreateItemDialog", () => {
 	});
 
 	// Note: Testing the full flow (select type -> show form) requires
-	// mocking the type-specific forms, which is beyond the scope of this basic test
+	// Mocking the type-specific forms, which is beyond the scope of this basic test
 });

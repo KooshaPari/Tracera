@@ -1,4 +1,4 @@
-import { NextConfig } from 'next';
+import type { NextConfig } from 'next';
 import createMDX from 'fumadocs-mdx/config';
 import BundleAnalyzer from '@next/bundle-analyzer';
 
@@ -9,10 +9,10 @@ const withBundleAnalyzer = BundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
+  reactStrictMode: true,
 };
 
 export default withBundleAnalyzer(withMDX(nextConfig));

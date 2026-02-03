@@ -16,7 +16,7 @@ test.describe("Dashboard Page Visual Tests", () => {
 		await setTheme(page, "light");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <!-- Dashboard Header -->
@@ -150,7 +150,7 @@ test.describe("Dashboard Page Visual Tests", () => {
 		await setTheme(page, "dark");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
@@ -199,7 +199,7 @@ test.describe("Projects List Page Visual Tests", () => {
 		await setTheme(page, "light");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
@@ -339,7 +339,7 @@ test.describe("Items Table Page Visual Tests", () => {
 		await setTheme(page, "light");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
@@ -473,7 +473,7 @@ test.describe("Empty State Pages", () => {
 		await setTheme(page, "light");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
@@ -515,7 +515,7 @@ test.describe("Empty State Pages", () => {
 		await setTheme(page, "light");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
@@ -559,7 +559,7 @@ test.describe("Settings Page Visual Tests", () => {
 		await setTheme(page, "light");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
@@ -685,7 +685,7 @@ test.describe("Error State Pages", () => {
 		await setTheme(page, "light");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background flex items-center justify-center p-6">
           <div class="text-center space-y-4 max-w-md">
@@ -718,7 +718,7 @@ test.describe("Error State Pages", () => {
 		await setTheme(page, "light");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
@@ -767,7 +767,7 @@ test.describe("Command Palette Visual Tests", () => {
 		await setTheme(page, "light");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background relative">
           <!-- Backdrop -->

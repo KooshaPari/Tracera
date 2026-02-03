@@ -23,17 +23,18 @@ const priorityOptions = ["low", "medium", "high", "critical"] as const;
 const storyPointOptions = [1, 2, 3, 5, 8, 13] as const;
 
 const userStorySchema = z.object({
-	title: z.string().min(1, "Title is required").max(500, "Title too long"),
-	description: z.string().max(5000).optional(),
-	status: z.enum(statusOptions),
-	priority: z.enum(priorityOptions),
-	as_a: z.string().max(255).optional(),
-	i_want: z.string().max(500).optional(),
-	so_that: z.string().max(500).optional(),
 	acceptance_criteria: z.array(z.string().min(1, "Criteria cannot be empty")),
+	as_a: z.string().max(255).optional(),
+	description: z.string().max(5000).optional(),
+	i_want: z.string().max(500).optional(),
+	priority: z.enum(priorityOptions),
+	so_that: z.string().max(500).optional(),
+	status: z.enum(statusOptions),
 	story_points: z
 		.union([z.number(), z.string()])
-		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.transform((val) =>
+			typeof val === "string" ? Number.parseFloat(val) : val,
+		)
 		.pipe(
 			z
 				.number()
@@ -41,6 +42,7 @@ const userStorySchema = z.object({
 				.max(13, "Story points cannot exceed 13"),
 		)
 		.optional(),
+	title: z.string().min(1, "Title is required").max(500, "Title too long"),
 });
 
 type UserStoryFormData = z.infer<typeof userStorySchema>;
@@ -67,13 +69,13 @@ export function CreateUserStoryItemForm({
 		control,
 		formState: { errors, isSubmitting },
 	} = useForm<UserStoryFormData>({
-		resolver: zodResolver(userStorySchema),
 		defaultValues: {
-			status: "todo",
-			priority: "medium",
 			acceptance_criteria: [],
+			priority: "medium",
+			status: "todo",
 		},
 		mode: "onBlur",
+		resolver: zodResolver(userStorySchema),
 	});
 
 	const onSubmitWithAnnouncement = useCallback(
@@ -81,8 +83,8 @@ export function CreateUserStoryItemForm({
 			try {
 				await Promise.resolve(onSubmit(data));
 				announceToScreenReader("User story created successfully", "polite");
-} catch {
-                announceToScreenReader(
+			} catch {
+				announceToScreenReader(
 					"Error creating user story. Please check the form and try again.",
 					"assertive",
 				);
@@ -186,7 +188,7 @@ export function CreateUserStoryItemForm({
 								placeholder="Enter user story title"
 								aria-describedby={errors.title ? "title-error" : "title-help"}
 								aria-required="true"
-								aria-invalid={!!errors.title}
+								aria-invalid={Boolean(errors.title)}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							/>
 							{errors.title ? (
@@ -382,7 +384,7 @@ export function CreateUserStoryItemForm({
 										? "story_points-error"
 										: "story_points-help"
 								}
-								aria-invalid={!!errors.story_points}
+								aria-invalid={Boolean(errors.story_points)}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							>
 								<option value="">Select points...</option>

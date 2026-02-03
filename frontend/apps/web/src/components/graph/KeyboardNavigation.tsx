@@ -29,45 +29,45 @@ export interface KeyboardShortcut {
 
 const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
 	{
-		key: "ArrowUp",
-		description: "Navigate to parent node",
 		action: "navigate-parent",
+		description: "Navigate to parent node",
+		key: "ArrowUp",
 	},
 	{
-		key: "ArrowDown",
-		description: "Navigate to first child node",
 		action: "navigate-child",
+		description: "Navigate to first child node",
+		key: "ArrowDown",
 	},
 	{
-		key: "ArrowLeft",
-		description: "Collapse node",
 		action: "collapse",
+		description: "Collapse node",
+		key: "ArrowLeft",
 	},
 	{
-		key: "ArrowRight",
-		description: "Expand node",
 		action: "expand",
+		description: "Expand node",
+		key: "ArrowRight",
 	},
 	{
-		key: "Enter",
-		description: "Toggle node expansion",
 		action: "toggle-expansion",
+		description: "Toggle node expansion",
+		key: "Enter",
 	},
 	{
-		key: "Backspace",
-		description: "Go back in navigation history",
 		action: "navigate-back",
+		description: "Go back in navigation history",
+		key: "Backspace",
 	},
 	{
-		key: "Escape",
-		description: "Close current panel/deselect",
 		action: "close-panel",
+		description: "Close current panel/deselect",
+		key: "Escape",
 	},
 	{
-		key: "f",
+		action: "open-search",
 		ctrl: true,
 		description: "Open search",
-		action: "open-search",
+		key: "f",
 	},
 ];
 
@@ -84,9 +84,15 @@ interface KeyboardNavigationProps {
 function formatShortcut(shortcut: KeyboardShortcut): string {
 	const parts: string[] = [];
 
-	if (shortcut.ctrl) parts.push("Ctrl");
-	if (shortcut.shift) parts.push("Shift");
-	if (shortcut.alt) parts.push("Alt");
+	if (shortcut.ctrl) {
+		parts.push("Ctrl");
+	}
+	if (shortcut.shift) {
+		parts.push("Shift");
+	}
+	if (shortcut.alt) {
+		parts.push("Alt");
+	}
 
 	const keyLabel =
 		shortcut.key === "ArrowUp"
@@ -114,22 +120,30 @@ function formatShortcut(shortcut: KeyboardShortcut): string {
  */
 function getActionIcon(action: string) {
 	switch (action) {
-		case "navigate-parent":
+		case "navigate-parent": {
 			return <ArrowUp className="w-4 h-4" />;
-		case "navigate-child":
+		}
+		case "navigate-child": {
 			return <ArrowDown className="w-4 h-4" />;
-		case "collapse":
+		}
+		case "collapse": {
 			return <ArrowLeft className="w-4 h-4" />;
-		case "expand":
+		}
+		case "expand": {
 			return <ArrowRight className="w-4 h-4" />;
-		case "toggle-expansion":
+		}
+		case "toggle-expansion": {
 			return <CornerDownLeft className="w-4 h-4" />;
-		case "navigate-back":
+		}
+		case "navigate-back": {
 			return <ArrowLeft className="w-4 h-4" />;
-		case "close-panel":
+		}
+		case "close-panel": {
 			return <button className="text-base leading-none">×</button>;
-		default:
+		}
+		default: {
 			return null;
+		}
 	}
 }
 
@@ -180,10 +194,10 @@ function KeyboardNavigationComponent({
 			}
 		};
 
-		window.addEventListener("keydown", handleKeyDown);
+		globalThis.addEventListener("keydown", handleKeyDown);
 
 		return () => {
-			window.removeEventListener("keydown", handleKeyDown);
+			globalThis.removeEventListener("keydown", handleKeyDown);
 		};
 	}, [onKeyPress, shortcuts, showHelpPanel]);
 

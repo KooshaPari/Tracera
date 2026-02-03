@@ -20,18 +20,12 @@ interface DiffViewerProps {
 	compact?: boolean;
 }
 
-export function DiffViewer({
-	fieldChanges,
-	compact = false,
-}: DiffViewerProps) {
+export function DiffViewer({ fieldChanges, compact = false }: DiffViewerProps) {
 	const [copiedField, setCopiedField] = useState<string | null>(null);
 
 	const handleCopyValue = (value: unknown, field: string) => {
 		const text = formatValueForCopy(value);
-		void navigator.clipboard.writeText(text).then(() => {
-			setCopiedField(field);
-			setTimeout(() => setCopiedField(null), 2000);
-		});
+		undefined;
 	};
 
 	return (
@@ -65,14 +59,18 @@ interface FieldChangeRowProps {
 
 function getChangeTypeColor(changeType: string) {
 	switch (changeType) {
-		case "added":
+		case "added": {
 			return "bg-green-50 border-l-green-500 text-green-900";
-		case "removed":
+		}
+		case "removed": {
 			return "bg-red-50 border-l-red-500 text-red-900";
-		case "modified":
+		}
+		case "modified": {
 			return "bg-blue-50 border-l-blue-500 text-blue-900";
-		default:
+		}
+		default: {
 			return "bg-gray-50 border-l-gray-500";
+		}
 	}
 }
 
@@ -142,18 +140,18 @@ function ChangeTypeBadge({ type }: ChangeTypeBadgeProps) {
 	const badges: Record<string, { bg: string; text: string; label: string }> = {
 		added: {
 			bg: "bg-green-100",
-			text: "text-green-800",
 			label: "Added",
-		},
-		removed: {
-			bg: "bg-red-100",
-			text: "text-red-800",
-			label: "Removed",
+			text: "text-green-800",
 		},
 		modified: {
 			bg: "bg-blue-100",
-			text: "text-blue-800",
 			label: "Modified",
+			text: "text-blue-800",
+		},
+		removed: {
+			bg: "bg-red-100",
+			label: "Removed",
+			text: "text-red-800",
 		},
 	};
 

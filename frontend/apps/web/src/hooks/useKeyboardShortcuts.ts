@@ -47,40 +47,48 @@ export function useKeyboardShortcuts(
 
 	// Add provided shortcuts to registry
 	useEffect(() => {
-		if (!enabled) return;
+		if (!enabled) {
+			return;
+		}
 
-		const shortcutIds = shortcuts.map((shortcut) => {
-			const id = `shortcut-${shortcutCounter++}`;
-			shortcutRegistry.push({ shortcut, id });
-			return id;
-		});
+		const shortcutIds = new Set(
+			shortcuts.map((shortcut) => {
+				const id = `shortcut-${shortcutCounter++}`;
+				shortcutRegistry.push({ id, shortcut });
+				return id;
+			}),
+		);
 
 		setRegisteredShortcuts([...shortcutRegistry]);
 
 		return () => {
 			shortcutRegistry = shortcutRegistry.filter(
-				(item) => !shortcutIds.includes(item.id),
+				(item) => !shortcutIds.has(item.id),
 			);
 			setRegisteredShortcuts([...shortcutRegistry]);
 		};
 	}, [shortcuts, enabled]);
 
-	const allShortcuts = useMemo(() => {
-		return shortcutRegistry.map((item) => ({
-			key: item.shortcut.key,
-			meta: item.shortcut.meta,
-			ctrl: item.shortcut.ctrl,
-			shift: item.shortcut.shift,
-			alt: item.shortcut.alt,
-			description: item.shortcut.description,
-			category: item.shortcut.category,
-			context: item.shortcut.context,
-		}));
-	}, []);
+	const allShortcuts = useMemo(
+		() =>
+			shortcutRegistry.map((item) => ({
+				alt: item.shortcut.alt,
+				category: item.shortcut.category,
+				context: item.shortcut.context,
+				ctrl: item.shortcut.ctrl,
+				description: item.shortcut.description,
+				key: item.shortcut.key,
+				meta: item.shortcut.meta,
+				shift: item.shortcut.shift,
+			})),
+		[],
+	);
 
 	// Global keyboard listener
 	useEffect(() => {
-		if (!enabled) return;
+		if (!enabled) {
+			return;
+		}
 
 		const handler = (event: KeyboardEvent) => {
 			// Check for shortcuts modal trigger (?)
@@ -98,7 +106,7 @@ export function useKeyboardShortcuts(
 
 			// Check registered shortcuts
 			for (const registered of shortcutRegistry) {
-				const shortcut = registered.shortcut;
+				const { shortcut } = registered;
 
 				const metaMatch =
 					shortcut.meta === undefined || event.metaKey === shortcut.meta;
@@ -125,13 +133,13 @@ export function useKeyboardShortcuts(
 			}
 		};
 
-		window.addEventListener("keydown", handler);
-		return () => window.removeEventListener("keydown", handler);
+		globalThis.addEventListener("keydown", handler);
+		return () => globalThis.removeEventListener("keydown", handler);
 	}, [enabled]);
 
 	const register = useCallback((shortcut: KeyboardShortcutAction) => {
-		const id = `shortcut-${shortcutCounter++}`;
-		shortcutRegistry.push({ shortcut, id });
+		const id = `shortcut-${(shortcutCounter += 1)}`;
+		shortcutRegistry.push({ id, shortcut });
 		setRegisteredShortcuts([...shortcutRegistry]);
 
 		return () => {
@@ -146,10 +154,10 @@ export function useKeyboardShortcuts(
 	}, []);
 
 	return {
-		isShortcutsModalOpen,
-		setIsShortcutsModalOpen,
 		allShortcuts,
+		isShortcutsModalOpen,
 		register,
+		setIsShortcutsModalOpen,
 		unregister,
 	};
 }
@@ -158,10 +166,18 @@ export function useKeyboardShortcuts(
 export function formatKeyboardShortcut(shortcut: KeyboardShortcut): string {
 	const parts: string[] = [];
 
-	if (shortcut.meta) parts.push("⌘");
-	if (shortcut.ctrl) parts.push("Ctrl");
-	if (shortcut.alt) parts.push("Alt");
-	if (shortcut.shift) parts.push("Shift");
+	if (shortcut.meta) {
+		parts.push("⌘");
+	}
+	if (shortcut.ctrl) {
+		parts.push("Ctrl");
+	}
+	if (shortcut.alt) {
+		parts.push("Alt");
+	}
+	if (shortcut.shift) {
+		parts.push("Shift");
+	}
 
 	// Format key
 	let displayKey = shortcut.key.toUpperCase();

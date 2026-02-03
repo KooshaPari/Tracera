@@ -137,7 +137,7 @@ describe("Table Components - Accessibility", () => {
 			const { container } = render(
 				<Table>
 					<TableBody>
-						<TableRow isSelected={true}>
+						<TableRow isSelected>
 							<TableCell>Cell</TableCell>
 						</TableRow>
 					</TableBody>
@@ -200,7 +200,7 @@ describe("Table Components - Accessibility", () => {
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead isSortable={true}>Header</TableHead>
+							<TableHead isSortable>Header</TableHead>
 						</TableRow>
 					</TableHeader>
 				</Table>,

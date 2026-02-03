@@ -11,17 +11,19 @@
  */
 
 import {
-	type ColumnDef,
-	type ColumnFiltersState,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	type RowSelectionState,
-	type SortingState,
 	useReactTable,
-	type VisibilityState,
+} from "@tanstack/react-table";
+import type {
+	ColumnDef,
+	ColumnFiltersState,
+	RowSelectionState,
+	SortingState,
+	VisibilityState,
 } from "@tanstack/react-table";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -111,14 +113,14 @@ export function DataTable<TData, TValue>({
 		onColumnVisibilityChange: setColumnVisibility,
 		onRowSelectionChange: setRowSelection,
 		state: {
-			sorting,
 			columnFilters,
 			columnVisibility,
 			rowSelection,
+			sorting,
 		},
 		enableColumnResizing,
 		enableRowSelection,
-		manualPagination: !!paginationProps,
+		manualPagination: Boolean(paginationProps),
 		...(paginationProps?.pageCount !== undefined && {
 			pageCount: paginationProps.pageCount,
 		}),
@@ -291,24 +293,24 @@ export function DataTable<TData, TValue>({
 								{table
 									.getAllColumns()
 									.filter((column) => column.getCanHide())
-									.map((column) => {
-										return (
-											<DropdownMenuCheckboxItem
-												key={column.id}
-												className="capitalize"
-												checked={column.getIsVisible()}
-												onCheckedChange={(value: boolean) =>
-													column.toggleVisibility(!!value)
-												}
-											>
-												{column.id}
-											</DropdownMenuCheckboxItem>
-										);
-									})}
+									.map((column) => (
+										<DropdownMenuCheckboxItem
+											key={column.id}
+											className="capitalize"
+											checked={column.getIsVisible()}
+											onCheckedChange={(value: boolean) =>
+												column.toggleVisibility(!!value)
+											}
+										>
+											{column.id}
+										</DropdownMenuCheckboxItem>
+									))}
 								<DropdownMenuSeparator />
 								<DropdownMenuCheckboxItem
 									checked={isCompact}
-									onCheckedChange={(value: boolean) => setIsCompact(!!value)}
+									onCheckedChange={(value: boolean) =>
+										setIsCompact(Boolean(value))
+									}
 								>
 									Compact View
 								</DropdownMenuCheckboxItem>
@@ -381,7 +383,7 @@ export function DataTable<TData, TValue>({
 										))}
 									</TableRow>
 								))
-							) : table.getRowModel().rows?.length ? (
+							) : (table.getRowModel().rows?.length ? (
 								table.getRowModel().rows.map((row) => (
 									<motion.tr
 										key={row.id}
@@ -417,7 +419,7 @@ export function DataTable<TData, TValue>({
 										No results found.
 									</TableCell>
 								</TableRow>
-							)}
+							))}
 						</AnimatePresence>
 					</TableBody>
 				</Table>

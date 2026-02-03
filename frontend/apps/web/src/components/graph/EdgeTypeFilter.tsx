@@ -41,15 +41,16 @@ export function EdgeTypeFilter({
 	edgeStats,
 	compact = false,
 }: EdgeTypeFilterProps) {
-	const sortedTypes = useMemo(() => {
-		// Sort by count (if available) or alphabetically
-		return [...availableTypes].toSorted((a, b) => {
-			if (edgeStats) {
-				return (edgeStats[b] || 0) - (edgeStats[a] || 0);
-			}
-			return a.localeCompare(b);
-		});
-	}, [availableTypes, edgeStats]);
+	const sortedTypes = useMemo(
+		() =>
+			[...availableTypes].toSorted((a, b) => {
+				if (edgeStats) {
+					return (edgeStats[b] || 0) - (edgeStats[a] || 0);
+				}
+				return a.localeCompare(b);
+			}),
+		[availableTypes, edgeStats],
+	);
 
 	const activeCount = enabledTypes.size;
 	const totalCount = availableTypes.length;
@@ -91,7 +92,11 @@ export function EdgeTypeFilter({
 					</DropdownMenuLabel>
 					<DropdownMenuSeparator />
 					{sortedTypes.map((type) => {
-						const style = LINK_STYLES[type] || { color: "#64748b", dashed: false, arrow: false };
+						const style = LINK_STYLES[type] || {
+							arrow: false,
+							color: "#64748b",
+							dashed: false,
+						};
 						const count = edgeStats?.[type] || 0;
 						const isEnabled = enabledTypes.size === 0 || enabledTypes.has(type);
 
@@ -111,11 +116,14 @@ export function EdgeTypeFilter({
 										}}
 									/>
 									<span className="text-xs capitalize">
-										{type.replace(/_/g, " ")}
+										{type.replaceAll(/_/g, " ")}
 									</span>
 								</div>
 								{edgeStats && (
-									<Badge variant="secondary" className="ml-2 text-[10px] h-4 px-1">
+									<Badge
+										variant="secondary"
+										className="ml-2 text-[10px] h-4 px-1"
+									>
 										{count}
 									</Badge>
 								)}
@@ -159,7 +167,11 @@ export function EdgeTypeFilter({
 
 			<div className="space-y-1.5">
 				{sortedTypes.map((type) => {
-					const style = LINK_STYLES[type] || { color: "#64748b", dashed: false, arrow: false };
+					const style = LINK_STYLES[type] || {
+						arrow: false,
+						color: "#64748b",
+						dashed: false,
+					};
 					const count = edgeStats?.[type] || 0;
 					const isEnabled = enabledTypes.size === 0 || enabledTypes.has(type);
 
@@ -180,7 +192,7 @@ export function EdgeTypeFilter({
 									}}
 								/>
 								<span className="text-sm capitalize">
-									{type.replace(/_/g, " ")}
+									{type.replaceAll(/_/g, " ")}
 								</span>
 							</div>
 							<div className="flex items-center gap-2">
@@ -189,7 +201,9 @@ export function EdgeTypeFilter({
 										{count}
 									</Badge>
 								)}
-								{isEnabled && <div className="h-2 w-2 rounded-full bg-primary" />}
+								{isEnabled && (
+									<div className="h-2 w-2 rounded-full bg-primary" />
+								)}
 							</div>
 						</button>
 					);
@@ -203,7 +217,9 @@ export function EdgeTypeFilter({
  * Hook for managing edge type filter state
  */
 export function useEdgeTypeFilter(availableTypes: LinkType[]) {
-	const [enabledTypes, setEnabledTypes] = React.useState<Set<LinkType>>(new Set());
+	const [enabledTypes, setEnabledTypes] = React.useState<Set<LinkType>>(
+		new Set(),
+	);
 
 	const toggleType = useCallback((type: LinkType) => {
 		setEnabledTypes((prev) => {
@@ -230,12 +246,12 @@ export function useEdgeTypeFilter(availableTypes: LinkType[]) {
 	}, []);
 
 	return {
-		enabledTypes,
-		toggleType,
-		enableAll,
 		disableAll,
+		enableAll,
+		enabledTypes,
 		resetToDefault,
 		setEnabledTypes,
+		toggleType,
 	};
 }
 

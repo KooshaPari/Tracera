@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import type {
 	ADR,
 	ADRActivity,
@@ -42,115 +42,115 @@ function getAuthHeaders(): Record<string, string> {
 
 function transformADR(data: Record<string, unknown>): ADR {
 	return {
-		id: data['id'],
-		projectId: data['project_id'],
-		adrNumber: data['adr_number'],
-		title: data['title'],
+		adrNumber: data["adr_number"],
+		complianceScore: data["compliance_score"],
+		consequences: data["consequences"],
+		consideredOptions: data["considered_options"],
+		context: data["context"],
+		createdAt: data["created_at"],
+		date: data["date"],
+		deciders: data["deciders"],
+		decision: data["decision"],
+		decisionDrivers: data["decision_drivers"],
+		id: data["id"],
+		lastVerifiedAt: data["last_verified_at"],
+		metadata: data["metadata"],
+		projectId: data["project_id"],
+		relatedAdrs: data["related_adrs"],
+		relatedRequirements: data["related_requirements"],
+		stakeholders: data["stakeholders"],
 		status: data.status,
-		context: data['context'],
-		decision: data['decision'],
-		consequences: data['consequences'],
-		decisionDrivers: data['decision_drivers'],
-		consideredOptions: data['considered_options'],
-		relatedRequirements: data['related_requirements'],
-		relatedAdrs: data['related_adrs'],
-		supersededBy: data['superseded_by'],
-		supersedes: data['supersedes'],
-		complianceScore: data['compliance_score'],
-		lastVerifiedAt: data['last_verified_at'],
-		verificationNotes: data['verification_notes'],
-		deciders: data['deciders'],
-		stakeholders: data['stakeholders'],
-		date: data['date'],
-		tags: data['tags'],
-		metadata: data['metadata'],
-		version: data['version'],
-		createdAt: data['created_at'],
-		updatedAt: data['updated_at'],
+		supersededBy: data["superseded_by"],
+		supersedes: data["supersedes"],
+		tags: data["tags"],
+		title: data["title"],
+		updatedAt: data["updated_at"],
+		verificationNotes: data["verification_notes"],
+		version: data["version"],
 	};
 }
 
 function transformContract(data: Record<string, unknown>): Contract {
 	return {
-		id: data['id'],
-		projectId: data['project_id'],
-		itemId: data['item_id'],
-		contractNumber: data['contract_number'],
-		title: data['title'],
-		description: data['description'],
-		contractType: data['contract_type'],
+		contractNumber: data["contract_number"],
+		contractType: data["contract_type"],
+		createdAt: data["created_at"],
+		description: data["description"],
+		executableSpec: data["executable_spec"],
+		id: data["id"],
+		initialState: data["initial_state"],
+		invariants: data["invariants"],
+		itemId: data["item_id"],
+		lastVerifiedAt: data["last_verified_at"],
+		metadata: data["metadata"],
+		postconditions: data["postconditions"],
+		preconditions: data["preconditions"],
+		projectId: data["project_id"],
+		specLanguage: data["spec_language"],
+		states: data["states"],
 		status: data.status,
-		preconditions: data['preconditions'],
-		postconditions: data['postconditions'],
-		invariants: data['invariants'],
-		states: data['states'],
-		initialState: data['initial_state'],
-		transitions: data['transitions'],
-		executableSpec: data['executable_spec'],
-		specLanguage: data['spec_language'],
-		lastVerifiedAt: data['last_verified_at'],
-		verificationResult: data['verification_result'],
-		tags: data['tags'],
-		metadata: data['metadata'],
-		version: data['version'],
-		createdAt: data['created_at'],
-		updatedAt: data['updated_at'],
+		tags: data["tags"],
+		title: data["title"],
+		transitions: data["transitions"],
+		updatedAt: data["updated_at"],
+		verificationResult: data["verification_result"],
+		version: data["version"],
 	};
 }
 
 function transformFeature(data: Record<string, unknown>): Feature {
 	return {
-		id: data['id'],
-		projectId: data['project_id'],
-		featureNumber: data['feature_number'],
+		asA: data["as_a"],
+		createdAt: data["created_at"],
+		description: data["description"],
+		failedScenarios: data["failed_scenarios"] || 0,
+		featureNumber: data["feature_number"],
+		filePath: data["file_path"],
+		iWant: data["i_want"],
+		id: data["id"],
+		metadata: data["metadata"],
 		name: data.name,
-		description: data['description'],
-		asA: data['as_a'],
-		iWant: data['i_want'],
-		soThat: data['so_that'],
+		passedScenarios: data["passed_scenarios"] || 0,
+		pendingScenarios: data["pending_scenarios"] || 0,
+		projectId: data["project_id"],
+		relatedAdrs: data["related_adrs"],
+		relatedRequirements: data["related_requirements"],
+		scenarioCount: data["scenario_count"] || 0,
+		soThat: data["so_that"],
 		status: data.status,
-		filePath: data['file_path'],
-		tags: data['tags'],
-		scenarioCount: data['scenario_count'] || 0,
-		passedScenarios: data['passed_scenarios'] || 0,
-		failedScenarios: data['failed_scenarios'] || 0,
-		pendingScenarios: data['pending_scenarios'] || 0,
-		relatedRequirements: data['related_requirements'],
-		relatedAdrs: data['related_adrs'],
-		metadata: data['metadata'],
-		version: data['version'],
-		createdAt: data['created_at'],
-		updatedAt: data['updated_at'],
+		tags: data["tags"],
+		updatedAt: data["updated_at"],
+		version: data["version"],
 	};
 }
 
 function transformScenario(data: Record<string, unknown>): Scenario {
 	return {
-		id: data['id'],
-		featureId: data['feature_id'],
-		scenarioNumber: data['scenario_number'],
-		title: data['title'],
-		description: data['description'],
-		gherkinText: data['gherkin_text'],
-		background: data['background'],
-		givenSteps: data['given_steps'] || [],
-		whenSteps: data['when_steps'] || [],
-		thenSteps: data['then_steps'] || [],
-		isOutline: data['is_outline'] || false,
-		examples: data['examples'],
-		tags: data['tags'],
-		requirementIds: data['requirement_ids'],
-		testCaseIds: data['test_case_ids'],
+		background: data["background"],
+		createdAt: data["created_at"],
+		description: data["description"],
+		examples: data["examples"],
+		executionCount: data["execution_count"] || 0,
+		featureId: data["feature_id"],
+		gherkinText: data["gherkin_text"],
+		givenSteps: data["given_steps"] || [],
+		id: data["id"],
+		isOutline: data["is_outline"] || false,
+		lastRunAt: data["last_run_at"],
+		lastRunDurationMs: data["last_run_duration_ms"],
+		lastRunResult: data["last_run_result"],
+		metadata: data["metadata"],
+		passRate: data["pass_rate"] || 0,
+		requirementIds: data["requirement_ids"],
+		scenarioNumber: data["scenario_number"],
 		status: data.status,
-		lastRunAt: data['last_run_at'],
-		lastRunResult: data['last_run_result'],
-		lastRunDurationMs: data['last_run_duration_ms'],
-		executionCount: data['execution_count'] || 0,
-		passRate: data['pass_rate'] || 0,
-		metadata: data['metadata'],
-		version: data['version'],
-		createdAt: data['created_at'],
-		updatedAt: data['updated_at'],
+		tags: data["tags"],
+		testCaseIds: data["test_case_ids"],
+		thenSteps: data["then_steps"] || [],
+		title: data["title"],
+		updatedAt: data["updated_at"],
+		version: data["version"],
+		whenSteps: data["when_steps"] || [],
 	};
 }
 
@@ -170,9 +170,15 @@ async function fetchADRs(
 ): Promise<{ adrs: ADR[]; total: number }> {
 	const params = new URLSearchParams();
 	params.set("project_id", filters.projectId);
-	if (filters.status) params.set("status", filters.status);
-	if (filters.search) params.set("search", filters.search);
-	if (filters.tags?.length) params.set("tags", filters.tags.join(","));
+	if (filters.status) {
+		params.set("status", filters.status);
+	}
+	if (filters.search) {
+		params.set("search", filters.search);
+	}
+	if (filters.tags?.length) {
+		params.set("tags", filters.tags.join(","));
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/adrs?${params}`, {
 		headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
@@ -183,8 +189,8 @@ async function fetchADRs(
 	}
 	const data = await res.json();
 	return {
-		adrs: (data['adrs'] || []).map(transformADR),
-		total: data['total'] || 0,
+		adrs: (data["adrs"] || []).map(transformADR),
+		total: data["total"] || 0,
 	};
 }
 
@@ -192,7 +198,9 @@ async function fetchADR(id: string): Promise<ADR> {
 	const res = await fetch(`${API_URL}/api/v1/adrs/${id}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch ADR");
+	if (!res.ok) {
+		throw new Error("Failed to fetch ADR");
+	}
 	const data = await res.json();
 	return transformADR(data);
 }
@@ -214,24 +222,26 @@ async function createADR(
 	data: CreateADRData,
 ): Promise<{ id: string; adrNumber: string }> {
 	const res = await fetch(`${API_URL}/api/v1/adrs`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			project_id: data['projectId'],
-			title: data['title'],
-			context: data['context'],
-			decision: data['decision'],
-			consequences: data['consequences'],
-			decision_drivers: data['decisionDrivers'],
-			deciders: data['deciders'],
-			stakeholders: data['stakeholders'],
-			tags: data['tags'],
-			metadata: data['metadata'] || {},
+			consequences: data["consequences"],
+			context: data["context"],
+			deciders: data["deciders"],
+			decision: data["decision"],
+			decision_drivers: data["decisionDrivers"],
+			metadata: data["metadata"] || {},
+			project_id: data["projectId"],
+			stakeholders: data["stakeholders"],
+			tags: data["tags"],
+			title: data["title"],
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to create ADR");
+	if (!res.ok) {
+		throw new Error("Failed to create ADR");
+	}
 	const result = await res.json();
-	return { id: result['id'], adrNumber: result['adr_number'] };
+	return { adrNumber: result["adr_number"], id: result["id"] };
 }
 
 interface UpdateADRData {
@@ -252,33 +262,56 @@ async function updateADR(
 	data: UpdateADRData,
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
-	if (data['title'] !== undefined) body['title'] = data['title'];
-	if (data['context'] !== undefined) body['context'] = data['context'];
-	if (data['decision'] !== undefined) body['decision'] = data['decision'];
-	if (data['consequences'] !== undefined) body['consequences'] = data['consequences'];
-	if (data.status !== undefined) body.status = data.status;
-	if (data['decisionDrivers'] !== undefined)
-		body['decision_drivers'] = data['decisionDrivers'];
-	if (data['deciders'] !== undefined) body['deciders'] = data['deciders'];
-	if (data['stakeholders'] !== undefined) body['stakeholders'] = data['stakeholders'];
-	if (data['tags'] !== undefined) body['tags'] = data['tags'];
-	if (data['metadata'] !== undefined) body['metadata'] = data['metadata'];
+	if (data["title"] !== undefined) {
+		body["title"] = data["title"];
+	}
+	if (data["context"] !== undefined) {
+		body["context"] = data["context"];
+	}
+	if (data["decision"] !== undefined) {
+		body["decision"] = data["decision"];
+	}
+	if (data["consequences"] !== undefined) {
+		body["consequences"] = data["consequences"];
+	}
+	if (data.status !== undefined) {
+		body.status = data.status;
+	}
+	if (data["decisionDrivers"] !== undefined) {
+		body["decision_drivers"] = data["decisionDrivers"];
+	}
+	if (data["deciders"] !== undefined) {
+		body["deciders"] = data["deciders"];
+	}
+	if (data["stakeholders"] !== undefined) {
+		body["stakeholders"] = data["stakeholders"];
+	}
+	if (data["tags"] !== undefined) {
+		body["tags"] = data["tags"];
+	}
+	if (data["metadata"] !== undefined) {
+		body["metadata"] = data["metadata"];
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/adrs/${id}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PATCH",
 	});
-	if (!res.ok) throw new Error("Failed to update ADR");
+	if (!res.ok) {
+		throw new Error("Failed to update ADR");
+	}
 	return res.json();
 }
 
 async function deleteADR(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/adrs/${id}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete ADR");
+	if (!res.ok) {
+		throw new Error("Failed to delete ADR");
+	}
 }
 
 async function verifyADR(
@@ -286,16 +319,18 @@ async function verifyADR(
 	notes: string,
 ): Promise<{ id: string; complianceScore: number; lastVerifiedAt: string }> {
 	const res = await fetch(`${API_URL}/api/v1/adrs/${id}/verify`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({ verification_notes: notes }),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to verify ADR");
+	if (!res.ok) {
+		throw new Error("Failed to verify ADR");
+	}
 	const result = await res.json();
 	return {
-		id: result['id'],
-		complianceScore: result['compliance_score'],
-		lastVerifiedAt: result['last_verified_at'],
+		complianceScore: result["compliance_score"],
+		id: result["id"],
+		lastVerifiedAt: result["last_verified_at"],
 	};
 }
 
@@ -303,17 +338,19 @@ async function fetchADRActivities(adrId: string): Promise<ADRActivity[]> {
 	const res = await fetch(`${API_URL}/api/v1/adrs/${adrId}/activities`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch ADR activities");
+	if (!res.ok) {
+		throw new Error("Failed to fetch ADR activities");
+	}
 	const data = await res.json();
-	return (data['activities'] || []).map((a: Record<string, unknown>) => ({
-		id: a.id,
-		adrId: a.adr_id,
+	return (data["activities"] || []).map((a: Record<string, unknown>) => ({
 		activityType: a.activity_type,
-		fromValue: a.from_value,
-		toValue: a.to_value,
-		description: a.description,
-		performedBy: a.performed_by,
+		adrId: a.adr_id,
 		createdAt: a.created_at,
+		description: a.description,
+		fromValue: a.from_value,
+		id: a.id,
+		performedBy: a.performed_by,
+		toValue: a.to_value,
 	}));
 }
 
@@ -324,37 +361,44 @@ async function fetchContractActivities(
 		`${API_URL}/api/v1/contracts/${contractId}/activities`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch contract activities");
+	if (!res.ok) {
+		throw new Error("Failed to fetch contract activities");
+	}
 	const data = await res.json();
-	return (data['activities'] || []).map((a: Record<string, unknown>) => ({
-		id: a.id,
-		contractId: a.contract_id,
+	return (data["activities"] || []).map((a: Record<string, unknown>) => ({
 		activityType: a.activity_type,
-		fromValue: a.from_value,
-		toValue: a.to_value,
-		description: a.description,
-		performedBy: a.performed_by,
+		contractId: a.contract_id,
 		createdAt: a.created_at,
+		description: a.description,
+		fromValue: a.from_value,
+		id: a.id,
+		performedBy: a.performed_by,
+		toValue: a.to_value,
 	}));
 }
 
 async function fetchFeatureActivities(
 	featureId: string,
 ): Promise<FeatureActivity[]> {
-	const res = await fetch(`${API_URL}/api/v1/features/${featureId}/activities`, {
-		headers: getAuthHeaders(),
-	});
-	if (!res.ok) throw new Error("Failed to fetch feature activities");
+	const res = await fetch(
+		`${API_URL}/api/v1/features/${featureId}/activities`,
+		{
+			headers: getAuthHeaders(),
+		},
+	);
+	if (!res.ok) {
+		throw new Error("Failed to fetch feature activities");
+	}
 	const data = await res.json();
-	return (data['activities'] || []).map((a: Record<string, unknown>) => ({
-		id: a.id,
-		featureId: a.feature_id,
+	return (data["activities"] || []).map((a: Record<string, unknown>) => ({
 		activityType: a.activity_type,
-		fromValue: a.from_value,
-		toValue: a.to_value,
-		description: a.description,
-		performedBy: a.performed_by,
 		createdAt: a.created_at,
+		description: a.description,
+		featureId: a.feature_id,
+		fromValue: a.from_value,
+		id: a.id,
+		performedBy: a.performed_by,
+		toValue: a.to_value,
 	}));
 }
 
@@ -363,27 +407,34 @@ async function fetchScenarioActivities(
 	options: { limit?: number; offset?: number } = {},
 ): Promise<{ activities: ScenarioActivity[]; total: number }> {
 	const params = new URLSearchParams();
-	if (options.limit !== undefined) params.set("limit", String(options.limit));
-	if (options.offset !== undefined)
+	if (options.limit !== undefined) {
+		params.set("limit", String(options.limit));
+	}
+	if (options.offset !== undefined) {
 		params.set("offset", String(options.offset));
+	}
 	const res = await fetch(
 		`${API_URL}/api/v1/specifications/scenarios/${scenarioId}/activities?${params}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch scenario activities");
+	if (!res.ok) {
+		throw new Error("Failed to fetch scenario activities");
+	}
 	const data = await res.json();
 	return {
-		activities: (data['activities'] || []).map((a: Record<string, unknown>) => ({
-			id: a.id,
-			scenarioId: a.scenario_id,
-			activityType: a.activity_type,
-			fromValue: a.from_value,
-			toValue: a.to_value,
-			description: a.description,
-			performedBy: a.performed_by,
-			createdAt: a.created_at,
-		})),
-		total: data['total'] || 0,
+		activities: (data["activities"] || []).map(
+			(a: Record<string, unknown>) => ({
+				activityType: a.activity_type,
+				createdAt: a.created_at,
+				description: a.description,
+				fromValue: a.from_value,
+				id: a.id,
+				performedBy: a.performed_by,
+				scenarioId: a.scenario_id,
+				toValue: a.to_value,
+			}),
+		),
+		total: data["total"] || 0,
 	};
 }
 
@@ -392,7 +443,9 @@ async function fetchProjectScenarios(
 	status?: string,
 ): Promise<{ scenarios: Scenario[]; total: number }> {
 	const params = new URLSearchParams();
-	if (status) params.set("status", status);
+	if (status) {
+		params.set("status", status);
+	}
 	const res = await fetch(
 		`${API_URL}/api/v1/specifications/projects/${projectId}/scenarios?${params}`,
 		{ headers: getAuthHeaders() },
@@ -403,8 +456,8 @@ async function fetchProjectScenarios(
 	}
 	const data = await res.json();
 	return {
-		scenarios: (data['scenarios'] || []).map(transformScenario),
-		total: data['total'] || 0,
+		scenarios: (data["scenarios"] || []).map(transformScenario),
+		total: data["total"] || 0,
 	};
 }
 
@@ -419,43 +472,59 @@ async function fetchProjectScenarioActivities(
 	} = {},
 ): Promise<ScenarioActivity[]> {
 	const params = new URLSearchParams();
-	if (options.limit !== undefined) params.set("limit", String(options.limit));
-	if (options.offset !== undefined)
+	if (options.limit !== undefined) {
+		params.set("limit", String(options.limit));
+	}
+	if (options.offset !== undefined) {
 		params.set("offset", String(options.offset));
-	if (options.eventType) params.set("event_type", options.eventType);
-	if (options.since) params.set("since", options.since);
-	if (options.until) params.set("until", options.until);
+	}
+	if (options.eventType) {
+		params.set("event_type", options.eventType);
+	}
+	if (options.since) {
+		params.set("since", options.since);
+	}
+	if (options.until) {
+		params.set("until", options.until);
+	}
 	const res = await fetch(
 		`${API_URL}/api/v1/specifications/projects/${projectId}/scenarios/activities?${params}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch scenario activities");
+	if (!res.ok) {
+		throw new Error("Failed to fetch scenario activities");
+	}
 	const data = await res.json();
-	return (data['activities'] || []).map((a: Record<string, unknown>) => ({
-		id: a.id,
-		scenarioId: a.scenario_id,
+	return (data["activities"] || []).map((a: Record<string, unknown>) => ({
 		activityType: a.activity_type,
-		fromValue: a.from_value,
-		toValue: a.to_value,
-		description: a.description,
-		performedBy: a.performed_by,
 		createdAt: a.created_at,
+		description: a.description,
+		fromValue: a.from_value,
+		id: a.id,
+		performedBy: a.performed_by,
+		scenarioId: a.scenario_id,
+		toValue: a.to_value,
 	}));
 }
 
 async function fetchADRStats(projectId: string): Promise<ADRStats> {
-	const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/adrs/stats`, {
-		headers: getAuthHeaders(),
-	});
-	if (!res.ok) throw new Error("Failed to fetch ADR stats");
+	const res = await fetch(
+		`${API_URL}/api/v1/projects/${projectId}/adrs/stats`,
+		{
+			headers: getAuthHeaders(),
+		},
+	);
+	if (!res.ok) {
+		throw new Error("Failed to fetch ADR stats");
+	}
 	const data = await res.json();
 	return {
-		projectId: data['project_id'],
-		total: data['total'] || 0,
-		byStatus: data['by_status'] || {},
-		averageComplianceScore: data['average_compliance_score'] || 0,
-		requirementsLinked: data['requirements_linked'] || 0,
-		pendingVerification: data['pending_verification'] || 0,
+		averageComplianceScore: data["average_compliance_score"] || 0,
+		byStatus: data["by_status"] || {},
+		pendingVerification: data["pending_verification"] || 0,
+		projectId: data["project_id"],
+		requirementsLinked: data["requirements_linked"] || 0,
+		total: data["total"] || 0,
 	};
 }
 
@@ -475,9 +544,15 @@ async function fetchContracts(
 ): Promise<{ contracts: Contract[]; total: number }> {
 	const params = new URLSearchParams();
 	params.set("project_id", filters.projectId);
-	if (filters.status) params.set("status", filters.status);
-	if (filters.contractType) params.set("contract_type", filters.contractType);
-	if (filters.search) params.set("search", filters.search);
+	if (filters.status) {
+		params.set("status", filters.status);
+	}
+	if (filters.contractType) {
+		params.set("contract_type", filters.contractType);
+	}
+	if (filters.search) {
+		params.set("search", filters.search);
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/contracts?${params}`, {
 		headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
@@ -488,8 +563,8 @@ async function fetchContracts(
 	}
 	const data = await res.json();
 	return {
-		contracts: (data['contracts'] || []).map(transformContract),
-		total: data['total'] || 0,
+		contracts: (data["contracts"] || []).map(transformContract),
+		total: data["total"] || 0,
 	};
 }
 
@@ -497,7 +572,9 @@ async function fetchContract(id: string): Promise<Contract> {
 	const res = await fetch(`${API_URL}/api/v1/contracts/${id}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch contract");
+	if (!res.ok) {
+		throw new Error("Failed to fetch contract");
+	}
 	const data = await res.json();
 	return transformContract(data);
 }
@@ -519,24 +596,26 @@ async function createContract(
 	data: CreateContractData,
 ): Promise<{ id: string; contractNumber: string }> {
 	const res = await fetch(`${API_URL}/api/v1/contracts`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			project_id: data['projectId'],
-			item_id: data['itemId'],
-			title: data['title'],
-			description: data['description'],
-			contract_type: data['contractType'],
-			preconditions: data['preconditions'],
-			postconditions: data['postconditions'],
-			invariants: data['invariants'],
-			tags: data['tags'],
-			metadata: data['metadata'] || {},
+			contract_type: data["contractType"],
+			description: data["description"],
+			invariants: data["invariants"],
+			item_id: data["itemId"],
+			metadata: data["metadata"] || {},
+			postconditions: data["postconditions"],
+			preconditions: data["preconditions"],
+			project_id: data["projectId"],
+			tags: data["tags"],
+			title: data["title"],
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to create contract");
+	if (!res.ok) {
+		throw new Error("Failed to create contract");
+	}
 	const result = await res.json();
-	return { id: result['id'], contractNumber: result['contract_number'] };
+	return { contractNumber: result["contract_number"], id: result["id"] };
 }
 
 interface UpdateContractData {
@@ -555,31 +634,50 @@ async function updateContract(
 	data: UpdateContractData,
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
-	if (data['title'] !== undefined) body['title'] = data['title'];
-	if (data['description'] !== undefined) body['description'] = data['description'];
-	if (data.status !== undefined) body.status = data.status;
-	if (data['preconditions'] !== undefined) body['preconditions'] = data['preconditions'];
-	if (data['postconditions'] !== undefined)
-		body['postconditions'] = data['postconditions'];
-	if (data['invariants'] !== undefined) body['invariants'] = data['invariants'];
-	if (data['tags'] !== undefined) body['tags'] = data['tags'];
-	if (data['metadata'] !== undefined) body['metadata'] = data['metadata'];
+	if (data["title"] !== undefined) {
+		body["title"] = data["title"];
+	}
+	if (data["description"] !== undefined) {
+		body["description"] = data["description"];
+	}
+	if (data.status !== undefined) {
+		body.status = data.status;
+	}
+	if (data["preconditions"] !== undefined) {
+		body["preconditions"] = data["preconditions"];
+	}
+	if (data["postconditions"] !== undefined) {
+		body["postconditions"] = data["postconditions"];
+	}
+	if (data["invariants"] !== undefined) {
+		body["invariants"] = data["invariants"];
+	}
+	if (data["tags"] !== undefined) {
+		body["tags"] = data["tags"];
+	}
+	if (data["metadata"] !== undefined) {
+		body["metadata"] = data["metadata"];
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/contracts/${id}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PATCH",
 	});
-	if (!res.ok) throw new Error("Failed to update contract");
+	if (!res.ok) {
+		throw new Error("Failed to update contract");
+	}
 	return res.json();
 }
 
 async function deleteContract(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/contracts/${id}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete contract");
+	if (!res.ok) {
+		throw new Error("Failed to delete contract");
+	}
 }
 
 async function verifyContract(id: string): Promise<{
@@ -592,11 +690,13 @@ async function verifyContract(id: string): Promise<{
 	};
 }> {
 	const res = await fetch(`${API_URL}/api/v1/contracts/${id}/verify`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to verify contract");
+	if (!res.ok) {
+		throw new Error("Failed to verify contract");
+	}
 	return res.json();
 }
 
@@ -605,15 +705,17 @@ async function fetchContractStats(projectId: string): Promise<ContractStats> {
 		`${API_URL}/api/v1/projects/${projectId}/contracts/stats`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch contract stats");
+	if (!res.ok) {
+		throw new Error("Failed to fetch contract stats");
+	}
 	const data = await res.json();
 	return {
-		projectId: data['project_id'],
-		total: data['total'] || 0,
-		byType: data['by_type'] || {},
-		byStatus: data['by_status'] || {},
-		verificationRate: data['verification_rate'] || 0,
-		violationCount: data['violation_count'] || 0,
+		byStatus: data["by_status"] || {},
+		byType: data["by_type"] || {},
+		projectId: data["project_id"],
+		total: data["total"] || 0,
+		verificationRate: data["verification_rate"] || 0,
+		violationCount: data["violation_count"] || 0,
 	};
 }
 
@@ -632,8 +734,12 @@ async function fetchFeatures(
 ): Promise<{ features: Feature[]; total: number }> {
 	const params = new URLSearchParams();
 	params.set("project_id", filters.projectId);
-	if (filters.status) params.set("status", filters.status);
-	if (filters.search) params.set("search", filters.search);
+	if (filters.status) {
+		params.set("status", filters.status);
+	}
+	if (filters.search) {
+		params.set("search", filters.search);
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/features?${params}`, {
 		headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
@@ -644,8 +750,8 @@ async function fetchFeatures(
 	}
 	const data = await res.json();
 	return {
-		features: (data['features'] || []).map(transformFeature),
-		total: data['total'] || 0,
+		features: (data["features"] || []).map(transformFeature),
+		total: data["total"] || 0,
 	};
 }
 
@@ -653,7 +759,9 @@ async function fetchFeature(id: string): Promise<Feature> {
 	const res = await fetch(`${API_URL}/api/v1/features/${id}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch feature");
+	if (!res.ok) {
+		throw new Error("Failed to fetch feature");
+	}
 	const data = await res.json();
 	return transformFeature(data);
 }
@@ -674,23 +782,25 @@ async function createFeature(
 	data: CreateFeatureData,
 ): Promise<{ id: string; featureNumber: string }> {
 	const res = await fetch(`${API_URL}/api/v1/features`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			project_id: data['projectId'],
+			as_a: data["asA"],
+			description: data["description"],
+			file_path: data["filePath"],
+			i_want: data["iWant"],
+			metadata: data["metadata"] || {},
 			name: data.name,
-			description: data['description'],
-			as_a: data['asA'],
-			i_want: data['iWant'],
-			so_that: data['soThat'],
-			file_path: data['filePath'],
-			tags: data['tags'],
-			metadata: data['metadata'] || {},
+			project_id: data["projectId"],
+			so_that: data["soThat"],
+			tags: data["tags"],
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to create feature");
+	if (!res.ok) {
+		throw new Error("Failed to create feature");
+	}
 	const result = await res.json();
-	return { id: result['id'], featureNumber: result['feature_number'] };
+	return { featureNumber: result["feature_number"], id: result["id"] };
 }
 
 interface UpdateFeatureData {
@@ -710,31 +820,53 @@ async function updateFeature(
 	data: UpdateFeatureData,
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
-	if (data.name !== undefined) body.name = data.name;
-	if (data['description'] !== undefined) body['description'] = data['description'];
-	if (data['asA'] !== undefined) body['as_a'] = data['asA'];
-	if (data['iWant'] !== undefined) body['i_want'] = data['iWant'];
-	if (data['soThat'] !== undefined) body['so_that'] = data['soThat'];
-	if (data.status !== undefined) body.status = data.status;
-	if (data['filePath'] !== undefined) body['file_path'] = data['filePath'];
-	if (data['tags'] !== undefined) body['tags'] = data['tags'];
-	if (data['metadata'] !== undefined) body['metadata'] = data['metadata'];
+	if (data.name !== undefined) {
+		body.name = data.name;
+	}
+	if (data["description"] !== undefined) {
+		body["description"] = data["description"];
+	}
+	if (data["asA"] !== undefined) {
+		body["as_a"] = data["asA"];
+	}
+	if (data["iWant"] !== undefined) {
+		body["i_want"] = data["iWant"];
+	}
+	if (data["soThat"] !== undefined) {
+		body["so_that"] = data["soThat"];
+	}
+	if (data.status !== undefined) {
+		body.status = data.status;
+	}
+	if (data["filePath"] !== undefined) {
+		body["file_path"] = data["filePath"];
+	}
+	if (data["tags"] !== undefined) {
+		body["tags"] = data["tags"];
+	}
+	if (data["metadata"] !== undefined) {
+		body["metadata"] = data["metadata"];
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/features/${id}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PATCH",
 	});
-	if (!res.ok) throw new Error("Failed to update feature");
+	if (!res.ok) {
+		throw new Error("Failed to update feature");
+	}
 	return res.json();
 }
 
 async function deleteFeature(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/features/${id}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete feature");
+	if (!res.ok) {
+		throw new Error("Failed to delete feature");
+	}
 }
 
 async function fetchFeatureStats(projectId: string): Promise<FeatureStats> {
@@ -742,19 +874,21 @@ async function fetchFeatureStats(projectId: string): Promise<FeatureStats> {
 		`${API_URL}/api/v1/projects/${projectId}/features/stats`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch feature stats");
+	if (!res.ok) {
+		throw new Error("Failed to fetch feature stats");
+	}
 	const data = await res.json();
 	return {
-		projectId: data['project_id'],
-		totalFeatures: data['total_features'] || 0,
-		totalScenarios: data['total_scenarios'] || 0,
-		byStatus: data['by_status'] || {},
-		passRate: data['pass_rate'] || 0,
+		byStatus: data["by_status"] || {},
 		coverage: {
-			requirementsCovered: data['coverage']?.requirements_covered || 0,
-			totalRequirements: data['coverage']?.total_requirements || 0,
-			percentage: data['coverage']?.percentage || 0,
+			percentage: data["coverage"]?.percentage || 0,
+			requirementsCovered: data["coverage"]?.requirements_covered || 0,
+			totalRequirements: data["coverage"]?.total_requirements || 0,
 		},
+		passRate: data["pass_rate"] || 0,
+		projectId: data["project_id"],
+		totalFeatures: data["total_features"] || 0,
+		totalScenarios: data["total_scenarios"] || 0,
 	};
 }
 
@@ -777,8 +911,8 @@ async function fetchScenarios(
 	}
 	const data = await res.json();
 	return {
-		scenarios: (data['scenarios'] || []).map(transformScenario),
-		total: data['total'] || 0,
+		scenarios: (data["scenarios"] || []).map(transformScenario),
+		total: data["total"] || 0,
 	};
 }
 
@@ -786,7 +920,9 @@ async function fetchScenario(id: string): Promise<Scenario> {
 	const res = await fetch(`${API_URL}/api/v1/scenarios/${id}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch scenario");
+	if (!res.ok) {
+		throw new Error("Failed to fetch scenario");
+	}
 	const data = await res.json();
 	return transformScenario(data);
 }
@@ -808,24 +944,26 @@ async function createScenario(
 	data: CreateScenarioData,
 ): Promise<{ id: string; scenarioNumber: string }> {
 	const res = await fetch(`${API_URL}/api/v1/scenarios`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			feature_id: data['featureId'],
-			title: data['title'],
-			description: data['description'],
-			gherkin_text: data['gherkinText'],
-			given_steps: data['givenSteps'],
-			when_steps: data['whenSteps'],
-			then_steps: data['thenSteps'],
-			tags: data['tags'],
-			requirement_ids: data['requirementIds'],
-			metadata: data['metadata'] || {},
+			description: data["description"],
+			feature_id: data["featureId"],
+			gherkin_text: data["gherkinText"],
+			given_steps: data["givenSteps"],
+			metadata: data["metadata"] || {},
+			requirement_ids: data["requirementIds"],
+			tags: data["tags"],
+			then_steps: data["thenSteps"],
+			title: data["title"],
+			when_steps: data["whenSteps"],
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to create scenario");
+	if (!res.ok) {
+		throw new Error("Failed to create scenario");
+	}
 	const result = await res.json();
-	return { id: result['id'], scenarioNumber: result['scenario_number'] };
+	return { id: result["id"], scenarioNumber: result["scenario_number"] };
 }
 
 interface UpdateScenarioData {
@@ -845,32 +983,53 @@ async function updateScenario(
 	data: UpdateScenarioData,
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
-	if (data['title'] !== undefined) body['title'] = data['title'];
-	if (data['description'] !== undefined) body['description'] = data['description'];
-	if (data['gherkinText'] !== undefined) body['gherkin_text'] = data['gherkinText'];
-	if (data['givenSteps'] !== undefined) body['given_steps'] = data['givenSteps'];
-	if (data['whenSteps'] !== undefined) body['when_steps'] = data['whenSteps'];
-	if (data['thenSteps'] !== undefined) body['then_steps'] = data['thenSteps'];
-	if (data['tags'] !== undefined) body['tags'] = data['tags'];
-	if (data['requirementIds'] !== undefined)
-		body['requirement_ids'] = data['requirementIds'];
-	if (data['metadata'] !== undefined) body['metadata'] = data['metadata'];
+	if (data["title"] !== undefined) {
+		body["title"] = data["title"];
+	}
+	if (data["description"] !== undefined) {
+		body["description"] = data["description"];
+	}
+	if (data["gherkinText"] !== undefined) {
+		body["gherkin_text"] = data["gherkinText"];
+	}
+	if (data["givenSteps"] !== undefined) {
+		body["given_steps"] = data["givenSteps"];
+	}
+	if (data["whenSteps"] !== undefined) {
+		body["when_steps"] = data["whenSteps"];
+	}
+	if (data["thenSteps"] !== undefined) {
+		body["then_steps"] = data["thenSteps"];
+	}
+	if (data["tags"] !== undefined) {
+		body["tags"] = data["tags"];
+	}
+	if (data["requirementIds"] !== undefined) {
+		body["requirement_ids"] = data["requirementIds"];
+	}
+	if (data["metadata"] !== undefined) {
+		body["metadata"] = data["metadata"];
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/scenarios/${id}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PATCH",
 	});
-	if (!res.ok) throw new Error("Failed to update scenario");
+	if (!res.ok) {
+		throw new Error("Failed to update scenario");
+	}
 	return res.json();
 }
 
 async function deleteScenario(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/scenarios/${id}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete scenario");
+	if (!res.ok) {
+		throw new Error("Failed to delete scenario");
+	}
 }
 
 async function runScenario(id: string): Promise<{
@@ -881,18 +1040,20 @@ async function runScenario(id: string): Promise<{
 	executionCount: number;
 }> {
 	const res = await fetch(`${API_URL}/api/v1/scenarios/${id}/run`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to run scenario");
+	if (!res.ok) {
+		throw new Error("Failed to run scenario");
+	}
 	const result = await res.json();
 	return {
-		id: result['id'],
+		executionCount: result["execution_count"],
+		id: result["id"],
+		lastRunAt: result["last_run_at"],
+		lastRunResult: result["last_run_result"],
 		status: result.status,
-		lastRunAt: result['last_run_at'],
-		lastRunResult: result['last_run_result'],
-		executionCount: result['execution_count'],
 	};
 }
 
@@ -903,7 +1064,9 @@ async function fetchSpecificationSummary(
 		`${API_URL}/api/v1/projects/${projectId}/specifications/summary`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch specification summary");
+	if (!res.ok) {
+		throw new Error("Failed to fetch specification summary");
+	}
 	return res.json();
 }
 
@@ -913,17 +1076,17 @@ async function fetchSpecificationSummary(
 
 export function useADRs(filters: ADRFilters) {
 	return useQuery({
-		queryKey: ["adrs", filters],
-		queryFn: () => fetchADRs(filters),
 		enabled: !!filters.projectId,
+		queryFn: () => fetchADRs(filters),
+		queryKey: ["adrs", filters],
 	});
 }
 
 export function useADR(id: string) {
 	return useQuery({
-		queryKey: ["adrs", id],
-		queryFn: () => fetchADR(id),
 		enabled: !!id,
+		queryFn: () => fetchADR(id),
+		queryKey: ["adrs", id],
 	});
 }
 
@@ -932,13 +1095,9 @@ export function useCreateADR() {
 	return useMutation({
 		mutationFn: createADR,
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({ queryKey: ["adrs"] });
-			void queryClient.invalidateQueries({
-				queryKey: ["adrStats", variables.projectId],
-			});
-			void queryClient.invalidateQueries({
-				queryKey: ["specificationSummary", variables.projectId],
-			});
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -949,9 +1108,9 @@ export function useUpdateADR() {
 		mutationFn: ({ id, data }: { id: string; data: UpdateADRData }) =>
 			updateADR(id, data),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["adrs"] });
-			void queryClient.invalidateQueries({ queryKey: ["adrs", id] });
-			void queryClient.invalidateQueries({ queryKey: ["adrActivities", id] });
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -961,9 +1120,9 @@ export function useDeleteADR() {
 	return useMutation({
 		mutationFn: deleteADR,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["adrs"] });
-			void queryClient.invalidateQueries({ queryKey: ["adrStats"] });
-			void queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -974,36 +1133,36 @@ export function useVerifyADR() {
 		mutationFn: ({ id, notes }: { id: string; notes: string }) =>
 			verifyADR(id, notes),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["adrs"] });
-			void queryClient.invalidateQueries({ queryKey: ["adrs", id] });
-			void queryClient.invalidateQueries({ queryKey: ["adrActivities", id] });
-			void queryClient.invalidateQueries({ queryKey: ["adrStats"] });
-			void queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
+			undefined;
+			undefined;
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
 
 export function useADRActivities(adrId: string) {
 	return useQuery({
-		queryKey: ["adrActivities", adrId],
-		queryFn: () => fetchADRActivities(adrId),
 		enabled: !!adrId,
+		queryFn: () => fetchADRActivities(adrId),
+		queryKey: ["adrActivities", adrId],
 	});
 }
 
 export function useContractActivities(contractId: string) {
 	return useQuery({
-		queryKey: ["contractActivities", contractId],
-		queryFn: () => fetchContractActivities(contractId),
 		enabled: !!contractId,
+		queryFn: () => fetchContractActivities(contractId),
+		queryKey: ["contractActivities", contractId],
 	});
 }
 
 export function useFeatureActivities(featureId: string) {
 	return useQuery({
-		queryKey: ["featureActivities", featureId],
-		queryFn: () => fetchFeatureActivities(featureId),
 		enabled: !!featureId,
+		queryFn: () => fetchFeatureActivities(featureId),
+		queryKey: ["featureActivities", featureId],
 	});
 }
 
@@ -1012,17 +1171,17 @@ export function useScenarioActivities(
 	options?: { limit?: number; offset?: number },
 ) {
 	return useQuery({
-		queryKey: ["scenarioActivities", scenarioId, options],
-		queryFn: () => fetchScenarioActivities(scenarioId, options),
 		enabled: !!scenarioId,
+		queryFn: () => fetchScenarioActivities(scenarioId, options),
+		queryKey: ["scenarioActivities", scenarioId, options],
 	});
 }
 
 export function useProjectScenarios(projectId: string, status?: string) {
 	return useQuery({
-		queryKey: ["projectScenarios", projectId, status],
-		queryFn: () => fetchProjectScenarios(projectId, status),
 		enabled: !!projectId,
+		queryFn: () => fetchProjectScenarios(projectId, status),
+		queryKey: ["projectScenarios", projectId, status],
 	});
 }
 
@@ -1037,17 +1196,17 @@ export function useProjectScenarioActivities(
 	},
 ) {
 	return useQuery({
-		queryKey: ["projectScenarioActivities", projectId, options],
-		queryFn: () => fetchProjectScenarioActivities(projectId, options),
 		enabled: !!projectId,
+		queryFn: () => fetchProjectScenarioActivities(projectId, options),
+		queryKey: ["projectScenarioActivities", projectId, options],
 	});
 }
 
 export function useADRStats(projectId: string) {
 	return useQuery({
-		queryKey: ["adrStats", projectId],
-		queryFn: () => fetchADRStats(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchADRStats(projectId),
+		queryKey: ["adrStats", projectId],
 	});
 }
 
@@ -1057,17 +1216,17 @@ export function useADRStats(projectId: string) {
 
 export function useContracts(filters: ContractFilters) {
 	return useQuery({
-		queryKey: ["contracts", filters],
-		queryFn: () => fetchContracts(filters),
 		enabled: !!filters.projectId,
+		queryFn: () => fetchContracts(filters),
+		queryKey: ["contracts", filters],
 	});
 }
 
 export function useContract(id: string) {
 	return useQuery({
-		queryKey: ["contracts", id],
-		queryFn: () => fetchContract(id),
 		enabled: !!id,
+		queryFn: () => fetchContract(id),
+		queryKey: ["contracts", id],
 	});
 }
 
@@ -1076,13 +1235,9 @@ export function useCreateContract() {
 	return useMutation({
 		mutationFn: createContract,
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({ queryKey: ["contracts"] });
-			void queryClient.invalidateQueries({
-				queryKey: ["contractStats", variables.projectId],
-			});
-			void queryClient.invalidateQueries({
-				queryKey: ["specificationSummary", variables.projectId],
-			});
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1093,8 +1248,8 @@ export function useUpdateContract() {
 		mutationFn: ({ id, data }: { id: string; data: UpdateContractData }) =>
 			updateContract(id, data),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["contracts"] });
-			void queryClient.invalidateQueries({ queryKey: ["contracts", id] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1104,9 +1259,9 @@ export function useDeleteContract() {
 	return useMutation({
 		mutationFn: deleteContract,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["contracts"] });
-			void queryClient.invalidateQueries({ queryKey: ["contractStats"] });
-			void queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1116,19 +1271,19 @@ export function useVerifyContract() {
 	return useMutation({
 		mutationFn: (id: string) => verifyContract(id),
 		onSuccess: (_, id) => {
-			void queryClient.invalidateQueries({ queryKey: ["contracts"] });
-			void queryClient.invalidateQueries({ queryKey: ["contracts", id] });
-			void queryClient.invalidateQueries({ queryKey: ["contractStats"] });
-			void queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
+			undefined;
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
 
 export function useContractStats(projectId: string) {
 	return useQuery({
-		queryKey: ["contractStats", projectId],
-		queryFn: () => fetchContractStats(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchContractStats(projectId),
+		queryKey: ["contractStats", projectId],
 	});
 }
 
@@ -1138,17 +1293,17 @@ export function useContractStats(projectId: string) {
 
 export function useFeatures(filters: FeatureFilters) {
 	return useQuery({
-		queryKey: ["features", filters],
-		queryFn: () => fetchFeatures(filters),
 		enabled: !!filters.projectId,
+		queryFn: () => fetchFeatures(filters),
+		queryKey: ["features", filters],
 	});
 }
 
 export function useFeature(id: string) {
 	return useQuery({
-		queryKey: ["features", id],
-		queryFn: () => fetchFeature(id),
 		enabled: !!id,
+		queryFn: () => fetchFeature(id),
+		queryKey: ["features", id],
 	});
 }
 
@@ -1157,13 +1312,9 @@ export function useCreateFeature() {
 	return useMutation({
 		mutationFn: createFeature,
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({ queryKey: ["features"] });
-			void queryClient.invalidateQueries({
-				queryKey: ["featureStats", variables.projectId],
-			});
-			void queryClient.invalidateQueries({
-				queryKey: ["specificationSummary", variables.projectId],
-			});
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1174,8 +1325,8 @@ export function useUpdateFeature() {
 		mutationFn: ({ id, data }: { id: string; data: UpdateFeatureData }) =>
 			updateFeature(id, data),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["features"] });
-			void queryClient.invalidateQueries({ queryKey: ["features", id] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1185,18 +1336,18 @@ export function useDeleteFeature() {
 	return useMutation({
 		mutationFn: deleteFeature,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["features"] });
-			void queryClient.invalidateQueries({ queryKey: ["featureStats"] });
-			void queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
 
 export function useFeatureStats(projectId: string) {
 	return useQuery({
-		queryKey: ["featureStats", projectId],
-		queryFn: () => fetchFeatureStats(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchFeatureStats(projectId),
+		queryKey: ["featureStats", projectId],
 	});
 }
 
@@ -1206,17 +1357,17 @@ export function useFeatureStats(projectId: string) {
 
 export function useScenarios(featureId: string) {
 	return useQuery({
-		queryKey: ["scenarios", featureId],
-		queryFn: () => fetchScenarios(featureId),
 		enabled: !!featureId,
+		queryFn: () => fetchScenarios(featureId),
+		queryKey: ["scenarios", featureId],
 	});
 }
 
 export function useScenario(id: string) {
 	return useQuery({
-		queryKey: ["scenarios", id],
-		queryFn: () => fetchScenario(id),
 		enabled: !!id,
+		queryFn: () => fetchScenario(id),
+		queryKey: ["scenarios", id],
 	});
 }
 
@@ -1225,14 +1376,10 @@ export function useCreateScenario() {
 	return useMutation({
 		mutationFn: createScenario,
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({
-				queryKey: ["scenarios", variables.featureId],
-			});
-			void queryClient.invalidateQueries({
-				queryKey: ["features", variables.featureId],
-			});
-			void queryClient.invalidateQueries({ queryKey: ["featureStats"] });
-			void queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
+			undefined;
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1243,9 +1390,9 @@ export function useUpdateScenario() {
 		mutationFn: ({ id, data }: { id: string; data: UpdateScenarioData }) =>
 			updateScenario(id, data),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["scenarios"] });
-			void queryClient.invalidateQueries({ queryKey: ["scenarios", id] });
-			void queryClient.invalidateQueries({ queryKey: ["features"] });
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1255,10 +1402,10 @@ export function useDeleteScenario() {
 	return useMutation({
 		mutationFn: deleteScenario,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["scenarios"] });
-			void queryClient.invalidateQueries({ queryKey: ["features"] });
-			void queryClient.invalidateQueries({ queryKey: ["featureStats"] });
-			void queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
+			undefined;
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1268,11 +1415,11 @@ export function useRunScenario() {
 	return useMutation({
 		mutationFn: runScenario,
 		onSuccess: (_, id) => {
-			void queryClient.invalidateQueries({ queryKey: ["scenarios"] });
-			void queryClient.invalidateQueries({ queryKey: ["scenarios", id] });
-			void queryClient.invalidateQueries({ queryKey: ["features"] });
-			void queryClient.invalidateQueries({ queryKey: ["featureStats"] });
-			void queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
+			undefined;
+			undefined;
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -1283,9 +1430,9 @@ export function useRunScenario() {
 
 export function useSpecificationSummary(projectId: string) {
 	return useQuery({
-		queryKey: ["specificationSummary", projectId],
-		queryFn: () => fetchSpecificationSummary(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchSpecificationSummary(projectId),
+		queryKey: ["specificationSummary", projectId],
 	});
 }
 
@@ -1335,22 +1482,22 @@ async function fetchQualityReports(
 			if (qualityRes.ok) {
 				const qualityData = await qualityRes.json();
 				return {
-					id: qualityData.id,
-					itemId: qualityData.item_id,
-					smells: qualityData.smells || [],
 					ambiguityScore: qualityData.ambiguity_score || 0,
 					completenessScore: qualityData.completeness_score || 0,
-					suggestions: qualityData.suggestions || [],
-					lastAnalyzedAt: qualityData.last_analyzed_at,
-					version: qualityData.version || 0,
 					createdAt: qualityData.created_at,
+					id: qualityData.id,
+					itemId: qualityData.item_id,
+					lastAnalyzedAt: qualityData.last_analyzed_at,
+					smells: qualityData.smells || [],
+					suggestions: qualityData.suggestions || [],
 					updatedAt: qualityData.updated_at,
+					version: qualityData.version || 0,
 				};
 			}
 			// If quality doesn't exist for this item, skip it (404 is expected)
 			return null;
-		} catch (err) {
-			logger.warn(`Failed to fetch quality for item ${item.id}:`, err);
+		} catch (error) {
+			logger.warn(`Failed to fetch quality for item ${item.id}:`, error);
 			return null;
 		}
 	});
@@ -1361,8 +1508,8 @@ async function fetchQualityReports(
 
 export function useQualityReport(projectId: string) {
 	return useQuery({
-		queryKey: ["qualityReports", projectId],
-		queryFn: () => fetchQualityReports(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchQualityReports(projectId),
+		queryKey: ["qualityReports", projectId],
 	});
 }

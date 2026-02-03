@@ -6,10 +6,8 @@
  */
 
 import type { Edge, Node } from "@xyflow/react";
-import {
-	type ForceSimulationConfig,
-	GPUForceLayout,
-} from "./gpuForceLayout";
+import { GPUForceLayout } from "./gpuForceLayout";
+import type { ForceSimulationConfig } from "./gpuForceLayout";
 
 // ============================================================================
 // MESSAGE TYPES
@@ -17,14 +15,14 @@ import {
 
 export interface ForceLayoutRequest {
 	type: "simulate";
-	nodes: Array<{ id: string }>;
-	edges: Array<{ id: string; source: string; target: string }>;
+	nodes: { id: string }[];
+	edges: { id: string; source: string; target: string }[];
 	config: ForceSimulationConfig;
 }
 
 export interface ForceLayoutResponse {
 	type: "result";
-	positions: Array<{ id: string; x: number; y: number }>;
+	positions: { id: string; x: number; y: number }[];
 	duration: number;
 }
 
@@ -46,66 +44,78 @@ export interface ForceLayoutError {
 
 const layoutEngine = new GPUForceLayout();
 
-self.addEventListener("message", async (ev: MessageEvent<ForceLayoutRequest>) => {
-	const msg = ev.data;
+self.addEventListener(
+	"message",
+	async (ev: MessageEvent<ForceLayoutRequest>) => {
+		const msg = ev.data;
 
-	if (msg.type !== "simulate") {
-		return;
-	}
+		if (msg.type !== "simulate") {
+			return;
+		}
 
-	const startTime = performance.now();
+		const startTime = performance.now();
 
-	try {
-		// Convert minimal node data back to full Node objects
-		const nodes: Node[] = msg.nodes.map((n) => ({
-			id: n.id,
-			type: "default",
-			position: { x: 0, y: 0 },
-			data: {},
-		}));
+		try {
+			// Convert minimal node data back to full Node objects
+			const nodes: Node[] = msg.nodes.map((n) => ({
+				data: {},
+				id: n.id,
+				position: { x: 0, y: 0 },
+				type: "default",
+			}));
 
-		const edges: Edge[] = msg.edges.map((e) => ({
-			id: e.id,
-			source: e.source,
-			target: e.target,
-		}));
+			const edges: Edge[] = msg.edges.map((e) => ({
+				id: e.id,
+				source: e.source,
+				target: e.target,
+			}));
 
-		// Run simulation
-		const result = await layoutEngine.simulate(nodes, edges, msg.config);
+			// Run simulation
+			const result = await layoutEngine.simulate(nodes, edges, msg.config);
 
-		// Extract positions
-		const positions = result.map((node) => ({
-			id: node.id,
-			x: node.position.x,
-			y: node.position.y,
-		}));
+			// Extract positions
+			const positions = result.map((node) => ({
+				id: node.id,
+				x: node.position.x,
+				y: node.position.y,
+			}));
 
-		const duration = performance.now() - startTime;
+			const duration = performance.now() - startTime;
 
-		// Send result back to main thread
-		const response: ForceLayoutResponse = {
-			type: "result",
-			positions,
-			duration,
-		};
+			// Send result back to main thread
+			const response: ForceLayoutResponse = {
+				duration,
+				positions,
+				type: "result",
+			};
 
-		(self as unknown as Worker).postMessage(response, self.location.origin);
-	} catch (err) {
-		const errorResponse: ForceLayoutError = {
-			type: "error",
-			error: err instanceof Error ? err.message : String(err),
-		};
+			(globalThis as unknown as Worker).postMessage(
+				response,
+				self.location.origin,
+			);
+		} catch (error) {
+			const errorResponse: ForceLayoutError = {
+				error: error instanceof Error ? error.message : String(error),
+				type: "error",
+			};
 
-		(self as unknown as Worker).postMessage(errorResponse, self.location.origin);
-	}
-});
+			(globalThis as unknown as Worker).postMessage(
+				errorResponse,
+				self.location.origin,
+			);
+		}
+	},
+);
 
 // Handle cleanup
 self.addEventListener("error", (err) => {
 	const errorResponse: ForceLayoutError = {
-		type: "error",
 		error: err.message || "Worker error occurred",
+		type: "error",
 	};
 
-	(self as unknown as Worker).postMessage(errorResponse, self.location.origin);
+	(globalThis as unknown as Worker).postMessage(
+		errorResponse,
+		self.location.origin,
+	);
 });

@@ -14,21 +14,21 @@ import { describe, expect, it } from "vitest";
 
 function createMockItem(type: string): Item {
 	return {
-		id: "test-id",
-		projectId: "project-1",
-		view: "FEATURE",
-		type,
-		title: "Test Item",
-		status: "todo",
-		priority: "medium",
-		version: 1,
 		createdAt: "2026-01-30T00:00:00Z",
+		id: "test-id",
+		priority: "medium",
+		projectId: "project-1",
+		status: "todo",
+		title: "Test Item",
+		type,
 		updatedAt: "2026-01-30T00:00:00Z",
+		version: 1,
+		view: "FEATURE",
 	};
 }
 
 describe("Type Guards", () => {
-	describe("isRequirementItem", () => {
+	describe(isRequirementItem, () => {
 		it("should return true for requirement type", () => {
 			const item = createMockItem("requirement");
 			expect(isRequirementItem(item)).toBe(true);
@@ -51,7 +51,7 @@ describe("Type Guards", () => {
 		});
 	});
 
-	describe("isTestItem", () => {
+	describe(isTestItem, () => {
 		it("should return true for test types", () => {
 			expect(isTestItem(createMockItem("test"))).toBe(true);
 			expect(isTestItem(createMockItem("test_case"))).toBe(true);
@@ -74,7 +74,7 @@ describe("Type Guards", () => {
 		});
 	});
 
-	describe("isEpicItem", () => {
+	describe(isEpicItem, () => {
 		it("should return true for epic type", () => {
 			expect(isEpicItem(createMockItem("epic"))).toBe(true);
 		});
@@ -95,7 +95,7 @@ describe("Type Guards", () => {
 		});
 	});
 
-	describe("isUserStoryItem", () => {
+	describe(isUserStoryItem, () => {
 		it("should return true for user story types", () => {
 			expect(isUserStoryItem(createMockItem("user_story"))).toBe(true);
 			expect(isUserStoryItem(createMockItem("story"))).toBe(true);
@@ -109,16 +109,16 @@ describe("Type Guards", () => {
 		it("should enable type-specific property access", () => {
 			const item = createMockItem("user_story");
 			if (isUserStoryItem(item)) {
-                const asA = item.asA; // Should compile
-                const _iWant = item.iWant; // Should compile
-                const _soThat = item.soThat; // Should compile
+				const asA = item.asA; // Should compile
+				const _iWant = item.iWant; // Should compile
+				const _soThat = item.soThat; // Should compile
 				const _storyPoints = item.storyPoints; // Should compile
 				expect(asA).toBeUndefined();
 			}
 		});
 	});
 
-	describe("isTaskItem", () => {
+	describe(isTaskItem, () => {
 		it("should return true for task type", () => {
 			expect(isTaskItem(createMockItem("task"))).toBe(true);
 		});
@@ -138,7 +138,7 @@ describe("Type Guards", () => {
 		});
 	});
 
-	describe("isDefectItem", () => {
+	describe(isDefectItem, () => {
 		it("should return true for defect types", () => {
 			expect(isDefectItem(createMockItem("bug"))).toBe(true);
 			expect(isDefectItem(createMockItem("defect"))).toBe(true);
@@ -160,7 +160,7 @@ describe("Type Guards", () => {
 		});
 	});
 
-	describe("hasSpec", () => {
+	describe(hasSpec, () => {
 		it("should return true for requirement items", () => {
 			expect(hasSpec(createMockItem("requirement"))).toBe(true);
 		});
@@ -185,19 +185,22 @@ describe("Type Guards", () => {
 			const item = createMockItem("requirement");
 
 			switch (item.type) {
-				case "requirement":
+				case "requirement": {
 					// TypeScript should narrow to RequirementItem
 					expect(item.type).toBe("requirement");
 					break;
+				}
 				case "test":
 				case "test_case":
-				case "test_suite":
+				case "test_suite": {
 					// TypeScript should narrow to TestItem
 					expect(item.type).toMatch(/^test/);
 					break;
-				default:
+				}
+				default: {
 					// Other types
 					break;
+				}
 			}
 		});
 	});

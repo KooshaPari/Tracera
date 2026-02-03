@@ -9,15 +9,15 @@ export const VIEWPORTS = {
 		width: 1440,
 		height: 900,
 	},
-	tablet: {
-		name: "Tablet",
-		width: 768,
-		height: 1024,
-	},
 	mobile: {
 		name: "Mobile",
 		width: 375,
 		height: 667,
+	},
+	tablet: {
+		name: "Tablet",
+		width: 768,
+		height: 1024,
 	},
 	widescreen: {
 		name: "Widescreen",
@@ -27,26 +27,26 @@ export const VIEWPORTS = {
 } as const;
 
 export const THEMES = {
-	light: {
-		name: "Light",
-		colorScheme: "light",
-		query: "[data-theme='light']",
-	},
 	dark: {
 		name: "Dark",
 		colorScheme: "dark",
 		query: "[data-theme='dark']",
 	},
+	light: {
+		name: "Light",
+		colorScheme: "light",
+		query: "[data-theme='light']",
+	},
 } as const;
 
 export const INTERACTION_STATES = {
-	default: "default",
-	hover: "hover",
-	focus: "focus",
 	active: "active",
+	default: "default",
 	disabled: "disabled",
-	loading: "loading",
 	error: "error",
+	focus: "focus",
+	hover: "hover",
+	loading: "loading",
 	success: "success",
 } as const;
 
@@ -63,18 +63,18 @@ export const CHROMATIC_VIEWPORT_CONFIG = {
 				height: "900px",
 			},
 		},
-		tablet: {
-			name: "Tablet",
-			styles: {
-				width: "768px",
-				height: "1024px",
-			},
-		},
 		mobile: {
 			name: "Mobile",
 			styles: {
 				width: "375px",
 				height: "667px",
+			},
+		},
+		tablet: {
+			name: "Tablet",
+			styles: {
+				width: "768px",
+				height: "1024px",
 			},
 		},
 		widescreen: {
@@ -93,6 +93,8 @@ export const CHROMATIC_VIEWPORT_CONFIG = {
  */
 export const CHROMATIC_PARAMETERS = {
 	chromatic: {
+		delay: 300,
+		disableSnapshot: false,
 		modes: {
 			light: {
 				query: "[data-theme='light']",
@@ -103,9 +105,7 @@ export const CHROMATIC_PARAMETERS = {
 				matcherUrl: "**/dark",
 			},
 		},
-		delay: 300,
 		pauseAnimationAtEnd: true,
-		disableSnapshot: false,
 	},
 };
 
@@ -113,16 +113,10 @@ export const CHROMATIC_PARAMETERS = {
  * Component-specific visual test configurations
  */
 export const COMPONENT_VISUAL_CONFIGS = {
-	UnifiedGraphView: {
-		viewports: ["desktop", "tablet"],
+	GraphNodePill: {
+		viewports: ["desktop", "mobile"],
 		themes: ["light", "dark"],
-		delay: 500,
-		pauseAnimationAtEnd: true,
-	},
-	PerspectiveSelector: {
-		viewports: ["desktop", "tablet", "mobile"],
-		themes: ["light", "dark"],
-		delay: 300,
+		delay: 200,
 	},
 	GraphSearch: {
 		viewports: ["desktop", "tablet", "mobile"],
@@ -134,10 +128,10 @@ export const COMPONENT_VISUAL_CONFIGS = {
 		themes: ["light", "dark"],
 		delay: 300,
 	},
-	GraphNodePill: {
-		viewports: ["desktop", "mobile"],
+	PerspectiveSelector: {
+		viewports: ["desktop", "tablet", "mobile"],
 		themes: ["light", "dark"],
-		delay: 200,
+		delay: 300,
 	},
 	ProgressDashboard: {
 		viewports: ["desktop", "tablet"],
@@ -149,6 +143,12 @@ export const COMPONENT_VISUAL_CONFIGS = {
 		viewports: ["desktop", "tablet"],
 		themes: ["light", "dark"],
 		delay: 300,
+	},
+	UnifiedGraphView: {
+		viewports: ["desktop", "tablet"],
+		themes: ["light", "dark"],
+		delay: 500,
+		pauseAnimationAtEnd: true,
 	},
 } as const;
 

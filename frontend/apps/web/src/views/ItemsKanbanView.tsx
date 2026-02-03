@@ -144,15 +144,14 @@ const ItemCard = memo(
 			</div>
 		);
 	},
-	(prev, next) => (
-			prev.item.id === next.item.id &&
-			prev.item.title === next.item.title &&
-			prev.item.type === next.item.type &&
-			prev.item.status === next.item.status &&
-			prev.item.priority === next.item.priority &&
-			prev.item.owner === next.item.owner &&
-			prev.projectFilter === next.projectFilter
-		),
+	(prev, next) =>
+		prev.item.id === next.item.id &&
+		prev.item.title === next.item.title &&
+		prev.item.type === next.item.type &&
+		prev.item.status === next.item.status &&
+		prev.item.priority === next.item.priority &&
+		prev.item.owner === next.item.owner &&
+		prev.projectFilter === next.projectFilter,
 );
 
 const ColumnHeader = memo(function ColumnHeader({
@@ -242,25 +241,29 @@ const ColumnDropZone = memo(
 					)}
 				>
 					{items.map((item) => (
-						<ItemCard key={item.id} item={item} onDragStart={onDragStart} projectFilter={projectFilter} />
+						<ItemCard
+							key={item.id}
+							item={item}
+							onDragStart={onDragStart}
+							projectFilter={projectFilter}
+						/>
 					))}
 					{items.length === 0 && <EmptyDropZone />}
 				</div>
 			</div>
 		);
 	},
-	(prev, next) => (
-			prev.column.status === next.column.status &&
-			prev.items.length === next.items.length &&
-			prev.items.every(
-				(item, idx) =>
-					next.items[idx] &&
-					item.id === next.items[idx].id &&
-					item.status === next.items[idx].status,
-			) &&
-			prev.isOver === next.isOver &&
-			prev.projectFilter === next.projectFilter
-		),
+	(prev, next) =>
+		prev.column.status === next.column.status &&
+		prev.items.length === next.items.length &&
+		prev.items.every(
+			(item, idx) =>
+				next.items[idx] &&
+				item.id === next.items[idx].id &&
+				item.status === next.items[idx].status,
+		) &&
+		prev.isOver === next.isOver &&
+		prev.projectFilter === next.projectFilter,
 );
 
 export function ItemsKanbanView() {
@@ -283,9 +286,13 @@ export function ItemsKanbanView() {
 	const [isDraggingOver, setIsDraggingOver] = useState<string | null>(null);
 
 	const filteredItems = useMemo(() => {
-		if (items.length === 0) {return [];}
+		if (items.length === 0) {
+			return [];
+		}
 		return items.filter((item: any) => {
-			if (typeFilter && item.type !== typeFilter) {return false;}
+			if (typeFilter && item.type !== typeFilter) {
+				return false;
+			}
 			if (searchQuery) {
 				const query = searchQuery.toLowerCase();
 				return (
@@ -305,7 +312,7 @@ export function ItemsKanbanView() {
 			todo: [],
 		};
 		filteredItems.forEach((item) => {
-			const {status} = item;
+			const { status } = item;
 			if (status && grouped[status]) {
 				grouped[status].push(item);
 			}
@@ -331,8 +338,8 @@ export function ItemsKanbanView() {
 				});
 				toast.success(`Moved to ${newStatus.replace("_", " ")}`);
 				setDraggedItem(null);
-            } catch {
-                toast.error("Failed to update status");
+			} catch {
+				toast.error("Failed to update status");
 			}
 		},
 		[draggedItem, updateItem],
@@ -354,35 +361,21 @@ export function ItemsKanbanView() {
 		setIsDraggingOver(null);
 	}, []);
 
-	const handleProjectFilterChange = useCallback(
-		(v: string) => {
-			undefined;
-		},
-		[navigate],
-	);
+	const handleProjectFilterChange = useCallback((v: string) => {}, [navigate]);
 
-	const handleTypeFilterChange = useCallback(
-		(v: string) => {
-			undefined;
-		},
-		[navigate],
-	);
+	const handleTypeFilterChange = useCallback((v: string) => {}, [navigate]);
 
-	const handleNavigateToTable = useCallback(() => {
-		if (!projectFilter) {
-			undefined;
-			return;
-		}
-		undefined;
-	}, [navigate, searchParams, projectFilter]);
+	const handleNavigateToTable = useCallback(() => {}, [
+		navigate,
+		searchParams,
+		projectFilter,
+	]);
 
-	const handleNavigateToCreate = useCallback(() => {
-		if (!projectFilter) {
-			undefined;
-			return;
-		}
-		undefined;
-	}, [navigate, searchParams, projectFilter]);
+	const handleNavigateToCreate = useCallback(() => {}, [
+		navigate,
+		searchParams,
+		projectFilter,
+	]);
 
 	if (isLoading) {
 		return (

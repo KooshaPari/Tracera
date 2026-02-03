@@ -6,9 +6,9 @@ import { ItemsKanbanView } from "../../views/ItemsKanbanView";
 
 // Mock react router
 vi.mock("@tanstack/react-router", () => ({
+	Link: ({ to, children }: any) => <a href={to}>{children}</a>,
 	useNavigate: vi.fn(() => vi.fn()),
 	useSearch: vi.fn(() => ({})),
-	Link: ({ to, children }: any) => <a href={to}>{children}</a>,
 }));
 
 // Mock hooks
@@ -24,16 +24,16 @@ vi.mock("../../hooks/useProjects", () => ({
 }));
 
 const mockItems = Array.from({ length: 100 }, (_, i) => ({
-	id: `item-${i}`,
-	title: `Item ${i}`,
+	createdAt: new Date(),
 	description: `Description for item ${i}`,
-	type: ["requirement", "feature", "test", "bug", "task"][i % 5],
-	status: ["todo", "in_progress", "done", "blocked"][i % 4],
-	priority: ["critical", "high", "medium", "low"][i % 4],
+	id: `item-${i}`,
 	owner: i % 2 === 0 ? `User ${i % 5}` : null,
 	parentId: null,
+	priority: ["critical", "high", "medium", "low"][i % 4],
 	projectId: `project-${i % 3}`,
-	createdAt: new Date(),
+	status: ["todo", "in_progress", "done", "blocked"][i % 4],
+	title: `Item ${i}`,
+	type: ["requirement", "feature", "test", "bug", "task"][i % 5],
 	updatedAt: new Date(),
 }));
 
@@ -67,7 +67,7 @@ describe("ItemsKanbanView Performance", () => {
 		render(<WrappedView />);
 
 		// Initial render
-		expect(renderSpy).toHaveBeenCalledTimes(1);
+		expect(renderSpy).toHaveBeenCalledOnce();
 
 		// Re-render with same props should not increase count significantly
 		rerender(<WrappedView />);
@@ -122,13 +122,15 @@ describe("ItemsKanbanView Performance", () => {
 		render(<ItemsKanbanView />);
 
 		// Get initial column count
-		const initialColumns = container.querySelectorAll(".min-w-\\[320px\\]");
+		const initialColumns =
+			container.querySelectorAll(String.raw`.min-w-\[320px\]`);
 		const initialCount = initialColumns.length;
 
 		// Re-render
 		rerender(<ItemsKanbanView />);
 
-		const rerenderedColumns = container.querySelectorAll(".min-w-\\[320px\\]");
+		const rerenderedColumns =
+			container.querySelectorAll(String.raw`.min-w-\[320px\]`);
 		expect(rerenderedColumns.length).toBe(initialCount);
 	});
 });

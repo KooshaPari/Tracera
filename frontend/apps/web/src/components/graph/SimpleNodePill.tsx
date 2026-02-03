@@ -1,7 +1,8 @@
 // Simple Node Pill - LOD-reduced node (label only, minimal DOM)
 // Used when zoom is low or node count is high (B3 perf)
 
-import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { memo } from "react";
 import { ENHANCED_TYPE_COLORS } from "./types";
 
@@ -31,7 +32,7 @@ function SimpleNodePillComponent({
 				type="target"
 				position={Position.Left}
 				className="!w-2 !h-2 !min-w-2 !min-h-2 !-left-1 !border-2"
-				style={{ borderColor: bgColor, backgroundColor: "var(--background)" }}
+				style={{ backgroundColor: "var(--background)", borderColor: bgColor }}
 			/>
 			<div
 				role="button"
@@ -61,7 +62,7 @@ function SimpleNodePillComponent({
 				type="source"
 				position={Position.Right}
 				className="!w-2 !h-2 !min-w-2 !min-h-2 !-right-1 !border-2"
-				style={{ borderColor: bgColor, backgroundColor: "var(--background)" }}
+				style={{ backgroundColor: "var(--background)", borderColor: bgColor }}
 			/>
 		</>
 	);

@@ -62,7 +62,9 @@ export function GherkinEditor({
 
 	// Setup Monaco editor configuration
 	useEffect(() => {
-		if (!monaco) return;
+		if (!monaco) {
+			return;
+		}
 
 		// Register custom language for Gherkin if needed
 		monaco.languages.register({ id: "gherkin" });
@@ -72,25 +74,25 @@ export function GherkinEditor({
 			monaco.languages.registerCompletionItemProvider("gherkin", {
 				provideCompletionItems: (_model, position) => {
 					const wordRange = {
-						startLineNumber: position.lineNumber,
+						endColumn: position.column,
 						endLineNumber: position.lineNumber,
 						startColumn: 1,
-						endColumn: position.column,
+						startLineNumber: position.lineNumber,
 					};
 					const suggestions = [
 						...KEYWORDS.map((keyword) => ({
-							label: keyword,
-							kind: monaco.languages.CompletionItemKind.Keyword,
 							insertText: keyword,
-							sortText: `1-${keyword}`,
+							kind: monaco.languages.CompletionItemKind.Keyword,
+							label: keyword,
 							range: wordRange,
+							sortText: `1-${keyword}`,
 						})),
 						...STEP_DEFINITIONS.map((step) => ({
-							label: step,
-							kind: monaco.languages.CompletionItemKind.Snippet,
 							insertText: step,
-							sortText: `2-${step}`,
+							kind: monaco.languages.CompletionItemKind.Snippet,
+							label: step,
 							range: wordRange,
+							sortText: `2-${step}`,
 						})),
 					];
 					return { suggestions };
@@ -148,7 +150,9 @@ export function GherkinEditor({
 	};
 
 	const handleEditorChange = (value: string | undefined) => {
-		if (value === undefined) return;
+		if (value === undefined) {
+			return;
+		}
 		onChange?.(value);
 		validateGherkin(value);
 	};
@@ -166,24 +170,24 @@ export function GherkinEditor({
 					onChange={handleEditorChange}
 					theme="vs-dark"
 					options={{
-						readOnly,
-						minimap: { enabled: false },
-						scrollBeyondLastLine: false,
-						fontSize: 13,
-						fontFamily: "'JetBrains Mono','Fira Code',monospace",
-						lineNumbers: "on",
-						renderLineHighlight: "none",
-						padding: { top: 16, bottom: 16 },
-						suggestOnTriggerCharacters: showSuggestions,
-						quickSuggestions: {
-							other: showSuggestions,
-							comments: false,
-							strings: false,
-						},
-						wordWrap: "on",
 						bracketPairColorization: {
 							enabled: true,
 						},
+						fontFamily: "'JetBrains Mono','Fira Code',monospace",
+						fontSize: 13,
+						lineNumbers: "on",
+						minimap: { enabled: false },
+						padding: { bottom: 16, top: 16 },
+						quickSuggestions: {
+							comments: false,
+							other: showSuggestions,
+							strings: false,
+						},
+						readOnly,
+						renderLineHighlight: "none",
+						scrollBeyondLastLine: false,
+						suggestOnTriggerCharacters: showSuggestions,
+						wordWrap: "on",
 					}}
 				/>
 			</Card>

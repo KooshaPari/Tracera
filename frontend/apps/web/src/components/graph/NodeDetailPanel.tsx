@@ -49,7 +49,9 @@ function NodeDetailPanelComponent({
 	onNavigateToItem,
 	onFocusNode,
 }: NodeDetailPanelProps) {
-	if (!node) return null;
+	if (!node) {
+		return null;
+	}
 
 	const bgColor = ENHANCED_TYPE_COLORS[node.type] || "#64748b";
 
@@ -57,7 +59,9 @@ function NodeDetailPanelComponent({
 	const incomingByType = incomingLinks.reduce(
 		(acc, link) => {
 			const type = link.type || "related_to";
-			if (!acc[type]) acc[type] = [];
+			if (!acc[type]) {
+				acc[type] = [];
+			}
 			acc[type].push(link);
 			return acc;
 		},
@@ -67,7 +71,9 @@ function NodeDetailPanelComponent({
 	const outgoingByType = outgoingLinks.reduce(
 		(acc, link) => {
 			const type = link.type || "related_to";
-			if (!acc[type]) acc[type] = [];
+			if (!acc[type]) {
+				acc[type] = [];
+			}
 			acc[type].push(link);
 			return acc;
 		},
@@ -89,13 +95,16 @@ function NodeDetailPanelComponent({
 								className="text-[10px] sm:text-xs px-1.5 sm:px-2 shrink-0"
 								style={{
 									backgroundColor: `${bgColor}20`,
-									color: bgColor,
 									borderColor: bgColor,
+									color: bgColor,
 								}}
 							>
-								{node.type.replace(/_/g, " ")}
+								{node.type.replaceAll(/_/g, " ")}
 							</Badge>
-							<Badge variant="secondary" className="text-[10px] sm:text-xs shrink-0">
+							<Badge
+								variant="secondary"
+								className="text-[10px] sm:text-xs shrink-0"
+							>
 								{node.status}
 							</Badge>
 						</div>
@@ -255,7 +264,7 @@ function NodeDetailPanelComponent({
 													}}
 												/>
 												<span className="text-xs text-muted-foreground">
-													{type.replace(/_/g, " ")} ({links.length})
+													{type.replaceAll(/_/g, " ")} ({links.length})
 												</span>
 											</div>
 											<div className="space-y-1 pl-4">
@@ -327,7 +336,7 @@ function NodeDetailPanelComponent({
 													}}
 												/>
 												<span className="text-xs text-muted-foreground">
-													{type.replace(/_/g, " ")} ({links.length})
+													{type.replaceAll(/_/g, " ")} ({links.length})
 												</span>
 											</div>
 											<div className="space-y-1 pl-4">

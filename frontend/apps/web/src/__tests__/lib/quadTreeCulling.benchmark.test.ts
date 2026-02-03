@@ -10,14 +10,14 @@
  * - 10k nodes: O(n) ~1ms → O(log n) ~0.1ms
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
 	QuadTreeNodeIndex,
 	type QuadTreeNode,
 	createViewportRectangle,
-} from '@/lib/quadTreeIndex';
+} from "@/lib/quadTreeIndex";
 
-describe('QuadTree Culling Benchmark', () => {
+describe("QuadTree Culling Benchmark", () => {
 	// Generate test nodes
 	function generateNodes(count: number): QuadTreeNode[] {
 		const nodes: QuadTreeNode[] = [];
@@ -79,12 +79,12 @@ describe('QuadTree Culling Benchmark', () => {
 		return results;
 	}
 
-	describe('Performance Comparison', () => {
+	describe("Performance Comparison", () => {
 		const testCases = [
-			{ nodeCount: 1000, name: '1k nodes' },
-			{ nodeCount: 10000, name: '10k nodes' },
-			{ nodeCount: 50000, name: '50k nodes' },
-			{ nodeCount: 100000, name: '100k nodes' },
+			{ nodeCount: 1000, name: "1k nodes" },
+			{ nodeCount: 10000, name: "10k nodes" },
+			{ nodeCount: 50000, name: "50k nodes" },
+			{ nodeCount: 100000, name: "100k nodes" },
 		];
 
 		testCases.forEach(({ nodeCount, name }) => {
@@ -138,7 +138,7 @@ describe('QuadTree Culling Benchmark', () => {
 		});
 	});
 
-	describe('QuadTreeNodeIndex', () => {
+	describe("QuadTreeNodeIndex", () => {
 		let index: QuadTreeNodeIndex;
 		let nodes: QuadTreeNode[];
 
@@ -147,7 +147,7 @@ describe('QuadTree Culling Benchmark', () => {
 			nodes = generateNodes(10000);
 		});
 
-		it('should build index efficiently', () => {
+		it("should build index efficiently", () => {
 			const start = performance.now();
 			index.build(nodes);
 			const buildTime = performance.now() - start;
@@ -161,7 +161,7 @@ describe('QuadTree Culling Benchmark', () => {
 			logger.info(`  Build time: ${buildTime.toFixed(2)}ms`);
 		});
 
-		it('should query viewport efficiently', () => {
+		it("should query viewport efficiently", () => {
 			index.build(nodes);
 
 			const viewport = {
@@ -183,7 +183,7 @@ describe('QuadTree Culling Benchmark', () => {
 			logger.info(`  Time: ${queryTime.toFixed(3)}ms`);
 		});
 
-		it('should find nearest node efficiently', () => {
+		it("should find nearest node efficiently", () => {
 			index.build(nodes);
 
 			const start = performance.now();
@@ -197,7 +197,7 @@ describe('QuadTree Culling Benchmark', () => {
 			logger.info(`  Time: ${queryTime.toFixed(3)}ms`);
 		});
 
-		it('should handle dynamic updates', () => {
+		it("should handle dynamic updates", () => {
 			index.build(nodes.slice(0, 1000));
 
 			// Add nodes
@@ -224,7 +224,7 @@ describe('QuadTree Culling Benchmark', () => {
 			logger.info(`  Update 100 positions: ${updateTime.toFixed(2)}ms`);
 		});
 
-		it('should scale logarithmically', () => {
+		it("should scale logarithmically", () => {
 			const sizes = [1000, 10000, 100000];
 			const queryTimes: number[] = [];
 
@@ -255,8 +255,8 @@ describe('QuadTree Culling Benchmark', () => {
 		});
 	});
 
-	describe('Viewport Rectangle Conversion', () => {
-		it('should convert React Flow viewport to rectangle', () => {
+	describe("Viewport Rectangle Conversion", () => {
+		it("should convert React Flow viewport to rectangle", () => {
 			const viewport = { x: -1000, y: -500, zoom: 0.5 };
 			const rect = createViewportRectangle(viewport, 1920, 1080);
 
@@ -268,8 +268,8 @@ describe('QuadTree Culling Benchmark', () => {
 		});
 	});
 
-	describe('Real-world Scenarios', () => {
-		it('should handle typical graph navigation', () => {
+	describe("Real-world Scenarios", () => {
+		it("should handle typical graph navigation", () => {
 			const nodes = generateNodes(50000);
 			const index = new QuadTreeNodeIndex();
 
@@ -307,7 +307,9 @@ describe('QuadTree Culling Benchmark', () => {
 
 			logger.info(`  Average query time: ${avgQueryTime.toFixed(3)}ms`);
 			logger.info(`  Average visible nodes: ${avgVisible.toFixed(0)}`);
-			logger.info(`  Culling ratio: ${((1 - avgVisible / 50000) * 100).toFixed(1)}%`);
+			logger.info(
+				`  Culling ratio: ${((1 - avgVisible / 50000) * 100).toFixed(1)}%`,
+			);
 
 			// Should query quickly even with viewport changes
 			expect(avgQueryTime).toBeLessThan(2);

@@ -18,10 +18,10 @@ import { mockItems, mockLinks, mockProjects } from "../mocks/data";
 // Mock the client module - must use factory function for hoisting
 vi.mock("../../api/client", () => {
 	const mockApiClient = {
+		DELETE: vi.fn(),
 		GET: vi.fn(),
 		POST: vi.fn(),
 		PUT: vi.fn(),
-		DELETE: vi.fn(),
 		use: vi.fn(),
 	};
 
@@ -40,41 +40,48 @@ vi.mock("../../api/client", () => {
 	}
 
 	return {
-		apiClient: mockApiClient,
-		handleApiResponse: mockHandleApiResponse,
-		safeApiCall: mockSafeApiCall,
-		ApiError: MockApiError,
+		__esModule: true,
+		default: {
+			ApiError: MockApiError,
+			apiClient: mockApiClient,
+			handleApiResponse: mockHandleApiResponse,
+			safeApiCall: mockSafeApiCall,
+		},
 	};
 });
 
-import {
-	ApiError,
-	apiClient,
-	handleApiResponse,
-	safeApiCall,
-} from "../../api/client";
+import client from "../../api/client";
+
+const { ApiError, apiClient, handleApiResponse, safeApiCall } = client;
 
 describe("API Endpoints - Comprehensive Tests", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		// Default mock: successful response
-		vi.mocked(handleApiResponse).mockImplementation(async (promise: Promise<Response>) => {
-			if (!promise) throw new ApiError(500, "Null promise");
-			const result = (await promise) as unknown as {
-				error?: unknown;
-				response?: { status?: number };
-				data?: unknown;
-			};
-			if (result?.error)
-				throw new ApiError(
-					result.response?.status || 500,
-					"Error",
-					result.error as string,
-				);
-			return result?.data;
-		});
+		vi.mocked(handleApiResponse).mockImplementation(
+			async (promise: Promise<Response>) => {
+				if (!promise) {
+					throw new ApiError(500, "Null promise");
+				}
+				const result = (await promise) as unknown as {
+					error?: unknown;
+					response?: { status?: number };
+					data?: unknown;
+				};
+				if (result?.error) {
+					throw new ApiError(
+						result.response?.status || 500,
+						"Error",
+						result.error as string,
+					);
+				}
+				return result?.data;
+			},
+		);
 		vi.mocked(safeApiCall).mockImplementation(async (promise: any) => {
-			if (!promise) throw new ApiError(500, "Null promise");
+			if (!promise) {
+				throw new ApiError(500, "Null promise");
+			}
 			return promise;
 		});
 	});
@@ -83,7 +90,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 	// PROJECTS API
 	// ============================================================================
 
-	describe("projectsApi", () => {
+	describe(projectsApi, () => {
 		describe("list", () => {
 			it("should list projects without params", async () => {
 				vi.mocked(apiClient.GET).mockResolvedValue({
@@ -177,7 +184,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 
 		describe("create", () => {
 			it("should create a project", async () => {
-				const newProject = { name: "New Project", description: "Test" };
+				const newProject = { description: "Test", name: "New Project" };
 				const created = { ...mockProjects[0], ...newProject, id: "new-id" };
 
 				vi.mocked(apiClient.POST).mockResolvedValue({
@@ -218,8 +225,8 @@ describe("API Endpoints - Comprehensive Tests", () => {
 				const result = await projectsApi.update("proj-1", updates);
 				expect(result).toEqual(updated);
 				expect(apiClient.PUT).toHaveBeenCalledWith("/api/v1/projects/{id}", {
-					params: { path: { id: "proj-1" } },
 					body: updates,
+					params: { path: { id: "proj-1" } },
 				});
 			});
 		});
@@ -244,7 +251,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 	// ITEMS API
 	// ============================================================================
 
-	describe("itemsApi", () => {
+	describe(itemsApi, () => {
 		describe("list", () => {
 			it("should list items without params", async () => {
 				vi.mocked(apiClient.GET).mockResolvedValue({
@@ -313,9 +320,9 @@ describe("API Endpoints - Comprehensive Tests", () => {
 			it("should create an item", async () => {
 				const newItem = {
 					project_id: "proj-1",
-					type: "feature" as const,
-					title: "New Item",
 					status: "pending" as const,
+					title: "New Item",
+					type: "feature" as const,
 				};
 				const created = { ...mockItems[0], ...newItem, id: "new-id" };
 
@@ -366,7 +373,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 	// LINKS API
 	// ============================================================================
 
-	describe("linksApi", () => {
+	describe(linksApi, () => {
 		describe("list", () => {
 			it("should list links", async () => {
 				vi.mocked(apiClient.GET).mockResolvedValue({
@@ -460,10 +467,10 @@ describe("API Endpoints - Comprehensive Tests", () => {
 	// GRAPH API
 	// ============================================================================
 
-	describe("graphApi", () => {
+	describe(graphApi, () => {
 		describe("getAncestors", () => {
 			it("should get ancestors without depth", async () => {
-				const mockGraph = { nodes: [], edges: [] };
+				const mockGraph = { edges: [], nodes: [] };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockGraph,
 					error: undefined,
@@ -481,7 +488,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 			});
 
 			it("should get ancestors with depth", async () => {
-				const mockGraph = { nodes: [], edges: [] };
+				const mockGraph = { edges: [], nodes: [] };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockGraph,
 					error: undefined,
@@ -501,7 +508,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 
 		describe("getDescendants", () => {
 			it("should get descendants", async () => {
-				const mockGraph = { nodes: [], edges: [] };
+				const mockGraph = { edges: [], nodes: [] };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockGraph,
 					error: undefined,
@@ -552,7 +559,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 
 		describe("getFullGraph", () => {
 			it("should get full graph without projectId", async () => {
-				const mockGraph = { nodes: [], edges: [] };
+				const mockGraph = { edges: [], nodes: [] };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockGraph,
 					error: undefined,
@@ -567,7 +574,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 			});
 
 			it("should get full graph with projectId", async () => {
-				const mockGraph = { nodes: [], edges: [] };
+				const mockGraph = { edges: [], nodes: [] };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockGraph,
 					error: undefined,
@@ -584,7 +591,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 
 		describe("get (alias)", () => {
 			it("should call getFullGraph", async () => {
-				const mockGraph = { nodes: [], edges: [] };
+				const mockGraph = { edges: [], nodes: [] };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockGraph,
 					error: undefined,
@@ -633,10 +640,10 @@ describe("API Endpoints - Comprehensive Tests", () => {
 		describe("getImpactAnalysis", () => {
 			it("should get impact analysis", async () => {
 				const mockAnalysis = {
-					item_id: "item-1",
-					affected_items: [],
 					affected_count: 0,
+					affected_items: [],
 					depth: 5,
+					item_id: "item-1",
 				};
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockAnalysis,
@@ -658,10 +665,10 @@ describe("API Endpoints - Comprehensive Tests", () => {
 		describe("getDependencyAnalysis", () => {
 			it("should get dependency analysis", async () => {
 				const mockAnalysis = {
-					item_id: "item-1",
 					dependencies: [],
 					dependency_count: 0,
 					depth: 5,
+					item_id: "item-1",
 				};
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockAnalysis,
@@ -689,7 +696,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 
 		describe("traverse", () => {
 			it("should traverse up", async () => {
-				const mockGraph = { nodes: [], edges: [] };
+				const mockGraph = { edges: [], nodes: [] };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockGraph,
 					error: undefined,
@@ -703,14 +710,14 @@ describe("API Endpoints - Comprehensive Tests", () => {
 					{
 						params: {
 							path: { id: "item-1" },
-							query: { direction: "up", depth: 3 },
+							query: { depth: 3, direction: "up" },
 						},
 					},
 				);
 			});
 
 			it("should traverse down", async () => {
-				const mockGraph = { nodes: [], edges: [] };
+				const mockGraph = { edges: [], nodes: [] };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockGraph,
 					error: undefined,
@@ -722,7 +729,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 			});
 
 			it("should traverse both directions", async () => {
-				const mockGraph = { nodes: [], edges: [] };
+				const mockGraph = { edges: [], nodes: [] };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockGraph,
 					error: undefined,
@@ -739,10 +746,10 @@ describe("API Endpoints - Comprehensive Tests", () => {
 	// SEARCH API
 	// ============================================================================
 
-	describe("searchApi", () => {
+	describe(searchApi, () => {
 		describe("search", () => {
 			it("should search with query", async () => {
-				const mockResult = { items: [], total: 0, query: "test" };
+				const mockResult = { items: [], query: "test", total: 0 };
 				vi.mocked(apiClient.POST).mockResolvedValue({
 					data: mockResult,
 					error: undefined,
@@ -759,7 +766,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 
 		describe("searchGet", () => {
 			it("should search via GET", async () => {
-				const mockResult = { items: [], total: 0, query: "test" };
+				const mockResult = { items: [], query: "test", total: 0 };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockResult,
 					error: undefined,
@@ -786,7 +793,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 				const result = await searchApi.suggest("test", 10);
 				expect(result).toEqual(mockSuggestions);
 				expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/search/suggest", {
-					params: { query: { q: "test", limit: 10 } },
+					params: { query: { limit: 10, q: "test" } },
 				});
 			});
 
@@ -864,7 +871,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 
 		describe("getStats", () => {
 			it("should get search stats", async () => {
-				const mockStats = { total: 100, indexed: 95 };
+				const mockStats = { indexed: 95, total: 100 };
 				vi.mocked(apiClient.GET).mockResolvedValue({
 					data: mockStats,
 					error: undefined,
@@ -907,29 +914,29 @@ describe("API Endpoints - Comprehensive Tests", () => {
 	// EXPORT/IMPORT API
 	// ============================================================================
 
-	describe("exportImportApi", () => {
+	describe(exportImportApi, () => {
 		describe("export", () => {
 			it("should export project as JSON", async () => {
 				const mockBlob = new Blob(['{"data": "test"}'], {
 					type: "application/json",
 				});
-				global.fetch = vi.fn().mockResolvedValue({
-					ok: true,
+				globalThis.fetch = vi.fn().mockResolvedValue({
 					blob: () => Promise.resolve(mockBlob),
+					ok: true,
 				}) as typeof fetch;
 
 				const result = await exportImportApi.export("proj-1", "json");
 				expect(result).toBeInstanceOf(Blob);
-				expect(global.fetch).toHaveBeenCalledWith(
+				expect(globalThis.fetch).toHaveBeenCalledWith(
 					"/api/v1/projects/proj-1/export?format=json",
 				);
 			});
 
 			it("should export project as CSV", async () => {
 				const mockBlob = new Blob(["id,name"], { type: "text/csv" });
-				global.fetch = vi.fn().mockResolvedValue({
-					ok: true,
+				globalThis.fetch = vi.fn().mockResolvedValue({
 					blob: () => Promise.resolve(mockBlob),
+					ok: true,
 				}) as typeof fetch;
 
 				const result = await exportImportApi.export("proj-1", "csv");
@@ -938,9 +945,9 @@ describe("API Endpoints - Comprehensive Tests", () => {
 
 			it("should export project as markdown", async () => {
 				const mockBlob = new Blob(["# Project"], { type: "text/markdown" });
-				global.fetch = vi.fn().mockResolvedValue({
-					ok: true,
+				globalThis.fetch = vi.fn().mockResolvedValue({
 					blob: () => Promise.resolve(mockBlob),
+					ok: true,
 				}) as typeof fetch;
 
 				const result = await exportImportApi.export("proj-1", "markdown");
@@ -948,7 +955,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 			});
 
 			it("should handle export errors", async () => {
-				global.fetch = vi.fn().mockResolvedValue({
+				globalThis.fetch = vi.fn().mockResolvedValue({
 					ok: false,
 					status: 500,
 				}) as typeof fetch;
@@ -962,10 +969,10 @@ describe("API Endpoints - Comprehensive Tests", () => {
 		describe("import", () => {
 			it("should import project data", async () => {
 				const mockResult = {
-					success: true,
-					imported_count: 10,
 					error_count: 0,
 					errors: [],
+					imported_count: 10,
+					success: true,
 				};
 				vi.mocked(apiClient.POST).mockResolvedValue({
 					data: mockResult,
@@ -982,8 +989,8 @@ describe("API Endpoints - Comprehensive Tests", () => {
 				expect(apiClient.POST).toHaveBeenCalledWith(
 					"/api/v1/projects/{project_id}/import",
 					{
-						params: { path: { project_id: "proj-1" } },
 						body: { format: "json", data: '{"data": "test"}' },
+						params: { path: { project_id: "proj-1" } },
 					},
 				);
 			});
@@ -1004,9 +1011,9 @@ describe("API Endpoints - Comprehensive Tests", () => {
 		describe("exportProject (alias)", () => {
 			it("should call export", async () => {
 				const mockBlob = new Blob(["test"], { type: "application/json" });
-				global.fetch = vi.fn().mockResolvedValue({
-					ok: true,
+				globalThis.fetch = vi.fn().mockResolvedValue({
 					blob: () => Promise.resolve(mockBlob),
+					ok: true,
 				}) as typeof fetch;
 
 				// Mock export to be callable
@@ -1021,10 +1028,10 @@ describe("API Endpoints - Comprehensive Tests", () => {
 		describe("importProject (alias)", () => {
 			it("should call import", async () => {
 				const mockResult = {
-					success: true,
-					imported_count: 10,
 					error_count: 0,
 					errors: [],
+					imported_count: 10,
+					success: true,
 				};
 				vi.mocked(apiClient.POST).mockResolvedValue({
 					data: mockResult,
@@ -1054,9 +1061,9 @@ describe("API Endpoints - Comprehensive Tests", () => {
 	// HEALTH CHECK
 	// ============================================================================
 
-	describe("healthCheck", () => {
+	describe(healthCheck, () => {
 		it("should perform health check", async () => {
-			const mockHealth = { status: "ok", service: "api" };
+			const mockHealth = { service: "api", status: "ok" };
 			vi.mocked(apiClient.GET).mockResolvedValue({
 				data: mockHealth,
 				error: undefined,

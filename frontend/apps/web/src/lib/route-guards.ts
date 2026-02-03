@@ -41,10 +41,10 @@ export function requireAuth(options?: {
 	const { isAuthenticated, user } = useAuthStore.getState();
 	const hasStoredToken =
 		typeof window !== "undefined" &&
-		(typeof localStorage !== "undefined" &&
-			(localStorage.getItem("auth_token") ||
-				localStorage.getItem("authToken") ||
-				localStorage.getItem("tracertm-auth-store")));
+		typeof localStorage !== "undefined" &&
+		(localStorage.getItem("auth_token") ||
+			localStorage.getItem("authToken") ||
+			localStorage.getItem("tracertm-auth-store"));
 	const isE2E =
 		typeof window !== "undefined" &&
 		(Boolean((window as any).__E2E__) ||
@@ -89,10 +89,10 @@ export function requireAuthWithAccount(options?: {
 	const { isAuthenticated, user, account } = useAuthStore.getState();
 	const hasStoredToken =
 		typeof window !== "undefined" &&
-		(typeof localStorage !== "undefined" &&
-			(localStorage.getItem("auth_token") ||
-				localStorage.getItem("authToken") ||
-				localStorage.getItem("tracertm-auth-store")));
+		typeof localStorage !== "undefined" &&
+		(localStorage.getItem("auth_token") ||
+			localStorage.getItem("authToken") ||
+			localStorage.getItem("tracertm-auth-store"));
 	const isE2E =
 		typeof window !== "undefined" &&
 		(Boolean((window as any).__E2E__) ||
@@ -134,10 +134,10 @@ export function requireAdmin(options?: { redirectTo?: string }) {
 	const { isAuthenticated, user } = useAuthStore.getState();
 	const hasStoredToken =
 		typeof window !== "undefined" &&
-		(typeof localStorage !== "undefined" &&
-			(localStorage.getItem("auth_token") ||
-				localStorage.getItem("authToken") ||
-				localStorage.getItem("tracertm-auth-store")));
+		typeof localStorage !== "undefined" &&
+		(localStorage.getItem("auth_token") ||
+			localStorage.getItem("authToken") ||
+			localStorage.getItem("tracertm-auth-store"));
 	const isE2E =
 		typeof window !== "undefined" &&
 		(Boolean((window as any).__E2E__) ||

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -8,19 +8,19 @@ import { useCreateProblem } from "../../hooks/useProblems";
 const impactLevels = ["critical", "high", "medium", "low"] as const;
 
 const problemSchema = z.object({
-	title: z.string().min(1, "Title is required").max(500, "Title too long"),
-	description: z.string().max(5000).optional(),
-	category: z.string().max(100).optional(),
-	subCategory: z.string().max(100).optional(),
-	impactLevel: z.enum(impactLevels),
-	urgency: z.enum(impactLevels),
-	priority: z.enum(impactLevels),
 	affectedSystems: z.string().optional(),
 	affectedUsersEstimated: z.coerce.number().optional(),
-	businessImpactDescription: z.string().max(2000).optional(),
-	assignedTo: z.string().max(255).optional(),
 	assignedTeam: z.string().max(255).optional(),
+	assignedTo: z.string().max(255).optional(),
+	businessImpactDescription: z.string().max(2000).optional(),
+	category: z.string().max(100).optional(),
+	description: z.string().max(5000).optional(),
+	impactLevel: z.enum(impactLevels),
 	owner: z.string().max(255).optional(),
+	priority: z.enum(impactLevels),
+	subCategory: z.string().max(100).optional(),
+	title: z.string().min(1, "Title is required").max(500, "Title too long"),
+	urgency: z.enum(impactLevels),
 });
 
 type ProblemFormData = z.infer<typeof problemSchema>;
@@ -55,38 +55,52 @@ export function CreateProblemForm({
 		handleSubmit,
 		formState: { errors },
 	} = useForm<ProblemFormData>({
-		resolver: zodResolver(problemSchema) as any,
 		defaultValues: {
 			impactLevel: "medium",
-			urgency: "medium",
 			priority: "medium",
+			urgency: "medium",
 		},
+		resolver: zodResolver(problemSchema) as any,
 	});
 
 	const onSubmit = async (data: ProblemFormData) => {
 		try {
 			const payload: Parameters<typeof createProblem.mutateAsync>[0] = {
+				impactLevel: data.impactLevel,
+				priority: data.priority,
 				projectId,
 				title: data.title,
-				impactLevel: data.impactLevel,
 				urgency: data.urgency,
-				priority: data.priority,
 			};
-			if (data.description) payload.description = data.description;
-			if (data.category) payload.category = data.category;
-			if (data.subCategory) payload.subCategory = data.subCategory;
+			if (data.description) {
+				payload.description = data.description;
+			}
+			if (data.category) {
+				payload.category = data.category;
+			}
+			if (data.subCategory) {
+				payload.subCategory = data.subCategory;
+			}
 			if (data.affectedSystems) {
 				payload.affectedSystems = data.affectedSystems
 					.split(",")
 					.map((s) => s.trim());
 			}
-			if (data.affectedUsersEstimated)
+			if (data.affectedUsersEstimated) {
 				payload.affectedUsersEstimated = data.affectedUsersEstimated;
-			if (data.businessImpactDescription)
+			}
+			if (data.businessImpactDescription) {
 				payload.businessImpactDescription = data.businessImpactDescription;
-			if (data.assignedTo) payload.assignedTo = data.assignedTo;
-			if (data.assignedTeam) payload.assignedTeam = data.assignedTeam;
-			if (data.owner) payload.owner = data.owner;
+			}
+			if (data.assignedTo) {
+				payload.assignedTo = data.assignedTo;
+			}
+			if (data.assignedTeam) {
+				payload.assignedTeam = data.assignedTeam;
+			}
+			if (data.owner) {
+				payload.owner = data.owner;
+			}
 
 			await createProblem.mutateAsync(payload);
 			onSuccess();

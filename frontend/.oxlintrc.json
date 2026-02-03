@@ -1,203 +1,204 @@
 {
-	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"ignorePatterns": [
-		"**/node_modules/**",
-		"**/dist/**",
-		"**/.turbo/**",
-		"**/routeTree.gen.ts",
-		"**/api/schema.ts",
-		"**/*.gen.ts"
-	],
-	"plugins": [
-		"eslint",
-		"typescript",
-		"unicorn",
-		"oxc",
-		"react",
-		"react-perf",
-		"import",
-		"jsx-a11y",
-		"promise",
-		"vitest"
-	],
-	"env": {
-		"browser": true,
-		"es2022": true,
-		"builtin": true
-	},
-	"categories": {
-		"correctness": "error",
-		"suspicious": "error",
-		"pedantic": "warn",
-		"style": "warn",
-		"restriction": "warn",
-		"perf": "warn",
-		"nursery": "off"
-	},
+	"$schema": "https://oxc.rs/schema.json",
+	"plugins": ["react", "unicorn", "jsx-a11y", "react-perf", "import"],
 	"rules": {
-		"react/react-in-jsx-scope": "off",
-		"import/no-cycle": ["error", { "maxDepth": 3 }],
-		"import/no-duplicates": "warn",
+		"typescript/no-explicit-any": "error",
+		"typescript/explicit-function-return-type": "error",
+		"typescript/explicit-module-boundary-types": "error",
+		"typescript/no-unsafe-assignment": "error",
+		"typescript/no-unsafe-member-access": "error",
+		"typescript/no-unsafe-call": "error",
+		"typescript/no-unsafe-return": "error",
+		"typescript/strict-boolean-expressions": "error",
 		"typescript/no-floating-promises": "error",
+		"typescript/await-thenable": "error",
 		"typescript/no-misused-promises": "error",
-		"typescript/no-unsafe-assignment": "warn",
-		"typescript/no-unsafe-call": "warn",
-		"typescript/no-unsafe-member-access": "warn",
-		"typescript/no-unsafe-return": "warn",
+		"typescript/prefer-nullish-coalescing": "error",
+		"typescript/prefer-optional-chain": "error",
+
+		"eslint/sort-imports": ["error", {
+			"ignoreCase": false,
+			"ignoreDeclarationSort": false,
+			"ignoreMemberSort": false,
+			"memberSyntaxSortOrder": ["none", "all", "multiple", "single"]
+		}],
+		"eslint/sort-keys": ["error", "asc", {
+			"caseSensitive": true,
+			"natural": true,
+			"minKeys": 2
+		}],
+		"import/order": ["error", {
+			"groups": [
+				"builtin",
+				"external",
+				"internal",
+				"parent",
+				"sibling",
+				"index",
+				"object",
+				"type"
+			],
+			"pathGroups": [
+				{
+					"pattern": "@/**",
+					"group": "internal"
+				}
+			],
+			"alphabetize": {
+				"order": "asc",
+				"caseInsensitive": false
+			}
+		}],
+		"eslint/func-style": ["error", "expression", {
+			"allowArrowFunctions": true
+		}],
+
+		"eslint/id-length": ["error", {
+			"min": 2,
+			"max": 50,
+			"exceptions": ["i", "j", "k", "x", "y", "z", "_"],
+			"properties": "never",
+			"exceptionPatterns": ["^[a-z]$"]
+		}],
+		"unicorn/prevent-abbreviations": ["warn", {
+			"checkFilenames": false,
+			"allowList": {
+				"args": true,
+				"Args": true,
+				"db": true,
+				"Db": true,
+				"env": true,
+				"Env": true,
+				"params": true,
+				"Params": true,
+				"props": true,
+				"Props": true,
+				"ref": true,
+				"Ref": true
+			}
+		}],
+		"unicorn/filename-case": ["error", {
+			"cases": {
+				"camelCase": true,
+				"pascalCase": true,
+				"kebabCase": true
+			}
+		}],
+
+		"eslint/max-lines-per-function": ["error", {
+			"max": 50,
+			"skipBlankLines": true,
+			"skipComments": true,
+			"IIFEs": true
+		}],
+		"eslint/max-params": ["error", 3],
+		"eslint/max-depth": ["error", 3],
+		"eslint/max-nested-callbacks": ["error", 3],
+		"complexity": ["error", 10],
+		"eslint/max-statements": ["error", 15],
+
+		"eslint/no-magic-numbers": ["error", {
+			"ignore": [0, 1, -1],
+			"ignoreArrayIndexes": true,
+			"ignoreDefaultValues": true,
+			"enforceConst": true,
+			"detectObjects": false
+		}],
+
+		"react/jsx-max-depth": ["error", { "max": 4 }],
+		"react-perf/jsx-no-new-object-as-prop": "error",
+		"react-perf/jsx-no-new-array-as-prop": "error",
+		"react-perf/jsx-no-new-function-as-prop": "error",
+		"react/jsx-no-leaked-render": "error",
+		"react-hooks/exhaustive-deps": "error",
+		"react/jsx-no-useless-fragment": "error",
+		"react/no-array-index-key": "warn",
+		"react/jsx-key": "error",
+		"react/jsx-no-duplicate-props": "error",
+
+		"import/no-cycle": ["error", {
+			"maxDepth": 3,
+			"ignoreExternal": true
+		}],
+		"import/no-self-import": "error",
+		"import/no-useless-path-segments": "error",
+		"import/no-duplicates": "error",
+		"import/first": "error",
+		"import/newline-after-import": "error",
+
+		"import/no-default-export": "warn",
+		"import/no-named-export": "off",
+		"import/prefer-default-export": "off",
+		"import/exports-last": "off",
+
+		"eslint/no-ternary": "off",
+		"unicorn/no-nested-ternary": "error",
+		"eslint/multiline-ternary": ["error", "always-multiline"],
+		"eslint/no-unneeded-ternary": "error",
+
+		"oxc/no-optional-chaining": "off",
+		"oxc/no-rest-spread-properties": "off",
+		"oxc/no-async-await": "off",
+		"unicorn/prefer-spread": "error",
+		"unicorn/prefer-modern-math-apis": "error",
+		"eslint/prefer-exponentiation-operator": "error",
+
+		"eslint/no-throw-literal": "error",
+		"unicorn/error-message": "error",
+		"unicorn/prefer-type-error": "error",
+
+		"eslint/no-console": "warn",
+		"eslint/no-debugger": "error",
+		"eslint/no-alert": "error",
 		"eslint/eqeqeq": ["error", "always"],
-		"react/self-closing-comp": ["error", { "component": true, "html": false }]
+		"eslint/no-eval": "error",
+		"eslint/no-implied-eval": "error",
+		"eslint/no-new-func": "error",
+		"eslint/no-script-url": "error",
+		"eslint/no-void": "error",
+
+		"eslint/no-inline-comments": "off",
+		"eslint/line-comment-position": "off",
+		"eslint/capitalized-comments": "off",
+		"eslint/multiline-comment-style": "off",
+		"eslint/init-declarations": "off"
 	},
-	"settings": {
-		"react": { "version": "18" }
-	},
+
 	"overrides": [
 		{
-			"files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/*.smoke.test.tsx", "**/__tests__/**", "**/e2e/**/*.ts"],
+			"files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/*.bench.ts"],
 			"rules": {
-				"typescript/no-explicit-any": "off",
-				"typescript/no-non-null-assertion": "off",
-				"typescript/explicit-function-return-type": "off",
-				"typescript/explicit-module-boundary-types": "off",
-				"eslint/no-magic-numbers": "off",
-				"eslint/sort-keys": "off",
-				"eslint/func-style": "off",
-				"eslint/sort-imports": "off",
-				"eslint/no-undefined": "off",
-				"eslint/no-void": "off",
-				"eslint/no-empty-function": "off",
-				"eslint/no-await-in-loop": "off",
-				"eslint/no-inline-comments": "off",
-				"eslint/no-plusplus": "off",
-				"eslint/no-console": "off",
-				"eslint/max-lines-per-function": "off",
-				"eslint/max-lines": "off",
-				"eslint/max-statements": "off",
-				"oxc/no-async-await": "off",
-				"oxc/no-optional-chaining": "off",
-				"eslint/id-length": "off",
-				"eslint/prefer-destructuring": "off",
-				"unicorn/filename-case": "off",
-				"unicorn/prefer-dom-node-append": "off",
-				"unicorn/no-array-for-each": "off",
-				"vitest/prefer-to-be-truthy": "off",
-				"vitest/prefer-to-be-falsy": "off",
-				"vitest/consistent-test-filename": "off"
-			}
-		},
-		{
-			"files": ["analyze-deps.js", "find-unused-deps.js", "scripts/**/*.js", "scripts/**/*.ts", "tools/**/*.ts"],
-			"rules": {
-				"oxc/no-async-await": "off",
-				"oxc/no-rest-spread-properties": "off",
-				"unicorn/no-null": "off",
-				"unicorn/no-array-for-each": "off",
-				"eslint/max-lines-per-function": "off",
-				"eslint/complexity": "off",
-				"eslint/sort-imports": "off"
-			}
-		},
-		{
-			"files": ["apps/web/src/router.tsx"],
-			"rules": {
-				"import/group-exports": "off",
-				"import/no-named-export": "off",
-				"eslint/func-style": "off",
-				"eslint/sort-keys": "off"
-			}
-		},
-		{
-			"files": ["apps/**/src/**/*.ts", "apps/**/src/**/*.tsx", "packages/**/src/**/*.ts", "packages/**/src/**/*.tsx"],
-			"rules": {
-				"eslint/func-style": "off",
-				"eslint/curly": "off",
-				"eslint/no-ternary": "off",
-				"eslint/capitalized-comments": "off",
-				"eslint/arrow-body-style": "off",
-				"eslint/max-lines": "off",
-				"eslint/max-params": "off",
-				"eslint/sort-imports": "off",
-				"eslint/sort-keys": "off",
-				"eslint/new-cap": "off",
-				"import/group-exports": "off",
-				"import/no-named-export": "off",
-				"import/no-default-export": "off",
-				"import/exports-last": "off",
-				"typescript/explicit-function-return-type": "off",
-				"typescript/explicit-module-boundary-types": "off",
-				"unicorn/numeric-separators-style": "off",
-				"unicorn/no-zero-fractions": "off",
-				"unicorn/no-null": "off",
-				"oxc/no-async-await": "off",
-				"react/jsx-filename-extension": "off",
-				"react/jsx-max-depth": "off",
-				"oxc/no-optional-chaining": "off",
-				"oxc/no-rest-spread-properties": "off",
-				"eslint/no-magic-numbers": "off",
-				"eslint/no-undefined": "off",
-				"eslint/no-void": "off",
-				"eslint/id-length": "off",
-				"unicorn/filename-case": "off",
-				"eslint-plugin-react-perf/jsx-no-new-function-as-prop": "off",
-				"eslint-plugin-react-perf/jsx-no-new-object-as-prop": "off",
-				"typescript/array-type": "off",
-				"eslint/no-negated-condition": "off",
-				"eslint/no-nested-ternary": "off",
-				"eslint/prefer-destructuring": "off",
-				"eslint/no-plusplus": "off",
-				"eslint/no-implicit-coercion": "off",
-				"eslint/no-else-return": "off",
-				"eslint-plugin-unicorn/no-nested-ternary": "off",
-				"eslint-plugin-unicorn/prefer-spread": "off",
-				"eslint-plugin-unicorn/prefer-number-properties": "off",
-				"eslint-plugin-unicorn/prefer-at": "off",
-				"eslint-plugin-unicorn/no-useless-collection-argument": "off",
-				"eslint-plugin-unicorn/switch-case-braces": "off",
-				"eslint-plugin-unicorn/prefer-query-selector": "off",
-				"eslint-plugin-unicorn/prefer-global-this": "off",
-				"eslint-plugin-react-hooks/rules-of-hooks": "off",
-				"eslint-plugin-react/no-set-state": "off",
-				"eslint-plugin-react/button-has-type": "off",
-				"eslint-plugin-react/jsx-handler-names": "off",
-				"eslint-plugin-import/consistent-type-specifier-style": "off",
-				"eslint-plugin-import/max-dependencies": "off",
-				"eslint-plugin-react/no-array-index-key": "off",
-				"eslint-plugin-unicorn/no-array-for-each": "off",
-				"oxc/no-map-spread": "off",
-				"eslint/no-inline-comments": "off",
-				"typescript/no-explicit-any": "off"
-			}
-		},
-		{
-			"files": ["apps/docs/**/*.tsx", "apps/docs/**/*.ts"],
-			"rules": {
-				"import/no-default-export": "off",
-				"react/jsx-filename-extension": "off",
-				"react/jsx-max-depth": ["warn", { "max": 4 }],
-				"eslint/sort-keys": "off",
-				"eslint/sort-imports": "off",
-				"eslint/new-cap": "off",
-				"react/only-export-components": "off"
-			}
-		},
-		{
-			"files": ["**/vite.config.mjs", "**/vite.config.ts", "**/vite.config.js", "**/nitro.config.ts", "**/svgo.config.js", "**/next.config.*", "**/*.config.js", "**/*.config.ts", "**/*.config.mjs"],
-			"rules": {
-				"import/no-default-export": "off",
-				"import/no-anonymous-default-export": "off",
-				"eslint/max-lines": "off",
-				"eslint/complexity": "off",
 				"eslint/max-lines-per-function": "off",
 				"eslint/max-statements": "off",
-				"eslint/sort-keys": "off",
-				"eslint/capitalized-comments": "off",
-				"eslint/no-inline-comments": "off",
-				"eslint/no-ternary": "off",
-				"eslint/curly": "off",
-				"eslint/new-cap": "off",
-				"eslint/no-undefined": "off",
-				"eslint/sort-imports": "off",
-				"eslint/require-await": "off",
-				"typescript/no-var-requires": "off"
+				"eslint/no-magic-numbers": "off",
+				"typescript/no-explicit-any": "warn",
+				"eslint/max-nested-callbacks": "off",
+				"eslint/id-length": ["error", {
+					"min": 1,
+					"exceptions": ["i", "j", "k", "x", "y", "z", "a", "b", "c", "_"]
+				}]
+			}
+		},
+		{
+			"files": ["**/routes/**/*.tsx", "**/routes/**/*.ts"],
+			"rules": {
+				"import/no-default-export": "off",
+				"typescript/explicit-function-return-type": "off"
+			}
+		},
+		{
+			"files": ["**/*.config.ts", "**/*.config.js", "**/vite.config.*", "**/vitest.config.*"],
+			"rules": {
+				"import/no-default-export": "off",
+				"eslint/no-magic-numbers": "off"
+			}
+		},
+		{
+			"files": ["**/e2e/**/*.ts", "**/e2e/**/*.tsx"],
+			"rules": {
+				"eslint/max-lines-per-function": ["error", 100],
+				"eslint/max-statements": ["error", 25],
+				"typescript/no-explicit-any": "warn"
 			}
 		}
 	]

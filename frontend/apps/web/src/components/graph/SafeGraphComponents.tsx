@@ -5,7 +5,7 @@
  * to prevent entire page crashes when a graph rendering error occurs.
  */
 
-import { lazy, Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
 import { Loader2 } from "lucide-react";
@@ -72,7 +72,9 @@ function GraphErrorFallback(error: Error, reset: () => void) {
 /**
  * Safe wrapper for GraphViewContainer with error boundary and lazy loading
  */
-export function SafeGraphViewContainer(props: React.ComponentProps<typeof GraphViewContainer>) {
+export function SafeGraphViewContainer(
+	props: React.ComponentProps<typeof GraphViewContainer>,
+) {
 	return (
 		<ErrorBoundary name="GraphViewContainer" fallback={GraphErrorFallback}>
 			<Suspense fallback={<GraphLoadingFallback />}>
@@ -85,7 +87,9 @@ export function SafeGraphViewContainer(props: React.ComponentProps<typeof GraphV
 /**
  * Safe wrapper for FlowGraphView with error boundary and lazy loading
  */
-export function SafeFlowGraphView(props: React.ComponentProps<typeof FlowGraphView>) {
+export function SafeFlowGraphView(
+	props: React.ComponentProps<typeof FlowGraphView>,
+) {
 	return (
 		<ErrorBoundary name="FlowGraphView" fallback={GraphErrorFallback}>
 			<Suspense fallback={<GraphLoadingFallback />}>
@@ -98,7 +102,9 @@ export function SafeFlowGraphView(props: React.ComponentProps<typeof FlowGraphVi
 /**
  * Safe wrapper for EnhancedGraphView with error boundary and lazy loading
  */
-export function SafeEnhancedGraphView(props: React.ComponentProps<typeof EnhancedGraphView>) {
+export function SafeEnhancedGraphView(
+	props: React.ComponentProps<typeof EnhancedGraphView>,
+) {
 	return (
 		<ErrorBoundary name="EnhancedGraphView" fallback={GraphErrorFallback}>
 			<Suspense fallback={<GraphLoadingFallback />}>
@@ -111,7 +117,9 @@ export function SafeEnhancedGraphView(props: React.ComponentProps<typeof Enhance
 /**
  * Safe wrapper for VirtualizedGraphView with error boundary and lazy loading
  */
-export function SafeVirtualizedGraphView(props: React.ComponentProps<typeof VirtualizedGraphView>) {
+export function SafeVirtualizedGraphView(
+	props: React.ComponentProps<typeof VirtualizedGraphView>,
+) {
 	return (
 		<ErrorBoundary name="VirtualizedGraphView" fallback={GraphErrorFallback}>
 			<Suspense fallback={<GraphLoadingFallback />}>
@@ -124,7 +132,9 @@ export function SafeVirtualizedGraphView(props: React.ComponentProps<typeof Virt
 /**
  * Safe wrapper for UnifiedGraphView with error boundary and lazy loading
  */
-export function SafeUnifiedGraphView(props: React.ComponentProps<typeof UnifiedGraphView>) {
+export function SafeUnifiedGraphView(
+	props: React.ComponentProps<typeof UnifiedGraphView>,
+) {
 	return (
 		<ErrorBoundary name="UnifiedGraphView" fallback={GraphErrorFallback}>
 			<Suspense fallback={<GraphLoadingFallback />}>

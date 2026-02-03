@@ -29,7 +29,6 @@ import {
 	List,
 	ListChecks,
 	Loader,
-	type LucideIcon,
 	Maximize,
 	MessageSquare,
 	Monitor,
@@ -50,6 +49,7 @@ import {
 	Workflow,
 	Zap,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 // ============================================================================
 // TYPE TO ICON MAPPING
@@ -136,78 +136,78 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
 
 const TYPE_COLORS: Record<string, string> = {
 	// UI Entity Types - Blue spectrum
-	site: "#3b82f6", // blue-500
-	page: "#60a5fa", // blue-400
-	layout: "#2563eb", // blue-600
-	section: "#3b82f6", // blue-500
-	subsection: "#60a5fa", // blue-400
-	component: "#6366f1", // indigo-500
-	subcomponent: "#818cf8", // indigo-400
-	element: "#a5b4fc", // indigo-300
-	modal: "#4f46e5", // indigo-600
-	popup: "#6366f1", // indigo-500
-	toast: "#818cf8", // indigo-400
-	drawer: "#4f46e5", // indigo-600
+	site: "#3b82f6", // Blue-500
+	page: "#60a5fa", // Blue-400
+	layout: "#2563eb", // Blue-600
+	section: "#3b82f6", // Blue-500
+	subsection: "#60a5fa", // Blue-400
+	component: "#6366f1", // Indigo-500
+	subcomponent: "#818cf8", // Indigo-400
+	element: "#a5b4fc", // Indigo-300
+	modal: "#4f46e5", // Indigo-600
+	popup: "#6366f1", // Indigo-500
+	toast: "#818cf8", // Indigo-400
+	drawer: "#4f46e5", // Indigo-600
 
 	// Product Entity Types - Purple spectrum
-	initiative: "#7c3aed", // violet-600
-	epic: "#8b5cf6", // violet-500
-	feature: "#a78bfa", // violet-400
-	user_story: "#c4b5fd", // violet-300
-	acceptance_criteria: "#e879f9", // fuchsia-400
-	task: "#d946ef", // fuchsia-500
-	subtask: "#f0abfc", // fuchsia-300
-	requirement: "#a855f7", // purple-500
-	story: "#c4b5fd", // violet-300
+	initiative: "#7c3aed", // Violet-600
+	epic: "#8b5cf6", // Violet-500
+	feature: "#a78bfa", // Violet-400
+	user_story: "#c4b5fd", // Violet-300
+	acceptance_criteria: "#e879f9", // Fuchsia-400
+	task: "#d946ef", // Fuchsia-500
+	subtask: "#f0abfc", // Fuchsia-300
+	requirement: "#a855f7", // Purple-500
+	story: "#c4b5fd", // Violet-300
 
 	// Technical Entity Types - Green spectrum
-	service: "#10b981", // emerald-500
-	module: "#34d399", // emerald-400
-	class: "#059669", // emerald-600
-	function: "#14b8a6", // teal-500
-	api_endpoint: "#2dd4bf", // teal-400
-	api: "#2dd4bf", // teal-400
-	database_table: "#0d9488", // teal-600
-	database_field: "#0d9488", // teal-600
-	config: "#22c55e", // green-500
-	code: "#4ade80", // green-400
+	service: "#10b981", // Emerald-500
+	module: "#34d399", // Emerald-400
+	class: "#059669", // Emerald-600
+	function: "#14b8a6", // Teal-500
+	api_endpoint: "#2dd4bf", // Teal-400
+	api: "#2dd4bf", // Teal-400
+	database_table: "#0d9488", // Teal-600
+	database_field: "#0d9488", // Teal-600
+	config: "#22c55e", // Green-500
+	code: "#4ade80", // Green-400
 
 	// Test Entity Types - Orange spectrum
-	test_suite: "#f97316", // orange-500
-	test_case: "#fb923c", // orange-400
-	test_step: "#fdba74", // orange-300
-	assertion: "#fed7aa", // orange-200
-	fixture: "#ea580c", // orange-600
-	mock: "#dc2626", // red-600
-	test: "#fb923c", // orange-400
+	test_suite: "#f97316", // Orange-500
+	test_case: "#fb923c", // Orange-400
+	test_step: "#fdba74", // Orange-300
+	assertion: "#fed7aa", // Orange-200
+	fixture: "#ea580c", // Orange-600
+	mock: "#dc2626", // Red-600
+	test: "#fb923c", // Orange-400
 
 	// Design Entity Types - Pink spectrum
-	wireframe: "#ec4899", // pink-500
-	mockup: "#f472b6", // pink-400
-	prototype: "#f9a8d4", // pink-300
-	design_token: "#be185d", // pink-700
-	style_guide: "#db2777", // pink-600
-	design: "#ec4899", // pink-500
-	ui: "#f472b6", // pink-400
+	wireframe: "#ec4899", // Pink-500
+	mockup: "#f472b6", // Pink-400
+	prototype: "#f9a8d4", // Pink-300
+	design_token: "#be185d", // Pink-700
+	style_guide: "#db2777", // Pink-600
+	design: "#ec4899", // Pink-500
+	ui: "#f472b6", // Pink-400
 
 	// Documentation Types - Yellow spectrum
-	doc_root: "#eab308", // yellow-500
-	doc_section: "#facc15", // yellow-400
-	doc_page: "#fde047", // yellow-300
-	doc_block: "#fef08a", // yellow-200
-	documentation: "#eab308", // yellow-500
+	doc_root: "#eab308", // Yellow-500
+	doc_section: "#facc15", // Yellow-400
+	doc_page: "#fde047", // Yellow-300
+	doc_block: "#fef08a", // Yellow-200
+	documentation: "#eab308", // Yellow-500
 
 	// Other common types
-	workflow: "#0ea5e9", // sky-500
-	process: "#38bdf8", // sky-400
-	integration: "#7dd3fc", // sky-300
-	deployment: "#0284c7", // sky-600
-	database: "#0d9488", // teal-600
-	bug: "#ef4444", // red-500
-	issue: "#f87171", // red-400
+	workflow: "#0ea5e9", // Sky-500
+	process: "#38bdf8", // Sky-400
+	integration: "#7dd3fc", // Sky-300
+	deployment: "#0284c7", // Sky-600
+	database: "#0d9488", // Teal-600
+	bug: "#ef4444", // Red-500
+	issue: "#f87171", // Red-400
 
 	// Default
-	default: "#64748b", // slate-500
+	default: "#64748b", // Slate-500
 };
 
 // ============================================================================
@@ -215,13 +215,13 @@ const TYPE_COLORS: Record<string, string> = {
 // ============================================================================
 
 export const CATEGORY_COLORS = {
-	ui: "#3b82f6", // blue-500
-	product: "#8b5cf6", // violet-500
-	technical: "#10b981", // emerald-500
-	test: "#f97316", // orange-500
-	design: "#ec4899", // pink-500
-	documentation: "#eab308", // yellow-500
-	default: "#64748b", // slate-500
+	ui: "#3b82f6", // Blue-500
+	product: "#8b5cf6", // Violet-500
+	technical: "#10b981", // Emerald-500
+	test: "#f97316", // Orange-500
+	design: "#ec4899", // Pink-500
+	documentation: "#eab308", // Yellow-500
+	default: "#64748b", // Slate-500
 };
 
 // ============================================================================
@@ -232,7 +232,7 @@ export const CATEGORY_COLORS = {
  * Get icon component for an entity type
  */
 export function getTypeIcon(type: string): LucideIcon {
-	const normalizedType = type.toLowerCase().replace(/[_-]/g, "_");
+	const normalizedType = type.toLowerCase().replaceAll(/[_-]/g, "_");
 	return (TYPE_ICONS[normalizedType] ?? TYPE_ICONS["default"])!;
 }
 
@@ -240,7 +240,7 @@ export function getTypeIcon(type: string): LucideIcon {
  * Get color for an entity type
  */
 export function getTypeColor(type: string): string {
-	const normalizedType = type.toLowerCase().replace(/[_-]/g, "_");
+	const normalizedType = type.toLowerCase().replaceAll(/[_-]/g, "_");
 	return (TYPE_COLORS[normalizedType] ?? TYPE_COLORS["default"])!;
 }
 
@@ -392,27 +392,33 @@ export function getStatusColor(status: string): string {
 	switch (normalizedStatus) {
 		case "todo":
 		case "draft":
-		case "pending":
-			return "#94a3b8"; // slate-400
+		case "pending": {
+			return "#94a3b8";
+		} // Slate-400
 		case "in_progress":
 		case "active":
-		case "running":
-			return "#3b82f6"; // blue-500
+		case "running": {
+			return "#3b82f6";
+		} // Blue-500
 		case "done":
 		case "complete":
 		case "completed":
-		case "approved":
-			return "#22c55e"; // green-500
+		case "approved": {
+			return "#22c55e";
+		} // Green-500
 		case "blocked":
 		case "failed":
-		case "error":
-			return "#ef4444"; // red-500
+		case "error": {
+			return "#ef4444";
+		} // Red-500
 		case "cancelled":
 		case "deprecated":
-		case "archived":
-			return "#6b7280"; // gray-500
-		default:
-			return "#94a3b8"; // slate-400
+		case "archived": {
+			return "#6b7280";
+		} // Gray-500
+		default: {
+			return "#94a3b8";
+		} // Slate-400
 	}
 }
 
@@ -425,22 +431,28 @@ export function getPriorityColor(priority: string): string {
 	switch (normalizedPriority) {
 		case "critical":
 		case "highest":
-		case "p0":
-			return "#ef4444"; // red-500
+		case "p0": {
+			return "#ef4444";
+		} // Red-500
 		case "high":
-		case "p1":
-			return "#f97316"; // orange-500
+		case "p1": {
+			return "#f97316";
+		} // Orange-500
 		case "medium":
 		case "normal":
-		case "p2":
-			return "#eab308"; // yellow-500
+		case "p2": {
+			return "#eab308";
+		} // Yellow-500
 		case "low":
-		case "p3":
-			return "#22c55e"; // green-500
+		case "p3": {
+			return "#22c55e";
+		} // Green-500
 		case "lowest":
-		case "p4":
-			return "#3b82f6"; // blue-500
-		default:
-			return "#64748b"; // slate-500
+		case "p4": {
+			return "#3b82f6";
+		} // Blue-500
+		default: {
+			return "#64748b";
+		} // Slate-500
 	}
 }

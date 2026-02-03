@@ -1,7 +1,7 @@
 // General helper utilities
 
 import type { Item, Link } from "@tracertm/types";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // Array utilities
 export function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
@@ -23,18 +23,22 @@ export function sortBy<T>(
 	key: keyof T,
 	order: "asc" | "desc" = "asc",
 ): T[] {
-	return [...array].sort((a: T, b: T) => {
+	return [...array].toSorted((a: T, b: T) => {
 		const aVal = a[key];
 		const bVal = b[key];
 
-		if (aVal < bVal) return order === "asc" ? -1 : 1;
-		if (aVal > bVal) return order === "asc" ? 1 : -1;
+		if (aVal < bVal) {
+			return order === "asc" ? -1 : 1;
+		}
+		if (aVal > bVal) {
+			return order === "asc" ? 1 : -1;
+		}
 		return 0;
 	});
 }
 
 export function unique<T>(array: T[]): T[] {
-	return Array.from(new Set(array));
+	return [...new Set(array)];
 }
 
 export function chunk<T>(array: T[], size: number): T[][] {
@@ -47,7 +51,7 @@ export function chunk<T>(array: T[], size: number): T[][] {
 
 export function shuffle<T>(array: T[]): T[] {
 	const shuffled = [...array];
-	for (let i = shuffled.length - 1; i > 0; i--) {
+	for (let i = shuffled.length - 1; i > 0; i -= 1) {
 		const j = Math.floor(Math.random() * (i + 1));
 		const temp = shuffled[i];
 		shuffled[i] = shuffled[j]!;
@@ -82,7 +86,7 @@ export function omit<T extends object, K extends keyof T>(
 }
 
 export function deepClone<T>(obj: T): T {
-	return JSON.parse(JSON.stringify(obj));
+	return structuredClone(obj);
 }
 
 export function isEmpty(obj: object): boolean {
@@ -98,23 +102,23 @@ export function merge<T extends object>(
 
 // String utilities
 export function generateId(): string {
-	return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+	return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
 export function slugify(text: string): string {
 	return text
 		.toLowerCase()
 		.trim()
-		.replace(/[^\w\s-]/g, "")
-		.replace(/[\s_-]+/g, "-")
-		.replace(/^-+|-+$/g, "");
+		.replaceAll(/[^\w\s-]/g, "")
+		.replaceAll(/[\s_-]+/g, "-")
+		.replaceAll(/^-+|-+$/g, "");
 }
 
 export function randomString(length: number): string {
 	const chars =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 	let result = "";
-	for (let i = 0; i < length; i++) {
+	for (let i = 0; i < length; i += 1) {
 		result += chars.charAt(Math.floor(Math.random() * chars.length));
 	}
 	return result;
@@ -157,7 +161,7 @@ export function throttle<T extends (...args: never[]) => unknown>(
 	func: T,
 	limit: number,
 ): (...args: Parameters<T>) => void {
-	let inThrottle: boolean = false;
+	let inThrottle = false;
 
 	return function executedFunction(...args: Parameters<T>) {
 		if (!inThrottle) {
@@ -216,21 +220,22 @@ export function getLinkedItems(
 }
 
 export function calculateProgress(items: Item[]): number {
-	if (items.length === 0) return 0;
+	if (items.length === 0) {
+		return 0;
+	}
 	const doneItems = items.filter((item) => item.status === "done").length;
 	return (doneItems / items.length) * 100;
 }
 
 // Local storage utilities (SSR-safe)
-const isLocalStorageAvailable = () => {
-	return (
-		typeof localStorage !== "undefined" &&
-		typeof localStorage.getItem === "function"
-	);
-};
+const isLocalStorageAvailable = () =>
+	typeof localStorage !== "undefined" &&
+	typeof localStorage.getItem === "function";
 
 export function getFromStorage<T>(key: string, defaultValue: T): T {
-	if (!isLocalStorageAvailable()) return defaultValue;
+	if (!isLocalStorageAvailable()) {
+		return defaultValue;
+	}
 	try {
 		const item = localStorage.getItem(key);
 		return item ? JSON.parse(item) : defaultValue;
@@ -240,7 +245,9 @@ export function getFromStorage<T>(key: string, defaultValue: T): T {
 }
 
 export function setToStorage<T>(key: string, value: T): void {
-	if (!isLocalStorageAvailable()) return;
+	if (!isLocalStorageAvailable()) {
+		return;
+	}
 	try {
 		localStorage.setItem(key, JSON.stringify(value));
 	} catch (error) {
@@ -249,7 +256,9 @@ export function setToStorage<T>(key: string, value: T): void {
 }
 
 export function removeFromStorage(key: string): void {
-	if (!isLocalStorageAvailable()) return;
+	if (!isLocalStorageAvailable()) {
+		return;
+	}
 	try {
 		localStorage.removeItem(key);
 	} catch (error) {
@@ -260,7 +269,7 @@ export function removeFromStorage(key: string): void {
 // Copy to clipboard
 export async function copyToClipboard(text: string): Promise<boolean> {
 	if (
-		typeof window === "undefined" ||
+		typeof globalThis.window === "undefined" ||
 		typeof navigator === "undefined" ||
 		typeof document === "undefined"
 	) {
@@ -282,7 +291,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 		textArea.value = text;
 		textArea.style.position = "fixed";
 		textArea.style.left = "-999999px";
-		document.body.appendChild(textArea);
+		document.body.append(textArea);
 		textArea.select();
 		try {
 			document.execCommand("copy");
@@ -301,16 +310,21 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 export function downloadFile(
 	content: string,
 	filename: string,
-	type: string = "text/plain",
+	type = "text/plain",
 ): void {
-	if (typeof window === "undefined" || typeof document === "undefined") return;
+	if (
+		typeof globalThis.window === "undefined" ||
+		typeof document === "undefined"
+	) {
+		return;
+	}
 
 	const blob = new Blob([content], { type });
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement("a");
 	link.href = url;
 	link.download = filename;
-	document.body.appendChild(link);
+	document.body.append(link);
 	link.click();
 	document.body.removeChild(link);
 	URL.revokeObjectURL(url);

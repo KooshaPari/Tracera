@@ -21,8 +21,5 @@ export const EQUIVALENCE_VIEW = EquivalenceView;
 export const Route = createFileRoute("/projects/$projectId/equivalence")({
 	beforeLoad: () => requireAuth(),
 	component: EquivalenceView,
-	loader: async () => {
-		// Equivalence data is loaded in component
-		return {};
-	},
+	loader: async () => ({}),
 });

@@ -423,13 +423,12 @@ test.describe("Route Navigation - Sidebar Navigation", () => {
 		// Check if projects link is marked as active
 		const projectsLink = page.getByRole("link", { name: /projects/i });
 		const _isActive = await projectsLink
-			.evaluate((el) => {
-				return (
+			.evaluate(
+				(el) =>
 					el.classList.contains("active") ||
 					el.getAttribute("aria-current") === "page" ||
-					el.parentElement?.classList.contains("active")
-				);
-			})
+					el.parentElement?.classList.contains("active"),
+			)
 			.catch(() => false);
 
 		// Just verify the link exists and is visible

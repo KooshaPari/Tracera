@@ -16,13 +16,13 @@ let user: ReturnType<typeof userEvent.setup>;
 // Mock table component for testing
 function MockDataTable({
 	rows = [
-		{ id: "1", name: "Item 1", status: "Active", priority: "High" },
-		{ id: "2", name: "Item 2", status: "Inactive", priority: "Low" },
-		{ id: "3", name: "Item 3", status: "Active", priority: "Medium" },
+		{ id: "1", name: "Item 1", priority: "High", status: "Active" },
+		{ id: "2", name: "Item 2", priority: "Low", status: "Inactive" },
+		{ id: "3", name: "Item 3", priority: "Medium", status: "Active" },
 	],
 	onRowSelect = vi.fn(),
 }: {
-	rows?: Array<{ id: string; name: string; status: string; priority: string }>;
+	rows?: { id: string; name: string; status: string; priority: string }[];
 	onRowSelect?: (id: string) => void;
 }) {
 	const [selectedRow, setSelectedRow] = React.useState<string | null>(null);
@@ -154,7 +154,7 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const lastDataRow = rows[rows.length - 1];
+		const lastDataRow = rows.at(-1);
 
 		lastDataRow.focus();
 		await user.keyboard("{ArrowDown}");
@@ -173,7 +173,7 @@ describe("Table Keyboard Navigation - Home/End Keys", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const lastDataRow = rows[rows.length - 1];
+		const lastDataRow = rows.at(-1);
 
 		lastDataRow.focus();
 		await user.keyboard("{Home}");
@@ -194,7 +194,7 @@ describe("Table Keyboard Navigation - Home/End Keys", () => {
 		await user.keyboard("{End}");
 
 		await waitFor(() => {
-			const lastDataRow = rows[rows.length - 1];
+			const lastDataRow = rows.at(-1);
 			expect(lastDataRow).toHaveFocus();
 		});
 	});
@@ -292,7 +292,7 @@ describe("Table Focus Management", () => {
 		firstRow.focus();
 
 		// Check for visual focus indicator
-		const _style = window.getComputedStyle(firstRow);
+		const _style = globalThis.getComputedStyle(firstRow);
 		// Should have ring or outline
 		expect(firstRow.className).toContain("ring");
 	});
@@ -301,7 +301,7 @@ describe("Table Focus Management", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const lastRow = rows[rows.length - 1];
+		const lastRow = rows.at(-1);
 
 		lastRow.focus();
 		await user.keyboard("{ArrowDown}");

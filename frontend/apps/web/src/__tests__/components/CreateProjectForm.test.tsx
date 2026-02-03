@@ -6,14 +6,12 @@ import { describe, expect, it, vi } from "vitest";
 import { CreateProjectForm } from "../../components/forms/CreateProjectForm";
 import { render, screen, waitFor } from "../utils/test-utils";
 
-describe("CreateProjectForm", () => {
+describe(CreateProjectForm, () => {
 	it("should render form fields", () => {
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
-		render(
-			<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} />,
-		);
+		render(<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} />);
 
 		// Verify form exists
 		expect(container.querySelector("form")).toBeInTheDocument();
@@ -28,7 +26,7 @@ describe("CreateProjectForm", () => {
 
 		await user.click(screen.getByRole("button", { name: /cancel/i }));
 
-		expect(onCancel).toHaveBeenCalledTimes(1);
+		expect(onCancel).toHaveBeenCalledOnce();
 	});
 
 	it("should show validation errors for empty required fields", async () => {
@@ -50,9 +48,7 @@ describe("CreateProjectForm", () => {
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
-		render(
-			<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} />,
-		);
+		render(<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} />);
 
 		// Find name input
 		const nameInput =
@@ -83,11 +79,7 @@ describe("CreateProjectForm", () => {
 		const onCancel = vi.fn();
 
 		render(
-			<CreateProjectForm
-				onSubmit={onSubmit}
-				onCancel={onCancel}
-				isLoading={true}
-			/>,
+			<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} isLoading />,
 		);
 
 		const submitButton = screen.getByRole("button", { name: /creating/i });

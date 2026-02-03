@@ -1,5 +1,5 @@
 /**
- * useViewportGraph Hook
+ * UseViewportGraph Hook
  *
  * Progressive graph loading based on viewport bounds.
  * Loads graph data incrementally as user pans/zooms, reducing initial payload.
@@ -20,8 +20,8 @@
  * ```
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
-import type { Node, Edge } from "@xyflow/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Edge, Node } from "@xyflow/react";
 import { logger } from "@/lib/logger";
 import client from "@/api/client";
 
@@ -121,7 +121,11 @@ export function useViewportGraph(
 		/** Buffer size around viewport (default: 500px) */
 		bufferPx?: number;
 		/** Callback when region is loaded */
-		onRegionLoaded?: (regionKey: string, nodeCount: number, edgeCount: number) => void;
+		onRegionLoaded?: (
+			regionKey: string,
+			nodeCount: number,
+			edgeCount: number,
+		) => void;
 	},
 ): UseViewportGraphResult {
 	const { bufferPx = DEFAULT_BUFFER_PX, onRegionLoaded } = options || {};
@@ -130,7 +134,12 @@ export function useViewportGraph(
 	const [allNodes, setAllNodes] = useState<Map<string, Node>>(new Map());
 	const [allEdges, setAllEdges] = useState<Map<string, Edge>>(new Map());
 	const [loadedRegions, setLoadedRegions] = useState<Set<string>>(new Set());
-	const [hasMore, setHasMore] = useState({ north: false, south: false, east: false, west: false });
+	const [hasMore, setHasMore] = useState({
+		east: false,
+		north: false,
+		south: false,
+		west: false,
+	});
 	const [totalCount, setTotalCount] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -171,14 +180,14 @@ export function useViewportGraph(
 						},
 						credentials: "include", // Send HttpOnly cookies
 						body: JSON.stringify({
+							bufferPx,
 							viewport: {
-								minX: viewport.minX,
-								minY: viewport.minY,
 								maxX: viewport.maxX,
 								maxY: viewport.maxY,
+								minX: viewport.minX,
+								minY: viewport.minY,
 							},
 							zoom: viewport.zoom,
-							bufferPx,
 						}),
 					},
 				);
@@ -228,8 +237,8 @@ export function useViewportGraph(
 						data.metadata.totalEdgesInRegion,
 					);
 				}
-			} catch (err) {
-				logger.error("[useViewportGraph] Failed to load viewport:", err);
+			} catch (error) {
+				logger.error("[useViewportGraph] Failed to load viewport:", error);
 				// Don't add to loadedRegions on error - allow retry
 			} finally {
 				// Remove from loading set
@@ -243,22 +252,16 @@ export function useViewportGraph(
 	// Auto-load on mount (initial viewport)
 	useEffect(() => {
 		// Load initial viewport (center of graph)
-		void loadViewport({
-			minX: -1000,
-			minY: -1000,
-			maxX: 1000,
-			maxY: 1000,
-			zoom: 1.0,
-		});
+		undefined;
 	}, [loadViewport]);
 
 	return {
-		nodes: Array.from(allNodes.values()),
-		edges: Array.from(allEdges.values()),
-		loadViewport,
+		edges: [...allEdges.values()],
 		hasMore,
-		totalCount,
 		isLoading,
+		loadViewport,
 		loadedRegionCount: loadedRegions.size,
+		nodes: [...allNodes.values()],
+		totalCount,
 	};
 }

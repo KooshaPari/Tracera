@@ -147,7 +147,7 @@ export interface MerkleProofResponse {
 	leaf_index: number;
 	leaf_hash: string;
 	verified: boolean;
-	verification_path: Array<{ direction: string; hash: string }>;
+	verification_path: { direction: string; hash: string }[];
 	tree_size: number;
 	algorithm: string;
 	generated_at: string;
@@ -432,8 +432,8 @@ export interface AnalyzeSimilarityRequest {
 
 async function apiPost<T>(url: string, data?: unknown): Promise<T> {
 	const requestInit: RequestInit = {
-		method: "POST",
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	};
 	if (data !== undefined) {
 		requestInit.body = JSON.stringify(data);
@@ -461,26 +461,6 @@ async function apiGet<T>(url: string): Promise<T> {
 
 export const specAnalyticsKeys = {
 	all: ["spec-analytics"] as const,
-	ears: (projectId: string, specId: string) =>
-		[...specAnalyticsKeys.all, "ears", projectId, specId] as const,
-	quality: (projectId: string, specId: string) =>
-		[...specAnalyticsKeys.all, "quality", projectId, specId] as const,
-	versionChain: (projectId: string, specType: SpecType, specId: string) =>
-		[
-			...specAnalyticsKeys.all,
-			"version-chain",
-			projectId,
-			specType,
-			specId,
-		] as const,
-	merkleProof: (projectId: string, specType: SpecType, specId: string) =>
-		[
-			...specAnalyticsKeys.all,
-			"merkle-proof",
-			projectId,
-			specType,
-			specId,
-		] as const,
 	contentAddress: (projectId: string, specType: SpecType, specId: string) =>
 		[
 			...specAnalyticsKeys.all,
@@ -489,14 +469,26 @@ export const specAnalyticsKeys = {
 			specType,
 			specId,
 		] as const,
-	flakiness: (projectId: string, specId: string) =>
-		[...specAnalyticsKeys.all, "flakiness", projectId, specId] as const,
-	odc: (projectId: string, specId: string) =>
-		[...specAnalyticsKeys.all, "odc", projectId, specId] as const,
+	coverageGaps: (projectId: string) =>
+		[...specAnalyticsKeys.all, "coverage-gaps", projectId] as const,
 	cvss: (projectId: string, specId: string) =>
 		[...specAnalyticsKeys.all, "cvss", projectId, specId] as const,
+	ears: (projectId: string, specId: string) =>
+		[...specAnalyticsKeys.all, "ears", projectId, specId] as const,
+	flakiness: (projectId: string, specId: string) =>
+		[...specAnalyticsKeys.all, "flakiness", projectId, specId] as const,
 	impact: (projectId: string, specType: SpecType, specId: string) =>
 		[...specAnalyticsKeys.all, "impact", projectId, specType, specId] as const,
+	merkleProof: (projectId: string, specType: SpecType, specId: string) =>
+		[
+			...specAnalyticsKeys.all,
+			"merkle-proof",
+			projectId,
+			specType,
+			specId,
+		] as const,
+	odc: (projectId: string, specId: string) =>
+		[...specAnalyticsKeys.all, "odc", projectId, specId] as const,
 	prioritization: (projectId: string, specType: SpecType, specId: string) =>
 		[
 			...specAnalyticsKeys.all,
@@ -505,14 +497,22 @@ export const specAnalyticsKeys = {
 			specType,
 			specId,
 		] as const,
-	coverageGaps: (projectId: string) =>
-		[...specAnalyticsKeys.all, "coverage-gaps", projectId] as const,
-	suspectLinks: (projectId: string) =>
-		[...specAnalyticsKeys.all, "suspect-links", projectId] as const,
+	quality: (projectId: string, specId: string) =>
+		[...specAnalyticsKeys.all, "quality", projectId, specId] as const,
 	similarity: (projectId: string, specType: SpecType, specId: string) =>
 		[
 			...specAnalyticsKeys.all,
 			"similarity",
+			projectId,
+			specType,
+			specId,
+		] as const,
+	suspectLinks: (projectId: string) =>
+		[...specAnalyticsKeys.all, "suspect-links", projectId] as const,
+	versionChain: (projectId: string, specType: SpecType, specId: string) =>
+		[
+			...specAnalyticsKeys.all,
+			"version-chain",
 			projectId,
 			specType,
 			specId,
@@ -571,14 +571,14 @@ export function useVersionChain(
 	options?: { enabled?: boolean; limit?: number },
 ) {
 	return useQuery({
-		queryKey: specAnalyticsKeys.versionChain(projectId, specType, specId),
+		enabled: options?.enabled ?? true,
 		queryFn: () =>
 			apiGet<VersionChainResponse>(
 				`/api/v1/projects/${projectId}/item-specs/${specType}/${specId}/version-chain${
 					options?.limit ? `?limit=${options.limit}` : ""
 				}`,
 			),
-		enabled: options?.enabled ?? true,
+		queryKey: specAnalyticsKeys.versionChain(projectId, specType, specId),
 	});
 }
 
@@ -593,12 +593,12 @@ export function useMerkleProof(
 	options?: { enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: specAnalyticsKeys.merkleProof(projectId, specType, specId),
+		enabled: options?.enabled ?? true,
 		queryFn: () =>
 			apiGet<MerkleProofResponse>(
 				`/api/v1/projects/${projectId}/item-specs/${specType}/${specId}/merkle-proof`,
 			),
-		enabled: options?.enabled ?? true,
+		queryKey: specAnalyticsKeys.merkleProof(projectId, specType, specId),
 	});
 }
 
@@ -626,12 +626,12 @@ export function useContentAddress(
 	options?: { enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: specAnalyticsKeys.contentAddress(projectId, specType, specId),
+		enabled: options?.enabled ?? true,
 		queryFn: () =>
 			apiGet<ContentAddressResponse>(
 				`/api/v1/projects/${projectId}/item-specs/${specType}/${specId}/content-address`,
 			),
-		enabled: options?.enabled ?? true,
+		queryKey: specAnalyticsKeys.contentAddress(projectId, specType, specId),
 	});
 }
 
@@ -827,15 +827,6 @@ export function useInvalidateSpecAnalytics() {
 				queryKey: [...specAnalyticsKeys.all, projectId],
 			});
 		},
-		invalidateVersionChain: (
-			projectId: string,
-			specType: SpecType,
-			specId: string,
-		) => {
-			void queryClient.invalidateQueries({
-				queryKey: specAnalyticsKeys.versionChain(projectId, specType, specId),
-			});
-		},
 		invalidateContentAddress: (
 			projectId: string,
 			specType: SpecType,
@@ -843,6 +834,15 @@ export function useInvalidateSpecAnalytics() {
 		) => {
 			void queryClient.invalidateQueries({
 				queryKey: specAnalyticsKeys.contentAddress(projectId, specType, specId),
+			});
+		},
+		invalidateVersionChain: (
+			projectId: string,
+			specType: SpecType,
+			specId: string,
+		) => {
+			void queryClient.invalidateQueries({
+				queryKey: specAnalyticsKeys.versionChain(projectId, specType, specId),
 			});
 		},
 	};

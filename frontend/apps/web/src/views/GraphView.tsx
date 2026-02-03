@@ -23,14 +23,16 @@ export function GraphView({ projectId }: GraphViewProps) {
 	const [visibleEdgeCount, setVisibleEdgeCount] = useState(MAX_EDGES_INITIAL);
 
 	const { data: graphsData } = useGraphs(projectId);
-	const [selectedGraphId, setSelectedGraphId] = useState<string | undefined>(
-		);
+	const [selectedGraphId, setSelectedGraphId] = useState<string | undefined>();
 	const [overlayMapping, setOverlayMapping] = useState(false);
 
 	const selectedGraph = useMemo(() => {
-		if (!graphsData?.length) {return;}
-		if (selectedGraphId)
-			{return graphsData.find((g) => g.id === selectedGraphId);}
+		if (!graphsData?.length) {
+			return;
+		}
+		if (selectedGraphId) {
+			return graphsData.find((g) => g.id === selectedGraphId);
+		}
 		return graphsData[0];
 	}, [graphsData, selectedGraphId]);
 
@@ -51,11 +53,24 @@ export function GraphView({ projectId }: GraphViewProps) {
 
 	const items = useMemo(() => {
 		const nodes = graphData?.nodes || [];
-		return nodes.map((node: any) => (Object.assign(node, {id:node.id,title:node.title,view:node.view,type:node.item_type||node.itemType||node.view})));
+		return nodes.map((node: any) =>
+			Object.assign(node, {
+				id: node.id,
+				title: node.title,
+				type: node.item_type || node.itemType || node.view,
+				view: node.view,
+			}),
+		);
 	}, [graphData]);
 
 	const links = useMemo(() => {
-		const baseLinks = (graphData?.links || []).map((link: any) => (Object.assign(link, {sourceId:link.source_item_id||link.sourceId,targetId:link.target_item_id||link.targetId,type:link.link_type||link.type})));
+		const baseLinks = (graphData?.links || []).map((link: any) =>
+			Object.assign(link, {
+				sourceId: link.source_item_id || link.sourceId,
+				targetId: link.target_item_id || link.targetId,
+				type: link.link_type || link.type,
+			}),
+		);
 
 		if (!overlayMapping || !mappingData?.links) {
 			return baseLinks;
@@ -83,11 +98,7 @@ export function GraphView({ projectId }: GraphViewProps) {
 		setVisibleEdgeCount((prev) => Math.min(prev + 500, links.length));
 	};
 
-	const handleNavigateToItem = (itemId: string) => {
-		const item = items.find((node: any) => node.id === itemId);
-		const viewType = String(item?.view || "feature").toLowerCase();
-		undefined;
-	};
+	const handleNavigateToItem = (itemId: string) => {};
 
 	return (
 		<div className="space-y-4 animate-in-fade-up">

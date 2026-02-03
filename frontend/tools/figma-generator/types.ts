@@ -305,13 +305,9 @@ export interface DesignTokens {
 	transitions?: TransitionTokens;
 }
 
-export interface ColorTokens {
-	[key: string]: string;
-}
+export type ColorTokens = Record<string, string>;
 
-export interface TypographyTokens {
-	[key: string]: TypographyToken;
-}
+export type TypographyTokens = Record<string, TypographyToken>;
 
 export interface TypographyToken {
 	fontFamily: string;
@@ -321,25 +317,15 @@ export interface TypographyToken {
 	letterSpacing?: number;
 }
 
-export interface SpacingTokens {
-	[key: string]: number;
-}
+export type SpacingTokens = Record<string, number>;
 
-export interface BorderRadiusTokens {
-	[key: string]: number;
-}
+export type BorderRadiusTokens = Record<string, number>;
 
-export interface ShadowTokens {
-	[key: string]: string;
-}
+export type ShadowTokens = Record<string, string>;
 
-export interface BreakpointTokens {
-	[key: string]: number;
-}
+export type BreakpointTokens = Record<string, number>;
 
-export interface TransitionTokens {
-	[key: string]: string;
-}
+export type TransitionTokens = Record<string, string>;
 
 // Sync Metadata Types
 export interface SyncMetadata {

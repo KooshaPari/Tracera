@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
+	RouterProvider,
 	createRootRoute,
 	createRouter,
-	RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -10,6 +10,14 @@ import { ItemsTableView } from "../ItemsTableView";
 
 // Mock hooks
 vi.mock("../../hooks/useItems", () => ({
+	useCreateItem: vi.fn(() => ({
+		mutateAsync: vi.fn(),
+		isPending: false,
+	})),
+	useDeleteItem: vi.fn(() => ({
+		mutateAsync: vi.fn(),
+		isPending: false,
+	})),
 	useItems: vi.fn(() => ({
 		data: {
 			items: Array.from({ length: 1000 }, (_, i) => ({
@@ -23,14 +31,6 @@ vi.mock("../../hooks/useItems", () => ({
 			})),
 		},
 		isLoading: false,
-	})),
-	useDeleteItem: vi.fn(() => ({
-		mutateAsync: vi.fn(),
-		isPending: false,
-	})),
-	useCreateItem: vi.fn(() => ({
-		mutateAsync: vi.fn(),
-		isPending: false,
 	})),
 }));
 

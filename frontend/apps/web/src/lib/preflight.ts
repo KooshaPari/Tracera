@@ -107,12 +107,14 @@ function renderPreflightLoading(checks: PreflightCheck[]): void {
 					<div data-progress style="width:0%;height:100%;background:#f59e0b;transition:width 200ms ease;"></div>
 				</div>
 				<ul data-preflight-list style="list-style:none;padding:0;margin:0;display:none;">${items}</ul>
-				${infraItems.length
-					? `<details data-infra-panel style="margin-top:18px;padding-top:12px;border-top:1px solid #1f2a37;display:none;">
+				${
+					infraItems.length
+						? `<details data-infra-panel style="margin-top:18px;padding-top:12px;border-top:1px solid #1f2a37;display:none;">
 					<summary style="cursor:pointer;color:#9aa4b2;font-weight:600;">Infrastructure checks</summary>
 					<ul data-infra-list style="list-style:none;padding:0;margin:12px 0 0 0;">${infraSkeleton}</ul>
 				</details>`
-					: ""}
+						: ""
+				}
 				<div data-preflight-footer style="margin-top:16px;color:#9aa4b2;font-size:14px;display:none;">
 					Status updates will appear as checks complete.
 				</div>
@@ -122,9 +124,15 @@ function renderPreflightLoading(checks: PreflightCheck[]): void {
 }
 
 function revealFailurePanel(): void {
-	const list = document.querySelector("[data-preflight-list]") as HTMLElement | null;
-	const infra = document.querySelector("[data-infra-panel]") as HTMLElement | null;
-	const footer = document.querySelector("[data-preflight-footer]") as HTMLElement | null;
+	const list = document.querySelector(
+		"[data-preflight-list]",
+	) as HTMLElement | null;
+	const infra = document.querySelector(
+		"[data-infra-panel]",
+	) as HTMLElement | null;
+	const footer = document.querySelector(
+		"[data-preflight-footer]",
+	) as HTMLElement | null;
 	if (list) {
 		list.style.display = "block";
 	}
@@ -137,7 +145,9 @@ function revealFailurePanel(): void {
 }
 
 function revealItem(name: string): void {
-	const item = document.querySelector(`[data-check="${name}"]`) as HTMLElement | null;
+	const item = document.querySelector(
+		`[data-check="${name}"]`,
+	) as HTMLElement | null;
 	if (item) {
 		item.style.display = "flex";
 	}
@@ -156,8 +166,12 @@ function updatePreflightCheck(
 	const errorEl = item.querySelector("[data-error]") as HTMLElement | null;
 	const hintEl = item.querySelector("[data-hint]") as HTMLElement | null;
 	const skeleton = item.querySelector("[data-skeleton]") as HTMLElement | null;
-	const retryBtn = item.querySelector("[data-retry]") as HTMLButtonElement | null;
-	const statusText = item.querySelector("[data-status-text]") as HTMLElement | null;
+	const retryBtn = item.querySelector(
+		"[data-retry]",
+	) as HTMLButtonElement | null;
+	const statusText = item.querySelector(
+		"[data-status-text]",
+	) as HTMLElement | null;
 	const isRetrying = error?.toLowerCase().startsWith("retrying") ?? false;
 	const state = ok ? "healthy" : isRetrying ? "checking" : "unhealthy";
 	if (!ok && !isRetrying) {
@@ -173,7 +187,8 @@ function updatePreflightCheck(
 					: "#ef4444";
 	}
 	if (icon) {
-		icon.textContent = state === "healthy" ? "✓" : state === "checking" ? "…" : "✕";
+		icon.textContent =
+			state === "healthy" ? "✓" : state === "checking" ? "…" : "✕";
 		icon.style.color =
 			state === "healthy"
 				? "#22c55e"
@@ -199,7 +214,11 @@ function updatePreflightCheck(
 	item.setAttribute("data-state", state);
 	if (statusText) {
 		statusText.textContent = ok ? "Healthy" : isRetrying ? "Retrying" : "Down";
-		statusText.style.color = ok ? "#22c55e" : isRetrying ? "#f59e0b" : "#ef4444";
+		statusText.style.color = ok
+			? "#22c55e"
+			: isRetrying
+				? "#f59e0b"
+				: "#ef4444";
 	}
 }
 
@@ -219,8 +238,12 @@ function updateInfraStatus(map: Record<string, string>): void {
 	entries.forEach((entry) => {
 		const key = entry.getAttribute("data-infra") || "";
 		const status = map[key] || "unknown";
-		const dot = entry.querySelector("[data-infra-status]") as HTMLElement | null;
-		const shimmer = entry.querySelector(".preflight-skeleton") as HTMLElement | null;
+		const dot = entry.querySelector(
+			"[data-infra-status]",
+		) as HTMLElement | null;
+		const shimmer = entry.querySelector(
+			".preflight-skeleton",
+		) as HTMLElement | null;
 		const text = entry.querySelector("[data-infra-text]") as HTMLElement | null;
 		if (dot) {
 			dot.style.background =
@@ -274,7 +297,9 @@ function pulseItem(element: Element | null): void {
 }
 
 function fadeOutAndReload(): void {
-	const card = document.querySelector("[data-preflight-card]") as HTMLElement | null;
+	const card = document.querySelector(
+		"[data-preflight-card]",
+	) as HTMLElement | null;
 	if (!card) {
 		window.location.reload();
 		return;
@@ -329,7 +354,9 @@ async function checkHealth(
 	};
 }
 
-async function fetchPythonInfra(baseUrl: string): Promise<Record<string, string>> {
+async function fetchPythonInfra(
+	baseUrl: string,
+): Promise<Record<string, string>> {
 	const normalized = baseUrl.replace(/\/$/, "");
 	const status: Record<string, string> = {};
 
@@ -374,8 +401,7 @@ export async function runFrontendPreflight(): Promise<PreflightResult> {
 			: "127.0.0.1";
 
 	if (import.meta.env.PROD) {
-		const baseUrl =
-			import.meta.env?.VITE_API_URL || window.location.origin;
+		const baseUrl = import.meta.env?.VITE_API_URL || window.location.origin;
 		checks.push({ name: "backend", url: baseUrl });
 	} else {
 		// Use single Caddy URL when app is served via gateway (port 4000) or VITE_API_URL points at Caddy
@@ -438,7 +464,9 @@ export async function runFrontendPreflight(): Promise<PreflightResult> {
 			updateInfraStatus(infra);
 		}
 		const item = document.querySelector(`[data-check="${check.name}"]`);
-		const retryBtn = item?.querySelector("[data-retry]") as HTMLButtonElement | null;
+		const retryBtn = item?.querySelector(
+			"[data-retry]",
+		) as HTMLButtonElement | null;
 		if (retryBtn) {
 			retryBtn.onclick = () => {
 				retryCheck(check);
@@ -462,7 +490,9 @@ export function renderPreflightFailure(result: PreflightResult): void {
 	revealFailurePanel();
 
 	const details = result.errors.map((err) => `<li>${err}</li>`).join("");
-	const footer = root.querySelector("[data-preflight-footer]") as HTMLElement | null;
+	const footer = root.querySelector(
+		"[data-preflight-footer]",
+	) as HTMLElement | null;
 	if (!footer) {
 		return;
 	}

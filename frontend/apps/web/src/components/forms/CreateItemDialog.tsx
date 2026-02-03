@@ -67,10 +67,10 @@ export function CreateItemDialog({
 		try {
 			// TODO: Replace with actual API call
 			logger.info("Creating item:", {
+				data,
 				projectId,
 				type: selectedType,
 				view: defaultView,
-				data,
 			});
 
 			// Mock API delay
@@ -99,30 +99,38 @@ export function CreateItemDialog({
 
 	// Render the appropriate form based on selected type
 	const renderForm = () => {
-		if (!selectedType) return null;
+		if (!selectedType) {
+			return null;
+		}
 
 		const formProps = {
-			onSubmit: handleFormSubmit,
-			onCancel: handleCancel,
 			isLoading: isSubmitting,
+			onCancel: handleCancel,
+			onSubmit: handleFormSubmit,
 		};
 
 		switch (selectedType) {
-			case "test":
+			case "test": {
 				return <CreateTestItemForm {...formProps} />;
-			case "requirement":
+			}
+			case "requirement": {
 				return <CreateRequirementItemForm {...formProps} />;
-			case "epic":
+			}
+			case "epic": {
 				return <CreateEpicItemForm {...formProps} />;
+			}
 			case "user_story":
-			case "story":
+			case "story": {
 				return <CreateUserStoryItemForm {...formProps} />;
-			case "task":
+			}
+			case "task": {
 				return <CreateTaskItemForm {...formProps} />;
+			}
 			case "bug":
-			case "defect":
+			case "defect": {
 				return <CreateDefectItemForm {...formProps} />;
-			default:
+			}
+			default: {
 				// Fallback for unknown types
 				return (
 					<div className="p-4 text-center">
@@ -138,6 +146,7 @@ export function CreateItemDialog({
 						</button>
 					</div>
 				);
+			}
 		}
 	};
 

@@ -66,8 +66,8 @@ export function ChatBubble() {
 			}
 		};
 
-		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
+		globalThis.addEventListener("keydown", handleKeyDown);
+		return () => globalThis.removeEventListener("keydown", handleKeyDown);
 	}, []);
 
 	const handleToggleCollapse = () => {
@@ -124,19 +124,19 @@ export function ChatBubble() {
 					<motion.div
 						initial={false}
 						animate={{
-							width: `${sidebarWidth}px`,
 							opacity: 1,
+							width: `${sidebarWidth}px`,
 						}}
 						transition={
 							isResizing
-								? { type: "tween", duration: 0 }
-								: { type: "spring", damping: 25, stiffness: 300 }
+								? { duration: 0, type: "tween" }
+								: { damping: 25, stiffness: 300, type: "spring" }
 						}
 						className="relative flex flex-col border-l border-white/10 bg-card/60 backdrop-blur-xl shrink-0 overflow-hidden h-full min-w-0"
 						style={{
-							width: `${sidebarWidth}px`,
-							minWidth: `${sidebarWidth}px`,
 							maxWidth: `${sidebarWidth}px`,
+							minWidth: `${sidebarWidth}px`,
+							width: `${sidebarWidth}px`,
 						}}
 					>
 						<ChatPanel
@@ -152,10 +152,10 @@ export function ChatBubble() {
 			{/* Floating bubble button when collapsed */}
 			{isCollapsed && (
 				<motion.div
-					initial={{ scale: 0, opacity: 0 }}
-					animate={{ scale: 1, opacity: 1 }}
-					exit={{ scale: 0, opacity: 0 }}
-					transition={{ type: "spring", damping: 20, stiffness: 300 }}
+					initial={{ opacity: 0, scale: 0 }}
+					animate={{ opacity: 1, scale: 1 }}
+					exit={{ opacity: 0, scale: 0 }}
+					transition={{ damping: 20, stiffness: 300, type: "spring" }}
 					className="fixed bottom-6 right-6 z-50"
 				>
 					<Button

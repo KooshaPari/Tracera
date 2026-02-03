@@ -46,12 +46,12 @@ export function DigitalSignatureBadge({
 		valid === true
 			? {
 					bg: "bg-green-100",
-					text: "text-green-700",
 					border: "border-green-300",
 					icon: "✓",
 					label: "Verified",
+					text: "text-green-700",
 				}
-			: valid === false
+			: (valid === false
 				? {
 						bg: "bg-red-100",
 						text: "text-red-700",
@@ -65,7 +65,7 @@ export function DigitalSignatureBadge({
 						border: "border-yellow-300",
 						icon: "?",
 						label: "Unverified",
-					};
+					});
 
 	if (!showDetails) {
 		return (
@@ -139,9 +139,9 @@ export function DigitalSignatureBadge({
 }
 
 const sizeClasses = {
-	sm: "text-xs px-2 py-0.5",
-	md: "text-sm px-2.5 py-1",
 	lg: "text-base px-3 py-1.5",
+	md: "text-sm px-2.5 py-1",
+	sm: "text-xs px-2 py-0.5",
 };
 
 interface SignatureVerificationStatusProps {
@@ -211,13 +211,13 @@ export function SignatureVerificationStatus({
 }
 
 interface SignatureHistoryProps {
-	signatures: Array<{
+	signatures: {
 		signature: string;
 		signedBy: string;
 		signedAt: string;
 		valid: boolean;
 		algorithm?: string;
-	}>;
+	}[];
 	className?: string;
 }
 

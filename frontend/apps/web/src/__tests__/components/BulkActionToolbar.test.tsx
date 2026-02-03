@@ -3,14 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { Trash2 } from "lucide-react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	type BulkAction,
-	BulkActionToolbar,
-} from "../../components/BulkActionToolbar";
+import { BulkActionToolbar } from "../../components/BulkActionToolbar";
+import type { BulkAction } from "../../components/BulkActionToolbar";
 
 let user: ReturnType<typeof userEvent.setup>;
 
-describe("BulkActionToolbar", () => {
+describe(BulkActionToolbar, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		user = userEvent.setup();
@@ -22,10 +20,10 @@ describe("BulkActionToolbar", () => {
 	const _getMockOnActionComplete = () => vi.fn();
 
 	const getDeleteAction = (): BulkAction => ({
+		action: getMockDelete(),
+		icon: <Trash2 className="h-4 w-4" />,
 		id: "delete",
 		label: "Delete",
-		icon: <Trash2 className="h-4 w-4" />,
-		action: getMockDelete(),
 		variant: "destructive",
 	});
 
@@ -120,10 +118,10 @@ describe("BulkActionToolbar", () => {
 
 	it("renders all provided actions", () => {
 		const archiveAction: BulkAction = {
+			action: vi.fn(),
+			icon: <span>📦</span>,
 			id: "archive",
 			label: "Archive",
-			icon: <span>📦</span>,
-			action: vi.fn(),
 		};
 
 		const { getByText } = render(
@@ -148,7 +146,7 @@ describe("BulkActionToolbar", () => {
 				onSelectAll={getMockSelectAll()}
 				onSelectNone={getMockSelectNone()}
 				actions={[getDeleteAction()]}
-				loading={true}
+				loading
 			/>,
 		);
 

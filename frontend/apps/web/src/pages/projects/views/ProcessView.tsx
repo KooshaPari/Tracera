@@ -1,33 +1,37 @@
-import type { Process, ProcessCategory, ProcessStatus } from "../../../../../../packages/types/src/index";
+import type {
+	Process,
+	ProcessCategory,
+	ProcessStatus,
+} from "../../../../../../packages/types/src/index";
 import { Archive, Filter, Play, Plus, Search, Workflow } from "lucide-react";
 import { useState } from "react";
 import { CreateProcessForm } from "../../../components/forms/CreateProcessForm";
-import { useProcesses, useProcessStats } from "../../../hooks/useProcesses";
+import { useProcessStats, useProcesses } from "../../../hooks/useProcesses";
 
 const statusColors: Record<ProcessStatus, string> = {
-	draft: "bg-gray-100 text-gray-700",
 	active: "bg-green-100 text-green-700",
-	deprecated: "bg-yellow-100 text-yellow-700",
-	retired: "bg-orange-100 text-orange-700",
 	archived: "bg-gray-200 text-gray-500",
+	deprecated: "bg-yellow-100 text-yellow-700",
+	draft: "bg-gray-100 text-gray-700",
+	retired: "bg-orange-100 text-orange-700",
 };
 
 const statusLabels: Record<ProcessStatus, string> = {
-	draft: "Draft",
 	active: "Active",
-	deprecated: "Deprecated",
-	retired: "Retired",
 	archived: "Archived",
+	deprecated: "Deprecated",
+	draft: "Draft",
+	retired: "Retired",
 };
 
 const categoryLabels: Record<ProcessCategory, string> = {
-	operational: "Operational",
-	support: "Support",
-	management: "Management",
+	compliance: "Compliance",
 	development: "Development",
 	integration: "Integration",
-	compliance: "Compliance",
+	management: "Management",
+	operational: "Operational",
 	other: "Other",
+	support: "Support",
 };
 
 interface ProcessViewProps {
@@ -104,7 +108,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
 							Active
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.['active'] ?? 0}
+							{stats.byStatus?.["active"] ?? 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -113,7 +117,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
 							Draft
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.['draft'] ?? 0}
+							{stats.byStatus?.["draft"] ?? 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -122,7 +126,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
 							Deprecated
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.['deprecated'] ?? 0}
+							{stats.byStatus?.["deprecated"] ?? 0}
 						</div>
 					</div>
 				</div>
@@ -187,7 +191,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
 				<div className="flex items-center justify-center py-12">
 					<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 				</div>
-			) : filteredProcesses.length === 0 ? (
+			) : (filteredProcesses.length === 0 ? (
 				<div className="rounded-lg border border-dashed p-12 text-center">
 					<Workflow className="mx-auto h-12 w-12 text-muted-foreground" />
 					<h3 className="mt-4 text-lg font-semibold">No processes found</h3>
@@ -211,7 +215,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
 						<ProcessCard key={process.id} process={process} />
 					))}
 				</div>
-			)}
+			))}
 
 			{/* Create Modal */}
 			{showCreateModal && (

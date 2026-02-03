@@ -6,7 +6,7 @@ const { apiClient } = client;
 
 const POLL_INTERVAL_MS = 25_000;
 const RETRY_ATTEMPTS = 3;
-const RETRY_DELAY_MS = 2_000;
+const RETRY_DELAY_MS = 2000;
 
 /**
  * Background health polling for the important backend (Python API).
@@ -34,7 +34,9 @@ export function useConnectionHealth(): void {
 					"/api/v1/health",
 					{},
 				);
-				if (cancelled) return;
+				if (cancelled) {
+					return;
+				}
 				const unhealthy =
 					error ||
 					!response?.ok ||
@@ -45,14 +47,19 @@ export function useConnectionHealth(): void {
 					} else {
 						setReconnecting("Reconnecting…");
 					}
-					for (let i = 0; i < RETRY_ATTEMPTS && !cancelled; i++) {
+					for (let i = 0; i < RETRY_ATTEMPTS && !cancelled; i += 1) {
 						await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
 						const retry = await apiClient.GET("/api/v1/health", {});
-						if (cancelled) return;
+						if (cancelled) {
+							return;
+						}
 						const retryOk =
 							!retry.error &&
 							retry.response?.ok &&
-							!(retry.data && (retry.data as { status?: string }).status === "unhealthy");
+							!(
+								retry.data &&
+								(retry.data as { status?: string }).status === "unhealthy"
+							);
 						if (retryOk) {
 							setOnline();
 							hasEverConnected = true;
@@ -68,29 +75,36 @@ export function useConnectionHealth(): void {
 				}
 				setOnline();
 				hasEverConnected = true;
-            } catch {
-                if (cancelled) return;
+			} catch {
+				if (cancelled) {
+					return;
+				}
 				if (!hasEverConnected) {
 					setConnecting("Still waiting for backend…");
 				} else {
 					setReconnecting("Reconnecting…");
 				}
-				for (let i = 0; i < RETRY_ATTEMPTS && !cancelled; i++) {
+				for (let i = 0; i < RETRY_ATTEMPTS && !cancelled; i += 1) {
 					await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
 					try {
 						const retry = await apiClient.GET("/api/v1/health", {});
-						if (cancelled) return;
+						if (cancelled) {
+							return;
+						}
 						const retryOk =
 							!retry.error &&
 							retry.response?.ok &&
-							!(retry.data && (retry.data as { status?: string }).status === "unhealthy");
+							!(
+								retry.data &&
+								(retry.data as { status?: string }).status === "unhealthy"
+							);
 						if (retryOk) {
 							setOnline();
 							hasEverConnected = true;
 							return;
 						}
-                    } catch {
-                        // continue retries
+					} catch {
+						// Continue retries
 					}
 				}
 				setLost(
@@ -103,7 +117,7 @@ export function useConnectionHealth(): void {
 
 		// Initial poll after a short delay so we don't block first paint
 		const initial = setTimeout(() => {
-			void poll();
+			undefined;
 		}, 2000);
 
 		intervalRef.current = setInterval(poll, POLL_INTERVAL_MS);

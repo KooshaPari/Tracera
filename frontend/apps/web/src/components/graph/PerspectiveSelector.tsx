@@ -32,12 +32,12 @@ const PERSPECTIVE_ICONS: Record<
 	React.ComponentType<{ className?: string }>
 > = {
 	all: Network,
-	product: Users,
 	business: Briefcase,
+	performance: Gauge,
+	product: Users,
+	security: Shield,
 	technical: Code,
 	ui: Layout,
-	security: Shield,
-	performance: Gauge,
 };
 
 function PerspectiveSelectorComponent({

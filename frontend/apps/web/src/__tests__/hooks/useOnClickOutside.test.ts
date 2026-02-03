@@ -94,7 +94,7 @@ describe("useOnClickOutside Hook", () => {
 
 		it("should pass event object to handler", () => {
 			const handler = vi.fn();
-			const mockEvent = { type: "mousedown", target: "element" };
+			const mockEvent = { target: "element", type: "mousedown" };
 
 			handler(mockEvent);
 			expect(handler).toHaveBeenCalledWith(mockEvent);

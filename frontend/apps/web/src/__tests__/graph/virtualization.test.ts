@@ -8,18 +8,18 @@ describe("Virtual Rendering Utilities", () => {
 	describe("Viewport culling", () => {
 		it("should identify nodes within viewport bounds", () => {
 			const node: NodePosition = {
+				height: 120,
 				id: "node-1",
+				width: 200,
 				x: 100,
 				y: 100,
-				width: 200,
-				height: 120,
 			};
 
 			const viewport: ViewportBounds = {
-				minX: 0,
 				maxX: 500,
-				minY: 0,
 				maxY: 500,
+				minX: 0,
+				minY: 0,
 			};
 
 			const isVisible =
@@ -33,18 +33,18 @@ describe("Virtual Rendering Utilities", () => {
 
 		it("should cull nodes outside viewport bounds", () => {
 			const node: NodePosition = {
+				height: 120,
 				id: "node-1",
+				width: 200,
 				x: 1000,
 				y: 1000,
-				width: 200,
-				height: 120,
 			};
 
 			const viewport: ViewportBounds = {
-				minX: 0,
 				maxX: 500,
-				minY: 0,
 				maxY: 500,
+				minX: 0,
+				minY: 0,
 			};
 
 			const isVisible =
@@ -58,18 +58,18 @@ describe("Virtual Rendering Utilities", () => {
 
 		it("should handle nodes at viewport edges", () => {
 			const nodeLeft: NodePosition = {
+				height: 120,
 				id: "node-left",
+				width: 200,
 				x: -50,
 				y: 100,
-				width: 200,
-				height: 120,
 			};
 
 			const viewport: ViewportBounds = {
-				minX: 0,
 				maxX: 500,
-				minY: 0,
 				maxY: 500,
+				minX: 0,
+				minY: 0,
 			};
 
 			const isVisibleLeft =
@@ -82,14 +82,14 @@ describe("Virtual Rendering Utilities", () => {
 		});
 
 		it("should calculate viewport bounds with padding", () => {
-			const viewport = { x: 100, y: 100, width: 1000, height: 600, zoom: 1 };
+			const viewport = { height: 600, width: 1000, x: 100, y: 100, zoom: 1 };
 			const padding = 200;
 
 			const bounds: ViewportBounds = {
-				minX: viewport.x - padding,
 				maxX: viewport.x + viewport.width / viewport.zoom + padding,
-				minY: viewport.y - padding,
 				maxY: viewport.y + viewport.height / viewport.zoom + padding,
+				minX: viewport.x - padding,
+				minY: viewport.y - padding,
 			};
 
 			expect(bounds.minX).toBe(-100);
@@ -99,14 +99,14 @@ describe("Virtual Rendering Utilities", () => {
 		});
 
 		it("should account for zoom level in viewport calculation", () => {
-			const viewport = { x: 0, y: 0, width: 1000, height: 600, zoom: 0.5 };
+			const viewport = { height: 600, width: 1000, x: 0, y: 0, zoom: 0.5 };
 			const padding = 0;
 
 			const bounds: ViewportBounds = {
-				minX: viewport.x - padding,
 				maxX: viewport.x + viewport.width / viewport.zoom + padding,
-				minY: viewport.y - padding,
 				maxY: viewport.y + viewport.height / viewport.zoom + padding,
+				minX: viewport.x - padding,
+				minY: viewport.y - padding,
 			};
 
 			expect(bounds.maxX).toBe(2000); // 1000 / 0.5
@@ -119,7 +119,7 @@ describe("Virtual Rendering Utilities", () => {
 			const zoom = 0.9;
 			const threshold = 0.8;
 			const lodLevel =
-				zoom >= threshold ? "high" : zoom >= threshold / 2 ? "medium" : "low";
+				zoom >= threshold ? "high" : (zoom >= threshold / 2 ? "medium" : "low");
 			expect(lodLevel).toBe("high");
 		});
 
@@ -130,9 +130,9 @@ describe("Virtual Rendering Utilities", () => {
 			const lodLevel =
 				zoom >= highThreshold
 					? "high"
-					: zoom >= mediumThreshold
+					: (zoom >= mediumThreshold
 						? "medium"
-						: "low";
+						: "low");
 			expect(lodLevel).toBe("medium");
 		});
 
@@ -143,9 +143,9 @@ describe("Virtual Rendering Utilities", () => {
 			const lodLevel =
 				zoom >= highThreshold
 					? "high"
-					: zoom >= mediumThreshold
+					: (zoom >= mediumThreshold
 						? "medium"
-						: "low";
+						: "low");
 			expect(lodLevel).toBe("low");
 		});
 	});
@@ -153,9 +153,9 @@ describe("Virtual Rendering Utilities", () => {
 	describe("Node clustering", () => {
 		it("should group nodes within distance threshold", () => {
 			const nodes: NodePosition[] = [
-				{ id: "n1", x: 0, y: 0, width: 100, height: 100 },
-				{ id: "n2", x: 50, y: 50, width: 100, height: 100 }, // Close to n1
-				{ id: "n3", x: 500, y: 500, width: 100, height: 100 }, // Far from others
+				{ height: 100, id: "n1", width: 100, x: 0, y: 0 },
+				{ height: 100, id: "n2", width: 100, x: 50, y: 50 }, // Close to n1
+				{ height: 100, id: "n3", width: 100, x: 500, y: 500 }, // Far from others
 			];
 
 			const clusterDistance = 200;
@@ -163,7 +163,9 @@ describe("Virtual Rendering Utilities", () => {
 			const visited = new Set<string>();
 
 			function clusterFromNode(startId: string): string[] {
-				if (visited.has(startId)) return [];
+				if (visited.has(startId)) {
+					return [];
+				}
 
 				const cluster: string[] = [startId];
 				visited.add(startId);
@@ -176,7 +178,9 @@ describe("Virtual Rendering Utilities", () => {
 					const current = nodeMap.get(currentId)!;
 
 					for (const other of nodes) {
-						if (visited.has(other.id)) continue;
+						if (visited.has(other.id)) {
+							continue;
+						}
 
 						const dx = other.x - current.x;
 						const dy = other.y - current.y;
@@ -200,7 +204,7 @@ describe("Virtual Rendering Utilities", () => {
 				}
 			}
 
-			expect(clusters.size).toBe(2); // n1+n2 group, n3 alone
+			expect(clusters.size).toBe(2); // N1+n2 group, n3 alone
 		});
 	});
 
@@ -271,19 +275,19 @@ describe("Virtual Rendering Utilities", () => {
 
 	describe("Large graph handling", () => {
 		it("should handle 10000 nodes efficiently", () => {
-			const nodes: NodePosition[] = Array.from({ length: 10000 }, (_, i) => ({
-				id: `node-${i}`,
-				x: Math.random() * 50000,
-				y: Math.random() * 50000,
-				width: 200,
+			const nodes: NodePosition[] = Array.from({ length: 10_000 }, (_, i) => ({
 				height: 120,
+				id: `node-${i}`,
+				width: 200,
+				x: Math.random() * 50_000,
+				y: Math.random() * 50_000,
 			}));
 
 			const viewport: ViewportBounds = {
-				minX: 0,
 				maxX: 2000,
-				minY: 0,
 				maxY: 1500,
+				minX: 0,
+				minY: 0,
 			};
 
 			const startTime = performance.now();
@@ -307,20 +311,20 @@ describe("Virtual Rendering Utilities", () => {
 
 		it("should reduce render load with virtualization", () => {
 			const totalNodes = 5000;
-			const viewport = { x: 0, y: 0, width: 1000, height: 600, zoom: 1 };
+			const viewport = { height: 600, width: 1000, x: 0, y: 0, zoom: 1 };
 			const padding = 300;
 
 			const bounds: ViewportBounds = {
-				minX: viewport.x - padding,
 				maxX: viewport.x + viewport.width / viewport.zoom + padding,
-				minY: viewport.y - padding,
 				maxY: viewport.y + viewport.height / viewport.zoom + padding,
+				minX: viewport.x - padding,
+				minY: viewport.y - padding,
 			};
 
 			// Rough estimate of visible nodes
 			const boundsArea =
 				(bounds.maxX - bounds.minX) * (bounds.maxY - bounds.minY);
-			const totalArea = 50000 * 50000;
+			const totalArea = 50_000 * 50_000;
 			const estimatedVisibleNodes = Math.floor(
 				(boundsArea / totalArea) * totalNodes,
 			);

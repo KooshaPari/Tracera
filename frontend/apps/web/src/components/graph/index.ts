@@ -146,7 +146,11 @@ export { VirtualizedGraphView } from "./VirtualizedGraphView";
 // Phase 6: WebGL Rendering (Sigma.js)
 export { SigmaGraphView } from "./SigmaGraphView";
 export { RichNodeDetailPanel } from "./sigma/RichNodeDetailPanel";
-export { customNodeRenderer, customEdgeRenderer, sigmaRenderers } from "./sigma/customRenderers";
+export {
+	customNodeRenderer,
+	customEdgeRenderer,
+	sigmaRenderers,
+} from "./sigma/customRenderers";
 
 // Phase 6: Hybrid Graph (Task #26) - Automatic threshold switching
 export { HybridGraphView } from "./HybridGraphView";

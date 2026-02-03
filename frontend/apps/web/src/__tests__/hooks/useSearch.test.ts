@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useSearch } from "../../hooks/useSearch";
 import { createWrapper } from "../utils/test-utils";
 
-describe("useSearch", () => {
+describe(useSearch, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		// Don't use fake timers - causes issues with async React Query hooks
@@ -23,9 +23,9 @@ describe("useSearch", () => {
 		});
 
 		expect(result.current.query).toEqual({
-			q: "",
 			page: 1,
 			per_page: 20,
+			q: "",
 		});
 	});
 
@@ -85,9 +85,9 @@ describe("useSearch", () => {
 		});
 
 		expect(result.current.query).toEqual({
-			q: "",
 			page: 1,
 			per_page: 20,
+			q: "",
 		});
 	});
 
@@ -98,8 +98,8 @@ describe("useSearch", () => {
 
 		act(() => {
 			result.current.updateQuery({
-				types: ["feature" as any],
 				statuses: ["in_progress" as any],
+				types: ["feature" as any],
 			});
 		});
 
@@ -129,5 +129,5 @@ describe("useSearch", () => {
 		expect(result.current.query.q).toBe("test");
 		// Search is not immediately empty anymore
 		expect(result.current.query.q).toBeTruthy();
-	}, 10000);
+	}, 10_000);
 });

@@ -10,13 +10,13 @@ import { useCreateLink, useLinks } from "../../hooks/useLinks";
 
 // Mock fetch at module level
 const mockFetch = vi.fn();
-global.fetch = mockFetch as unknown as typeof fetch;
+globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 const createWrapper = () => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { retry: false },
 			mutations: { retry: false },
+			queries: { retry: false },
 		},
 	});
 
@@ -24,7 +24,7 @@ const createWrapper = () => {
 		React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
 
-describe("useLinks", () => {
+describe(useLinks, () => {
 	beforeEach(() => {
 		mockFetch.mockClear();
 	});
@@ -41,8 +41,8 @@ describe("useLinks", () => {
 		};
 
 		mockFetch.mockResolvedValueOnce({
-			ok: true,
 			json: async () => mockResponse,
+			ok: true,
 		});
 
 		const { result } = renderHook(() => useLinks(), {
@@ -52,7 +52,7 @@ describe("useLinks", () => {
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		expect(result.current.data).toEqual(mockResponse);
-		expect(mockFetch).toHaveBeenCalledTimes(1);
+		expect(mockFetch).toHaveBeenCalledOnce();
 	});
 
 	it("should fetch links with source filter", async () => {
@@ -66,8 +66,8 @@ describe("useLinks", () => {
 		};
 
 		mockFetch.mockResolvedValueOnce({
-			ok: true,
 			json: async () => mockResponse,
+			ok: true,
 		});
 
 		const { result } = renderHook(() => useLinks({ sourceId: "item-1" }), {
@@ -77,7 +77,7 @@ describe("useLinks", () => {
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		expect(result.current.data).toEqual(mockResponse);
-		expect(global.fetch).toHaveBeenCalledWith(
+		expect(globalThis.fetch).toHaveBeenCalledWith(
 			expect.stringContaining("source_id=item-1"),
 			expect.any(Object),
 		);
@@ -94,8 +94,8 @@ describe("useLinks", () => {
 		};
 
 		mockFetch.mockResolvedValueOnce({
-			ok: true,
 			json: async () => mockResponse,
+			ok: true,
 		});
 
 		const { result } = renderHook(() => useLinks({ targetId: "item-2" }), {
@@ -104,7 +104,7 @@ describe("useLinks", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-		expect(global.fetch).toHaveBeenCalledWith(
+		expect(globalThis.fetch).toHaveBeenCalledWith(
 			expect.stringContaining("target_id=item-2"),
 			expect.any(Object),
 		);
@@ -126,17 +126,17 @@ describe("useLinks", () => {
 	});
 });
 
-describe("useCreateLink", () => {
+describe(useCreateLink, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	it("should create a link", async () => {
 		const newLink = {
+			projectId: "proj-1",
 			sourceId: "item-1",
 			targetId: "item-2",
 			type: "depends_on" as const,
-			projectId: "proj-1",
 		};
 
 		const createdLink = {
@@ -145,8 +145,8 @@ describe("useCreateLink", () => {
 		};
 
 		mockFetch.mockResolvedValueOnce({
-			ok: true,
 			json: async () => createdLink,
+			ok: true,
 		});
 
 		const { result } = renderHook(() => useCreateLink(), {
@@ -158,7 +158,7 @@ describe("useCreateLink", () => {
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		expect(result.current.data).toEqual(createdLink);
-		expect(global.fetch).toHaveBeenCalledWith(
+		expect(globalThis.fetch).toHaveBeenCalledWith(
 			expect.stringContaining("/api/v1/links"),
 			expect.objectContaining({
 				method: "POST",
@@ -177,10 +177,10 @@ describe("useCreateLink", () => {
 		});
 
 		result.current.mutate({
+			projectId: "proj-1",
 			sourceId: "item-1",
 			targetId: "item-2",
 			type: "depends_on" as const,
-			projectId: "proj-1",
 		});
 
 		await waitFor(() => expect(result.current.isError).toBe(true));

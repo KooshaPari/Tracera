@@ -70,18 +70,18 @@ function StatCard({
 }: StatCardProps) {
 	const colorClasses = {
 		default: "bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100",
+		destructive: "bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-100",
 		success:
 			"bg-green-50 dark:bg-green-900/20 text-green-900 dark:text-green-100",
 		warning:
 			"bg-yellow-50 dark:bg-yellow-900/20 text-yellow-900 dark:text-yellow-100",
-		destructive: "bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-100",
 	};
 
 	const iconColorClasses = {
 		default: "text-blue-600 dark:text-blue-400",
+		destructive: "text-red-600 dark:text-red-400",
 		success: "text-green-600 dark:text-green-400",
 		warning: "text-yellow-600 dark:text-yellow-400",
-		destructive: "text-red-600 dark:text-red-400",
 	};
 
 	return (
@@ -118,18 +118,18 @@ function HealthBadge({ health }: HealthBadgeProps) {
 	const variants = {
 		green:
 			"bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700",
-		yellow:
-			"bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700",
 		red: "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700",
 		unknown:
 			"bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600",
+		yellow:
+			"bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700",
 	};
 
 	const icons = {
 		green: <CheckCircle2 className="w-3 h-3" />,
-		yellow: <AlertTriangle className="w-3 h-3" />,
 		red: <AlertCircle className="w-3 h-3" />,
 		unknown: <Clock className="w-3 h-3" />,
+		yellow: <AlertTriangle className="w-3 h-3" />,
 	};
 
 	return (
@@ -274,7 +274,9 @@ function MilestoneGroup({
 	icon,
 	onClickMilestone,
 }: MilestoneGroupProps) {
-	if (milestones.length === 0) return null;
+	if (milestones.length === 0) {
+		return null;
+	}
 
 	return (
 		<div className="space-y-2">
@@ -329,7 +331,7 @@ function SprintRow({ sprint, onClickSprint }: SprintRowProps) {
 						</h4>
 						<Badge
 							variant={
-								isActive ? "default" : isCompleted ? "secondary" : "outline"
+								isActive ? "default" : (isCompleted ? "secondary" : "outline")
 							}
 							className="text-xs"
 						>
@@ -403,17 +405,17 @@ function SimpleBurndownChart({
 		if (!burndownData || burndownData.length === 0) {
 			// Create 10 day burndown simulation
 			const simulated: BurndownDataPoint[] = [];
-			for (let i = 0; i <= 10; i++) {
+			for (let i = 0; i <= 10; i += 1) {
 				simulated.push({
+					completedPoints: Math.round(completedPoints * (i / 10)),
 					date: new Date(
 						Date.now() - (10 - i) * 24 * 60 * 60 * 1000,
 					).toISOString(),
+					idealPoints: Math.max(plannedPoints * ((10 - i) / 10), 0),
 					remainingPoints: Math.max(
 						plannedPoints - completedPoints * (i / 10),
 						0,
 					),
-					idealPoints: Math.max(plannedPoints * ((10 - i) / 10), 0),
-					completedPoints: Math.round(completedPoints * (i / 10)),
 				});
 			}
 			return simulated;
@@ -684,7 +686,9 @@ export function ProgressDashboard({
 	);
 
 	const overallProgress = useMemo(() => {
-		if (milestones.length === 0) return 0;
+		if (milestones.length === 0) {
+			return 0;
+		}
 		const totalProgress = milestones.reduce(
 			(sum, m) => sum + m.progress.percentage,
 			0,
@@ -888,7 +892,7 @@ export function ProgressDashboard({
 					)}
 
 					{/* Planning Sprints */}
-					{sprints.filter((s) => s.status === "planning").length > 0 && (
+					{sprints.some((s) => s.status === "planning") && (
 						<div className="space-y-3">
 							<h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
 								Planning
@@ -908,7 +912,7 @@ export function ProgressDashboard({
 					)}
 
 					{/* Recent Completed Sprints */}
-					{sprints.filter((s) => s.status === "completed").length > 0 && (
+					{sprints.some((s) => s.status === "completed") && (
 						<div className="space-y-3">
 							<h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
 								Recently Completed
@@ -959,25 +963,25 @@ export function ProgressDashboard({
 									icon={
 										velocityMetrics.trend === "improving" ? (
 											<TrendingUp className="w-5 h-5" />
-										) : velocityMetrics.trend === "declining" ? (
+										) : (velocityMetrics.trend === "declining" ? (
 											<TrendingDown className="w-5 h-5" />
 										) : (
 											<Clock className="w-5 h-5" />
-										)
+										))
 									}
 									color={
 										velocityMetrics.trend === "improving"
 											? "success"
-											: velocityMetrics.trend === "declining"
+											: (velocityMetrics.trend === "declining"
 												? "destructive"
-												: "default"
+												: "default")
 									}
 									trend={
 										velocityMetrics.trend === "improving"
 											? "up"
-											: velocityMetrics.trend === "declining"
+											: (velocityMetrics.trend === "declining"
 												? "down"
-												: "stable"
+												: "stable")
 									}
 									trendValue={`${Math.abs(velocityMetrics.trendPercentage)}%`}
 								/>

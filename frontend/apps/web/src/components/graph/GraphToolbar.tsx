@@ -81,29 +81,29 @@ export function GraphToolbar({
 	onExport,
 	variant = "full",
 	className,
-}: Omit<GraphToolbarProps, 'onReset'>) {
+}: Omit<GraphToolbarProps, "onReset">) {
 	const { fitView, zoomIn, zoomOut, getViewport } = useReactFlow();
 	const [showFilters, setShowFilters] = useState(false);
 	const [showExport, setShowExport] = useState(false);
 
 	// Zoom controls
 	const handleZoomIn = useCallback(() => {
-		void zoomIn({ duration: 200 });
+		undefined;
 	}, [zoomIn]);
 
 	const handleZoomOut = useCallback(() => {
-		void zoomOut({ duration: 200 });
+		undefined;
 	}, [zoomOut]);
 
 	const handleFitView = useCallback(() => {
-		void fitView({ padding: 0.2, duration: 300 });
+		undefined;
 	}, [fitView]);
 
 	const handleActualSize = useCallback(() => {
 		const viewport = getViewport();
 		if (viewport) {
 			// Reset zoom to 1:1
-			void fitView({ maxZoom: 1, minZoom: 1, duration: 300 });
+			undefined;
 		}
 	}, [fitView, getViewport]);
 
@@ -174,11 +174,7 @@ export function GraphToolbar({
 					variant="compact"
 				/>
 
-				<Separator
-					orientation="vertical"
-					className="h-6"
-					aria-hidden="true"
-				/>
+				<Separator orientation="vertical" className="h-6" aria-hidden="true" />
 
 				<div
 					className="flex items-center gap-0.5 rounded-md border p-0.5"
@@ -223,9 +219,7 @@ export function GraphToolbar({
 					onClick={onToggleDetailPanel}
 					className="h-7 w-7 p-0"
 					aria-label={
-						showDetailPanel
-							? "Hide detail panel"
-							: "Show detail panel"
+						showDetailPanel ? "Hide detail panel" : "Show detail panel"
 					}
 					aria-pressed={showDetailPanel}
 					title="Toggle detail panel"

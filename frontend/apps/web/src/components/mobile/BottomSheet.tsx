@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
-import { type ReactNode, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface BottomSheetProps {
@@ -29,7 +30,9 @@ export function BottomSheet({
 
 	// Handle escape key
 	useEffect(() => {
-		if (!isOpen || !dismissible) return;
+		if (!isOpen || !dismissible) {
+			return;
+		}
 
 		const handleEscape = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
@@ -37,8 +40,8 @@ export function BottomSheet({
 			}
 		};
 
-		window.addEventListener("keydown", handleEscape);
-		return () => window.removeEventListener("keydown", handleEscape);
+		globalThis.addEventListener("keydown", handleEscape);
+		return () => globalThis.removeEventListener("keydown", handleEscape);
 	}, [isOpen, dismissible, onClose]);
 
 	// Prevent body scroll when sheet is open
@@ -54,7 +57,9 @@ export function BottomSheet({
 		};
 	}, [isOpen]);
 
-	if (!isOpen) return null;
+	if (!isOpen) {
+		return null;
+	}
 
 	return (
 		<>

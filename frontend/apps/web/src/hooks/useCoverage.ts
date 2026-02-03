@@ -17,24 +17,24 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformCoverage(data: Record<string, unknown>): TestCoverage {
 	return {
-		id: data['id'] as string,
-		projectId: data['project_id'] as string,
-		testCaseId: data['test_case_id'] as string,
-		requirementId: data['requirement_id'] as string,
-		coverageType: data['coverage_type'] as CoverageType,
-		status: data['status'] as CoverageStatus,
-		coveragePercentage: data['coverage_percentage'] as number | undefined,
-		rationale: data['rationale'] as string | undefined,
-		notes: data['notes'] as string | undefined,
-		lastVerifiedAt: data['last_verified_at'] as string | undefined,
-		verifiedBy: data['verified_by'] as string | undefined,
-		lastTestResult: data['last_test_result'] as string | undefined,
-		lastTestedAt: data['last_tested_at'] as string | undefined,
-		createdBy: data['created_by'] as string | undefined,
-		metadata: data['coverage_metadata'] as Record<string, unknown> | undefined,
-		version: data['version'] as number,
-		createdAt: data['created_at'] as string,
-		updatedAt: data['updated_at'] as string,
+		coveragePercentage: data["coverage_percentage"] as number | undefined,
+		coverageType: data["coverage_type"] as CoverageType,
+		createdAt: data["created_at"] as string,
+		createdBy: data["created_by"] as string | undefined,
+		id: data["id"] as string,
+		lastTestResult: data["last_test_result"] as string | undefined,
+		lastTestedAt: data["last_tested_at"] as string | undefined,
+		lastVerifiedAt: data["last_verified_at"] as string | undefined,
+		metadata: data["coverage_metadata"] as Record<string, unknown> | undefined,
+		notes: data["notes"] as string | undefined,
+		projectId: data["project_id"] as string,
+		rationale: data["rationale"] as string | undefined,
+		requirementId: data["requirement_id"] as string,
+		status: data["status"] as CoverageStatus,
+		testCaseId: data["test_case_id"] as string,
+		updatedAt: data["updated_at"] as string,
+		verifiedBy: data["verified_by"] as string | undefined,
+		version: data["version"] as number,
 	};
 }
 
@@ -53,13 +53,24 @@ async function fetchCoverages(
 ): Promise<{ coverages: TestCoverage[]; total: number }> {
 	const params = new URLSearchParams();
 	params.set("project_id", filters.projectId);
-	if (filters.coverageType) params.set("coverage_type", filters.coverageType);
-	if (filters.status) params.set("status", filters.status);
-	if (filters.testCaseId) params.set("test_case_id", filters.testCaseId);
-	if (filters.requirementId)
+	if (filters.coverageType) {
+		params.set("coverage_type", filters.coverageType);
+	}
+	if (filters.status) {
+		params.set("status", filters.status);
+	}
+	if (filters.testCaseId) {
+		params.set("test_case_id", filters.testCaseId);
+	}
+	if (filters.requirementId) {
 		params.set("requirement_id", filters.requirementId);
-	if (filters.skip !== undefined) params.set("skip", String(filters.skip));
-	if (filters.limit !== undefined) params.set("limit", String(filters.limit));
+	}
+	if (filters.skip !== undefined) {
+		params.set("skip", String(filters.skip));
+	}
+	if (filters.limit !== undefined) {
+		params.set("limit", String(filters.limit));
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/coverage?${params}`, {
 		headers: {
@@ -73,8 +84,8 @@ async function fetchCoverages(
 	}
 	const data = await res.json();
 	return {
-		coverages: (data['coverages'] || []).map(transformCoverage),
-		total: data['total'] || 0,
+		coverages: (data["coverages"] || []).map(transformCoverage),
+		total: data["total"] || 0,
 	};
 }
 
@@ -82,7 +93,9 @@ async function fetchCoverage(id: string): Promise<TestCoverage> {
 	const res = await fetch(`${API_URL}/api/v1/coverage/${id}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch coverage");
+	if (!res.ok) {
+		throw new Error("Failed to fetch coverage");
+	}
 	const data = await res.json();
 	return transformCoverage(data);
 }
@@ -102,25 +115,33 @@ async function createCoverage(
 	data: CreateCoverageData,
 ): Promise<{ id: string; coverageType: string; status: string }> {
 	const params = new URLSearchParams();
-	params.set("project_id", data['projectId']);
-	params.set("test_case_id", data['testCaseId']);
-	params.set("requirement_id", data['requirementId']);
-	if (data['coverageType']) params.set("coverage_type", data['coverageType']);
-	if (data['coveragePercentage'] !== undefined) {
-		params.set("coverage_percentage", String(data['coveragePercentage']));
+	params.set("project_id", data["projectId"]);
+	params.set("test_case_id", data["testCaseId"]);
+	params.set("requirement_id", data["requirementId"]);
+	if (data["coverageType"]) {
+		params.set("coverage_type", data["coverageType"]);
 	}
-	if (data['rationale']) params.set("rationale", data['rationale']);
-	if (data['notes']) params.set("notes", data['notes']);
+	if (data["coveragePercentage"] !== undefined) {
+		params.set("coverage_percentage", String(data["coveragePercentage"]));
+	}
+	if (data["rationale"]) {
+		params.set("rationale", data["rationale"]);
+	}
+	if (data["notes"]) {
+		params.set("notes", data["notes"]);
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/coverage?${params}`, {
-		method: "POST",
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to create coverage");
+	if (!res.ok) {
+		throw new Error("Failed to create coverage");
+	}
 	const result = await res.json();
 	return {
-		id: result['id'],
-		coverageType: result['coverage_type'],
+		coverageType: result["coverage_type"],
+		id: result["id"],
 		status: result.status,
 	};
 }
@@ -136,28 +157,40 @@ async function updateCoverage(
 	}>,
 ): Promise<{ id: string; version: number }> {
 	const params = new URLSearchParams();
-	if (data['coverageType']) params.set("coverage_type", data['coverageType']);
-	if (data.status) params.set("status", data.status);
-	if (data['coveragePercentage'] !== undefined) {
-		params.set("coverage_percentage", String(data['coveragePercentage']));
+	if (data["coverageType"]) {
+		params.set("coverage_type", data["coverageType"]);
 	}
-	if (data['rationale']) params.set("rationale", data['rationale']);
-	if (data['notes']) params.set("notes", data['notes']);
+	if (data.status) {
+		params.set("status", data.status);
+	}
+	if (data["coveragePercentage"] !== undefined) {
+		params.set("coverage_percentage", String(data["coveragePercentage"]));
+	}
+	if (data["rationale"]) {
+		params.set("rationale", data["rationale"]);
+	}
+	if (data["notes"]) {
+		params.set("notes", data["notes"]);
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/coverage/${id}?${params}`, {
-		method: "PUT",
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PUT",
 	});
-	if (!res.ok) throw new Error("Failed to update coverage");
+	if (!res.ok) {
+		throw new Error("Failed to update coverage");
+	}
 	return res.json();
 }
 
 async function deleteCoverage(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/coverage/${id}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete coverage");
+	if (!res.ok) {
+		throw new Error("Failed to delete coverage");
+	}
 }
 
 async function verifyCoverage(
@@ -165,18 +198,22 @@ async function verifyCoverage(
 	notes?: string,
 ): Promise<{ id: string; lastVerifiedAt: string; verifiedBy: string }> {
 	const params = new URLSearchParams();
-	if (notes) params.set("notes", notes);
+	if (notes) {
+		params.set("notes", notes);
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/coverage/${id}/verify?${params}`, {
-		method: "POST",
 		headers: getAuthHeaders(),
+		method: "POST",
 	});
-	if (!res.ok) throw new Error("Failed to verify coverage");
+	if (!res.ok) {
+		throw new Error("Failed to verify coverage");
+	}
 	const result = await res.json();
 	return {
-		id: result['id'],
-		lastVerifiedAt: result['last_verified_at'],
-		verifiedBy: result['verified_by'],
+		id: result["id"],
+		lastVerifiedAt: result["last_verified_at"],
+		verifiedBy: result["verified_by"],
 	};
 }
 
@@ -186,42 +223,52 @@ async function fetchTraceabilityMatrix(
 ): Promise<TraceabilityMatrix> {
 	const params = new URLSearchParams();
 	params.set("project_id", projectId);
-	if (requirementView) params.set("requirement_view", requirementView);
+	if (requirementView) {
+		params.set("requirement_view", requirementView);
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/coverage/matrix?${params}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch traceability matrix");
+	if (!res.ok) {
+		throw new Error("Failed to fetch traceability matrix");
+	}
 	const data = await res.json();
 
 	return {
-		projectId: data['project_id'],
-		totalRequirements: data['total_requirements'],
-		coveredRequirements: data['covered_requirements'],
-		uncoveredRequirements: data['uncovered_requirements'],
-		coveragePercentage: data['coverage_percentage'],
-		matrix: (data['matrix'] as unknown[] || []).map((value: unknown) => {
-			const item = (typeof value === "object" && value !== null ? value : {}) as Record<string, unknown>;
+		coveragePercentage: data["coverage_percentage"],
+		coveredRequirements: data["covered_requirements"],
+		matrix: ((data["matrix"] as unknown[]) || []).map((value: unknown) => {
+			const item = (
+				typeof value === "object" && value !== null ? value : {}
+			) as Record<string, unknown>;
 			return {
-				requirementId: item['requirement_id'],
-				requirementTitle: item['requirement_title'],
-				requirementView: item['requirement_view'],
-				requirementStatus: item['requirement_status'],
-				isCovered: item['is_covered'],
-				testCount: item['test_count'],
-				testCases: (item['test_cases'] as unknown[] || []).map((tcValue: unknown) => {
-					const tc = (typeof tcValue === "object" && tcValue !== null ? tcValue : {}) as Record<string, unknown>;
-					return {
-						testCaseId: tc['test_case_id'],
-						coverageType: tc['coverage_type'],
-						coveragePercentage: tc['coverage_percentage'],
-						lastTestResult: tc['last_test_result'],
-						lastTestedAt: tc['last_tested_at'],
-					};
-				}),
-				overallStatus: item['overall_status'],
+				isCovered: item["is_covered"],
+				overallStatus: item["overall_status"],
+				requirementId: item["requirement_id"],
+				requirementStatus: item["requirement_status"],
+				requirementTitle: item["requirement_title"],
+				requirementView: item["requirement_view"],
+				testCases: ((item["test_cases"] as unknown[]) || []).map(
+					(tcValue: unknown) => {
+						const tc = (
+							typeof tcValue === "object" && tcValue !== null ? tcValue : {}
+						) as Record<string, unknown>;
+						return {
+							testCaseId: tc["test_case_id"],
+							coverageType: tc["coverage_type"],
+							coveragePercentage: tc["coverage_percentage"],
+							lastTestResult: tc["last_test_result"],
+							lastTestedAt: tc["last_tested_at"],
+						};
+					},
+				),
+				testCount: item["test_count"],
 			};
 		}),
+		projectId: data["project_id"],
+		totalRequirements: data["total_requirements"],
+		uncoveredRequirements: data["uncovered_requirements"],
 	};
 }
 
@@ -231,29 +278,35 @@ async function fetchCoverageGaps(
 ): Promise<CoverageGapsResponse> {
 	const params = new URLSearchParams();
 	params.set("project_id", projectId);
-	if (requirementView) params.set("requirement_view", requirementView);
+	if (requirementView) {
+		params.set("requirement_view", requirementView);
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/coverage/gaps?${params}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch coverage gaps");
+	if (!res.ok) {
+		throw new Error("Failed to fetch coverage gaps");
+	}
 	const data = await res.json();
 
 	return {
-		projectId: data['project_id'],
-		totalRequirements: data['total_requirements'],
-		uncoveredCount: data['uncovered_count'],
-		coveragePercentage: data['coverage_percentage'],
-		gaps: (data['gaps'] as unknown[] || []).map((value: unknown) => {
-			const gap = (typeof value === "object" && value !== null ? value : {}) as Record<string, unknown>;
+		coveragePercentage: data["coverage_percentage"],
+		gaps: ((data["gaps"] as unknown[]) || []).map((value: unknown) => {
+			const gap = (
+				typeof value === "object" && value !== null ? value : {}
+			) as Record<string, unknown>;
 			return {
-				requirementId: gap['requirement_id'],
-				requirementTitle: gap['requirement_title'],
-				requirementView: gap['requirement_view'],
-				requirementStatus: gap['requirement_status'],
-				priority: gap['priority'],
+				priority: gap["priority"],
+				requirementId: gap["requirement_id"],
+				requirementStatus: gap["requirement_status"],
+				requirementTitle: gap["requirement_title"],
+				requirementView: gap["requirement_view"],
 			};
 		}),
+		projectId: data["project_id"],
+		totalRequirements: data["total_requirements"],
+		uncoveredCount: data["uncovered_count"],
 	};
 }
 
@@ -262,16 +315,18 @@ async function fetchCoverageStats(projectId: string): Promise<CoverageStats> {
 		`${API_URL}/api/v1/projects/${projectId}/coverage/stats`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch coverage stats");
+	if (!res.ok) {
+		throw new Error("Failed to fetch coverage stats");
+	}
 	const data = await res.json();
 
 	return {
-		projectId: data['project_id'],
-		totalMappings: data['total_mappings'] || 0,
-		byType: data['by_type'] || {},
-		byStatus: data['by_status'] || {},
-		uniqueTestCases: data['unique_test_cases'] || 0,
-		uniqueRequirements: data['unique_requirements'] || 0,
+		byStatus: data["by_status"] || {},
+		byType: data["by_type"] || {},
+		projectId: data["project_id"],
+		totalMappings: data["total_mappings"] || 0,
+		uniqueRequirements: data["unique_requirements"] || 0,
+		uniqueTestCases: data["unique_test_cases"] || 0,
 	};
 }
 
@@ -283,25 +338,31 @@ async function fetchCoverageActivities(
 		`${API_URL}/api/v1/coverage/${coverageId}/activities?limit=${limit}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch activities");
+	if (!res.ok) {
+		throw new Error("Failed to fetch activities");
+	}
 	const data = await res.json();
 
 	return {
-		coverageId: data['coverage_id'],
-		activities: (data['activities'] as unknown[] || []).map((value: unknown) => {
-			const a = (typeof value === "object" && value !== null ? value : {}) as Record<string, unknown>;
-			return {
-				id: a['id'],
-				coverageId: a['coverage_id'],
-				activityType: a['activity_type'],
-				fromValue: a['from_value'],
-				toValue: a['to_value'],
-				description: a['description'],
-				performedBy: a['performed_by'],
-				metadata: a['activity_metadata'],
-				createdAt: a['created_at'],
-			};
-		}),
+		activities: ((data["activities"] as unknown[]) || []).map(
+			(value: unknown) => {
+				const a = (
+					typeof value === "object" && value !== null ? value : {}
+				) as Record<string, unknown>;
+				return {
+					activityType: a["activity_type"],
+					coverageId: a["coverage_id"],
+					createdAt: a["created_at"],
+					description: a["description"],
+					fromValue: a["from_value"],
+					id: a["id"],
+					metadata: a["activity_metadata"],
+					performedBy: a["performed_by"],
+					toValue: a["to_value"],
+				};
+			},
+		),
+		coverageId: data["coverage_id"],
 	};
 }
 
@@ -309,17 +370,17 @@ async function fetchCoverageActivities(
 
 export function useCoverages(filters: CoverageFilters) {
 	return useQuery({
-		queryKey: ["coverages", filters],
-		queryFn: () => fetchCoverages(filters),
 		enabled: !!filters.projectId,
+		queryFn: () => fetchCoverages(filters),
+		queryKey: ["coverages", filters],
 	});
 }
 
 export function useCoverage(id: string) {
 	return useQuery({
-		queryKey: ["coverages", id],
-		queryFn: () => fetchCoverage(id),
 		enabled: !!id,
+		queryFn: () => fetchCoverage(id),
+		queryKey: ["coverages", id],
 	});
 }
 
@@ -390,32 +451,32 @@ export function useTraceabilityMatrix(
 	requirementView?: string,
 ) {
 	return useQuery({
-		queryKey: ["traceabilityMatrix", projectId, requirementView],
-		queryFn: () => fetchTraceabilityMatrix(projectId, requirementView),
 		enabled: !!projectId,
+		queryFn: () => fetchTraceabilityMatrix(projectId, requirementView),
+		queryKey: ["traceabilityMatrix", projectId, requirementView],
 	});
 }
 
 export function useCoverageGaps(projectId: string, requirementView?: string) {
 	return useQuery({
-		queryKey: ["coverageGaps", projectId, requirementView],
-		queryFn: () => fetchCoverageGaps(projectId, requirementView),
 		enabled: !!projectId,
+		queryFn: () => fetchCoverageGaps(projectId, requirementView),
+		queryKey: ["coverageGaps", projectId, requirementView],
 	});
 }
 
 export function useCoverageStats(projectId: string) {
 	return useQuery({
-		queryKey: ["coverageStats", projectId],
-		queryFn: () => fetchCoverageStats(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchCoverageStats(projectId),
+		queryKey: ["coverageStats", projectId],
 	});
 }
 
 export function useCoverageActivities(coverageId: string, limit = 50) {
 	return useQuery({
-		queryKey: ["coverageActivities", coverageId, limit],
-		queryFn: () => fetchCoverageActivities(coverageId, limit),
 		enabled: !!coverageId,
+		queryFn: () => fetchCoverageActivities(coverageId, limit),
+		queryKey: ["coverageActivities", coverageId, limit],
 	});
 }

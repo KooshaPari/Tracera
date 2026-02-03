@@ -40,7 +40,9 @@ describe("UUID Validation", () => {
 	});
 
 	it("validates with Zod schema", () => {
-		expect(() => uuidSchema.parse("550e8400-e29b-41d4-a716-446655440000")).not.toThrow();
+		expect(() =>
+			uuidSchema.parse("550e8400-e29b-41d4-a716-446655440000"),
+		).not.toThrow();
 		expect(() => uuidSchema.parse("invalid")).toThrow();
 	});
 });
@@ -146,15 +148,19 @@ describe("File Validation", () => {
 	it("validates file type", () => {
 		const allowedTypes = ["image/jpeg", "image/png"];
 
-		expect(validateFileType(
-			new File([], "test.jpg", { type: "image/jpeg" }),
-			allowedTypes,
-		)).toBeUndefined();
+		expect(
+			validateFileType(
+				new File([], "test.jpg", { type: "image/jpeg" }),
+				allowedTypes,
+			),
+		).toBeUndefined();
 
-		expect(validateFileType(
-			new File([], "test.gif", { type: "image/gif" }),
-			allowedTypes,
-		)).toBeDefined();
+		expect(
+			validateFileType(
+				new File([], "test.gif", { type: "image/gif" }),
+				allowedTypes,
+			),
+		).toBeDefined();
 	});
 
 	it("validates filename", () => {
@@ -229,8 +235,12 @@ describe("Schema Validation", () => {
 		});
 
 		it("rejects invalid login data", () => {
-			expect(() => loginSchema.parse({ email: "invalid", password: "pass" })).toThrow();
-			expect(() => loginSchema.parse({ email: "user@example.com", password: "" })).toThrow();
+			expect(() =>
+				loginSchema.parse({ email: "invalid", password: "pass" }),
+			).toThrow();
+			expect(() =>
+				loginSchema.parse({ email: "user@example.com", password: "" }),
+			).toThrow();
 		});
 	});
 

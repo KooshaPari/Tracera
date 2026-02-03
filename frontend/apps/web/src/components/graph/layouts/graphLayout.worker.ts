@@ -7,13 +7,15 @@ import type { ElkExtendedEdge, ElkNode } from "elkjs";
 import * as ELKModule from "elkjs/lib/elk.bundled.js";
 
 const ELK = (ELKModule as { default?: unknown }).default ?? ELKModule;
-const elk = new (ELK as new () => { layout: (g: ElkNode) => Promise<ElkNode> })();
+const elk = new (
+	ELK as new () => { layout: (g: ElkNode) => Promise<ElkNode> }
+)();
 
 const DIRECTION_MAP: Record<string, string> = {
-	TB: "DOWN",
 	BT: "UP",
 	LR: "RIGHT",
 	RL: "LEFT",
+	TB: "DOWN",
 };
 
 export interface ElkOptionsPayload {
@@ -48,24 +50,24 @@ function runElkLayout(
 	}
 
 	const graph: ElkNode = {
-		id: "root",
-		layoutOptions: {
-			"elk.algorithm": "layered",
-			"elk.direction": DIRECTION_MAP[options.direction] ?? "DOWN",
-			"elk.spacing.nodeNode": String(options.nodeSep),
-			"elk.layered.spacing.nodeNodeBetweenLayers": String(options.rankSep),
-			"elk.padding": `[left=${options.marginX}, top=${options.marginY}, right=${options.marginX}, bottom=${options.marginY}]`,
-		},
 		children: nodes.map((n) => ({
+			height: options.nodeHeight,
 			id: n.id,
 			width: options.nodeWidth,
-			height: options.nodeHeight,
 		})),
 		edges: edges.map((e) => ({
 			id: e.id,
 			sources: [e.source],
 			targets: [e.target],
 		})) as ElkExtendedEdge[],
+		id: "root",
+		layoutOptions: {
+			"elk.algorithm": "layered",
+			"elk.direction": DIRECTION_MAP[options.direction] ?? "DOWN",
+			"elk.layered.spacing.nodeNodeBetweenLayers": String(options.rankSep),
+			"elk.padding": `[left=${options.marginX}, top=${options.marginY}, right=${options.marginX}, bottom=${options.marginY}]`,
+			"elk.spacing.nodeNode": String(options.nodeSep),
+		},
 	};
 
 	return elk.layout(graph).then((result) => {
@@ -80,21 +82,29 @@ function runElkLayout(
 }
 
 /* eslint-disable unicorn/prefer-add-event-listener -- Worker API uses self.onmessage */
-self.onmessage = (ev: MessageEvent<LayoutRequest>) => {
+globalThis.onmessage = (ev: MessageEvent<LayoutRequest>) => {
 	const msg = ev.data;
-	if (msg.type !== "layout") return;
+	if (msg.type !== "layout") {
+		return;
+	}
 
 	runElkLayout(msg.nodes, msg.edges, msg.options)
 		.then((positions) => {
-			self.postMessage({
-				type: "result",
-				positions,
-			} satisfies LayoutResponse);
+			self.postMessage(
+				{
+					positions,
+					type: "result",
+				} satisfies LayoutResponse,
+				self.location.origin,
+			);
 		})
-		.catch((err) => {
-			self.postMessage({
-				type: "error",
-				error: err instanceof Error ? err.message : String(err),
-			});
+		.catch((error) => {
+			self.postMessage(
+				{
+					error: error instanceof Error ? error.message : String(error),
+					type: "error",
+				},
+				self.location.origin,
+			);
 		});
 };

@@ -1,3 +1,4 @@
+/* oxlint-disable oxc/no-async-await */
 // Events API stub
 import client from "./client";
 
@@ -12,7 +13,7 @@ export interface Event {
 	projectId?: string;
 }
 
-export const fetchEvents = async (params?: {
+const fetchEvents = async (params?: {
 	limit?: number;
 	offset?: number;
 }): Promise<Event[]> => {
@@ -20,19 +21,32 @@ export const fetchEvents = async (params?: {
 		const response = await safeApiCall(
 			apiClient.GET("/api/v1/events", { params: { query: params } }),
 		);
-		return (response.data as Event[]) || [];
-    } catch {
-        return [];
+		const data = response.data;
+		if (Array.isArray(data)) {
+			return data as Event[];
+		}
+		return [];
+	} catch {
+		return [];
 	}
 };
 
-export const fetchEvent = async (id: string): Promise<Event | null> => {
+const fetchEvent = async (id: string): Promise<Event | null> => {
 	try {
 		const response = await safeApiCall(
 			apiClient.GET("/api/v1/events/{id}", { params: { path: { id } } }),
 		);
-		return (response.data as Event) || null;
-    } catch {
-        return null;
+		const data = response.data;
+		if (data && typeof data === "object" && "id" in data) {
+			return data as Event;
+		}
+		return null;
+	} catch {
+		return null;
 	}
 };
+
+const eventsApi = { fetchEvent, fetchEvents };
+
+// eslint-disable-next-line import/no-default-export
+export default eventsApi;

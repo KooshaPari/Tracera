@@ -16,14 +16,14 @@ import {
 
 let user: ReturnType<typeof userEvent.setup>;
 
-describe("EmptyState", () => {
+describe(EmptyState, () => {
 	beforeEach(() => {
 		user = userEvent.setup();
 	});
 	const defaultProps = {
+		description: "There are no items to display",
 		icon: Inbox,
 		title: "No items",
-		description: "There are no items to display",
 	};
 
 	it("renders with title and description", () => {
@@ -67,14 +67,14 @@ describe("EmptyState", () => {
 	});
 });
 
-describe("NoItemsEmptyState", () => {
+describe(NoItemsEmptyState, () => {
 	it("renders with custom item type", () => {
 		render(<NoItemsEmptyState itemType="requirements" />);
 		expect(screen.getByText("No requirements yet")).toBeInTheDocument();
 	});
 });
 
-describe("NoSearchResultsEmptyState", () => {
+describe(NoSearchResultsEmptyState, () => {
 	it("renders with search query", () => {
 		render(<NoSearchResultsEmptyState query="test" />);
 		expect(screen.getByText("No results found")).toBeInTheDocument();
@@ -84,14 +84,14 @@ describe("NoSearchResultsEmptyState", () => {
 	});
 });
 
-describe("FilteredEmptyState", () => {
+describe(FilteredEmptyState, () => {
 	it("renders with applied filters", () => {
 		render(<FilteredEmptyState filters={["Priority: High"]} />);
 		expect(screen.getByText("No items match your filters")).toBeInTheDocument();
 	});
 });
 
-describe("ErrorEmptyState", () => {
+describe(ErrorEmptyState, () => {
 	it("renders error message", () => {
 		render(<ErrorEmptyState error="Network error" />);
 		expect(screen.getByText("Something went wrong")).toBeInTheDocument();

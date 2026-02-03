@@ -11,12 +11,12 @@
 
 import type { Meta, StoryObj } from "@storybook/react";
 
-// import { COMPONENT_NAME } from "../COMPONENT_NAME";
+// Import { COMPONENT_NAME } from "../COMPONENT_NAME";
 
 const meta: Meta = {
 	// Set the title following the naming convention: Type/Category/ComponentName
 	title: "Components/Graph/ComponentName",
-	// component: COMPONENT_NAME,
+	// Component: COMPONENT_NAME,
 	tags: ["autodocs"],
 
 	// Configure visual regression testing
@@ -25,13 +25,13 @@ const meta: Meta = {
 		chromatic: {
 			// Test both light and dark modes
 			modes: {
-				light: {
-					query: "[data-theme='light']",
-					matcherUrl: "**/light",
-				},
 				dark: {
-					query: "[data-theme='dark']",
 					matcherUrl: "**/dark",
+					query: "[data-theme='dark']",
+				},
+				light: {
+					matcherUrl: "**/light",
+					query: "[data-theme='light']",
 				},
 			},
 			// Delay before taking snapshot (wait for animations)
@@ -51,18 +51,18 @@ const meta: Meta = {
 	// Define component props for interactive control in Storybook UI
 	argTypes: {
 		// Example arg type definitions
-		// variant: {
-		// 	control: "select",
-		// 	options: ["primary", "secondary", "outline"],
-		// 	description: "Button visual style variant",
+		// Variant: {
+		// 	Control: "select",
+		// 	Options: ["primary", "secondary", "outline"],
+		// 	Description: "Button visual style variant",
 		// },
-		// disabled: {
-		// 	control: "boolean",
-		// 	description: "Disable the component",
+		// Disabled: {
+		// 	Control: "boolean",
+		// 	Description: "Disable the component",
 		// },
-		// onClick: {
-		// 	action: "clicked",
-		// 	description: "Click handler",
+		// OnClick: {
+		// 	Action: "clicked",
+		// 	Description: "Click handler",
 		// },
 	},
 };
@@ -80,8 +80,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
 	args: {
 		// Add props for your component
-		// label: "Default Button",
-		// variant: "primary",
+		// Label: "Default Button",
+		// Variant: "primary",
 	},
 };
 
@@ -94,7 +94,7 @@ export const Default: Story = {
 export const Disabled: Story = {
 	args: {
 		// ...Default.args,
-		// disabled: true,
+		// Disabled: true,
 	},
 };
 
@@ -184,7 +184,7 @@ export const Hovered: Story = {
 				new MouseEvent("mouseenter", {
 					bubbles: true,
 					cancelable: true,
-					view: window,
+					view: globalThis,
 				}),
 			);
 		}
@@ -239,8 +239,8 @@ export const Active: Story = {
  * For async components, shows the loading visual state.
  * Example: Spinner, skeleton loader, disabled state with message.
  */
-// export const Loading: Story = {
-// 	args: {
+// Export const Loading: Story = {
+// 	Args: {
 // 		// ...Default.args,
 // 		// isLoading: true,
 // 	},
@@ -253,8 +253,8 @@ export const Active: Story = {
  * Shows error messaging and visual indication of error.
  * Example: Red border, error icon, error message text.
  */
-// export const Error: Story = {
-// 	args: {
+// Export const Error: Story = {
+// 	Args: {
 // 		// ...Default.args,
 // 		// error: "Something went wrong",
 // 		// status: "error",
@@ -268,8 +268,8 @@ export const Active: Story = {
  * Shows success messaging and visual indication of success.
  * Example: Green checkmark, success message.
  */
-// export const Success: Story = {
-// 	args: {
+// Export const Success: Story = {
+// 	Args: {
 // 		// ...Default.args,
 // 		// status: "success",
 // 		// message: "Successfully updated",
@@ -283,8 +283,8 @@ export const Active: Story = {
  * Useful for comparing different variants side-by-side.
  * Helps catch inconsistencies between variants.
  */
-// export const AllVariants: Story = {
-// 	render: () => (
+// Export const AllVariants: Story = {
+// 	Render: () => (
 // 		<div className="flex flex-wrap gap-4 p-4">
 // 			{/* Render all variants */}
 // 			{/* <COMPONENT_NAME variant="primary">Primary</COMPONENT_NAME> */}
@@ -301,11 +301,11 @@ export const Active: Story = {
  * Use this for complex components that benefit from
  * user interaction during visual testing.
  */
-// export const Interactive: Story = {
-// 	args: {
+// Export const Interactive: Story = {
+// 	Args: {
 // 		// ...Default.args,
 // 	},
-// 	play: async ({ canvasElement }) => {
+// 	Play: async ({ canvasElement }) => {
 // 		// Perform a sequence of user interactions
 // 		// This helps catch visual issues that occur after interactions
 // 	},

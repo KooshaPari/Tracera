@@ -2,8 +2,8 @@
 // Patch @tanstack/router-generator to work with Zod 4
 // Issue: router-generator uses z.function().returns() which doesn't exist in Zod 4
 
-import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 const configPath = join(
 	process.cwd(),
@@ -17,23 +17,15 @@ try {
 	// Old: z.function().returns(z.string())
 	// New: z.function(z.tuple([]), z.string())
 
-	const patched = content.replace(
+	const patched = content.replaceAll(
 		/z\.function\(\)\.returns\((.*?)\)/g,
 		"z.function(z.tuple([]), $1)",
 	);
 
 	if (content !== patched) {
 		writeFileSync(configPath, patched, "utf8");
-		console.log(
-			"✅ Patched @tanstack/router-generator for Zod 4 compatibility",
-		);
 	} else {
-		console.log("ℹ️  No patching needed or already patched");
 	}
 } catch (error) {
-	console.error(
-		"❌ Failed to patch router-generator:",
-		error instanceof Error ? error.message : String(error),
-	);
 	process.exit(0); // Don't fail build
 }

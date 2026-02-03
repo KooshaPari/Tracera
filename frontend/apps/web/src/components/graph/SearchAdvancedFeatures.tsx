@@ -27,7 +27,7 @@ export const SavedSearchesPanel = memo(function SavedSearchesPanelComponent({
 	onLoadSearch,
 	onDeleteSearch,
 	className,
-}: Omit<SavedSearchesPanelProps, 'onSaveSearch'>) {
+}: Omit<SavedSearchesPanelProps, "onSaveSearch">) {
 	if (savedSearches.length === 0) {
 		return (
 			<div className={cn("text-center text-muted-foreground py-4", className)}>
@@ -142,7 +142,7 @@ export const SearchResultsExport = memo(function SearchResultsExportComponent({
 		return null;
 	}
 
-	const filename = `search-${query.replace(/\s+/g, "-")}-${Date.now()}`;
+	const filename = `search-${query.replaceAll(/\s+/g, "-")}-${Date.now()}`;
 
 	return (
 		<div className={cn("flex items-center gap-2", className)}>
@@ -190,7 +190,7 @@ export const SearchMetrics = memo(function SearchMetricsComponent({
 	executionTime,
 	cacheHit,
 	className,
-}: Omit<SearchMetricsProps, 'query'>) {
+}: Omit<SearchMetricsProps, "query">) {
 	const totalResults = results.reduce((sum, group) => sum + group.count, 0);
 	const perspectiveCount = results.length;
 
@@ -223,7 +223,7 @@ export const SearchMetrics = memo(function SearchMetricsComponent({
  * Props for QuickFilterButtons
  */
 interface QuickFilterButtonsProps {
-	items?: Array<{ label: string; value: string; count: number }>;
+	items?: { label: string; value: string; count: number }[];
 	onFilterSelect?: (value: string) => void;
 	className?: string;
 }
@@ -277,7 +277,7 @@ export const SaveSearchButton = memo(function SaveSearchButtonComponent({
 	query,
 	onSave,
 	isSaved = false,
-}: Omit<SaveSearchButtonProps, 'className'>) {
+}: Omit<SaveSearchButtonProps, "className">) {
 	const [showFeedback, setShowFeedback] = useState(false);
 
 	const handleClick = useCallback(() => {
@@ -303,7 +303,7 @@ export const SaveSearchButton = memo(function SaveSearchButtonComponent({
  * Props for DimensionFilterGroup
  */
 interface DimensionFilterGroupProps {
-	dimensions: Array<{ key: string; values: string[] }>;
+	dimensions: { key: string; values: string[] }[];
 	selectedDimension?: string;
 	selectedValue?: string;
 	onDimensionSelect: (key: string) => void;

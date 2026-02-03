@@ -4,15 +4,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Alert } from "@tracertm/ui";
 
 const meta: Meta<typeof Alert> = {
-	title: "Components/Alert",
-	component: Alert,
-	tags: ["autodocs"],
 	argTypes: {
 		variant: {
 			control: "select",
 			options: ["default", "destructive", "success", "warning"],
 		},
 	},
+	component: Alert,
+	tags: ["autodocs"],
+	title: "Components/Alert",
 };
 
 export default meta;

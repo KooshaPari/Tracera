@@ -1,7 +1,6 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
-		"baseUrl": ".",
 		"lib": ["ES2023", "DOM", "DOM.Iterable"],
 		"paths": {
 			"@tracertm/types": ["./packages/types/src/index.ts"],

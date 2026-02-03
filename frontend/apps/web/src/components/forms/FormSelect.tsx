@@ -48,9 +48,15 @@ export const FormSelect = React.forwardRef<HTMLButtonElement, FormSelectProps>(
 			disabled?: boolean;
 		} = {};
 
-		if (value !== undefined) selectProps.value = value;
-		if (onValueChange !== undefined) selectProps.onValueChange = onValueChange;
-		if (disabled !== undefined) selectProps.disabled = disabled;
+		if (value !== undefined) {
+			selectProps.value = value;
+		}
+		if (onValueChange !== undefined) {
+			selectProps.onValueChange = onValueChange;
+		}
+		if (disabled !== undefined) {
+			selectProps.disabled = disabled;
+		}
 
 		return (
 			<Select {...selectProps}>

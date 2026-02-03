@@ -1,4 +1,4 @@
-// useTemporal - React Query hooks for temporal navigation
+// UseTemporal - React Query hooks for temporal navigation
 // Handles branch and version management
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,9 +15,11 @@ async function fetchBranches(projectId: string): Promise<Branch[]> {
 	const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/branches`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch branches");
+	if (!res.ok) {
+		throw new Error("Failed to fetch branches");
+	}
 	const data = await res.json();
-	return Array.isArray(data) ? data : data['branches'] || [];
+	return Array.isArray(data) ? data : data["branches"] || [];
 }
 
 export function useBranches(projectId: string) {
@@ -33,9 +35,11 @@ async function fetchVersions(branchId: string): Promise<Version[]> {
 	const res = await fetch(`${API_URL}/api/v1/branches/${branchId}/versions`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch versions");
+	if (!res.ok) {
+		throw new Error("Failed to fetch versions");
+	}
 	const data = await res.json();
-	return Array.isArray(data) ? data : data['versions'] || [];
+	return Array.isArray(data) ? data : data["versions"] || [];
 }
 
 export function useVersions(branchId: string) {
@@ -58,12 +62,14 @@ async function createBranch(input: CreateBranchInput): Promise<Branch> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${input.projectId}/branches`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(input),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create branch");
+	if (!res.ok) {
+		throw new Error("Failed to create branch");
+	}
 	return res.json();
 }
 
@@ -72,9 +78,7 @@ export function useCreateBranch() {
 	return useMutation({
 		mutationFn: createBranch,
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({
-				queryKey: [queryKeys.branches, variables.projectId],
-			});
+			undefined;
 		},
 	});
 }
@@ -92,12 +96,14 @@ async function createVersion(input: CreateVersionInput): Promise<Version> {
 	const res = await fetch(
 		`${API_URL}/api/v1/branches/${input.branchId}/versions`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(input),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create version");
+	if (!res.ok) {
+		throw new Error("Failed to create version");
+	}
 	return res.json();
 }
 
@@ -106,9 +112,7 @@ export function useCreateVersion() {
 	return useMutation({
 		mutationFn: createVersion,
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({
-				queryKey: [queryKeys.versions, variables.branchId],
-			});
+			undefined;
 		},
 	});
 }
@@ -126,15 +130,17 @@ async function mergeBranch(
 	const res = await fetch(
 		`${API_URL}/api/v1/branches/${input.targetBranchId}/merge`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
-				sourceBranchId: input.sourceBranchId,
 				conflictResolution: input.conflictResolution || "manual",
+				sourceBranchId: input.sourceBranchId,
 			}),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to merge branches");
+	if (!res.ok) {
+		throw new Error("Failed to merge branches");
+	}
 	return res.json();
 }
 
@@ -143,12 +149,8 @@ export function useMergeBranch() {
 	return useMutation({
 		mutationFn: mergeBranch,
 		onSuccess: (_, variables) => {
-			void queryClient.invalidateQueries({
-				queryKey: [queryKeys.branches],
-			});
-			void queryClient.invalidateQueries({
-				queryKey: [queryKeys.versions, variables.targetBranchId],
-			});
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -156,16 +158,19 @@ export function useMergeBranch() {
 /**
  * Version snapshot data structure
  */
-export interface VersionSnapshot {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+export type VersionSnapshot = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
 
 // GET VERSION SNAPSHOT
 async function getVersionSnapshot(versionId: string): Promise<VersionSnapshot> {
 	const res = await fetch(`${API_URL}/api/v1/versions/${versionId}/snapshot`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch version snapshot");
+	if (!res.ok) {
+		throw new Error("Failed to fetch version snapshot");
+	}
 	return res.json();
 }
 
@@ -187,15 +192,17 @@ interface UpdateBranchInput {
 
 async function updateBranch(input: UpdateBranchInput): Promise<Branch> {
 	const res = await fetch(`${API_URL}/api/v1/branches/${input.branchId}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			name: input.name,
 			description: input.description,
+			name: input.name,
 			status: input.status,
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PATCH",
 	});
-	if (!res.ok) throw new Error("Failed to update branch");
+	if (!res.ok) {
+		throw new Error("Failed to update branch");
+	}
 	return res.json();
 }
 
@@ -204,9 +211,7 @@ export function useUpdateBranch() {
 	return useMutation({
 		mutationFn: updateBranch,
 		onSuccess: (_data) => {
-			void queryClient.invalidateQueries({
-				queryKey: [queryKeys.branches],
-			});
+			undefined;
 		},
 	});
 }
@@ -222,16 +227,18 @@ interface UpdateVersionInput {
 
 async function updateVersion(input: UpdateVersionInput): Promise<Version> {
 	const res = await fetch(`${API_URL}/api/v1/versions/${input.versionId}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			title: input.title,
 			description: input.description,
-			tag: input.tag,
 			status: input.status,
+			tag: input.tag,
+			title: input.title,
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PATCH",
 	});
-	if (!res.ok) throw new Error("Failed to update version");
+	if (!res.ok) {
+		throw new Error("Failed to update version");
+	}
 	return res.json();
 }
 
@@ -240,9 +247,7 @@ export function useUpdateVersion() {
 	return useMutation({
 		mutationFn: updateVersion,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: [queryKeys.versions],
-			});
+			undefined;
 		},
 	});
 }
@@ -250,10 +255,12 @@ export function useUpdateVersion() {
 // DELETE BRANCH
 async function deleteBranch(branchId: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/branches/${branchId}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete branch");
+	if (!res.ok) {
+		throw new Error("Failed to delete branch");
+	}
 }
 
 export function useDeleteBranch() {
@@ -261,9 +268,7 @@ export function useDeleteBranch() {
 	return useMutation({
 		mutationFn: deleteBranch,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: [queryKeys.branches],
-			});
+			undefined;
 		},
 	});
 }
@@ -285,7 +290,9 @@ async function compareBranches(
 		`${API_URL}/api/v1/branches/${sourceBranchId}/compare/${targetBranchId}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to compare branches");
+	if (!res.ok) {
+		throw new Error("Failed to compare branches");
+	}
 	return res.json();
 }
 

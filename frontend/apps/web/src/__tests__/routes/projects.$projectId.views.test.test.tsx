@@ -7,18 +7,16 @@ import { describe, expect, it } from "vitest";
 describe("Test View Route", () => {
 	it("validates test view route path pattern", () => {
 		const testViewPath = "/projects/proj-1/views/test";
-		expect(testViewPath).toMatch(
-			/^\/projects\/[^/]+\/views\/test$/,
-		);
+		expect(testViewPath).toMatch(/^\/projects\/[^/]+\/views\/test$/);
 	});
 
 	it("supports test coverage metrics in view", () => {
 		const mockTestData = {
+			coverage: 85,
 			id: "item-1",
+			status: "done",
 			title: "Test Case 1",
 			type: "test",
-			status: "done",
-			coverage: 85,
 		};
 
 		expect(mockTestData.type).toBe("test");
@@ -43,9 +41,9 @@ describe("Test View Route", () => {
 
 	it("handles multiple test cases in list", () => {
 		const mockTestCases = [
-			{ id: "test-1", title: "Test 1", coverage: 90 },
-			{ id: "test-2", title: "Test 2", coverage: 80 },
-			{ id: "test-3", title: "Test 3", coverage: 95 },
+			{ coverage: 90, id: "test-1", title: "Test 1" },
+			{ coverage: 80, id: "test-2", title: "Test 2" },
+			{ coverage: 95, id: "test-3", title: "Test 3" },
 		];
 
 		expect(mockTestCases).toHaveLength(3);
@@ -59,8 +57,10 @@ describe("Test View Route", () => {
 			{ coverage: 95 },
 		];
 
-		const avgCoverage = mockTestCases.reduce((sum, test) => sum + test.coverage, 0) / mockTestCases.length;
+		const avgCoverage =
+			mockTestCases.reduce((sum, test) => sum + test.coverage, 0) /
+			mockTestCases.length;
 
-		expect(avgCoverage).toBe(88.33333333333333);
+		expect(avgCoverage).toBe(88.333_333_333_333_33);
 	});
 });

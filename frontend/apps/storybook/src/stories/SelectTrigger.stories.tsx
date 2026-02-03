@@ -4,9 +4,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SelectTrigger } from "@tracertm/ui";
 
 const meta: Meta<typeof SelectTrigger> = {
-	title: "Components/SelectTrigger",
 	component: SelectTrigger,
 	tags: ["autodocs"],
+	title: "Components/SelectTrigger",
 };
 
 export default meta;

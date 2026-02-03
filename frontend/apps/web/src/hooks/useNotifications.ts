@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { SSEClient, createNotificationSSEClient } from "@/lib/sse-client";
+import type { SSEClient } from "@/lib/sse-client";
+import { createNotificationSSEClient } from "@/lib/sse-client";
 
 export interface Notification {
 	id: string;
@@ -29,7 +30,7 @@ export function useNotifications() {
 
 	// Fetch initial notifications
 	const query = useQuery({
-		queryKey: ["notifications"],
+		enabled: !!token,
 		queryFn: async () => {
 			if (!token) return [];
 			const response = await fetch(`${API_URL}/api/v1/notifications`, {
@@ -40,7 +41,7 @@ export function useNotifications() {
 			if (!response.ok) throw new Error("Failed to fetch notifications");
 			return response.json() as Promise<Notification[]>;
 		},
-		enabled: !!token,
+		queryKey: ["notifications"],
 		// No refetchInterval - we use SSE for real-time updates
 	});
 
@@ -49,43 +50,47 @@ export function useNotifications() {
 		(data: unknown) => {
 			const event = data as NotificationEvent;
 
-			queryClient.setQueryData<Notification[]>(
-				["notifications"],
-				(oldData) => {
-					if (!oldData) return oldData;
+			queryClient.setQueryData<Notification[]>(["notifications"], (oldData) => {
+				if (!oldData) {
+					return oldData;
+				}
 
-					switch (event.type) {
-						case "notification":
-							// Add new notification to the list
-							if (event.notification) {
-								return [event.notification, ...oldData];
-							}
-							return oldData;
-
-						case "read":
-							// Mark notification as read
-							return oldData.map((n) =>
-								n.id === event.notification?.id
-									? { ...n, read_at: new Date().toISOString() }
-									: n,
-							);
-
-						case "read_all":
-							// Mark all as read
-							return oldData.map((n) => ({
-								...n,
-								read_at: n.read_at || new Date().toISOString(),
-							}));
-
-						case "delete":
-							// Remove notification from list
-							return oldData.filter((n) => n.id !== event.notification?.id);
-
-						default:
-							return oldData;
+				switch (event.type) {
+					case "notification": {
+						// Add new notification to the list
+						if (event.notification) {
+							return [event.notification, ...oldData];
+						}
+						return oldData;
 					}
-				},
-			);
+
+					case "read": {
+						// Mark notification as read
+						return oldData.map((n) =>
+							n.id === event.notification?.id
+								? { ...n, read_at: new Date().toISOString() }
+								: n,
+						);
+					}
+
+					case "read_all": {
+						// Mark all as read
+						return oldData.map((n) => ({
+							...n,
+							read_at: n.read_at || new Date().toISOString(),
+						}));
+					}
+
+					case "delete": {
+						// Remove notification from list
+						return oldData.filter((n) => n.id !== event.notification?.id);
+					}
+
+					default: {
+						return oldData;
+					}
+				}
+			});
 		},
 		[queryClient],
 	);
@@ -105,9 +110,7 @@ export function useNotifications() {
 		sseClientRef.current = createNotificationSSEClient(
 			token,
 			handleNotificationEvent,
-			(error) => {
-				console.error("SSE connection error:", error);
-			},
+			(error) => {},
 		);
 
 		// Connect to SSE stream
@@ -127,8 +130,8 @@ export function useNotifications() {
 			const response = await fetch(
 				`${API_URL}/api/v1/notifications/${id}/read`,
 				{
-					method: "POST",
 					headers: { Authorization: `Bearer ${token}` },
+					method: "POST",
 				},
 			);
 			if (!response.ok) {
@@ -137,34 +140,31 @@ export function useNotifications() {
 		},
 		onSuccess: () => {
 			// SSE will update the cache automatically, but we can also update optimistically
-			// queryClient.invalidateQueries({ queryKey: ["notifications"] });
+			// QueryClient.invalidateQueries({ queryKey: ["notifications"] });
 		},
 	});
 
 	const markAllRead = useMutation({
 		mutationFn: async () => {
-			const response = await fetch(
-				`${API_URL}/api/v1/notifications/read-all`,
-				{
-					method: "POST",
-					headers: { Authorization: `Bearer ${token}` },
-				},
-			);
+			const response = await fetch(`${API_URL}/api/v1/notifications/read-all`, {
+				headers: { Authorization: `Bearer ${token}` },
+				method: "POST",
+			});
 			if (!response.ok) {
 				throw new Error("Failed to mark all notifications as read");
 			}
 		},
 		onSuccess: () => {
 			// SSE will update the cache automatically
-			// queryClient.invalidateQueries({ queryKey: ["notifications"] });
+			// QueryClient.invalidateQueries({ queryKey: ["notifications"] });
 		},
 	});
 
 	const deleteNotification = useMutation({
 		mutationFn: async (id: string) => {
 			const response = await fetch(`${API_URL}/api/v1/notifications/${id}`, {
-				method: "DELETE",
 				headers: { Authorization: `Bearer ${token}` },
+				method: "DELETE",
 			});
 			if (!response.ok) {
 				throw new Error("Failed to delete notification");
@@ -179,12 +179,12 @@ export function useNotifications() {
 	const isConnected = sseClientRef.current?.isConnected() ?? false;
 
 	return {
-		notifications: query.data || [],
-		isLoading: query.isLoading,
-		unreadCount,
-		isConnected,
-		markAsRead,
-		markAllRead,
 		deleteNotification,
+		isConnected,
+		isLoading: query.isLoading,
+		markAllRead,
+		markAsRead,
+		notifications: query.data || [],
+		unreadCount,
 	};
 }

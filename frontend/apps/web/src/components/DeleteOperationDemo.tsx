@@ -45,21 +45,21 @@ export function SingleItemDeleteExample() {
 
 	const handleDeleteClick = (itemId: string, itemName: string) => {
 		requestDelete({
-			id: itemId,
-			name: itemName,
-			title: `Delete "${itemName}"?`,
+			confirmText: "Delete",
 			description:
 				"This action cannot be undone. The item will be permanently deleted.",
-			confirmText: "Delete",
-			successMessage: `${itemName} has been deleted`,
 			errorMessage: `Failed to delete ${itemName}`,
+			id: itemId,
+			name: itemName,
 			severity: "danger",
+			successMessage: `${itemName} has been deleted`,
+			title: `Delete "${itemName}"?`,
 		});
 	};
 
 	const performDelete = async () => {
 		// Your actual delete function here
-		// await deleteItemAPI(pendingDelete!.id);
+		// Await deleteItemAPI(pendingDelete!.id);
 		logger.info(`Deleting item: ${pendingDelete?.id}`);
 	};
 
@@ -79,7 +79,9 @@ export function SingleItemDeleteExample() {
 				<ConfirmationDialog
 					open={dialogOpen}
 					onOpenChange={(open) => {
-						if (!open) cancelDelete();
+						if (!open) {
+							cancelDelete();
+						}
 					}}
 					title={pendingDelete.title || "Delete?"}
 					description={pendingDelete.description || ""}
@@ -88,7 +90,7 @@ export function SingleItemDeleteExample() {
 					isLoading={isDeleting}
 					onConfirm={() => executeDelete(performDelete)}
 					context={pendingDelete.name}
-					showWarning={true}
+					showWarning
 				/>
 			)}
 		</div>
@@ -133,7 +135,7 @@ export function BulkDeleteExample() {
 
 	const performBulkDelete = async () => {
 		// Your actual bulk delete function here
-		// await deleteItemsAPI(selectedItems);
+		// Await deleteItemsAPI(selectedItems);
 		logger.info(`Deleting ${selectedItems.length} items:`, selectedItems);
 		setSelectedItems([]);
 	};
@@ -157,7 +159,9 @@ export function BulkDeleteExample() {
 			<BulkConfirmationDialog
 				open={dialogOpen}
 				onOpenChange={(open) => {
-					if (!open) cancelDelete();
+					if (!open) {
+						cancelDelete();
+					}
 				}}
 				actionType="delete"
 				itemCount={pendingDelete?.count || 0}
@@ -178,7 +182,7 @@ export function BulkDeleteExample() {
  * - Error states
  */
 export function EmptyStateExample() {
-	const [items, _setItems] = useState<Array<{ id: string; name: string }>>([]);
+	const [items, _setItems] = useState<{ id: string; name: string }[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [filters, setFilters] = useState<string[]>([]);
 
@@ -194,8 +198,8 @@ export function EmptyStateExample() {
 					},
 					{
 						label: "View Documentation",
-						variant: "outline",
 						onClick: () => window.open("/docs", "_blank"),
+						variant: "outline",
 					},
 				]}
 				helpText="Keyboard shortcut: Cmd+K to create"
@@ -250,12 +254,11 @@ export function InlineDeleteExample() {
 	const handleQuickDelete = async (itemId: string) => {
 		setIsDeleting(true);
 		try {
-			// await deleteItemAPI(itemId);
+			// Await deleteItemAPI(itemId);
 			logger.info(`Deleting: ${itemId}`);
 
 			// Show success with undo option
 			toast.success("Item deleted", {
-				description: "Item moved to trash",
 				action: {
 					label: "Undo",
 					onClick: () => {
@@ -263,6 +266,7 @@ export function InlineDeleteExample() {
 						toast.success("Item restored");
 					},
 				},
+				description: "Item moved to trash",
 			});
 		} catch {
 			toast.error("Failed to delete item");
@@ -293,7 +297,7 @@ export function InlineDeleteExample() {
  * - Success feedback
  */
 export function CompleteListViewExample() {
-	const [items, setItems] = useState<Array<{ id: string; name: string }>>([]);
+	const [items, setItems] = useState<{ id: string; name: string }[]>([]);
 	const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
 	const {
@@ -317,19 +321,21 @@ export function CompleteListViewExample() {
 	const handleDeleteItem = useCallback(
 		(item: { id: string; name: string }) => {
 			requestDelete({
+				confirmText: "Delete",
+				description: "This action cannot be undone.",
 				id: item.id,
 				name: item.name,
-				title: `Delete "${item.name}"?`,
-				description: "This action cannot be undone.",
-				confirmText: "Delete",
 				severity: "danger",
+				title: `Delete "${item.name}"?`,
 			});
 		},
 		[requestDelete],
 	);
 
 	const handleBulkDelete = useCallback(() => {
-		if (selectedItems.length === 0) return;
+		if (selectedItems.length === 0) {
+			return;
+		}
 
 		requestBulkDelete({
 			count: selectedItems.length,
@@ -419,7 +425,9 @@ export function CompleteListViewExample() {
 			<ConfirmationDialog
 				open={deleteDialogOpen}
 				onOpenChange={(open) => {
-					if (!open) cancelDelete();
+					if (!open) {
+						cancelDelete();
+					}
 				}}
 				title={pendingDeleteItem?.title || "Delete?"}
 				description={pendingDeleteItem?.description || ""}
@@ -430,7 +438,9 @@ export function CompleteListViewExample() {
 			<BulkConfirmationDialog
 				open={bulkDialogOpen}
 				onOpenChange={(open) => {
-					if (!open) cancelBulkDelete();
+					if (!open) {
+						cancelBulkDelete();
+					}
 				}}
 				actionType="delete"
 				itemCount={pendingBulkDelete?.count || 0}

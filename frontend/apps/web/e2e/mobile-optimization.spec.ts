@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("Mobile Optimization - Phase 12 & 13", () => {
 	// Set mobile viewport
 	test.use({
-		viewport: { width: 375, height: 667 }, // iPhone SE
+		viewport: { height: 667, width: 375 }, // IPhone SE
 		isMobile: true,
 		hasTouch: true,
 	});
@@ -40,7 +40,7 @@ test.describe("Mobile Optimization - Phase 12 & 13", () => {
 		// Verify touch target has focus ring
 		await firstCard.focus();
 		const hasFocusRing = await firstCard.evaluate((el) => {
-			const styles = window.getComputedStyle(el);
+			const styles = globalThis.getComputedStyle(el);
 			return styles.outline !== "none" || styles.boxShadow.includes("rgb(");
 		});
 		expect(hasFocusRing).toBe(true);
@@ -233,9 +233,9 @@ test.describe("Mobile Optimization - Phase 12 & 13", () => {
 		const firstAction = actions.first();
 		await firstAction.focus();
 
-		const hasFocus = await firstAction.evaluate((el) => {
-			return el === document.activeElement;
-		});
+		const hasFocus = await firstAction.evaluate(
+			(el) => el === document.activeElement,
+		);
 		expect(hasFocus).toBe(true);
 	});
 
@@ -260,16 +260,16 @@ test.describe("Mobile Optimization - Phase 12 & 13", () => {
 		await page.waitForLoadState("networkidle");
 
 		// Set viewport to small tablet
-		await page.setViewportSize({ width: 640, height: 800 });
+		await page.setViewportSize({ height: 800, width: 640 });
 
 		// Should still show cards
 		const cardGrid = page.locator(".grid");
 		expect(await cardGrid.isVisible()).toBe(true);
 
 		// At 640px (sm breakpoint), should show 2 columns
-		const hasSmClass = await cardGrid.evaluate((el) => {
-			return window.getComputedStyle(el).gridTemplateColumns.split(" ").length;
-		});
+		const hasSmClass = await cardGrid.evaluate(
+			(el) => window.getComputedStyle(el).gridTemplateColumns.split(" ").length,
+		);
 
 		// Should have columns (actual count may vary)
 		expect(hasSmClass).toBeGreaterThan(0);
@@ -287,9 +287,9 @@ test.describe("Mobile Optimization - Phase 12 & 13", () => {
 
 		await firstMenuItem.focus();
 
-		const hasFocus = await firstMenuItem.evaluate((el) => {
-			return el === document.activeElement;
-		});
+		const hasFocus = await firstMenuItem.evaluate(
+			(el) => el === document.activeElement,
+		);
 
 		expect(hasFocus).toBe(true);
 	});
@@ -301,12 +301,12 @@ test.describe("Mobile Optimization - Phase 12 & 13", () => {
 		// Get card title
 		const cardTitle = page.locator("button").first().locator("h3, div");
 
-		const fontSize = await cardTitle.evaluate((el) => {
-			return window.getComputedStyle(el).fontSize;
-		});
+		const fontSize = await cardTitle.evaluate(
+			(el) => window.getComputedStyle(el).fontSize,
+		);
 
 		// Font should be at least 12px (0.75rem minimum)
-		const fontSizePx = parseFloat(fontSize);
+		const fontSizePx = Number.parseFloat(fontSize);
 		expect(fontSizePx).toBeGreaterThanOrEqual(12);
 	});
 
@@ -315,38 +315,39 @@ test.describe("Mobile Optimization - Phase 12 & 13", () => {
 		await page.waitForLoadState("networkidle");
 
 		// Enable performance monitoring
-		const metrics = await page.evaluate(() => {
-			return new Promise<{
-				fps: number;
-				jsHeap: number;
-			}>((resolve) => {
-				const frames: number[] = [];
-				let lastTime = performance.now();
+		const metrics = await page.evaluate(
+			() =>
+				new Promise<{
+					fps: number;
+					jsHeap: number;
+				}>((resolve) => {
+					const frames: number[] = [];
+					let lastTime = performance.now();
 
-				const measureFrame = () => {
-					const now = performance.now();
-					const delta = now - lastTime;
+					const measureFrame = () => {
+						const now = performance.now();
+						const delta = now - lastTime;
 
-					if (delta > 0) {
-						frames.push(1000 / delta);
-					}
+						if (delta > 0) {
+							frames.push(1000 / delta);
+						}
 
-					lastTime = now;
+						lastTime = now;
 
-					if (frames.length < 60) {
-						requestAnimationFrame(measureFrame);
-					} else {
-						const avgFps = frames.reduce((a, b) => a + b) / frames.length;
-						resolve({
-							fps: avgFps,
-							jsHeap: 0, // Not available in this context
-						});
-					}
-				};
+						if (frames.length < 60) {
+							requestAnimationFrame(measureFrame);
+						} else {
+							const avgFps = frames.reduce((a, b) => a + b) / frames.length;
+							resolve({
+								fps: avgFps,
+								jsHeap: 0, // Not available in this context
+							});
+						}
+					};
 
-				requestAnimationFrame(measureFrame);
-			});
-		});
+					requestAnimationFrame(measureFrame);
+				}),
+		);
 
 		// Should maintain reasonable frame rate (30fps minimum for mobile)
 		expect(metrics.fps).toBeGreaterThan(30);
@@ -380,9 +381,9 @@ test.describe("Mobile Optimization - Phase 12 & 13", () => {
 
 test.describe("Mobile Performance Optimization - Phase 13", () => {
 	test.use({
-		viewport: { width: 375, height: 667 },
-		isMobile: true,
 		hasTouch: true,
+		isMobile: true,
+		viewport: { width: 375, height: 667 },
 	});
 
 	test("lazy loads images on mobile", async ({ page }) => {

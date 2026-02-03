@@ -1,7 +1,8 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
-import { formatKeyboardShortcut, type KeyboardShortcut } from "@/hooks";
+import { formatKeyboardShortcut } from "@/hooks";
+import type { KeyboardShortcut } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 interface KeyboardShortcutsModalProps {
@@ -11,16 +12,16 @@ interface KeyboardShortcutsModalProps {
 }
 
 const categoryLabels: Record<string, string> = {
+	editing: "Editing",
 	navigation: "Navigation",
 	selection: "Selection",
-	editing: "Editing",
 	system: "System",
 };
 
 const categoryIcons: Record<string, string> = {
+	editing: "✏️",
 	navigation: "🧭",
 	selection: "☑️",
-	editing: "✏️",
 	system: "⚙️",
 };
 
@@ -38,13 +39,15 @@ export function KeyboardShortcutsModal({
 		};
 
 		if (isOpen) {
-			window.addEventListener("keydown", handler);
-			return () => window.removeEventListener("keydown", handler);
+			globalThis.addEventListener("keydown", handler);
+			return () => globalThis.removeEventListener("keydown", handler);
 		}
-		return undefined;
+		return;
 	}, [isOpen, onClose]);
 
-	if (!isOpen) return null;
+	if (!isOpen) {
+		return null;
+	}
 
 	// Group shortcuts by category
 	const grouped = shortcuts.reduce(
@@ -95,7 +98,9 @@ export function KeyboardShortcutsModal({
 						{Object.entries(categoryLabels).map(
 							([categoryKey, categoryLabel]) => {
 								const categoryShortcuts = grouped[categoryKey] || [];
-								if (categoryShortcuts.length === 0) return null;
+								if (categoryShortcuts.length === 0) {
+									return null;
+								}
 
 								return (
 									<div key={categoryKey}>

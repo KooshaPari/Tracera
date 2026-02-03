@@ -68,7 +68,9 @@ test.describe("Accessibility - Keyboard Navigation", () => {
 			const focused = await page.evaluate(() =>
 				document.activeElement?.getAttribute("data-testid"),
 			);
-			if (focused === "item-card") break;
+			if (focused === "item-card") {
+				break;
+			}
 			tabCount++;
 		}
 
@@ -385,7 +387,7 @@ test.describe("Accessibility - Visual and Color", () => {
 
 	test("should scale properly at 200% zoom", async ({ page }) => {
 		// Set viewport to simulate 200% zoom
-		await page.setViewportSize({ width: 640, height: 480 });
+		await page.setViewportSize({ height: 480, width: 640 });
 		await page.goto("/items");
 
 		// Content should not be cut off
@@ -393,12 +395,11 @@ test.describe("Accessibility - Visual and Color", () => {
 		await expect(main).toBeVisible();
 
 		// Horizontal scrolling should not be required
-		const hasHorizontalScroll = await page.evaluate(() => {
-			return (
+		const hasHorizontalScroll = await page.evaluate(
+			() =>
 				document.documentElement.scrollWidth >
-				document.documentElement.clientWidth
-			);
-		});
+				document.documentElement.clientWidth,
+		);
 		expect(hasHorizontalScroll).toBe(false);
 	});
 
@@ -411,13 +412,20 @@ test.describe("Accessibility - Visual and Color", () => {
 		// Get focused element's outline
 		const focusedOutline = await page.evaluate(() => {
 			const el = document.activeElement;
-			if (!el) return { outline: "", outlineWidth: "0px", outlineColor: "", boxShadow: "none" };
-			const styles = window.getComputedStyle(el);
+			if (!el) {
+				return {
+					boxShadow: "none",
+					outline: "",
+					outlineColor: "",
+					outlineWidth: "0px",
+				};
+			}
+			const styles = globalThis.getComputedStyle(el);
 			return {
-				outline: styles.outline,
-				outlineWidth: styles.outlineWidth,
-				outlineColor: styles.outlineColor,
 				boxShadow: styles.boxShadow,
+				outline: styles.outline,
+				outlineColor: styles.outlineColor,
+				outlineWidth: styles.outlineWidth,
 			};
 		});
 
@@ -438,7 +446,7 @@ test.describe("Accessibility - Visual and Color", () => {
 		const hasAnimations = await page.evaluate(() => {
 			const elements = document.querySelectorAll("*");
 			for (const el of elements) {
-				const styles = window.getComputedStyle(el);
+				const styles = globalThis.getComputedStyle(el);
 				if (
 					styles.animationDuration !== "0s" &&
 					styles.animationDuration !== ""
@@ -498,13 +506,13 @@ test.describe("Accessibility - Focus Management", () => {
 		await page.waitForURL(/\/items\/.*/);
 
 		// Focus should be on main heading or skip link
-		const h1Focused = await page.evaluate(() => {
-			return document.activeElement?.tagName === "H1";
-		});
+		const h1Focused = await page.evaluate(
+			() => document.activeElement?.tagName === "H1",
+		);
 
-		const skipLinkFocused = await page.evaluate(() => {
-			return document.activeElement?.textContent?.includes("Skip");
-		});
+		const skipLinkFocused = await page.evaluate(() =>
+			document.activeElement?.textContent?.includes("Skip"),
+		);
 
 		expect(h1Focused || skipLinkFocused).toBe(true);
 	});
@@ -547,7 +555,9 @@ test.describe("Accessibility - Focus Management", () => {
 			await page.keyboard.press("Tab");
 			const position = await page.evaluate(() => {
 				const el = document.activeElement;
-				if (!el || !("getBoundingClientRect" in el)) return { x: 0, y: 0 };
+				if (!el || !("getBoundingClientRect" in el)) {
+					return { x: 0, y: 0 };
+				}
 				const rect = el.getBoundingClientRect();
 				return { x: rect.left, y: rect.top };
 			});

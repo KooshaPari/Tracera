@@ -19,9 +19,9 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 }) => {
 	// Adjust radius and stroke based on size
 	const sizeMap = {
-		sm: { radius: 30, strokeWidth: 3, fontSize: "12px" },
-		md: { radius: 45, strokeWidth: 4, fontSize: "16px" },
-		lg: { radius: 60, strokeWidth: 5, fontSize: "24px" },
+		lg: { fontSize: "24px", radius: 60, strokeWidth: 5 },
+		md: { fontSize: "16px", radius: 45, strokeWidth: 4 },
+		sm: { fontSize: "12px", radius: 30, strokeWidth: 3 },
 	};
 
 	const config = sizeMap[size];
@@ -33,13 +33,13 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 	let ringColor = color;
 	if (!ringColor) {
 		if (percentage >= 75) {
-			ringColor = "#22c55e"; // green
+			ringColor = "#22c55e"; // Green
 		} else if (percentage >= 50) {
-			ringColor = "#3b82f6"; // blue
+			ringColor = "#3b82f6"; // Blue
 		} else if (percentage >= 25) {
-			ringColor = "#eab308"; // yellow
+			ringColor = "#eab308"; // Yellow
 		} else {
-			ringColor = "#ef4444"; // red
+			ringColor = "#ef4444"; // Red
 		}
 	}
 
@@ -73,8 +73,8 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 						cx={normalizedRadius + 5}
 						cy={normalizedRadius + 5}
 						style={{
-							transition: animated ? "stroke-dashoffset 0.5s ease" : "none",
 							filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))",
+							transition: animated ? "stroke-dashoffset 0.5s ease" : "none",
 						}}
 					/>
 				</svg>
@@ -113,9 +113,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 	className = "",
 }) => {
 	const heightMap = {
-		sm: "h-1",
-		md: "h-2",
 		lg: "h-3",
+		md: "h-2",
+		sm: "h-1",
 	};
 
 	// Determine color based on percentage

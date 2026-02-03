@@ -20,28 +20,28 @@ import { buildHierarchy } from "../../../../components/graph/utils/hierarchy";
 
 function createItem(id: string, title: string, type: string): Item {
 	return {
-		id,
-		projectId: "p1",
-		view: "technical",
-		type,
-		title,
-		description: `Item ${id}`,
-		status: "done" as const,
-		priority: "medium" as const,
-		version: 1,
 		createdAt: new Date().toISOString(),
+		description: `Item ${id}`,
+		id,
+		priority: "medium" as const,
+		projectId: "p1",
+		status: "done" as const,
+		title,
+		type,
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "technical",
 	};
 }
 
 function createParentOfLink(parentId: string, childId: string): Link {
 	return {
+		createdAt: new Date().toISOString(),
+		description: `${parentId} is parent of ${childId}`,
 		id: `link-${parentId}-${childId}`,
 		sourceId: parentId,
 		targetId: childId,
 		type: "parent_of",
-		description: `${parentId} is parent of ${childId}`,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};
 }
@@ -68,7 +68,7 @@ describe("Drill-Down Navigation", () => {
 		];
 	});
 
-	describe("inferDrillDownLevel", () => {
+	describe(inferDrillDownLevel, () => {
 		it("should infer drill-down level from item type", () => {
 			expect(inferDrillDownLevel("project")).toBe("project");
 			expect(inferDrillDownLevel("repository")).toBe("repository");
@@ -88,7 +88,7 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("getNextLevel", () => {
+	describe(getNextLevel, () => {
 		it("should return next level in hierarchy", () => {
 			expect(getNextLevel("project")).toBe("repository");
 			expect(getNextLevel("repository")).toBe("module");
@@ -101,7 +101,7 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("getPreviousLevel", () => {
+	describe(getPreviousLevel, () => {
 		it("should return previous level in hierarchy", () => {
 			expect(getPreviousLevel("repository")).toBe("project");
 			expect(getPreviousLevel("module")).toBe("repository");
@@ -114,14 +114,14 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("createBreadcrumbs", () => {
+	describe(createBreadcrumbs, () => {
 		it("should create breadcrumbs from item path", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const breadcrumbs = createBreadcrumbs("func", hierarchy);
 
 			expect(breadcrumbs.length).toBe(5); // All levels
 			expect(breadcrumbs[0].itemId).toBe("proj");
-			expect(breadcrumbs[breadcrumbs.length - 1].itemId).toBe("func");
+			expect(breadcrumbs.at(-1).itemId).toBe("func");
 		});
 
 		it("should include correct drill-down levels in breadcrumbs", () => {
@@ -129,7 +129,7 @@ describe("Drill-Down Navigation", () => {
 			const breadcrumbs = createBreadcrumbs("func", hierarchy);
 
 			expect(breadcrumbs[0].level).toBe("project");
-			expect(breadcrumbs[breadcrumbs.length - 1].level).toBe("function");
+			expect(breadcrumbs.at(-1).level).toBe("function");
 		});
 
 		it("should include icons in breadcrumbs", () => {
@@ -143,7 +143,7 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("getChildrenByDrillDownLevel", () => {
+	describe(getChildrenByDrillDownLevel, () => {
 		it("should group children by drill-down level", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const levelGroups = getChildrenByDrillDownLevel("proj", hierarchy, items);
@@ -160,7 +160,7 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("createDrillDownContext", () => {
+	describe(createDrillDownContext, () => {
 		it("should create context for current item", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const context = createDrillDownContext("mod", items, hierarchy);
@@ -196,7 +196,7 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("createDrillDownNodeGroups", () => {
+	describe(createDrillDownNodeGroups, () => {
 		it("should create groups for item children", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const groups = createDrillDownNodeGroups("proj", items, hierarchy);
@@ -231,7 +231,7 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("toggleDrillDownGroup", () => {
+	describe(toggleDrillDownGroup, () => {
 		it("should add group to expanded set", () => {
 			const expanded = new Set<string>();
 			const result = toggleDrillDownGroup("group1", expanded);
@@ -255,7 +255,7 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("navigateUp", () => {
+	describe(navigateUp, () => {
 		it("should return parent ID", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const parentId = navigateUp("file", hierarchy);
@@ -271,7 +271,7 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("navigateToChild", () => {
+	describe(navigateToChild, () => {
 		it("should navigate to child by index", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const childId = navigateToChild("proj", 0, hierarchy);
@@ -297,7 +297,7 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("getDrillDownPath", () => {
+	describe(getDrillDownPath, () => {
 		it("should return path from root to item", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const path = getDrillDownPath("func", hierarchy);
@@ -320,12 +320,12 @@ describe("Drill-Down Navigation", () => {
 		});
 	});
 
-	describe("getDrillDownStats", () => {
+	describe(getDrillDownStats, () => {
 		it("should calculate drill-down statistics", () => {
 			const hierarchy = buildHierarchy(items, links);
 			const stats = getDrillDownStats("proj", hierarchy);
 
-			expect(stats.totalDescendants).toBe(4); // repo, mod, file, func
+			expect(stats.totalDescendants).toBe(4); // Repo, mod, file, func
 			expect(stats.depth).toBe(0);
 			expect(stats.childCount).toBe(1);
 		});

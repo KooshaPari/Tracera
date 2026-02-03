@@ -8,8 +8,8 @@ import { fetchDependencyAnalysis, fetchImpactAnalysis } from "../../api/impact";
 // Mock endpoints
 vi.mock("../../api/endpoints", () => ({
 	graphApi: {
-		getImpactAnalysis: vi.fn(),
 		getDependencyAnalysis: vi.fn(),
+		getImpactAnalysis: vi.fn(),
 	},
 }));
 
@@ -20,13 +20,13 @@ describe("Impact API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchImpactAnalysis", () => {
+	describe(fetchImpactAnalysis, () => {
 		it("should fetch impact analysis", async () => {
 			const mockAnalysis = {
-				item_id: "item-1",
-				affected_items: [],
 				affected_count: 0,
+				affected_items: [],
 				depth: 5,
+				item_id: "item-1",
 			};
 			vi.mocked(graphApi.getImpactAnalysis).mockResolvedValue(mockAnalysis);
 
@@ -36,13 +36,13 @@ describe("Impact API", () => {
 		});
 	});
 
-	describe("fetchDependencyAnalysis", () => {
+	describe(fetchDependencyAnalysis, () => {
 		it("should fetch dependency analysis", async () => {
 			const mockAnalysis = {
-				item_id: "item-1",
 				dependencies: [],
 				dependency_count: 0,
 				depth: 5,
+				item_id: "item-1",
 			};
 			vi.mocked(graphApi.getDependencyAnalysis).mockResolvedValue(mockAnalysis);
 

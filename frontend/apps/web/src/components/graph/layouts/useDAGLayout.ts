@@ -7,7 +7,7 @@ import type { ElkExtendedEdge, ElkNode } from "elkjs";
 import * as ELKModule from "elkjs/lib/elk.bundled.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ElkOptionsPayload, LayoutResponse } from "./graphLayout.worker";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // D2: Use worker for ELK layout when node count exceeds this (keeps main thread responsive)
 const LAYOUT_WORKER_THRESHOLD = 150;
@@ -18,10 +18,10 @@ const elk = new ELK();
 
 // Direction mapping from dagre convention to ELK
 const DIRECTION_MAP: Record<string, string> = {
-	TB: "DOWN",
 	BT: "UP",
 	LR: "RIGHT",
 	RL: "LEFT",
+	TB: "DOWN",
 };
 
 // ============================================================================
@@ -49,76 +49,76 @@ export interface LayoutConfig {
 
 export const LAYOUT_CONFIGS: LayoutConfig[] = [
 	{
-		id: "flow-chart",
-		label: "Flow Chart",
-		description: "Top-to-bottom directed flow",
-		icon: "ArrowDown",
 		algorithm: "elk",
 		bestFor: [
 			"Requirements traceability",
 			"Linear flows",
 			"Waterfall processes",
 		],
+		description: "Top-to-bottom directed flow",
+		icon: "ArrowDown",
+		id: "flow-chart",
+		label: "Flow Chart",
 	},
 	{
-		id: "timeline",
-		label: "Timeline",
-		description: "Left-to-right progression",
-		icon: "ArrowRight",
 		algorithm: "elk",
 		bestFor: ["Process flows", "User journeys", "Sequential tasks"],
+		description: "Left-to-right progression",
+		icon: "ArrowRight",
+		id: "timeline",
+		label: "Timeline",
 	},
 	{
-		id: "tree",
-		label: "Tree",
-		description: "Hierarchical tree structure",
-		icon: "GitBranch",
 		algorithm: "elk",
 		bestFor: ["Component trees", "Org charts", "File systems"],
+		description: "Hierarchical tree structure",
+		icon: "GitBranch",
+		id: "tree",
+		label: "Tree",
 	},
 	{
-		id: "organic-network",
-		label: "Organic Network",
-		description: "Natural clustering by relationships",
-		icon: "Network",
 		algorithm: "d3-force",
 		bestFor: [
 			"Exploratory analysis",
 			"Relationship discovery",
 			"Unknown structures",
 		],
+		description: "Natural clustering by relationships",
+		icon: "Network",
+		id: "organic-network",
+		label: "Organic Network",
 	},
 	{
-		id: "mind-map",
-		label: "Mind Map",
-		description: "Radial layout from center",
-		icon: "CircleDot",
 		algorithm: "d3-radial",
 		bestFor: ["Brainstorming", "Centered exploration", "Topic mapping"],
+		description: "Radial layout from center",
+		icon: "CircleDot",
+		id: "mind-map",
+		label: "Mind Map",
 	},
 	{
-		id: "gallery",
-		label: "Gallery",
-		description: "Grid for quick overview",
-		icon: "LayoutGrid",
 		algorithm: "grid",
 		bestFor: ["Quick overview", "Many items", "Visual scanning"],
+		description: "Grid for quick overview",
+		icon: "LayoutGrid",
+		id: "gallery",
+		label: "Gallery",
 	},
 	{
-		id: "wheel",
-		label: "Wheel",
-		description: "Circular arrangement",
-		icon: "Circle",
 		algorithm: "circular",
 		bestFor: ["Cyclic processes", "Stakeholder maps", "Peer relationships"],
+		description: "Circular arrangement",
+		icon: "Circle",
+		id: "wheel",
+		label: "Wheel",
 	},
 	{
-		id: "compact",
-		label: "Compact",
-		description: "Dense space-efficient grid",
-		icon: "Minimize2",
 		algorithm: "grid",
 		bestFor: ["Large datasets", "Dense views", "Minimized space"],
+		description: "Dense space-efficient grid",
+		icon: "Minimize2",
+		id: "compact",
+		label: "Compact",
 	},
 ];
 
@@ -141,27 +141,29 @@ async function applyElkLayout<T extends Record<string, unknown>>(
 	edges: Edge[],
 	options: ElkOptions,
 ): Promise<Node<T>[]> {
-	if (nodes.length === 0) return [];
+	if (nodes.length === 0) {
+		return [];
+	}
 
 	const graph: ElkNode = {
-		id: "root",
-		layoutOptions: {
-			"elk.algorithm": "layered",
-			"elk.direction": DIRECTION_MAP[options.direction] || "DOWN",
-			"elk.spacing.nodeNode": String(options.nodeSep),
-			"elk.layered.spacing.nodeNodeBetweenLayers": String(options.rankSep),
-			"elk.padding": `[left=${options.marginX}, top=${options.marginY}, right=${options.marginX}, bottom=${options.marginY}]`,
-		},
 		children: nodes.map((n) => ({
+			height: options.nodeHeight,
 			id: n.id,
 			width: options.nodeWidth,
-			height: options.nodeHeight,
 		})),
 		edges: edges.map((e) => ({
 			id: e.id,
 			sources: [e.source],
 			targets: [e.target],
 		})) as ElkExtendedEdge[],
+		id: "root",
+		layoutOptions: {
+			"elk.algorithm": "layered",
+			"elk.direction": DIRECTION_MAP[options.direction] || "DOWN",
+			"elk.layered.spacing.nodeNodeBetweenLayers": String(options.rankSep),
+			"elk.padding": `[left=${options.marginX}, top=${options.marginY}, right=${options.marginX}, bottom=${options.marginY}]`,
+			"elk.spacing.nodeNode": String(options.nodeSep),
+		},
 	};
 
 	const result = await elk.layout(graph);
@@ -176,7 +178,9 @@ async function applyElkLayout<T extends Record<string, unknown>>(
 
 	return nodes.map((node) => {
 		const pos = positionMap.get(node.id);
-		if (!pos) return node;
+		if (!pos) {
+			return node;
+		}
 
 		return {
 			...node,
@@ -204,7 +208,9 @@ function runElkLayoutInWorker<T extends Record<string, unknown>>(
 			{ type: "module" },
 		);
 
-		const onMessage = (ev: MessageEvent<LayoutResponse | { type: "error"; error: string }>) => {
+		const onMessage = (
+			ev: MessageEvent<LayoutResponse | { type: "error"; error: string }>,
+		) => {
 			worker.terminate();
 			if (ev.data.type === "result") {
 				const positionMap = new Map(
@@ -213,7 +219,9 @@ function runElkLayoutInWorker<T extends Record<string, unknown>>(
 				resolve(
 					nodes.map((node) => {
 						const pos = positionMap.get(node.id);
-						if (!pos) return node;
+						if (!pos) {
+							return node;
+						}
 						return { ...node, position: pos };
 					}),
 				);
@@ -228,12 +236,19 @@ function runElkLayoutInWorker<T extends Record<string, unknown>>(
 			reject(new Error("Layout worker failed"));
 		});
 
-		worker.postMessage({
-			type: "layout",
-			nodes: nodes.map((n) => ({ id: n.id })),
-			edges: edges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
-			options: options as ElkOptionsPayload,
-		});
+		worker.postMessage(
+			{
+				edges: edges.map((e) => ({
+					id: e.id,
+					source: e.source,
+					target: e.target,
+				})),
+				nodes: nodes.map((n) => ({ id: n.id })),
+				options: options as ElkOptionsPayload,
+				type: "layout",
+			},
+			worker.location.origin,
+		);
 	});
 }
 
@@ -292,19 +307,21 @@ function applyRadialLayout<T extends Record<string, unknown>>(
 	// Assign depths via BFS
 	const depths = new Map<string, number>();
 	const queue: { id: string; depth: number }[] = roots.map((r) => ({
-		id: r.id,
 		depth: 0,
+		id: r.id,
 	}));
 
 	while (queue.length > 0) {
 		const { id, depth } = queue.shift()!;
-		if (depths.has(id)) continue;
+		if (depths.has(id)) {
+			continue;
+		}
 		depths.set(id, depth);
 
 		const nodeChildren = children.get(id) || [];
 		for (const childId of nodeChildren) {
 			if (!depths.has(childId)) {
-				queue.push({ id: childId, depth: depth + 1 });
+				queue.push({ depth: depth + 1, id: childId });
 			}
 		}
 	}
@@ -312,7 +329,9 @@ function applyRadialLayout<T extends Record<string, unknown>>(
 	// Group by depth
 	const byDepth = new Map<number, string[]>();
 	for (const [id, depth] of depths) {
-		if (!byDepth.has(depth)) byDepth.set(depth, []);
+		if (!byDepth.has(depth)) {
+			byDepth.set(depth, []);
+		}
 		byDepth.get(depth)!.push(id);
 	}
 
@@ -341,7 +360,7 @@ function applyRadialLayout<T extends Record<string, unknown>>(
 		let pos = positions.get(node.id);
 		if (!pos) {
 			// Orphan node - place on outer ring
-			const angle = (orphanIndex++ * 2 * Math.PI) / 8 - Math.PI / 2;
+			const angle = (orphanIndex += 1 * 2 * Math.PI) / 8 - Math.PI / 2;
 			pos = {
 				x:
 					options.centerX +
@@ -408,18 +427,22 @@ function applyForceLayout<T extends Record<string, unknown>>(
 		const baseY =
 			Math.floor(index / cols) * (options.nodeHeight + options.padding * 2);
 		positions.set(node.id, {
-			x: baseX + (Math.random() - 0.5) * 50,
-			y: baseY + (Math.random() - 0.5) * 50,
 			vx: 0,
 			vy: 0,
+			x: baseX + (Math.random() - 0.5) * 50,
+			y: baseY + (Math.random() - 0.5) * 50,
 		});
 	});
 
 	// Build edge map
 	const adjacency = new Map<string, Set<string>>();
 	for (const edge of edges) {
-		if (!adjacency.has(edge.source)) adjacency.set(edge.source, new Set());
-		if (!adjacency.has(edge.target)) adjacency.set(edge.target, new Set());
+		if (!adjacency.has(edge.source)) {
+			adjacency.set(edge.source, new Set());
+		}
+		if (!adjacency.has(edge.target)) {
+			adjacency.set(edge.target, new Set());
+		}
 		adjacency.get(edge.source)!.add(edge.target);
 		adjacency.get(edge.target)!.add(edge.source);
 	}
@@ -430,12 +453,14 @@ function applyForceLayout<T extends Record<string, unknown>>(
 	const attractionStrength = 0.1;
 	const damping = 0.9;
 
-	for (let iter = 0; iter < iterations; iter++) {
+	for (let iter = 0; iter < iterations; iter += 1) {
 		// Repulsion between all nodes
 		for (const node1 of nodes) {
 			const p1 = positions.get(node1.id)!;
 			for (const node2 of nodes) {
-				if (node1.id === node2.id) continue;
+				if (node1.id === node2.id) {
+					continue;
+				}
 				const p2 = positions.get(node2.id)!;
 
 				const dx = p1.x - p2.x;
@@ -452,7 +477,9 @@ function applyForceLayout<T extends Record<string, unknown>>(
 		for (const edge of edges) {
 			const p1 = positions.get(edge.source);
 			const p2 = positions.get(edge.target);
-			if (!p1 || !p2) continue;
+			if (!p1 || !p2) {
+				continue;
+			}
 
 			const dx = p2.x - p1.x;
 			const dy = p2.y - p1.y;
@@ -537,50 +564,58 @@ export function useDAGLayout<T extends Record<string, unknown>>(
 	// Synchronous layouts (grid, radial, force, circular)
 	const applySyncLayout = useCallback(
 		(inputNodes: Node<T>[], inputEdges: Edge[]): Node<T>[] | null => {
-			if (inputNodes.length === 0) return [];
+			if (inputNodes.length === 0) {
+				return [];
+			}
 
 			switch (layout) {
-				case "organic-network":
+				case "organic-network": {
 					return applyForceLayout(inputNodes, inputEdges, {
-						nodeWidth,
 						nodeHeight,
+						nodeWidth,
 						padding: nodeSep,
 					});
+				}
 
-				case "mind-map":
+				case "mind-map": {
 					return applyRadialLayout(inputNodes, inputEdges, {
-						nodeWidth,
-						nodeHeight,
 						centerX,
 						centerY,
-					});
-
-				case "gallery":
-					return applyGridLayout(inputNodes, {
-						nodeWidth,
 						nodeHeight,
-						padding: nodeSep,
+						nodeWidth,
+					});
+				}
+
+				case "gallery": {
+					return applyGridLayout(inputNodes, {
 						compact: false,
-					});
-
-				case "wheel":
-					return applyCircularLayout(inputNodes, {
-						nodeWidth,
 						nodeHeight,
+						nodeWidth,
+						padding: nodeSep,
+					});
+				}
+
+				case "wheel": {
+					return applyCircularLayout(inputNodes, {
 						centerX,
 						centerY,
-					});
-
-				case "compact":
-					return applyGridLayout(inputNodes, {
-						nodeWidth,
 						nodeHeight,
-						padding: nodeSep / 2,
-						compact: true,
+						nodeWidth,
 					});
+				}
 
-				default:
-					return null; // Signal that async ELK layout is needed
+				case "compact": {
+					return applyGridLayout(inputNodes, {
+						compact: true,
+						nodeHeight,
+						nodeWidth,
+						padding: nodeSep / 2,
+					});
+				}
+
+				default: {
+					return null;
+				} // Signal that async ELK layout is needed
 			}
 		},
 		[layout, nodeWidth, nodeHeight, nodeSep, centerX, centerY],
@@ -589,41 +624,45 @@ export function useDAGLayout<T extends Record<string, unknown>>(
 	// Async ELK layout options
 	const elkOptions = useMemo((): ElkOptions | null => {
 		switch (layout) {
-			case "flow-chart":
+			case "flow-chart": {
 				return {
 					direction: "TB",
-					nodeWidth,
-					nodeHeight,
-					rankSep,
-					nodeSep,
 					marginX,
 					marginY,
+					nodeHeight,
+					nodeSep,
+					nodeWidth,
+					rankSep,
 				};
+			}
 
-			case "timeline":
+			case "timeline": {
 				return {
 					direction: "LR",
-					nodeWidth,
-					nodeHeight,
-					rankSep,
-					nodeSep,
 					marginX,
 					marginY,
+					nodeHeight,
+					nodeSep,
+					nodeWidth,
+					rankSep,
 				};
+			}
 
-			case "tree":
+			case "tree": {
 				return {
 					direction: "TB",
-					nodeWidth,
-					nodeHeight,
-					rankSep: rankSep * 1.5,
-					nodeSep: nodeSep * 0.8,
 					marginX,
 					marginY,
+					nodeHeight,
+					nodeSep: nodeSep * 0.8,
+					nodeWidth,
+					rankSep: rankSep * 1.5,
 				};
+			}
 
-			default:
+			default: {
 				return null;
+			}
 		}
 	}, [layout, nodeWidth, nodeHeight, rankSep, nodeSep, marginX, marginY]);
 
@@ -660,15 +699,15 @@ export function useDAGLayout<T extends Record<string, unknown>>(
 				.then((result) => {
 					setLayoutedNodes(result);
 				})
-				.catch((err) => {
-					logger.error("ELK layout failed:", err);
+				.catch((error) => {
+					logger.error("ELK layout failed:", error);
 					// Fallback to grid layout
 					setLayoutedNodes(
 						applyGridLayout(nodes, {
-							nodeWidth,
-							nodeHeight,
-							padding: nodeSep,
 							compact: false,
+							nodeHeight,
+							nodeWidth,
+							padding: nodeSep,
 						}),
 					);
 				})
@@ -690,7 +729,9 @@ export function useDAGLayout<T extends Record<string, unknown>>(
 	// Calculate layout function for external use
 	const calculateLayout = useCallback(
 		async (inputNodes: Node<T>[], inputEdges: Edge[]): Promise<Node<T>[]> => {
-			if (inputNodes.length === 0) return [];
+			if (inputNodes.length === 0) {
+				return [];
+			}
 
 			// Try synchronous layout first
 			const syncResult = applySyncLayout(inputNodes, inputEdges);
@@ -704,34 +745,34 @@ export function useDAGLayout<T extends Record<string, unknown>>(
 					return inputNodes.length > LAYOUT_WORKER_THRESHOLD
 						? await runElkLayoutInWorker(inputNodes, inputEdges, elkOptions)
 						: await applyElkLayout(inputNodes, inputEdges, elkOptions);
-} catch (error) {
-                    logger.error("ELK layout failed:", error);
+				} catch (error) {
+					logger.error("ELK layout failed:", error);
 					// Fallback to grid layout
 					return applyGridLayout(inputNodes, {
-						nodeWidth,
-						nodeHeight,
-						padding: nodeSep,
 						compact: false,
+						nodeHeight,
+						nodeWidth,
+						padding: nodeSep,
 					});
 				}
 			}
 
 			// Final fallback
 			return applyGridLayout(inputNodes, {
-				nodeWidth,
-				nodeHeight,
-				padding: nodeSep,
 				compact: false,
+				nodeHeight,
+				nodeWidth,
+				padding: nodeSep,
 			});
 		},
 		[applySyncLayout, elkOptions, nodeWidth, nodeHeight, nodeSep],
 	);
 
 	return {
-		nodes: layoutedNodes,
-		layoutConfig,
 		calculateLayout,
 		isLayouting,
+		layoutConfig,
+		nodes: layoutedNodes,
 	};
 }
 

@@ -27,25 +27,27 @@ describe("Deployment View Route", () => {
 
 	it("supports deployment metadata", () => {
 		const mockDeployment = {
+			environment: "production",
 			id: "deploy-1",
+			status: "done",
 			title: "Production Deployment",
 			type: "deployment",
-			status: "done",
-			environment: "production",
 		};
 
-		expect(mockDeployment.environment).toMatch(/^(staging|production|development)$/);
+		expect(mockDeployment.environment).toMatch(
+			/^(staging|production|development)$/,
+		);
 		expect(mockDeployment.status).toMatch(/^(pending|done|failed)$/);
 	});
 
 	it("handles multiple deployments", () => {
 		const mockDeployments = [
-			{ id: "d1", environment: "development", status: "done" },
-			{ id: "d2", environment: "staging", status: "done" },
-			{ id: "d3", environment: "production", status: "pending" },
+			{ environment: "development", id: "d1", status: "done" },
+			{ environment: "staging", id: "d2", status: "done" },
+			{ environment: "production", id: "d3", status: "pending" },
 		];
 
 		expect(mockDeployments).toHaveLength(3);
-		expect(mockDeployments.filter(d => d.status === "done")).toHaveLength(2);
+		expect(mockDeployments.filter((d) => d.status === "done")).toHaveLength(2);
 	});
 });

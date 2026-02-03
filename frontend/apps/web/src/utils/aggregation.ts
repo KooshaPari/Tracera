@@ -36,12 +36,12 @@ export interface AggregationConfig {
 }
 
 const DEFAULT_CONFIG: AggregationConfig = {
-	groupByType: true,
-	groupByDependency: true,
-	minGroupSize: 3,
-	maxGroupSize: 50,
-	enableCommunityDetection: true,
 	communityThreshold: 0.5,
+	enableCommunityDetection: true,
+	groupByDependency: true,
+	groupByType: true,
+	maxGroupSize: 50,
+	minGroupSize: 3,
 };
 
 /**
@@ -49,7 +49,7 @@ const DEFAULT_CONFIG: AggregationConfig = {
  */
 export function groupItemsByType(
 	items: Item[],
-	minSize: number = 3,
+	minSize = 3,
 ): Map<string, Item[]> {
 	const groups = new Map<string, Item[]>();
 
@@ -79,7 +79,9 @@ export function findCommonDependencies(
 	itemIds: string[],
 	links: Link[],
 ): string[] {
-	if (itemIds.length === 0) return [];
+	if (itemIds.length === 0) {
+		return [];
+	}
 
 	// Find all items that these items depend on
 	const dependencyMap = new Map<string, number>();
@@ -110,7 +112,9 @@ export function findCommonDependents(
 	itemIds: string[],
 	links: Link[],
 ): string[] {
-	if (itemIds.length === 0) return [];
+	if (itemIds.length === 0) {
+		return [];
+	}
 
 	const dependentMap = new Map<string, number>();
 	const itemIdSet = new Set(itemIds);
@@ -153,13 +157,13 @@ export function createAggregateGroups(
 			const commonDepents = findCommonDependents(itemIds, links);
 
 			const group: AggregateGroup = {
-				id: `agg-${type}-${groupIndex++}`,
-				type,
-				label: `${type.charAt(0).toUpperCase() + type.slice(1)} (${groupItems.length})`,
-				itemIds,
-				itemCount: groupItems.length,
 				commonDependencies: commonDeps,
 				commonDependents: commonDepents,
+				id: `agg-${type}-${groupIndex++}`,
+				itemCount: groupItems.length,
+				itemIds,
+				label: `${type.charAt(0).toUpperCase() + type.slice(1)} (${groupItems.length})`,
+				type,
 			};
 
 			groups.push(group);
@@ -195,8 +199,12 @@ function detectCommunities(items: Item[], links: Link[]): AggregateGroup[] {
 		const sources = adjacencyMap.get(link.sourceId);
 		const targets = adjacencyMap.get(link.targetId);
 
-		if (sources) sources.add(link.targetId);
-		if (targets) targets.add(link.sourceId);
+		if (sources) {
+			sources.add(link.targetId);
+		}
+		if (targets) {
+			targets.add(link.sourceId);
+		}
 	}
 
 	// Simple community detection: group by connected components
@@ -205,7 +213,9 @@ function detectCommunities(items: Item[], links: Link[]): AggregateGroup[] {
 	let groupIndex = 0;
 
 	function dfs(nodeId: string, community: string[]): void {
-		if (visited.has(nodeId)) return;
+		if (visited.has(nodeId)) {
+			return;
+		}
 		visited.add(nodeId);
 		community.push(nodeId);
 
@@ -227,13 +237,13 @@ function detectCommunities(items: Item[], links: Link[]): AggregateGroup[] {
 				const commonDepents = findCommonDependents(community, links);
 
 				communities.push({
-					id: `community-${groupIndex++}`,
-					type: "community",
-					label: `Community ${groupIndex} (${community.length})`,
-					itemIds: community,
-					itemCount: community.length,
 					commonDependencies: commonDeps,
 					commonDependents: commonDepents,
+					id: `community-${groupIndex++}`,
+					itemCount: community.length,
+					itemIds: community,
+					label: `Community ${groupIndex} (${community.length})`,
+					type: "community",
 				});
 			}
 		}
@@ -258,24 +268,24 @@ export function applyAggregation(
 	const aggregateItems: Item[] = groups.map((group) => {
 		const baseItem = items[0];
 		return {
-			id: group.id,
-			projectId: baseItem?.projectId || "unknown",
-			view: baseItem?.view || "technical",
-			type: "aggregate",
-			title: group.label,
-			description: `Aggregated group of ${group.itemCount} ${group.type} items`,
-			status: "done" as const,
-			priority: "medium" as const,
-			version: 1,
 			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
+			description: `Aggregated group of ${group.itemCount} ${group.type} items`,
+			id: group.id,
 			metadata: {
 				aggregateType: group.type,
-				itemCount: group.itemCount,
-				itemIds: group.itemIds,
 				commonDependencies: group.commonDependencies,
 				commonDependents: group.commonDependents,
+				itemCount: group.itemCount,
+				itemIds: group.itemIds,
 			},
+			priority: "medium" as const,
+			projectId: baseItem?.projectId || "unknown",
+			status: "done" as const,
+			title: group.label,
+			type: "aggregate",
+			updatedAt: new Date().toISOString(),
+			version: 1,
+			view: baseItem?.view || "technical",
 		} as Item;
 	});
 
@@ -324,10 +334,10 @@ export function applyAggregation(
 	);
 
 	return {
-		items: visibleItems,
-		links: visibleLinks,
 		groups,
 		hiddenByAggregation,
+		items: visibleItems,
+		links: visibleLinks,
 	};
 }
 
@@ -372,12 +382,12 @@ export function getAggregationStats(items: Item[], groups: AggregateGroup[]) {
 	const aggregateNodes = groups.length;
 
 	return {
-		totalItems,
-		totalAggregated,
 		aggregateNodes,
 		estimatedNodeCount: totalItems - totalAggregated + aggregateNodes,
 		reductionPercent: Math.round(
 			((totalAggregated - aggregateNodes) / totalItems) * 100,
 		),
+		totalAggregated,
+		totalItems,
 	};
 }

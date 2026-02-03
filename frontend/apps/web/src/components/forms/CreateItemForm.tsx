@@ -31,14 +31,14 @@ const statusOptions = [
 const priorityOptions = ["low", "medium", "high", "critical"] as const;
 
 const itemSchema = z.object({
-	title: z.string().min(1, "Title is required").max(500, "Title too long"),
 	description: z.string().max(5000).optional(),
-	view: z.enum(viewTypes),
-	type: z.string().min(1, "Type is required"),
-	status: z.enum(statusOptions),
-	priority: z.enum(priorityOptions),
-	parentId: z.string().uuid().optional().or(z.literal("")),
 	owner: z.string().max(255).optional(),
+	parentId: z.string().uuid().optional().or(z.literal("")),
+	priority: z.enum(priorityOptions),
+	status: z.enum(statusOptions),
+	title: z.string().min(1, "Title is required").max(500, "Title too long"),
+	type: z.string().min(1, "Type is required"),
+	view: z.enum(viewTypes),
 });
 
 type ItemFormData = z.infer<typeof itemSchema>;
@@ -76,21 +76,21 @@ export function CreateItemForm({
 		watch,
 		formState: { errors, isSubmitting },
 	} = useForm<ItemFormData>({
-		resolver: zodResolver(itemSchema),
-		defaultValues: { view: defaultView, status: "todo", priority: "medium" },
+		defaultValues: { priority: "medium", status: "todo", view: defaultView },
 		mode: "onBlur",
+		resolver: zodResolver(itemSchema),
 	});
 
 	const selectedView = watch("view");
 	const typeOptions: Record<string, string[]> = {
-		FEATURE: ["epic", "feature", "story", "task"],
-		CODE: ["module", "file", "function", "class"],
-		TEST: ["suite", "case", "scenario"],
 		API: ["endpoint", "schema", "model"],
+		CODE: ["module", "file", "function", "class"],
 		DATABASE: ["table", "column", "index"],
-		WIREFRAME: ["screen", "component", "flow"],
-		DOCUMENTATION: ["guide", "reference", "tutorial", "changelog"],
 		DEPLOYMENT: ["environment", "release", "config"],
+		DOCUMENTATION: ["guide", "reference", "tutorial", "changelog"],
+		FEATURE: ["epic", "feature", "story", "task"],
+		TEST: ["suite", "case", "scenario"],
+		WIREFRAME: ["screen", "component", "flow"],
 	};
 
 	// Handle form submission with error announcements
@@ -236,7 +236,7 @@ export function CreateItemForm({
 								id="type"
 								aria-describedby={errors.type ? "type-error" : "type-help"}
 								aria-required="true"
-								aria-invalid={!!errors.type}
+								aria-invalid={Boolean(errors.type)}
 								{...register("type")}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							>
@@ -280,7 +280,7 @@ export function CreateItemForm({
 							placeholder="Enter item title"
 							aria-describedby={errors.title ? "title-error" : "title-help"}
 							aria-required="true"
-							aria-invalid={!!errors.title}
+							aria-invalid={Boolean(errors.title)}
 							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						/>
 						{errors.title ? (
@@ -405,9 +405,7 @@ export function CreateItemForm({
 							disabled={isLoading || isSubmitting}
 							aria-busy={isLoading || isSubmitting}
 							aria-label={
-								isLoading || isSubmitting
-									? submitBusyLabel
-									: submitLabel
+								isLoading || isSubmitting ? submitBusyLabel : submitLabel
 							}
 							className="flex-1 rounded-lg bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						>

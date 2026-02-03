@@ -20,49 +20,49 @@ const defectTypeConfig: Record<
 	ODCDefectType,
 	{ label: string; description: string; color: string }
 > = {
-	function: {
-		label: "Function",
-		description:
-			"Affects capability, end-user interfaces, product interfaces, or global data structure",
-		color: "bg-red-100 text-red-800 border-red-300",
-	},
-	interface: {
-		label: "Interface",
-		description:
-			"Incorrect interaction with other components, modules, or drivers",
-		color: "bg-orange-100 text-orange-800 border-orange-300",
-	},
-	checking: {
-		label: "Checking",
-		description:
-			"Missing or incorrect validation of data, values, or conditions",
-		color: "bg-yellow-100 text-yellow-800 border-yellow-300",
+	algorithm: {
+		color: "bg-pink-100 text-pink-800 border-pink-300",
+		description: "Incorrect or inefficient algorithm implementation",
+		label: "Algorithm",
 	},
 	assignment: {
-		label: "Assignment",
-		description: "Incorrect initialization or setting of data values",
 		color: "bg-green-100 text-green-800 border-green-300",
-	},
-	timing: {
-		label: "Timing/Serialization",
-		description:
-			"Race conditions, resource contention, or synchronization issues",
-		color: "bg-blue-100 text-blue-800 border-blue-300",
+		description: "Incorrect initialization or setting of data values",
+		label: "Assignment",
 	},
 	build: {
-		label: "Build/Package",
-		description: "Build process, library references, or version control issues",
 		color: "bg-indigo-100 text-indigo-800 border-indigo-300",
+		description: "Build process, library references, or version control issues",
+		label: "Build/Package",
+	},
+	checking: {
+		color: "bg-yellow-100 text-yellow-800 border-yellow-300",
+		description:
+			"Missing or incorrect validation of data, values, or conditions",
+		label: "Checking",
 	},
 	documentation: {
-		label: "Documentation",
-		description: "Issues in publications, maintenance notes, or documentation",
 		color: "bg-purple-100 text-purple-800 border-purple-300",
+		description: "Issues in publications, maintenance notes, or documentation",
+		label: "Documentation",
 	},
-	algorithm: {
-		label: "Algorithm",
-		description: "Incorrect or inefficient algorithm implementation",
-		color: "bg-pink-100 text-pink-800 border-pink-300",
+	function: {
+		color: "bg-red-100 text-red-800 border-red-300",
+		description:
+			"Affects capability, end-user interfaces, product interfaces, or global data structure",
+		label: "Function",
+	},
+	interface: {
+		color: "bg-orange-100 text-orange-800 border-orange-300",
+		description:
+			"Incorrect interaction with other components, modules, or drivers",
+		label: "Interface",
+	},
+	timing: {
+		color: "bg-blue-100 text-blue-800 border-blue-300",
+		description:
+			"Race conditions, resource contention, or synchronization issues",
+		label: "Timing/Serialization",
 	},
 };
 
@@ -70,33 +70,33 @@ const triggerConfig: Record<
 	ODCTrigger,
 	{ label: string; description: string }
 > = {
+	complex_path: {
+		description: "Found through complex interactions or sequences",
+		label: "Complex Path",
+	},
 	coverage: {
-		label: "Coverage",
 		description: "Found through simple path testing",
+		label: "Coverage",
 	},
 	design_conformance: {
-		label: "Design Conformance",
 		description: "Found by verifying design specifications",
+		label: "Design Conformance",
 	},
 	exception_handling: {
-		label: "Exception Handling",
 		description: "Found through exception/error path testing",
-	},
-	simple_path: {
-		label: "Simple Path",
-		description: "Found through basic code path execution",
-	},
-	complex_path: {
-		label: "Complex Path",
-		description: "Found through complex interactions or sequences",
-	},
-	side_effects: {
-		label: "Side Effects",
-		description: "Found through interaction with other modules",
+		label: "Exception Handling",
 	},
 	rare_situation: {
-		label: "Rare Situation",
 		description: "Found in unusual or edge-case conditions",
+		label: "Rare Situation",
+	},
+	side_effects: {
+		description: "Found through interaction with other modules",
+		label: "Side Effects",
+	},
+	simple_path: {
+		description: "Found through basic code path execution",
+		label: "Simple Path",
 	},
 };
 

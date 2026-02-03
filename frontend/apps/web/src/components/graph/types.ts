@@ -126,13 +126,13 @@ import { DEFAULT_PERSPECTIVES } from "@tracertm/types";
 
 export const PERSPECTIVE_CONFIGS: PerspectiveConfig[] =
 	DEFAULT_PERSPECTIVES.map((config) => ({
-		id: config.perspectiveType as GraphPerspective,
-		label: config.name,
-		description: config.description || "",
-		icon: config.icon,
 		color: config.color,
-		includeTypes: config.includeTypes,
+		description: config.description || "",
 		excludeTypes: config.excludeTypes,
+		icon: config.icon,
+		id: config.perspectiveType as GraphPerspective,
+		includeTypes: config.includeTypes,
+		label: config.name,
 		layoutPreference: config.layoutPreference,
 	}));
 
@@ -182,13 +182,13 @@ export const ENHANCED_TYPE_COLORS: Record<string, string> = {
 
 // Status opacity mapping
 export const STATUS_OPACITY: Record<ItemStatus | string, number> = {
-	done: 1,
-	completed: 1,
-	in_progress: 0.85,
-	todo: 0.6,
-	pending: 0.6,
 	blocked: 0.5,
 	cancelled: 0.3,
+	completed: 1,
+	done: 1,
+	in_progress: 0.85,
+	pending: 0.6,
+	todo: 0.6,
 };
 
 // Link type colors and styles
@@ -196,12 +196,12 @@ export const LINK_STYLES: Record<
 	LinkType | string,
 	{ color: string; dashed: boolean; arrow: boolean }
 > = {
-	implements: { color: "#9333ea", dashed: false, arrow: true },
-	tests: { color: "#22c55e", dashed: false, arrow: true },
-	depends_on: { color: "#f59e0b", dashed: true, arrow: true },
-	traces_to: { color: "#3b82f6", dashed: false, arrow: true },
-	validates: { color: "#10b981", dashed: false, arrow: true },
-	blocks: { color: "#ef4444", dashed: true, arrow: true },
-	related_to: { color: "#64748b", dashed: true, arrow: false },
-	parent_of: { color: "#8b5cf6", dashed: false, arrow: true },
+	blocks: { arrow: true, color: "#ef4444", dashed: true },
+	depends_on: { arrow: true, color: "#f59e0b", dashed: true },
+	implements: { arrow: true, color: "#9333ea", dashed: false },
+	parent_of: { arrow: true, color: "#8b5cf6", dashed: false },
+	related_to: { arrow: false, color: "#64748b", dashed: true },
+	tests: { arrow: true, color: "#22c55e", dashed: false },
+	traces_to: { arrow: true, color: "#3b82f6", dashed: false },
+	validates: { arrow: true, color: "#10b981", dashed: false },
 };

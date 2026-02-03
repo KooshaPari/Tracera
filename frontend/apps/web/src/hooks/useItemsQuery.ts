@@ -6,12 +6,12 @@ import { useItemsStore } from "../stores/itemsStore";
 // Query keys
 export const itemKeys = {
 	all: ["items"] as const,
-	lists: () => [...itemKeys.all, "list"] as const,
-	list: (filters: any) => [...itemKeys.lists(), filters] as const,
-	details: () => [...itemKeys.all, "detail"] as const,
-	detail: (id: string) => [...itemKeys.details(), id] as const,
 	byProject: (projectId: string) =>
 		[...itemKeys.all, "project", projectId] as const,
+	detail: (id: string) => [...itemKeys.details(), id] as const,
+	details: () => [...itemKeys.all, "detail"] as const,
+	list: (filters: any) => [...itemKeys.lists(), filters] as const,
+	lists: () => [...itemKeys.all, "list"] as const,
 };
 
 // Hooks
@@ -19,7 +19,6 @@ export function useItemsQuery(projectId?: string) {
 	const { addItems, setLoading } = useItemsStore();
 
 	return useQuery({
-		queryKey: projectId ? itemKeys.byProject(projectId) : itemKeys.lists(),
 		queryFn: async () => {
 			setLoading(true);
 			try {
@@ -32,6 +31,7 @@ export function useItemsQuery(projectId?: string) {
 				setLoading(false);
 			}
 		},
+		queryKey: projectId ? itemKeys.byProject(projectId) : itemKeys.lists(),
 		staleTime: 30000, // 30 seconds
 	});
 }
@@ -40,13 +40,13 @@ export function useItemQuery(id: string) {
 	const { addItem } = useItemsStore();
 
 	return useQuery({
-		queryKey: itemKeys.detail(id),
+		enabled: !!id,
 		queryFn: async () => {
 			const item = await api.items.get(id);
 			addItem(item);
 			return item;
 		},
-		enabled: !!id,
+		queryKey: itemKeys.detail(id),
 	});
 }
 
@@ -69,10 +69,8 @@ export function useCreateItem() {
 			}
 		},
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
-			void queryClient.invalidateQueries({
-				queryKey: itemKeys.byProject(data['projectId']),
-			});
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -95,8 +93,8 @@ export function useUpdateItem() {
 			}
 		},
 		onSuccess: (data) => {
-			void queryClient.invalidateQueries({ queryKey: itemKeys.detail(data['id']) });
-			void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -109,7 +107,9 @@ export function useDeleteItem() {
 	return useMutation({
 		mutationFn: async (id: string) => {
 			const item = getItem(id);
-			if (!item) throw new Error("Item not found");
+			if (!item) {
+				throw new Error("Item not found");
+			}
 
 			optimisticDelete(id);
 
@@ -122,7 +122,7 @@ export function useDeleteItem() {
 			}
 		},
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
+			undefined;
 		},
 	});
 }
@@ -130,9 +130,7 @@ export function useDeleteItem() {
 // Get items from store
 export function useItemsFromStore(projectId?: string) {
 	return useItemsStore((state) =>
-		projectId
-			? state.getItemsByProject(projectId)
-			: Array.from(state.items.values()),
+		projectId ? state.getItemsByProject(projectId) : [...state.items.values()],
 	);
 }
 

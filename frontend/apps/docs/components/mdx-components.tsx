@@ -1,16 +1,16 @@
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { Callout } from 'fumadocs-ui/components/callout';
 import {
-  TabsLazy,
-  TabLazy,
-  AccordionsLazy,
   AccordionLazy,
-  ImageZoomLazy,
+  AccordionsLazy,
+  FileLazy,
   FilesLazy,
   FolderLazy,
-  FileLazy,
-  StepsLazy,
+  ImageZoomLazy,
   StepLazy,
+  StepsLazy,
+  TabLazy,
+  TabsLazy,
 } from './mdx-components-lazy';
 import { DocImage } from './optimized-image';
 import { Icon } from './icon-sprite';
@@ -62,9 +62,9 @@ export const mdxComponents = {
         href={href}
         {...props}
         {...(isExternal && {
-          target: '_blank',
-          rel: 'noopener noreferrer',
           className: 'inline-flex items-center gap-1',
+          rel: 'noopener noreferrer',
+          target: '_blank',
         })}
       >
         {children}

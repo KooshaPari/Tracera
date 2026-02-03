@@ -17,16 +17,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CommandPalette } from "@/components/CommandPalette";
 
 // Mock TanStack Router
-const mockNavigate = vi.fn((options: { to: string; params?: Record<string, unknown> }) => {
-	// Handle both old string format and new { to: '...' } format
-	if (typeof options === "string") {
+const mockNavigate = vi.fn(
+	(options: { to: string; params?: Record<string, unknown> }) => {
+		// Handle both old string format and new { to: '...' } format
+		if (typeof options === "string") {
+			return Promise.resolve();
+		}
+		if (options && typeof options === "object" && "to" in options) {
+			return Promise.resolve();
+		}
 		return Promise.resolve();
-	}
-	if (options && typeof options === "object" && "to" in options) {
-		return Promise.resolve();
-	}
-	return Promise.resolve();
-});
+	},
+);
 
 // Track current mock pathname for dynamic location mocking
 let mockPathname = "/";
@@ -41,8 +43,19 @@ vi.mock("@tanstack/react-router", async () => {
 		}),
 		useLocation: () => ({ pathname: mockPathname }),
 		useParams: () => ({}),
-		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string; [key: string]: unknown }) => (
-			<a href={typeof to === "string" ? to : String((to as unknown) ?? "")} {...props}>
+		Link: ({
+			children,
+			to,
+			...props
+		}: {
+			children: React.ReactNode;
+			to: string;
+			[key: string]: unknown;
+		}) => (
+			<a
+				href={typeof to === "string" ? to : String((to as unknown) ?? "")}
+				{...props}
+			>
 				{children}
 			</a>
 		),
@@ -59,9 +72,7 @@ const clearProjectContext = () => {
 	mockPathname = "/";
 };
 
-const renderCommandPalette = () => {
-	return render(<CommandPalette />);
-};
+const renderCommandPalette = () => render(<CommandPalette />);
 
 describe("CommandPalette Component", () => {
 	let user: ReturnType<typeof userEvent.setup>;
@@ -88,7 +99,7 @@ describe("CommandPalette Component", () => {
 		it("should render when opened with Cmd+K on macOS", async () => {
 			renderCommandPalette();
 
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(
@@ -100,7 +111,7 @@ describe("CommandPalette Component", () => {
 		it("should render when opened with Ctrl+K on Windows/Linux", async () => {
 			renderCommandPalette();
 
-			fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+			fireEvent.keyDown(globalThis, { ctrlKey: true, key: "k" });
 
 			await waitFor(() => {
 				expect(
@@ -113,7 +124,7 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 
 			// Open palette
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 			await waitFor(() => {
 				expect(
 					screen.getByPlaceholderText(/search commands/i),
@@ -121,7 +132,7 @@ describe("CommandPalette Component", () => {
 			});
 
 			// Close with Escape
-			fireEvent.keyDown(window, { key: "Escape" });
+			fireEvent.keyDown(globalThis, { key: "Escape" });
 
 			await waitFor(() => {
 				expect(
@@ -134,7 +145,7 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 
 			// Open palette
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 			await waitFor(() => {
 				expect(
 					screen.getByPlaceholderText(/search commands/i),
@@ -159,7 +170,7 @@ describe("CommandPalette Component", () => {
 		it("should display search input when opened", async () => {
 			renderCommandPalette();
 
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				const input = screen.getByPlaceholderText(/search commands/i);
@@ -171,7 +182,7 @@ describe("CommandPalette Component", () => {
 		it("should display ESC keyboard hint", async () => {
 			renderCommandPalette();
 
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(screen.getByText("ESC")).toBeInTheDocument();
@@ -182,7 +193,7 @@ describe("CommandPalette Component", () => {
 	describe("Command Categories", () => {
 		it("should display navigation category commands", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(screen.getByText("navigation")).toBeInTheDocument();
@@ -196,7 +207,7 @@ describe("CommandPalette Component", () => {
 			// Project-specific views only show when on a project page
 			setProjectContext("test-project-123");
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(screen.getByText("view")).toBeInTheDocument();
@@ -209,7 +220,7 @@ describe("CommandPalette Component", () => {
 
 		it("should display action category commands", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(screen.getByText("action")).toBeInTheDocument();
@@ -221,7 +232,7 @@ describe("CommandPalette Component", () => {
 			// Project-specific views only show when on a project page
 			setProjectContext("test-project-123");
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(
@@ -236,7 +247,7 @@ describe("CommandPalette Component", () => {
 	describe("Search and Filtering", () => {
 		it("should filter commands by title", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
@@ -252,7 +263,7 @@ describe("CommandPalette Component", () => {
 			// Project-specific views only show when on a project page
 			setProjectContext("test-project-123");
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
@@ -266,7 +277,7 @@ describe("CommandPalette Component", () => {
 
 		it("should filter commands by keywords", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
@@ -279,7 +290,7 @@ describe("CommandPalette Component", () => {
 
 		it("should show no results message when search has no matches", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
@@ -292,7 +303,7 @@ describe("CommandPalette Component", () => {
 
 		it("should perform case-insensitive search", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
@@ -307,13 +318,13 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 
 			// Open, search, close
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 			const input = await screen.findByPlaceholderText(/search commands/i);
 			await user.type(input, "test");
-			fireEvent.keyDown(window, { key: "Escape" });
+			fireEvent.keyDown(globalThis, { key: "Escape" });
 
 			// Reopen
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const newInput = await screen.findByPlaceholderText(/search commands/i);
 			expect(newInput).toHaveValue("");
@@ -323,7 +334,7 @@ describe("CommandPalette Component", () => {
 	describe("Keyboard Navigation", () => {
 		it("should navigate down with ArrowDown key", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(
@@ -336,7 +347,7 @@ describe("CommandPalette Component", () => {
 			expect(firstItem).toHaveClass("bg-accent");
 
 			// Navigate down
-			fireEvent.keyDown(window, { key: "ArrowDown" });
+			fireEvent.keyDown(globalThis, { key: "ArrowDown" });
 
 			await waitFor(() => {
 				const secondItem = screen.getByText("Go to Projects").closest("button");
@@ -346,7 +357,7 @@ describe("CommandPalette Component", () => {
 
 		it("should navigate up with ArrowUp key", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(
@@ -355,11 +366,11 @@ describe("CommandPalette Component", () => {
 			});
 
 			// Navigate down twice
-			fireEvent.keyDown(window, { key: "ArrowDown" });
-			fireEvent.keyDown(window, { key: "ArrowDown" });
+			fireEvent.keyDown(globalThis, { key: "ArrowDown" });
+			fireEvent.keyDown(globalThis, { key: "ArrowDown" });
 
 			// Navigate up once
-			fireEvent.keyDown(window, { key: "ArrowUp" });
+			fireEvent.keyDown(globalThis, { key: "ArrowUp" });
 
 			await waitFor(() => {
 				const secondItem = screen.getByText("Go to Projects").closest("button");
@@ -369,7 +380,7 @@ describe("CommandPalette Component", () => {
 
 		it("should not go below 0 when navigating up from first item", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(
@@ -378,7 +389,7 @@ describe("CommandPalette Component", () => {
 			});
 
 			// Try to navigate up from first item
-			fireEvent.keyDown(window, { key: "ArrowUp" });
+			fireEvent.keyDown(globalThis, { key: "ArrowUp" });
 
 			const firstItem = screen.getByText("Go to Dashboard").closest("button");
 			expect(firstItem).toHaveClass("bg-accent");
@@ -386,7 +397,7 @@ describe("CommandPalette Component", () => {
 
 		it("should not go beyond last item when navigating down", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(
@@ -396,7 +407,7 @@ describe("CommandPalette Component", () => {
 
 			// Navigate down many times (more than total commands)
 			for (let i = 0; i < 50; i++) {
-				fireEvent.keyDown(window, { key: "ArrowDown" });
+				fireEvent.keyDown(globalThis, { key: "ArrowDown" });
 			}
 
 			// Should stay at last item
@@ -408,7 +419,7 @@ describe("CommandPalette Component", () => {
 			// Project-specific views only show when on a project page
 			setProjectContext("test-project-123");
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
@@ -427,7 +438,7 @@ describe("CommandPalette Component", () => {
 	describe("Command Execution", () => {
 		it("should execute selected command on Enter", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(
@@ -436,7 +447,7 @@ describe("CommandPalette Component", () => {
 			});
 
 			// Execute first command (Go to Dashboard)
-			fireEvent.keyDown(window, { key: "Enter" });
+			fireEvent.keyDown(globalThis, { key: "Enter" });
 
 			await waitFor(() => {
 				expect(mockNavigate).toHaveBeenCalledWith({ to: "/home" });
@@ -445,7 +456,7 @@ describe("CommandPalette Component", () => {
 
 		it("should execute command on click", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const dashboardCommand = await screen.findByText("Go to Dashboard");
 			fireEvent.click(dashboardCommand);
@@ -455,7 +466,7 @@ describe("CommandPalette Component", () => {
 
 		it("should close palette after command execution via Enter", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(
@@ -463,7 +474,7 @@ describe("CommandPalette Component", () => {
 				).toBeInTheDocument();
 			});
 
-			fireEvent.keyDown(window, { key: "Enter" });
+			fireEvent.keyDown(globalThis, { key: "Enter" });
 
 			await waitFor(() => {
 				expect(
@@ -474,7 +485,7 @@ describe("CommandPalette Component", () => {
 
 		it("should close palette after command execution via click", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const dashboardCommand = await screen.findByText("Go to Dashboard");
 			fireEvent.click(dashboardCommand);
@@ -488,7 +499,7 @@ describe("CommandPalette Component", () => {
 
 		it("should navigate to projects page", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const projectsCommand = await screen.findByText("Go to Projects");
 			fireEvent.click(projectsCommand);
@@ -498,7 +509,7 @@ describe("CommandPalette Component", () => {
 
 		it("should navigate to settings page", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const settingsCommand = await screen.findByText("Go to Settings");
 			fireEvent.click(settingsCommand);
@@ -510,18 +521,18 @@ describe("CommandPalette Component", () => {
 			// Project-specific views only show when on a project page
 			setProjectContext("test-project-123");
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const codeViewCommand = await screen.findByText("Code View");
 			fireEvent.click(codeViewCommand);
 
 			// The navigate call uses TanStack Router format with params
 			expect(mockNavigate).toHaveBeenCalledWith({
-				to: "/projects/$projectId/views/$viewType",
 				params: {
 					projectId: "test-project-123",
 					viewType: "code",
 				},
+				to: "/projects/$projectId/views/$viewType",
 			});
 		});
 	});
@@ -531,9 +542,9 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 
 			// Rapidly toggle open/close
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(
@@ -544,7 +555,7 @@ describe("CommandPalette Component", () => {
 
 		it("should not execute command if none is selected", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
@@ -552,7 +563,7 @@ describe("CommandPalette Component", () => {
 			await user.type(input, "nonexistent");
 
 			// Try to execute with Enter
-			fireEvent.keyDown(window, { key: "Enter" });
+			fireEvent.keyDown(globalThis, { key: "Enter" });
 
 			// Should not call navigate
 			expect(mockNavigate).not.toHaveBeenCalled();
@@ -564,14 +575,14 @@ describe("CommandPalette Component", () => {
 			const event = new KeyboardEvent("keydown", { key: "k", metaKey: true });
 			const preventDefaultSpy = vi.spyOn(event, "preventDefault");
 
-			window.dispatchEvent(event);
+			globalThis.dispatchEvent(event);
 
 			expect(preventDefaultSpy).toHaveBeenCalled();
 		});
 
 		it("should handle empty search gracefully", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
@@ -589,23 +600,23 @@ describe("CommandPalette Component", () => {
 		it.skip("should not render when window is undefined (SSR)", () => {
 			// This test is skipped because setting window = undefined breaks React rendering in JSDOM
 			// The component correctly checks for window existence (lines 202-203)
-			// but React DOM requires window to render, making this test incompatible with JSDOM
+			// But React DOM requires window to render, making this test incompatible with JSDOM
 			const originalWindow = globalThis.window;
 
 			// Simulate SSR environment
 			Object.defineProperty(globalThis, "window", {
+				configurable: true,
 				value: undefined,
 				writable: true,
-				configurable: true,
 			});
 
 			renderCommandPalette();
 
 			// Restore window
 			Object.defineProperty(globalThis, "window", {
+				configurable: true,
 				value: originalWindow,
 				writable: true,
-				configurable: true,
 			});
 
 			expect(
@@ -617,7 +628,7 @@ describe("CommandPalette Component", () => {
 	describe("Accessibility", () => {
 		it("should have proper ARIA attributes", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			const input = await screen.findByPlaceholderText(/search commands/i);
 			expect(input).toHaveAttribute("type", "text");
@@ -625,7 +636,7 @@ describe("CommandPalette Component", () => {
 
 		it("should display keyboard shortcuts", async () => {
 			renderCommandPalette();
-			fireEvent.keyDown(window, { key: "k", metaKey: true });
+			fireEvent.keyDown(globalThis, { key: "k", metaKey: true });
 
 			await waitFor(() => {
 				expect(screen.getByText("↑↓")).toBeInTheDocument();

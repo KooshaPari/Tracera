@@ -354,9 +354,7 @@ test.describe("Graph Visualization", () => {
 			const graphContainer = page.locator(".react-flow");
 
 			if (await graphContainer.isVisible({ timeout: 2000 })) {
-				await page
-					.locator(".react-flow__nodes > div[data-id]")
-					.count();
+				await page.locator(".react-flow__nodes > div[data-id]").count();
 			}
 		});
 	});

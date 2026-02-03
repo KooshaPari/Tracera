@@ -495,9 +495,9 @@ export function calculateHealthStatus(
 export function getHealthColor(health: HealthStatus): string {
 	const colors: Record<HealthStatus, string> = {
 		green: "#22c55e",
-		yellow: "#eab308",
 		red: "#ef4444",
 		unknown: "#6b7280",
+		yellow: "#eab308",
 	};
 	return colors[health];
 }
@@ -507,12 +507,12 @@ export function getHealthColor(health: HealthStatus): string {
  */
 export function getMilestoneStatusColor(status: MilestoneStatus): string {
 	const colors: Record<MilestoneStatus, string> = {
-		not_started: "#94a3b8",
-		in_progress: "#3b82f6",
 		at_risk: "#eab308",
 		blocked: "#ef4444",
-		completed: "#22c55e",
 		cancelled: "#6b7280",
+		completed: "#22c55e",
+		in_progress: "#3b82f6",
+		not_started: "#94a3b8",
 	};
 	return colors[status];
 }
@@ -522,10 +522,10 @@ export function getMilestoneStatusColor(status: MilestoneStatus): string {
  */
 export function getSprintStatusColor(status: SprintStatus): string {
 	const colors: Record<SprintStatus, string> = {
-		planning: "#a78bfa",
 		active: "#3b82f6",
-		completed: "#22c55e",
 		cancelled: "#6b7280",
+		completed: "#22c55e",
+		planning: "#a78bfa",
 	};
 	return colors[status];
 }
@@ -556,7 +556,7 @@ export function calculateProgressPercentage(
  */
 export function calculateVelocity(
 	history: VelocityDataPoint[],
-	periods: number = 3,
+	periods = 3,
 ): number {
 	if (history.length === 0) return 0;
 	const recent = history.slice(-periods);

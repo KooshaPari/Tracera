@@ -1,9 +1,14 @@
-/* eslint-disable eslint/no-duplicate-imports, eslint/prefer-object-spread, eslint/sort-imports, promise/prefer-await-to-then */
-import type { UseMutationOptions, UseMutationResult } from "@tanstack/react-query";
+/* eslint-disable eslint/no-duplicate-imports, eslint/prefer-object-spread, eslint/sort-imports, promise/prefer-await-to-then, oxc/no-async-await */
+import type {
+	UseMutationOptions,
+	UseMutationResult,
+} from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ComponentLibrary, LibraryComponent } from "@tracertm/types";
-import { apiClient, handleApiResponse } from "./client";
+import client from "./client";
 import componentLibraryQueries from "./component-library.queries";
+
+const { apiClient, handleApiResponse } = client;
 
 interface CreateComponentLibraryInput {
 	projectId: string;
@@ -51,8 +56,8 @@ const useCreateComponentLibrary = (
 
 	const mutationOptions = Object.assign(
 		{
-			mutationFn: (input: CreateComponentLibraryInput) =>
-				handleApiResponse(
+			mutationFn: async (input: CreateComponentLibraryInput) =>
+				await handleApiResponse(
 					apiPost("/api/v1/projects/{projectId}/libraries", {
 						body: {
 							description: input.description,
@@ -88,25 +93,26 @@ const useUpdateComponentLibrary = (
 
 	const mutationOptions = Object.assign(
 		{
-			mutationFn: (input: {
+			mutationFn: async (input: {
 				libraryId: string;
 				data: UpdateComponentLibraryInput;
 			}) =>
-				handleApiResponse(
+				await handleApiResponse(
 					apiPut("/api/v1/libraries/{libraryId}", {
 						body: input.data,
 						params: { path: { libraryId: input.libraryId } },
 					}),
 				),
-			onSuccess: (data: ComponentLibrary) =>
-				Promise.all([
+			onSuccess: async (data: ComponentLibrary) => {
+				await Promise.all([
 					queryClient.invalidateQueries({
 						queryKey: componentLibraryQueryKeys.detail(data.id),
 					}),
 					queryClient.invalidateQueries({
 						queryKey: componentLibraryQueryKeys.lists(),
 					}),
-				]),
+				]);
+			},
 		},
 		options,
 	);
@@ -121,8 +127,8 @@ const useDeleteComponentLibrary = (
 
 	const mutationOptions = Object.assign(
 		{
-			mutationFn: (libraryId: string) =>
-				handleApiResponse(
+			mutationFn: async (libraryId: string) =>
+				await handleApiResponse(
 					apiDelete("/api/v1/libraries/{libraryId}", {
 						params: { path: { libraryId } },
 					}),
@@ -149,8 +155,8 @@ const useCreateLibraryComponent = (
 
 	const mutationOptions = Object.assign(
 		{
-			mutationFn: (input: CreateLibraryComponentInput) =>
-				handleApiResponse(
+			mutationFn: async (input: CreateLibraryComponentInput) =>
+				await handleApiResponse(
 					apiPost("/api/v1/libraries/{libraryId}/components", {
 						body: {
 							category: input.category,
@@ -188,25 +194,26 @@ const useUpdateLibraryComponent = (
 
 	const mutationOptions = Object.assign(
 		{
-			mutationFn: (input: {
+			mutationFn: async (input: {
 				componentId: string;
 				data: UpdateLibraryComponentInput;
 			}) =>
-				handleApiResponse(
+				await handleApiResponse(
 					apiPut("/api/v1/components/{componentId}", {
 						body: input.data,
 						params: { path: { componentId: input.componentId } },
 					}),
 				),
-			onSuccess: (data: LibraryComponent) =>
-				Promise.all([
+			onSuccess: async (data: LibraryComponent) => {
+				await Promise.all([
 					queryClient.invalidateQueries({
 						queryKey: componentLibraryQueryKeys.component(data.id),
 					}),
 					queryClient.invalidateQueries({
 						queryKey: componentLibraryQueryKeys.components(data.libraryId),
 					}),
-				]),
+				]);
+			},
 		},
 		options,
 	);
@@ -220,24 +227,30 @@ const useDeleteLibraryComponent = (
 		Error,
 		{ componentId: string; libraryId: string }
 	>,
-): UseMutationResult<void, Error, { componentId: string; libraryId: string }> => {
+): UseMutationResult<
+	void,
+	Error,
+	{ componentId: string; libraryId: string }
+> => {
 	const queryClient = useQueryClient();
 
 	const mutationOptions = Object.assign(
 		{
-			mutationFn: (input: { componentId: string; libraryId: string }) =>
-				handleApiResponse(
+			mutationFn: async (input: { componentId: string; libraryId: string }) =>
+				await handleApiResponse(
 					apiDelete("/api/v1/components/{componentId}", {
 						params: { path: { componentId: input.componentId } },
 					}),
 				),
-			onSuccess: (
-				unusedResult: void,
+			onSuccess: async (
+				data: void,
 				variables: { componentId: string; libraryId: string },
-			) =>
-				queryClient.invalidateQueries({
+			) => {
+				await queryClient.invalidateQueries({
 					queryKey: componentLibraryQueryKeys.components(variables.libraryId),
-				}),
+				});
+				return data;
+			},
 		},
 		options,
 	);

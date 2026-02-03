@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3001';
 
@@ -241,8 +241,7 @@ test.describe('Documentation Site E2E Tests', () => {
       await page.goto(`${BASE_URL}/docs`);
 
       // Monitor for layout shifts
-      const cls = await page.evaluate(() => {
-        return new Promise<number>((resolve) => {
+      const cls = await page.evaluate(() => new Promise<number>((resolve) => {
           let clsValue = 0;
 
           const observer = new PerformanceObserver((list) => {
@@ -252,14 +251,13 @@ test.describe('Documentation Site E2E Tests', () => {
             }
           });
 
-          observer.observe({ type: 'layout-shift', buffered: true });
+          observer.observe({ buffered: true, type: 'layout-shift' });
 
           setTimeout(() => {
             observer.disconnect();
             resolve(clsValue);
           }, 2000);
-        });
-      });
+        }));
 
       // CLS should be < 0.1
       expect(cls).toBeLessThan(0.1);
@@ -268,8 +266,7 @@ test.describe('Documentation Site E2E Tests', () => {
     test('should have fast time to interactive', async ({ page }) => {
       await page.goto(`${BASE_URL}/docs`);
 
-      const tti = await page.evaluate(() => {
-        return new Promise<number>((resolve) => {
+      const tti = await page.evaluate(() => new Promise<number>((resolve) => {
           const observer = new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {
               if (entry.entryType === 'navigation') {
@@ -280,14 +277,13 @@ test.describe('Documentation Site E2E Tests', () => {
             }
           });
 
-          observer.observe({ type: 'navigation', buffered: true });
+          observer.observe({ buffered: true, type: 'navigation' });
 
           setTimeout(() => {
             observer.disconnect();
             resolve(0);
           }, 1000);
-        });
-      });
+        }));
 
       // TTI should be < 2500ms
       if (tti > 0) {
@@ -333,7 +329,7 @@ test.describe('Documentation Site E2E Tests', () => {
 
   test.describe('Mobile Responsiveness', () => {
     test.use({
-      viewport: { width: 375, height: 667 } // iPhone SE size
+      viewport: { height: 667, width: 375 } // IPhone SE size
     });
 
     test('should render correctly on mobile', async ({ page }) => {

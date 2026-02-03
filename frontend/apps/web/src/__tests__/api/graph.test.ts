@@ -13,8 +13,8 @@ import {
 vi.mock("@/api/endpoints", () => ({
 	graphApi: {
 		get: vi.fn(),
-		getImpactAnalysis: vi.fn(),
 		getDependencyAnalysis: vi.fn(),
+		getImpactAnalysis: vi.fn(),
 	},
 }));
 
@@ -25,9 +25,9 @@ describe("Graph API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchGraph", () => {
+	describe(fetchGraph, () => {
 		it("should fetch graph data", async () => {
-			const mockGraph = { nodes: [], edges: [] };
+			const mockGraph = { edges: [], nodes: [] };
 			vi.mocked(graphApi.get).mockResolvedValue(mockGraph);
 
 			const result = await fetchGraph("proj-1");
@@ -36,23 +36,23 @@ describe("Graph API", () => {
 		});
 
 		it("should fetch graph without projectId", async () => {
-			const mockGraph = { nodes: [], edges: [] };
+			const mockGraph = { edges: [], nodes: [] };
 			vi.mocked(graphApi.get).mockResolvedValue(mockGraph);
 
 			const result = await fetchGraph();
 			expect(result).toEqual(mockGraph);
-			// get can be called with no args (optional parameter)
+			// Get can be called with no args (optional parameter)
 			expect(graphApi.get).toHaveBeenCalled();
 		});
 	});
 
-	describe("fetchImpactAnalysis", () => {
+	describe(fetchImpactAnalysis, () => {
 		it("should fetch impact analysis", async () => {
 			const mockAnalysis = {
-				item_id: "item-1",
-				affected_items: [],
 				affected_count: 0,
+				affected_items: [],
 				depth: 5,
+				item_id: "item-1",
 			};
 			vi.mocked(graphApi.getImpactAnalysis).mockResolvedValue(mockAnalysis);
 
@@ -63,27 +63,27 @@ describe("Graph API", () => {
 
 		it("should fetch impact analysis without depth", async () => {
 			const mockAnalysis = {
-				item_id: "item-1",
-				affected_items: [],
 				affected_count: 0,
+				affected_items: [],
 				depth: undefined,
+				item_id: "item-1",
 			};
 			vi.mocked(graphApi.getImpactAnalysis).mockResolvedValue(mockAnalysis);
 
 			const result = await fetchImpactAnalysis("item-1");
 			expect(result).toEqual(mockAnalysis);
-			// depth is optional parameter
+			// Depth is optional parameter
 			expect(graphApi.getImpactAnalysis).toHaveBeenCalled();
 		});
 	});
 
-	describe("fetchDependencyAnalysis", () => {
+	describe(fetchDependencyAnalysis, () => {
 		it("should fetch dependency analysis", async () => {
 			const mockAnalysis = {
-				item_id: "item-1",
 				dependencies: [],
 				dependency_count: 0,
 				depth: 5,
+				item_id: "item-1",
 			};
 			vi.mocked(graphApi.getDependencyAnalysis).mockResolvedValue(mockAnalysis);
 

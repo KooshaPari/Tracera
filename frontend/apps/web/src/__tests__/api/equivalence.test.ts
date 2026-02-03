@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import {
-	type ConfirmEquivalenceInput,
-	type DetectEquivalencesInput,
-	type EquivalenceLink,
-	equivalenceQueryKeys,
-	type RejectEquivalenceInput,
+import { equivalenceQueryKeys } from "../../api/equivalence";
+import type {
+	ConfirmEquivalenceInput,
+	DetectEquivalencesInput,
+	EquivalenceLink,
+	RejectEquivalenceInput,
 } from "../../api/equivalence";
 
 describe("equivalence API hooks", () => {
@@ -33,13 +33,13 @@ describe("equivalence API hooks", () => {
 	describe("EquivalenceLink type", () => {
 		it("should validate equivalence link structure", () => {
 			const link: EquivalenceLink = {
+				confidence: 0.88,
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "equiv-1",
 				itemId1: "item-1",
 				itemId2: "item-2",
 				similarity: 0.95,
-				confidence: 0.88,
 				status: "pending",
-				createdAt: "2024-01-01T00:00:00Z",
 			};
 
 			expect(link.id).toBeDefined();
@@ -52,14 +52,14 @@ describe("equivalence API hooks", () => {
 
 		it("should allow optional confirmedAt field", () => {
 			const link: EquivalenceLink = {
+				confidence: 0.88,
+				confirmedAt: "2024-01-02T00:00:00Z",
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "equiv-1",
 				itemId1: "item-1",
 				itemId2: "item-2",
 				similarity: 0.95,
-				confidence: 0.88,
 				status: "confirmed",
-				createdAt: "2024-01-01T00:00:00Z",
-				confirmedAt: "2024-01-02T00:00:00Z",
 			};
 
 			expect(link.confirmedAt).toBeDefined();
@@ -79,8 +79,8 @@ describe("equivalence API hooks", () => {
 
 		it("should validate ConfirmEquivalenceInput", () => {
 			const input: ConfirmEquivalenceInput = {
-				equivalenceId: "equiv-1",
 				comment: "Confirmed as equivalent",
+				equivalenceId: "equiv-1",
 			};
 
 			expect(input.equivalenceId).toBeDefined();

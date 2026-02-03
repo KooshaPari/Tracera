@@ -29,9 +29,7 @@ export interface NavigationHistory {
 /**
  * Hook for managing node expansion state with hierarchy support
  */
-export function useNodeExpansion(
-	items: Array<{ id: string; parentId?: string }>,
-) {
+export function useNodeExpansion(items: { id: string; parentId?: string }[]) {
 	// Map items for quick lookup
 	const itemMap = useMemo(
 		() => new Map(items.map((item) => [item.id, item])),
@@ -48,7 +46,7 @@ export function useNodeExpansion(
 			let depth = 0;
 			let currentId: string | undefined = item.parentId;
 			while (currentId && depth < 100) {
-				depth++;
+				depth += 1;
 				const parent = itemMap.get(currentId);
 				currentId = parent?.parentId;
 			}
@@ -65,22 +63,21 @@ export function useNodeExpansion(
 			}
 		}
 
-		return { parentToChildren, depths };
+		return { depths, parentToChildren };
 	}, [items, itemMap]);
 
 	// State tracking
 	const expansionStateRef = useRef<Map<string, NodeExpansionState>>(new Map());
 	const navigationHistoryRef = useRef<NavigationHistory>({
 		current: null,
-		previous: [],
 		next: [],
+		previous: [],
 	});
 
 	// Get expansion state for a node
 	const getExpansionState = useCallback(
-		(nodeId: string): NodeExpansionState => {
-			return expansionStateRef.current.get(nodeId) ?? "collapsed";
-		},
+		(nodeId: string): NodeExpansionState =>
+			expansionStateRef.current.get(nodeId) ?? "collapsed",
 		[],
 	);
 
@@ -94,25 +91,19 @@ export function useNodeExpansion(
 
 	// Get children of a node
 	const getChildren = useCallback(
-		(nodeId: string): string[] => {
-			return hierarchy.parentToChildren.get(nodeId) ?? [];
-		},
+		(nodeId: string): string[] => hierarchy.parentToChildren.get(nodeId) ?? [],
 		[hierarchy],
 	);
 
 	// Get parent of a node
 	const getParent = useCallback(
-		(nodeId: string): string | undefined => {
-			return itemMap.get(nodeId)?.parentId;
-		},
+		(nodeId: string): string | undefined => itemMap.get(nodeId)?.parentId,
 		[itemMap],
 	);
 
 	// Get depth of a node
 	const getDepth = useCallback(
-		(nodeId: string): number => {
-			return hierarchy.depths.get(nodeId) ?? 0;
-		},
+		(nodeId: string): number => hierarchy.depths.get(nodeId) ?? 0,
 		[hierarchy],
 	);
 
@@ -152,7 +143,7 @@ export function useNodeExpansion(
 
 	// Navigate to child
 	const navigateToChild = useCallback(
-		(nodeId: string, childIndex: number = 0): string | null => {
+		(nodeId: string, childIndex = 0): string | null => {
 			const children = getChildren(nodeId);
 			if (children[childIndex]) {
 				navigationHistoryRef.current.previous.push(
@@ -227,16 +218,19 @@ export function useNodeExpansion(
 	const handleKeyboardNavigation = useCallback(
 		(key: string, currentNodeId: string): string | null => {
 			switch (key) {
-				case "ArrowUp":
+				case "ArrowUp": {
 					// Navigate to parent
 					return navigateToParent(currentNodeId);
-				case "ArrowDown":
+				}
+				case "ArrowDown": {
 					// Navigate to first child
 					return navigateToChild(currentNodeId, 0);
-				case "ArrowLeft":
+				}
+				case "ArrowLeft": {
 					// Collapse current node
 					setExpansionState(currentNodeId, "collapsed");
 					return currentNodeId;
+				}
 				case "ArrowRight": {
 					// Expand current node
 					const state = getExpansionState(currentNodeId);
@@ -247,24 +241,27 @@ export function useNodeExpansion(
 					}
 					return currentNodeId;
 				}
-				case "Backspace":
+				case "Backspace": {
 					// Go back in history
 					return navigateBack();
-				case "Enter":
+				}
+				case "Enter": {
 					// Toggle expansion state
 					{
 						const state = getExpansionState(currentNodeId);
 						const nextState: NodeExpansionState =
 							state === "collapsed"
 								? "preview"
-								: state === "preview"
+								: (state === "preview"
 									? "panel"
-									: "collapsed";
+									: "collapsed");
 						setExpansionState(currentNodeId, nextState);
 					}
 					return currentNodeId;
-				default:
+				}
+				default: {
 					return null;
+				}
 			}
 		},
 		[

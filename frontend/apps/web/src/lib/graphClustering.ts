@@ -340,7 +340,7 @@ function calculateModularityGain(
 	// Modularity gain (simplified)
 	const gain =
 		(edgesToTarget - edgesFromCurrent) / m -
-		resolution * (node.degree * node.degree) / (2 * m * m);
+		(resolution * (node.degree * node.degree)) / (2 * m * m);
 
 	return gain;
 }
@@ -610,9 +610,7 @@ export function adaptiveClustering(
 
 	// Medium graphs: use Louvain with adjusted resolution
 	if (nodeCount < 10000) {
-		const resolution = targetClusters
-			? nodeCount / targetClusters / 10
-			: 1.0;
+		const resolution = targetClusters ? nodeCount / targetClusters / 10 : 1.0;
 		return louvainClustering(items, links, resolution);
 	}
 

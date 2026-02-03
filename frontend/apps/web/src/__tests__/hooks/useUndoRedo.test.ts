@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 
-describe("useUndoRedo", () => {
+describe(useUndoRedo, () => {
 	it("initializes with initial state", () => {
 		const { result } = renderHook(() => useUndoRedo("initial"));
 

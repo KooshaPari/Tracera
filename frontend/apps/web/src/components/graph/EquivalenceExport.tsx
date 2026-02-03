@@ -37,7 +37,7 @@ import {
 	Filter,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import {
 	createExportSummary,
 	serializeToCSV,
@@ -85,15 +85,15 @@ interface FilterState {
 // =============================================================================
 
 const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
+	domains: [],
 	format: "json",
-	includeLinks: true,
 	includeConcepts: true,
-	includeProjections: true,
 	includeConfidenceScores: true,
+	includeLinks: true,
+	includeProjections: true,
 	includeSources: true,
 	minConfidence: 0,
 	statuses: ["confirmed", "auto_confirmed", "suggested"],
-	domains: [],
 };
 
 // =============================================================================
@@ -110,17 +110,17 @@ function EquivalenceExportComponent({
 	const [isOpen, setIsOpen] = useState(false);
 	const [options, setOptions] = useState<ExportOptions>(DEFAULT_EXPORT_OPTIONS);
 	const [filters, setFilters] = useState<FilterState>({
-		showFilters: false,
+		minConfidence: DEFAULT_EXPORT_OPTIONS.minConfidence,
 		selectedDomains: new Set(DEFAULT_EXPORT_OPTIONS.domains),
 		selectedStatuses: new Set(DEFAULT_EXPORT_OPTIONS.statuses),
-		minConfidence: DEFAULT_EXPORT_OPTIONS.minConfidence,
+		showFilters: false,
 	});
 	const [copied, setCopied] = useState(false);
 
 	// Get unique domains from concepts
-	const uniqueDomains = Array.from(
-		new Set(canonicalConcepts.map((c) => c.domain)),
-	).toSorted((a, b) => String(a).localeCompare(String(b)));
+	const uniqueDomains = [
+		...new Set(canonicalConcepts.map((c) => c.domain)),
+	].toSorted((a, b) => String(a).localeCompare(String(b)));
 
 	// Filter data based on options
 	const filteredLinks = equivalenceLinks.filter(
@@ -143,22 +143,22 @@ function EquivalenceExportComponent({
 	// Create export package
 	const createExportPackage = useCallback(() => {
 		const baseData = {
-			version: "1.0" as const,
 			exportedAt: new Date().toISOString(),
-			projectId,
 			exportedBy: userId,
+			projectId,
+			version: "1.0" as const,
 		};
 
 		const data = {
 			...baseData,
 			metadata: createExportSummary({
-				version: "1.0",
-				exportedAt: baseData.exportedAt,
-				projectId,
-				exportedBy: userId,
-				equivalenceLinks: filteredLinks,
 				canonicalConcepts: filteredConcepts,
 				canonicalProjections: filteredProjections,
+				equivalenceLinks: filteredLinks,
+				exportedAt: baseData.exportedAt,
+				exportedBy: userId,
+				projectId,
+				version: "1.0",
 			}),
 			equivalenceLinks: options.includeLinks ? filteredLinks : [],
 			canonicalConcepts: options.includeConcepts ? filteredConcepts : [],
@@ -189,14 +189,14 @@ function EquivalenceExportComponent({
 	const handleExportCSV = useCallback(() => {
 		const data = createExportPackage();
 		const csvData = serializeToCSV({
-			version: "1.0",
-			exportedAt: data.exportedAt,
-			projectId: data.projectId,
-			exportedBy: data.exportedBy,
-			metadata: data.metadata,
-			equivalenceLinks: data.equivalenceLinks,
 			canonicalConcepts: data.canonicalConcepts,
 			canonicalProjections: data.canonicalProjections,
+			equivalenceLinks: data.equivalenceLinks,
+			exportedAt: data.exportedAt,
+			exportedBy: data.exportedBy,
+			metadata: data.metadata,
+			projectId: data.projectId,
+			version: "1.0",
 		});
 
 		if (options.includeLinks && data.equivalenceLinks.length > 0) {
@@ -226,7 +226,7 @@ function EquivalenceExportComponent({
 				setCopied(true);
 				setTimeout(() => setCopied(false), 2000);
 			})
-			.catch((err) => logger.error("Failed to copy:", err));
+			.catch((error) => logger.error("Failed to copy:", error));
 	}, [createExportPackage]);
 
 	return (
@@ -443,7 +443,7 @@ function EquivalenceExportComponent({
 											onChange={(e) =>
 												setFilters({
 													...filters,
-													minConfidence: parseFloat(e.target.value),
+													minConfidence: Number.parseFloat(e.target.value),
 												})
 											}
 											className="w-full"
@@ -630,7 +630,7 @@ function downloadFile(content: string, filename: string, mimeType: string) {
 	const link = document.createElement("a");
 	link.href = url;
 	link.download = filename;
-	document.body.appendChild(link);
+	document.body.append(link);
 	link.click();
 	document.body.removeChild(link);
 	URL.revokeObjectURL(url);

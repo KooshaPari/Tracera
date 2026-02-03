@@ -20,7 +20,15 @@ vi.mock("@tanstack/react-router", async () => {
 		useRouter: () => ({ navigate: vi.fn() }),
 		useLocation: () => ({ pathname: mockPathname }),
 		useParams: () => mockParams,
-		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string | { toString(): string }; [key: string]: unknown }) => (
+		Link: ({
+			children,
+			to,
+			...props
+		}: {
+			children: React.ReactNode;
+			to: string | { toString(): string };
+			[key: string]: unknown;
+		}) => (
 			<a href={typeof to === "string" ? to : String(to)} {...props}>
 				{children}
 			</a>
@@ -329,7 +337,7 @@ describe("Sidebar Navigation", () => {
 
 			// Check that localStorage may be updated
 			const savedGroups = localStorage.getItem("sidebar-collapsed-groups");
-			// localStorage may or may not be set depending on interactions
+			// LocalStorage may or may not be set depending on interactions
 			expect(["string", "object"]).toContain(typeof savedGroups);
 
 			// Rerender and verify component still works
@@ -374,9 +382,7 @@ describe("Sidebar Navigation", () => {
 		it("clears search input when Escape key is pressed", async () => {
 			render(<Sidebar />);
 
-			const searchInput = screen.getByPlaceholderText(
-				"Search navigation...",
-			);
+			const searchInput = screen.getByPlaceholderText("Search navigation...");
 			await user.type(searchInput, "test");
 
 			expect(searchInput).toHaveValue("test");

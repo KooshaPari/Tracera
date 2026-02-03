@@ -196,8 +196,8 @@ test.describe("Security - CSRF Protection", () => {
 			const inputValue =
 				inputField instanceof HTMLInputElement ? inputField.value : undefined;
 			return {
-				meta: metaTag?.getAttribute("content"),
 				input: inputValue,
+				meta: metaTag?.getAttribute("content"),
 			};
 		});
 
@@ -246,9 +246,9 @@ test.describe("Security - Authentication & Authorization", () => {
 			const storage = JSON.stringify(localStorage);
 
 			return {
+				hasApiKey: storage.includes("apiKey") || storage.includes("api_key"),
 				hasPassword: storage.includes("password"),
 				hasToken: storage.includes("token") && storage.includes("Bearer"),
-				hasApiKey: storage.includes("apiKey") || storage.includes("api_key"),
 			};
 		});
 
@@ -343,9 +343,9 @@ test.describe("Security - Data Validation", () => {
 
 		if ((await fileInput.count()) > 0) {
 			await fileInput.setInputFiles({
-				name: "malicious.exe",
-				mimeType: "application/x-msdownload",
 				buffer: Buffer.from("fake executable content"),
+				mimeType: "application/x-msdownload",
+				name: "malicious.exe",
 			});
 
 			// Should show error
@@ -431,9 +431,10 @@ test.describe("Security - Content Security Policy", () => {
 				script.textContent = "window.inlineScriptExecuted = true";
 				document.body.appendChild(script);
 
-				return !!(
-				window as Window & { inlineScriptExecuted?: boolean }
-			).inlineScriptExecuted;
+				return Boolean(
+					(window as Window & { inlineScriptExecuted?: boolean })
+						.inlineScriptExecuted,
+				);
 			} catch {
 				return false;
 			}
@@ -609,8 +610,8 @@ test.describe("Security - API Security", () => {
 		// Simulate 401 response
 		await page.route("**/api/**", (route) => {
 			void route.fulfill({
-				status: 401,
 				body: JSON.stringify({ error: "Unauthorized" }),
+				status: 401,
 			});
 		});
 

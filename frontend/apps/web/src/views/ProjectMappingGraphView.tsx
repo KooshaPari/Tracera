@@ -24,10 +24,27 @@ export function ProjectMappingGraphView() {
 
 	const items = useMemo(() => {
 		const nodes = graphData?.nodes || [];
-		return nodes.map((node: any) => (Object.assign(node, {id:node.id,title:node.title,view:node.view,type:node.item_type||node.itemType||node.view})));
+		return nodes.map((node: any) =>
+			Object.assign(node, {
+				id: node.id,
+				title: node.title,
+				type: node.item_type || node.itemType || node.view,
+				view: node.view,
+			}),
+		);
 	}, [graphData]);
 
-	const links = useMemo(() => (graphData?.links || []).map((link: any) => (Object.assign(link, {sourceId:link.source_item_id||link.sourceId,targetId:link.target_item_id||link.targetId,type:link.link_type||link.type}))), [graphData]);
+	const links = useMemo(
+		() =>
+			(graphData?.links || []).map((link: any) =>
+				Object.assign(link, {
+					sourceId: link.source_item_id || link.sourceId,
+					targetId: link.target_item_id || link.targetId,
+					type: link.link_type || link.type,
+				}),
+			),
+		[graphData],
+	);
 
 	// ✅ NEW: Progressive edge loading
 	const visibleLinks = links.slice(0, visibleEdgeCount);
@@ -36,15 +53,7 @@ export function ProjectMappingGraphView() {
 		setVisibleEdgeCount((prev) => Math.min(prev + 500, links.length));
 	};
 
-	const handleNavigateToItem = (itemId: string) => {
-		const item = items.find((node: any) => node.id === itemId);
-		const viewType = String(item?.view || "feature").toLowerCase();
-		if (!projectId) {
-			undefined;
-			return;
-		}
-		undefined;
-	};
+	const handleNavigateToItem = (itemId: string) => {};
 
 	return (
 		<UnifiedGraphView

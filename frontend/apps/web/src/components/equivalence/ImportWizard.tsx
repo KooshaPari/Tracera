@@ -50,11 +50,11 @@ interface ValidationResult {
 		projections: number;
 		links: number;
 	};
-	conflicts?: Array<{
+	conflicts?: {
 		type: string;
 		severity: string;
 		message: string;
-	}>;
+	}[];
 }
 
 type ImportStep = "upload" | "validate" | "conflicts" | "confirm" | "complete";
@@ -99,9 +99,9 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 			const response = await fetch(
 				`/api/v1/projects/${projectId}/equivalence/validate`,
 				{
-					method: "POST",
-					headers: getAuthHeaders(),
 					body: formData,
+					headers: getAuthHeaders(),
+					method: "POST",
 				},
 			);
 
@@ -132,7 +132,9 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 	};
 
 	const handleImport = async () => {
-		if (!file) return;
+		if (!file) {
+			return;
+		}
 
 		setIsLoading(true);
 		setError(null);
@@ -148,9 +150,9 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 				const response = await fetch(
 					`/api/v1/projects/${projectId}/equivalence/import`,
 					{
-						method: "POST",
-						headers: getAuthHeaders(),
 						body: formData,
+						headers: getAuthHeaders(),
+						method: "POST",
 					},
 				);
 
@@ -331,7 +333,9 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 				</Label>
 				<RadioGroup
 					value={conflictStrategy}
-					onValueChange={(v: string) => setConflictStrategy(v as ConflictStrategy)}
+					onValueChange={(v: string) =>
+						setConflictStrategy(v as ConflictStrategy)
+					}
 				>
 					<div className="space-y-3">
 						<div className="flex items-start space-x-2">
@@ -527,11 +531,11 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 										<Loader2 className="h-4 w-4 animate-spin" />
 										Importing...
 									</>
-								) : step === "conflicts" ? (
+								) : (step === "conflicts" ? (
 									"Next"
 								) : (
 									"Import"
-								)}
+								))}
 							</Button>
 						</>
 					)}

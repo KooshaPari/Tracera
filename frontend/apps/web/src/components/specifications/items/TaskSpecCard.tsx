@@ -41,18 +41,22 @@ interface TaskSpecCardProps {
 }
 
 const statusStyles = {
-	todo: { bg: "bg-muted", text: "text-muted-foreground", icon: Circle },
-	in_progress: { bg: "bg-blue-500/10", text: "text-blue-600", icon: Play },
-	review: { bg: "bg-purple-500/10", text: "text-purple-600", icon: Search },
-	done: { bg: "bg-green-500/10", text: "text-green-600", icon: CheckCircle2 },
-	blocked: { bg: "bg-red-500/10", text: "text-red-600", icon: XCircle },
+	blocked: { bg: "bg-red-500/10", icon: XCircle, text: "text-red-600" },
+	done: { bg: "bg-green-500/10", icon: CheckCircle2, text: "text-green-600" },
+	in_progress: { bg: "bg-blue-500/10", icon: Play, text: "text-blue-600" },
+	review: { bg: "bg-purple-500/10", icon: Search, text: "text-purple-600" },
+	todo: { bg: "bg-muted", icon: Circle, text: "text-muted-foreground" },
 };
 
 function formatDuration(minutes: number): string {
-	if (minutes < 60) return `${minutes}m`;
+	if (minutes < 60) {
+		return `${minutes}m`;
+	}
 	const hours = Math.floor(minutes / 60);
 	const mins = minutes % 60;
-	if (hours < 24) return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+	if (hours < 24) {
+		return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+	}
 	const days = Math.floor(hours / 24);
 	const remainingHours = hours % 24;
 	return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;

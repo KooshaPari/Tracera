@@ -3,7 +3,7 @@
  * Shown when user clicks the settings (gear) button in the chat header.
  */
 
-import { Button, cn, ScrollArea, Textarea } from "@tracertm/ui";
+import { Button, ScrollArea, Textarea, cn } from "@tracertm/ui";
 import { Settings, X } from "lucide-react";
 import { buildSystemPrompt } from "@/lib/ai/systemPrompt";
 import type { ChatContext } from "@/lib/ai/types";

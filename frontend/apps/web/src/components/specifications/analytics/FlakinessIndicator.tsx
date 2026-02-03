@@ -17,61 +17,79 @@ const patternLabels: Record<
 	FlakinessPattern,
 	{ label: string; description: string; icon: string }
 > = {
-	timing: {
-		label: "Timing",
-		description: "Race conditions or timeout issues",
-		icon: "⏱",
-	},
 	async: {
-		label: "Async",
 		description: "Asynchronous operation handling issues",
 		icon: "⟳",
+		label: "Async",
 	},
 	environment: {
-		label: "Environment",
 		description: "Environment-specific configuration issues",
 		icon: "🌍",
+		label: "Environment",
 	},
 	network: {
-		label: "Network",
 		description: "Network connectivity or latency issues",
 		icon: "🌐",
-	},
-	resource: {
-		label: "Resource",
-		description: "Resource contention or availability issues",
-		icon: "💾",
+		label: "Network",
 	},
 	order_dependent: {
-		label: "Order Dependent",
 		description: "Test execution order dependencies",
 		icon: "📋",
+		label: "Order Dependent",
 	},
 	random: {
-		label: "Random",
 		description: "Random or non-deterministic behavior",
 		icon: "🎲",
+		label: "Random",
+	},
+	resource: {
+		description: "Resource contention or availability issues",
+		icon: "💾",
+		label: "Resource",
+	},
+	timing: {
+		description: "Race conditions or timeout issues",
+		icon: "⏱",
+		label: "Timing",
 	},
 };
 
 function getProbabilityColor(probability: number): string {
-	if (probability >= 0.7) return "text-red-600";
-	if (probability >= 0.4) return "text-orange-500";
-	if (probability >= 0.2) return "text-yellow-600";
+	if (probability >= 0.7) {
+		return "text-red-600";
+	}
+	if (probability >= 0.4) {
+		return "text-orange-500";
+	}
+	if (probability >= 0.2) {
+		return "text-yellow-600";
+	}
 	return "text-green-600";
 }
 
 function getProbabilityBgColor(probability: number): string {
-	if (probability >= 0.7) return "bg-red-500";
-	if (probability >= 0.4) return "bg-orange-500";
-	if (probability >= 0.2) return "bg-yellow-500";
+	if (probability >= 0.7) {
+		return "bg-red-500";
+	}
+	if (probability >= 0.4) {
+		return "bg-orange-500";
+	}
+	if (probability >= 0.2) {
+		return "bg-yellow-500";
+	}
 	return "bg-green-500";
 }
 
 function getProbabilityLabel(probability: number): string {
-	if (probability >= 0.7) return "High";
-	if (probability >= 0.4) return "Medium";
-	if (probability >= 0.2) return "Low";
+	if (probability >= 0.7) {
+		return "High";
+	}
+	if (probability >= 0.4) {
+		return "Medium";
+	}
+	if (probability >= 0.2) {
+		return "Low";
+	}
 	return "Minimal";
 }
 
@@ -152,11 +170,11 @@ interface FlakinessDetailCardProps {
 	entropy: number;
 	pattern?: FlakinessPattern | null;
 	patternConfidence?: number;
-	contributingFactors?: Array<{
+	contributingFactors?: {
 		factor: string;
 		weight: number;
 		evidence: string | null;
-	}>;
+	}[];
 	recentRuns?: number;
 	flakyRuns?: number;
 	passRate?: number;
@@ -258,9 +276,9 @@ export function FlakinessDetailCard({
 										"w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
 										factor.weight > 0.5
 											? "bg-red-500"
-											: factor.weight > 0.25
+											: (factor.weight > 0.25
 												? "bg-yellow-500"
-												: "bg-gray-400",
+												: "bg-gray-400"),
 									)}
 								/>
 								<div>

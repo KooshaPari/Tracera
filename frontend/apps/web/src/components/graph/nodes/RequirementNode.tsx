@@ -10,7 +10,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import {
 	AlertCircle,
 	CheckCircle2,
@@ -56,19 +57,19 @@ export interface RequirementNodeData {
 
 // EARS pattern colors
 const EARS_COLORS = {
-	ubiquitous: "#8b5cf6",
 	event_driven: "#3b82f6",
-	state_driven: "#10b981",
 	optional: "#f59e0b",
+	state_driven: "#10b981",
+	ubiquitous: "#8b5cf6",
 	unwanted: "#ef4444",
 };
 
 // Risk level colors
 const RISK_COLORS = {
+	critical: "#ef4444",
+	high: "#f97316",
 	low: "#22c55e",
 	medium: "#f59e0b",
-	high: "#f97316",
-	critical: "#ef4444",
 };
 
 // Verification status icons
@@ -145,16 +146,17 @@ function RequirementNodeComponent({
 												className="text-[10px] px-1.5 h-5"
 												style={{
 													backgroundColor: `${earsColor}15`,
-													color: earsColor,
 													borderColor: `${earsColor}40`,
+													color: earsColor,
 												}}
 											>
-												{data.earsPatternType.replace(/_/g, " ")}
+												{data.earsPatternType.replaceAll(/_/g, " ")}
 											</Badge>
 										</TooltipTrigger>
 										<TooltipContent>
 											<p>
-												EARS Pattern: {data.earsPatternType.replace(/_/g, " ")}
+												EARS Pattern:{" "}
+												{data.earsPatternType.replaceAll(/_/g, " ")}
 											</p>
 										</TooltipContent>
 									</Tooltip>
@@ -169,8 +171,8 @@ function RequirementNodeComponent({
 												className="text-[10px] px-1.5 h-5 ml-auto"
 												style={{
 													backgroundColor: `${riskColor}15`,
-													color: riskColor,
 													borderColor: `${riskColor}40`,
+													color: riskColor,
 												}}
 											>
 												<AlertCircle className="h-3 w-3 mr-0.5" />
@@ -251,7 +253,7 @@ function RequirementNodeComponent({
 							}}
 						>
 							<VerificationIcon className="h-3.5 w-3.5" />
-							<span>{data.verificationStatus.replace(/_/g, " ")}</span>
+							<span>{data.verificationStatus.replaceAll(/_/g, " ")}</span>
 						</div>
 					)}
 

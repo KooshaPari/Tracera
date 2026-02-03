@@ -11,10 +11,7 @@ function SearchRedirectComponent() {
 
 	useEffect(() => {
 		// Redirect to projects list
-		void navigate({
-			to: "/projects",
-			replace: true, // Replace history entry to prevent back button issues
-		});
+		undefined;
 	}, [navigate]);
 
 	return (

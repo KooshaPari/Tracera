@@ -2,17 +2,22 @@
  * Example component demonstrating NDJSON streaming usage
  */
 
-import _React, { useState } from 'react';
-import { useStreamItems, useStreamGraph, useStreamExport } from '../../hooks/useStreaming';
-import { StreamingProgress, StreamingProgressBar } from '../StreamingProgress';
+import { useState } from "react";
+import {
+	useStreamExport,
+	useStreamGraph,
+	useStreamItems,
+} from "../../hooks/useStreaming";
+import { StreamingProgress, StreamingProgressBar } from "../StreamingProgress";
 
 export function StreamItemsExample() {
-	const [projectId, setProjectId] = useState('');
-	const { items, state, startStreaming, stopStreaming, reset } = useStreamItems();
+	const [projectId, setProjectId] = useState("");
+	const { items, state, startStreaming, stopStreaming, reset } =
+		useStreamItems();
 
 	const handleStart = () => {
 		if (projectId) {
-			void startStreaming({ projectId });
+			startStreaming({ projectId });
 		}
 	};
 
@@ -70,9 +75,7 @@ export function StreamItemsExample() {
 
 			{/* Items display */}
 			<div className="space-y-2">
-				<h4 className="font-medium">
-					Received Items ({items.length})
-				</h4>
+				<h4 className="font-medium">Received Items ({items.length})</h4>
 				<div className="max-h-64 overflow-y-auto space-y-1">
 					{items.slice(-10).map((item, i) => (
 						<div key={i} className="p-2 bg-muted rounded text-sm">
@@ -86,19 +89,13 @@ export function StreamItemsExample() {
 }
 
 export function StreamGraphExample() {
-	const [graphId, setGraphId] = useState('');
-	const { nodes, edges, state, startStreaming, stopStreaming, reset } = useStreamGraph();
-	const [currentSection, setCurrentSection] = useState<string>('');
+	const [graphId, setGraphId] = useState("");
+	const { nodes, edges, state, startStreaming, stopStreaming, reset } =
+		useStreamGraph();
 
 	const handleStart = () => {
 		if (graphId) {
-			void startStreaming(graphId, {
-				onMetadata: (metadata) => {
-					if (metadata.type === 'section') {
-						setCurrentSection(metadata.name);
-					}
-				},
-			});
+			startStreaming(graphId);
 		}
 	};
 
@@ -139,13 +136,6 @@ export function StreamGraphExample() {
 				</button>
 			</div>
 
-			{/* Current section */}
-			{currentSection && (
-				<div className="text-sm text-muted-foreground">
-					Currently streaming: <span className="font-semibold">{currentSection}</span>
-				</div>
-			)}
-
 			{/* Progress */}
 			<StreamingProgress
 				stats={state.stats}
@@ -180,18 +170,19 @@ export function StreamGraphExample() {
 }
 
 export function StreamExportExample() {
-	const [projectId, setProjectId] = useState('');
-	const [exportType, setExportType] = useState<'json' | 'csv'>('json');
-	const { data, state, startExport, stopExport, downloadAsFile, reset } = useStreamExport();
+	const [projectId, setProjectId] = useState("");
+	const [exportType, setExportType] = useState<"json" | "csv">("json");
+	const { data, state, startExport, stopExport, downloadAsFile, reset } =
+		useStreamExport();
 
 	const handleStart = () => {
 		if (projectId) {
-			void startExport({ projectId, type: exportType });
+			startExport({ projectId, type: exportType });
 		}
 	};
 
 	const handleDownload = () => {
-		const timestamp = new Date().toISOString().split('T')[0];
+		const timestamp = new Date().toISOString().split("T")[0];
 		downloadAsFile(`export-${projectId}-${timestamp}.json`);
 	};
 
@@ -211,7 +202,7 @@ export function StreamExportExample() {
 				/>
 				<select
 					value={exportType}
-					onChange={(e) => setExportType(e.target.value as 'json' | 'csv')}
+					onChange={(e) => setExportType(e.target.value as "json" | "csv")}
 					className="px-3 py-2 border rounded"
 					disabled={state.isStreaming}
 				>

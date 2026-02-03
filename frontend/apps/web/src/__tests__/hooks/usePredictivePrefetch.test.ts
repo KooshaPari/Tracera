@@ -5,22 +5,24 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	type PredictedViewport,
-	type Viewport,
 	isNodeInPredictedViewport,
 	usePredictivePrefetch,
 	viewportToCacheKey,
 } from "@/hooks/usePredictivePrefetch";
+import type {
+	PredictedViewport,
+	Viewport,
+} from "@/hooks/usePredictivePrefetch";
 
-describe("usePredictivePrefetch", () => {
+describe(usePredictivePrefetch, () => {
 	const mockLoadViewport = vi.fn();
 
 	const baseViewport: Viewport = {
+		height: 800,
+		width: 1000,
 		x: 0,
 		y: 0,
 		zoom: 1,
-		width: 1000,
-		height: 800,
 	};
 
 	beforeEach(() => {
@@ -30,8 +32,8 @@ describe("usePredictivePrefetch", () => {
 	it("should initialize with zero velocity", () => {
 		const { result } = renderHook(() =>
 			usePredictivePrefetch({
-				viewport: baseViewport,
 				loadViewport: mockLoadViewport,
+				viewport: baseViewport,
 			}),
 		);
 
@@ -45,9 +47,9 @@ describe("usePredictivePrefetch", () => {
 		const { rerender } = renderHook(
 			({ viewport }) =>
 				usePredictivePrefetch({
-					viewport,
-					loadViewport: mockLoadViewport,
 					enabled: false,
+					loadViewport: mockLoadViewport,
+					viewport,
 				}),
 			{
 				initialProps: { viewport: baseViewport },
@@ -96,10 +98,10 @@ describe("usePredictivePrefetch", () => {
 		const { result, rerender } = renderHook(
 			({ viewport }) =>
 				usePredictivePrefetch({
-					viewport,
+					debounceDelay: 10,
 					loadViewport: mockLoadViewport,
 					smoothingFactor: 0.3,
-					debounceDelay: 10,
+					viewport,
 				}),
 			{
 				initialProps: { viewport: baseViewport },
@@ -131,10 +133,10 @@ describe("usePredictivePrefetch", () => {
 		const { result, rerender } = renderHook(
 			({ viewport }) =>
 				usePredictivePrefetch({
-					viewport,
+					debounceDelay: 10,
 					loadViewport: mockLoadViewport,
 					smoothingFactor: 1,
-					debounceDelay: 10,
+					viewport,
 				}),
 			{
 				initialProps: { viewport: baseViewport },
@@ -157,10 +159,10 @@ describe("usePredictivePrefetch", () => {
 		const { rerender } = renderHook(
 			({ viewport }) =>
 				usePredictivePrefetch({
-					viewport,
+					debounceDelay: 50,
 					loadViewport: mockLoadViewport,
 					velocityThreshold: 10,
-					debounceDelay: 50,
+					viewport,
 				}),
 			{
 				initialProps: { viewport: baseViewport },
@@ -183,10 +185,10 @@ describe("usePredictivePrefetch", () => {
 		const { rerender } = renderHook(
 			({ viewport }) =>
 				usePredictivePrefetch({
-					viewport,
+					debounceDelay: 50,
 					loadViewport: mockLoadViewport,
 					velocityThreshold: 100,
-					debounceDelay: 50,
+					viewport,
 				}),
 			{
 				initialProps: { viewport: baseViewport },
@@ -205,10 +207,10 @@ describe("usePredictivePrefetch", () => {
 		const { rerender } = renderHook(
 			({ viewport }) =>
 				usePredictivePrefetch({
-					viewport,
+					debounceDelay: 100,
 					loadViewport: mockLoadViewport,
 					velocityThreshold: 10,
-					debounceDelay: 100,
+					viewport,
 				}),
 			{
 				initialProps: { viewport: baseViewport },
@@ -224,7 +226,7 @@ describe("usePredictivePrefetch", () => {
 		// Should only call once after debounce period
 		await waitFor(
 			() => {
-				expect(mockLoadViewport).toHaveBeenCalledTimes(1);
+				expect(mockLoadViewport).toHaveBeenCalledOnce();
 			},
 			{ timeout: 200 },
 		);
@@ -234,12 +236,12 @@ describe("usePredictivePrefetch", () => {
 		const { rerender } = renderHook(
 			({ viewport }) =>
 				usePredictivePrefetch({
-					viewport,
-					loadViewport: mockLoadViewport,
-					velocityThreshold: 10,
-					predictionHorizon: 500,
 					debounceDelay: 50,
-					smoothingFactor: 1, // No smoothing for predictable results
+					loadViewport: mockLoadViewport,
+					predictionHorizon: 500,
+					smoothingFactor: 1,
+					velocityThreshold: 10,
+					viewport, // No smoothing for predictable results
 				}),
 			{
 				initialProps: { viewport: baseViewport },
@@ -271,21 +273,21 @@ describe("usePredictivePrefetch", () => {
 
 	it("should account for zoom in predicted viewport bounds", async () => {
 		const zoomedViewport: Viewport = {
+			height: 800,
+			width: 1000,
 			x: 0,
 			y: 0,
 			zoom: 2,
-			width: 1000,
-			height: 800,
 		};
 
 		const { rerender } = renderHook(
 			({ viewport }) =>
 				usePredictivePrefetch({
-					viewport,
-					loadViewport: mockLoadViewport,
-					velocityThreshold: 10,
 					debounceDelay: 50,
+					loadViewport: mockLoadViewport,
 					smoothingFactor: 1,
+					velocityThreshold: 10,
+					viewport,
 				}),
 			{
 				initialProps: { viewport: zoomedViewport },
@@ -307,7 +309,7 @@ describe("usePredictivePrefetch", () => {
 			.calls[0][0] as PredictedViewport;
 
 		// Width/height should be scaled by zoom
-		const expectedWidth = 1000 / 2; // zoom = 2
+		const expectedWidth = 1000 / 2; // Zoom = 2
 		const expectedHeight = 800 / 2;
 
 		expect(predictedViewport.maxX - predictedViewport.minX).toBeCloseTo(
@@ -323,8 +325,8 @@ describe("usePredictivePrefetch", () => {
 	it("should cleanup debounce timer on unmount", () => {
 		const { unmount } = renderHook(() =>
 			usePredictivePrefetch({
-				viewport: baseViewport,
 				loadViewport: mockLoadViewport,
+				viewport: baseViewport,
 			}),
 		);
 
@@ -367,13 +369,13 @@ describe("usePredictivePrefetch", () => {
 	});
 });
 
-describe("viewportToCacheKey", () => {
+describe(viewportToCacheKey, () => {
 	it("should generate consistent cache keys", () => {
 		const viewport: PredictedViewport = {
-			minX: 100,
-			minY: 200,
 			maxX: 1100,
 			maxY: 1000,
+			minX: 100,
+			minY: 200,
 			zoom: 1.5,
 		};
 
@@ -385,18 +387,18 @@ describe("viewportToCacheKey", () => {
 
 	it("should round coordinates to reduce key variations", () => {
 		const viewport1: PredictedViewport = {
-			minX: 101,
-			minY: 202,
 			maxX: 1103,
 			maxY: 1004,
+			minX: 101,
+			minY: 202,
 			zoom: 1.5,
 		};
 
 		const viewport2: PredictedViewport = {
-			minX: 149,
-			minY: 249,
 			maxX: 1149,
 			maxY: 1049,
+			minX: 149,
+			minY: 249,
 			zoom: 1.5,
 		};
 
@@ -409,10 +411,10 @@ describe("viewportToCacheKey", () => {
 
 	it("should include all viewport bounds in key", () => {
 		const viewport: PredictedViewport = {
-			minX: 100,
-			minY: 200,
 			maxX: 1100,
 			maxY: 1000,
+			minX: 100,
+			minY: 200,
 			zoom: 1.5,
 		};
 
@@ -426,52 +428,52 @@ describe("viewportToCacheKey", () => {
 	});
 });
 
-describe("isNodeInPredictedViewport", () => {
+describe(isNodeInPredictedViewport, () => {
 	const viewport: PredictedViewport = {
-		minX: 0,
-		minY: 0,
 		maxX: 1000,
 		maxY: 800,
+		minX: 0,
+		minY: 0,
 		zoom: 1,
 	};
 
 	it("should return true for node fully inside viewport", () => {
-		const node = { x: 100, y: 100, width: 50, height: 50 };
+		const node = { height: 50, width: 50, x: 100, y: 100 };
 		expect(isNodeInPredictedViewport(node, viewport)).toBe(true);
 	});
 
 	it("should return true for node partially inside viewport", () => {
-		const node = { x: -25, y: 100, width: 50, height: 50 };
+		const node = { height: 50, width: 50, x: -25, y: 100 };
 		expect(isNodeInPredictedViewport(node, viewport)).toBe(true);
 	});
 
 	it("should return false for node completely outside viewport", () => {
-		const node = { x: 1100, y: 100, width: 50, height: 50 };
+		const node = { height: 50, width: 50, x: 1100, y: 100 };
 		expect(isNodeInPredictedViewport(node, viewport)).toBe(false);
 	});
 
 	it("should handle edge cases correctly", () => {
 		// Node touching left edge
-		const node1 = { x: -50, y: 100, width: 50, height: 50 };
+		const node1 = { height: 50, width: 50, x: -50, y: 100 };
 		expect(isNodeInPredictedViewport(node1, viewport)).toBe(false);
 
 		// Node touching right edge
-		const node2 = { x: 1000, y: 100, width: 50, height: 50 };
+		const node2 = { height: 50, width: 50, x: 1000, y: 100 };
 		expect(isNodeInPredictedViewport(node2, viewport)).toBe(false);
 
 		// Node overlapping right edge
-		const node3 = { x: 990, y: 100, width: 50, height: 50 };
+		const node3 = { height: 50, width: 50, x: 990, y: 100 };
 		expect(isNodeInPredictedViewport(node3, viewport)).toBe(true);
 	});
 
 	it("should handle zero-size nodes", () => {
-		const node = { x: 500, y: 400, width: 0, height: 0 };
+		const node = { height: 0, width: 0, x: 500, y: 400 };
 		// Zero-size nodes at a point inside the viewport are considered visible
 		expect(isNodeInPredictedViewport(node, viewport)).toBe(true);
 	});
 
 	it("should handle nodes larger than viewport", () => {
-		const node = { x: -100, y: -100, width: 1500, height: 1200 };
+		const node = { height: 1200, width: 1500, x: -100, y: -100 };
 		expect(isNodeInPredictedViewport(node, viewport)).toBe(true);
 	});
 });

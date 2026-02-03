@@ -2,7 +2,8 @@
 // Renders a loading placeholder by lodLevel: dot → minimal pill → compact pill → full pill → full node shape
 
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { memo } from "react";
 import { LODLevel } from "./utils/lod";
 
@@ -36,19 +37,24 @@ function NodeLoadingSkeletonComponent({
 
 function LodLoadingShape({ lod }: { lod: LODLevel }) {
 	switch (lod) {
-		case LODLevel.VeryFar:
+		case LODLevel.VeryFar: {
 			return <Skeleton className="h-2 w-2 min-w-2 min-h-2 rounded-full" />;
-		case LODLevel.Far:
+		}
+		case LODLevel.Far: {
 			return <Skeleton className="h-2 w-4 min-w-[8px] rounded" />;
-		case LODLevel.Medium:
+		}
+		case LODLevel.Medium: {
 			return <Skeleton className="h-5 w-16 rounded-md" />;
-		case LODLevel.Close:
+		}
+		case LODLevel.Close: {
 			return <Skeleton className="h-6 w-24 rounded-md" />;
+		}
 		case LODLevel.VeryClose:
-		default:
+		default: {
 			return (
 				<Skeleton className="h-[72px] w-[180px] min-w-[180px] rounded-lg" />
 			);
+		}
 	}
 }
 

@@ -46,8 +46,8 @@ import {
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListLoadingSkeleton } from "@/lib/lazy-loading";
-import { ResponsiveCardView } from '@/components/mobile';
-import type { CardItem } from '@/components/mobile';
+import { ResponsiveCardView } from "@/components/mobile";
+import type { CardItem } from "@/components/mobile";
 import {
 	Table,
 	TableBody,
@@ -284,16 +284,15 @@ const VirtualTableRow = memo(
 			</TableRow>
 		);
 	},
-	(prev, next) => (
-			prev.item.id === next.item.id &&
-			prev.item.title === next.item.title &&
-			prev.item.type === next.item.type &&
-			prev.item.status === next.item.status &&
-			prev.item.priority === next.item.priority &&
-			prev.item.owner === next.item.owner &&
-			prev.rowIndex === next.rowIndex &&
-			prev.isVisible === next.isVisible
-		),
+	(prev, next) =>
+		prev.item.id === next.item.id &&
+		prev.item.title === next.item.title &&
+		prev.item.type === next.item.type &&
+		prev.item.status === next.item.status &&
+		prev.item.priority === next.item.priority &&
+		prev.item.owner === next.item.owner &&
+		prev.rowIndex === next.rowIndex &&
+		prev.isVisible === next.isVisible,
 );
 
 /** View-specific titles and empty-state copy for list/table views */
@@ -502,7 +501,9 @@ const VirtualTableContainer = forwardRef<VirtualTableHandle, any>(
 			() => ({
 				getScrollPercentage: () => {
 					const element = parentRef.current;
-					if (!element) {return 0;}
+					if (!element) {
+						return 0;
+					}
 					const scrollHeight = element.scrollHeight - element.clientHeight;
 					return scrollHeight > 0 ? element.scrollTop / scrollHeight : 0;
 				},
@@ -510,7 +511,7 @@ const VirtualTableContainer = forwardRef<VirtualTableHandle, any>(
 					const items = rowVirtualizer.getVirtualItems();
 					return items.length > 0
 						? {
-								end: items[items.length - 1]?.index ?? 0,
+								end: items.at(-1)?.index ?? 0,
 								start: items[0]?.index ?? 0,
 							}
 						: null;
@@ -541,7 +542,9 @@ const VirtualTableContainer = forwardRef<VirtualTableHandle, any>(
 					>
 						{rowVirtualizer.getVirtualItems().map((virtualRow) => {
 							const item = filteredAndSortedItems[virtualRow.index];
-							if (!item) {return null;}
+							if (!item) {
+								return null;
+							}
 
 							return (
 								<div
@@ -651,28 +654,10 @@ export function ItemsTableView({
 		}
 	}, [actionParam]);
 
-	const closeCreateModal = useCallback(() => {
-		setShowCreateModal(false);
-		setFormError(null);
-		undefined;
-		if (lastFocusedRef.current) {
-			lastFocusedRef.current.focus();
-		}
-	}, [navigate]);
+	const closeCreateModal = useCallback(() => {}, [navigate]);
 
 	const handleItemNavigate = useCallback(
-		(item: any) => {
-			const viewType = String(item?.view || view || "feature").toLowerCase();
-			if (location.pathname.startsWith("/items")) {
-				undefined;
-				return;
-			}
-			if (!effectiveProjectId) {
-				undefined;
-				return;
-			}
-			undefined;
-		},
+		(item: any) => {},
 		[navigate, effectiveProjectId, view, location.pathname],
 	);
 
@@ -741,12 +726,15 @@ export function ItemsTableView({
 
 		return filtered.toSorted((a, b) => {
 			const dir = sortOrder === "asc" ? 1 : -1;
-			if (sortColumn === "title") {return a.title.localeCompare(b.title) * dir;}
-			if (sortColumn === "created")
-				{return (
+			if (sortColumn === "title") {
+				return a.title.localeCompare(b.title) * dir;
+			}
+			if (sortColumn === "created") {
+				return (
 					(new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
 					dir
-				);}
+				);
+			}
 			return 0;
 		});
 	}, [items, effectiveTypeFilter, searchQuery, sortColumn, sortOrder]);
@@ -801,11 +789,15 @@ export function ItemsTableView({
 
 	const handleCellKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLElement>) => {
-			if (event.target !== event.currentTarget) {return;}
+			if (event.target !== event.currentTarget) {
+				return;
+			}
 			const target = event.currentTarget as HTMLElement;
 			const rowAttr = target.getAttribute("data-row-index");
 			const colAttr = target.getAttribute("data-col-index");
-			if (rowAttr == null || colAttr == null) {return;}
+			if (rowAttr == null || colAttr == null) {
+				return;
+			}
 
 			const rowIndex = Number.parseInt(rowAttr, 10);
 			const colIndex = Number.parseInt(colAttr, 10);
@@ -878,7 +870,9 @@ export function ItemsTableView({
 	);
 
 	useEffect(() => {
-		if (!showCreateModal) {return;}
+		if (!showCreateModal) {
+			return;
+		}
 		lastFocusedRef.current = document.activeElement as HTMLElement | null;
 		hasTabbedInModalRef.current = false;
 		const timer = globalThis.setTimeout(() => {
@@ -891,7 +885,9 @@ export function ItemsTableView({
 				closeCreateModal();
 				return;
 			}
-			if (event.key !== "Tab") {return;}
+			if (event.key !== "Tab") {
+				return;
+			}
 			if (
 				document.activeElement === titleInputRef.current &&
 				!hasTabbedInModalRef.current
@@ -901,15 +897,23 @@ export function ItemsTableView({
 				return;
 			}
 			const modal = modalRef.current;
-			if (!modal) {return;}
-			const focusable = [...modal.querySelectorAll<HTMLElement>([
-	'button',
-	'input',
-	'textarea',
-	'select',
-	'[tabindex]:not([tabindex=\'-1\'])'
-].join(','))].filter((el) => !el.hasAttribute("disabled") && el.tabIndex !== -1);
-			if (focusable.length === 0) {return;}
+			if (!modal) {
+				return;
+			}
+			const focusable = [
+				...modal.querySelectorAll<HTMLElement>(
+					[
+						"button",
+						"input",
+						"textarea",
+						"select",
+						"[tabindex]:not([tabindex='-1'])",
+					].join(","),
+				),
+			].filter((el) => !el.hasAttribute("disabled") && el.tabIndex !== -1);
+			if (focusable.length === 0) {
+				return;
+			}
 			const first = focusable[0];
 			const last = focusable.at(-1);
 			const active = document.activeElement as HTMLElement | null;
@@ -950,8 +954,8 @@ export function ItemsTableView({
 		);
 	}
 
-		const labels = getViewLabels(view);
-		const emptyStateNode = (
+	const labels = getViewLabels(view);
+	const emptyStateNode = (
 		<EmptyState
 			icon={Terminal}
 			title={labels.emptyTitle}
@@ -959,10 +963,7 @@ export function ItemsTableView({
 			actions={[
 				{
 					label: labels.newButtonLabel ?? "New Item",
-					onClick: () => {
-						setShowCreateModal(true);
-						undefined;
-					},
+					onClick: () => {},
 				},
 			]}
 			variant="compact"
@@ -1064,10 +1065,7 @@ export function ItemsTableView({
 					</Button>
 					<Button
 						size="sm"
-						onClick={() => {
-							setShowCreateModal(true);
-							undefined;
-						}}
+						onClick={() => {}}
 						aria-label={labels.newButtonLabel ?? "Create new item"}
 						className="gap-2 rounded-xl shadow-lg shadow-primary/20 min-h-[44px]"
 					>
@@ -1110,12 +1108,7 @@ export function ItemsTableView({
 					<Filter className="h-4 w-4" />
 				</Button>
 				{!projectId && (
-					<Select
-						value={projectFilter || "all"}
-						onValueChange={(v) =>
-							undefined
-						}
-					>
+					<Select value={projectFilter || "all"} onValueChange={(v) => {}}>
 						<SelectTrigger
 							role="button"
 							className="w-[180px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors"
@@ -1138,9 +1131,7 @@ export function ItemsTableView({
 				{!type && (
 					<Select
 						value={effectiveTypeFilter || "all"}
-						onValueChange={(v) =>
-							undefined
-						}
+						onValueChange={(v) => {}}
 					>
 						<SelectTrigger
 							role="button"
@@ -1192,9 +1183,9 @@ export function ItemsTableView({
 											colIndex={1}
 											sortDirection={
 												sortColumn === "title"
-													? (sortOrder === "asc"
+													? sortOrder === "asc"
 														? "ascending"
-														: "descending")
+														: "descending"
 													: "none"
 											}
 											className="w-[400px] h-14 px-6 text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10"
@@ -1204,8 +1195,7 @@ export function ItemsTableView({
 												className="flex items-center gap-2 hover:text-primary transition-colors"
 												aria-label={`Node Identifier ${sortColumn === "title" ? `sorted ${sortOrder}` : "not sorted"}`}
 											>
-												Node Identifier{" "}
-												<span className="sr-only">Title</span>
+												Node Identifier <span className="sr-only">Title</span>
 												{sortColumn === "title" &&
 													(sortOrder === "asc" ? (
 														<ArrowUp className="h-3 w-3" />
@@ -1277,9 +1267,9 @@ export function ItemsTableView({
 												colIndex={1}
 												sortDirection={
 													sortColumn === "title"
-														? (sortOrder === "asc"
+														? sortOrder === "asc"
 															? "ascending"
-															: "descending")
+															: "descending"
 														: "none"
 												}
 												className="w-[400px] h-14 px-6 text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10"
@@ -1289,8 +1279,7 @@ export function ItemsTableView({
 													className="flex items-center gap-2 hover:text-primary transition-colors"
 													aria-label={`Node Identifier ${sortColumn === "title" ? `sorted ${sortOrder}` : "not sorted"}`}
 												>
-													Node Identifier{" "}
-													<span className="sr-only">Title</span>
+													Node Identifier <span className="sr-only">Title</span>
 													{sortColumn === "title" &&
 														(sortOrder === "asc" ? (
 															<ArrowUp className="h-3 w-3" />
@@ -1386,7 +1375,10 @@ export function ItemsTableView({
 								</div>
 							)}
 							<div>
-								<label htmlFor="item-title" className="block text-sm font-medium">
+								<label
+									htmlFor="item-title"
+									className="block text-sm font-medium"
+								>
 									Title
 								</label>
 								<Input
@@ -1419,7 +1411,10 @@ export function ItemsTableView({
 							</div>
 							<div className="grid gap-4 sm:grid-cols-2">
 								<div>
-									<label htmlFor="item-type" className="block text-sm font-medium">
+									<label
+										htmlFor="item-type"
+										className="block text-sm font-medium"
+									>
 										Type
 									</label>
 									<Select value={newType} onValueChange={setNewType}>
@@ -1482,9 +1477,7 @@ export function ItemsTableView({
 									id="item-priority"
 									name="priority"
 									value={newPriority}
-									onChange={(e) =>
-										setNewPriority(e.target.value as Priority)
-									}
+									onChange={(e) => setNewPriority(e.target.value as Priority)}
 									tabIndex={-1}
 									className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
 									aria-label="Priority"

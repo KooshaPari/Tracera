@@ -1,5 +1,5 @@
 import type { Item, Link } from "@tracertm/types";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import {
 	Tabs,
 	TabsContent,

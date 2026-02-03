@@ -40,14 +40,14 @@ vi.mock("../../hooks/useProjects", () => ({
 
 const user = userEvent.setup();
 
-describe("ProjectDetailView", () => {
+describe(ProjectDetailView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -60,23 +60,23 @@ describe("ProjectDetailView", () => {
 				name: "Test Project",
 				description: "Test description",
 			},
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useItems).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -95,9 +95,9 @@ describe("ProjectDetailView", () => {
 				id: "proj-1",
 				name: "Test Project",
 			},
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useItems).mockReturnValue({
@@ -105,16 +105,16 @@ describe("ProjectDetailView", () => {
 				{ id: "item-1", status: "todo" },
 				{ id: "item-2", status: "done" },
 			],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: [{ id: "link-1" }],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -127,29 +127,28 @@ describe("ProjectDetailView", () => {
 	});
 
 	it("handles tab switching", async () => {
-
 		vi.mocked(useProject).mockReturnValue({
 			data: {
 				id: "proj-1",
 				name: "Test Project",
 			},
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useItems).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(
@@ -172,9 +171,9 @@ describe("ProjectDetailView", () => {
 				id: "proj-1",
 				name: "Test Project",
 			},
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useItems).mockReturnValue({
@@ -197,16 +196,16 @@ describe("ProjectDetailView", () => {
 				],
 				total: 2,
 			},
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		vi.mocked(useLinks).mockReturnValue({
 			data: [],
-			isLoading: false,
-			isError: false,
 			error: null,
+			isError: false,
+			isLoading: false,
 		} as any);
 
 		render(

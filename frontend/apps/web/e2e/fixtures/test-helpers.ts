@@ -1,4 +1,5 @@
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /**
  * Test Helper Functions
@@ -301,8 +302,8 @@ export class TestHelpers {
 	 */
 	async takeScreenshot(name: string) {
 		await this.page.screenshot({
-			path: `screenshots/${name}.png`,
 			fullPage: true,
+			path: `screenshots/${name}.png`,
 		});
 	}
 
@@ -317,8 +318,8 @@ export class TestHelpers {
 	async mockApiResponse(url: string, response: any, status = 200) {
 		await this.page.route(`**${url}**`, (route) => {
 			void route.fulfill({
-				status,
 				body: JSON.stringify(response),
+				status,
 			});
 		});
 	}
@@ -330,8 +331,8 @@ export class TestHelpers {
 	) {
 		await this.page.route(`**${url}**`, (route) => {
 			void route.fulfill({
-				status,
 				body: JSON.stringify({ error: message }),
+				status,
 			});
 		});
 	}
@@ -377,8 +378,8 @@ export class TestHelpers {
 		return this.page.evaluate(() => {
 			const el = document.activeElement;
 			return {
-				tagName: el?.tagName,
 				id: el?.id,
+				tagName: el?.tagName,
 				testId: el?.getAttribute("data-testid"),
 				text: el?.textContent?.slice(0, 50),
 			};
@@ -399,15 +400,15 @@ export class TestHelpers {
 		return this.page.evaluate(() => {
 			const timing = performance.timing;
 			return {
-				loadTime: timing.loadEventEnd - timing.navigationStart,
 				domContentLoaded:
 					timing.domContentLoadedEventEnd - timing.navigationStart,
-				firstPaint: performance
-					.getEntriesByType("paint")
-					.find((e) => e.name === "first-paint")?.startTime,
 				firstContentfulPaint: performance
 					.getEntriesByType("paint")
 					.find((e) => e.name === "first-contentful-paint")?.startTime,
+				firstPaint: performance
+					.getEntriesByType("paint")
+					.find((e) => e.name === "first-paint")?.startTime,
+				loadTime: timing.loadEventEnd - timing.navigationStart,
 			};
 		});
 	}
@@ -451,7 +452,7 @@ export class TestHelpers {
 export function randomString(length = 10): string {
 	return Math.random()
 		.toString(36)
-		.substring(2, length + 2);
+		.slice(2, length + 2);
 }
 
 export function randomEmail(): string {
@@ -460,19 +461,19 @@ export function randomEmail(): string {
 
 export function randomItem() {
 	return {
-		title: `Test Item ${randomString()}`,
 		description: `Description for test item ${randomString()}`,
+		status: ["open", "in-progress", "done"][Math.floor(Math.random() * 3)],
+		title: `Test Item ${randomString()}`,
 		type: ["requirement", "task", "bug", "feature"][
 			Math.floor(Math.random() * 4)
 		],
-		status: ["open", "in-progress", "done"][Math.floor(Math.random() * 3)],
 	};
 }
 
 export function randomProject() {
 	return {
-		name: `Test Project ${randomString()}`,
 		description: `Description for test project ${randomString()}`,
+		name: `Test Project ${randomString()}`,
 	};
 }
 
@@ -494,7 +495,7 @@ export const customMatchers = {
 		const viewport = await locator.page().viewportSize();
 
 		if (!box || !viewport) {
-			return { pass: false, message: () => "Element not found or no viewport" };
+			return { message: () => "Element not found or no viewport", pass: false };
 		}
 
 		const isWithin =
@@ -504,11 +505,11 @@ export const customMatchers = {
 			box.x + box.width <= viewport.width;
 
 		return {
-			pass: isWithin,
 			message: () =>
 				isWithin
 					? "Element is within viewport"
 					: "Element is outside viewport boundaries",
+			pass: isWithin,
 		};
 	},
 };

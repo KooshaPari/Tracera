@@ -14,22 +14,22 @@ export function loadDesignMetadata(
 	metadataPath: string,
 ): DesignMetadata | null {
 	if (!existsSync(metadataPath)) {
-		console.warn(`Design metadata file not found: ${metadataPath}`);
+		
 		return null;
 	}
 
 	try {
-		const content = readFileSync(metadataPath, "utf-8");
+		const content = readFileSync(metadataPath, "utf8");
 		const data = parseYaml(content);
 
 		if (!data || typeof data !== "object") {
-			console.warn("Invalid design metadata format");
+			
 			return null;
 		}
 
 		return data as DesignMetadata;
 	} catch (error) {
-		console.error("Error loading design metadata:", error);
+		
 		return null;
 	}
 }
@@ -93,7 +93,7 @@ export function saveExampleDesignMetadata(outputPath: string): void {
 	mkdirSync(dir, { recursive: true });
 
 	const content = generateExampleDesignMetadata();
-	writeFileSync(outputPath, content, "utf-8");
+	writeFileSync(outputPath, content, "utf8");
 
-	console.log(`Example design metadata created: ${outputPath}`);
+	
 }

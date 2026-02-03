@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils";
 
 interface HealthScoreRingProps {
 	score: number; // 0-100
-	categories?: Array<{
+	categories?: {
 		name: string;
 		value: number;
 		color: string;
-	}>;
+	}[];
 	showAnimation?: boolean;
 	showLegend?: boolean;
 	size?: number;
@@ -22,17 +22,23 @@ interface HealthScoreRingProps {
 }
 
 const DEFAULT_CATEGORIES = [
-	{ name: "Excellent", value: 0, color: "#10b981" },
-	{ name: "Good", value: 0, color: "#3b82f6" },
-	{ name: "Fair", value: 0, color: "#f59e0b" },
-	{ name: "Poor", value: 0, color: "#ef4444" },
+	{ color: "#10b981", name: "Excellent", value: 0 },
+	{ color: "#3b82f6", name: "Good", value: 0 },
+	{ color: "#f59e0b", name: "Fair", value: 0 },
+	{ color: "#ef4444", name: "Poor", value: 0 },
 ];
 
 function getScoreColor(value: number) {
-	if (value >= 90) return "#10b981"; // green
-	if (value >= 70) return "#3b82f6"; // blue
-	if (value >= 50) return "#f59e0b"; // amber
-	return "#ef4444"; // red
+	if (value >= 90) {
+		return "#10b981";
+	} // Green
+	if (value >= 70) {
+		return "#3b82f6";
+	} // Blue
+	if (value >= 50) {
+		return "#f59e0b";
+	} // Amber
+	return "#ef4444"; // Red
 }
 
 export function HealthScoreRing({
@@ -81,7 +87,7 @@ export function HealthScoreRing({
 			transition={{ duration: 0.5 }}
 		>
 			{/* Ring Chart */}
-			<div style={{ width: size, height: size }}>
+			<div style={{ height: size, width: size }}>
 				<ResponsiveContainer width="100%" height="100%">
 					<PieChart>
 						<Pie

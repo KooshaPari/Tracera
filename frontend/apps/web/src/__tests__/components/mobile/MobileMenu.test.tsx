@@ -4,24 +4,24 @@ import { MobileMenu } from "@/components/mobile";
 
 // Mock dependencies
 vi.mock("@tanstack/react-router", () => ({
-	useNavigate: vi.fn(() => vi.fn()),
 	useLocation: vi.fn(() => ({
 		pathname: "/",
 	})),
+	useNavigate: vi.fn(() => vi.fn()),
 }));
 
 vi.mock("@/stores/authStore", () => ({
 	useAuthStore: vi.fn(() => ({
+		logout: vi.fn(),
 		user: {
 			name: "Test User",
 			email: "test@example.com",
 			role: "user",
 		},
-		logout: vi.fn(),
 	})),
 }));
 
-describe("MobileMenu", () => {
+describe(MobileMenu, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -47,12 +47,12 @@ describe("MobileMenu", () => {
 		const button = screen.getByLabelText("Open menu");
 
 		// Menu should be closed initially
-		let menuPanel = document.getElementById("mobile-menu");
+		let menuPanel = document.querySelector("#mobile-menu");
 		expect(menuPanel).toHaveClass("-translate-x-full");
 
 		// Click to open
 		fireEvent.click(button);
-		menuPanel = document.getElementById("mobile-menu");
+		menuPanel = document.querySelector("#mobile-menu");
 		expect(menuPanel).toHaveClass("translate-x-0");
 	});
 
@@ -77,7 +77,7 @@ describe("MobileMenu", () => {
 			fireEvent.click(backdrop);
 		}
 
-		const menuPanel = document.getElementById("mobile-menu");
+		const menuPanel = document.querySelector("#mobile-menu");
 		expect(menuPanel).toHaveClass("-translate-x-full");
 	});
 
@@ -87,9 +87,9 @@ describe("MobileMenu", () => {
 		const button = screen.getByLabelText("Open menu");
 		fireEvent.click(button);
 
-		fireEvent.keyDown(window, { key: "Escape" });
+		fireEvent.keyDown(globalThis, { key: "Escape" });
 
-		const menuPanel = document.getElementById("mobile-menu");
+		const menuPanel = document.querySelector("#mobile-menu");
 		expect(menuPanel).toHaveClass("-translate-x-full");
 	});
 
@@ -99,7 +99,7 @@ describe("MobileMenu", () => {
 		const button = screen.getByLabelText("Open menu");
 		fireEvent.click(button);
 
-		const menuItems = container.querySelectorAll(".min-h-\\[52px\\]");
+		const menuItems = container.querySelectorAll(String.raw`.min-h-\[52px\]`);
 		expect(menuItems.length).toBeGreaterThan(0);
 	});
 

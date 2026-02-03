@@ -41,7 +41,7 @@ export interface GroupResult {
 export function groupByLinkTargets(
 	items: Item[],
 	links: Link[],
-	minGroupSize: number = 2,
+	minGroupSize = 2,
 ): GroupResult[] {
 	const targetMap = new Map<string, Set<string>>();
 	const itemMap = new Map(items.map((i) => [i.id, i]));
@@ -59,10 +59,12 @@ export function groupByLinkTargets(
 	let groupIndex = 0;
 
 	for (const [itemId, targets] of targetMap) {
-		if (targets.size === 0 || !itemMap.has(itemId)) continue;
+		if (targets.size === 0 || !itemMap.has(itemId)) {
+			continue;
+		}
 
 		// Create a key from sorted targets
-		const targetKey = Array.from(targets).toSorted().join("|");
+		const targetKey = [...targets].toSorted().join("|");
 
 		if (!groupMap.has(targetKey)) {
 			groupMap.set(targetKey, new Set());
@@ -77,18 +79,18 @@ export function groupByLinkTargets(
 			const targets = targetKey.split("|").filter((t) => t.length > 0);
 			groups.push({
 				groupId: `group-targets-${groupIndex++}`,
-				strategy: "link-targets",
-				label: `Items targeting ${targets.length} common targets`,
-				itemIds: Array.from(itemIds),
 				itemCount: itemIds.size,
-				metrics: {
-					cohesion: Math.min(1, targets.length / 10),
-					commonality: 1,
-				},
+				itemIds: [...itemIds],
+				label: `Items targeting ${targets.length} common targets`,
 				metadata: {
 					commonTargets: targets,
 					targetCount: targets.length,
 				},
+				metrics: {
+					cohesion: Math.min(1, targets.length / 10),
+					commonality: 1,
+				},
+				strategy: "link-targets",
 			});
 		}
 	}
@@ -108,7 +110,7 @@ export function groupByLinkTargets(
 export function groupByDependencies(
 	items: Item[],
 	links: Link[],
-	minGroupSize: number = 2,
+	minGroupSize = 2,
 ): GroupResult[] {
 	const dependencyMap = new Map<string, Set<string>>();
 	const itemMap = new Map(items.map((i) => [i.id, i]));
@@ -128,9 +130,11 @@ export function groupByDependencies(
 	let groupIndex = 0;
 
 	for (const [itemId, deps] of dependencyMap) {
-		if (deps.size === 0) continue;
+		if (deps.size === 0) {
+			continue;
+		}
 
-		const depKey = Array.from(deps).toSorted().join("|");
+		const depKey = [...deps].toSorted().join("|");
 
 		if (!groupMap.has(depKey)) {
 			groupMap.set(depKey, new Set());
@@ -145,18 +149,18 @@ export function groupByDependencies(
 			const deps = depKey.split("|").filter((d) => d.length > 0);
 			groups.push({
 				groupId: `group-deps-${groupIndex++}`,
-				strategy: "dependencies",
-				label: `Items with ${deps.length} shared dependencies`,
-				itemIds: Array.from(itemIds),
 				itemCount: itemIds.size,
+				itemIds: [...itemIds],
+				label: `Items with ${deps.length} shared dependencies`,
+				metadata: {
+					dependencyCount: deps.length,
+					sharedDependencies: deps,
+				},
 				metrics: {
 					cohesion: Math.min(1, deps.length / 10),
 					commonality: 1,
 				},
-				metadata: {
-					sharedDependencies: deps,
-					dependencyCount: deps.length,
-				},
+				strategy: "dependencies",
 			});
 		}
 	}
@@ -176,7 +180,7 @@ export function groupByDependencies(
 export function groupByPaths(
 	items: Item[],
 	links: Link[],
-	minGroupSize: number = 2,
+	minGroupSize = 2,
 ): GroupResult[] {
 	const itemSet = new Set(items.map((i) => i.id));
 	const adjacency = new Map<string, Set<string>>();
@@ -204,7 +208,9 @@ export function groupByPaths(
 
 		while (queue.length > 0) {
 			const current = queue.shift()!;
-			if (visited.has(current)) continue;
+			if (visited.has(current)) {
+				continue;
+			}
 
 			visited.add(current);
 			path.push(current);
@@ -227,17 +233,17 @@ export function groupByPaths(
 			if (path.length >= minGroupSize) {
 				groups.push({
 					groupId: `group-path-${groupIndex++}`,
-					strategy: "paths",
-					label: `Trace path (${path.length} items)`,
-					itemIds: path,
 					itemCount: path.length,
+					itemIds: path,
+					label: `Trace path (${path.length} items)`,
+					metadata: {
+						pathLength: path.length,
+					},
 					metrics: {
 						cohesion: 1, // Connected components have perfect cohesion
 						separation: 0.5,
 					},
-					metadata: {
-						pathLength: path.length,
-					},
+					strategy: "paths",
 				});
 			}
 		}
@@ -257,8 +263,8 @@ export function groupByPaths(
  */
 export function groupBySemantic(
 	items: Item[],
-	minGroupSize: number = 2,
-	_embeddingDistance: number = 0.3,
+	minGroupSize = 2,
+	_embeddingDistance = 0.3,
 ): GroupResult[] {
 	const groups: GroupResult[] = [];
 	let groupIndex = 0;
@@ -282,19 +288,19 @@ export function groupBySemantic(
 
 			groups.push({
 				groupId: `group-semantic-${groupIndex++}`,
-				strategy: "semantic",
-				label: `${type} items (${typeItems.length})`,
-				itemIds: typeItems.map((i) => i.id),
 				itemCount: typeItems.length,
+				itemIds: typeItems.map((i) => i.id),
+				label: `${type} items (${typeItems.length})`,
+				metadata: {
+					titleSimilarity: commonality,
+					type,
+				},
 				metrics: {
 					cohesion: 0.8, // Type-based cohesion
 					commonality,
 					separation: 0.6,
 				},
-				metadata: {
-					type,
-					titleSimilarity: commonality,
-				},
+				strategy: "semantic",
 			});
 		}
 	}
@@ -307,19 +313,21 @@ export function groupBySemantic(
  * Returns a value 0-1 where 1 is maximum similarity
  */
 function calculateTitleSimilarity(titles: string[]): number {
-	if (titles.length < 2) return 1;
+	if (titles.length < 2) {
+		return 1;
+	}
 
 	let totalSimilarity = 0;
 	let comparisons = 0;
 
-	for (let i = 0; i < titles.length; i++) {
-		for (let j = i + 1; j < titles.length; j++) {
+	for (let i = 0; i < titles.length; i += 1) {
+		for (let j = i + 1; j < titles.length; j += 1) {
 			const title1 = titles[i];
 			const title2 = titles[j];
 			if (title1 && title2) {
 				const similarity = stringSimilarity(title1, title2);
 				totalSimilarity += similarity;
-				comparisons++;
+				comparisons += 1;
 			}
 		}
 	}
@@ -341,8 +349,8 @@ function stringSimilarity(a: string, b: string): number {
 	}
 
 	// Calculate character overlap
-	const chars1 = new Set(s1.split(""));
-	const chars2 = new Set(s2.split(""));
+	const chars1 = new Set(s1);
+	const chars2 = new Set(s2);
 	const intersection = new Set([...chars1].filter((c) => chars2.has(c)));
 
 	const union = new Set([...chars1, ...chars2]);
@@ -357,13 +365,15 @@ function stringSimilarity(a: string, b: string): number {
 export function intersectGroupResults(
 	groupSets: GroupResult[][],
 ): GroupResult[] {
-	if (groupSets.length === 0) return [];
+	if (groupSets.length === 0) {
+		return [];
+	}
 
 	// Start with first set
 	let current = groupSets[0]!.map((g) => new Set(g.itemIds));
 
 	// Intersect with subsequent sets
-	for (let i = 1; i < groupSets.length; i++) {
+	for (let i = 1; i < groupSets.length; i += 1) {
 		const nextSets = groupSets[i]!.map((g) => new Set(g.itemIds));
 
 		current = current.flatMap((currentSet) => {
@@ -387,12 +397,12 @@ export function intersectGroupResults(
 		groupId: `group-intersection-${idx}`,
 		strategy: "paths", // Default strategy for intersections
 		label: `Intersection group (${itemSet.size} items)`,
-		itemIds: Array.from(itemSet),
+		itemIds: [...itemSet],
 		itemCount: itemSet.size,
 		metrics: {
 			cohesion: 0.8,
-			separation: 0.5,
 			commonality: 0.7,
+			separation: 0.5,
 		},
 	}));
 }
@@ -405,7 +415,9 @@ export function calculateGroupCohesion(
 	groupItemIds: Set<string>,
 	links: Link[],
 ): number {
-	if (groupItemIds.size < 2) return 1;
+	if (groupItemIds.size < 2) {
+		return 1;
+	}
 
 	let internalLinks = 0;
 	let totalLinks = 0;
@@ -415,9 +427,9 @@ export function calculateGroupCohesion(
 		const targetInGroup = groupItemIds.has(link.targetId);
 
 		if (sourceInGroup || targetInGroup) {
-			totalLinks++;
+			totalLinks += 1;
 			if (sourceInGroup && targetInGroup) {
-				internalLinks++;
+				internalLinks += 1;
 			}
 		}
 	}
@@ -439,18 +451,18 @@ export function calculateGroupSeparation(
 	for (const link of links) {
 		const source = group1ItemIds.has(link.sourceId)
 			? 1
-			: group2ItemIds.has(link.sourceId)
+			: (group2ItemIds.has(link.sourceId)
 				? 2
-				: 0;
+				: 0);
 		const target = group1ItemIds.has(link.targetId)
 			? 1
-			: group2ItemIds.has(link.targetId)
+			: (group2ItemIds.has(link.targetId)
 				? 2
-				: 0;
+				: 0);
 
 		// Cross-group link exists
 		if ((source === 1 && target === 2) || (source === 2 && target === 1)) {
-			crossGroupLinks++;
+			crossGroupLinks += 1;
 		}
 	}
 

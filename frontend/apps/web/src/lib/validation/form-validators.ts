@@ -40,7 +40,10 @@ export const isValidURL = (value: string): boolean => {
 	}
 };
 
-export const validateURL = (value: string, required = true): string | undefined => {
+export const validateURL = (
+	value: string,
+	required = true,
+): string | undefined => {
 	if (!value) {
 		return required ? "URL is required" : undefined;
 	}
@@ -104,7 +107,9 @@ export const validatePositiveNumber = (
 };
 
 // Password validation
-export const validatePasswordStrength = (password: string): string | undefined => {
+export const validatePasswordStrength = (
+	password: string,
+): string | undefined => {
 	if (!password) return "Password is required";
 	if (password.length < 8) return "Password must be at least 8 characters";
 	if (password.length > 128) return "Password is too long";
@@ -112,8 +117,7 @@ export const validatePasswordStrength = (password: string): string | undefined =
 		return "Password must contain at least one lowercase letter";
 	if (!/[A-Z]/.test(password))
 		return "Password must contain at least one uppercase letter";
-	if (!/\d/.test(password))
-		return "Password must contain at least one number";
+	if (!/\d/.test(password)) return "Password must contain at least one number";
 	return undefined;
 };
 
@@ -314,9 +318,7 @@ export const combineValidators =
 	};
 
 export const combineAsyncValidators =
-	<T>(
-		...validators: AsyncFieldValidator<T>[]
-	): AsyncFieldValidator<T> =>
+	<T>(...validators: AsyncFieldValidator<T>[]): AsyncFieldValidator<T> =>
 	async (value: T) => {
 		for (const validator of validators) {
 			const error = await validator(value);

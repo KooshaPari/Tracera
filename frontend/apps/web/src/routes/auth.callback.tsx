@@ -3,7 +3,7 @@ import { Button } from "@tracertm/ui";
 import { useAuth } from "@workos-inc/authkit-react";
 import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AUTH_ROUTES } from "@/config/constants";
+import config from "@/config/constants";
 import { getReturnTo } from "@/lib/auth-utils";
 
 /**
@@ -22,7 +22,7 @@ import { getReturnTo } from "@/lib/auth-utils";
  */
 
 function handleCancel() {
-	window.location.href = "/home";
+	globalThis.location.href = "/home";
 }
 
 interface CallbackState {
@@ -33,23 +33,23 @@ interface CallbackState {
 function AuthCallback() {
 	const navigate = useNavigate();
 	const { user, isLoading } = useAuth();
-// 	const _setAuthFromWorkOS = useAuthStore((state) => state.setAuthFromWorkOS);
+	// 	Const _setAuthFromWorkOS = useAuthStore((state) => state.setAuthFromWorkOS);
 	const [state, setState] = useState<CallbackState>({
-		status: "loading",
 		message: "Processing authentication...",
+		status: "loading",
 	});
 
 	useEffect(() => {
 		// Get the URL search params for returnTo
-		const searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(globalThis.location.search);
 		const error = searchParams.get("error");
 		const errorDescription = searchParams.get("error_description");
 
 		// Handle OAuth errors from WorkOS
 		if (error) {
 			setState({
-				status: "error",
 				message: errorDescription || "Authentication failed. Please try again.",
+				status: "error",
 			});
 			return;
 		}
@@ -58,8 +58,8 @@ function AuthCallback() {
 		// Wait for the SDK to complete authentication
 		if (isLoading) {
 			setState({
-				status: "loading",
 				message: "Verifying credentials...",
+				status: "loading",
 			});
 			return;
 		}
@@ -68,16 +68,16 @@ function AuthCallback() {
 		if (!user) {
 			// If no user after loading completes, something went wrong
 			setState({
-				status: "error",
 				message: "Authentication failed. No user information received.",
+				status: "error",
 			});
 			return;
 		}
 
 		// Success! User is authenticated
 		setState({
-			status: "success",
 			message: "Authentication successful! Redirecting...",
+			status: "success",
 		});
 
 		// Redirect to intended destination
@@ -87,7 +87,7 @@ function AuthCallback() {
 		// Use a small delay to show success state
 		const redirectTimeout = setTimeout(() => {
 			// Use navigate for proper router integration
-			void navigate({ to: returnTo });
+			undefined;
 		}, 500);
 
 		return () => clearTimeout(redirectTimeout);
@@ -96,13 +96,13 @@ function AuthCallback() {
 	// Handle manual retry for error state
 	const handleRetry = () => {
 		setState({
-			status: "loading",
 			message: "Retrying authentication...",
+			status: "loading",
 		});
 
 		// Clear any stale state and redirect to login
 		setTimeout(() => {
-			window.location.href = AUTH_ROUTES.LOGIN;
+			globalThis.location.href = config.AUTH_ROUTES.LOGIN;
 		}, 500);
 	};
 

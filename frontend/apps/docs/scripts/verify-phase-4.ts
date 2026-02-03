@@ -11,8 +11,8 @@
  * - Component integration
  */
 
-import { readFile, access } from 'fs/promises';
-import { join } from 'path';
+import { access, readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 interface VerificationResult {
   name: string;
@@ -39,7 +39,7 @@ async function fileExists(path: string): Promise<boolean> {
  */
 async function fileContains(path: string, text: string): Promise<boolean> {
   try {
-    const content = await readFile(path, 'utf-8');
+    const content = await readFile(path, 'utf8');
     return content.includes(text);
   } catch {
     return false;
@@ -78,9 +78,9 @@ async function verifyImageConfig(): Promise<void> {
   for (const check of checks) {
     const passed = await check.test();
     results.push({
+      message: passed ? '✓ Configured' : '✗ Missing or misconfigured',
       name: check.name,
       passed,
-      message: passed ? '✓ Configured' : '✗ Missing or misconfigured',
     });
   }
 }
@@ -117,9 +117,9 @@ async function verifyFontOptimization(): Promise<void> {
   for (const check of checks) {
     const passed = await check.test();
     results.push({
+      message: passed ? '✓ Configured' : '✗ Missing or misconfigured',
       name: check.name,
       passed,
-      message: passed ? '✓ Configured' : '✗ Missing or misconfigured',
     });
   }
 }
@@ -158,9 +158,9 @@ async function verifySpriteSystem(): Promise<void> {
   for (const check of checks) {
     const passed = await check.test();
     results.push({
+      message: passed ? '✓ Implemented' : '✗ Missing or not integrated',
       name: check.name,
       passed,
-      message: passed ? '✓ Implemented' : '✗ Missing or not integrated',
     });
   }
 }
@@ -202,9 +202,9 @@ async function verifyImageComponents(): Promise<void> {
   for (const check of checks) {
     const passed = await check.test();
     results.push({
+      message: passed ? '✓ Implemented' : '✗ Missing',
       name: check.name,
       passed,
-      message: passed ? '✓ Implemented' : '✗ Missing',
     });
   }
 }
@@ -238,9 +238,9 @@ async function verifyCompression(): Promise<void> {
   for (const check of checks) {
     const passed = await check.test();
     results.push({
+      message: passed ? '✓ Configured' : '✗ Missing or disabled',
       name: check.name,
       passed,
-      message: passed ? '✓ Configured' : '✗ Missing or disabled',
     });
   }
 }
@@ -279,9 +279,9 @@ async function verifyTools(): Promise<void> {
   for (const check of checks) {
     const passed = await check.test();
     results.push({
+      message: passed ? '✓ Available' : '✗ Missing',
       name: check.name,
       passed,
-      message: passed ? '✓ Available' : '✗ Missing',
     });
   }
 }
@@ -308,9 +308,9 @@ async function verifyDocumentation(): Promise<void> {
   for (const check of checks) {
     const passed = await check.test();
     results.push({
+      message: passed ? '✓ Available' : '✗ Missing',
       name: check.name,
       passed,
-      message: passed ? '✓ Available' : '✗ Missing',
     });
   }
 }
@@ -319,29 +319,29 @@ async function verifyDocumentation(): Promise<void> {
  * Print results
  */
 function printResults(): void {
-  console.log('🔍 Phase 4: Asset Optimization Verification\n');
-  console.log('━'.repeat(70));
+  
+  
 
   // Group by category
   const categories = [
-    { name: '📸 Image Optimization', start: 0, count: 5 },
-    { name: '🔤 Font Optimization', start: 5, count: 5 },
-    { name: '📝 SVG Sprite System', start: 10, count: 5 },
-    { name: '🎨 Optimized Image Components', start: 15, count: 6 },
-    { name: '⚡ Asset Compression', start: 21, count: 4 },
-    { name: '🛠️ Tools and Scripts', start: 25, count: 5 },
-    { name: '📚 Documentation', start: 30, count: 3 },
+    { count: 5, name: '📸 Image Optimization', start: 0 },
+    { count: 5, name: '🔤 Font Optimization', start: 5 },
+    { count: 5, name: '📝 SVG Sprite System', start: 10 },
+    { count: 6, name: '🎨 Optimized Image Components', start: 15 },
+    { count: 4, name: '⚡ Asset Compression', start: 21 },
+    { count: 5, name: '🛠️ Tools and Scripts', start: 25 },
+    { count: 3, name: '📚 Documentation', start: 30 },
   ];
 
   for (const category of categories) {
-    console.log(`\n${category.name}:`);
+    
     const categoryResults = results.slice(category.start, category.start + category.count);
 
     for (const result of categoryResults) {
       const icon = result.passed ? '✓' : '✗';
-      const color = result.passed ? '\x1b[32m' : '\x1b[31m';
-      const reset = '\x1b[0m';
-      console.log(`  ${color}${icon}${reset} ${result.name}: ${result.message}`);
+      const color = result.passed ? '\x1B[32m' : '\x1B[31m';
+      const reset = '\x1B[0m';
+      
     }
   }
 
@@ -350,18 +350,18 @@ function printResults(): void {
   const total = results.length;
   const percentage = Math.round((passed / total) * 100);
 
-  console.log('\n' + '━'.repeat(70));
-  console.log(`\n📊 Summary: ${passed}/${total} checks passed (${percentage}%)`);
+  
+  
 
   if (percentage === 100) {
-    console.log('\n✅ All Phase 4 optimizations verified successfully!');
+    
   } else if (percentage >= 80) {
-    console.log('\n⚠️  Most optimizations verified, but some items need attention.');
+    
   } else {
-    console.log('\n❌ Multiple optimizations missing or misconfigured.');
+    
   }
 
-  console.log('');
+  
 }
 
 /**
@@ -385,7 +385,7 @@ async function verify(): Promise<void> {
 
     process.exit(percentage === 100 ? 0 : 1);
   } catch (error) {
-    console.error('❌ Verification failed:', error);
+    
     process.exit(1);
   }
 }

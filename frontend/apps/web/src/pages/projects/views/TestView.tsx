@@ -1,9 +1,9 @@
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 
 const suites = [
-	{ id: "1", name: "Unit Tests", passed: 45, failed: 2, pending: 3 },
-	{ id: "2", name: "Integration Tests", passed: 12, failed: 0, pending: 1 },
-	{ id: "3", name: "E2E Tests", passed: 8, failed: 1, pending: 0 },
+	{ failed: 2, id: "1", name: "Unit Tests", passed: 45, pending: 3 },
+	{ failed: 0, id: "2", name: "Integration Tests", passed: 12, pending: 1 },
+	{ failed: 1, id: "3", name: "E2E Tests", passed: 8, pending: 0 },
 ];
 
 export function TestView() {

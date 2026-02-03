@@ -181,12 +181,12 @@ describe("XSS Prevention Tests", () => {
 	describe("URL Sanitization", () => {
 		it("should validate URLs before rendering", () => {
 			const urls = [
-				{ url: "https://example.com", safe: true },
-				{ url: "http://example.com", safe: true },
-				{ url: 'javascript:alert("XSS")', safe: false },
-				{ url: 'data:text/html,<script>alert("XSS")</script>', safe: false },
-				{ url: 'vbscript:msgbox("XSS")', safe: false },
-				{ url: "file:///etc/passwd", safe: false },
+				{ safe: true, url: "https://example.com" },
+				{ safe: true, url: "http://example.com" },
+				{ safe: false, url: 'javascript:alert("XSS")' },
+				{ safe: false, url: 'data:text/html,<script>alert("XSS")</script>' },
+				{ safe: false, url: 'vbscript:msgbox("XSS")' },
+				{ safe: false, url: "file:///etc/passwd" },
 			];
 
 			urls.forEach(({ url, safe }) => {
@@ -298,9 +298,9 @@ describe("XSS Prevention Tests", () => {
 		it("should use strict configuration for untrusted content", () => {
 			const maliciousInput = '<img src=x onerror=alert("XSS")><p>Text</p>';
 			const sanitized = DOMPurify.sanitize(maliciousInput, {
-				ALLOWED_TAGS: ["p", "strong", "em", "a"],
-				ALLOWED_ATTR: ["href"],
 				ALLOW_DATA_ATTR: false,
+				ALLOWED_ATTR: ["href"],
+				ALLOWED_TAGS: ["p", "strong", "em", "a"],
 			});
 
 			expect(sanitized).not.toContain("<img>");
@@ -320,13 +320,12 @@ describe("XSS Prevention Tests", () => {
 
 // Test sanitization helper function
 describe("Sanitization Helpers", () => {
-	const sanitizeUserInput = (input: string): string => {
-		return DOMPurify.sanitize(input, {
-			ALLOWED_TAGS: ["p", "br", "strong", "em", "a", "ul", "ol", "li"],
-			ALLOWED_ATTR: ["href", "target", "rel"],
+	const sanitizeUserInput = (input: string): string =>
+		DOMPurify.sanitize(input, {
 			ALLOW_DATA_ATTR: false,
+			ALLOWED_ATTR: ["href", "target", "rel"],
+			ALLOWED_TAGS: ["p", "br", "strong", "em", "a", "ul", "ol", "li"],
 		});
-	};
 
 	it("should provide safe sanitization helper", () => {
 		const maliciousInput = '<script>alert("XSS")</script><p>Safe content</p>';

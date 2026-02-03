@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import { Label } from "@tracertm/ui/components/Label";
@@ -57,7 +57,9 @@ export function ImportView() {
 
 	const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFile = event.target.files?.[0];
-		if (!selectedFile) {return;}
+		if (!selectedFile) {
+			return;
+		}
 
 		setFile(selectedFile);
 		const reader = new FileReader();

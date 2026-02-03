@@ -19,37 +19,37 @@ const severityConfig: Record<
 	CVSSSeverity,
 	{ label: string; color: string; bg: string }
 > = {
-	none: {
-		label: "None",
-		color: "text-gray-700",
-		bg: "bg-gray-100 border-gray-300",
-	},
-	low: {
-		label: "Low",
-		color: "text-green-700",
-		bg: "bg-green-100 border-green-300",
-	},
-	medium: {
-		label: "Medium",
-		color: "text-yellow-700",
-		bg: "bg-yellow-100 border-yellow-300",
+	critical: {
+		bg: "bg-red-100 border-red-300",
+		color: "text-red-700",
+		label: "Critical",
 	},
 	high: {
-		label: "High",
-		color: "text-orange-700",
 		bg: "bg-orange-100 border-orange-300",
+		color: "text-orange-700",
+		label: "High",
 	},
-	critical: {
-		label: "Critical",
-		color: "text-red-700",
-		bg: "bg-red-100 border-red-300",
+	low: {
+		bg: "bg-green-100 border-green-300",
+		color: "text-green-700",
+		label: "Low",
+	},
+	medium: {
+		bg: "bg-yellow-100 border-yellow-300",
+		color: "text-yellow-700",
+		label: "Medium",
+	},
+	none: {
+		bg: "bg-gray-100 border-gray-300",
+		color: "text-gray-700",
+		label: "None",
 	},
 };
 
 const sizeConfig = {
-	sm: { badge: "text-xs px-2 py-0.5", score: "text-sm" },
-	md: { badge: "text-sm px-2.5 py-1", score: "text-lg" },
 	lg: { badge: "text-base px-3 py-1.5", score: "text-2xl" },
+	md: { badge: "text-sm px-2.5 py-1", score: "text-lg" },
+	sm: { badge: "text-xs px-2 py-0.5", score: "text-sm" },
 };
 
 export function CVSSScoreBadge({
@@ -115,7 +115,7 @@ export function CVSSScoreGauge({
 				"relative inline-flex items-center justify-center",
 				className,
 			)}
-			style={{ width: size, height: size }}
+			style={{ height: size, width: size }}
 		>
 			<svg viewBox={`0 0 ${size} ${size}`} className="transform -rotate-135">
 				{/* Background arc */}
@@ -187,33 +187,33 @@ export function CVSSDetailCard({
 	const config = severityConfig[severity];
 
 	const baseMetrics = [
-		{ label: "Attack Vector", value: breakdown.attack_vector, abbr: "AV" },
+		{ abbr: "AV", label: "Attack Vector", value: breakdown.attack_vector },
 		{
+			abbr: "AC",
 			label: "Attack Complexity",
 			value: breakdown.attack_complexity,
-			abbr: "AC",
 		},
 		{
+			abbr: "PR",
 			label: "Privileges Required",
 			value: breakdown.privileges_required,
-			abbr: "PR",
 		},
 		{
+			abbr: "UI",
 			label: "User Interaction",
 			value: breakdown.user_interaction,
-			abbr: "UI",
 		},
 	];
 
 	const impactMetrics = [
-		{ label: "Scope", value: breakdown.scope, abbr: "S" },
+		{ abbr: "S", label: "Scope", value: breakdown.scope },
 		{
+			abbr: "C",
 			label: "Confidentiality",
 			value: breakdown.confidentiality_impact,
-			abbr: "C",
 		},
-		{ label: "Integrity", value: breakdown.integrity_impact, abbr: "I" },
-		{ label: "Availability", value: breakdown.availability_impact, abbr: "A" },
+		{ abbr: "I", label: "Integrity", value: breakdown.integrity_impact },
+		{ abbr: "A", label: "Availability", value: breakdown.availability_impact },
 	];
 
 	return (

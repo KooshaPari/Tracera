@@ -3,7 +3,7 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from "@tracertm/ui/components/Alert";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { Button } from "@tracertm/ui/components/Button";
 import { AlertCircle, Bug, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
@@ -70,11 +70,11 @@ export class ErrorBoundary extends React.Component<
 > {
 	constructor(props: ErrorBoundaryProps) {
 		super(props);
-		this.state = { hasError: false, error: null, errorInfo: null };
+		this.state = { error: null, errorInfo: null, hasError: false };
 	}
 
 	static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-		return { hasError: true, error, errorInfo: null };
+		return { error, errorInfo: null, hasError: true };
 	}
 
 	override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -84,7 +84,7 @@ export class ErrorBoundary extends React.Component<
 		logger.error(
 			`Error caught by ${name || "ErrorBoundary"}:`,
 			error,
-			errorInfo
+			errorInfo,
 		);
 
 		// Store error info in state for display
@@ -114,7 +114,7 @@ export class ErrorBoundary extends React.Component<
 	}
 
 	reset = () => {
-		this.setState({ hasError: false, error: null, errorInfo: null });
+		this.setState({ error: null, errorInfo: null, hasError: false });
 	};
 
 	override render() {
@@ -178,7 +178,7 @@ export class ErrorBoundary extends React.Component<
 							<Button
 								variant="ghost"
 								size="sm"
-								onClick={() => window.location.reload()}
+								onClick={() => globalThis.location.reload()}
 								className="gap-1"
 							>
 								Reload page
@@ -203,7 +203,7 @@ export class ErrorBoundary extends React.Component<
  */
 export function withErrorBoundary<P extends object>(
 	Component: React.ComponentType<P>,
-	options?: Omit<ErrorBoundaryProps, "children">
+	options?: Omit<ErrorBoundaryProps, "children">,
 ) {
 	const WrappedComponent = (props: P) => (
 		<ErrorBoundary {...options}>

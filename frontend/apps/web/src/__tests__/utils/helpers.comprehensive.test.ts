@@ -36,7 +36,7 @@ import {
 	unique,
 } from "../../utils/helpers";
 
-describe("groupBy", () => {
+describe(groupBy, () => {
 	it("should group array by key", () => {
 		const items = [
 			{ id: "1", type: "A" },
@@ -65,9 +65,9 @@ describe("groupBy", () => {
 
 	it("should handle numeric keys", () => {
 		const items = [
-			{ id: "1", count: 1 },
-			{ id: "2", count: 2 },
-			{ id: "3", count: 1 },
+			{ count: 1, id: "1" },
+			{ count: 2, id: "2" },
+			{ count: 1, id: "3" },
 		];
 		const result = groupBy(items, "count");
 		expect(result["1"]).toHaveLength(2);
@@ -85,7 +85,7 @@ describe("groupBy", () => {
 	});
 });
 
-describe("sortBy", () => {
+describe(sortBy, () => {
 	it("should sort ascending by default", () => {
 		const items = [
 			{ id: "1", value: 3 },
@@ -151,7 +151,7 @@ describe("sortBy", () => {
 	});
 });
 
-describe("unique", () => {
+describe(unique, () => {
 	it("should remove duplicates from array", () => {
 		const result = unique([1, 2, 2, 3, 3, 3]);
 		expect(result).toEqual([1, 2, 3]);
@@ -183,7 +183,7 @@ describe("unique", () => {
 	});
 });
 
-describe("chunk", () => {
+describe(chunk, () => {
 	it("should chunk array into specified size", () => {
 		const result = chunk([1, 2, 3, 4, 5], 2);
 		expect(result).toEqual([[1, 2], [3, 4], [5]]);
@@ -218,7 +218,7 @@ describe("chunk", () => {
 	});
 });
 
-describe("shuffle", () => {
+describe(shuffle, () => {
 	it("should return array with same length", () => {
 		const arr = [1, 2, 3, 4, 5];
 		const result = shuffle(arr);
@@ -228,7 +228,9 @@ describe("shuffle", () => {
 	it("should contain all original elements", () => {
 		const arr = [1, 2, 3, 4, 5];
 		const result = shuffle(arr);
-		expect(result.toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0))).toEqual(arr.toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0)));
+		expect(result.toSorted((a, b) => (a < b ? -1 : (a > b ? 1 : 0)))).toEqual(
+			arr.toSorted((a, b) => (a < b ? -1 : (a > b ? 1 : 0))),
+		);
 	});
 
 	it("should not mutate original array", () => {
@@ -249,7 +251,7 @@ describe("shuffle", () => {
 	});
 });
 
-describe("pick", () => {
+describe(pick, () => {
 	it("should pick specified keys", () => {
 		const obj = { a: 1, b: 2, c: 3 };
 		const result = pick(obj, ["a", "c"]);
@@ -269,14 +271,14 @@ describe("pick", () => {
 	});
 
 	it("should preserve value types", () => {
-		const obj = { str: "hello", num: 42, bool: true };
+		const obj = { bool: true, num: 42, str: "hello" };
 		const result = pick(obj, ["str", "bool"]);
 		expect(result.str).toBe("hello");
 		expect(result.bool).toBe(true);
 	});
 });
 
-describe("omit", () => {
+describe(omit, () => {
 	it("should omit specified keys", () => {
 		const obj = { a: 1, b: 2, c: 3 };
 		const result = omit(obj, ["b"]);
@@ -296,14 +298,14 @@ describe("omit", () => {
 	});
 
 	it("should preserve value types", () => {
-		const obj = { str: "hello", num: 42, bool: true };
+		const obj = { bool: true, num: 42, str: "hello" };
 		const result = omit(obj, ["num"]);
 		expect(result.str).toBe("hello");
 		expect(result.bool).toBe(true);
 	});
 });
 
-describe("deepClone", () => {
+describe(deepClone, () => {
 	it("should deep clone object", () => {
 		const obj = { a: 1, b: { c: 2 } };
 		const clone = deepClone(obj);
@@ -337,7 +339,7 @@ describe("deepClone", () => {
 	});
 });
 
-describe("isEmpty", () => {
+describe(isEmpty, () => {
 	it("should return true for empty object", () => {
 		expect(isEmpty({})).toBe(true);
 	});
@@ -351,7 +353,7 @@ describe("isEmpty", () => {
 	});
 });
 
-describe("merge", () => {
+describe(merge, () => {
 	it("should merge objects", () => {
 		const result = merge({ a: 1 }, { b: 2 }, { c: 3 });
 		expect(result).toEqual({ a: 1, b: 2, c: 3 });
@@ -374,7 +376,7 @@ describe("merge", () => {
 	});
 });
 
-describe("generateId", () => {
+describe(generateId, () => {
 	it("should generate unique IDs", () => {
 		const id1 = generateId();
 		const id2 = generateId();
@@ -392,7 +394,7 @@ describe("generateId", () => {
 	});
 });
 
-describe("slugify", () => {
+describe(slugify, () => {
 	it("should convert to slug", () => {
 		expect(slugify("Hello World")).toBe("hello-world");
 	});
@@ -418,7 +420,7 @@ describe("slugify", () => {
 	});
 });
 
-describe("randomString", () => {
+describe(randomString, () => {
 	it("should generate string of specified length", () => {
 		const result = randomString(10);
 		expect(result).toHaveLength(10);
@@ -441,7 +443,7 @@ describe("randomString", () => {
 	});
 });
 
-describe("isNotNull", () => {
+describe(isNotNull, () => {
 	it("should return true for non-null values", () => {
 		expect(isNotNull(0)).toBe(true);
 		expect(isNotNull("")).toBe(true);
@@ -454,11 +456,11 @@ describe("isNotNull", () => {
 	});
 
 	it("should return false for undefined", () => {
-		expect(isNotNull(undefined)).toBe(false);
+		expect(isNotNull()).toBe(false);
 	});
 });
 
-describe("isDefined", () => {
+describe(isDefined, () => {
 	it("should return true for defined values", () => {
 		expect(isDefined(0)).toBe(true);
 		expect(isDefined("")).toBe(true);
@@ -466,11 +468,11 @@ describe("isDefined", () => {
 	});
 
 	it("should return false for undefined", () => {
-		expect(isDefined(undefined)).toBe(false);
+		expect(isDefined()).toBe(false);
 	});
 });
 
-describe("sleep", () => {
+describe(sleep, () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 	});
@@ -498,7 +500,7 @@ describe("sleep", () => {
 	});
 });
 
-describe("debounce", () => {
+describe(debounce, () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 	});
@@ -515,7 +517,7 @@ describe("debounce", () => {
 		expect(fn).not.toHaveBeenCalled();
 
 		vi.advanceTimersByTime(100);
-		expect(fn).toHaveBeenCalledTimes(1);
+		expect(fn).toHaveBeenCalledOnce();
 	});
 
 	it("should reset timer on multiple calls", () => {
@@ -529,7 +531,7 @@ describe("debounce", () => {
 		expect(fn).not.toHaveBeenCalled();
 
 		vi.advanceTimersByTime(50);
-		expect(fn).toHaveBeenCalledTimes(1);
+		expect(fn).toHaveBeenCalledOnce();
 	});
 
 	it("should pass arguments to function", () => {
@@ -542,7 +544,7 @@ describe("debounce", () => {
 	});
 });
 
-describe("throttle", () => {
+describe(throttle, () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 	});
@@ -556,7 +558,7 @@ describe("throttle", () => {
 		const throttled = throttle(fn, 100);
 
 		throttled();
-		expect(fn).toHaveBeenCalledTimes(1);
+		expect(fn).toHaveBeenCalledOnce();
 	});
 
 	it("should ignore calls within throttle period", () => {
@@ -566,7 +568,7 @@ describe("throttle", () => {
 		throttled();
 		throttled();
 		throttled();
-		expect(fn).toHaveBeenCalledTimes(1);
+		expect(fn).toHaveBeenCalledOnce();
 	});
 
 	it("should allow calls after throttle period", () => {
@@ -591,42 +593,42 @@ describe("throttle", () => {
 describe("TraceRTM utilities", () => {
 	const mockItems: Item[] = [
 		{
+			created_at: "2024-01-01T00:00:00Z",
 			id: "1",
-			project_id: "proj-1",
-			type: "feature",
-			title: "Feature 1",
-			view: "features",
-			status: "todo",
 			priority: "high",
-			created_at: "2024-01-01T00:00:00Z",
-			updated_at: "2024-01-01T00:00:00Z",
-		},
-		{
-			id: "2",
 			project_id: "proj-1",
+			status: "todo",
+			title: "Feature 1",
 			type: "feature",
-			title: "Feature 2",
-			view: "code",
-			status: "done",
-			priority: "medium",
-			parentId: "1",
-			created_at: "2024-01-01T00:00:00Z",
 			updated_at: "2024-01-01T00:00:00Z",
-		},
-		{
-			id: "3",
-			project_id: "proj-1",
-			type: "feature",
-			title: "Feature 3",
 			view: "features",
-			status: "in_progress",
-			priority: "low",
+		},
+		{
 			created_at: "2024-01-01T00:00:00Z",
+			id: "2",
+			parentId: "1",
+			priority: "medium",
+			project_id: "proj-1",
+			status: "done",
+			title: "Feature 2",
+			type: "feature",
 			updated_at: "2024-01-01T00:00:00Z",
+			view: "code",
+		},
+		{
+			created_at: "2024-01-01T00:00:00Z",
+			id: "3",
+			priority: "low",
+			project_id: "proj-1",
+			status: "in_progress",
+			title: "Feature 3",
+			type: "feature",
+			updated_at: "2024-01-01T00:00:00Z",
+			view: "features",
 		},
 	];
 
-	describe("getItemsByView", () => {
+	describe(getItemsByView, () => {
 		it("should filter items by view", () => {
 			const result = getItemsByView(mockItems, "features");
 			expect(result).toHaveLength(2);
@@ -644,7 +646,7 @@ describe("TraceRTM utilities", () => {
 		});
 	});
 
-	describe("getItemChildren", () => {
+	describe(getItemChildren, () => {
 		it("should find children of parent", () => {
 			const result = getItemChildren(mockItems, "1");
 			expect(result).toHaveLength(1);
@@ -662,42 +664,42 @@ describe("TraceRTM utilities", () => {
 		});
 	});
 
-	describe("getItemAncestors", () => {
+	describe(getItemAncestors, () => {
 		const hierarchyItems: Item[] = [
 			{
+				created_at: "2024-01-01T00:00:00Z",
 				id: "1",
+				priority: "high",
 				project_id: "proj-1",
-				type: "feature",
+				status: "todo",
 				title: "Root",
-				view: "features",
-				status: "todo",
-				priority: "high",
-				created_at: "2024-01-01T00:00:00Z",
+				type: "feature",
 				updated_at: "2024-01-01T00:00:00Z",
+				view: "features",
 			},
 			{
+				created_at: "2024-01-01T00:00:00Z",
 				id: "2",
-				project_id: "proj-1",
-				type: "feature",
-				title: "Child",
-				view: "features",
-				status: "todo",
-				priority: "high",
 				parentId: "1",
-				created_at: "2024-01-01T00:00:00Z",
+				priority: "high",
+				project_id: "proj-1",
+				status: "todo",
+				title: "Child",
+				type: "feature",
 				updated_at: "2024-01-01T00:00:00Z",
+				view: "features",
 			},
 			{
-				id: "3",
-				project_id: "proj-1",
-				type: "feature",
-				title: "Grandchild",
-				view: "features",
-				status: "todo",
-				priority: "high",
-				parentId: "2",
 				created_at: "2024-01-01T00:00:00Z",
+				id: "3",
+				parentId: "2",
+				priority: "high",
+				project_id: "proj-1",
+				status: "todo",
+				title: "Grandchild",
+				type: "feature",
 				updated_at: "2024-01-01T00:00:00Z",
+				view: "features",
 			},
 		];
 
@@ -719,23 +721,23 @@ describe("TraceRTM utilities", () => {
 		});
 	});
 
-	describe("getLinkedItems", () => {
+	describe(getLinkedItems, () => {
 		const mockLinks: Link[] = [
 			{
+				created_at: "2024-01-01T00:00:00Z",
 				id: "link-1",
 				project_id: "proj-1",
 				sourceId: "1",
 				targetId: "2",
 				type: "depends_on",
-				created_at: "2024-01-01T00:00:00Z",
 			},
 			{
+				created_at: "2024-01-01T00:00:00Z",
 				id: "link-2",
 				project_id: "proj-1",
 				sourceId: "2",
 				targetId: "3",
 				type: "implements",
-				created_at: "2024-01-01T00:00:00Z",
 			},
 		];
 
@@ -756,12 +758,12 @@ describe("TraceRTM utilities", () => {
 		it("should filter out non-existent items", () => {
 			const linksWithMissing: Link[] = [
 				{
+					created_at: "2024-01-01T00:00:00Z",
 					id: "link-1",
 					project_id: "proj-1",
 					sourceId: "nonexistent",
 					targetId: "2",
 					type: "depends_on",
-					created_at: "2024-01-01T00:00:00Z",
 				},
 			];
 			const result = getLinkedItems(mockItems, linksWithMissing, "2");
@@ -769,7 +771,7 @@ describe("TraceRTM utilities", () => {
 		});
 	});
 
-	describe("calculateProgress", () => {
+	describe(calculateProgress, () => {
 		it("should calculate progress percentage", () => {
 			const result = calculateProgress(mockItems);
 			expect(result).toBeCloseTo(33.333, 1);
@@ -790,10 +792,9 @@ describe("TraceRTM utilities", () => {
 		});
 
 		it("should return 0 when none done", () => {
-			const noneDone = mockItems.map((item) => ({
-				...item,
-				status: "todo" as const,
-			}));
+			const noneDone = mockItems.map((item) =>
+				Object.assign(item, { status: `todo` as const }),
+			);
 			const result = calculateProgress(noneDone);
 			expect(result).toBe(0);
 		});
@@ -805,7 +806,7 @@ describe("localStorage utilities", () => {
 		localStorage.clear();
 	});
 
-	describe("getFromStorage", () => {
+	describe(getFromStorage, () => {
 		it("should retrieve stored value", () => {
 			localStorage.setItem("test", JSON.stringify({ value: 42 }));
 			const result = getFromStorage("test", { value: 0 });
@@ -834,7 +835,7 @@ describe("localStorage utilities", () => {
 		});
 	});
 
-	describe("setToStorage", () => {
+	describe(setToStorage, () => {
 		it("should store value", () => {
 			setToStorage("test", { value: 42 });
 			const stored = localStorage.getItem("test");
@@ -858,7 +859,7 @@ describe("localStorage utilities", () => {
 		});
 	});
 
-	describe("removeFromStorage", () => {
+	describe(removeFromStorage, () => {
 		it("should remove value", () => {
 			localStorage.setItem("test", "value");
 			removeFromStorage("test");
@@ -871,9 +872,9 @@ describe("localStorage utilities", () => {
 	});
 });
 
-describe("copyToClipboard", () => {
+describe(copyToClipboard, () => {
 	it("should use clipboard API when available", async () => {
-		const mockWriteText = vi.fn().mockResolvedValue(undefined);
+		const mockWriteText = vi.fn().mockResolvedValue();
 		Object.assign(navigator, {
 			clipboard: { writeText: mockWriteText },
 		});
@@ -895,15 +896,15 @@ describe("copyToClipboard", () => {
 	});
 });
 
-describe("downloadFile", () => {
+describe(downloadFile, () => {
 	it("should create download link", () => {
 		const createElementSpy = vi.spyOn(document, "createElement");
 		const appendChildSpy = vi
 			.spyOn(document.body, "appendChild")
-			.mockImplementation((): Node => (null as unknown as Node));
+			.mockImplementation((): Node => null as unknown as Node);
 		const removeChildSpy = vi
 			.spyOn(document.body, "removeChild")
-			.mockImplementation((): Node => (null as unknown as Node));
+			.mockImplementation((): Node => null as unknown as Node);
 
 		downloadFile("test content", "test.txt", "text/plain");
 
@@ -919,10 +920,10 @@ describe("downloadFile", () => {
 	it("should handle different file types", () => {
 		const appendChildSpy = vi
 			.spyOn(document.body, "appendChild")
-			.mockImplementation((): Node => (null as unknown as Node));
+			.mockImplementation((): Node => null as unknown as Node);
 		const removeChildSpy = vi
 			.spyOn(document.body, "removeChild")
-			.mockImplementation((): Node => (null as unknown as Node));
+			.mockImplementation((): Node => null as unknown as Node);
 
 		downloadFile('{"test": true}', "data.json", "application/json");
 		expect(appendChildSpy).toHaveBeenCalled();

@@ -11,18 +11,14 @@ import { ComponentUsageMatrix } from "../../components/graph/ComponentUsageMatri
 
 const mockComponents: LibraryComponent[] = [
 	{
+		category: "atom",
+		createdAt: "2025-01-01T00:00:00Z",
+		description: "A versatile button component",
+		displayName: "Primary Button",
 		id: "btn-1",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "Button",
-		displayName: "Primary Button",
-		description: "A versatile button component",
-		category: "atom",
-		status: "stable",
-		usageCount: 24,
-		usageLocations: ["page-1", "page-2"],
-		createdAt: "2025-01-01T00:00:00Z",
-		updatedAt: "2025-01-29T00:00:00Z",
+		projectId: "proj-1",
 		props: [
 			{
 				name: "variant",
@@ -33,113 +29,117 @@ const mockComponents: LibraryComponent[] = [
 			{ name: "size", type: "string", required: false },
 			{ name: "disabled", type: "boolean", required: false },
 		],
+		status: "stable",
+		updatedAt: "2025-01-29T00:00:00Z",
+		usageCount: 24,
+		usageLocations: ["page-1", "page-2"],
 		variants: [
 			{ name: "Primary", props: { variant: "primary" } },
 			{ name: "Secondary", props: { variant: "secondary" } },
 		],
 	},
 	{
+		category: "atom",
+		createdAt: "2025-01-01T00:00:00Z",
+		description: "Text input field for form data",
+		displayName: "Text Input",
 		id: "input-1",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "Input",
-		displayName: "Text Input",
-		description: "Text input field for form data",
-		category: "atom",
-		status: "stable",
-		usageCount: 15,
-		usageLocations: ["page-2"],
-		createdAt: "2025-01-01T00:00:00Z",
-		updatedAt: "2025-01-29T00:00:00Z",
+		projectId: "proj-1",
 		props: [
 			{ name: "placeholder", type: "string", required: false },
 			{ name: "type", type: "string", required: false },
 		],
+		status: "stable",
+		updatedAt: "2025-01-29T00:00:00Z",
+		usageCount: 15,
+		usageLocations: ["page-2"],
 	},
 	{
+		category: "overlay",
+		createdAt: "2025-01-01T00:00:00Z",
+		description: "Modal dialog component",
+		displayName: "Dialog Modal",
 		id: "modal-1",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "Modal",
-		displayName: "Dialog Modal",
-		description: "Modal dialog component",
-		category: "overlay",
+		projectId: "proj-1",
 		status: "stable",
-		usageCount: 0,
-		createdAt: "2025-01-01T00:00:00Z",
 		updatedAt: "2025-01-29T00:00:00Z",
+		usageCount: 0,
 	},
 	{
+		category: "atom",
+		createdAt: "2025-01-01T00:00:00Z",
+		deprecationMessage: "Use Button component instead",
+		description: "This button is no longer supported",
+		displayName: "Legacy Button",
 		id: "old-btn-1",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "OldButton",
-		displayName: "Legacy Button",
-		description: "This button is no longer supported",
-		category: "atom",
+		projectId: "proj-1",
 		status: "deprecated",
-		deprecationMessage: "Use Button component instead",
-		usageCount: 5,
-		createdAt: "2025-01-01T00:00:00Z",
 		updatedAt: "2025-01-29T00:00:00Z",
+		usageCount: 5,
 	},
 	{
+		category: "organism",
+		createdAt: "2025-01-01T00:00:00Z",
+		description: "Main page header with navigation",
+		displayName: "Page Header",
 		id: "header-1",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "Header",
-		displayName: "Page Header",
-		description: "Main page header with navigation",
-		category: "organism",
+		projectId: "proj-1",
 		status: "beta",
-		usageCount: 8,
-		createdAt: "2025-01-01T00:00:00Z",
 		updatedAt: "2025-01-29T00:00:00Z",
+		usageCount: 8,
 	},
 ];
 
 const mockUsage: ComponentUsage[] = [
 	{
-		id: "usage-1",
-		projectId: "proj-1",
-		libraryId: "lib-1",
 		componentId: "btn-1",
-		usedInItemId: "page-1",
+		detectedAt: "2025-01-28T10:00:00Z",
+		id: "usage-1",
+		libraryId: "lib-1",
+		projectId: "proj-1",
 		usedInFilePath: "pages/dashboard.tsx",
+		usedInItemId: "page-1",
 		usedInLine: 45,
 		variantUsed: "Primary",
-		detectedAt: "2025-01-28T10:00:00Z",
 	},
 	{
-		id: "usage-2",
-		projectId: "proj-1",
-		libraryId: "lib-1",
 		componentId: "btn-1",
-		usedInItemId: "page-2",
+		detectedAt: "2025-01-28T10:00:00Z",
+		id: "usage-2",
+		libraryId: "lib-1",
+		projectId: "proj-1",
 		usedInFilePath: "pages/settings.tsx",
+		usedInItemId: "page-2",
 		usedInLine: 120,
 		variantUsed: "Secondary",
-		detectedAt: "2025-01-28T10:00:00Z",
 	},
 	{
-		id: "usage-3",
-		projectId: "proj-1",
-		libraryId: "lib-1",
 		componentId: "input-1",
-		usedInItemId: "page-2",
-		usedInFilePath: "pages/settings.tsx",
-		usedInLine: 95,
 		detectedAt: "2025-01-28T10:00:00Z",
+		id: "usage-3",
+		libraryId: "lib-1",
+		projectId: "proj-1",
+		usedInFilePath: "pages/settings.tsx",
+		usedInItemId: "page-2",
+		usedInLine: 95,
 	},
 	{
-		id: "usage-4",
-		projectId: "proj-1",
-		libraryId: "lib-1",
 		componentId: "old-btn-1",
-		usedInItemId: "page-1",
-		usedInFilePath: "pages/legacy.tsx",
-		usedInLine: 30,
 		detectedAt: "2025-01-28T10:00:00Z",
+		id: "usage-4",
+		libraryId: "lib-1",
+		projectId: "proj-1",
+		usedInFilePath: "pages/legacy.tsx",
+		usedInItemId: "page-1",
+		usedInLine: 30,
 	},
 ];
 
@@ -153,7 +153,7 @@ const mockPages = [
 // TESTS
 // =============================================================================
 
-describe("ComponentUsageMatrix", () => {
+describe(ComponentUsageMatrix, () => {
 	it("renders the component with title and stats", () => {
 		render(
 			<ComponentUsageMatrix
@@ -222,7 +222,7 @@ describe("ComponentUsageMatrix", () => {
 				components={mockComponents}
 				usage={mockUsage}
 				pages={mockPages}
-				highlightUnused={true}
+				highlightUnused
 			/>,
 		);
 
@@ -237,7 +237,7 @@ describe("ComponentUsageMatrix", () => {
 				components={mockComponents}
 				usage={mockUsage}
 				pages={mockPages}
-				highlightUnused={true}
+				highlightUnused
 			/>,
 		);
 
@@ -251,7 +251,7 @@ describe("ComponentUsageMatrix", () => {
 				components={mockComponents}
 				usage={mockUsage}
 				pages={mockPages}
-				enableFiltering={true}
+				enableFiltering
 			/>,
 		);
 
@@ -273,7 +273,7 @@ describe("ComponentUsageMatrix", () => {
 				usage={mockUsage}
 				pages={mockPages}
 				selectedCategory="all"
-				enableFiltering={true}
+				enableFiltering
 			/>,
 		);
 
@@ -292,7 +292,7 @@ describe("ComponentUsageMatrix", () => {
 				usage={mockUsage}
 				pages={mockPages}
 				onCategoryChange={onCategoryChange}
-				enableFiltering={true}
+				enableFiltering
 			/>,
 		);
 
@@ -319,13 +319,12 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("shows props when showProps is true and component is expanded", async () => {
-
 		render(
 			<ComponentUsageMatrix
 				components={mockComponents}
 				usage={mockUsage}
 				pages={mockPages}
-				showProps={true}
+				showProps
 			/>,
 		);
 
@@ -334,13 +333,12 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("shows variants when showVariants is true and component is expanded", async () => {
-
 		render(
 			<ComponentUsageMatrix
 				components={mockComponents}
 				usage={mockUsage}
 				pages={mockPages}
-				showVariants={true}
+				showVariants
 			/>,
 		);
 
@@ -361,14 +359,13 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("shows deprecation message for deprecated components", async () => {
-
 		render(
 			<ComponentUsageMatrix
 				components={mockComponents}
 				usage={mockUsage}
 				pages={mockPages}
-				showVariants={true}
-				showProps={true}
+				showVariants
+				showProps
 			/>,
 		);
 
@@ -405,7 +402,7 @@ describe("ComponentUsageMatrix", () => {
 				components={[]}
 				usage={mockUsage}
 				pages={mockPages}
-				isLoading={true}
+				isLoading
 			/>,
 		);
 
@@ -413,13 +410,12 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("shows empty state when no components match filters", async () => {
-
 		render(
 			<ComponentUsageMatrix
 				components={mockComponents}
 				usage={mockUsage}
 				pages={mockPages}
-				enableFiltering={true}
+				enableFiltering
 			/>,
 		);
 
@@ -444,8 +440,8 @@ describe("ComponentUsageMatrix", () => {
 				usage={mockUsage}
 				pages={mockPages}
 				pageLabels={pageLabels}
-				showVariants={true}
-				showProps={true}
+				showVariants
+				showProps
 			/>,
 		);
 
@@ -506,7 +502,6 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("expands/collapses category sections", async () => {
-
 		render(
 			<ComponentUsageMatrix
 				components={mockComponents}

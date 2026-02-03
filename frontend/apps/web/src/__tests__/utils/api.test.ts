@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock fetch
 const mockFetch = vi.fn();
-global.fetch = mockFetch as unknown as typeof fetch;
+globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 // Mock API_URL
 const API_URL = "http://localhost:4000";
@@ -24,8 +24,8 @@ describe("API utilities", () => {
 			];
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => mockItems,
+				ok: true,
 			});
 
 			const response = await fetch(`${API_URL}/api/v1/items`);
@@ -37,8 +37,8 @@ describe("API utilities", () => {
 
 		it("should fetch items with project filter", async () => {
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => [],
+				ok: true,
 			});
 
 			const params = new URLSearchParams({ project_id: "project-1" });
@@ -65,31 +65,31 @@ describe("API utilities", () => {
 	describe("createItem", () => {
 		it("should create an item", async () => {
 			const newItem = {
+				priority: "high",
 				project_id: "project-1",
+				status: "open",
 				title: "New Item",
 				type: "feature",
-				status: "open",
-				priority: "high",
 			};
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ id: "1", ...newItem }),
+				ok: true,
 			});
 
 			const response = await fetch(`${API_URL}/api/v1/items`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(newItem),
+				headers: { "Content-Type": "application/json" },
+				method: "POST",
 			});
 
 			expect(mockFetch).toHaveBeenCalledWith(
 				`${API_URL}/api/v1/items`,
 				expect.objectContaining({
-					method: "POST",
 					headers: expect.objectContaining({
 						"Content-Type": "application/json",
 					}),
+					method: "POST",
 				}),
 			);
 
@@ -101,19 +101,19 @@ describe("API utilities", () => {
 	describe("updateItem", () => {
 		it("should update an item", async () => {
 			const updates = {
-				title: "Updated Title",
 				status: "in_progress",
+				title: "Updated Title",
 			};
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ id: "1", ...updates }),
+				ok: true,
 			});
 
 			const response = await fetch(`${API_URL}/api/v1/items/1`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(updates),
+				headers: { "Content-Type": "application/json" },
+				method: "PATCH",
 			});
 
 			expect(mockFetch).toHaveBeenCalledWith(
@@ -157,8 +157,8 @@ describe("API utilities", () => {
 			];
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => mockProjects,
+				ok: true,
 			});
 
 			const response = await fetch(`${API_URL}/api/v1/projects`);
@@ -169,19 +169,19 @@ describe("API utilities", () => {
 
 		it("should create a project", async () => {
 			const newProject = {
-				name: "New Project",
 				description: "Description",
+				name: "New Project",
 			};
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ id: "1", ...newProject }),
+				ok: true,
 			});
 
 			const response = await fetch(`${API_URL}/api/v1/projects`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(newProject),
+				headers: { "Content-Type": "application/json" },
+				method: "POST",
 			});
 
 			const data: { name: string } = await response.json();
@@ -196,8 +196,8 @@ describe("API utilities", () => {
 			];
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => mockLinks,
+				ok: true,
 			});
 
 			const response = await fetch(`${API_URL}/api/v1/links`);
@@ -214,14 +214,14 @@ describe("API utilities", () => {
 			};
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => ({ id: "1", ...newLink }),
+				ok: true,
 			});
 
 			const response = await fetch(`${API_URL}/api/v1/links`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(newLink),
+				headers: { "Content-Type": "application/json" },
+				method: "POST",
 			});
 
 			const data: { type: string } = await response.json();

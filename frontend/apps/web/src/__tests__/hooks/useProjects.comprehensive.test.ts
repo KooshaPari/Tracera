@@ -18,13 +18,13 @@ import {
 // Mock fetch (vi.fn() compatible with fetch at runtime)
 const mockFetch = vi.fn();
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- test mock assignment
-global.fetch = mockFetch as unknown as typeof fetch;
+globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 const createWrapper = () => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { retry: false },
 			mutations: { retry: false },
+			queries: { retry: false },
 		},
 	});
 
@@ -37,11 +37,11 @@ describe("useProjects - Comprehensive Coverage", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("useProjects", () => {
+	describe(useProjects, () => {
 		it("should fetch empty projects list", async () => {
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => [],
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useProjects(), {
@@ -66,7 +66,7 @@ describe("useProjects - Comprehensive Coverage", () => {
 		});
 	});
 
-	describe("useProject", () => {
+	describe(useProject, () => {
 		it("should handle fetch errors", async () => {
 			// Mock for initial attempt and one retry (retry: 1)
 			mockFetch.mockResolvedValueOnce({
@@ -104,7 +104,7 @@ describe("useProjects - Comprehensive Coverage", () => {
 		});
 	});
 
-	describe("useCreateProject", () => {
+	describe(useCreateProject, () => {
 		it("should create project without description", async () => {
 			const newProject = {
 				name: "New Project",
@@ -117,8 +117,8 @@ describe("useProjects - Comprehensive Coverage", () => {
 			};
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => createdProject,
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useCreateProject(), {
@@ -143,33 +143,33 @@ describe("useProjects - Comprehensive Coverage", () => {
 			});
 
 			result.current.mutate({
-				name: "",
 				description: "Invalid",
+				name: "",
 			});
 
 			await waitFor(() => expect(result.current.isError).toBe(true));
 		});
 	});
 
-	describe("useUpdateProject", () => {
+	describe(useUpdateProject, () => {
 		it("should update project", async () => {
 			const updates = { name: "Updated Name" };
 			const updatedProject = {
+				description: "Original Description",
 				id: "proj-1",
 				name: "Updated Name",
-				description: "Original Description",
 			};
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => updatedProject,
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useUpdateProject(), {
 				wrapper: createWrapper(),
 			});
 
-			result.current.mutate({ id: "proj-1", data: updates });
+			result.current.mutate({ data: updates, id: "proj-1" });
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -177,11 +177,11 @@ describe("useProjects - Comprehensive Coverage", () => {
 			expect(mockFetch).toHaveBeenCalledWith(
 				expect.stringContaining("/api/v1/projects/proj-1"),
 				expect.objectContaining({
-					method: "PATCH",
+					body: JSON.stringify(updates),
 					headers: expect.objectContaining({
 						"Content-Type": "application/json",
 					}),
-					body: JSON.stringify(updates),
+					method: "PATCH",
 				}),
 			);
 		});
@@ -189,21 +189,21 @@ describe("useProjects - Comprehensive Coverage", () => {
 		it("should invalidate both list and single project queries", async () => {
 			const updates = { description: "New Description" };
 			const updatedProject = {
+				description: "New Description",
 				id: "proj-1",
 				name: "Project 1",
-				description: "New Description",
 			};
 
 			mockFetch.mockResolvedValueOnce({
-				ok: true,
 				json: async () => updatedProject,
+				ok: true,
 			});
 
 			const { result } = renderHook(() => useUpdateProject(), {
 				wrapper: createWrapper(),
 			});
 
-			result.current.mutate({ id: "proj-1", data: updates });
+			result.current.mutate({ data: updates, id: "proj-1" });
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 		});
@@ -219,15 +219,15 @@ describe("useProjects - Comprehensive Coverage", () => {
 			});
 
 			result.current.mutate({
-				id: "proj-1",
 				data: { name: "Updated" },
+				id: "proj-1",
 			});
 
 			await waitFor(() => expect(result.current.isError).toBe(true));
 		});
 	});
 
-	describe("useDeleteProject", () => {
+	describe(useDeleteProject, () => {
 		it("should delete project", async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,

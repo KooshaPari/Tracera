@@ -1,9 +1,4 @@
-import {
-	Tabs,
-	TabsContent,
-	TabsList,
-	TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, Link2, Upload } from "lucide-react";
 import { useState } from "react";
 import {
@@ -26,9 +21,18 @@ export function EquivalenceManager({ projectId }: EquivalenceManagerProps) {
 	);
 
 	// Mock data for equivalence components (would be loaded from API)
-	const mockEquivalenceLinks: Array<{ id: string; source: string; target: string }> = [];
-	const mockCanonicalConcepts: Array<{ id: string; name: string; description: string }> = [];
-	const mockCanonicalProjections: Array<{ id: string; conceptId: string; projection: string }> = [];
+	const mockEquivalenceLinks: { id: string; source: string; target: string }[] =
+		[];
+	const mockCanonicalConcepts: {
+		id: string;
+		name: string;
+		description: string;
+	}[] = [];
+	const mockCanonicalProjections: {
+		id: string;
+		conceptId: string;
+		projection: string;
+	}[] = [];
 
 	return (
 		<div className="space-y-6">

@@ -55,7 +55,9 @@ export function useGraphWorker() {
 
 	// Initialize worker
 	useEffect(() => {
-		if (typeof window === "undefined") return;
+		if (typeof globalThis.window === "undefined") {
+			return;
+		}
 
 		try {
 			// Create worker from inline code or separate file
@@ -191,10 +193,14 @@ export function useGraphWorker() {
 			worker.onmessage = (event: MessageEvent<LayoutMessage>) => {
 				const { id, type, data, error: errorMsg } = event.data;
 
-				if (!id) return;
+				if (!id) {
+					return;
+				}
 
 				const pending = pendingRequestsRef.current.get(id);
-				if (!pending) return;
+				if (!pending) {
+					return;
+				}
 
 				pendingRequestsRef.current.delete(id);
 				clearTimeout(pending.timeout);
@@ -234,8 +240,8 @@ export function useGraphWorker() {
 			nodes: LayoutNode[],
 			edges: LayoutEdge[],
 			options: LayoutOptions,
-		): Promise<LayoutResult> => {
-			return new Promise((resolve, reject) => {
+		): Promise<LayoutResult> =>
+			new Promise((resolve, reject) => {
 				if (!workerRef.current) {
 					reject(new Error("Worker not initialized"));
 					return;
@@ -250,24 +256,26 @@ export function useGraphWorker() {
 
 				pendingRequestsRef.current.set(id, {
 					id,
-					resolve,
 					reject,
+					resolve,
 					timeout: timeoutId,
 				});
 
-				workerRef.current.postMessage({
-					id,
-					type: "layout-request",
-					nodes,
-					edges,
-					options,
-				} as LayoutMessage & {
-					nodes: LayoutNode[];
-					edges: LayoutEdge[];
-					options: LayoutOptions;
-				}, self.location.origin);
-			});
-		},
+				workerRef.current.postMessage(
+					{
+						edges,
+						id,
+						nodes,
+						options,
+						type: "layout-request",
+					} as LayoutMessage & {
+						nodes: LayoutNode[];
+						edges: LayoutEdge[];
+						options: LayoutOptions;
+					},
+					self.location.origin,
+				);
+			}),
 		[],
 	);
 
@@ -281,10 +289,10 @@ export function useGraphWorker() {
 	}, []);
 
 	return {
-		isReady,
-		error,
-		computeLayout,
 		cancelRequests,
+		computeLayout,
+		error,
+		isReady,
 	};
 }
 
@@ -292,14 +300,14 @@ export function useGraphWorker() {
  * Hook for grouping and clustering nodes
  */
 export function useNodeClustering(
-	nodes: Array<{
+	nodes: {
 		id: string;
 		x: number;
 		y: number;
 		width: number;
 		height: number;
-	}>,
-	clusterDistance: number = 300,
+	}[],
+	clusterDistance = 300,
 ) {
 	const [clusters, setClusters] = useState<Map<string, string[]>>(new Map());
 
@@ -315,7 +323,9 @@ export function useNodeClustering(
 		const visited = new Set<string>();
 
 		function clusterFromNode(startId: string): string[] {
-			if (visited.has(startId)) return [];
+			if (visited.has(startId)) {
+				return [];
+			}
 
 			const cluster: string[] = [startId];
 			visited.add(startId);
@@ -326,7 +336,9 @@ export function useNodeClustering(
 				const current = nodeMap.get(currentId)!;
 
 				for (const other of nodeMap.values()) {
-					if (visited.has(other.id)) continue;
+					if (visited.has(other.id)) {
+						continue;
+					}
 
 					const dx = other.x - current.x;
 					const dy = other.y - current.y;

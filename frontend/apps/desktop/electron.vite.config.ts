@@ -1,29 +1,22 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
-import path from "path";
+import path from "node:path";
 
 export default defineConfig({
 	main: {
-		plugins: [externalizeDepsPlugin()],
 		build: {
 			outDir: "dist/main",
 		},
+		plugins: [externalizeDepsPlugin()],
 	},
 	preload: {
-		plugins: [externalizeDepsPlugin()],
 		build: {
 			outDir: "dist/preload",
 		},
+		plugins: [externalizeDepsPlugin()],
 	},
 	renderer: {
-		plugins: [tailwindcss(), react()],
-		root: "../web",
-		resolve: {
-			alias: {
-				"@": path.resolve(__dirname, "../web/src"),
-			},
-		},
 		build: {
 			outDir: path.resolve(__dirname, "dist/renderer"),
 			cssMinify: "lightningcss",
@@ -35,5 +28,12 @@ export default defineConfig({
 			transformer: "lightningcss",
 			lightningcss: {},
 		},
+		plugins: [tailwindcss(), react()],
+		resolve: {
+			alias: {
+				"@": path.resolve(__dirname, "../web/src"),
+			},
+		},
+		root: "../web",
 	},
 });

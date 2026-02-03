@@ -16,7 +16,7 @@ describe("useGraph", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("useFullGraph", () => {
+	describe(useFullGraph, () => {
 		it("should fetch full graph data", async () => {
 			const { result } = renderHook(() => useFullGraph("proj-1"), {
 				wrapper: createWrapper(),
@@ -45,7 +45,7 @@ describe("useGraph", () => {
 		});
 	});
 
-	describe("useImpactAnalysis", () => {
+	describe(useImpactAnalysis, () => {
 		it("should fetch impact analysis", async () => {
 			const { result } = renderHook(() => useImpactAnalysis("item-1"), {
 				wrapper: createWrapper(),
@@ -71,7 +71,7 @@ describe("useGraph", () => {
 		});
 	});
 
-	describe("useDependencyAnalysis", () => {
+	describe(useDependencyAnalysis, () => {
 		it("should fetch dependency analysis", async () => {
 			const { result } = renderHook(() => useDependencyAnalysis("item-1"), {
 				wrapper: createWrapper(),

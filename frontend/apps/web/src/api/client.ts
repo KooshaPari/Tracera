@@ -1,4 +1,5 @@
-import clientCore from "./client-core";
+/* eslint-disable import/no-default-export */
+import { clientCore } from "./client-core";
 import clientErrors from "./client-errors";
 
 const client = {

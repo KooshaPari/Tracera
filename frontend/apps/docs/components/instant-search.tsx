@@ -11,7 +11,7 @@
  * - <100ms response time
  */
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useSearchWorker } from '../lib/use-search-worker';
 import { formatSearchPreview } from '../lib/search-config';
@@ -58,8 +58,8 @@ export function InstantSearch({
   // Virtual scrolling for results
   const rowVirtualizer = useVirtualizer({
     count: results.length,
-    getScrollElement: () => resultsContainerRef.current,
     estimateSize: () => 80,
+    getScrollElement: () => resultsContainerRef.current,
     overscan: 5,
   });
 
@@ -69,27 +69,31 @@ export function InstantSearch({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       switch (e.key) {
-        case 'ArrowDown':
+        case 'ArrowDown': {
           e.preventDefault();
           setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
           break;
+        }
 
-        case 'ArrowUp':
+        case 'ArrowUp': {
           e.preventDefault();
           setSelectedIndex((prev) => Math.max(prev - 1, 0));
           break;
+        }
 
-        case 'Enter':
+        case 'Enter': {
           e.preventDefault();
           if (results[selectedIndex]) {
             window.location.href = results[selectedIndex].item.url;
           }
           break;
+        }
 
-        case 'Escape':
+        case 'Escape': {
           e.preventDefault();
           onClose();
           break;
+        }
       }
     },
     [results, selectedIndex, onClose]
@@ -134,7 +138,7 @@ export function InstantSearch({
     []
   );
 
-  if (!isOpen) return null;
+  if (!isOpen) {return null;}
 
   return (
     <div
@@ -198,7 +202,7 @@ export function InstantSearch({
             <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
               Type at least 2 characters to search
             </div>
-          ) : results.length === 0 && !isSearching ? (
+          ) : (results.length === 0 && !isSearching ? (
             <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
               No results found for &quot;{query}&quot;
             </div>
@@ -206,8 +210,8 @@ export function InstantSearch({
             <div
               style={{
                 height: `${rowVirtualizer.getTotalSize()}px`,
-                width: '100%',
                 position: 'relative',
+                width: '100%',
               }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -262,7 +266,7 @@ export function InstantSearch({
                 );
               })}
             </div>
-          )}
+          ))}
         </div>
 
         {/* Footer */}

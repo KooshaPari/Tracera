@@ -24,36 +24,41 @@ interface VerificationBadgeProps {
 
 const statusConfig: Record<
 	VerificationStatus,
-	{ icon: React.ComponentType<{ className?: string }>; color: string; bgColor: string; label: string }
+	{
+		icon: React.ComponentType<{ className?: string }>;
+		color: string;
+		bgColor: string;
+		label: string;
+	}
 > = {
-	pass: {
-		icon: CheckCircle,
-		color: "text-green-600",
-		bgColor: "bg-green-500/10 border-green-500/20",
-		label: "Verified",
-	},
-	fail: {
-		icon: AlertCircle,
-		color: "text-red-600",
-		bgColor: "bg-red-500/10 border-red-500/20",
-		label: "Failed",
-	},
-	pending: {
-		icon: Clock,
-		color: "text-yellow-600",
-		bgColor: "bg-yellow-500/10 border-yellow-500/20",
-		label: "Pending",
-	},
 	error: {
-		icon: AlertTriangle,
-		color: "text-orange-600",
 		bgColor: "bg-orange-500/10 border-orange-500/20",
+		color: "text-orange-600",
+		icon: AlertTriangle,
 		label: "Error",
 	},
+	fail: {
+		bgColor: "bg-red-500/10 border-red-500/20",
+		color: "text-red-600",
+		icon: AlertCircle,
+		label: "Failed",
+	},
+	pass: {
+		bgColor: "bg-green-500/10 border-green-500/20",
+		color: "text-green-600",
+		icon: CheckCircle,
+		label: "Verified",
+	},
+	pending: {
+		bgColor: "bg-yellow-500/10 border-yellow-500/20",
+		color: "text-yellow-600",
+		icon: Clock,
+		label: "Pending",
+	},
 	unknown: {
-		icon: HelpCircle,
-		color: "text-gray-600",
 		bgColor: "bg-gray-500/10 border-gray-500/20",
+		color: "text-gray-600",
+		icon: HelpCircle,
 		label: "Unverified",
 	},
 };
@@ -69,9 +74,15 @@ function formatTimestamp(isoString: string): string {
 		);
 		const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
-		if (diffDays > 0) return `${diffDays}d ago`;
-		if (diffHours > 0) return `${diffHours}h ago`;
-		if (diffMins > 0) return `${diffMins}m ago`;
+		if (diffDays > 0) {
+			return `${diffDays}d ago`;
+		}
+		if (diffHours > 0) {
+			return `${diffHours}h ago`;
+		}
+		if (diffMins > 0) {
+			return `${diffMins}m ago`;
+		}
 		return "just now";
 	} catch {
 		return new Date(isoString).toLocaleDateString();

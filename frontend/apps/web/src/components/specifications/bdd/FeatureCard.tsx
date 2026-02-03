@@ -24,10 +24,10 @@ interface FeatureCardProps {
 }
 
 const statusColors: Record<FeatureStatus, string> = {
-	draft: "bg-gray-500/10 text-gray-500 border-gray-500/20",
 	active: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-	deprecated: "bg-orange-500/10 text-orange-500 border-orange-500/20",
 	archived: "bg-muted text-muted-foreground border-border",
+	deprecated: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+	draft: "bg-gray-500/10 text-gray-500 border-gray-500/20",
 };
 
 export function FeatureCard({ feature, onClick, className }: FeatureCardProps) {

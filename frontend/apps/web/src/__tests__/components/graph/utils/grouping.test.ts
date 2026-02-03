@@ -13,17 +13,17 @@ import {
 
 function createItem(id: string, title: string, type: string): Item {
 	return {
-		id,
-		projectId: "p1",
-		view: "technical",
-		type,
-		title,
-		description: `Item ${id}`,
-		status: "done" as const,
-		priority: "medium" as const,
-		version: 1,
 		createdAt: new Date().toISOString(),
+		description: `Item ${id}`,
+		id,
+		priority: "medium" as const,
+		projectId: "p1",
+		status: "done" as const,
+		title,
+		type,
 		updatedAt: new Date().toISOString(),
+		version: 1,
+		view: "technical",
 	};
 }
 
@@ -33,12 +33,12 @@ function createLink(
 	type = "depends_on",
 ): Link {
 	return {
+		createdAt: new Date().toISOString(),
+		description: `Link from ${sourceId} to ${targetId}`,
 		id: `link-${sourceId}-${targetId}`,
 		sourceId,
 		targetId,
 		type: type as LinkType,
-		description: `Link from ${sourceId} to ${targetId}`,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};
 }
@@ -62,16 +62,16 @@ describe("Grouping Algorithms", () => {
 			createLink("item1", "item4"),
 			createLink("item2", "item3"),
 			createLink("item2", "item4"),
-			// item5 depends on item3 only
+			// Item5 depends on item3 only
 			createLink("item5", "item3"),
 		];
 	});
 
-	describe("groupByLinkTargets", () => {
+	describe(groupByLinkTargets, () => {
 		it("should group items that share common targets", () => {
 			const groups = groupByLinkTargets(items, links);
 
-			// item1 and item2 should be in same group (both target item3 and item4)
+			// Item1 and item2 should be in same group (both target item3 and item4)
 			expect(groups.length).toBeGreaterThan(0);
 
 			const groupWithBoth = groups.find(
@@ -93,11 +93,11 @@ describe("Grouping Algorithms", () => {
 		});
 	});
 
-	describe("groupByDependencies", () => {
+	describe(groupByDependencies, () => {
 		it("should group items with same dependencies", () => {
 			const groups = groupByDependencies(items, links);
 
-			// item1 and item2 have identical dependencies (item3 and item4)
+			// Item1 and item2 have identical dependencies (item3 and item4)
 			const groupWithBoth = groups.find(
 				(g) => g.itemIds.includes("item1") && g.itemIds.includes("item2"),
 			);
@@ -108,7 +108,7 @@ describe("Grouping Algorithms", () => {
 			const groups = groupByDependencies(items, links);
 			const groupWithItem5 = groups.find((g) => g.itemIds.includes("item5"));
 
-			// item5 has different dependencies than item1/item2
+			// Item5 has different dependencies than item1/item2
 			if (groupWithItem5) {
 				expect(!groupWithItem5.itemIds.includes("item1")).toBe(true);
 			}
@@ -123,7 +123,7 @@ describe("Grouping Algorithms", () => {
 		});
 	});
 
-	describe("groupByPaths", () => {
+	describe(groupByPaths, () => {
 		it("should group connected items as paths", () => {
 			const groups = groupByPaths(items, links);
 			expect(groups.length).toBeGreaterThan(0);
@@ -152,7 +152,7 @@ describe("Grouping Algorithms", () => {
 		});
 	});
 
-	describe("groupBySemantic", () => {
+	describe(groupBySemantic, () => {
 		it("should group items by type", () => {
 			const groups = groupBySemantic(items);
 
@@ -198,7 +198,7 @@ describe("Grouping Algorithms", () => {
 		});
 	});
 
-	describe("calculateGroupCohesion", () => {
+	describe(calculateGroupCohesion, () => {
 		it("should return 1 for fully connected group", () => {
 			const groupItemIds = new Set(["item1", "item2", "item3"]);
 			const fullLinks: Link[] = [
@@ -223,7 +223,7 @@ describe("Grouping Algorithms", () => {
 			const groupItemIds = new Set(["item1", "item2", "item3"]);
 			const partialLinks: Link[] = [
 				createLink("item1", "item2"),
-				// item3 is not connected
+				// Item3 is not connected
 			];
 
 			const cohesion = calculateGroupCohesion(groupItemIds, partialLinks);
@@ -238,7 +238,7 @@ describe("Grouping Algorithms", () => {
 		});
 	});
 
-	describe("calculateGroupSeparation", () => {
+	describe(calculateGroupSeparation, () => {
 		it("should return 0 for non-overlapping groups", () => {
 			const group1 = new Set(["item1", "item2"]);
 			const group2 = new Set(["item3", "item4"]);

@@ -62,9 +62,12 @@ export class SSEClient {
 			};
 
 			// Handle custom event types
-			this.eventSource.addEventListener("notification", (event: MessageEvent) => {
-				this.handleNotificationEvent(event);
-			});
+			this.eventSource.addEventListener(
+				"notification",
+				(event: MessageEvent) => {
+					this.handleNotificationEvent(event);
+				},
+			);
 
 			this.eventSource.addEventListener("read", (event: MessageEvent) => {
 				this.handleNotificationEvent(event);
@@ -102,7 +105,10 @@ export class SSEClient {
 	 * Build URL with authentication token
 	 * EventSource doesn't support custom headers, so we need to pass auth in URL or use cookies
 	 */
-	private buildUrlWithAuth(url: string, headers?: Record<string, string>): string {
+	private buildUrlWithAuth(
+		url: string,
+		headers?: Record<string, string>,
+	): string {
 		if (!headers?.Authorization) {
 			return url;
 		}

@@ -16,7 +16,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import {
 	BarChart3,
 	Camera,
@@ -83,9 +84,12 @@ export interface QAEnhancedNodeData {
 // === Main Component ===
 
 function getPassRateColor(rate: number): string {
-	if (rate >= 90) return "text-green-500 bg-green-500/10 border-green-500/30";
-	if (rate >= 70)
+	if (rate >= 90) {
+		return "text-green-500 bg-green-500/10 border-green-500/30";
+	}
+	if (rate >= 70) {
 		return "text-yellow-500 bg-yellow-500/10 border-yellow-500/30";
+	}
 	return "text-red-500 bg-red-500/10 border-red-500/30";
 }
 
@@ -96,7 +100,7 @@ function QAEnhancedNodeComponent({
 	const [popupOpen, setPopupOpen] = useState(false);
 
 	const hasPreview =
-		!!data.preview?.thumbnailUrl || !!data.preview?.screenshotUrl;
+		Boolean(data.preview?.thumbnailUrl) || Boolean(data.preview?.screenshotUrl);
 	const passRate = data.metrics?.passRate ?? 0;
 
 	const handleImageClick = useCallback((e: React.MouseEvent) => {
@@ -137,11 +141,11 @@ function QAEnhancedNodeComponent({
 							>
 								{passRate >= 90 ? (
 									<CheckCircle2 className="h-3.5 w-3.5" />
-								) : passRate >= 70 ? (
+								) : (passRate >= 70 ? (
 									<Clock className="h-3.5 w-3.5" />
 								) : (
 									<XCircle className="h-3.5 w-3.5" />
-								)}
+								))}
 								{passRate}%
 							</div>
 						)}
@@ -269,15 +273,15 @@ function NodeExpandPopup({ data, onClose }: NodeExpandPopupProps) {
 
 	const tabs = [
 		{
-			id: "artifacts",
-			icon: Camera,
-			label: "Artifacts",
 			badge: data.artifacts?.length,
+			icon: Camera,
+			id: "artifacts",
+			label: "Artifacts",
 		},
-		{ id: "demo", icon: Play, label: "Demo" },
-		{ id: "tests", icon: FileText, label: "Tests" },
-		{ id: "metrics", icon: BarChart3, label: "Metrics" },
-		{ id: "actions", icon: Settings, label: "Actions" },
+		{ icon: Play, id: "demo", label: "Demo" },
+		{ icon: FileText, id: "tests", label: "Tests" },
+		{ icon: BarChart3, id: "metrics", label: "Metrics" },
+		{ icon: Settings, id: "actions", label: "Actions" },
 	];
 
 	return (
@@ -491,7 +495,7 @@ function DemoTab({ data }: { data: QAEnhancedNodeData }) {
 						>
 							<track kind="captions" />
 						</video>
-					) : isGif ? (
+					) : (isGif ? (
 						<img
 							src={previewUrl}
 							alt={data.label}
@@ -503,7 +507,7 @@ function DemoTab({ data }: { data: QAEnhancedNodeData }) {
 							alt={data.label}
 							className="w-full h-full object-contain"
 						/>
-					)}
+					))}
 				</div>
 			</div>
 		);
@@ -519,7 +523,7 @@ function DemoTab({ data }: { data: QAEnhancedNodeData }) {
 }
 
 function TestsTab({ data }: { data: QAEnhancedNodeData }) {
-	const metrics = data.metrics;
+	const { metrics } = data;
 
 	if (!metrics) {
 		return (
@@ -570,9 +574,9 @@ function TestsTab({ data }: { data: QAEnhancedNodeData }) {
 						className={`h-full transition-all ${
 							metrics.passRate >= 90
 								? "bg-green-500"
-								: metrics.passRate >= 70
+								: (metrics.passRate >= 70
 									? "bg-yellow-500"
-									: "bg-red-500"
+									: "bg-red-500")
 						}`}
 						style={{ width: `${metrics.passRate}%` }}
 					/>
@@ -606,7 +610,7 @@ function TestsTab({ data }: { data: QAEnhancedNodeData }) {
 }
 
 function MetricsTab({ data }: { data: QAEnhancedNodeData }) {
-	const metrics = data.metrics;
+	const { metrics } = data;
 
 	return (
 		<div className="space-y-4">
@@ -669,7 +673,7 @@ function ActionsTab({
 	data: QAEnhancedNodeData;
 	onClose: () => void;
 }) {
-	void _onClose; // Reserved for future use
+	undefined; // Reserved for future use
 	const handleRunTests = useCallback(() => {
 		data.onRunTests?.(data.id);
 	}, [data]);

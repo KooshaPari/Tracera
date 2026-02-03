@@ -25,30 +25,30 @@ const statusConfig: Record<
 	string,
 	{ label: string; color: string; icon: typeof CheckCircle2 }
 > = {
-	done: {
-		label: "Done",
-		color: "bg-green-500/10 text-green-600 border-green-500/20",
-		icon: CheckCircle2,
-	},
-	in_progress: {
-		label: "In progress",
-		color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-		icon: Clock,
-	},
 	blocked: {
-		label: "Blocked",
 		color: "bg-red-500/10 text-red-600 border-red-500/20",
 		icon: AlertCircle,
-	},
-	todo: {
-		label: "To do",
-		color: "bg-muted text-muted-foreground",
-		icon: Terminal,
+		label: "Blocked",
 	},
 	cancelled: {
-		label: "Cancelled",
 		color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
 		icon: X,
+		label: "Cancelled",
+	},
+	done: {
+		color: "bg-green-500/10 text-green-600 border-green-500/20",
+		icon: CheckCircle2,
+		label: "Done",
+	},
+	in_progress: {
+		color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+		icon: Clock,
+		label: "In progress",
+	},
+	todo: {
+		color: "bg-muted text-muted-foreground",
+		icon: Terminal,
+		label: "To do",
 	},
 };
 
@@ -63,10 +63,9 @@ export function MonitoringView({ projectId }: MonitoringViewProps) {
 		return acc;
 	}, {});
 
-	const criticalHigh =
-		items.filter(
-			(i) => i.priority === "critical" || i.priority === "high",
-		).length;
+	const criticalHigh = items.filter(
+		(i) => i.priority === "critical" || i.priority === "high",
+	).length;
 
 	return (
 		<div className="flex flex-col h-full">
@@ -90,9 +89,7 @@ export function MonitoringView({ projectId }: MonitoringViewProps) {
 				<div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">
-								Total items
-							</CardTitle>
+							<CardTitle className="text-sm font-medium">Total items</CardTitle>
 							<Monitor className="h-4 w-4 text-muted-foreground" />
 						</CardHeader>
 						<CardContent>
@@ -110,7 +107,7 @@ export function MonitoringView({ projectId }: MonitoringViewProps) {
 					</Card>
 					{(["done", "in_progress", "blocked", "todo"] as const).map(
 						(status) => {
-							const c = statusConfig[status] ?? statusConfig['todo'];
+							const c = statusConfig[status] ?? statusConfig["todo"];
 							const count = byStatus[status] ?? 0;
 							const Icon = c?.icon;
 							return (
@@ -119,7 +116,9 @@ export function MonitoringView({ projectId }: MonitoringViewProps) {
 										<CardTitle className="text-sm font-medium">
 											{c?.label ?? status}
 										</CardTitle>
-										{Icon ? <Icon className="h-4 w-4 text-muted-foreground" /> : null}
+										{Icon ? (
+											<Icon className="h-4 w-4 text-muted-foreground" />
+										) : null}
 									</CardHeader>
 									<CardContent>
 										{isLoading ? (

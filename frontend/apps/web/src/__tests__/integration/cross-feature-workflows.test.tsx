@@ -17,16 +17,16 @@ class MockApiClient {
 	async createProject(name: string, description: string) {
 		await new Promise((resolve) => setTimeout(resolve, this.delay));
 		return {
+			createdAt: new Date(),
+			description,
 			id: `proj-${Date.now()}`,
 			name,
-			description,
-			createdAt: new Date(),
 		};
 	}
 
 	async createItem(projectId: string, name: string) {
 		await new Promise((resolve) => setTimeout(resolve, this.delay));
-		return { id: `item-${Date.now()}`, projectId, name, createdAt: new Date() };
+		return { createdAt: new Date(), id: `item-${Date.now()}`, name, projectId };
 	}
 
 	async createLink(sourceId: string, targetId: string, type: string) {
@@ -93,7 +93,7 @@ function MockProjectWorkflow({
 		setIsLoading(true);
 		try {
 			const report = await api.generateReport(project.id, "coverage", "pdf");
-			onWorkflowComplete({ project, items, report });
+			onWorkflowComplete({ items, project, report });
 			setStep(3);
 		} finally {
 			setIsLoading(false);
@@ -428,7 +428,6 @@ describe("Project Creation Workflow - End-to-End", () => {
 	});
 
 	it("should prevent incomplete workflow progression", async () => {
-
 		render(<MockProjectWorkflow />);
 
 		// Create project
@@ -474,7 +473,6 @@ describe("Search and Filter Integration", () => {
 	});
 
 	it("should display no results message when search returns empty", async () => {
-
 		render(<MockSearchWorkflow />);
 
 		const searchInput = screen.getByPlaceholderText("Search items...");
@@ -496,7 +494,6 @@ describe("Search and Filter Integration", () => {
 	});
 
 	it("should enable search button when query is entered", async () => {
-
 		render(<MockSearchWorkflow />);
 
 		const searchInput = screen.getByPlaceholderText("Search items...");
@@ -533,23 +530,19 @@ describe("Link Creation Workflow", () => {
 	});
 
 	it("should support different link types", async () => {
-
 		render(<MockLinkCreationWorkflow />);
 
 		const linkTypeSelect = screen.getByDisplayValue("Traces");
 
 		// Should have multiple options
 		const options =
-			linkTypeSelect instanceof HTMLSelectElement
-				? linkTypeSelect.options
-				: [];
+			linkTypeSelect instanceof HTMLSelectElement ? linkTypeSelect.options : [];
 		expect(options).toHaveLength(4);
 		expect(options[1]).toHaveTextContent("Implements");
 		expect(options[2]).toHaveTextContent("Verifies");
 	});
 
 	it("should create multiple links in sequence", async () => {
-
 		render(<MockLinkCreationWorkflow />);
 
 		const sourceInput = screen.getByPlaceholderText("e.g., REQ-001");
@@ -584,9 +577,9 @@ describe("Cross-Feature Workflow Integration", () => {
 		onWorkflowMetrics?: (metrics: unknown) => void;
 	}) {
 		const [workflowState, setWorkflowState] = React.useState({
-			projectCreated: false,
 			itemsAdded: 0,
 			linksCreated: 0,
+			projectCreated: false,
 			reportGenerated: false,
 			sharedLink: null,
 		});
@@ -618,7 +611,7 @@ describe("Cross-Feature Workflow Integration", () => {
 						onChange={(e) =>
 							setWorkflowState({
 								...workflowState,
-								itemsAdded: parseInt(e.target.value, 10),
+								itemsAdded: Number.parseInt(e.target.value, 10),
 							})
 						}
 						min="0"
@@ -633,7 +626,7 @@ describe("Cross-Feature Workflow Integration", () => {
 						onChange={(e) =>
 							setWorkflowState({
 								...workflowState,
-								linksCreated: parseInt(e.target.value, 10),
+								linksCreated: Number.parseInt(e.target.value, 10),
 							})
 						}
 						min="0"
@@ -699,9 +692,9 @@ describe("Cross-Feature Workflow Integration", () => {
 		await waitFor(() => {
 			expect(handleMetrics).toHaveBeenCalledWith(
 				expect.objectContaining({
-					projectCreated: true,
 					itemsAdded: 5,
 					linksCreated: 3,
+					projectCreated: true,
 					reportGenerated: true,
 				}),
 			);
@@ -726,7 +719,8 @@ describe("Error Recovery in Workflows", () => {
 				}
 				setError(null);
 			} catch (error) {
-				const errorMsg = error instanceof Error ? error.message : "Unknown error";
+				const errorMsg =
+					error instanceof Error ? error.message : "Unknown error";
 				setError(errorMsg);
 				onError(new Error(errorMsg));
 			}
@@ -766,9 +760,7 @@ describe("Error Recovery in Workflows", () => {
 	it("should handle workflow errors gracefully", async () => {
 		const handleError = vi.fn();
 
-		render(
-			<MockWorkflowWithErrorHandling shouldFail={true} onError={handleError} />,
-		);
+		render(<MockWorkflowWithErrorHandling shouldFail onError={handleError} />);
 
 		const actionBtn = screen.getByRole("button", {
 			name: "Perform Action",
@@ -782,8 +774,7 @@ describe("Error Recovery in Workflows", () => {
 	});
 
 	it("should allow dismissing errors", async () => {
-
-		render(<MockWorkflowWithErrorHandling shouldFail={true} />);
+		render(<MockWorkflowWithErrorHandling shouldFail />);
 
 		const actionBtn = screen.getByRole("button", {
 			name: "Perform Action",

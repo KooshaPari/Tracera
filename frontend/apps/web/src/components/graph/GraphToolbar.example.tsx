@@ -1,14 +1,14 @@
 // Example: Integrating GraphToolbar into FlowGraphViewInner
 // This shows how to use the new toolbar with all features
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { FlowGraphViewInner } from "./FlowGraphViewInner";
 import { GraphToolbar } from "./GraphToolbar";
 import type { Item, Link } from "@tracertm/types";
 import type { LayoutType } from "./layouts/useDAGLayout";
 import type { GraphPerspective } from "./types";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 interface EnhancedGraphViewProps {
 	items: Item[];
@@ -29,14 +29,18 @@ export function EnhancedGraphView({
 	const [selectedNodeTypes, setSelectedNodeTypes] = useState<string[]>([]);
 
 	// Derive unique node types from items
-	const nodeTypes = Array.from(
-		new Set(items.map((item) => item.type || "item").map((t) => t.toLowerCase()))
-	);
+	const nodeTypes = [
+		...new Set(
+			items.map((item) => item.type || "item").map((t) => t.toLowerCase()),
+		),
+	];
 
 	// Fullscreen toggle
 	const handleFullscreenToggle = useCallback(async () => {
 		const container = document.querySelector(".graph-container");
-		if (!container) return;
+		if (!container) {
+			return;
+		}
 
 		try {
 			if (document.fullscreenElement) {
@@ -46,8 +50,8 @@ export function EnhancedGraphView({
 				await (container as HTMLElement).requestFullscreen();
 				setIsFullscreen(true);
 			}
-        } catch {
-            // Fullscreen not supported or denied
+		} catch {
+			// Fullscreen not supported or denied
 		}
 	}, []);
 
@@ -68,7 +72,7 @@ export function EnhancedGraphView({
 	const filteredItems =
 		selectedNodeTypes.length > 0
 			? items.filter((item) =>
-					selectedNodeTypes.includes((item.type || "item").toLowerCase())
+					selectedNodeTypes.includes((item.type || "item").toLowerCase()),
 				)
 			: items;
 
@@ -94,7 +98,7 @@ export function EnhancedGraphView({
 					visibleEdges={links.length}
 					onReset={handleReset}
 					onExport={handleExport}
-					variant="full" // or "compact" or "minimal"
+					variant="full" // Or "compact" or "minimal"
 				/>
 
 				{/* Graph View */}
@@ -106,7 +110,7 @@ export function EnhancedGraphView({
 						defaultLayout={layout}
 						onNavigateToItem={onNavigateToItem}
 						showControls={false} // Toolbar provides controls
-						autoFit={true}
+						autoFit
 					/>
 				</div>
 			</div>
@@ -173,7 +177,11 @@ export function MinimalGraphView({
 				/>
 
 				<div className="flex-1 mt-1">
-					<FlowGraphViewInner items={items} links={links} showControls={false} />
+					<FlowGraphViewInner
+						items={items}
+						links={links}
+						showControls={false}
+					/>
 				</div>
 			</div>
 		</ReactFlowProvider>

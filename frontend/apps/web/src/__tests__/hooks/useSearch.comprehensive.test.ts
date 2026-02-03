@@ -29,14 +29,14 @@ describe("useSearch - Comprehensive Coverage", () => {
 		vi.clearAllTimers();
 	});
 
-	describe("useSearch", () => {
+	describe(useSearch, () => {
 		it("should initialize with custom query", () => {
 			const { result } = renderHook(
 				() =>
 					useSearch({
-						q: "initial",
 						page: 2,
 						per_page: 10,
+						q: "initial",
 					}),
 				{
 					wrapper: createWrapper(),
@@ -49,7 +49,7 @@ describe("useSearch - Comprehensive Coverage", () => {
 		});
 
 		it("should debounce search query", async () => {
-			const mockResults = { items: [], total: 0, query: "test", page: 1 };
+			const mockResults = { items: [], page: 1, query: "test", total: 0 };
 			vi.mocked(api.search.search).mockResolvedValue(mockResults);
 
 			const { result } = renderHook(() => useSearch(), {
@@ -113,9 +113,9 @@ describe("useSearch - Comprehensive Coverage", () => {
 
 			act(() => {
 				result.current.updateQuery({
-					types: ["feature", "bug"],
-					statuses: ["in_progress"],
 					projectId: "proj-1",
+					statuses: ["in_progress"],
+					types: ["feature", "bug"],
 				});
 			});
 
@@ -143,7 +143,7 @@ describe("useSearch - Comprehensive Coverage", () => {
 		});
 	});
 
-	describe("useSearchSuggestions", () => {
+	describe(useSearchSuggestions, () => {
 		it("should fetch suggestions when query is long enough", async () => {
 			const mockSuggestions = ["test1", "test2"];
 			vi.mocked(api.search.suggest).mockResolvedValue(mockSuggestions);
@@ -202,9 +202,12 @@ describe("useSearch - Comprehensive Coverage", () => {
 			const mockSuggestions = ["test1", "test2", "test3"];
 			vi.mocked(api.search.suggest).mockResolvedValue(mockSuggestions);
 
-			const { result: _result } = renderHook(() => useSearchSuggestions("test", 5), {
-				wrapper: createWrapper(),
-			});
+			const { result: _result } = renderHook(
+				() => useSearchSuggestions("test", 5),
+				{
+					wrapper: createWrapper(),
+				},
+			);
 
 			await waitFor(
 				() => {

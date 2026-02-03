@@ -4,9 +4,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button } from "@tracertm/ui";
 
 const meta: Meta<typeof Button> = {
-	title: "Components/Button",
-	component: Button,
-	tags: ["autodocs"],
 	argTypes: {
 		variant: {
 			control: "select",
@@ -24,6 +21,7 @@ const meta: Meta<typeof Button> = {
 			options: ["default", "sm", "lg", "icon"],
 		},
 	},
+	component: Button,
 	parameters: {
 		design: {
 			type: "figma",
@@ -34,6 +32,8 @@ const meta: Meta<typeof Button> = {
 			storyId: "story-button-001",
 		},
 	},
+	tags: ["autodocs"],
+	title: "Components/Button",
 };
 
 export default meta;

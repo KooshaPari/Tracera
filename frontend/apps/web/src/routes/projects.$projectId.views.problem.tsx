@@ -12,7 +12,5 @@ export const Route = createFileRoute(
 	"/projects/$projectId/views/problem" as any,
 )({
 	component: ProblemViewRoute,
-	loader: async () => {
-		return {};
-	},
+	loader: async () => ({}),
 });

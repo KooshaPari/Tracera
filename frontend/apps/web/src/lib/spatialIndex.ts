@@ -70,7 +70,9 @@ function calculateEdgeBounds(
 	nodePositions: Map<string, NodePosition> | Record<string, NodePosition>,
 ): RTreeItem | null {
 	const positions =
-		nodePositions instanceof Map ? nodePositions : new Map(Object.entries(nodePositions));
+		nodePositions instanceof Map
+			? nodePositions
+			: new Map(Object.entries(nodePositions));
 
 	const sourcePos = positions.get(edge.source);
 	const targetPos = positions.get(edge.target);
@@ -227,7 +229,10 @@ export class RBushSpatialIndex {
 	 * @param padding - Extra space around viewport (default 100)
 	 * @returns Array of visible edges
 	 */
-	searchViewport(viewportBounds: ViewportBounds, padding: number = 100): Edge[] {
+	searchViewport(
+		viewportBounds: ViewportBounds,
+		padding: number = 100,
+	): Edge[] {
 		const searchBounds = {
 			minX: viewportBounds.minX - padding,
 			maxX: viewportBounds.maxX + padding,
@@ -314,16 +319,18 @@ export class RBushSpatialIndex {
 		const totalEdges = this.edgeMap.size;
 
 		// Estimate tree depth (log base 16 for default maxEntries=16)
-		const treeDepth = totalEdges > 0 ? Math.ceil(Math.log(totalEdges) / Math.log(16)) : 0;
+		const treeDepth =
+			totalEdges > 0 ? Math.ceil(Math.log(totalEdges) / Math.log(16)) : 0;
 
 		// Estimate memory usage
 		// Each RTreeItem: ~24 bytes (4 coords + 2 refs)
 		// Tree overhead: ~30% of items
 		const memoryBytes = totalEdges * 24 * 1.3;
 		const memoryMB = memoryBytes / (1024 * 1024);
-		const memoryEstimate = memoryMB < 1
-			? `${Math.round(memoryBytes / 1024)} KB`
-			: `${memoryMB.toFixed(2)} MB`;
+		const memoryEstimate =
+			memoryMB < 1
+				? `${Math.round(memoryBytes / 1024)} KB`
+				: `${memoryMB.toFixed(2)} MB`;
 
 		return {
 			totalEdges,
@@ -402,7 +409,9 @@ export function benchmarkSpatialIndex(
 
 	// Convert to Map for consistent access
 	const posMap =
-		nodePositions instanceof Map ? nodePositions : new Map(Object.entries(nodePositions));
+		nodePositions instanceof Map
+			? nodePositions
+			: new Map(Object.entries(nodePositions));
 
 	// Benchmark linear search (O(n))
 	const linearStart = performance.now();
@@ -451,7 +460,8 @@ export function benchmarkSpatialIndex(
 	// Verify results match
 	const linearIds = new Set(linearResults.map((e) => e.id));
 	const rtreeIds = new Set(rtreeResults.map((e) => e.id));
-	const resultsMatch = linearIds.size === rtreeIds.size &&
+	const resultsMatch =
+		linearIds.size === rtreeIds.size &&
 		Array.from(linearIds).every((id) => rtreeIds.has(id));
 
 	return {
@@ -500,7 +510,7 @@ export class GraphSpatialIndex {
 
 	indexNodes(nodes: Array<{ id: string; position: { x: number; y: number } }>) {
 		this.nodeIndex.clear();
-		const items = nodes.map(node => ({
+		const items = nodes.map((node) => ({
 			minX: node.position.x - 50, // Node width/2
 			minY: node.position.y - 25, // Node height/2
 			maxX: node.position.x + 50,
@@ -512,11 +522,11 @@ export class GraphSpatialIndex {
 
 	indexEdges(
 		edges: Array<{ id: string; sourceId: string; targetId: string }>,
-		nodePositions: Map<string, { x: number; y: number }>
+		nodePositions: Map<string, { x: number; y: number }>,
 	) {
 		this.edgeIndex.clear();
 		const items = edges
-			.map(edge => {
+			.map((edge) => {
 				const sourcePos = nodePositions.get(edge.sourceId);
 				const targetPos = nodePositions.get(edge.targetId);
 				if (!sourcePos || !targetPos) return null;

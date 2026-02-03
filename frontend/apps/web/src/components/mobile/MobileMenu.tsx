@@ -34,34 +34,31 @@ export function MobileMenu({ className }: MobileMenuProps) {
 	};
 
 	const handleLogout = () => {
-		void logout();
+		undefined;
 		setIsOpen(false);
-		void navigate({ to: "/home" } as any);
+		undefined;
 	};
 
 	const menuItems = [
 		{
-			label: "Dashboard",
 			href: "/home",
 			icon: Home,
+			label: "Dashboard",
 		},
 		{
-			label: "Projects",
 			href: "/projects",
 			icon: FolderOpen,
+			label: "Projects",
 		},
 		{
-			label: "Settings",
 			href: "/settings",
 			icon: Settings,
+			label: "Settings",
 		},
 	];
 
-	const isActive = (href: string) => {
-		return (
-			location.pathname === href || location.pathname.startsWith(`${href}/`)
-		);
-	};
+	const isActive = (href: string) =>
+		location.pathname === href || location.pathname.startsWith(`${href}/`);
 
 	return (
 		<>
@@ -112,7 +109,7 @@ export function MobileMenu({ className }: MobileMenuProps) {
 				</div>
 
 				{/* Navigation items */}
-				<nav className="flex-1 p-4 sm:p-6 space-y-2" role="navigation">
+				<nav className="flex-1 p-4 sm:p-6 space-y-2">
 					{menuItems.map((item) => {
 						const Icon = item.icon;
 						const active = isActive(item.href);

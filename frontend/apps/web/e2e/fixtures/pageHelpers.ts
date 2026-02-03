@@ -337,8 +337,8 @@ export async function scrollToElement(
  */
 export async function takeScreenshot(page: Page, name: string): Promise<void> {
 	await page.screenshot({
-		path: `test-results/screenshots/${name}.png`,
 		fullPage: true,
+		path: `test-results/screenshots/${name}.png`,
 	});
 }
 
@@ -486,10 +486,10 @@ export async function setCookie(
 ): Promise<void> {
 	await page.context().addCookies([
 		{
-			name,
-			value,
 			domain: "localhost",
+			name,
 			path: "/",
+			value,
 		},
 	]);
 }

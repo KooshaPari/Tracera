@@ -15,48 +15,50 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformTestSuite(data: Record<string, unknown>): TestSuite {
 	return {
-		id: data['id'],
-		suiteNumber: data['suite_number'],
-		projectId: data['project_id'],
+		automatedCount: data["automated_count"],
+		category: data["category"],
+		createdAt: data["created_at"],
+		description: data["description"],
+		environmentVariables: data["environment_variables"],
+		estimatedDurationMinutes: data["estimated_duration_minutes"],
+		id: data["id"],
+		isParallelExecution: data["is_parallel_execution"],
+		lastRunAt: data["last_run_at"],
+		lastRunStatus: data["last_run_status"],
+		manualCount: data["manual_count"],
+		metadata: data["suite_metadata"],
 		name: data.name,
-		description: data['description'],
-		objective: data['objective'],
+		objective: data["objective"],
+		orderIndex: data["order_index"],
+		owner: data["owner"],
+		parentId: data["parent_id"],
+		passRate: data["pass_rate"],
+		projectId: data["project_id"],
+		requiredEnvironment: data["required_environment"],
+		responsibleTeam: data["responsible_team"],
+		setupInstructions: data["setup_instructions"],
 		status: data.status,
-		parentId: data['parent_id'],
-		orderIndex: data['order_index'],
-		category: data['category'],
-		tags: data['tags'],
-		isParallelExecution: data['is_parallel_execution'],
-		estimatedDurationMinutes: data['estimated_duration_minutes'],
-		requiredEnvironment: data['required_environment'],
-		environmentVariables: data['environment_variables'],
-		setupInstructions: data['setup_instructions'],
-		teardownInstructions: data['teardown_instructions'],
-		owner: data['owner'],
-		responsibleTeam: data['responsible_team'],
-		totalTestCases: data['total_test_cases'],
-		automatedCount: data['automated_count'],
-		manualCount: data['manual_count'],
-		passRate: data['pass_rate'],
-		lastRunAt: data['last_run_at'],
-		lastRunStatus: data['last_run_status'],
-		metadata: data['suite_metadata'],
-		version: data['version'],
-		createdAt: data['created_at'],
-		updatedAt: data['updated_at'],
+		suiteNumber: data["suite_number"],
+		tags: data["tags"],
+		teardownInstructions: data["teardown_instructions"],
+		totalTestCases: data["total_test_cases"],
+		updatedAt: data["updated_at"],
+		version: data["version"],
 	};
 }
 
-function transformTestSuiteTestCase(data: Record<string, unknown>): TestSuiteTestCase {
+function transformTestSuiteTestCase(
+	data: Record<string, unknown>,
+): TestSuiteTestCase {
 	return {
-		id: data['id'],
-		suiteId: data['suite_id'],
-		testCaseId: data['test_case_id'],
-		orderIndex: data['order_index'],
-		isMandatory: data['is_mandatory'],
-		skipReason: data['skip_reason'],
-		customParameters: data['custom_parameters'],
-		createdAt: data['created_at'],
+		createdAt: data["created_at"],
+		customParameters: data["custom_parameters"],
+		id: data["id"],
+		isMandatory: data["is_mandatory"],
+		orderIndex: data["order_index"],
+		skipReason: data["skip_reason"],
+		suiteId: data["suite_id"],
+		testCaseId: data["test_case_id"],
 	};
 }
 
@@ -76,13 +78,27 @@ async function fetchTestSuites(
 ): Promise<{ testSuites: TestSuite[]; total: number }> {
 	const params = new URLSearchParams();
 	params.set("project_id", filters.projectId);
-	if (filters.status) params.set("status", filters.status);
-	if (filters.category) params.set("category", filters.category);
-	if (filters.parentId !== undefined) params.set("parent_id", filters.parentId);
-	if (filters.owner) params.set("owner", filters.owner);
-	if (filters.search) params.set("search", filters.search);
-	if (filters.skip !== undefined) params.set("skip", String(filters.skip));
-	if (filters.limit !== undefined) params.set("limit", String(filters.limit));
+	if (filters.status) {
+		params.set("status", filters.status);
+	}
+	if (filters.category) {
+		params.set("category", filters.category);
+	}
+	if (filters.parentId !== undefined) {
+		params.set("parent_id", filters.parentId);
+	}
+	if (filters.owner) {
+		params.set("owner", filters.owner);
+	}
+	if (filters.search) {
+		params.set("search", filters.search);
+	}
+	if (filters.skip !== undefined) {
+		params.set("skip", String(filters.skip));
+	}
+	if (filters.limit !== undefined) {
+		params.set("limit", String(filters.limit));
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/test-suites?${params}`, {
 		headers: {
@@ -96,8 +112,8 @@ async function fetchTestSuites(
 	}
 	const data = await res.json();
 	return {
-		testSuites: (data['test_suites'] || []).map(transformTestSuite),
-		total: data['total'] || 0,
+		testSuites: (data["test_suites"] || []).map(transformTestSuite),
+		total: data["total"] || 0,
 	};
 }
 
@@ -105,7 +121,9 @@ async function fetchTestSuite(id: string): Promise<TestSuite> {
 	const res = await fetch(`${API_URL}/api/v1/test-suites/${id}`, {
 		headers: getAuthHeaders(),
 	});
-	if (!res.ok) throw new Error("Failed to fetch test suite");
+	if (!res.ok) {
+		throw new Error("Failed to fetch test suite");
+	}
 	const data = await res.json();
 	return transformTestSuite(data);
 }
@@ -134,33 +152,35 @@ async function createTestSuite(
 	data: CreateTestSuiteData,
 ): Promise<{ id: string; suiteNumber: string }> {
 	const res = await fetch(
-		`${API_URL}/api/v1/test-suites?project_id=${data['projectId']}`,
+		`${API_URL}/api/v1/test-suites?project_id=${data["projectId"]}`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
+				category: data["category"],
+				description: data["description"],
+				environment_variables: data["environmentVariables"],
+				estimated_duration_minutes: data["estimatedDurationMinutes"],
+				is_parallel_execution: data["isParallelExecution"] || false,
+				metadata: data["metadata"] || {},
 				name: data.name,
-				description: data['description'],
-				objective: data['objective'],
-				parent_id: data['parentId'],
-				order_index: data['orderIndex'] || 0,
-				category: data['category'],
-				tags: data['tags'],
-				is_parallel_execution: data['isParallelExecution'] || false,
-				estimated_duration_minutes: data['estimatedDurationMinutes'],
-				required_environment: data['requiredEnvironment'],
-				environment_variables: data['environmentVariables'],
-				setup_instructions: data['setupInstructions'],
-				teardown_instructions: data['teardownInstructions'],
-				owner: data['owner'],
-				responsible_team: data['responsibleTeam'],
-				metadata: data['metadata'] || {},
+				objective: data["objective"],
+				order_index: data["orderIndex"] || 0,
+				owner: data["owner"],
+				parent_id: data["parentId"],
+				required_environment: data["requiredEnvironment"],
+				responsible_team: data["responsibleTeam"],
+				setup_instructions: data["setupInstructions"],
+				tags: data["tags"],
+				teardown_instructions: data["teardownInstructions"],
 			}),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to create test suite");
+	if (!res.ok) {
+		throw new Error("Failed to create test suite");
+	}
 	const result = await res.json();
-	return { id: result['id'], suiteNumber: result['suite_number'] };
+	return { id: result["id"], suiteNumber: result["suite_number"] };
 }
 
 async function updateTestSuite(
@@ -168,28 +188,30 @@ async function updateTestSuite(
 	data: Partial<CreateTestSuiteData>,
 ): Promise<{ id: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/test-suites/${id}`, {
-		method: "PUT",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
+			category: data["category"],
+			description: data["description"],
+			environment_variables: data["environmentVariables"],
+			estimated_duration_minutes: data["estimatedDurationMinutes"],
+			is_parallel_execution: data["isParallelExecution"],
+			metadata: data["metadata"],
 			name: data.name,
-			description: data['description'],
-			objective: data['objective'],
-			parent_id: data['parentId'],
-			order_index: data['orderIndex'],
-			category: data['category'],
-			tags: data['tags'],
-			is_parallel_execution: data['isParallelExecution'],
-			estimated_duration_minutes: data['estimatedDurationMinutes'],
-			required_environment: data['requiredEnvironment'],
-			environment_variables: data['environmentVariables'],
-			setup_instructions: data['setupInstructions'],
-			teardown_instructions: data['teardownInstructions'],
-			owner: data['owner'],
-			responsible_team: data['responsibleTeam'],
-			metadata: data['metadata'],
+			objective: data["objective"],
+			order_index: data["orderIndex"],
+			owner: data["owner"],
+			parent_id: data["parentId"],
+			required_environment: data["requiredEnvironment"],
+			responsible_team: data["responsibleTeam"],
+			setup_instructions: data["setupInstructions"],
+			tags: data["tags"],
+			teardown_instructions: data["teardownInstructions"],
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "PUT",
 	});
-	if (!res.ok) throw new Error("Failed to update test suite");
+	if (!res.ok) {
+		throw new Error("Failed to update test suite");
+	}
 	return res.json();
 }
 
@@ -199,12 +221,12 @@ async function transitionTestSuiteStatus(
 	reason?: string,
 ): Promise<{ id: string; status: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/test-suites/${id}/status`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			new_status: newStatus,
 			reason,
 		}),
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+		method: "POST",
 	});
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -215,10 +237,12 @@ async function transitionTestSuiteStatus(
 
 async function deleteTestSuite(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/test-suites/${id}`, {
-		method: "DELETE",
 		headers: getAuthHeaders(),
+		method: "DELETE",
 	});
-	if (!res.ok) throw new Error("Failed to delete test suite");
+	if (!res.ok) {
+		throw new Error("Failed to delete test suite");
+	}
 }
 
 // Test case management within suites
@@ -233,18 +257,20 @@ async function addTestCaseToSuite(
 	const res = await fetch(
 		`${API_URL}/api/v1/test-suites/${suiteId}/test-cases`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
-				test_case_id: testCaseId,
-				order_index: orderIndex || 0,
-				is_mandatory: isMandatory !== false,
-				skip_reason: skipReason,
 				custom_parameters: customParameters,
+				is_mandatory: isMandatory !== false,
+				order_index: orderIndex || 0,
+				skip_reason: skipReason,
+				test_case_id: testCaseId,
 			}),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to add test case to suite");
+	if (!res.ok) {
+		throw new Error("Failed to add test case to suite");
+	}
 	const data = await res.json();
 	return transformTestSuiteTestCase(data);
 }
@@ -256,11 +282,13 @@ async function removeTestCaseFromSuite(
 	const res = await fetch(
 		`${API_URL}/api/v1/test-suites/${suiteId}/test-cases/${testCaseId}`,
 		{
-			method: "DELETE",
 			headers: getAuthHeaders(),
+			method: "DELETE",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to remove test case from suite");
+	if (!res.ok) {
+		throw new Error("Failed to remove test case from suite");
+	}
 }
 
 async function fetchSuiteTestCases(
@@ -270,9 +298,11 @@ async function fetchSuiteTestCases(
 		`${API_URL}/api/v1/test-suites/${suiteId}/test-cases`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch suite test cases");
+	if (!res.ok) {
+		throw new Error("Failed to fetch suite test cases");
+	}
 	const data = await res.json();
-	return (data['test_cases'] || []).map(transformTestSuiteTestCase);
+	return (data["test_cases"] || []).map(transformTestSuiteTestCase);
 }
 
 async function reorderSuiteTestCases(
@@ -282,14 +312,16 @@ async function reorderSuiteTestCases(
 	const res = await fetch(
 		`${API_URL}/api/v1/test-suites/${suiteId}/test-cases/reorder`,
 		{
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				ordered_test_case_ids: testCaseIds,
 			}),
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+			method: "POST",
 		},
 	);
-	if (!res.ok) throw new Error("Failed to reorder test cases");
+	if (!res.ok) {
+		throw new Error("Failed to reorder test cases");
+	}
 }
 
 async function fetchTestSuiteActivities(
@@ -300,21 +332,25 @@ async function fetchTestSuiteActivities(
 		`${API_URL}/api/v1/test-suites/${suiteId}/activities?limit=${limit}`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch activities");
+	if (!res.ok) {
+		throw new Error("Failed to fetch activities");
+	}
 	const data = await res.json();
 	return {
-		suiteId: data['suite_id'],
-		activities: (data['activities'] || []).map((a: Record<string, unknown>) => ({
-			id: a.id,
-			suiteId: a.suite_id,
-			activityType: a.activity_type,
-			fromValue: a.from_value,
-			toValue: a.to_value,
-			description: a.description,
-			performedBy: a.performed_by,
-			metadata: a.activity_metadata,
-			createdAt: a.created_at,
-		})),
+		activities: (data["activities"] || []).map(
+			(a: Record<string, unknown>) => ({
+				activityType: a.activity_type,
+				createdAt: a.created_at,
+				description: a.description,
+				fromValue: a.from_value,
+				id: a.id,
+				metadata: a.activity_metadata,
+				performedBy: a.performed_by,
+				suiteId: a.suite_id,
+				toValue: a.to_value,
+			}),
+		),
+		suiteId: data["suite_id"],
 	};
 }
 
@@ -323,15 +359,17 @@ async function fetchTestSuiteStats(projectId: string): Promise<TestSuiteStats> {
 		`${API_URL}/api/v1/projects/${projectId}/test-suites/stats`,
 		{ headers: getAuthHeaders() },
 	);
-	if (!res.ok) throw new Error("Failed to fetch test suite stats");
+	if (!res.ok) {
+		throw new Error("Failed to fetch test suite stats");
+	}
 	const data = await res.json();
 	return {
-		projectId: data['project_id'],
-		total: data['total'] || 0,
-		byStatus: data['by_status'] || {},
-		byCategory: data['by_category'] || {},
-		totalTestCases: data['total_test_cases'] || 0,
-		automatedTestCases: data['automated_test_cases'] || 0,
+		automatedTestCases: data["automated_test_cases"] || 0,
+		byCategory: data["by_category"] || {},
+		byStatus: data["by_status"] || {},
+		projectId: data["project_id"],
+		total: data["total"] || 0,
+		totalTestCases: data["total_test_cases"] || 0,
 	};
 }
 
@@ -339,17 +377,17 @@ async function fetchTestSuiteStats(projectId: string): Promise<TestSuiteStats> {
 
 export function useTestSuites(filters: TestSuiteFilters) {
 	return useQuery({
-		queryKey: ["testSuites", filters],
-		queryFn: () => fetchTestSuites(filters),
 		enabled: !!filters.projectId,
+		queryFn: () => fetchTestSuites(filters),
+		queryKey: ["testSuites", filters],
 	});
 }
 
 export function useTestSuite(id: string) {
 	return useQuery({
-		queryKey: ["testSuites", id],
-		queryFn: () => fetchTestSuite(id),
 		enabled: !!id,
+		queryFn: () => fetchTestSuite(id),
+		queryKey: ["testSuites", id],
 	});
 }
 
@@ -358,7 +396,7 @@ export function useCreateTestSuite() {
 	return useMutation({
 		mutationFn: createTestSuite,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["testSuites"] });
+			undefined;
 		},
 	});
 }
@@ -374,8 +412,8 @@ export function useUpdateTestSuite() {
 			data: Partial<CreateTestSuiteData>;
 		}) => updateTestSuite(id, data),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["testSuites"] });
-			void queryClient.invalidateQueries({ queryKey: ["testSuites", id] });
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -393,9 +431,9 @@ export function useTransitionTestSuiteStatus() {
 			reason?: string;
 		}) => transitionTestSuiteStatus(id, newStatus, reason),
 		onSuccess: (_, { id }) => {
-			void queryClient.invalidateQueries({ queryKey: ["testSuites"] });
-			void queryClient.invalidateQueries({ queryKey: ["testSuites", id] });
-			void queryClient.invalidateQueries({ queryKey: ["testSuiteActivities", id] });
+			undefined;
+			undefined;
+			undefined;
 		},
 	});
 }
@@ -405,7 +443,7 @@ export function useDeleteTestSuite() {
 	return useMutation({
 		mutationFn: deleteTestSuite,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["testSuites"] });
+			undefined;
 		},
 	});
 }
@@ -462,9 +500,9 @@ export function useRemoveTestCaseFromSuite() {
 
 export function useSuiteTestCases(suiteId: string) {
 	return useQuery({
-		queryKey: ["suiteTestCases", suiteId],
-		queryFn: () => fetchSuiteTestCases(suiteId),
 		enabled: !!suiteId,
+		queryFn: () => fetchSuiteTestCases(suiteId),
+		queryKey: ["suiteTestCases", suiteId],
 	});
 }
 
@@ -486,16 +524,16 @@ export function useReorderSuiteTestCases() {
 
 export function useTestSuiteActivities(suiteId: string, limit = 50) {
 	return useQuery({
-		queryKey: ["testSuiteActivities", suiteId, limit],
-		queryFn: () => fetchTestSuiteActivities(suiteId, limit),
 		enabled: !!suiteId,
+		queryFn: () => fetchTestSuiteActivities(suiteId, limit),
+		queryKey: ["testSuiteActivities", suiteId, limit],
 	});
 }
 
 export function useTestSuiteStats(projectId: string) {
 	return useQuery({
-		queryKey: ["testSuiteStats", projectId],
-		queryFn: () => fetchTestSuiteStats(projectId),
 		enabled: !!projectId,
+		queryFn: () => fetchTestSuiteStats(projectId),
+		queryKey: ["testSuiteStats", projectId],
 	});
 }

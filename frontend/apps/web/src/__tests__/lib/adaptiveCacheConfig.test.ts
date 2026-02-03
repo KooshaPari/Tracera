@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import {
 	AccessFrequencyCategory,
 	ADAPTIVE_CONFIGS,

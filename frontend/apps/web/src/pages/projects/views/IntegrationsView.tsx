@@ -4,7 +4,7 @@ import type {
 	IntegrationProvider,
 	SyncConflict,
 } from "@tracertm/types";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { useState } from "react";
 import {
 	useConflicts,
@@ -27,9 +27,13 @@ interface IntegrationsViewProps {
 	projectId: string;
 	mode?: "project" | "account";
 	initialTab?: "overview" | "credentials" | "mappings" | "sync" | "conflicts";
-	allowedTabs?: Array<
-		"overview" | "credentials" | "mappings" | "sync" | "conflicts"
-	>;
+	allowedTabs?: (
+		| "overview"
+		| "credentials"
+		| "mappings"
+		| "sync"
+		| "conflicts"
+	)[];
 }
 
 export default function IntegrationsView({
@@ -79,10 +83,10 @@ export default function IntegrationsView({
 					),
 				)
 			: defaultTabs
-	) as Array<{
+	) as {
 		id: "overview" | "credentials" | "mappings" | "sync" | "conflicts";
 		label: string;
-	}>;
+	}[];
 
 	return (
 		<div className="p-6">
@@ -98,7 +102,7 @@ export default function IntegrationsView({
 
 			{/* Tabs */}
 			<div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-				<nav className="flex space-x-8" role="navigation">
+				<nav className="flex space-x-8">
 					{tabs.map((tab) => (
 						<button
 							type="button"
@@ -179,16 +183,16 @@ function OverviewTab({
 	const startOAuth = useStartOAuth();
 
 	const handleConnect = async (provider: IntegrationProvider) => {
-		const redirectUri = `${window.location.origin}/integrations/callback`;
+		const redirectUri = `${globalThis.location.origin}/integrations/callback`;
 		try {
 			const result = await startOAuth.mutateAsync({
+				credentialScope: mode === "account" ? "user" : "project",
 				projectId,
 				provider,
 				redirectUri,
-				credentialScope: mode === "account" ? "user" : "project",
 			});
 			// Redirect to OAuth provider
-			window.location.href = result.auth_url;
+			globalThis.location.href = result.auth_url;
 		} catch (error) {
 			logger.error("Failed to start OAuth:", error);
 		}
@@ -536,12 +540,12 @@ function MappingsTab({
 										onClick={() =>
 											handleCreateMapping({
 												externalId: repo.fullName,
+												externalKey: repo.fullName,
 												externalType: "github_repo",
 												externalUrl: repo.htmlUrl,
-												externalKey: repo.fullName,
 												mappingMetadata: {
-													repo_full_name: repo.fullName,
 													external_kind: "repo",
+													repo_full_name: repo.fullName,
 												},
 											})
 										}
@@ -590,14 +594,14 @@ function MappingsTab({
 										onClick={() =>
 											handleCreateMapping({
 												externalId: project.id,
+												externalKey: project.title,
 												externalType: "github_project",
 												externalUrl: project.url,
-												externalKey: project.title,
 												mappingMetadata: {
+													external_kind: "project",
 													project_id: project.id,
 													project_owner: projectOwner,
 													project_owner_is_org: projectOwnerIsOrg,
-													external_kind: "project",
 												},
 											})
 										}
@@ -629,12 +633,12 @@ function MappingsTab({
 									onClick={() =>
 										handleCreateMapping({
 											externalId: project.id,
+											externalKey: project.name,
 											externalType: "linear_project",
 											externalUrl: project.url,
-											externalKey: project.name,
 											mappingMetadata: {
-												project_id: project.id,
 												external_kind: "project",
+												project_id: project.id,
 											},
 										})
 									}
@@ -671,7 +675,7 @@ function MappingsTab({
 										</span>
 									</div>
 									<div className="text-sm text-gray-500 mt-1">
-										Local: {mapping.localItemId.substring(0, 8)}... | External:{" "}
+										Local: {mapping.localItemId.slice(0, 8)}... | External:{" "}
 										{mapping.externalKey || mapping.externalId}
 									</div>
 									{mapping.externalUrl && (
@@ -691,8 +695,8 @@ function MappingsTab({
 										type="button"
 										onClick={() =>
 											triggerSync.mutate({
-												mappingId: mapping.id,
 												direction: "pull",
+												mappingId: mapping.id,
 											})
 										}
 										disabled={triggerSync.isPending}
@@ -1023,15 +1027,15 @@ function StatusBadge({ status }: { status: string }) {
 			"bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
 		completed:
 			"bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+		error: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+		expired:
+			"bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+		failed: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+		paused: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
 		pending:
 			"bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
 		processing:
 			"bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-		failed: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-		error: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-		expired:
-			"bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-		paused: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
 	};
 
 	return (

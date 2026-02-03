@@ -182,7 +182,8 @@ describe("Form Accessibility - Validation Announcements", () => {
 		const { rerender, getByLabelText } = render(<AccessibleForm />);
 
 		let titleInputEl = getByLabelText(/title/i);
-		let titleInput = titleInputEl instanceof HTMLInputElement ? titleInputEl : null;
+		let titleInput =
+			titleInputEl instanceof HTMLInputElement ? titleInputEl : null;
 		expect(titleInput).not.toBeNull();
 		expect(titleInput!).toHaveAttribute("aria-invalid", "false");
 

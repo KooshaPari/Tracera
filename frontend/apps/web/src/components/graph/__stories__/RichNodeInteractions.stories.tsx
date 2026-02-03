@@ -10,16 +10,16 @@ import {
 
 // NodeActions Stories
 const NodeActionsMeta: Meta<typeof NodeActions> = {
-	title: "Graph/Interactions/NodeActions",
-	component: NodeActions,
-	tags: ["autodocs"],
 	args: {
-		nodeId: "node-123",
 		isExpanded: false,
+		nodeId: "node-123",
 		onExpand: () => {},
 		onNavigate: () => {},
 		onShowMenu: () => {},
 	},
+	component: NodeActions,
+	tags: ["autodocs"],
+	title: "Graph/Interactions/NodeActions",
 };
 
 export default NodeActionsMeta;
@@ -49,17 +49,15 @@ export const Interactive: NodeActionsStory = {
 
 // NodeContextMenu Stories
 export const ContextMenuStory: Meta<typeof NodeContextMenu> = {
-	title: "Graph/Interactions/NodeContextMenu",
-	component: NodeContextMenu,
-	tags: ["autodocs"],
 	args: {
 		nodeId: "node-123",
 		nodeType: "requirement",
 		onCopyId: () => {},
-		onDuplicate: () => {},
 		onDelete: () => {},
+		onDuplicate: () => {},
 		onViewDetails: () => {},
 	},
+	component: NodeContextMenu,
 	render: (args) => (
 		<NodeContextMenu {...args}>
 			<div className="p-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer">
@@ -67,6 +65,8 @@ export const ContextMenuStory: Meta<typeof NodeContextMenu> = {
 			</div>
 		</NodeContextMenu>
 	),
+	tags: ["autodocs"],
+	title: "Graph/Interactions/NodeContextMenu",
 };
 
 export const ContextMenuWithCard: StoryObj<typeof NodeContextMenu> = {
@@ -85,16 +85,16 @@ export const ContextMenuWithCard: StoryObj<typeof NodeContextMenu> = {
 
 // NodeHoverTooltip Stories
 export const HoverTooltipStory: Meta<typeof NodeHoverTooltip> = {
-	title: "Graph/Interactions/NodeHoverTooltip",
-	component: NodeHoverTooltip,
-	tags: ["autodocs"],
 	args: {
+		label: "User Authentication System",
 		nodeId: "node-123",
 		nodeType: "requirement",
-		label: "User Authentication System",
-		status: "in_progress",
 		position: { x: 100, y: 100 },
+		status: "in_progress",
 	},
+	component: NodeHoverTooltip,
+	tags: ["autodocs"],
+	title: "Graph/Interactions/NodeHoverTooltip",
 };
 
 export const BasicTooltip: StoryObj<typeof NodeHoverTooltip> = {
@@ -106,9 +106,9 @@ export const TooltipWithMetadata: StoryObj<typeof NodeHoverTooltip> = {
 	args: {
 		...HoverTooltipStory.args,
 		metadata: {
-			priority: "high",
 			assignee: "John Doe",
 			deadline: "2024-12-31",
+			priority: "high",
 			progress: "75%",
 		},
 	},
@@ -147,15 +147,15 @@ export const TooltipDifferentTypes: StoryObj<typeof NodeHoverTooltip> = {
 
 // NodeQuickActions Stories
 export const QuickActionsStory: Meta<typeof NodeQuickActions> = {
-	title: "Graph/Interactions/NodeQuickActions",
-	component: NodeQuickActions,
-	tags: ["autodocs"],
 	args: {
 		nodeId: "node-123",
 		onAddLink: () => {},
 		onAddTag: () => {},
 		onEditNote: () => {},
 	},
+	component: NodeQuickActions,
+	tags: ["autodocs"],
+	title: "Graph/Interactions/NodeQuickActions",
 };
 
 export const QuickActionsDefault: StoryObj<typeof NodeQuickActions> = {
@@ -230,7 +230,6 @@ export const QuickActionsInteractive: StoryObj<typeof NodeQuickActions> = {
 
 // Combined interactions story
 export const AllInteractions: Meta = {
-	title: "Graph/Interactions/Combined",
 	render: () => {
 		const [isExpanded, setIsExpanded] = useState(false);
 		const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
@@ -318,9 +317,9 @@ export const AllInteractions: Meta = {
 						label="User Authentication"
 						status="in_progress"
 						metadata={{
-							priority: "high",
 							assignee: "John Doe",
 							deadline: "2024-12-31",
+							priority: "high",
 						}}
 						position={hoverPosition}
 					/>
@@ -328,4 +327,5 @@ export const AllInteractions: Meta = {
 			</div>
 		);
 	},
+	title: "Graph/Interactions/Combined",
 };

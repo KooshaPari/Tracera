@@ -1,19 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { type CardItem, ResponsiveCardView } from "@/components/mobile";
+import { ResponsiveCardView } from "@/components/mobile";
+import type { CardItem } from "@/components/mobile";
 
-describe("ResponsiveCardView", () => {
+describe(ResponsiveCardView, () => {
 	it("renders card items", () => {
 		const items: CardItem[] = [
 			{
 				id: "1",
-				title: "Test Item 1",
 				subtitle: "Subtitle 1",
+				title: "Test Item 1",
 			},
 			{
 				id: "2",
-				title: "Test Item 2",
 				subtitle: "Subtitle 2",
+				title: "Test Item 2",
 			},
 		];
 
@@ -34,7 +35,7 @@ describe("ResponsiveCardView", () => {
 	});
 
 	it("displays loading state", () => {
-		render(<ResponsiveCardView items={[]} isLoading={true} />);
+		render(<ResponsiveCardView items={[]} isLoading />);
 
 		// Should render skeleton loaders
 		const animatedElements = document.querySelectorAll(".animate-pulse");
@@ -90,11 +91,11 @@ describe("ResponsiveCardView", () => {
 	it("renders badges, status, and priority when provided", () => {
 		const items: CardItem[] = [
 			{
-				id: "1",
-				title: "Item with extras",
 				badge: <span>Badge</span>,
-				status: <span>In Progress</span>,
+				id: "1",
 				priority: <span>High</span>,
+				status: <span>In Progress</span>,
+				title: "Item with extras",
 			},
 		];
 
@@ -108,9 +109,9 @@ describe("ResponsiveCardView", () => {
 	it("renders action buttons", () => {
 		const items: CardItem[] = [
 			{
+				actions: <button>Action</button>,
 				id: "1",
 				title: "Item with actions",
-				actions: <button>Action</button>,
 			},
 		];
 

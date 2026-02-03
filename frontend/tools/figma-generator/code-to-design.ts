@@ -4,7 +4,7 @@
  * Converts React components with Tailwind styles to Figma-compatible node structures
  */
 
-import * as fs from "fs/promises";
+import * as fs from "node:fs/promises";
 import * as ts from "typescript";
 
 export interface FigmaNode {
@@ -147,40 +147,47 @@ export class TailwindConverter {
 			const [, direction, value] = paddingMatch;
 			const padding = this.parseSpacing(value);
 			styles.padding = styles.padding || {
-				top: 0,
-				right: 0,
 				bottom: 0,
 				left: 0,
+				right: 0,
+				top: 0,
 			};
 
 			switch (direction) {
-				case "t":
+				case "t": {
 					styles.padding.top = padding;
 					break;
-				case "r":
+				}
+				case "r": {
 					styles.padding.right = padding;
 					break;
-				case "b":
+				}
+				case "b": {
 					styles.padding.bottom = padding;
 					break;
-				case "l":
+				}
+				case "l": {
 					styles.padding.left = padding;
 					break;
-				case "x":
+				}
+				case "x": {
 					styles.padding.left = padding;
 					styles.padding.right = padding;
 					break;
-				case "y":
+				}
+				case "y": {
 					styles.padding.top = padding;
 					styles.padding.bottom = padding;
 					break;
-				default:
+				}
+				default: {
 					styles.padding = {
-						top: padding,
-						right: padding,
 						bottom: padding,
 						left: padding,
+						right: padding,
+						top: padding,
 					};
+				}
 			}
 		}
 
@@ -233,9 +240,9 @@ export class TailwindConverter {
 
 	private parseColor(colorClass: string): string {
 		const colorMap: Record<string, string> = {
-			transparent: "transparent",
-			current: "currentColor",
 			black: "#000000",
+			current: "currentColor",
+			transparent: "transparent",
 			white: "#ffffff",
 		};
 
@@ -268,20 +275,20 @@ export class TailwindConverter {
 			"16": 64,
 		};
 
-		return spacingMap[value] || parseInt(value, 10) * 4 || 0;
+		return spacingMap[value] || Number.parseInt(value, 10) * 4 || 0;
 	}
 
 	private parseFontWeight(weight: string): number | null {
 		const weightMap: Record<string, number> = {
-			thin: 100,
-			extralight: 200,
-			light: 300,
-			normal: 400,
-			medium: 500,
-			semibold: 600,
+			black: 900,
 			bold: 700,
 			extrabold: 800,
-			black: 900,
+			extralight: 200,
+			light: 300,
+			medium: 500,
+			normal: 400,
+			semibold: 600,
+			thin: 100,
 		};
 
 		return weightMap[weight] || null;
@@ -291,10 +298,10 @@ export class TailwindConverter {
 		// Parse CSS shadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
 		const parts = shadowString.split(/\s+/);
 		return {
-			type: "DROP_SHADOW",
+			color: parts[3] || "rgba(0, 0, 0, 0.1)",
 			offset: { x: parseInt(parts[0]) || 0, y: parseInt(parts[1]) || 0 },
 			radius: parseInt(parts[2]) || 0,
-			color: parts[3] || "rgba(0, 0, 0, 0.1)",
+			type: "DROP_SHADOW",
 		};
 	}
 
@@ -309,7 +316,16 @@ export class TailwindConverter {
 
 	private getDefaultTokens(): DesignToken {
 		return {
+			borderRadius: {
+				DEFAULT: 8,
+				full: 9999,
+				lg: 12,
+				md: 6,
+				sm: 4,
+			},
 			colors: {
+				"blue-500": "#3b82f6",
+				"blue-600": "#2563eb",
 				"gray-50": "#f9fafb",
 				"gray-100": "#f3f4f6",
 				"gray-200": "#e5e7eb",
@@ -317,10 +333,13 @@ export class TailwindConverter {
 				"gray-500": "#6b7280",
 				"gray-700": "#374151",
 				"gray-900": "#111827",
-				"blue-500": "#3b82f6",
-				"blue-600": "#2563eb",
 				"green-500": "#10b981",
 				"red-500": "#ef4444",
+			},
+			shadows: {
+				DEFAULT: "0 1px 3px rgba(0, 0, 0, 0.1)",
+				lg: "0 10px 15px rgba(0, 0, 0, 0.1)",
+				md: "0 4px 6px rgba(0, 0, 0, 0.1)",
 			},
 			spacing: {
 				"0": 0,
@@ -330,12 +349,6 @@ export class TailwindConverter {
 				"4": 16,
 			},
 			typography: {
-				sm: {
-					fontFamily: "Inter",
-					fontSize: 14,
-					fontWeight: 400,
-					lineHeight: 20,
-				},
 				base: {
 					fontFamily: "Inter",
 					fontSize: 16,
@@ -348,24 +361,18 @@ export class TailwindConverter {
 					fontWeight: 400,
 					lineHeight: 28,
 				},
+				sm: {
+					fontFamily: "Inter",
+					fontSize: 14,
+					fontWeight: 400,
+					lineHeight: 20,
+				},
 				xl: {
 					fontFamily: "Inter",
 					fontSize: 20,
 					fontWeight: 600,
 					lineHeight: 28,
 				},
-			},
-			borderRadius: {
-				DEFAULT: 8,
-				sm: 4,
-				md: 6,
-				lg: 12,
-				full: 9999,
-			},
-			shadows: {
-				DEFAULT: "0 1px 3px rgba(0, 0, 0, 0.1)",
-				md: "0 4px 6px rgba(0, 0, 0, 0.1)",
-				lg: "0 10px 15px rgba(0, 0, 0, 0.1)",
 			},
 		};
 	}
@@ -385,7 +392,7 @@ export class ComponentParser {
 	 * Parse TypeScript file and extract component definitions
 	 */
 	async parseFile(filePath: string): Promise<ComponentDefinition[]> {
-		const sourceCode = await fs.readFile(filePath, "utf-8");
+		const sourceCode = await fs.readFile(filePath, "utf8");
 		const sourceFile = ts.createSourceFile(
 			filePath,
 			sourceCode,
@@ -416,16 +423,16 @@ export class ComponentParser {
 		filePath: string,
 	): ComponentDefinition | null {
 		const name = this.getComponentName(node);
-		if (!name) return null;
+		if (!name) {return null;}
 
 		const props = this.extractProps(node);
 		const nodes = this.extractNodes(node);
 
 		return {
-			name,
 			filePath,
-			props,
+			name,
 			nodes,
+			props,
 		};
 	}
 
@@ -437,7 +444,7 @@ export class ComponentParser {
 		}
 
 		// For arrow functions, look at parent variable declaration
-		const parent = node.parent;
+		const {parent} = node;
 		if (ts.isVariableDeclaration(parent) && ts.isIdentifier(parent.name)) {
 			return parent.name.text;
 		}
@@ -457,8 +464,8 @@ export class ComponentParser {
 					if (ts.isPropertySignature(member) && ts.isIdentifier(member.name)) {
 						props.push({
 							name: member.name.text,
-							type: member.type?.getText() || "unknown",
 							optional: !!member.questionToken,
+							type: member.type?.getText() || "unknown",
 						});
 					}
 				}
@@ -492,7 +499,7 @@ export class ComponentParser {
 		node: ts.JsxElement | ts.JsxSelfClosingElement,
 	): FigmaNode | null {
 		const tagName = this.getJsxTagName(node);
-		if (!tagName) return null;
+		if (!tagName) {return null;}
 
 		const className = this.getJsxClassName(node);
 		const styles = className ? this.converter.parseClasses(className) : {};
@@ -500,9 +507,9 @@ export class ComponentParser {
 		const figmaNode: FigmaNode = {
 			id: this.generateId(),
 			name: tagName,
-			type: this.mapTagToFigmaType(tagName),
 			properties: {},
 			styles,
+			type: this.mapTagToFigmaType(tagName),
 		};
 
 		// Extract children
@@ -558,21 +565,21 @@ export class ComponentParser {
 
 	private mapTagToFigmaType(tagName: string): FigmaNodeType {
 		const typeMap: Record<string, FigmaNodeType> = {
+			button: "FRAME",
 			div: "FRAME",
-			span: "TEXT",
-			p: "TEXT",
 			h1: "TEXT",
 			h2: "TEXT",
 			h3: "TEXT",
-			button: "FRAME",
 			img: "RECTANGLE",
+			p: "TEXT",
+			span: "TEXT",
 		};
 
 		return typeMap[tagName.toLowerCase()] || "FRAME";
 	}
 
 	private generateId(): string {
-		return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+		return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 	}
 }
 

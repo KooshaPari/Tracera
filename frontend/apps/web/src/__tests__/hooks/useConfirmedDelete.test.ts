@@ -1,5 +1,5 @@
 /**
- * useConfirmedDelete Hook Tests
+ * UseConfirmedDelete Hook Tests
  *
  * Tests for:
  * - Dialog state management
@@ -18,12 +18,12 @@ import {
 // Mock sonner toast
 vi.mock("sonner", () => ({
 	toast: {
-		success: vi.fn(),
 		error: vi.fn(),
+		success: vi.fn(),
 	},
 }));
 
-describe("useConfirmedDelete", () => {
+describe(useConfirmedDelete, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -41,10 +41,10 @@ describe("useConfirmedDelete", () => {
 
 		act(() => {
 			result.current.requestDelete({
+				description: "Are you sure?",
 				id: "item-1",
 				name: "Test Item",
 				title: "Delete item?",
-				description: "Are you sure?",
 			});
 		});
 
@@ -55,7 +55,7 @@ describe("useConfirmedDelete", () => {
 
 	it("executes delete function on executeDelete", async () => {
 		const { result } = renderHook(() => useConfirmedDelete());
-		const deleteFunction = vi.fn().mockResolvedValue(undefined);
+		const deleteFunction = vi.fn().mockResolvedValue();
 
 		act(() => {
 			result.current.requestDelete({
@@ -74,7 +74,7 @@ describe("useConfirmedDelete", () => {
 
 	it("closes dialog after successful delete", async () => {
 		const { result } = renderHook(() => useConfirmedDelete());
-		const deleteFunction = vi.fn().mockResolvedValue(undefined);
+		const deleteFunction = vi.fn().mockResolvedValue();
 
 		act(() => {
 			result.current.requestDelete({
@@ -173,7 +173,7 @@ describe("useConfirmedDelete", () => {
 		const { result } = renderHook(() =>
 			useConfirmedDelete({ showSuccessToast: true }),
 		);
-		const deleteFunction = vi.fn().mockResolvedValue(undefined);
+		const deleteFunction = vi.fn().mockResolvedValue();
 
 		act(() => {
 			result.current.requestDelete({
@@ -218,7 +218,7 @@ describe("useConfirmedDelete", () => {
 	});
 });
 
-describe("useConfirmedBulkDelete", () => {
+describe(useConfirmedBulkDelete, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -248,7 +248,7 @@ describe("useConfirmedBulkDelete", () => {
 
 	it("executes bulk delete function", async () => {
 		const { result } = renderHook(() => useConfirmedBulkDelete());
-		const deleteFunction = vi.fn().mockResolvedValue(undefined);
+		const deleteFunction = vi.fn().mockResolvedValue();
 
 		act(() => {
 			result.current.requestDelete({
@@ -266,7 +266,7 @@ describe("useConfirmedBulkDelete", () => {
 
 	it("closes dialog after successful bulk delete", async () => {
 		const { result } = renderHook(() => useConfirmedBulkDelete());
-		const deleteFunction = vi.fn().mockResolvedValue(undefined);
+		const deleteFunction = vi.fn().mockResolvedValue();
 
 		act(() => {
 			result.current.requestDelete({

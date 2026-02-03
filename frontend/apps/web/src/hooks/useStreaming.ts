@@ -2,20 +2,22 @@
  * React hooks for NDJSON streaming with progress tracking
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import type { StreamingStats, NDJSONMetadata } from '../lib/ndjson-parser';
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { NDJSONMetadata, StreamingStats } from "../lib/ndjson-parser";
 import {
-	streamItems,
-	streamGraph,
-	streamExport,
-	createCancellableItemStream,
-	createCancellableGraphStream,
 	createCancellableExportStream,
-	type StreamItemsOptions,
-	type StreamGraphOptions,
-	type StreamExportOptions,
-} from '../api/streaming';
-import type { Item } from '../api/types';
+	createCancellableGraphStream,
+	createCancellableItemStream,
+	streamExport,
+	streamGraph,
+	streamItems,
+} from "../api/streaming";
+import type {
+	StreamExportOptions,
+	StreamGraphOptions,
+	StreamItemsOptions,
+} from "../api/streaming";
+import type { Item } from "../api/types";
 
 export interface StreamingState {
 	isStreaming: boolean;
@@ -38,10 +40,10 @@ export interface UseStreamItemsResult {
 export function useStreamItems(): UseStreamItemsResult {
 	const [items, setItems] = useState<Item[]>([]);
 	const [state, setState] = useState<StreamingState>({
-		isStreaming: false,
-		stats: null,
 		error: null,
+		isStreaming: false,
 		metadata: [],
+		stats: null,
 	});
 
 	const abortControllerRef = useRef<AbortController | null>(null);
@@ -51,10 +53,10 @@ export function useStreamItems(): UseStreamItemsResult {
 			// Reset state
 			setItems([]);
 			setState({
-				isStreaming: true,
-				stats: null,
 				error: null,
+				isStreaming: true,
 				metadata: [],
+				stats: null,
 			});
 
 			// Create abort controller for cancellation
@@ -125,26 +127,27 @@ export function useStreamItems(): UseStreamItemsResult {
 		stopStreaming();
 		setItems([]);
 		setState({
-			isStreaming: false,
-			stats: null,
 			error: null,
+			isStreaming: false,
 			metadata: [],
+			stats: null,
 		});
 	}, [stopStreaming]);
 
 	// Cleanup on unmount
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			abortControllerRef.current?.abort();
-		};
-	}, []);
+		},
+		[],
+	);
 
 	return {
 		items,
-		state,
-		startStreaming,
-		stopStreaming,
 		reset,
+		startStreaming,
+		state,
+		stopStreaming,
 	};
 }
 
@@ -152,7 +155,10 @@ export interface UseStreamGraphResult {
 	nodes: any[];
 	edges: any[];
 	state: StreamingState;
-	startStreaming: (graphId: string, options?: StreamGraphOptions) => Promise<void>;
+	startStreaming: (
+		graphId: string,
+		options?: StreamGraphOptions,
+	) => Promise<void>;
 	stopStreaming: () => void;
 	reset: () => void;
 }
@@ -164,10 +170,10 @@ export function useStreamGraph(): UseStreamGraphResult {
 	const [nodes, setNodes] = useState<any[]>([]);
 	const [edges, setEdges] = useState<any[]>([]);
 	const [state, setState] = useState<StreamingState>({
-		isStreaming: false,
-		stats: null,
 		error: null,
+		isStreaming: false,
 		metadata: [],
+		stats: null,
 	});
 
 	const abortControllerRef = useRef<AbortController | null>(null);
@@ -178,10 +184,10 @@ export function useStreamGraph(): UseStreamGraphResult {
 			setNodes([]);
 			setEdges([]);
 			setState({
-				isStreaming: true,
-				stats: null,
 				error: null,
+				isStreaming: true,
 				metadata: [],
+				stats: null,
 			});
 
 			abortControllerRef.current = new AbortController();
@@ -205,20 +211,20 @@ export function useStreamGraph(): UseStreamGraphResult {
 					},
 				};
 
-				const receivedNodes: Array<Record<string, unknown>> = [];
-				const receivedEdges: Array<Record<string, unknown>> = [];
+				const receivedNodes: Record<string, unknown>[] = [];
+				const receivedEdges: Record<string, unknown>[] = [];
 
 				for await (const item of streamGraph(graphId, streamOptions)) {
 					if (abortControllerRef.current?.signal.aborted) {
 						break;
 					}
 
-					if (item.type === 'node') {
+					if (item.type === "node") {
 						receivedNodes.push(item.data as Record<string, unknown>);
 						if (receivedNodes.length % 10 === 0) {
 							setNodes([...receivedNodes]);
 						}
-					} else if (item.type === 'edge') {
+					} else if (item.type === "edge") {
 						receivedEdges.push(item.data as Record<string, unknown>);
 						if (receivedEdges.length % 10 === 0) {
 							setEdges([...receivedEdges]);
@@ -258,26 +264,27 @@ export function useStreamGraph(): UseStreamGraphResult {
 		setNodes([]);
 		setEdges([]);
 		setState({
-			isStreaming: false,
-			stats: null,
 			error: null,
+			isStreaming: false,
 			metadata: [],
+			stats: null,
 		});
 	}, [stopStreaming]);
 
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			abortControllerRef.current?.abort();
-		};
-	}, []);
+		},
+		[],
+	);
 
 	return {
-		nodes,
 		edges,
-		state,
-		startStreaming,
-		stopStreaming,
+		nodes,
 		reset,
+		startStreaming,
+		state,
+		stopStreaming,
 	};
 }
 
@@ -296,10 +303,10 @@ export interface UseStreamExportResult {
 export function useStreamExport(): UseStreamExportResult {
 	const [data, setData] = useState<any[]>([]);
 	const [state, setState] = useState<StreamingState>({
-		isStreaming: false,
-		stats: null,
 		error: null,
+		isStreaming: false,
 		metadata: [],
+		stats: null,
 	});
 
 	const abortControllerRef = useRef<AbortController | null>(null);
@@ -307,10 +314,10 @@ export function useStreamExport(): UseStreamExportResult {
 	const startExport = useCallback(async (options: StreamExportOptions) => {
 		setData([]);
 		setState({
-			isStreaming: true,
-			stats: null,
 			error: null,
+			isStreaming: true,
 			metadata: [],
+			stats: null,
 		});
 
 		abortControllerRef.current = new AbortController();
@@ -334,7 +341,7 @@ export function useStreamExport(): UseStreamExportResult {
 				},
 			};
 
-			const receivedData: Array<Record<string, unknown>> = [];
+			const receivedData: Record<string, unknown>[] = [];
 
 			for await (const item of streamExport(streamOptions)) {
 				if (abortControllerRef.current?.signal.aborted) {
@@ -374,10 +381,10 @@ export function useStreamExport(): UseStreamExportResult {
 	const downloadAsFile = useCallback(
 		(filename: string) => {
 			const blob = new Blob([JSON.stringify(data, null, 2)], {
-				type: 'application/json',
+				type: "application/json",
 			});
 			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
+			const a = document.createElement("a");
 			a.href = url;
 			a.download = filename;
 			a.click();
@@ -390,25 +397,26 @@ export function useStreamExport(): UseStreamExportResult {
 		stopExport();
 		setData([]);
 		setState({
-			isStreaming: false,
-			stats: null,
 			error: null,
+			isStreaming: false,
 			metadata: [],
+			stats: null,
 		});
 	}, [stopExport]);
 
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			abortControllerRef.current?.abort();
-		};
-	}, []);
+		},
+		[],
+	);
 
 	return {
 		data,
-		state,
-		startExport,
-		stopExport,
 		downloadAsFile,
 		reset,
+		startExport,
+		state,
+		stopExport,
 	};
 }

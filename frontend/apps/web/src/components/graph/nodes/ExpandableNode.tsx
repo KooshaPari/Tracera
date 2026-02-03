@@ -14,7 +14,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { NodeProps } from "@xyflow/react";
 import {
 	Bot,
 	ChevronRight,
@@ -31,7 +32,7 @@ import {
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { getTypeColor, getTypeIcon } from "../utils/typeStyles";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // TYPES
@@ -461,25 +462,25 @@ function PanelNodeView({
 							<div className="flex items-center gap-2 mb-2">
 								{data.editType === "instant" ? (
 									<Zap className="w-4 h-4 text-primary" />
-								) : data.editType === "agent_required" ? (
+								) : (data.editType === "agent_required" ? (
 									<Bot className="w-4 h-4 text-primary" />
 								) : (
 									<Edit3 className="w-4 h-4 text-primary" />
-								)}
+								))}
 								<span className="text-sm font-medium">
 									{data.editType === "instant"
 										? "Instant edit available"
-										: data.editType === "agent_required"
+										: (data.editType === "agent_required"
 											? "Agent-assisted edit"
-											: "Manual edit"}
+											: "Manual edit")}
 								</span>
 							</div>
 							<p className="text-xs text-muted-foreground">
 								{data.editType === "instant"
 									? "Changes apply immediately via automation"
-									: data.editType === "agent_required"
+									: (data.editType === "agent_required"
 										? "An AI agent will help implement changes"
-										: "Edit manually in the full editor"}
+										: "Edit manually in the full editor")}
 							</p>
 						</div>
 					)}
@@ -501,11 +502,11 @@ function PanelNodeView({
 					<Button variant="secondary" size="sm" onClick={onEdit}>
 						{data.editType === "instant" ? (
 							<Zap className="w-4 h-4" />
-						) : data.editType === "agent_required" ? (
+						) : (data.editType === "agent_required" ? (
 							<Bot className="w-4 h-4" />
 						) : (
 							<Edit3 className="w-4 h-4" />
-						)}
+						))}
 					</Button>
 				)}
 				<Button variant="ghost" size="sm" className="w-9 h-9 p-0">

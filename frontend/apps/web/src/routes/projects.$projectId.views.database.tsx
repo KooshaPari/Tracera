@@ -25,8 +25,5 @@ export const DATABASE_VIEW = DatabaseView;
 
 export const Route = createFileRoute("/projects/$projectId/views/database")({
 	component: DatabaseView,
-	loader: async () => {
-		// ItemsTableView fetches its own data
-		return {};
-	},
+	loader: async () => ({}),
 });

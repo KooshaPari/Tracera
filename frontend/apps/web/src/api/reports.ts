@@ -51,10 +51,10 @@ const reportTemplates: ReportTemplate[] = [
 	},
 ];
 
-const fetchReportTemplates = (): Promise<ReportTemplate[]> =>
+const fetchReportTemplates = async (): Promise<ReportTemplate[]> =>
 	Promise.resolve(reportTemplates);
 
-const generateReport = (
+const generateReport = async (
 	projectId: string,
 	templateId: string,
 	format: string,

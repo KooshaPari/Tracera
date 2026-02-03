@@ -42,14 +42,14 @@ export function useBulkSelection(): UseBulkSelectionResult {
 	}, []);
 
 	return {
-		selected,
-		selectedIds: Array.from(selected),
-		isSelected,
-		toggle,
-		selectAll,
-		deselectAll,
-		count: selected.size,
-		hasSelection: selected.size > 0,
 		clear,
+		count: selected.size,
+		deselectAll,
+		hasSelection: selected.size > 0,
+		isSelected,
+		selectAll,
+		selected,
+		selectedIds: [...selected],
+		toggle,
 	};
 }

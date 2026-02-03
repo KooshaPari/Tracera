@@ -1,5 +1,5 @@
 /**
- * useViewportCulling Hook
+ * UseViewportCulling Hook
  *
  * Provides viewport-aware edge culling for large graphs.
  * Automatically filters edges based on viewport bounds, reducing DOM elements.
@@ -25,14 +25,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-	type CullingStats,
 	cullEdges,
-	type Edge,
 	extractNodePositions,
 	getCullingStats,
 	getViewportBounds,
-	type ViewportBounds,
 } from "@/lib/viewportCulling";
+import type { CullingStats, Edge, ViewportBounds } from "@/lib/viewportCulling";
 
 interface UseViewportCullingProps {
 	edges: Edge[];
@@ -69,13 +67,13 @@ export function useViewportCulling({
 	);
 
 	// Extract node positions (memoized to avoid recalculation)
-	const nodePositions = useMemo(() => {
-		return extractNodePositions(nodes);
-	}, [nodes]);
+	const nodePositions = useMemo(() => extractNodePositions(nodes), [nodes]);
 
 	// Update viewport bounds on viewport change
 	const handleViewportChange = useCallback(() => {
-		if (!enabled) return;
+		if (!enabled) {
+			return;
+		}
 
 		const bounds = getViewportBounds(reactFlowInstance);
 		setViewportBounds(bounds);
@@ -83,7 +81,9 @@ export function useViewportCulling({
 
 	// Listen for viewport changes
 	useEffect(() => {
-		if (!enabled || !reactFlowInstance) return;
+		if (!enabled || !reactFlowInstance) {
+			return;
+		}
 
 		// Get viewport bounds initially
 		handleViewportChange();
@@ -125,8 +125,8 @@ export function useViewportCulling({
 	return {
 		cullableEdges,
 		cullingStats,
-		viewportBounds,
 		isEnabled: enabled,
+		viewportBounds,
 	};
 }
 
@@ -146,7 +146,7 @@ export function useViewportCullingStats(stats: CullingStats | null): {
 } {
 	return {
 		culledCount: stats?.culledEdges ?? 0,
-		visibleCount: stats?.visibleEdges ?? 0,
 		savedPercentage: stats?.cullingRatio ?? 0,
+		visibleCount: stats?.visibleEdges ?? 0,
 	};
 }

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { Suspense, lazy } from "react";
 
 const ProjectMappingGraphView = lazy(() =>
 	import("@/views/ProjectMappingGraphView").then((m) => ({
@@ -34,8 +34,5 @@ export const WIREFRAME_VIEW = WireframeView;
 
 export const Route = createFileRoute("/projects/$projectId/views/wireframe")({
 	component: WireframeView,
-	loader: async () => {
-		// ItemsTableView fetches its own data
-		return {};
-	},
+	loader: async () => ({}),
 });

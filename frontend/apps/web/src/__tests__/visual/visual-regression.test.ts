@@ -5,13 +5,13 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+	VisualRegressionTracker,
+	VisualTestMetrics,
 	createInteractionStories,
 	createThemeStories,
 	createViewportStories,
 	generateSnapshotName,
 	generateVisualTestParameters,
-	VisualRegressionTracker,
-	VisualTestMetrics,
 	validateComponentVisualTests,
 } from "../../components/graph/__stories__/visual-regression-automation";
 

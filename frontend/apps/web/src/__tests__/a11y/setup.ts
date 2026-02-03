@@ -9,12 +9,12 @@ import { configureAxe } from "jest-axe";
 export const axe = configureAxe({
 	rules: {
 		// WCAG 2.1 Level A & AA rules
-		"color-contrast": { enabled: true },
 		"aria-allowed-attr": { enabled: true },
 		"aria-required-attr": { enabled: true },
 		"aria-valid-attr": { enabled: true },
 		"aria-valid-attr-value": { enabled: true },
 		"button-name": { enabled: true },
+		"color-contrast": { enabled: true },
 		"duplicate-id": { enabled: true },
 		"form-field-multiple-labels": { enabled: true },
 		"frame-title": { enabled: true },
@@ -46,7 +46,9 @@ export function pressKey(key: string, options: KeyboardEventInit = {}) {
 			cancelable: true,
 			...options,
 		});
-		if (event) document.dispatchEvent(event);
+		if (event) {
+			document.dispatchEvent(event);
+		}
 	});
 	return event;
 }
@@ -94,8 +96,10 @@ export function getFocusedElement() {
  * Check if element has visible focus indicator
  */
 export function hasFocusIndicator(element: Element | null) {
-	if (!element) return false;
-	const styles = window.getComputedStyle(element);
+	if (!element) {
+		return false;
+	}
+	const styles = globalThis.getComputedStyle(element);
 
 	// Check for outline or box-shadow (common focus indicators)
 	return (
@@ -109,15 +113,19 @@ export function hasFocusIndicator(element: Element | null) {
  * Check if element is keyboard accessible
  */
 export function isKeyboardAccessible(element: Element | null) {
-	if (!element) return false;
+	if (!element) {
+		return false;
+	}
 
 	const tagName = element.tagName.toLowerCase();
 	const tabIndex = element.getAttribute("tabindex");
 
 	// Naturally keyboard accessible elements
 	const interactiveElements = ["a", "button", "input", "select", "textarea"];
-	if (interactiveElements.includes(tagName)) return true;
+	if (interactiveElements.includes(tagName)) {
+		return true;
+	}
 
 	// Check for explicit tabindex
-	return tabIndex !== null && parseInt(tabIndex, 10) >= 0;
+	return tabIndex !== null && Number.parseInt(tabIndex, 10) >= 0;
 }

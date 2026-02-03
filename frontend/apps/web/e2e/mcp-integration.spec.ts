@@ -86,15 +86,15 @@ test.describe("MCP Client Operations", () => {
 	test("should list available MCP tools", async ({ page: _page, request }) => {
 		// Make direct API request to test MCP tools/list
 		const response = await request.post(`${MCP_BASE_URL}/messages`, {
-			headers: {
-				Authorization: `Bearer ${TEST_TOKEN}`,
-				"Content-Type": "application/json",
-			},
 			data: {
 				jsonrpc: "2.0",
 				method: "tools/list",
 				params: {},
 				id: 1,
+			},
+			headers: {
+				Authorization: `Bearer ${TEST_TOKEN}`,
+				"Content-Type": "application/json",
 			},
 		});
 
@@ -177,7 +177,7 @@ test.describe("SSE Progress Updates", () => {
 
 		// Wait for completion
 		await expect(page.locator('[data-testid="progress-complete"]')).toBeVisible(
-			{ timeout: 30000 },
+			{ timeout: 30_000 },
 		);
 	});
 
@@ -198,9 +198,9 @@ test.describe("SSE Progress Updates", () => {
 		await page.click('[data-testid="analyze-button"]');
 
 		// Simulate network interruption
-		// await page.context().setOffline(true);
-		// await page.waitForTimeout(1000);
-		// await page.context().setOffline(false);
+		// Await page.context().setOffline(true);
+		// Await page.waitForTimeout(1000);
+		// Await page.context().setOffline(false);
 
 		// Verify reconnection
 		expect(true).toBe(true);

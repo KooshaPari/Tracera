@@ -40,9 +40,7 @@ export interface ComponentStyles {
 	itemSpacing?: number;
 }
 
-export interface ImageMap {
-	[nodeId: string]: string;
-}
+export type ImageMap = Record<string, string>;
 
 export interface Variables {
 	colors: Record<string, string>;
@@ -84,7 +82,7 @@ export class FigmaClient {
 
 		this.rateLimiter = new RateLimiter(
 			config.rateLimit?.maxRequests || 100,
-			config.rateLimit?.perMilliseconds || 60000,
+			config.rateLimit?.perMilliseconds || 60_000,
 		);
 	}
 
@@ -100,13 +98,13 @@ export class FigmaClient {
 			});
 
 			return {
-				name: file.name,
+				components: file.components || {},
+				document: file.document,
 				lastModified: file.lastModified,
+				name: file.name,
+				styles: file.styles || {},
 				thumbnailUrl: file.thumbnailUrl,
 				version: file.version,
-				document: file.document,
-				components: file.components || {},
-				styles: file.styles || {},
 			};
 		} catch (error) {
 			throw new FigmaAPIError(
@@ -149,8 +147,8 @@ export class FigmaClient {
 			const { format = "png", scale = 2 } = options;
 
 			const response = await this.api.getImage(fileKey, {
-				ids: nodeIds,
 				format,
+				ids: nodeIds,
 				scale,
 			});
 
@@ -170,11 +168,11 @@ export class FigmaClient {
 		const file = await this.getFile(fileKey);
 
 		const variables: Variables = {
-			colors: {},
-			typography: {},
-			spacing: {},
 			borderRadius: {},
+			colors: {},
 			shadows: {},
+			spacing: {},
+			typography: {},
 		};
 
 		// Extract color styles
@@ -194,8 +192,8 @@ export class FigmaClient {
 					fontFamily: style.fontFamily || "Inter",
 					fontSize: style.fontSize || 16,
 					fontWeight: style.fontWeight || 400,
-					lineHeight: style.lineHeightPx || style.fontSize || 16,
 					letterSpacing: style.letterSpacing,
+					lineHeight: style.lineHeightPx || style.fontSize || 16,
 				};
 			}
 		}
@@ -253,20 +251,20 @@ export class FigmaClient {
 
 	private nodeToComponent(node: Figma.Node): Component {
 		return {
-			id: node.id,
-			name: node.name,
 			description:
 				"description" in node ? (node.description as string) || "" : "",
-			type: node.type,
+			id: node.id,
+			name: node.name,
 			properties: this.extractNodeProperties(node),
 			styles: this.extractNodeStyles(node),
+			type: node.type,
 		};
 	}
 
 	private extractNodeProperties(node: Figma.Node): Record<string, unknown> {
 		const props: Record<string, unknown> = {
-			visible: "visible" in node ? node.visible : true,
 			locked: "locked" in node ? node.locked : false,
+			visible: "visible" in node ? node.visible : true,
 		};
 
 		if ("absoluteBoundingBox" in node) {
@@ -305,14 +303,14 @@ export class FigmaClient {
 				| "AUTO";
 
 			if ("paddingLeft" in node)
-				styles.paddingLeft = node.paddingLeft as number;
+				{styles.paddingLeft = node.paddingLeft as number;}
 			if ("paddingRight" in node)
-				styles.paddingRight = node.paddingRight as number;
-			if ("paddingTop" in node) styles.paddingTop = node.paddingTop as number;
+				{styles.paddingRight = node.paddingRight as number;}
+			if ("paddingTop" in node) {styles.paddingTop = node.paddingTop as number;}
 			if ("paddingBottom" in node)
-				styles.paddingBottom = node.paddingBottom as number;
+				{styles.paddingBottom = node.paddingBottom as number;}
 			if ("itemSpacing" in node)
-				styles.itemSpacing = node.itemSpacing as number;
+				{styles.itemSpacing = node.itemSpacing as number;}
 		}
 
 		return styles;

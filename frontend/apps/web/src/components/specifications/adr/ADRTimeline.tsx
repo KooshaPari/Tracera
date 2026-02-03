@@ -29,35 +29,35 @@ const STATUS_CONFIG: Record<
 	ADRStatus,
 	{ icon: typeof CheckCircle2; color: string; bg: string; line: string }
 > = {
-	proposed: {
-		icon: Clock,
-		color: "text-yellow-600",
-		bg: "bg-yellow-500",
-		line: "border-yellow-500/30",
-	},
 	accepted: {
-		icon: CheckCircle2,
-		color: "text-green-600",
 		bg: "bg-green-500",
+		color: "text-green-600",
+		icon: CheckCircle2,
 		line: "border-green-500/30",
 	},
 	deprecated: {
-		icon: AlertTriangle,
-		color: "text-orange-600",
 		bg: "bg-orange-500",
+		color: "text-orange-600",
+		icon: AlertTriangle,
 		line: "border-orange-500/30",
 	},
-	superseded: {
-		icon: GitBranch,
-		color: "text-blue-600",
-		bg: "bg-blue-500",
-		line: "border-blue-500/30",
+	proposed: {
+		bg: "bg-yellow-500",
+		color: "text-yellow-600",
+		icon: Clock,
+		line: "border-yellow-500/30",
 	},
 	rejected: {
-		icon: XCircle,
-		color: "text-red-600",
 		bg: "bg-red-500",
+		color: "text-red-600",
+		icon: XCircle,
 		line: "border-red-500/30",
+	},
+	superseded: {
+		bg: "bg-blue-500",
+		color: "text-blue-600",
+		icon: GitBranch,
+		line: "border-blue-500/30",
 	},
 };
 
@@ -93,14 +93,16 @@ export function ADRTimeline({ adrs, onADRClick, className }: ADRTimelineProps) {
 			const year = date.getFullYear();
 			const month = date.getMonth();
 
-			if (!byYear[year]) byYear[year] = [];
+			if (!byYear[year]) {
+				byYear[year] = [];
+			}
 
 			// Find superseded ADR
 			const supersedes = adr.supersedes
 				? adrs.find((a) => a.adrNumber === adr.supersedes)
 				: undefined;
 
-			byYear[year].push({ adr, year, month, supersedes });
+			byYear[year].push({ adr, month, supersedes, year });
 		}
 
 		return byYear;
@@ -253,9 +255,9 @@ export function ADRTimeline({ adrs, onADRClick, className }: ADRTimelineProps) {
 																"text-xs font-bold px-2 py-0.5 rounded-full",
 																adr.complianceScore >= 80
 																	? "bg-green-500/10 text-green-600"
-																	: adr.complianceScore >= 60
+																	: (adr.complianceScore >= 60
 																		? "bg-yellow-500/10 text-yellow-600"
-																		: "bg-red-500/10 text-red-600",
+																		: "bg-red-500/10 text-red-600"),
 															)}
 														>
 															{Math.round(adr.complianceScore)}%

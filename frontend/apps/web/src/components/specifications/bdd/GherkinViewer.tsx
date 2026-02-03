@@ -16,7 +16,7 @@ interface GherkinViewerProps {
 interface ParsedGherkin {
 	feature?: string;
 	background?: string[];
-	scenarios: Array<{
+	scenarios: {
 		type: "Scenario" | "Scenario Outline";
 		title: string;
 		steps: Array<{
@@ -24,7 +24,7 @@ interface ParsedGherkin {
 			text: string;
 		}>;
 		examples?: string;
-	}>;
+	}[];
 }
 
 function parseGherkin(content: string): ParsedGherkin {
@@ -38,7 +38,9 @@ function parseGherkin(content: string): ParsedGherkin {
 	for (const line of lines) {
 		const trimmed = line.trim();
 
-		if (!trimmed || trimmed.startsWith("#")) continue;
+		if (!trimmed || trimmed.startsWith("#")) {
+			continue;
+		}
 
 		// Feature
 		if (trimmed.startsWith("Feature:")) {
@@ -77,12 +79,12 @@ function parseGherkin(content: string): ParsedGherkin {
 
 			const isOutline = trimmed.startsWith("Scenario Outline:");
 			currentScenario = {
-				type: isOutline ? "Scenario Outline" : "Scenario",
+				steps: [],
 				title: trimmed
 					.replace("Scenario Outline:", "")
 					.replace("Scenario:", "")
 					.trim(),
-				steps: [],
+				type: isOutline ? "Scenario Outline" : "Scenario",
 			};
 		}
 
@@ -96,7 +98,7 @@ function parseGherkin(content: string): ParsedGherkin {
 				trimmed.startsWith("But"))
 		) {
 			const keyword = trimmed.split(/\s+/)[0] as StepType;
-			const text = trimmed.substring(keyword.length).trim();
+			const text = trimmed.slice(keyword.length).trim();
 			currentScenario.steps.push({ keyword, text });
 		}
 
@@ -148,14 +150,14 @@ export function GherkinViewer({
 					value={content}
 					theme="vs-dark"
 					options={{
-						readOnly: true,
-						minimap: { enabled: false },
-						scrollBeyondLastLine: false,
-						fontSize: 13,
 						fontFamily: "'JetBrains Mono','Fira Code',monospace",
+						fontSize: 13,
 						lineNumbers: showLineNumbers ? "on" : "off",
+						minimap: { enabled: false },
+						padding: { bottom: 16, top: 16 },
+						readOnly: true,
 						renderLineHighlight: "none",
-						padding: { top: 16, bottom: 16 },
+						scrollBeyondLastLine: false,
 					}}
 				/>
 			</Card>
@@ -184,7 +186,7 @@ export function GherkinViewer({
 						<div className="space-y-2">
 							{parsed.background.map((step, idx) => {
 								const keyword = step.split(/\s+/)[0] as StepType;
-								const text = step.substring(keyword.length).trim();
+								const text = step.slice(keyword.length).trim();
 								return (
 									<div key={idx} className="flex items-start gap-3">
 										<StepBadge type={keyword} compact />
@@ -300,14 +302,14 @@ export function GherkinViewer({
 						value={content}
 						theme="vs-dark"
 						options={{
-							readOnly: true,
-							minimap: { enabled: false },
-							scrollBeyondLastLine: false,
-							fontSize: 13,
 							fontFamily: "'JetBrains Mono','Fira Code',monospace",
+							fontSize: 13,
 							lineNumbers: showLineNumbers ? "on" : "off",
+							minimap: { enabled: false },
+							padding: { bottom: 16, top: 16 },
+							readOnly: true,
 							renderLineHighlight: "none",
-							padding: { top: 16, bottom: 16 },
+							scrollBeyondLastLine: false,
 						}}
 					/>
 				</Card>

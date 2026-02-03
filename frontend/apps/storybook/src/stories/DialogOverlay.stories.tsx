@@ -4,9 +4,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DialogOverlay } from "@tracertm/ui";
 
 const meta: Meta<typeof DialogOverlay> = {
-	title: "Components/DialogOverlay",
 	component: DialogOverlay,
 	tags: ["autodocs"],
+	title: "Components/DialogOverlay",
 };
 
 export default meta;

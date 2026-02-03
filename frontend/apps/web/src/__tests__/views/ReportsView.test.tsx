@@ -7,23 +7,23 @@ import { ReportsView } from "../../views/ReportsView";
 // Mock the API
 vi.mock("../../api/endpoints", () => ({
 	api: {
-		projects: {
-			list: vi.fn(),
-		},
 		exportImport: {
 			export: vi.fn(),
+		},
+		projects: {
+			list: vi.fn(),
 		},
 	},
 }));
 
-describe("ReportsView", () => {
+describe(ReportsView, () => {
 	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false },
 				mutations: { retry: false },
+				queries: { retry: false },
 			},
 		});
 		vi.clearAllMocks();
@@ -122,7 +122,7 @@ describe("ReportsView", () => {
 		);
 
 		// Select project
-		const projectSelect = document.getElementById("project-select");
+		const projectSelect = document.querySelector("#project-select");
 		if (projectSelect) {
 			await user.click(projectSelect);
 			await user.click(screen.getByText("Test Project"));
@@ -171,9 +171,8 @@ describe("ReportsView", () => {
 			</QueryClientProvider>,
 		);
 
-
 		// Select project
-		const projectSelect = document.getElementById("project-select");
+		const projectSelect = document.querySelector("#project-select");
 		if (projectSelect) {
 			await user.click(projectSelect);
 			// Wait for dropdown to open

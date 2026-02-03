@@ -2,10 +2,12 @@ import { act, renderHook } from "@testing-library/react";
 import type { Item, Link } from "@tracertm/types";
 import { describe, expect, it, vi } from "vitest";
 import {
-	type CrossPerspectiveSearchResult,
 	performCrossPerspectiveSearch,
-	type SearchFilters,
 	useCrossPerspectiveSearch,
+} from "../../components/graph/hooks/useCrossPerspectiveSearch";
+import type {
+	CrossPerspectiveSearchResult,
+	SearchFilters,
 } from "../../components/graph/hooks/useCrossPerspectiveSearch";
 
 /**
@@ -14,78 +16,78 @@ import {
 describe("useCrossPerspectiveSearch - Advanced Features", () => {
 	const mockItems: Item[] = [
 		{
-			id: "1",
-			projectId: "proj-1",
-			title: "Authentication System",
 			description: "User login and session management",
-			type: "Feature",
-			status: "done",
+			id: "1",
 			perspective: "feature",
+			projectId: "proj-1",
+			status: "done",
+			title: "Authentication System",
+			type: "Feature",
 			view: "feature",
 		},
 		{
-			id: "2",
-			projectId: "proj-1",
-			title: "Login API Endpoint",
 			description: "REST API for user authentication",
-			type: "API",
-			status: "done",
+			id: "2",
 			perspective: "api",
+			projectId: "proj-1",
+			status: "done",
+			title: "Login API Endpoint",
+			type: "API",
 			view: "api",
 		},
 		{
-			id: "3",
-			projectId: "proj-1",
-			title: "User Service",
 			description: "Business logic for user management",
-			type: "Service",
-			status: "in_progress",
+			id: "3",
 			perspective: "code",
+			projectId: "proj-1",
+			status: "in_progress",
+			title: "User Service",
+			type: "Service",
 			view: "code",
 		},
 		{
-			id: "4",
-			projectId: "proj-1",
-			title: "Login Tests",
 			description: "Unit tests for authentication",
-			type: "Test",
-			status: "done",
+			id: "4",
 			perspective: "test",
+			projectId: "proj-1",
+			status: "done",
+			title: "Login Tests",
+			type: "Test",
 			view: "test",
 		},
 		{
-			id: "5",
-			projectId: "proj-1",
-			title: "User Database Schema",
 			description: "PostgreSQL table definitions",
-			type: "Schema",
-			status: "done",
+			id: "5",
 			perspective: "database",
+			projectId: "proj-1",
+			status: "done",
+			title: "User Database Schema",
+			type: "Schema",
 			view: "database",
 		},
 	];
 
 	const mockLinks: Link[] = [
 		{
+			confidence: 0.95,
 			id: "link-1",
 			sourceId: "1",
 			targetId: "2",
 			type: "manifests_as",
-			confidence: 0.95,
 		},
 		{
+			confidence: 0.9,
 			id: "link-2",
 			sourceId: "2",
 			targetId: "3",
 			type: "represents",
-			confidence: 0.9,
 		},
 		{
+			confidence: 0.85,
 			id: "link-3",
 			sourceId: "1",
 			targetId: "4",
 			type: "same_as",
-			confidence: 0.85,
 		},
 	];
 
@@ -175,8 +177,8 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			const { result } = renderHook(() => useCrossPerspectiveSearch());
 
 			const filters: SearchFilters = {
-				type: "Feature",
 				status: "done",
+				type: "Feature",
 			};
 
 			act(() => {
@@ -248,11 +250,11 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 
 			const searchResults: CrossPerspectiveSearchResult[] = [
 				{
-					item: mockItems[0],
-					perspective: "feature",
-					matchType: "title",
-					score: 100,
 					equivalences: [],
+					item: mockItems[0],
+					matchType: "title",
+					perspective: "feature",
+					score: 100,
 				},
 			];
 
@@ -471,8 +473,8 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 
 		it("should achieve >95% accuracy with filters", () => {
 			const filters: SearchFilters = {
-				type: "Feature",
 				status: "done",
+				type: "Feature",
 			};
 
 			const results = performCrossPerspectiveSearch(
@@ -542,7 +544,7 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			await new Promise((resolve) => setTimeout(resolve, 150));
 
 			// Only the last call should execute
-			expect(mockCallback).toHaveBeenCalledTimes(1);
+			expect(mockCallback).toHaveBeenCalledOnce();
 		});
 	});
 
@@ -591,9 +593,9 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 
 		it("should apply multiple filters together", () => {
 			const filters: SearchFilters = {
-				type: "Feature",
-				status: "done",
 				perspectives: ["feature"],
+				status: "done",
+				type: "Feature",
 			};
 
 			const results = performCrossPerspectiveSearch(

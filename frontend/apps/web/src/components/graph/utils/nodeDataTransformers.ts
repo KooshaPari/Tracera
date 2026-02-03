@@ -17,18 +17,18 @@ import type { RichNodeData } from "../RichNodePill";
  */
 function isTestItem(item: Item): item is TestItem {
 	return (
-		item['type'] === "test" ||
-		item['type'] === "test_case" ||
-		item['type'] === "test_suite"
+		item["type"] === "test" ||
+		item["type"] === "test_case" ||
+		item["type"] === "test_suite"
 	);
 }
 
 function isRequirementItem(item: Item): item is RequirementItem {
-	return item['type'] === "requirement";
+	return item["type"] === "requirement";
 }
 
 function isEpicItem(item: Item): item is EpicItem {
-	return item['type'] === "epic";
+	return item["type"] === "epic";
 }
 
 /**
@@ -36,19 +36,19 @@ function isEpicItem(item: Item): item is EpicItem {
  */
 function transformTestItem(item: TestItem): Partial<TestNodeData> {
 	// Extract test-specific metadata
-	const metadata = item['metadata'] || {};
+	const metadata = item["metadata"] || {};
 
 	return {
-		testType: item['testType'],
-		framework: metadata['framework'] as string | undefined,
-		flakinessScore: metadata['flakinessScore'] as number | undefined,
-		coveragePercent: metadata['coveragePercent'] as number | undefined,
-		safetyLevel: metadata['safetyLevel'] as
+		coveragePercent: metadata["coveragePercent"] as number | undefined,
+		flakinessScore: metadata["flakinessScore"] as number | undefined,
+		framework: metadata["framework"] as string | undefined,
+		lastRunStatus: item["lastExecutionResult"],
+		safetyLevel: metadata["safetyLevel"] as
 			| "safe"
 			| "quarantined"
 			| "disabled"
 			| undefined,
-		lastRunStatus: item['lastExecutionResult'],
+		testType: item["testType"],
 	};
 }
 
@@ -58,8 +58,8 @@ function transformTestItem(item: TestItem): Partial<TestNodeData> {
 function transformRequirementItem(
 	item: RequirementItem,
 ): Partial<RequirementNodeData> {
-	const metadata = item['metadata'] || {};
-	const qualityMetrics = item['qualityMetrics'];
+	const metadata = item["metadata"] || {};
+	const { qualityMetrics } = item;
 
 	return {
 		earsPatternType: metadata.earsPatternType as
@@ -75,13 +75,13 @@ function transformRequirementItem(
 			| "high"
 			| "critical"
 			| undefined,
-		wsjfScore: metadata.wsjfScore as number | undefined,
 		verifiabilityScore: qualityMetrics?.completenessScore,
 		verificationStatus: metadata.verificationStatus as
 			| "not_verified"
 			| "partially_verified"
 			| "verified"
 			| undefined,
+		wsjfScore: metadata.wsjfScore as number | undefined,
 	};
 }
 
@@ -89,11 +89,11 @@ function transformRequirementItem(
  * Transform an epic item to EpicNodeData
  */
 function transformEpicItem(item: EpicItem): Partial<EpicNodeData> {
-	const metadata = item['metadata'] || {};
+	const metadata = item["metadata"] || {};
 
 	return {
-		businessValue: item['businessValue']
-			? (item['businessValue'].toLowerCase() as
+		businessValue: item["businessValue"]
+			? (item["businessValue"].toLowerCase() as
 					| "low"
 					| "medium"
 					| "high"
@@ -104,9 +104,9 @@ function transformEpicItem(item: EpicItem): Partial<EpicNodeData> {
 					| "high"
 					| "critical"
 					| undefined),
-		timelineProgress: metadata.timelineProgress as number | undefined,
-		storyCount: metadata.storyCount as number | undefined,
 		completedStoryCount: metadata.completedStoryCount as number | undefined,
+		storyCount: metadata.storyCount as number | undefined,
+		timelineProgress: metadata.timelineProgress as number | undefined,
 	};
 }
 
@@ -120,13 +120,13 @@ export function itemToNodeData(
 ): RichNodeData | TestNodeData | RequirementNodeData | EpicNodeData {
 	// Base node data (common to all types)
 	const baseData: RichNodeData = {
-		id: item['id'],
-		item,
-		type: item['type'],
-		status: item['status'],
-		label: item['title'],
-		description: item['description'],
 		connections,
+		description: item["description"],
+		id: item["id"],
+		item,
+		label: item["title"],
+		status: item["status"],
+		type: item["type"],
 	};
 
 	// Type-specific transformations
@@ -164,9 +164,9 @@ export function itemsToNodeData(
 		string,
 		{ incoming: number; outgoing: number; total: number }
 	>,
-): Array<RichNodeData | TestNodeData | RequirementNodeData | EpicNodeData> {
+): (RichNodeData | TestNodeData | RequirementNodeData | EpicNodeData)[] {
 	return items.map((item) => {
-		const connections = connectionMap?.get(item['id']) || {
+		const connections = connectionMap?.get(item["id"]) || {
 			incoming: 0,
 			outgoing: 0,
 			total: 0,

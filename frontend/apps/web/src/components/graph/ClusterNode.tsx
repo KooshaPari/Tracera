@@ -10,7 +10,8 @@ import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
-import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import type { NodeProps } from "@xyflow/react";
 import {
 	ChevronDown,
 	ChevronRight,
@@ -22,7 +23,7 @@ import {
 import { memo, useCallback, useMemo } from "react";
 import type { ClusterNode as ClusterNodeType } from "../../lib/graphClustering";
 import { getTypeColor } from "./utils/typeStyles";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 /**
  * Data structure for cluster node
@@ -78,7 +79,7 @@ function getClusterSize(nodeCount: number): { width: number; height: number } {
 	const scaleFactor = Math.log10(nodeCount + 1) * 20;
 	const size = Math.min(baseSize + scaleFactor, 200);
 
-	return { width: size, height: size };
+	return { height: size, width: size };
 }
 
 /**
@@ -110,8 +111,8 @@ function CollapsedClusterView({
 			)}
 			style={{
 				borderColor: `${typeColor}40`,
-				width,
 				height,
+				width,
 			}}
 			onClick={onToggle}
 		>
@@ -135,7 +136,10 @@ function CollapsedClusterView({
 			</div>
 
 			{/* Size badge */}
-			<Badge className="text-white font-bold" style={{ backgroundColor: typeColor }}>
+			<Badge
+				className="text-white font-bold"
+				style={{ backgroundColor: typeColor }}
+			>
 				{cluster.size}
 			</Badge>
 
@@ -152,16 +156,14 @@ function CollapsedClusterView({
 				<div
 					className="h-full transition-all"
 					style={{
-						width: `${density * 100}%`,
 						backgroundColor: typeColor,
+						width: `${density * 100}%`,
 					}}
 				/>
 			</div>
 
 			{/* Expand icon */}
-			<ChevronRight
-				className="absolute bottom-1 right-1 w-3 h-3 text-muted-foreground"
-			/>
+			<ChevronRight className="absolute bottom-1 right-1 w-3 h-3 text-muted-foreground" />
 		</div>
 	);
 }
@@ -186,9 +188,9 @@ function ExpandedClusterView({
 		totalEdges > 0 ? cluster.metadata.internalEdges / totalEdges : 0;
 
 	// Get type distribution entries sorted by count
-	const typeEntries = [...Object.entries(cluster.metadata.typeDistribution)].sort(
-		(a, b) => b[1] - a[1],
-	);
+	const typeEntries = Object.entries(
+		cluster.metadata.typeDistribution,
+	).toSorted((a, b) => b[1] - a[1]);
 
 	return (
 		<Card
@@ -272,15 +274,21 @@ function ExpandedClusterView({
 				<div className="space-y-1">
 					<div className="flex items-center justify-between text-[10px]">
 						<span className="text-muted-foreground">Cohesion</span>
-						<span className="font-semibold">{(cohesion * 100).toFixed(0)}%</span>
+						<span className="font-semibold">
+							{(cohesion * 100).toFixed(0)}%
+						</span>
 					</div>
 					<div className="w-full h-2 bg-muted rounded-full overflow-hidden">
 						<div
 							className="h-full transition-all"
 							style={{
-								width: `${cohesion * 100}%`,
 								backgroundColor:
-									cohesion > 0.7 ? "#22c55e" : cohesion > 0.4 ? "#f59e0b" : "#ef4444",
+									cohesion > 0.7
+										? "#22c55e"
+										: (cohesion > 0.4
+											? "#f59e0b"
+											: "#ef4444"),
+								width: `${cohesion * 100}%`,
 							}}
 						/>
 					</div>
@@ -299,15 +307,17 @@ function ExpandedClusterView({
 						return (
 							<div key={type} className="space-y-0.5">
 								<div className="flex items-center justify-between text-[11px]">
-									<span className="capitalize">{type.replace(/_/g, " ")}</span>
+									<span className="capitalize">
+										{type.replaceAll(/_/g, " ")}
+									</span>
 									<span className="font-semibold">{count}</span>
 								</div>
 								<div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
 									<div
 										className="h-full transition-all"
 										style={{
-											width: `${percentage}%`,
 											backgroundColor: color,
+											width: `${percentage}%`,
 										}}
 									/>
 								</div>
@@ -387,10 +397,7 @@ function ClusterNodeComponent({ data: nodeData, selected }: NodeProps) {
 	const data = nodeData;
 
 	// Calculate handle positions based on size
-	useMemo(
-		() => getClusterSize(data.cluster.size),
-		[data.cluster.size],
-	);
+	useMemo(() => getClusterSize(data.cluster.size), [data.cluster.size]);
 
 	return (
 		<div

@@ -37,140 +37,140 @@ interface ApiGroup {
 
 const apiGroups: ApiGroup[] = [
 	{
-		id: "1",
-		name: "Projects",
 		baseUrl: "/api/v1/projects",
 		endpoints: [
 			{
+				description: "List all projects",
 				id: "1.1",
 				method: "GET",
 				path: "/",
-				description: "List all projects",
-				status: "implemented",
 				responseExample: '[{"id": "uuid", "name": "Project"}]',
+				status: "implemented",
 			},
 			{
+				description: "Create a project",
 				id: "1.2",
 				method: "POST",
 				path: "/",
-				description: "Create a project",
-				status: "implemented",
 				requestBody: '{"name": "string"}',
+				status: "implemented",
 			},
 			{
+				description: "Get project by ID",
 				id: "1.3",
 				method: "GET",
 				path: "/{id}",
-				description: "Get project by ID",
 				status: "implemented",
 			},
 			{
+				description: "Update project",
 				id: "1.4",
 				method: "PATCH",
 				path: "/{id}",
-				description: "Update project",
 				status: "implemented",
 			},
 			{
+				description: "Delete project",
 				id: "1.5",
 				method: "DELETE",
 				path: "/{id}",
-				description: "Delete project",
 				status: "planned",
 			},
 		],
+		id: "1",
+		name: "Projects",
 	},
 	{
-		id: "2",
-		name: "Items",
 		baseUrl: "/api/v1/items",
 		endpoints: [
 			{
+				description: "List items with filters",
 				id: "2.1",
 				method: "GET",
 				path: "/",
-				description: "List items with filters",
 				status: "implemented",
 			},
 			{
+				description: "Create an item",
 				id: "2.2",
 				method: "POST",
 				path: "/",
-				description: "Create an item",
 				status: "implemented",
 			},
 			{
+				description: "Get item by ID",
 				id: "2.3",
 				method: "GET",
 				path: "/{id}",
-				description: "Get item by ID",
 				status: "implemented",
 			},
 			{
+				description: "Update item",
 				id: "2.4",
 				method: "PATCH",
 				path: "/{id}",
-				description: "Update item",
 				status: "implemented",
 			},
 			{
+				description: "Get item version history",
 				id: "2.5",
 				method: "GET",
 				path: "/{id}/history",
-				description: "Get item version history",
 				status: "planned",
 			},
 		],
+		id: "2",
+		name: "Items",
 	},
 	{
-		id: "3",
-		name: "Links",
 		baseUrl: "/api/v1/links",
 		endpoints: [
 			{
+				description: "List all links",
 				id: "3.1",
 				method: "GET",
 				path: "/",
-				description: "List all links",
 				status: "implemented",
 			},
 			{
+				description: "Create a link",
 				id: "3.2",
 				method: "POST",
 				path: "/",
-				description: "Create a link",
 				status: "implemented",
 			},
 			{
+				description: "Delete a link",
 				id: "3.3",
 				method: "DELETE",
 				path: "/{id}",
-				description: "Delete a link",
 				status: "implemented",
 			},
 			{
+				description: "Get full traceability graph",
 				id: "3.4",
 				method: "GET",
 				path: "/graph",
-				description: "Get full traceability graph",
 				status: "planned",
 			},
 		],
+		id: "3",
+		name: "Links",
 	},
 ];
 
 const methodColors: Record<HttpMethod, string> = {
+	DELETE: "bg-red-100 text-red-700",
 	GET: "bg-green-100 text-green-700",
+	PATCH: "bg-orange-100 text-orange-700",
 	POST: "bg-blue-100 text-blue-700",
 	PUT: "bg-yellow-100 text-yellow-700",
-	PATCH: "bg-orange-100 text-orange-700",
-	DELETE: "bg-red-100 text-red-700",
 };
 
 const statusBadge: Record<string, string> = {
+	deprecated: "bg-red-500",
 	implemented: "bg-green-500",
 	planned: "bg-yellow-500",
-	deprecated: "bg-red-500",
 };
 
 export function ApiView({ projectId }: ApiViewProps) {
@@ -216,7 +216,7 @@ export function ApiView({ projectId }: ApiViewProps) {
 					<Skeleton className="h-10 w-full rounded-lg" />
 					<Skeleton className="h-10 w-full rounded-lg" />
 				</div>
-			) : projectItems.length > 0 ? (
+			) : (projectItems.length > 0 ? (
 				<div className="space-y-2">
 					<h2 className="text-lg font-semibold">Project API items</h2>
 					<div className="rounded-lg border">
@@ -249,74 +249,74 @@ export function ApiView({ projectId }: ApiViewProps) {
 						})}
 					</div>
 				</div>
-			) : null}
+			) : null)}
 
 			<div className="space-y-2">
 				<h2 className="text-lg font-semibold">Reference</h2>
 				<div className="rounded-lg border">
-				{apiGroups.map((group) => (
-					<div key={group.id} className="border-b last:border-b-0">
-						<div
-							className="flex cursor-pointer items-center gap-3 p-4 hover:bg-accent/50"
-							onClick={() => toggle(group.id)}
-						>
-							{expanded.has(group.id) ? (
-								<ChevronDown className="h-4 w-4" />
-							) : (
-								<ChevronRight className="h-4 w-4" />
-							)}
-							<Globe className="h-5 w-5 text-blue-500" />
-							<span className="font-medium">{group.name}</span>
-							<code className="ml-2 text-xs text-muted-foreground">
-								{group.baseUrl}
-							</code>
-							<span className="ml-auto text-xs text-muted-foreground">
-								{group.endpoints.length} endpoints
-							</span>
-						</div>
-						{expanded.has(group.id) && (
-							<div className="border-t bg-muted/20">
-								{group.endpoints.map((endpoint) => (
-									<div
-										key={endpoint.id}
-										className="flex items-center gap-3 border-b last:border-b-0 p-3 pl-12"
-									>
-										<span
-											className={`rounded px-2 py-0.5 text-xs font-mono font-bold ${methodColors[endpoint.method]}`}
-										>
-											{endpoint.method}
-										</span>
-										<code className="text-sm">{endpoint.path}</code>
-										<span className="flex-1 text-sm text-muted-foreground">
-											{endpoint.description}
-										</span>
-										<span
-											className={`h-2 w-2 rounded-full ${statusBadge[endpoint.status]}`}
-											title={endpoint.status}
-										/>
-										<button
-											onClick={() => copyPath(endpoint, group)}
-											className="rounded p-1 hover:bg-accent"
-										>
-											{copied === endpoint.id ? (
-												<Check className="h-4 w-4 text-green-500" />
-											) : (
-												<Copy className="h-4 w-4" />
-											)}
-										</button>
-										<button
-											className="rounded p-1 hover:bg-accent"
-											title="Try it"
-										>
-											<Play className="h-4 w-4" />
-										</button>
-									</div>
-								))}
+					{apiGroups.map((group) => (
+						<div key={group.id} className="border-b last:border-b-0">
+							<div
+								className="flex cursor-pointer items-center gap-3 p-4 hover:bg-accent/50"
+								onClick={() => toggle(group.id)}
+							>
+								{expanded.has(group.id) ? (
+									<ChevronDown className="h-4 w-4" />
+								) : (
+									<ChevronRight className="h-4 w-4" />
+								)}
+								<Globe className="h-5 w-5 text-blue-500" />
+								<span className="font-medium">{group.name}</span>
+								<code className="ml-2 text-xs text-muted-foreground">
+									{group.baseUrl}
+								</code>
+								<span className="ml-auto text-xs text-muted-foreground">
+									{group.endpoints.length} endpoints
+								</span>
 							</div>
-						)}
-					</div>
-				))}
-			</div>
+							{expanded.has(group.id) && (
+								<div className="border-t bg-muted/20">
+									{group.endpoints.map((endpoint) => (
+										<div
+											key={endpoint.id}
+											className="flex items-center gap-3 border-b last:border-b-0 p-3 pl-12"
+										>
+											<span
+												className={`rounded px-2 py-0.5 text-xs font-mono font-bold ${methodColors[endpoint.method]}`}
+											>
+												{endpoint.method}
+											</span>
+											<code className="text-sm">{endpoint.path}</code>
+											<span className="flex-1 text-sm text-muted-foreground">
+												{endpoint.description}
+											</span>
+											<span
+												className={`h-2 w-2 rounded-full ${statusBadge[endpoint.status]}`}
+												title={endpoint.status}
+											/>
+											<button
+												onClick={() => copyPath(endpoint, group)}
+												className="rounded p-1 hover:bg-accent"
+											>
+												{copied === endpoint.id ? (
+													<Check className="h-4 w-4 text-green-500" />
+												) : (
+													<Copy className="h-4 w-4" />
+												)}
+											</button>
+											<button
+												className="rounded p-1 hover:bg-accent"
+												title="Try it"
+											>
+												<Play className="h-4 w-4" />
+											</button>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					))}
+				</div>
 			</div>
 		</div>
 	);

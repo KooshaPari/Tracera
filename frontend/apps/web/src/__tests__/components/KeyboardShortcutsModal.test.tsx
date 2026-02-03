@@ -1,37 +1,35 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-	type KeyboardShortcut,
-	KeyboardShortcutsModal,
-} from "@/components/KeyboardShortcutsModal";
+import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
+import type { KeyboardShortcut } from "@/components/KeyboardShortcutsModal";
 
-describe("KeyboardShortcutsModal", () => {
+describe(KeyboardShortcutsModal, () => {
 	const mockOnClose = vi.fn();
 
 	const shortcuts: KeyboardShortcut[] = [
 		{
+			category: "system",
+			description: "Open command palette",
 			key: "k",
 			meta: true,
-			description: "Open command palette",
-			category: "system",
 		},
 		{
+			category: "editing",
+			description: "Create new item",
 			key: "n",
 			meta: true,
-			description: "Create new item",
-			category: "editing",
 		},
 		{
+			category: "navigation",
+			description: "Search",
 			key: "f",
 			meta: true,
-			description: "Search",
-			category: "navigation",
 		},
 		{
-			key: "Delete",
-			description: "Bulk delete",
 			category: "selection",
+			description: "Bulk delete",
+			key: "Delete",
 		},
 	];
 
@@ -54,7 +52,7 @@ describe("KeyboardShortcutsModal", () => {
 	it("renders when open", () => {
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcuts}
 			/>,
@@ -66,7 +64,7 @@ describe("KeyboardShortcutsModal", () => {
 	it("displays all shortcuts", () => {
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcuts}
 			/>,
@@ -81,7 +79,7 @@ describe("KeyboardShortcutsModal", () => {
 	it("groups shortcuts by category", () => {
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcuts}
 			/>,
@@ -96,7 +94,7 @@ describe("KeyboardShortcutsModal", () => {
 	it("closes modal when close button is clicked", () => {
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcuts}
 			/>,
@@ -111,13 +109,15 @@ describe("KeyboardShortcutsModal", () => {
 	it("closes modal when clicking outside", () => {
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcuts}
 			/>,
 		);
 
-		const backdrop = document.querySelector(".fixed.inset-0.z-\\[101\\]");
+		const backdrop = document.querySelector(
+			String.raw`.fixed.inset-0.z-\[101\]`,
+		);
 		if (backdrop) {
 			fireEvent.click(backdrop);
 			expect(mockOnClose).toHaveBeenCalled();
@@ -127,7 +127,7 @@ describe("KeyboardShortcutsModal", () => {
 	it("does not close modal when clicking content", () => {
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcuts}
 			/>,
@@ -142,13 +142,13 @@ describe("KeyboardShortcutsModal", () => {
 	it("closes modal on Escape key", () => {
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcuts}
 			/>,
 		);
 
-		fireEvent.keyDown(window, { key: "Escape" });
+		fireEvent.keyDown(globalThis, { key: "Escape" });
 
 		expect(mockOnClose).toHaveBeenCalled();
 	});
@@ -156,7 +156,7 @@ describe("KeyboardShortcutsModal", () => {
 	it("displays shortcut count", () => {
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcuts}
 			/>,
@@ -167,11 +167,7 @@ describe("KeyboardShortcutsModal", () => {
 
 	it("displays empty modal when no shortcuts provided", () => {
 		render(
-			<KeyboardShortcutsModal
-				isOpen={true}
-				onClose={mockOnClose}
-				shortcuts={[]}
-			/>,
+			<KeyboardShortcutsModal isOpen onClose={mockOnClose} shortcuts={[]} />,
 		);
 
 		expect(screen.getByText(/Keyboard Shortcuts/)).toBeInTheDocument();
@@ -181,7 +177,7 @@ describe("KeyboardShortcutsModal", () => {
 	it("shows keyboard hint in footer", () => {
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcuts}
 			/>,
@@ -193,17 +189,17 @@ describe("KeyboardShortcutsModal", () => {
 	it("displays context when provided", () => {
 		const shortcutsWithContext: KeyboardShortcut[] = [
 			{
-				key: "a",
-				meta: true,
-				description: "Select all items",
 				category: "selection",
 				context: "Items view",
+				description: "Select all items",
+				key: "a",
+				meta: true,
 			},
 		];
 
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={shortcutsWithContext}
 			/>,
@@ -215,15 +211,15 @@ describe("KeyboardShortcutsModal", () => {
 	it("handles shortcuts without modifiers", () => {
 		const simpleShortcuts: KeyboardShortcut[] = [
 			{
-				key: "/",
-				description: "Focus search",
 				category: "navigation",
+				description: "Focus search",
+				key: "/",
 			},
 		];
 
 		render(
 			<KeyboardShortcutsModal
-				isOpen={true}
+				isOpen
 				onClose={mockOnClose}
 				shortcuts={simpleShortcuts}
 			/>,

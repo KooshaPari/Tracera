@@ -1,4 +1,4 @@
-// equivalence/index.ts - Central export for equivalence import/export functionality
+// Equivalence/index.ts - Central export for equivalence import/export functionality
 
 export type { EquivalenceExportProps } from "../EquivalenceExport";
 export { EquivalenceExport } from "../EquivalenceExport";

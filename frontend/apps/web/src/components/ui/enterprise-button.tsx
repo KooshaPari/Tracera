@@ -6,7 +6,8 @@
  */
 
 import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import { motion } from "framer-motion";
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,19 @@ import { cn } from "@/lib/utils";
 const buttonVariants = cva(
 	"inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
 	{
+		defaultVariants: {
+			size: "default",
+			variant: "default",
+		},
 		variants: {
+			size: {
+				default: "h-10 px-4 py-2",
+				sm: "h-9 rounded-md px-3",
+				lg: "h-11 rounded-md px-8",
+				icon: "h-10 w-10",
+				xs: "h-7 rounded px-2 text-xs",
+				xl: "h-13 rounded-lg px-10 text-base",
+			},
 			variant: {
 				default: "bg-primary text-primary-foreground hover:bg-primary/90",
 				destructive:
@@ -35,18 +48,6 @@ const buttonVariants = cva(
 					"bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-500",
 				info: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
 			},
-			size: {
-				default: "h-10 px-4 py-2",
-				sm: "h-9 rounded-md px-3",
-				lg: "h-11 rounded-md px-8",
-				icon: "h-10 w-10",
-				xs: "h-7 rounded px-2 text-xs",
-				xl: "h-13 rounded-lg px-10 text-base",
-			},
-		},
-		defaultVariants: {
-			variant: "default",
-			size: "default",
 		},
 	},
 );
@@ -85,7 +86,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 		return (
 			<Comp
 				className={cn(
-					buttonVariants({ variant, size, className }),
+					buttonVariants({ className, size, variant }),
 					loading && "relative overflow-hidden",
 					success && variant === "default" && "bg-green-600 hover:bg-green-700",
 					"cursor-pointer",
@@ -94,7 +95,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 				disabled={disabled || loading}
 				whileHover={{ scale: 1.02 }}
 				whileTap={{ scale: 0.98 }}
-				transition={{ type: "spring", stiffness: 400, damping: 17 }}
+				transition={{ damping: 17, stiffness: 400, type: "spring" }}
 				{...(props.style ? { style: props.style as React.CSSProperties } : {})}
 				{...(Object.fromEntries(
 					Object.entries(props).filter(([key]) => key !== "style"),
@@ -124,7 +125,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 						className="absolute inset-0 flex items-center justify-center bg-green-500/10 rounded-md"
 						initial={{ opacity: 0, scale: 0.8 }}
 						animate={{ opacity: 1, scale: 1 }}
-						transition={{ type: "spring", duration: 0.3 }}
+						transition={{ duration: 0.3, type: "spring" }}
 					>
 						<svg
 							className="h-5 w-5 text-green-600"
@@ -139,7 +140,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 								d="M5 13l4 4L19 7"
 								initial={{ pathLength: 0 }}
 								animate={{ pathLength: 1 }}
-								transition={{ duration: 0.3, delay: 0.2 }}
+								transition={{ delay: 0.2, duration: 0.3 }}
 							/>
 						</svg>
 					</motion.div>
@@ -167,48 +168,52 @@ export interface ButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
 	(
-		{ children, variant = "default", size: _size = "default", className, ...props },
+		{
+			children,
+			variant = "default",
+			size: _size = "default",
+			className,
+			...props
+		},
 		ref,
-	) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					"inline-flex",
-					{
-						// Default vertical grouping
-						"flex-col": variant === "default",
-						// Segmented horizontal buttons
-						"items-center rounded-md shadow-sm": variant === "segmented",
-						// ToolBar spacing
-						"items-center gap-1": variant === "toolbar",
-					},
-					className,
-				)}
-				{...props}
-			>
-				{variant === "segmented" &&
-					React.Children.map(children, (child, index) => {
-						if (React.isValidElement(child)) {
-							const childProps = child.props as { className?: string };
-							return React.cloneElement(child, {
-								className: cn(
-									index === 0 && "rounded-l-md rounded-r-none",
-									index === React.Children.count(children) - 1 &&
-										"rounded-r-md rounded-l-none",
-									index !== 0 &&
-										index !== React.Children.count(children) - 1 &&
-										"rounded-none",
-									childProps.className,
-								),
-							} as any);
-						}
-						return child;
-					})}
-				{variant !== "segmented" && children}
-			</div>
-		);
-	},
+	) => (
+		<div
+			ref={ref}
+			className={cn(
+				"inline-flex",
+				{
+					// Default vertical grouping
+					"flex-col": variant === "default",
+					// Segmented horizontal buttons
+					"items-center rounded-md shadow-sm": variant === "segmented",
+					// ToolBar spacing
+					"items-center gap-1": variant === "toolbar",
+				},
+				className,
+			)}
+			{...props}
+		>
+			{variant === "segmented" &&
+				React.Children.map(children, (child, index) => {
+					if (React.isValidElement(child)) {
+						const childProps = child.props as { className?: string };
+						return React.cloneElement(child, {
+							className: cn(
+								index === 0 && "rounded-l-md rounded-r-none",
+								index === React.Children.count(children) - 1 &&
+									"rounded-r-md rounded-l-none",
+								index !== 0 &&
+									index !== React.Children.count(children) - 1 &&
+									"rounded-none",
+								childProps.className,
+							),
+						} as any);
+					}
+					return child;
+				})}
+			{variant !== "segmented" && children}
+		</div>
+	),
 );
 
 ButtonGroup.displayName = "ButtonGroup";
@@ -222,35 +227,33 @@ export interface ToolbarButtonProps extends Omit<ButtonProps, "size"> {
 export const ToolbarButton = React.forwardRef<
 	HTMLButtonElement,
 	ToolbarButtonProps
->(({ shortcut, tooltip, children, className, ...props }, ref) => {
-	return (
-		<Button
-			ref={ref}
-			size="sm"
-			variant="ghost"
-			className={cn("h-8 px-3 group relative", className)}
-			{...props}
-		>
-			<div className="flex items-center gap-2">
-				{children}
-				{shortcut && (
-					<kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 font-mono text-xs text-muted-foreground bg-muted rounded">
-						{shortcut}
-					</kbd>
-				)}
-			</div>
-
-			{tooltip && (
-				<div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 text-xs text-white bg-black/80 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-					{tooltip}
-					<div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
-						<div className="border-4 border-transparent border-t-black/80" />
-					</div>
-				</div>
+>(({ shortcut, tooltip, children, className, ...props }, ref) => (
+	<Button
+		ref={ref}
+		size="sm"
+		variant="ghost"
+		className={cn("h-8 px-3 group relative", className)}
+		{...props}
+	>
+		<div className="flex items-center gap-2">
+			{children}
+			{shortcut && (
+				<kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 font-mono text-xs text-muted-foreground bg-muted rounded">
+					{shortcut}
+				</kbd>
 			)}
-		</Button>
-	);
-});
+		</div>
+
+		{tooltip && (
+			<div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 text-xs text-white bg-black/80 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+				{tooltip}
+				<div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+					<div className="border-4 border-transparent border-t-black/80" />
+				</div>
+			</div>
+		)}
+	</Button>
+));
 
 ToolbarButton.displayName = "ToolbarButton";
 

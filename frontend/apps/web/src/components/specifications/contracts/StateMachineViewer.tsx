@@ -26,7 +26,9 @@ function calculatePositions(
 	centerX = 300,
 	centerY = 150,
 ): StateNodePosition[] {
-	if (!states || states.length === 0) return [];
+	if (!states || states.length === 0) {
+		return [];
+	}
 
 	const radius = Math.min(250, 50 * states.length);
 	const angleSlice = (2 * Math.PI) / Math.max(states.length, 1);
@@ -68,7 +70,9 @@ export function StateMachineViewer({
 	}
 
 	const handleTransitionClick = async (transition: ContractTransition) => {
-		if (!isExecutable || !onTransitionTrigger) return;
+		if (!isExecutable || !onTransitionTrigger) {
+			return;
+		}
 		setIsTransitioning(true);
 		try {
 			await onTransitionTrigger(transition);
@@ -122,7 +126,9 @@ export function StateMachineViewer({
 						const fromPos = positionMap[transition.fromState];
 						const toPos = positionMap[transition.toState];
 
-						if (!fromPos || !toPos) return null;
+						if (!fromPos || !toPos) {
+							return null;
+						}
 
 						const isSelfLoop = transition.fromState === transition.toState;
 						const midX = (fromPos.x + toPos.x) / 2;
@@ -214,9 +220,9 @@ export function StateMachineViewer({
 									className={`transition-all cursor-pointer ${
 										isCurrent
 											? "fill-primary stroke-primary"
-											: isInitial
+											: (isInitial
 												? "fill-green-500/20 stroke-green-600"
-												: "fill-background stroke-border hover:fill-muted"
+												: "fill-background stroke-border hover:fill-muted")
 									}`}
 									strokeWidth={isCurrent ? 3 : 2}
 									onClick={() => onStateSelect?.(pos.state)}

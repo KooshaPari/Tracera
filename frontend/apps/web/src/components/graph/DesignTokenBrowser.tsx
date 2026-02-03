@@ -72,45 +72,45 @@ const TOKEN_TYPE_ICONS: Record<
 	DesignTokenType,
 	React.ComponentType<{ className?: string }>
 > = {
+	animation: Play,
+	border: LinkIcon,
+	breakpoint: Maximize,
 	color: Palette,
+	custom: Code,
+	opacity: Eye,
+	radius: AlertCircle,
+	shadow: Zap,
 	spacing: Hash,
 	typography: FileCode,
-	shadow: Zap,
-	border: LinkIcon,
-	radius: AlertCircle,
-	opacity: Eye,
 	"z-index": Layers,
-	breakpoint: Maximize,
-	animation: Play,
-	custom: Code,
 };
 
 const TOKEN_TYPE_LABELS: Record<DesignTokenType, string> = {
+	animation: "Animation",
+	border: "Borders",
+	breakpoint: "Breakpoints",
 	color: "Colors",
+	custom: "Custom",
+	opacity: "Opacity",
+	radius: "Border Radius",
+	shadow: "Shadows",
 	spacing: "Spacing",
 	typography: "Typography",
-	shadow: "Shadows",
-	border: "Borders",
-	radius: "Border Radius",
-	opacity: "Opacity",
 	"z-index": "Z-Index",
-	breakpoint: "Breakpoints",
-	animation: "Animation",
-	custom: "Custom",
 };
 
 const TOKEN_TYPE_COLORS: Record<DesignTokenType, string> = {
+	animation: "hsl(var(--red-500))",
+	border: "hsl(var(--orange-500))",
+	breakpoint: "hsl(var(--indigo-500))",
 	color: "hsl(var(--primary))",
+	custom: "hsl(var(--slate-500))",
+	opacity: "hsl(var(--yellow-500))",
+	radius: "hsl(var(--pink-500))",
+	shadow: "hsl(var(--purple-500))",
 	spacing: "hsl(var(--green-500))",
 	typography: "hsl(var(--blue-500))",
-	shadow: "hsl(var(--purple-500))",
-	border: "hsl(var(--orange-500))",
-	radius: "hsl(var(--pink-500))",
-	opacity: "hsl(var(--yellow-500))",
 	"z-index": "hsl(var(--cyan-500))",
-	breakpoint: "hsl(var(--indigo-500))",
-	animation: "hsl(var(--red-500))",
-	custom: "hsl(var(--slate-500))",
 };
 
 // =============================================================================
@@ -151,7 +151,7 @@ function DesignTokenBrowserComponent({
 		// Group by type
 		const grouped = new Map<DesignTokenType, DesignToken[]>();
 		for (const token of filtered) {
-			const type = token.type;
+			const { type } = token;
 			if (!grouped.has(type)) {
 				grouped.set(type, []);
 			}
@@ -166,11 +166,11 @@ function DesignTokenBrowserComponent({
 		// Stats
 		const stats = {
 			total: tokens.length,
-			withUsage: tokens.filter((t) => t.usageCount > 0).length,
 			withFigmaStyle: tokens.filter((t) => t.figmaStyleId).length,
 			withReferences: tokens.filter(
 				(t) => t.referencesTokenId || t.referencedByIds?.length,
 			).length,
+			withUsage: tokens.filter((t) => t.usageCount > 0).length,
 		};
 
 		return { filteredTokens: filtered, groupedByType: grouped, stats };
@@ -190,7 +190,7 @@ function DesignTokenBrowserComponent({
 	}, []);
 
 	const expandAllCategories = useCallback(() => {
-		const allCategories = new Set(Array.from(groupedByType.keys()) as string[]);
+		const allCategories = new Set([...groupedByType.keys()] as string[]);
 		setExpandedCategories(allCategories);
 	}, [groupedByType]);
 
@@ -199,10 +199,7 @@ function DesignTokenBrowserComponent({
 	}, []);
 
 	const copyToClipboard = useCallback((text: string, tokenId: string) => {
-		void navigator.clipboard.writeText(text).then(() => {
-			setCopiedTokenId(tokenId);
-			setTimeout(() => setCopiedTokenId(null), 2000);
-		});
+		undefined;
 	}, []);
 
 	if (tokens.length === 0) {
@@ -274,7 +271,7 @@ function DesignTokenBrowserComponent({
 
 				{/* Filter buttons row */}
 				<div className="px-4 py-2 border-b bg-muted/30 flex items-center gap-2 overflow-x-auto flex-wrap">
-					{Array.from(groupedByType.keys()).map((type) => {
+					{[...groupedByType.keys()].map((type) => {
 						const TypeIcon = TOKEN_TYPE_ICONS[type];
 						return (
 							<Button
@@ -330,7 +327,7 @@ function DesignTokenBrowserComponent({
 
 						{/* Token categories */}
 						{filteredTokens.length > 0 ? (
-							Array.from(groupedByType.entries()).map(([type, typeTokens]) => (
+							[...groupedByType.entries()].map(([type, typeTokens]) => (
 								<TokenCategorySection
 									key={type}
 									type={type}
@@ -680,7 +677,7 @@ function TokenListItem({
 							<div className="flex items-center gap-2 pt-1 border-t">
 								<Figma className="h-3.5 w-3.5 text-blue-500" />
 								<a
-									href={`https://figma.com/file/styles`}
+									href="https://figma.com/file/styles"
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-[10px] text-blue-500 hover:text-blue-600 flex items-center gap-1"
@@ -720,7 +717,7 @@ interface TokenPreviewProps {
 
 function TokenPreview({ token }: TokenPreviewProps) {
 	switch (token.type) {
-		case "color":
+		case "color": {
 			return (
 				<div
 					className="w-8 h-8 rounded-md border-2 border-muted shrink-0"
@@ -730,8 +727,9 @@ function TokenPreview({ token }: TokenPreviewProps) {
 					title={token.resolvedValue || token.value}
 				/>
 			);
+		}
 
-		case "shadow":
+		case "shadow": {
 			return (
 				<div
 					className="w-8 h-8 rounded-md border border-muted shrink-0"
@@ -740,9 +738,10 @@ function TokenPreview({ token }: TokenPreviewProps) {
 					}}
 				/>
 			);
+		}
 
 		case "border":
-		case "radius":
+		case "radius": {
 			return (
 				<div
 					className="w-8 h-8 rounded border-2 shrink-0"
@@ -755,12 +754,14 @@ function TokenPreview({ token }: TokenPreviewProps) {
 					}}
 				/>
 			);
-		default:
+		}
+		default: {
 			return (
 				<div className="w-8 h-8 rounded border border-muted bg-muted flex items-center justify-center shrink-0">
 					<Code className="h-4 w-4 text-muted-foreground" />
 				</div>
 			);
+		}
 	}
 }
 

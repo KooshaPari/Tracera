@@ -103,41 +103,41 @@ const CATEGORY_ICONS: Record<
 	React.ComponentType<{ className?: string }>
 > = {
 	atom: Square,
-	molecule: Grid3x3,
-	organism: Layers,
-	template: LayoutGrid,
-	page: Box,
-	utility: Settings,
-	layout: LayoutGrid,
-	navigation: ArrowUpRight,
-	feedback: AlertCircle,
-	overlay: Layers,
 	"data-display": Eye,
 	"data-entry": Box,
+	feedback: AlertCircle,
+	layout: LayoutGrid,
+	molecule: Grid3x3,
+	navigation: ArrowUpRight,
+	organism: Layers,
 	other: Component,
+	overlay: Layers,
+	page: Box,
+	template: LayoutGrid,
+	utility: Settings,
 };
 
 const CATEGORY_LABELS: Record<ComponentCategory, string> = {
 	atom: "Atoms",
-	molecule: "Molecules",
-	organism: "Organisms",
-	template: "Templates",
-	page: "Pages",
-	utility: "Utilities",
-	layout: "Layout",
-	navigation: "Navigation",
-	feedback: "Feedback",
-	overlay: "Overlays",
 	"data-display": "Data Display",
 	"data-entry": "Data Entry",
+	feedback: "Feedback",
+	layout: "Layout",
+	molecule: "Molecules",
+	navigation: "Navigation",
+	organism: "Organisms",
 	other: "Other",
+	overlay: "Overlays",
+	page: "Pages",
+	template: "Templates",
+	utility: "Utilities",
 };
 
 const STATUS_CONFIG = {
-	stable: { icon: Check, color: "#22c55e", label: "Stable" },
-	beta: { icon: Beaker, color: "#f59e0b", label: "Beta" },
-	deprecated: { icon: Archive, color: "#ef4444", label: "Deprecated" },
-	experimental: { icon: Zap, color: "#8b5cf6", label: "Experimental" },
+	beta: { color: "#f59e0b", icon: Beaker, label: "Beta" },
+	deprecated: { color: "#ef4444", icon: Archive, label: "Deprecated" },
+	experimental: { color: "#8b5cf6", icon: Zap, label: "Experimental" },
+	stable: { color: "#22c55e", icon: Check, label: "Stable" },
 };
 
 // =============================================================================
@@ -179,7 +179,9 @@ function ComponentLibraryExplorerComponent({
 
 	// Filter components by library
 	const libraryComponents = useMemo(() => {
-		if (!currentLibrary) return [];
+		if (!currentLibrary) {
+			return [];
+		}
 		return components.filter((c) => c.libraryId === currentLibrary.id);
 	}, [components, currentLibrary]);
 
@@ -207,7 +209,7 @@ function ComponentLibraryExplorerComponent({
 		// Group by category
 		const grouped = new Map<ComponentCategory, LibraryComponent[]>();
 		for (const component of filtered) {
-			const category = component.category;
+			const { category } = component;
 			if (!grouped.has(category)) {
 				grouped.set(category, []);
 			}
@@ -221,11 +223,11 @@ function ComponentLibraryExplorerComponent({
 
 		// Stats
 		const stats = {
-			total: libraryComponents.length,
-			stable: libraryComponents.filter((c) => c.status === "stable").length,
 			beta: libraryComponents.filter((c) => c.status === "beta").length,
 			deprecated: libraryComponents.filter((c) => c.status === "deprecated")
 				.length,
+			stable: libraryComponents.filter((c) => c.status === "stable").length,
+			total: libraryComponents.length,
 		};
 
 		return { filteredComponents: filtered, groupedByCategory: grouped, stats };
@@ -245,9 +247,7 @@ function ComponentLibraryExplorerComponent({
 	}, []);
 
 	const expandAllCategories = useCallback(() => {
-		const allCategories = new Set(
-			Array.from(groupedByCategory.keys()) as string[],
-		);
+		const allCategories = new Set([...groupedByCategory.keys()] as string[]);
 		setExpandedCategories(allCategories);
 	}, [groupedByCategory]);
 
@@ -439,7 +439,7 @@ function ComponentLibraryExplorerComponent({
 
 								{/* Categories */}
 								{filteredComponents.length > 0 ? (
-									Array.from(groupedByCategory.entries()).map(
+									[...groupedByCategory.entries()].map(
 										([category, categoryComponents]) => (
 											<CategorySection
 												key={category}
@@ -703,7 +703,7 @@ function TokensGrid({ tokens, libraryId }: TokensGridProps) {
 	const groupedTokens = useMemo(() => {
 		const grouped = new Map<string, DesignToken[]>();
 		for (const token of libraryTokens) {
-			const type = token.type;
+			const { type } = token;
 			if (!grouped.has(type)) {
 				grouped.set(type, []);
 			}
@@ -723,7 +723,7 @@ function TokensGrid({ tokens, libraryId }: TokensGridProps) {
 
 	return (
 		<div className="p-4 space-y-4">
-			{Array.from(groupedTokens.entries()).map(([type, typeTokens]) => (
+			{[...groupedTokens.entries()].map(([type, typeTokens]) => (
 				<div key={type}>
 					<h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
 						{type}

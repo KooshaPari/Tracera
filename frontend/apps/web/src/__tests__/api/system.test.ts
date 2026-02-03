@@ -28,12 +28,12 @@ describe("System API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchSystemStatus", () => {
+	describe(fetchSystemStatus, () => {
 		it("should fetch system status successfully", async () => {
 			const mockStatus = {
+				queuedJobs: 2,
 				status: "healthy" as const,
 				uptime: 99.9,
-				queuedJobs: 2,
 				version: "1.0.0",
 			};
 			vi.mocked(apiClient.GET).mockResolvedValue({
@@ -42,8 +42,8 @@ describe("System API", () => {
 				response: new Response(),
 			});
 			vi.mocked(getMcpConfig).mockResolvedValue({
-				mcp_base_url: "http://localhost:9000",
 				auth_mode: "authkit",
+				mcp_base_url: "http://localhost:9000",
 				requires_auth: true,
 			});
 
@@ -51,8 +51,8 @@ describe("System API", () => {
 			expect(result).toEqual({
 				...mockStatus,
 				mcp: {
-					baseUrl: "http://localhost:9000",
 					authMode: "authkit",
+					baseUrl: "http://localhost:9000",
 					requiresAuth: true,
 				},
 			});
@@ -67,9 +67,9 @@ describe("System API", () => {
 
 			const result = await fetchSystemStatus();
 			expect(result).toEqual({
+				queuedJobs: 0,
 				status: "healthy",
 				uptime: 99.9,
-				queuedJobs: 0,
 			});
 		});
 
@@ -84,8 +84,8 @@ describe("System API", () => {
 				response: new Response(),
 			});
 			vi.mocked(getMcpConfig).mockResolvedValue({
-				mcp_base_url: "http://localhost:9000",
 				auth_mode: "authkit",
+				mcp_base_url: "http://localhost:9000",
 				requires_auth: true,
 			});
 
@@ -95,8 +95,8 @@ describe("System API", () => {
 				uptime: 99.9,
 				queuedJobs: 0,
 				mcp: {
-					baseUrl: "http://localhost:9000",
 					authMode: "authkit",
+					baseUrl: "http://localhost:9000",
 					requiresAuth: true,
 				},
 				...responseData,
@@ -117,9 +117,9 @@ describe("System API", () => {
 
 			const result = await fetchSystemStatus();
 			expect(result).toEqual({
+				queuedJobs: 0,
 				status: "healthy",
 				uptime: 99.9,
-				queuedJobs: 0,
 			});
 		});
 	});

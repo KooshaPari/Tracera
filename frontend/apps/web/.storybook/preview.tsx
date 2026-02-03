@@ -2,14 +2,35 @@ import type { Preview } from "@storybook/react";
 import "../src/index.css";
 
 const preview: Preview = {
+	decorators: [
+		(Story) => (
+			<div className="min-h-screen bg-white dark:bg-slate-950">
+				<Story />
+			</div>
+		),
+	],
 	parameters: {
-		layout: "fullscreen",
+		chromatic: {
+			modes: {
+				light: {
+					query: "[data-theme='light']",
+					matcherUrl: "**/light",
+				},
+				dark: {
+					query: "[data-theme='dark']",
+					matcherUrl: "**/dark",
+				},
+			},
+			delay: 300,
+			pauseAnimationAtEnd: true,
+		},
 		controls: {
 			matchers: {
 				color: /(background|color)$/i,
 				date: /Date$/i,
 			},
 		},
+		layout: "fullscreen",
 		viewport: {
 			viewports: {
 				desktop: {
@@ -35,28 +56,7 @@ const preview: Preview = {
 				},
 			},
 		},
-		chromatic: {
-			modes: {
-				light: {
-					query: "[data-theme='light']",
-					matcherUrl: "**/light",
-				},
-				dark: {
-					query: "[data-theme='dark']",
-					matcherUrl: "**/dark",
-				},
-			},
-			delay: 300,
-			pauseAnimationAtEnd: true,
-		},
 	},
-	decorators: [
-		(Story) => (
-			<div className="min-h-screen bg-white dark:bg-slate-950">
-				<Story />
-			</div>
-		),
-	],
 };
 
 export default preview;

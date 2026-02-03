@@ -22,32 +22,32 @@ const mockItems = [
 	{
 		id: "550e8400-e29b-41d4-a716-446655440001",
 		title: "Epic 1",
-		view: "Feature",
 		type: "Epic",
+		view: "Feature",
 	},
 	{
 		id: "550e8400-e29b-41d4-a716-446655440002",
 		title: "Story 1",
-		view: "Feature",
 		type: "Story",
+		view: "Feature",
 	},
 	{
 		id: "550e8400-e29b-41d4-a716-446655440003",
 		title: "Module A",
-		view: "Code",
 		type: "Module",
+		view: "Code",
 	},
 	{
 		id: "550e8400-e29b-41d4-a716-446655440004",
 		title: "Test Suite 1",
-		view: "Test",
 		type: "Suite",
+		view: "Test",
 	},
 	{
 		id: "550e8400-e29b-41d4-a716-446655440005",
 		title: "API Endpoint",
-		view: "API",
 		type: "Endpoint",
+		view: "API",
 	},
 ];
 
@@ -234,7 +234,7 @@ describe("CreateLinkForm Component", () => {
 				/>,
 			);
 
-			// optgroup elements should exist
+			// Optgroup elements should exist
 			const optgroups = container.querySelectorAll("optgroup");
 			expect(optgroups.length).toBeGreaterThan(0);
 		});
@@ -306,8 +306,8 @@ describe("CreateLinkForm Component", () => {
 			const targetOptions = targetSelect.querySelectorAll("option");
 
 			// Should not include the source item
-			const hasSourceInTarget = Array.from(targetOptions).some(
-				opt => opt.value === "1",
+			const hasSourceInTarget = [...targetOptions].some(
+				(opt) => opt.value === "1",
 			);
 			expect(hasSourceInTarget).toBe(false);
 		});
@@ -444,7 +444,7 @@ describe("CreateLinkForm Component", () => {
 			const linkTypeSelect = screen.getAllByRole("combobox")[2];
 			const options = linkTypeSelect.querySelectorAll("option");
 
-			expect(options.length).toBe(6); // implements, tests, depends_on, related_to, blocks, parent_of
+			expect(options.length).toBe(6); // Implements, tests, depends_on, related_to, blocks, parent_of
 		});
 
 		it("should format link type labels correctly", () => {
@@ -663,10 +663,10 @@ describe("CreateLinkForm Component", () => {
 			await waitFor(() => {
 				expect(mockOnSubmit).toHaveBeenCalledWith(
 					expect.objectContaining({
+						description: "Test relationship",
 						sourceId: "550e8400-e29b-41d4-a716-446655440001",
 						targetId: "550e8400-e29b-41d4-a716-446655440003",
 						type: "implements",
-						description: "Test relationship",
 					}),
 					expect.anything(), // SyntheticBaseEvent
 				);
@@ -712,7 +712,7 @@ describe("CreateLinkForm Component", () => {
 					onSubmit={mockOnSubmit}
 					onCancel={mockOnCancel}
 					items={mockItems}
-					isLoading={true}
+					isLoading
 				/>,
 			);
 
@@ -726,7 +726,7 @@ describe("CreateLinkForm Component", () => {
 					onSubmit={mockOnSubmit}
 					onCancel={mockOnCancel}
 					items={mockItems}
-					isLoading={true}
+					isLoading
 				/>,
 			);
 
@@ -759,7 +759,7 @@ describe("CreateLinkForm Component", () => {
 
 			fireEvent.click(screen.getByText("Cancel"));
 
-			expect(mockOnCancel).toHaveBeenCalledTimes(1);
+			expect(mockOnCancel).toHaveBeenCalledOnce();
 		});
 
 		it("should call onCancel when close button is clicked", () => {
@@ -789,7 +789,7 @@ describe("CreateLinkForm Component", () => {
 			);
 
 			// The backdrop is the element with bg-black/50 and onClick={onCancel}
-			const backdrop = container.querySelector(".bg-black\\/50");
+			const backdrop = container.querySelector(String.raw`.bg-black\/50`);
 			if (backdrop) {
 				fireEvent.click(backdrop);
 			}
@@ -830,8 +830,8 @@ describe("CreateLinkForm Component", () => {
 
 		it("should handle items with same view", () => {
 			const sameViewItems = [
-				{ id: "1", title: "Item 1", view: "Feature", type: "Epic" },
-				{ id: "2", title: "Item 2", view: "Feature", type: "Story" },
+				{ id: "1", title: "Item 1", type: "Epic", view: "Feature" },
+				{ id: "2", title: "Item 2", type: "Story", view: "Feature" },
 			];
 
 			render(
@@ -847,7 +847,7 @@ describe("CreateLinkForm Component", () => {
 
 		it("should handle very long item titles", () => {
 			const longTitleItems = [
-				{ id: "1", title: "A".repeat(200), view: "Feature", type: "Epic" },
+				{ id: "1", title: "A".repeat(200), type: "Epic", view: "Feature" },
 			];
 
 			render(
@@ -863,7 +863,7 @@ describe("CreateLinkForm Component", () => {
 
 		it("should handle special characters in item titles", () => {
 			const specialCharItems = [
-				{ id: "1", title: '<Epic> & "Special"', view: "Feature", type: "Epic" },
+				{ id: "1", title: '<Epic> & "Special"', type: "Epic", view: "Feature" },
 			];
 
 			render(

@@ -34,8 +34,8 @@ export interface SimulationNode {
 }
 
 export interface QuadTreeNode {
-	x: number; // center of mass x
-	y: number; // center of mass y
+	x: number; // Center of mass x
+	y: number; // Center of mass y
 	mass: number;
 	count: number;
 	bounds: { x: number; y: number; width: number; height: number };
@@ -89,11 +89,11 @@ class BarnesHutQuadTree {
 		const height = maxY - minY;
 
 		this.root = {
+			bounds: { height, width, x: minX, y: minY },
+			count: 0,
+			mass: 0,
 			x: 0,
 			y: 0,
-			mass: 0,
-			count: 0,
-			bounds: { x: minX, y: minY, width, height },
 		};
 
 		// Insert all nodes
@@ -108,7 +108,7 @@ class BarnesHutQuadTree {
 		tree.x = (tree.x * tree.mass + node.x * node.mass) / totalMass;
 		tree.y = (tree.y * tree.mass + node.y * node.mass) / totalMass;
 		tree.mass = totalMass;
-		tree.count++;
+		tree.count += 1;
 
 		// If this is an empty internal node, store the node here
 		if (tree.count === 1) {
@@ -139,18 +139,22 @@ class BarnesHutQuadTree {
 
 		// Determine quadrant: 0=NW, 1=NE, 2=SW, 3=SE
 		let quadrant = 0;
-		if (node.x >= midX) quadrant += 1;
-		if (node.y >= midY) quadrant += 2;
+		if (node.x >= midX) {
+			quadrant += 1;
+		}
+		if (node.y >= midY) {
+			quadrant += 2;
+		}
 
 		if (!tree.children[quadrant]) {
 			const qx = quadrant % 2 === 0 ? x : midX;
 			const qy = quadrant < 2 ? y : midY;
 			tree.children[quadrant] = {
+				bounds: { height: height / 2, width: width / 2, x: qx, y: qy },
+				count: 0,
+				mass: 0,
 				x: 0,
 				y: 0,
-				mass: 0,
-				count: 0,
-				bounds: { x: qx, y: qy, width: width / 2, height: height / 2 },
 			};
 		}
 
@@ -168,10 +172,14 @@ class BarnesHutQuadTree {
 		let fx = 0;
 		let fy = 0;
 
-		if (!this.root) return { fx, fy };
+		if (!this.root) {
+			return { fx, fy };
+		}
 
 		const traverse = (tree: QuadTreeNode): void => {
-			if (tree.count === 0) return;
+			if (tree.count === 0) {
+				return;
+			}
 
 			const dx = tree.x - node.x;
 			const dy = tree.y - node.y;
@@ -192,7 +200,9 @@ class BarnesHutQuadTree {
 			// Otherwise, traverse children
 			if (tree.children) {
 				for (const child of tree.children) {
-					if (child) traverse(child);
+					if (child) {
+						traverse(child);
+					}
 				}
 			}
 		};
@@ -211,7 +221,7 @@ class BarnesHutQuadTree {
  * Each fragment computes forces for one node.
  */
 /*
-const _FORCE_VERTEX_SHADER = `
+Const _FORCE_VERTEX_SHADER = `
 attribute vec2 a_position;
 varying vec2 v_texCoord;
 
@@ -256,7 +266,7 @@ void main() {
 export class GPUForceLayout {
 	private canvas: HTMLCanvasElement | null = null;
 	private /* _gl */: WebGLRenderingContext | null = null;
-	private useGPU: boolean = false;
+	private useGPU = false;
 	private quadTree: BarnesHutQuadTree;
 
 	constructor() {
@@ -277,8 +287,11 @@ export class GPUForceLayout {
 				this.gl = gl;
 				this.useGPU = true;
 			}
-		} catch (err) {
-			console.warn("GPU acceleration not available, falling back to CPU:", err);
+		} catch (error) {
+			console.warn(
+				"GPU acceleration not available, falling back to CPU:",
+				error,
+			);
 			this.useGPU = false;
 		}
 	}
@@ -302,7 +315,9 @@ export class GPUForceLayout {
 			centeringStrength = 0.01,
 		} = config;
 
-		if (nodes.length === 0) return [];
+		if (nodes.length === 0) {
+			return [];
+		}
 
 		// Initialize simulation nodes
 		const simNodes: SimulationNode[] = this.initializeNodes(nodes);
@@ -314,14 +329,9 @@ export class GPUForceLayout {
 		// If GPU is available and we have many nodes, try GPU path
 		if (this.useGPU && nodes.length > 1000) {
 			try {
-				return await this.simulateGPU(
-					nodes,
-					simNodes,
-					edgeMap,
-					config,
-				);
-			} catch (err) {
-				console.warn("GPU simulation failed, falling back to CPU:", err);
+				return await this.simulateGPU(nodes, simNodes, edgeMap, config);
+			} catch (error) {
+				console.warn("GPU simulation failed, falling back to CPU:", error);
 			}
 		}
 
@@ -348,19 +358,23 @@ export class GPUForceLayout {
 
 		return nodes.map((node, index) => ({
 			id: node.id,
-			x: (index % cols) * spacing + (Math.random() - 0.5) * 50,
-			y: Math.floor(index / cols) * spacing + (Math.random() - 0.5) * 50,
+			mass: 1,
 			vx: 0,
 			vy: 0,
-			mass: 1,
+			x: (index % cols) * spacing + (Math.random() - 0.5) * 50,
+			y: Math.floor(index / cols) * spacing + (Math.random() - 0.5) * 50,
 		}));
 	}
 
 	private buildEdgeMap(edges: Edge[]): Map<string, Set<string>> {
 		const map = new Map<string, Set<string>>();
 		for (const edge of edges) {
-			if (!map.has(edge.source)) map.set(edge.source, new Set());
-			if (!map.has(edge.target)) map.set(edge.target, new Set());
+			if (!map.has(edge.source)) {
+				map.set(edge.source, new Set());
+			}
+			if (!map.has(edge.target)) {
+				map.set(edge.target, new Set());
+			}
 			map.get(edge.source)!.add(edge.target);
 			map.get(edge.target)!.add(edge.source);
 		}
@@ -398,7 +412,7 @@ export class GPUForceLayout {
 		centerY /= simNodes.length;
 
 		// Simulation loop
-		for (let iter = 0; iter < iterations; iter++) {
+		for (let iter = 0; iter < iterations; iter += 1) {
 			// Rebuild quadtree
 			this.quadTree.build(simNodes);
 
@@ -419,7 +433,9 @@ export class GPUForceLayout {
 				if (neighbors) {
 					for (const neighborId of neighbors) {
 						const neighbor = nodeMap.get(neighborId);
-						if (!neighbor) continue;
+						if (!neighbor) {
+							continue;
+						}
 
 						const dx = neighbor.x - node.x;
 						const dy = neighbor.y - node.y;
@@ -507,7 +523,9 @@ export class GPUForceLayout {
 		// Normalize to positive coordinates
 		return nodes.map((node) => {
 			const pos = posMap.get(node.id);
-			if (!pos) return node;
+			if (!pos) {
+				return node;
+			}
 
 			return {
 				...node,

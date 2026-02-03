@@ -5,43 +5,43 @@ import { vi } from "vitest";
 
 // Create mock route that has all necessary methods
 const createMockRoute = (path: string, id: string = path) => ({
-	id,
-	path,
-	getParentRoute: () => rootRoute,
-	init: vi.fn().mockReturnValue({}),
-	update: vi.fn().mockReturnThis(),
-	addChildren: vi.fn().mockReturnThis(),
 	_addFileChildren: vi.fn().mockReturnThis(),
 	_addFileTypes: vi.fn().mockReturnThis(),
+	addChildren: vi.fn().mockReturnThis(),
+	fullPath: path,
+	getParentRoute: () => rootRoute,
+	id,
+	init: vi.fn().mockReturnValue({}),
+	options: {},
+	path,
+	to: path,
+	update: vi.fn().mockReturnThis(),
 	useMatch: vi.fn(),
+	useParams: vi.fn(),
 	useRouteContext: vi.fn(),
 	useSearch: vi.fn(),
-	useParams: vi.fn(),
-	options: {},
-	fullPath: path,
-	to: path,
 });
 
 // Root route mock
 export const rootRoute = {
-	id: "__root__",
-	path: "/",
-	getParentRoute: () => undefined,
-	init: vi.fn().mockReturnValue({}),
-	update: vi.fn().mockReturnThis(),
-	addChildren: vi.fn().mockReturnThis(),
 	_addFileChildren: vi.fn().mockReturnThis(),
 	_addFileTypes: vi.fn().mockReturnThis(),
-	useMatch: vi.fn(),
-	useRouteContext: vi.fn(),
-	useSearch: vi.fn(),
-	useParams: vi.fn(),
+	addChildren: vi.fn().mockReturnThis(),
+	children: [],
+	fullPath: "/",
+	getParentRoute: () => {},
+	id: "__root__",
+	init: vi.fn().mockReturnValue({}),
 	options: {
 		component: () => null,
 	},
-	fullPath: "/",
+	path: "/",
 	to: "/",
-	children: [],
+	update: vi.fn().mockReturnThis(),
+	useMatch: vi.fn(),
+	useParams: vi.fn(),
+	useRouteContext: vi.fn(),
+	useSearch: vi.fn(),
 };
 
 // Create child routes
@@ -63,8 +63,8 @@ export const routeTree = rootRoute.addChildren([
 
 // Make routeTree have the same structure as a real route tree
 Object.assign(routeTree, {
-	init: vi.fn().mockReturnValue({}),
 	__types: {},
+	init: vi.fn().mockReturnValue({}),
 });
 
 // Export Route type mocks (for file-based routes)

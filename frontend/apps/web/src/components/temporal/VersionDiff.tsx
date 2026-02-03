@@ -328,22 +328,22 @@ function DiffItemRow({
 
 	const changeTypeConfig = {
 		added: {
-			icon: Plus,
 			bgColor: "bg-green-50 dark:bg-green-900/10",
 			borderColor: "border-l-green-500",
+			icon: Plus,
 			iconColor: "text-green-500",
 		},
-		removed: {
-			icon: Minus,
-			bgColor: "bg-red-50 dark:bg-red-900/10",
-			borderColor: "border-l-red-500",
-			iconColor: "text-red-500",
-		},
 		modified: {
-			icon: RefreshCw,
 			bgColor: "bg-yellow-50 dark:bg-yellow-900/10",
 			borderColor: "border-l-yellow-500",
+			icon: RefreshCw,
 			iconColor: "text-yellow-500",
+		},
+		removed: {
+			bgColor: "bg-red-50 dark:bg-red-900/10",
+			borderColor: "border-l-red-500",
+			icon: Minus,
+			iconColor: "text-red-500",
 		},
 	};
 
@@ -463,19 +463,19 @@ function SignificanceBadge({
 	const config = {
 		breaking: { color: "red", label: "Breaking" },
 		major: { color: "orange", label: "Major" },
-		moderate: { color: "yellow", label: "Moderate" },
 		minor: { color: "gray", label: "Minor" },
+		moderate: { color: "yellow", label: "Moderate" },
 	};
 
 	const { color, label } = config[significance];
 
 	const colorClasses: Record<string, string> = {
-		red: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+		gray: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
 		orange:
 			"bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+		red: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 		yellow:
 			"bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-		gray: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
 	};
 
 	return (
@@ -504,12 +504,12 @@ function ValueDisplay({ value }: { value: unknown }) {
 	const s =
 		typeof value === "string"
 			? value
-			: typeof value === "number" ||
+			: (typeof value === "number" ||
 					typeof value === "boolean" ||
 					typeof value === "symbol" ||
 					typeof value === "bigint"
 				? String(value)
-				: "";
+				: "");
 	return <span>{s}</span>;
 }
 

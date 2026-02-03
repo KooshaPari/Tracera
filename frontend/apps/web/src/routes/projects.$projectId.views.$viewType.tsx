@@ -1,13 +1,13 @@
 import {
-	createFileRoute,
 	Outlet,
+	createFileRoute,
 	useLoaderData,
 	useLocation,
 	useParams,
 } from "@tanstack/react-router";
-import React, { lazy, Suspense } from "react";
+import React, { Suspense, lazy } from "react";
 import { ChunkLoadingSkeleton } from "@/lib/lazy-loading";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { requireAuth } from "@/lib/route-guards";
 import { API_VIEW } from "@/routes/projects.$projectId.views.api";
 import { ARCHITECTURE_VIEW } from "@/routes/projects.$projectId.views.architecture";
@@ -36,13 +36,17 @@ const GraphViewLazy = lazy(() =>
 			const Comp = m?.GraphView;
 			if (typeof Comp !== "function") {
 				logger.error("GraphView module did not export GraphView", m);
-				return { default: () => <LazyFallback message="Failed to load Graph view." /> };
+				return {
+					default: () => <LazyFallback message="Failed to load Graph view." />,
+				};
 			}
 			return { default: Comp as React.ComponentType<{ projectId: string }> };
 		})
-		.catch((err) => {
-			logger.error("GraphView chunk failed to load", err);
-			return { default: () => <LazyFallback message="Failed to load Graph view." /> };
+		.catch((error) => {
+			logger.error("GraphView chunk failed to load", error);
+			return {
+				default: () => <LazyFallback message="Failed to load Graph view." />,
+			};
 		}),
 );
 function LazyFallback({ message }: { message: string }) {
@@ -55,10 +59,15 @@ function LazyFallback({ message }: { message: string }) {
 
 const IntegrationsViewLazy = lazy(() =>
 	import("@/pages/projects/views/IntegrationsView").then((m) => {
-		const Comp = m.default ?? (m as { IntegrationsView?: unknown }).IntegrationsView;
+		const Comp =
+			m.default ?? (m as { IntegrationsView?: unknown }).IntegrationsView;
 		if (typeof Comp !== "function" && typeof Comp !== "object") {
 			logger.error("IntegrationsView module did not export a component", m);
-			return { default: () => <LazyFallback message="Failed to load Integrations view." /> };
+			return {
+				default: () => (
+					<LazyFallback message="Failed to load Integrations view." />
+				),
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -67,8 +76,13 @@ const CoverageMatrixViewLazy = lazy(() =>
 	import("@/pages/projects/views/CoverageMatrixView").then((m) => {
 		const Comp = m?.CoverageMatrixView;
 		if (typeof Comp !== "function") {
-			logger.error("CoverageMatrixView module did not export CoverageMatrixView", m);
-			return { default: () => <LazyFallback message="Failed to load Coverage view." /> };
+			logger.error(
+				"CoverageMatrixView module did not export CoverageMatrixView",
+				m,
+			);
+			return {
+				default: () => <LazyFallback message="Failed to load Coverage view." />,
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -78,7 +92,11 @@ const QADashboardViewLazy = lazy(() =>
 		const Comp = m?.QADashboardView;
 		if (typeof Comp !== "function") {
 			logger.error("QADashboardView module did not export QADashboardView", m);
-			return { default: () => <LazyFallback message="Failed to load QA Dashboard view." /> };
+			return {
+				default: () => (
+					<LazyFallback message="Failed to load QA Dashboard view." />
+				),
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -88,7 +106,11 @@ const TestCaseViewLazy = lazy(() =>
 		const Comp = m?.TestCaseView ?? m?.default;
 		if (typeof Comp !== "function") {
 			logger.error("TestCaseView module did not export TestCaseView", m);
-			return { default: () => <LazyFallback message="Failed to load Test Cases view." /> };
+			return {
+				default: () => (
+					<LazyFallback message="Failed to load Test Cases view." />
+				),
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -98,7 +120,11 @@ const TestRunViewLazy = lazy(() =>
 		const Comp = m?.TestRunView ?? m?.default;
 		if (typeof Comp !== "function") {
 			logger.error("TestRunView module did not export TestRunView", m);
-			return { default: () => <LazyFallback message="Failed to load Test Runs view." /> };
+			return {
+				default: () => (
+					<LazyFallback message="Failed to load Test Runs view." />
+				),
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -108,7 +134,11 @@ const TestSuiteViewLazy = lazy(() =>
 		const Comp = m?.TestSuiteView ?? m?.default;
 		if (typeof Comp !== "function") {
 			logger.error("TestSuiteView module did not export TestSuiteView", m);
-			return { default: () => <LazyFallback message="Failed to load Test Suites view." /> };
+			return {
+				default: () => (
+					<LazyFallback message="Failed to load Test Suites view." />
+				),
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -117,8 +147,13 @@ const WebhookIntegrationsViewLazy = lazy(() =>
 	import("@/pages/projects/views/WebhookIntegrationsView").then((m) => {
 		const Comp = m?.WebhookIntegrationsView;
 		if (typeof Comp !== "function") {
-			logger.error("WebhookIntegrationsView module did not export WebhookIntegrationsView", m);
-			return { default: () => <LazyFallback message="Failed to load Webhooks view." /> };
+			logger.error(
+				"WebhookIntegrationsView module did not export WebhookIntegrationsView",
+				m,
+			);
+			return {
+				default: () => <LazyFallback message="Failed to load Webhooks view." />,
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -127,8 +162,15 @@ const WorkflowRunsViewLazy = lazy(() =>
 	import("@/pages/projects/views/WorkflowRunsView").then((m) => {
 		const Comp = m?.WorkflowRunsView;
 		if (typeof Comp !== "function") {
-			logger.error("WorkflowRunsView module did not export WorkflowRunsView", m);
-			return { default: () => <LazyFallback message="Failed to load Workflows view." /> };
+			logger.error(
+				"WorkflowRunsView module did not export WorkflowRunsView",
+				m,
+			);
+			return {
+				default: () => (
+					<LazyFallback message="Failed to load Workflows view." />
+				),
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -137,8 +179,15 @@ const ImpactAnalysisViewLazy = lazy(() =>
 	import("@/views/ImpactAnalysisView").then((m) => {
 		const Comp = m?.ImpactAnalysisView;
 		if (typeof Comp !== "function") {
-			logger.error("ImpactAnalysisView module did not export ImpactAnalysisView", m);
-			return { default: () => <LazyFallback message="Failed to load Impact Analysis view." /> };
+			logger.error(
+				"ImpactAnalysisView module did not export ImpactAnalysisView",
+				m,
+			);
+			return {
+				default: () => (
+					<LazyFallback message="Failed to load Impact Analysis view." />
+				),
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -147,8 +196,15 @@ const TraceabilityMatrixViewLazy = lazy(() =>
 	import("@/views/TraceabilityMatrixView").then((m) => {
 		const Comp = m?.TraceabilityMatrixView;
 		if (typeof Comp !== "function") {
-			logger.error("TraceabilityMatrixView module did not export TraceabilityMatrixView", m);
-			return { default: () => <LazyFallback message="Failed to load Traceability view." /> };
+			logger.error(
+				"TraceabilityMatrixView module did not export TraceabilityMatrixView",
+				m,
+			);
+			return {
+				default: () => (
+					<LazyFallback message="Failed to load Traceability view." />
+				),
+			};
 		}
 		return { default: Comp as React.ComponentType<{ projectId: string }> };
 	}),
@@ -180,43 +236,61 @@ function ViewTypeComponent() {
 	// Based on viewType, render the appropriate view component (list/registry)
 	switch (viewType) {
 		case "feature":
-		case "story":
+		case "story": {
 			return <FEATURE_VIEW />;
-		case "code":
+		}
+		case "code": {
 			return <CODE_VIEW />;
-		case "test":
+		}
+		case "test": {
 			return <TEST_VIEW />;
-		case "api":
+		}
+		case "api": {
 			return <API_VIEW />;
-		case "database":
+		}
+		case "database": {
 			return <DATABASE_VIEW />;
-		case "wireframe":
+		}
+		case "wireframe": {
 			return <WIREFRAME_VIEW />;
-		case "architecture":
+		}
+		case "architecture": {
 			return <ARCHITECTURE_VIEW />;
-		case "infrastructure":
+		}
+		case "infrastructure": {
 			return <INFRASTRUCTURE_VIEW />;
-		case "dataflow":
+		}
+		case "dataflow": {
 			return <DATAFLOW_VIEW />;
-		case "security":
+		}
+		case "security": {
 			return <SECURITY_VIEW />;
-		case "performance":
+		}
+		case "performance": {
 			return <PERFORMANCE_VIEW />;
-		case "monitoring":
+		}
+		case "monitoring": {
 			return <MONITORING_VIEW />;
-		case "domain":
+		}
+		case "domain": {
 			return <DOMAIN_VIEW />;
-		case "journey":
+		}
+		case "journey": {
 			return <JOURNEY_VIEW />;
-		case "configuration":
+		}
+		case "configuration": {
 			return <CONFIGURATION_VIEW />;
-		case "dependency":
+		}
+		case "dependency": {
 			return <DEPENDENCY_VIEW />;
-		case "problem":
+		}
+		case "problem": {
 			return <PROBLEM_VIEW />;
-		case "process":
+		}
+		case "process": {
 			return <PROCESS_VIEW />;
-		case "graph":
+		}
+		case "graph": {
 			if (!projectId) {
 				return (
 					<div className="p-6">
@@ -233,81 +307,93 @@ function ViewTypeComponent() {
 					<GraphViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		case "integrations":
+		}
+		case "integrations": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<IntegrationsViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		case "webhooks":
+		}
+		case "webhooks": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<WebhookIntegrationsViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		case "coverage":
+		}
+		case "coverage": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<CoverageMatrixViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		case "qa-dashboard":
+		}
+		case "qa-dashboard": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<QADashboardViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		case "test-cases":
+		}
+		case "test-cases": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<TestCaseViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		case "test-runs":
+		}
+		case "test-runs": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<TestRunViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		case "test-suites":
+		}
+		case "test-suites": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<TestSuiteViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		case "workflows":
+		}
+		case "workflows": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<WorkflowRunsViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		case "impact-analysis":
+		}
+		case "impact-analysis": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<ImpactAnalysisViewLazy projectId={projectId} />
 				</Suspense>
 			);
+		}
 		case "traceability":
-		case "matrix":
+		case "matrix": {
 			return (
 				<Suspense fallback={<LoadingFallback />}>
 					<TraceabilityMatrixViewLazy projectId={projectId} />
 				</Suspense>
 			);
-		default:
+		}
+		default: {
 			return (
 				<div className="p-6">
 					<h1 className="text-2xl font-semibold">Unknown view</h1>
 					<p className="text-muted-foreground">Unknown view type: {viewType}</p>
 				</div>
 			);
+		}
 	}
 }
 
 export const Route = createFileRoute("/projects/$projectId/views/$viewType")({
 	beforeLoad: () => requireAuth(),
 	component: ViewTypeComponent,
-	loader: async ({ params }: { params: { viewType: string } }) => {
-		return { viewType: params.viewType };
-	},
+	loader: async ({ params }: { params: { viewType: string } }) => ({
+		viewType: params.viewType,
+	}),
 });

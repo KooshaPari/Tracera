@@ -6,7 +6,7 @@
 import type { DesignToken } from "@tracertm/types";
 import { useState } from "react";
 import { DesignTokenBrowser } from "./DesignTokenBrowser";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 /**
  * Example 1: Basic Usage
@@ -15,20 +15,20 @@ import { logger } from '@/lib/logger';
 export function BasicExample() {
 	const tokens: DesignToken[] = [
 		{
+			createdAt: "2024-01-01T00:00:00Z",
+			description: "Primary brand color",
 			id: "color-primary",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "primary",
 			path: ["colors", "primary", "500"],
-			description: "Primary brand color",
-			type: "color",
-			value: "#3B82F6",
+			projectId: "proj-1",
 			resolvedValue: "#3B82F6",
+			tags: ["brand"],
+			type: "color",
+			updatedAt: "2024-01-01T00:00:00Z",
 			usageCount: 12,
 			usedByComponentIds: ["btn-1"],
-			tags: ["brand"],
-			createdAt: "2024-01-01T00:00:00Z",
-			updatedAt: "2024-01-01T00:00:00Z",
+			value: "#3B82F6",
 		},
 	];
 
@@ -44,30 +44,30 @@ export function SelectionExample() {
 
 	const tokens: DesignToken[] = [
 		{
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "color-1",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "primary",
 			path: ["colors", "primary", "500"],
-			type: "color",
-			value: "#3B82F6",
+			projectId: "proj-1",
 			resolvedValue: "#3B82F6",
-			usageCount: 12,
-			createdAt: "2024-01-01T00:00:00Z",
+			type: "color",
 			updatedAt: "2024-01-01T00:00:00Z",
+			usageCount: 12,
+			value: "#3B82F6",
 		},
 		{
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "color-2",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "secondary",
 			path: ["colors", "secondary", "500"],
-			type: "color",
-			value: "#10B981",
+			projectId: "proj-1",
 			resolvedValue: "#10B981",
-			usageCount: 8,
-			createdAt: "2024-01-01T00:00:00Z",
+			type: "color",
 			updatedAt: "2024-01-01T00:00:00Z",
+			usageCount: 8,
+			value: "#10B981",
 		},
 	];
 
@@ -103,41 +103,41 @@ export function ComponentUsageExample() {
 
 	const tokens: DesignToken[] = [
 		{
+			createdAt: "2024-01-01T00:00:00Z",
+			description: "Primary brand color",
 			id: "color-primary",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "primary",
 			path: ["colors", "primary", "500"],
-			description: "Primary brand color",
-			type: "color",
-			value: "#3B82F6",
+			projectId: "proj-1",
 			resolvedValue: "#3B82F6",
+			tags: ["brand", "interactive"],
+			type: "color",
+			updatedAt: "2024-01-01T00:00:00Z",
 			usageCount: 12,
 			usedByComponentIds: ["btn-primary", "link-default", "card-header"],
-			tags: ["brand", "interactive"],
-			createdAt: "2024-01-01T00:00:00Z",
-			updatedAt: "2024-01-01T00:00:00Z",
+			value: "#3B82F6",
 		},
 		{
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "spacing-md",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "md",
 			path: ["spacing", "md"],
-			type: "spacing",
-			value: "1rem",
+			projectId: "proj-1",
 			resolvedValue: "1rem",
+			type: "spacing",
+			updatedAt: "2024-01-01T00:00:00Z",
 			usageCount: 25,
 			usedByComponentIds: ["btn-primary", "btn-secondary", "card-header"],
-			createdAt: "2024-01-01T00:00:00Z",
-			updatedAt: "2024-01-01T00:00:00Z",
+			value: "1rem",
 		},
 	];
 
 	return (
 		<DesignTokenBrowser
 			tokens={tokens}
-			showComponentUsage={true}
+			showComponentUsage
 			componentMap={componentMap}
 		/>
 	);
@@ -196,17 +196,17 @@ export function FigmaIntegrationExample() {
 export function TokenReferencesExample() {
 	const tokens: DesignToken[] = [
 		{
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "color-primary-500",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "primary.500",
 			path: ["colors", "primary", "500"],
-			type: "color",
-			value: "#3B82F6",
+			projectId: "proj-1",
 			resolvedValue: "#3B82F6",
-			usageCount: 5,
-			createdAt: "2024-01-01T00:00:00Z",
+			type: "color",
 			updatedAt: "2024-01-01T00:00:00Z",
+			usageCount: 5,
+			value: "#3B82F6",
 		},
 		{
 			id: "color-primary-light",
@@ -224,19 +224,19 @@ export function TokenReferencesExample() {
 			updatedAt: "2024-01-01T00:00:00Z",
 		},
 		{
+			createdAt: "2024-01-01T00:00:00Z",
+			description: "Darker shade of primary color",
 			id: "color-primary-dark",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "primary.dark",
 			path: ["colors", "primary", "dark"],
-			description: "Darker shade of primary color",
-			type: "color",
-			value: "{colors.primary.500}",
-			resolvedValue: "#3B82F6",
+			projectId: "proj-1",
 			referencesTokenId: "color-primary-500",
-			usageCount: 6,
-			createdAt: "2024-01-01T00:00:00Z",
+			resolvedValue: "#3B82F6",
+			type: "color",
 			updatedAt: "2024-01-01T00:00:00Z",
+			usageCount: 6,
+			value: "{colors.primary.500}",
 		},
 	];
 
@@ -264,92 +264,92 @@ export function FullFeaturedExample() {
 	const tokens: DesignToken[] = [
 		// Colors
 		{
+			createdAt: "2024-01-01T00:00:00Z",
+			description: "Primary brand color",
+			figmaStyleId: "figma-1",
 			id: "color-1",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "primary",
 			path: ["colors", "primary", "500"],
-			description: "Primary brand color",
-			type: "color",
-			value: "#3B82F6",
+			projectId: "proj-1",
 			resolvedValue: "#3B82F6",
+			tags: ["brand", "interactive"],
+			type: "color",
+			updatedAt: "2024-01-01T00:00:00Z",
 			usageCount: 12,
 			usedByComponentIds: ["btn-1", "link-1"],
-			tags: ["brand", "interactive"],
-			figmaStyleId: "figma-1",
-			createdAt: "2024-01-01T00:00:00Z",
-			updatedAt: "2024-01-01T00:00:00Z",
+			value: "#3B82F6",
 		},
 		{
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "color-2",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "secondary",
 			path: ["colors", "secondary", "500"],
-			type: "color",
-			value: "#10B981",
+			projectId: "proj-1",
 			resolvedValue: "#10B981",
+			type: "color",
+			updatedAt: "2024-01-01T00:00:00Z",
 			usageCount: 8,
 			usedByComponentIds: ["btn-2"],
-			createdAt: "2024-01-01T00:00:00Z",
-			updatedAt: "2024-01-01T00:00:00Z",
+			value: "#10B981",
 		},
 		// Spacing
 		{
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "spacing-1",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "sm",
 			path: ["spacing", "sm"],
-			type: "spacing",
-			value: "0.5rem",
+			projectId: "proj-1",
 			resolvedValue: "0.5rem",
+			type: "spacing",
+			updatedAt: "2024-01-01T00:00:00Z",
 			usageCount: 20,
 			usedByComponentIds: ["btn-1", "btn-2"],
-			createdAt: "2024-01-01T00:00:00Z",
-			updatedAt: "2024-01-01T00:00:00Z",
+			value: "0.5rem",
 		},
 		{
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "spacing-2",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "md",
 			path: ["spacing", "md"],
-			type: "spacing",
-			value: "1rem",
+			projectId: "proj-1",
 			resolvedValue: "1rem",
+			type: "spacing",
+			updatedAt: "2024-01-01T00:00:00Z",
 			usageCount: 15,
 			usedByComponentIds: ["btn-1"],
-			createdAt: "2024-01-01T00:00:00Z",
-			updatedAt: "2024-01-01T00:00:00Z",
+			value: "1rem",
 		},
 		// Typography
 		{
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "typo-1",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "body",
 			path: ["typography", "body"],
-			type: "typography",
-			value: '16px/1.5 "Inter", sans-serif',
+			projectId: "proj-1",
 			resolvedValue: '16px/1.5 "Inter", sans-serif',
-			usageCount: 25,
-			createdAt: "2024-01-01T00:00:00Z",
+			type: "typography",
 			updatedAt: "2024-01-01T00:00:00Z",
+			usageCount: 25,
+			value: '16px/1.5 "Inter", sans-serif',
 		},
 		// Shadows
 		{
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "shadow-1",
 			libraryId: "lib-1",
-			projectId: "proj-1",
 			name: "lg",
 			path: ["shadows", "lg"],
-			type: "shadow",
-			value: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+			projectId: "proj-1",
 			resolvedValue: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-			usageCount: 5,
-			createdAt: "2024-01-01T00:00:00Z",
+			type: "shadow",
 			updatedAt: "2024-01-01T00:00:00Z",
+			usageCount: 5,
+			value: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
 		},
 	];
 
@@ -366,7 +366,7 @@ export function FullFeaturedExample() {
 				selectedTokenId={selectedTokenId}
 				onSelectToken={setSelectedTokenId}
 				onLinkToFigma={handleLinkToFigma}
-				showComponentUsage={true}
+				showComponentUsage
 				componentMap={componentMap}
 			/>
 		</div>
@@ -384,34 +384,34 @@ export function ExamplesShowcase() {
 
 	const examples = {
 		basic: {
-			title: "Basic Usage",
-			description: "Minimal configuration example",
 			component: <BasicExample />,
-		},
-		selection: {
-			title: "Token Selection",
-			description: "Handle token selection events",
-			component: <SelectionExample />,
-		},
-		usage: {
-			title: "Component Usage",
-			description: "Track component usage of tokens",
-			component: <ComponentUsageExample />,
+			description: "Minimal configuration example",
+			title: "Basic Usage",
 		},
 		figma: {
-			title: "Figma Integration",
-			description: "Sync tokens with Figma styles",
 			component: <FigmaIntegrationExample />,
-		},
-		references: {
-			title: "Token References",
-			description: "Display token-to-token references",
-			component: <TokenReferencesExample />,
+			description: "Sync tokens with Figma styles",
+			title: "Figma Integration",
 		},
 		full: {
-			title: "Full Featured",
-			description: "All features combined",
 			component: <FullFeaturedExample />,
+			description: "All features combined",
+			title: "Full Featured",
+		},
+		references: {
+			component: <TokenReferencesExample />,
+			description: "Display token-to-token references",
+			title: "Token References",
+		},
+		selection: {
+			component: <SelectionExample />,
+			description: "Handle token selection events",
+			title: "Token Selection",
+		},
+		usage: {
+			component: <ComponentUsageExample />,
+			description: "Track component usage of tokens",
+			title: "Component Usage",
 		},
 	};
 
@@ -426,7 +426,7 @@ export function ExamplesShowcase() {
 
 			{/* Tab buttons */}
 			<div className="flex gap-2 flex-wrap">
-				{(Object.keys(examples) as Array<keyof typeof examples>).map((key) => (
+				{(Object.keys(examples) as (keyof typeof examples)[]).map((key) => (
 					<button
 						key={key}
 						onClick={() => setActiveExample(key)}

@@ -16,60 +16,68 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	AuthError,
-	type AuthResponse,
 	authApi,
 	getAuthErrorMessage,
 	isAuthError,
-	type LoginRequest,
 	shouldLogoutOnError,
-	type User,
 } from "@/api/auth";
-import { ApiError } from "@/api/client";
+import type { AuthResponse, LoginRequest, User } from "@/api/auth";
+import client from "@/api/client";
 
 // Mock API client
 vi.mock("@/api/client", () => ({
-	apiClient: {
-		GET: vi.fn(),
-		POST: vi.fn(),
-		PUT: vi.fn(),
-		DELETE: vi.fn(),
-		use: vi.fn(),
-	},
-	handleApiResponse: vi.fn(),
-	safeApiCall: vi.fn(),
-	ApiError: class ApiError extends Error {
-		constructor(
-			public status: number,
-			public statusText: string,
-			public data?: unknown,
-		) {
-			super(`API Error ${status}: ${statusText}`);
-			this.name = "ApiError";
-		}
+	__esModule: true,
+	default: {
+		ApiError: class ApiError extends Error {
+			public data?: unknown;
+			public status: number;
+			public statusText: string;
+
+			constructor(status: number, statusText: string, data?: unknown) {
+				super(`API Error ${status}: ${statusText}`);
+				this.name = "ApiError";
+				this.status = status;
+				this.statusText = statusText;
+				if (arguments.length > 2) {
+					this.data = data;
+				}
+			}
+		},
+		apiClient: {
+			DELETE: vi.fn(),
+			GET: vi.fn(),
+			POST: vi.fn(),
+			PUT: vi.fn(),
+			use: vi.fn(),
+		},
+		handleApiResponse: vi.fn(),
+		safeApiCall: vi.fn(),
 	},
 }));
 
 // Mock CSRF utilities
 vi.mock("@/lib/csrf", () => ({
-	getCSRFToken: vi.fn(),
 	fetchCSRFToken: vi.fn(),
+	getCSRFToken: vi.fn(),
 }));
 
-import * as authClient from "@/api/client";
 import * as csrfLib from "@/lib/csrf";
+
+const { ApiError } = client;
+const authClient = client;
 
 // Test data
 const mockUser: User = {
-	id: "user-123",
 	email: "user@example.com",
+	id: "user-123",
 	name: "John Doe",
 	role: "user",
 };
 
 const mockAuthResponse: AuthResponse = {
-	user: mockUser,
-	token: "token-abc123",
 	expiresIn: 3600,
+	token: "token-abc123",
+	user: mockUser,
 };
 
 const mockLoginRequest: LoginRequest = {
@@ -213,7 +221,7 @@ describe("Authentication API", () => {
 
 	describe("logout", () => {
 		it("should successfully logout", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
 
 			await authApi.logout();
 
@@ -322,12 +330,12 @@ describe("Authentication API", () => {
 
 	describe("changePassword", () => {
 		it("should successfully change password", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
 
 			await authApi.changePassword({
+				confirmPassword: "newPass123",
 				currentPassword: "oldPass123",
 				newPassword: "newPass123",
-				confirmPassword: "newPass123",
 			});
 
 			expect(csrfLib.getCSRFToken).toHaveBeenCalled();
@@ -344,9 +352,9 @@ describe("Authentication API", () => {
 
 			await expect(
 				authApi.changePassword({
+					confirmPassword: "newPass123",
 					currentPassword: "wrongPassword",
 					newPassword: "newPass123",
-					confirmPassword: "newPass123",
 				}),
 			).rejects.toThrow(AuthError);
 		});
@@ -361,9 +369,9 @@ describe("Authentication API", () => {
 
 			await expect(
 				authApi.changePassword({
+					confirmPassword: "differentPass",
 					currentPassword: "oldPass123",
 					newPassword: "newPass123",
-					confirmPassword: "differentPass",
 				}),
 			).rejects.toThrow(AuthError);
 		});
@@ -375,7 +383,7 @@ describe("Authentication API", () => {
 
 	describe("requestPasswordReset", () => {
 		it("should request password reset", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
 
 			await authApi.requestPasswordReset({
 				email: "user@example.com",
@@ -387,7 +395,7 @@ describe("Authentication API", () => {
 
 		it("should handle non-existent email gracefully", async () => {
 			// Should not throw for security reasons
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
 
 			await authApi.requestPasswordReset({
 				email: "nonexistent@example.com",
@@ -399,12 +407,12 @@ describe("Authentication API", () => {
 
 	describe("confirmPasswordReset", () => {
 		it("should confirm password reset with valid token", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
 
 			await authApi.confirmPasswordReset({
-				token: "reset-token-xyz",
-				newPassword: "newPass123",
 				confirmPassword: "newPass123",
+				newPassword: "newPass123",
+				token: "reset-token-xyz",
 			});
 
 			expect(csrfLib.getCSRFToken).toHaveBeenCalled();
@@ -421,9 +429,9 @@ describe("Authentication API", () => {
 
 			await expect(
 				authApi.confirmPasswordReset({
-					token: "invalid-token",
-					newPassword: "newPass123",
 					confirmPassword: "newPass123",
+					newPassword: "newPass123",
+					token: "invalid-token",
 				}),
 			).rejects.toThrow(AuthError);
 		});
@@ -438,9 +446,9 @@ describe("Authentication API", () => {
 
 			await expect(
 				authApi.confirmPasswordReset({
-					token: "expired-token",
-					newPassword: "newPass123",
 					confirmPassword: "newPass123",
+					newPassword: "newPass123",
+					token: "expired-token",
 				}),
 			).rejects.toThrow(AuthError);
 		});
@@ -452,7 +460,7 @@ describe("Authentication API", () => {
 
 	describe("verifyEmail", () => {
 		it("should verify email with valid token", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
 
 			await authApi.verifyEmail("email-verify-token-123");
 
@@ -476,7 +484,7 @@ describe("Authentication API", () => {
 
 	describe("requestEmailVerification", () => {
 		it("should request new verification email", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
 
 			await authApi.requestEmailVerification();
 
@@ -491,7 +499,7 @@ describe("Authentication API", () => {
 
 	describe("deleteAccount", () => {
 		it("should delete user account", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
 
 			await authApi.deleteAccount();
 
@@ -514,7 +522,7 @@ describe("Authentication API", () => {
 	// AUTH ERROR TESTS
 	// ========================================================================
 
-	describe("AuthError", () => {
+	describe(AuthError, () => {
 		it("should construct with all parameters", () => {
 			const error = new AuthError("Test error", 401, "TEST_ERROR", {
 				field: "value",
@@ -546,7 +554,7 @@ describe("Authentication API", () => {
 	// UTILITY FUNCTION TESTS
 	// ========================================================================
 
-	describe("isAuthError", () => {
+	describe(isAuthError, () => {
 		it("should return true for AuthError instances", () => {
 			const error = new AuthError("Test", 400);
 			expect(isAuthError(error)).toBe(true);
@@ -564,13 +572,13 @@ describe("Authentication API", () => {
 
 		it("should return false for non-error objects", () => {
 			expect(isAuthError(null)).toBe(false);
-			expect(isAuthError(undefined)).toBe(false);
+			expect(isAuthError()).toBe(false);
 			expect(isAuthError("string")).toBe(false);
 			expect(isAuthError({})).toBe(false);
 		});
 	});
 
-	describe("getAuthErrorMessage", () => {
+	describe(getAuthErrorMessage, () => {
 		it("should return specific message for INVALID_CREDENTIALS", () => {
 			const error = new AuthError("Error", 401, "INVALID_CREDENTIALS");
 			expect(getAuthErrorMessage(error)).toBe("Invalid email or password");
@@ -629,7 +637,7 @@ describe("Authentication API", () => {
 		});
 	});
 
-	describe("shouldLogoutOnError", () => {
+	describe(shouldLogoutOnError, () => {
 		it("should return true for 401 status", () => {
 			const error = new AuthError("Error", 401);
 			expect(shouldLogoutOnError(error)).toBe(true);
@@ -703,7 +711,7 @@ describe("Authentication API", () => {
 		});
 
 		it("should ensure CSRF for all state-changing operations", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValue(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValue();
 
 			// These should all try to get/fetch CSRF token
 			await authApi.logout();
@@ -711,12 +719,12 @@ describe("Authentication API", () => {
 
 			vi.clearAllMocks();
 			vi.mocked(csrfLib.getCSRFToken).mockReturnValue("token");
-			vi.mocked(authClient.handleApiResponse).mockResolvedValue(undefined);
+			vi.mocked(authClient.handleApiResponse).mockResolvedValue();
 
 			await authApi.changePassword({
+				confirmPassword: "new",
 				currentPassword: "old",
 				newPassword: "new",
-				confirmPassword: "new",
 			});
 			expect(csrfLib.getCSRFToken).toHaveBeenCalled();
 		});

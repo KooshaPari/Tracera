@@ -7,6 +7,7 @@
   eslint/curly,
   eslint/id-length,
   eslint/max-lines,
+  eslint/max-lines,
   eslint/max-lines-per-function,
   eslint/max-statements,
   eslint/no-inline-comments,
@@ -29,6 +30,7 @@
   oxc/no-async-await,
   oxc/no-optional-chaining
  */
+/* eslint-disable-next-line max-lines */
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import type { ADR, ADRStatus } from "@tracertm/types";
 import {
@@ -477,7 +479,11 @@ export function ADRListView({ projectId }: ADRListViewProps) {
   import/no-default-export,
   import/no-named-export,
   import/max-dependencies,
+  eslint/prefer-default-export,
   eslint/func-style,
+  eslint/curly,
+  eslint/id-length,
+  eslint/max-lines,
   eslint/curly,
   eslint/id-length,
   eslint/max-lines,
@@ -503,3 +509,4 @@ export function ADRListView({ projectId }: ADRListViewProps) {
   oxc/no-async-await,
   oxc/no-optional-chaining
  */
+/* eslint-disable-next-line max-lines */

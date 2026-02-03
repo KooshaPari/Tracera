@@ -22,26 +22,24 @@ import {
 } from "@tracertm/ui/components/Tooltip";
 import { Code, ExternalLink, Image as ImageIcon } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { logger } from '@/lib/logger';
-import {
-	generateThumbnail,
-	type ScreenshotMetadata,
-} from "../../utils/screenshot";
+import { logger } from "@/lib/logger";
+import { generateThumbnail } from "../../utils/screenshot";
+import type { ScreenshotMetadata } from "../../utils/screenshot";
 
 export type VersionType = "design" | "draft" | "review" | "release";
 
 const VERSION_COLORS: Record<VersionType, string> = {
-	design: "#8b5cf6", // violet
-	draft: "#f59e0b", // amber
-	review: "#3b82f6", // blue
-	release: "#22c55e", // green
+	design: "#8b5cf6", // Violet
+	draft: "#f59e0b", // Amber
+	review: "#3b82f6", // Blue
+	release: "#22c55e", // Green
 };
 
 const VERSION_LABELS: Record<VersionType, string> = {
 	design: "Design",
 	draft: "Draft",
-	review: "Review",
 	release: "Release",
+	review: "Review",
 };
 
 interface ThumbnailPreviewProps {
@@ -110,7 +108,7 @@ function ThumbnailPreviewComponent({
 			}
 		}
 
-		void generateAndSetThumbnail();
+		undefined;
 
 		return () => {
 			cancelled = true;
@@ -283,8 +281,8 @@ function ThumbnailPreviewComponent({
 												variant="outline"
 												style={{
 													backgroundColor: `${VERSION_COLORS[v.versionType]}20`,
-													color: VERSION_COLORS[v.versionType],
 													borderColor: VERSION_COLORS[v.versionType],
+													color: VERSION_COLORS[v.versionType],
 												}}
 											>
 												{VERSION_LABELS[v.versionType]}
@@ -309,8 +307,8 @@ function ThumbnailPreviewComponent({
 						<Badge
 							style={{
 								backgroundColor: `${versionColor}20`,
-								color: versionColor,
 								borderColor: versionColor,
+								color: versionColor,
 							}}
 						>
 							{versionLabel} {version}

@@ -21,27 +21,33 @@ const statusOptions = [
 const priorityOptions = ["low", "medium", "high", "critical"] as const;
 
 const epicSchema = z.object({
-	title: z.string().min(1, "Title is required").max(500, "Title too long"),
-	description: z.string().max(5000).optional(),
-	status: z.enum(statusOptions),
-	priority: z.enum(priorityOptions),
 	business_value: z
 		.union([z.number(), z.string()])
-		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.transform((val) =>
+			typeof val === "string" ? Number.parseFloat(val) : val,
+		)
 		.pipe(z.number().min(0, "Business value must be non-negative"))
-		.optional(),
-	timeline_start: z.string().optional(),
-	timeline_end: z.string().optional(),
-	story_count: z
-		.union([z.number(), z.string()])
-		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
-		.pipe(z.number().min(0, "Story count must be non-negative"))
 		.optional(),
 	completed_story_count: z
 		.union([z.number(), z.string()])
-		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.transform((val) =>
+			typeof val === "string" ? Number.parseFloat(val) : val,
+		)
 		.pipe(z.number().min(0, "Completed story count must be non-negative"))
 		.optional(),
+	description: z.string().max(5000).optional(),
+	priority: z.enum(priorityOptions),
+	status: z.enum(statusOptions),
+	story_count: z
+		.union([z.number(), z.string()])
+		.transform((val) =>
+			typeof val === "string" ? Number.parseFloat(val) : val,
+		)
+		.pipe(z.number().min(0, "Story count must be non-negative"))
+		.optional(),
+	timeline_end: z.string().optional(),
+	timeline_start: z.string().optional(),
+	title: z.string().min(1, "Title is required").max(500, "Title too long"),
 });
 
 type EpicFormData = z.infer<typeof epicSchema>;
@@ -67,9 +73,9 @@ export function CreateEpicItemForm({
 		handleSubmit,
 		formState: { errors, isSubmitting },
 	} = useForm<EpicFormData>({
-		resolver: zodResolver(epicSchema),
-		defaultValues: { status: "todo", priority: "medium" },
+		defaultValues: { priority: "medium", status: "todo" },
 		mode: "onBlur",
+		resolver: zodResolver(epicSchema),
 	});
 
 	const onSubmitWithAnnouncement = useCallback(
@@ -180,7 +186,7 @@ export function CreateEpicItemForm({
 								placeholder="Enter epic title"
 								aria-describedby={errors.title ? "title-error" : "title-help"}
 								aria-required="true"
-								aria-invalid={!!errors.title}
+								aria-invalid={Boolean(errors.title)}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							/>
 							{errors.title ? (
@@ -300,7 +306,7 @@ export function CreateEpicItemForm({
 										? "business_value-error"
 										: "business_value-help"
 								}
-								aria-invalid={!!errors.business_value}
+								aria-invalid={Boolean(errors.business_value)}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							/>
 							{errors.business_value ? (
@@ -387,7 +393,7 @@ export function CreateEpicItemForm({
 											? "story_count-error"
 											: "story_count-help"
 									}
-									aria-invalid={!!errors.story_count}
+									aria-invalid={Boolean(errors.story_count)}
 									className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 								/>
 								{errors.story_count ? (
@@ -427,7 +433,7 @@ export function CreateEpicItemForm({
 											? "completed_story_count-error"
 											: "completed_story_count-help"
 									}
-									aria-invalid={!!errors.completed_story_count}
+									aria-invalid={Boolean(errors.completed_story_count)}
 									className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 								/>
 								{errors.completed_story_count ? (

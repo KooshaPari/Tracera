@@ -20,98 +20,98 @@ import { ComponentLibraryExplorer } from "@/components/graph/ComponentLibraryExp
 
 const mockDesignTokens: DesignToken[] = [
 	{
+		category: "color",
 		id: "color-primary",
 		name: "Primary Color",
-		category: "color",
 		value: "#3b82f6",
 	} as any,
 	{
+		category: "spacing",
 		id: "spacing-md",
 		name: "Medium Spacing",
-		category: "spacing",
 		value: "16px",
 	} as any,
 ];
 
 const mockComponentVariants: ComponentVariant[] = [
 	{
+		description: "Primary button style",
 		id: "variant-primary",
 		name: "Primary",
-		description: "Primary button style",
 		props: { variant: "primary", size: "md" },
 	} as any,
 	{
+		description: "Secondary button style",
 		id: "variant-secondary",
 		name: "Secondary",
-		description: "Secondary button style",
 		props: { variant: "secondary", size: "md" },
 	} as any,
 ];
 
 const mockComponentProps: ComponentProp[] = [
 	{
+		description: "Button text",
 		id: "prop-label",
 		name: "label",
-		type: "string",
 		required: true,
-		description: "Button text",
+		type: "string",
 	} as any,
 	{
+		description: "Click handler",
 		id: "prop-onClick",
 		name: "onClick",
-		type: "function",
 		required: false,
-		description: "Click handler",
+		type: "function",
 	} as any,
 ];
 
 const mockButton: LibraryComponent = {
-	id: "component-button",
-	libraryId: "lib-ui",
-	name: "Button",
 	category: "atom",
 	description: "Reusable button component",
-	props: mockComponentProps,
-	variants: mockComponentVariants,
-	storybook_url: "http://storybook.local/button",
 	figma_url: "http://figma.local/button",
-	source_code_url: "http://github.local/button",
-	usage_count: 24,
+	id: "component-button",
 	last_updated: "2024-01-15T00:00:00Z",
+	libraryId: "lib-ui",
+	name: "Button",
+	props: mockComponentProps,
+	source_code_url: "http://github.local/button",
+	storybook_url: "http://storybook.local/button",
+	usage_count: 24,
+	variants: mockComponentVariants,
 } as any;
 
 const mockCard: LibraryComponent = {
-	id: "component-card",
-	libraryId: "lib-ui",
-	name: "Card",
 	category: "molecule",
 	description: "Container component",
-	props: [],
-	variants: [],
-	usage_count: 12,
+	id: "component-card",
 	last_updated: "2024-01-15T00:00:00Z",
+	libraryId: "lib-ui",
+	name: "Card",
+	props: [],
+	usage_count: 12,
+	variants: [],
 } as any;
 
 const mockUILibrary: ComponentLibrary = {
-	id: "lib-ui",
-	name: "UI Components",
+	component_count: 2,
 	description: "Core UI component library",
+	id: "lib-ui",
+	last_updated: "2024-01-15T00:00:00Z",
+	name: "UI Components",
 	organization: "Design Team",
 	repository_url: "http://github.local/ui",
 	status: "active",
-	component_count: 2,
-	last_updated: "2024-01-15T00:00:00Z",
 } as any;
 
 const mockIconsLibrary: ComponentLibrary = {
-	id: "lib-icons",
-	name: "Icon Library",
+	component_count: 150,
 	description: "SVG icon library",
+	id: "lib-icons",
+	last_updated: "2024-01-15T00:00:00Z",
+	name: "Icon Library",
 	organization: "Design Team",
 	repository_url: "http://github.local/icons",
 	status: "active",
-	component_count: 150,
-	last_updated: "2024-01-15T00:00:00Z",
 } as any;
 
 // =============================================================================
@@ -206,7 +206,7 @@ describe("ComponentLibraryExplorer Component", () => {
 					libraries={[]}
 					components={[]}
 					onSelectComponent={onSelectComponent}
-					isLoading={true}
+					isLoading
 				/>,
 			);
 
@@ -681,7 +681,7 @@ describe("ComponentLibraryExplorer Component", () => {
 					libraries={[mockUILibrary]}
 					components={[mockButton]}
 					onSelectComponent={onSelectComponent}
-					isLoading={true}
+					isLoading
 				/>,
 			);
 

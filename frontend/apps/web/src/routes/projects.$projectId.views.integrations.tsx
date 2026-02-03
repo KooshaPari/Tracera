@@ -13,9 +13,9 @@ function ProjectIntegrationsPage() {
 
 	useEffect(() => {
 		navigate({
-			to: `/projects/${projectId}/settings`,
-			search: { tab: "integrations" } as any,
 			replace: true,
+			search: { tab: "integrations" } as any,
+			to: `/projects/${projectId}/settings`,
 		});
 	}, [navigate, projectId]);
 

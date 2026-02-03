@@ -57,32 +57,30 @@ interface StatusIconMap {
 /**
  * Type icon labels
  */
-interface TypeIconMap {
-	[key: string]: string;
-}
+type TypeIconMap = Record<string, string>;
 
 const statusColors: StatusColorMap = {
-	draft: "bg-gray-500/10 text-gray-500 border-gray-500/20",
 	active: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+	deprecated: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+	draft: "bg-gray-500/10 text-gray-500 border-gray-500/20",
 	verified: "bg-green-500/10 text-green-500 border-green-500/20",
 	violated: "bg-red-500/10 text-red-500 border-red-500/20",
-	deprecated: "bg-orange-500/10 text-orange-500 border-orange-500/20",
 };
 
 const statusIcons: StatusIconMap = {
-	draft: FileCode,
 	active: Shield,
+	deprecated: Shield,
+	draft: FileCode,
 	verified: ShieldCheck,
 	violated: ShieldAlert,
-	deprecated: Shield,
 };
 
 const typeIcons: TypeIconMap = {
 	api: "API",
-	function: "fn",
-	invariant: "∀",
 	data: "∑",
+	function: "fn",
 	integration: "⟷",
+	invariant: "∀",
 };
 
 export function ContractCard({
@@ -207,16 +205,16 @@ export function ContractCard({
 							status={
 								verificationStatus === "pass"
 									? "pass"
-									: verificationStatus === "fail"
+									: (verificationStatus === "fail"
 										? "fail"
-										: "unknown"
+										: "unknown")
 							}
 							lastVerifiedAt={contract.lastVerifiedAt}
 							passedCount={passedCount}
 							failedCount={failedCount}
 							totalCount={totalConditions}
-							showTimestamp={true}
-							showDetails={true}
+							showTimestamp
+							showDetails
 						/>
 					)}
 

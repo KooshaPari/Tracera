@@ -102,12 +102,12 @@ interface ConflictInfo {
 // =============================================================================
 
 const DEFAULT_IMPORT_OPTIONS: EquivalenceImportOptions = {
-	mode: "merge",
 	conflictResolution: "skip",
-	validateReferences: true,
+	mode: "merge",
 	preserveTimestamps: false,
-	updateProjectId: true,
 	targetProjectId: undefined,
+	updateProjectId: true,
+	validateReferences: true,
 };
 
 // =============================================================================
@@ -124,10 +124,10 @@ function EquivalenceImportComponent({
 }: EquivalenceImportProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [state, setState] = useState<ImportState>({
-		validationErrors: [],
 		conflicts: [],
 		options: { ...DEFAULT_IMPORT_OPTIONS, targetProjectId: projectId },
 		showPreview: false,
+		validationErrors: [],
 	});
 	const [isApplying, setIsApplying] = useState(false);
 
@@ -135,7 +135,9 @@ function EquivalenceImportComponent({
 	const handleFileSelect = useCallback(
 		async (event: React.ChangeEvent<HTMLInputElement>) => {
 			const file = event.target.files?.[0];
-			if (!file) return;
+			if (!file) {
+				return;
+			}
 
 			try {
 				const content = await file.text();
@@ -170,13 +172,13 @@ function EquivalenceImportComponent({
 				);
 
 				setState({
+					conflicts,
 					fileContent: content,
 					fileType,
-					parsedData,
-					validationErrors,
-					conflicts,
 					options: { ...state.options, targetProjectId: projectId },
+					parsedData,
 					showPreview: true,
+					validationErrors,
 				});
 			} catch (error) {
 				setState({
@@ -192,7 +194,9 @@ function EquivalenceImportComponent({
 
 	// Apply import
 	const handleApplyImport = useCallback(async () => {
-		if (!state.parsedData) return;
+		if (!state.parsedData) {
+			return;
+		}
 
 		setIsApplying(true);
 		try {
@@ -206,20 +210,20 @@ function EquivalenceImportComponent({
 			if (state.options.mode === "merge" && state.options.updateProjectId) {
 				const merged = mergeExportPackages(
 					{
-						version: "1.0",
-						exportedAt: new Date().toISOString(),
-						projectId: targetProjectId,
-						equivalenceLinks: existingLinks,
 						canonicalConcepts: existingConcepts,
 						canonicalProjections: existingProjections,
+						equivalenceLinks: existingLinks,
+						exportedAt: new Date().toISOString(),
+						projectId: targetProjectId,
+						version: "1.0",
 					},
 					{
-						version: "1.0",
-						exportedAt: state.parsedData.exportedAt,
-						projectId: targetProjectId,
-						equivalenceLinks: finalLinks,
 						canonicalConcepts: finalConcepts,
 						canonicalProjections: finalProjections,
+						equivalenceLinks: finalLinks,
+						exportedAt: state.parsedData.exportedAt,
+						projectId: targetProjectId,
+						version: "1.0",
 					},
 					state.options,
 				);
@@ -250,10 +254,10 @@ function EquivalenceImportComponent({
 
 			setIsOpen(false);
 			setState({
-				validationErrors: [],
 				conflicts: [],
 				options: { ...DEFAULT_IMPORT_OPTIONS, targetProjectId: projectId },
 				showPreview: false,
+				validationErrors: [],
 			});
 		} catch (error) {
 			setState({
@@ -428,10 +432,10 @@ function EquivalenceImportComponent({
 																{state.options.conflictResolution ===
 																"overwrite"
 																	? "overwritten"
-																	: state.options.conflictResolution ===
+																	: (state.options.conflictResolution ===
 																			"merge_metadata"
 																		? "merged"
-																		: "skipped"}
+																		: "skipped")}
 															</p>
 														</div>
 													</div>
@@ -714,7 +718,9 @@ function findConflicts(
 	existingProjections: CanonicalProjection[],
 	parsedData?: EquivalenceExportPackage,
 ): ConflictInfo[] {
-	if (!parsedData) return [];
+	if (!parsedData) {
+		return [];
+	}
 
 	const conflicts: ConflictInfo[] = [];
 	const existingLinkIds = new Set(existingLinks.map((l) => l.id));
@@ -726,11 +732,11 @@ function findConflicts(
 		if (existingLinkIds.has(link.id)) {
 			const existing = existingLinks.find((l) => l.id === link.id);
 			conflicts.push({
-				type: "link",
-				existingId: link.id,
-				incomingId: link.id,
 				existingData: existing,
+				existingId: link.id,
 				incomingData: link,
+				incomingId: link.id,
+				type: "link",
 			});
 		}
 	}
@@ -740,11 +746,11 @@ function findConflicts(
 		if (existingConceptIds.has(concept.id)) {
 			const existing = existingConcepts.find((c) => c.id === concept.id);
 			conflicts.push({
-				type: "concept",
-				existingId: concept.id,
-				incomingId: concept.id,
 				existingData: existing,
+				existingId: concept.id,
 				incomingData: concept,
+				incomingId: concept.id,
+				type: "concept",
 			});
 		}
 	}
@@ -754,11 +760,11 @@ function findConflicts(
 		if (existingProjectionIds.has(projection.id)) {
 			const existing = existingProjections.find((p) => p.id === projection.id);
 			conflicts.push({
-				type: "projection",
-				existingId: projection.id,
-				incomingId: projection.id,
 				existingData: existing,
+				existingId: projection.id,
 				incomingData: projection,
+				incomingId: projection.id,
+				type: "projection",
 			});
 		}
 	}

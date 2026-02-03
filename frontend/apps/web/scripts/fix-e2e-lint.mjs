@@ -62,16 +62,12 @@ for (const { file, from, to } of fixes) {
 		if (content.includes(from)) {
 			content = content.replace(from, to);
 			writeFileSync(filePath, content);
-			applied++;
-			console.log("Fixed:", file);
+			applied += 1;
 		}
-	} catch (e) {
-		const err = /** @type {{ code?: string; message?: string }} */ (e);
-		if (err.code !== "ENOENT") console.error(file, err.message);
+	} catch (error) {
+		const err = /** @type {{ code?: string; message?: string }} */ (error);
+		if (err.code !== "ENOENT") {
+			console.error(file, err.message);
+		}
 	}
 }
-console.log(
-	applied
-		? `Applied ${applied} fix(es).`
-		: "No matching content to fix (files may already be fixed).",
-);

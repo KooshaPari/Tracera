@@ -1,7 +1,6 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  darkMode: 'class',
   content: [
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
@@ -9,6 +8,8 @@ const config: Config = {
     './mdx-components.tsx',
     '../../node_modules/fumadocs-ui/dist/**/*.js',
   ],
+  darkMode: 'class',
+  plugins: [],
   theme: {
     extend: {
       colors: {
@@ -45,7 +46,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
 };
 
 export default config;

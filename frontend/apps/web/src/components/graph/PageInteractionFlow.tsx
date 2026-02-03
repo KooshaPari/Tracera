@@ -12,13 +12,9 @@ import {
 	Background,
 	BackgroundVariant,
 	Controls,
-	type Edge,
 	Handle,
 	MarkerType,
 	MiniMap,
-	type Node,
-	type NodeProps,
-	type NodeTypes,
 	Position,
 	ReactFlow,
 	ReactFlowProvider,
@@ -26,6 +22,7 @@ import {
 	useNodesState,
 	useReactFlow,
 } from "@xyflow/react";
+import type { Edge, Node, NodeProps, NodeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
 	ArrowRight,
@@ -43,7 +40,7 @@ import {
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 // UI-related item types
-const UI_PAGE_TYPES = ["page", "screen", "view", "modal", "dialog"];
+const UI_PAGE_TYPES = new Set(["page", "screen", "view", "modal", "dialog"]);
 const UI_WIREFRAME_TYPES = ["wireframe", "mockup", "prototype"];
 
 // Interaction types (link types that represent user interactions)
@@ -80,8 +77,8 @@ function PageNodeComponent({
 
 	const DeviceIcon = {
 		desktop: Monitor,
-		tablet: Tablet,
 		mobile: Smartphone,
+		tablet: Tablet,
 	}[data.deviceType || "desktop"];
 
 	return (
@@ -201,7 +198,7 @@ function PageInteractionFlowInner({
 		return items.filter((item) => {
 			const type = (item.type || "").toLowerCase();
 			return (
-				UI_PAGE_TYPES.includes(type) ||
+				UI_PAGE_TYPES.has(type) ||
 				UI_WIREFRAME_TYPES.includes(type) ||
 				item.view?.toLowerCase().includes("ui")
 			);
@@ -211,13 +208,12 @@ function PageInteractionFlowInner({
 	// Build interaction links between pages
 	const pageLinks = useMemo(() => {
 		const pageIds = new Set(uiPages.map((p) => p.id));
-		return links.filter((link) => {
-			return (
+		return links.filter(
+			(link) =>
 				pageIds.has(link.sourceId) &&
 				pageIds.has(link.targetId) &&
-				INTERACTION_LINK_TYPES.includes(link.type)
-			);
-		});
+				INTERACTION_LINK_TYPES.includes(link.type),
+		);
 	}, [uiPages, links]);
 
 	// Count interactions per page
@@ -252,11 +248,11 @@ function PageInteractionFlowInner({
 			if (visited.has(pageId) && path.length > 1) {
 				// Found a journey
 				journeys.push({
-					id: `journey-${journeys.length + 1}`,
-					name: `Journey ${journeys.length + 1}`,
 					description: path
 						.map((id) => uiPages.find((p) => p.id === id)?.title || id)
 						.join(" → "),
+					id: `journey-${journeys.length + 1}`,
+					name: `Journey ${journeys.length + 1}`,
 					steps: [...path],
 				});
 				return;
@@ -268,11 +264,11 @@ function PageInteractionFlowInner({
 			if (neighbors.length === 0 && path.length > 1) {
 				// End of journey
 				journeys.push({
-					id: `journey-${journeys.length + 1}`,
-					name: `Journey ${journeys.length + 1}`,
 					description: path
 						.map((id) => uiPages.find((p) => p.id === id)?.title || id)
 						.join(" → "),
+					id: `journey-${journeys.length + 1}`,
+					name: `Journey ${journeys.length + 1}`,
 					steps: [...path],
 				});
 			} else {
@@ -307,7 +303,7 @@ function PageInteractionFlowInner({
 			const source = uiPages.find((p) => p.id === sourceId);
 			const target = uiPages.find((p) => p.id === targetId);
 			if (source && target) {
-				matrix.push({ source, target, interactions: count });
+				matrix.push({ interactions: count, source, target });
 			}
 		}
 
@@ -317,19 +313,19 @@ function PageInteractionFlowInner({
 	const createNodeData = useCallback(
 		(page: Item): PageNodeData => {
 			const data: PageNodeData = {
-				id: page.id,
-				item: page,
-				label: page.title || "Untitled",
 				description: page.description ?? undefined,
-				screenshotUrl: (page.metadata?.screenshotUrl as string) ?? undefined,
-				thumbnailUrl: (page.metadata?.thumbnailUrl as string) ?? undefined,
 				deviceType:
 					((page.metadata?.deviceType as "desktop" | "tablet" | "mobile") ??
 						undefined) ||
 					"desktop",
+				id: page.id,
 				interactionCount: interactionCounts.get(page.id) || 0,
-				onSelect: onSelectItem ?? undefined,
+				item: page,
+				label: page.title || "Untitled",
 				onPreview: onPreviewItem ?? undefined,
+				onSelect: onSelectItem ?? undefined,
+				screenshotUrl: (page.metadata?.screenshotUrl as string) ?? undefined,
+				thumbnailUrl: (page.metadata?.thumbnailUrl as string) ?? undefined,
 			};
 			return data;
 		},
@@ -348,12 +344,14 @@ function PageInteractionFlowInner({
 				return journey.steps
 					.map((pageId, index) => {
 						const page = pages.find((p) => p.id === pageId);
-						if (!page) return null;
+						if (!page) {
+							return null;
+						}
 						return {
-							id: page.id,
-							type: "page",
-							position: { x: index * (nodeWidth + padding), y: 100 },
 							data: createNodeData(page),
+							id: page.id,
+							position: { x: index * (nodeWidth + padding), y: 100 },
+							type: "page",
 						};
 					})
 					.filter(Boolean) as Node<PageNodeData>[];
@@ -362,13 +360,13 @@ function PageInteractionFlowInner({
 			// Grid layout for all pages
 			const cols = Math.ceil(Math.sqrt(pages.length));
 			return pages.map((page, index) => ({
+				data: createNodeData(page),
 				id: page.id,
-				type: "page",
 				position: {
 					x: (index % cols) * (nodeWidth + padding),
 					y: Math.floor(index / cols) * (nodeHeight + padding),
 				},
-				data: createNodeData(page),
+				type: "page",
 			}));
 		},
 		[createNodeData],
@@ -376,7 +374,9 @@ function PageInteractionFlowInner({
 
 	// Filter pages by search
 	const filteredPages = useMemo(() => {
-		if (!searchQuery) return uiPages;
+		if (!searchQuery) {
+			return uiPages;
+		}
 		const query = searchQuery.toLowerCase();
 		return uiPages.filter(
 			(p) =>
@@ -387,9 +387,13 @@ function PageInteractionFlowInner({
 
 	// Selected journey pages
 	const journeyPages = useMemo(() => {
-		if (!selectedJourney) return filteredPages;
+		if (!selectedJourney) {
+			return filteredPages;
+		}
 		const journey = userJourneys.find((j) => j.id === selectedJourney);
-		if (!journey) return filteredPages;
+		if (!journey) {
+			return filteredPages;
+		}
 		return filteredPages.filter((p) => journey.steps.includes(p.id));
 	}, [filteredPages, selectedJourney, userJourneys]);
 
@@ -407,17 +411,17 @@ function PageInteractionFlowInner({
 				(link) => pageIds.has(link.sourceId) && pageIds.has(link.targetId),
 			)
 			.map((link) => ({
+				animated: true,
 				id: link.id,
+				label: link.type.replace(/_/g, " "),
+				labelBgPadding: [3, 2] as [number, number],
+				labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
+				labelStyle: { fill: "#ec4899", fontSize: 9 },
+				markerEnd: { color: "#ec4899", type: MarkerType.ArrowClosed },
 				source: link.sourceId,
+				style: { stroke: "#ec4899", strokeWidth: 2 },
 				target: link.targetId,
 				type: "smoothstep",
-				animated: true,
-				style: { stroke: "#ec4899", strokeWidth: 2 },
-				markerEnd: { type: MarkerType.ArrowClosed, color: "#ec4899" },
-				label: link.type.replace(/_/g, " "),
-				labelStyle: { fontSize: 9, fill: "#ec4899" },
-				labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
-				labelBgPadding: [3, 2] as [number, number],
 			}));
 	}, [journeyPages, pageLinks]);
 
@@ -517,7 +521,7 @@ function PageInteractionFlowInner({
 							nodeColor={() => "#ec4899"}
 							maskColor="rgba(0, 0, 0, 0.8)"
 							className="!bg-card !border-border !bottom-2 !right-2"
-							style={{ width: 100, height: 70 }}
+							style={{ height: 70, width: 100 }}
 						/>
 					</ReactFlow>
 				)}

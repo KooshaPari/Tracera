@@ -2,28 +2,28 @@ import { FileCode, Folder } from "lucide-react";
 
 const modules = [
 	{
+		files: ["main.tsx", "App.tsx", "index.css"],
 		id: "1",
 		name: "apps/web",
 		type: "module",
-		files: ["main.tsx", "App.tsx", "index.css"],
 	},
 	{
+		files: ["main.ts", "preload.ts"],
 		id: "2",
 		name: "apps/desktop",
 		type: "module",
-		files: ["main.ts", "preload.ts"],
 	},
 	{
+		files: ["Button.tsx", "Dialog.tsx", "index.ts"],
 		id: "3",
 		name: "packages/ui",
 		type: "module",
-		files: ["Button.tsx", "Dialog.tsx", "index.ts"],
 	},
 	{
+		files: ["stores.ts", "sync.ts"],
 		id: "4",
 		name: "packages/state",
 		type: "module",
-		files: ["stores.ts", "sync.ts"],
 	},
 ];
 

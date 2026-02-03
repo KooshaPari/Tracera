@@ -1,14 +1,14 @@
 import {
-	createFileRoute,
 	Outlet,
+	createFileRoute,
 	useLocation,
 	useParams,
 } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { FullScreenPage } from "@/components/layout/FullScreenPage";
 import { requireAuth } from "@/lib/route-guards";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 const ProjectDetailView = lazy(() =>
 	import("@/views/ProjectDetailView").then((m) => {
@@ -30,12 +30,12 @@ const ProjectDetailView = lazy(() =>
 export const Route = createFileRoute("/projects/$projectId")({
 	beforeLoad: () => requireAuth(),
 	component: ProjectDetailComponent,
+	errorComponent: ErrorComponent,
 	loader: async ({ params }: { params: { projectId: string } }) => {
 		// ProjectDetailView fetches its own data
 		// Don't throw errors here - let ProjectDetailView handle them
 		return { projectId: params.projectId };
 	},
-	errorComponent: ErrorComponent,
 });
 
 function ProjectDetailComponent() {
@@ -89,7 +89,7 @@ function ErrorComponent({ error }: { error?: Error }) {
 					</p>
 				)}
 				<button
-					onClick={() => window.history.back()}
+					onClick={() => globalThis.history.back()}
 					className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
 				>
 					Go Back
@@ -98,5 +98,3 @@ function ErrorComponent({ error }: { error?: Error }) {
 		</FullScreenPage>
 	);
 }
-
-

@@ -12,7 +12,7 @@ test.describe("Mobile Responsive Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <!-- Mobile Header -->
@@ -148,7 +148,7 @@ test.describe("Mobile Responsive Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background p-4">
           <div class="rounded-xl border bg-card p-4 space-y-4">
@@ -218,7 +218,7 @@ test.describe("Tablet Responsive Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <!-- Tablet Header -->
@@ -351,7 +351,7 @@ test.describe("Desktop Responsive Tests", () => {
 		await page.goto("http://localhost:5173");
 
 		await page.evaluate(() => {
-			const root = document.getElementById("root")!;
+			const root = document.querySelector("#root")!;
 			root.innerHTML = `
         <div class="flex min-h-screen bg-background">
           <!-- Sidebar -->
@@ -514,23 +514,23 @@ test.describe("Desktop Responsive Tests", () => {
 
 test.describe("Responsive Breakpoint Tests", () => {
 	const viewports = [
-		{ name: "mobile-sm", width: 375, height: 667 },
-		{ name: "mobile-lg", width: 428, height: 926 },
-		{ name: "tablet", width: 768, height: 1024 },
-		{ name: "desktop-sm", width: 1280, height: 800 },
-		{ name: "desktop-lg", width: 1920, height: 1080 },
+		{ height: 667, name: "mobile-sm", width: 375 },
+		{ height: 926, name: "mobile-lg", width: 428 },
+		{ height: 1024, name: "tablet", width: 768 },
+		{ height: 800, name: "desktop-sm", width: 1280 },
+		{ height: 1080, name: "desktop-lg", width: 1920 },
 	];
 
 	for (const viewport of viewports) {
 		test(`grid layout at ${viewport.name}`, async ({ page }) => {
 			await page.setViewportSize({
-				width: viewport.width,
 				height: viewport.height,
+				width: viewport.width,
 			});
 			await page.goto("http://localhost:5173");
 
 			await page.evaluate(() => {
-				const root = document.getElementById("root")!;
+				const root = document.querySelector("#root")!;
 				root.innerHTML = `
           <div class="p-4 md:p-6 lg:p-8 bg-background min-h-screen">
             <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">Responsive Grid</h1>

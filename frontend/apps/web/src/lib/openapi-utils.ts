@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 /**
  * OpenAPI Utilities
  * Helper functions for working with OpenAPI specifications

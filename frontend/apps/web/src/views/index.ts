@@ -9,7 +9,7 @@ export { ADRListView } from "./adr-list-view";
 // ============================================================================
 // Specification Views (ADR, Contracts, BDD Features)
 // ============================================================================
-export { ADRView } from "./ADRView";
+export { default as ADRView } from "./adr-view";
 export { AdvancedSearchView } from "./AdvancedSearchView";
 // ============================================================================
 // Workflow & Automation Views

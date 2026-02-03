@@ -7,76 +7,76 @@ import { render, screen, waitFor } from "@testing-library/react";
 import type { Item } from "@tracertm/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	buildPivotTargets,
 	PivotNavigation,
-	type PivotTarget,
+	buildPivotTargets,
 } from "@/components/graph/PivotNavigation";
+import type { PivotTarget } from "@/components/graph/PivotNavigation";
 
 // =============================================================================
 // FIXTURES
 // =============================================================================
 
 const mockCurrentItem: Item = {
-	id: "item-1",
-	projectId: "proj-1",
-	type: "feature",
-	title: "User Authentication",
-	perspective: "product",
-	status: "active",
 	createdAt: "2024-01-01T00:00:00Z",
+	id: "item-1",
+	perspective: "product",
+	projectId: "proj-1",
+	status: "active",
+	title: "User Authentication",
+	type: "feature",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockTechnicalItem: Item = {
-	id: "item-2",
-	projectId: "proj-1",
-	type: "api",
-	title: "Authentication API",
-	perspective: "technical",
-	status: "active",
 	createdAt: "2024-01-01T00:00:00Z",
+	id: "item-2",
+	perspective: "technical",
+	projectId: "proj-1",
+	status: "active",
+	title: "Authentication API",
+	type: "api",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockUIItem: Item = {
-	id: "item-3",
-	projectId: "proj-1",
-	type: "ui_component",
-	title: "Login Form Component",
-	perspective: "ui",
-	status: "active",
 	createdAt: "2024-01-01T00:00:00Z",
+	id: "item-3",
+	perspective: "ui",
+	projectId: "proj-1",
+	status: "active",
+	title: "Login Form Component",
+	type: "ui_component",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockSecurityItem: Item = {
-	id: "item-4",
-	projectId: "proj-1",
-	type: "security",
-	title: "Authentication Security Check",
-	perspective: "security",
-	status: "active",
 	createdAt: "2024-01-01T00:00:00Z",
+	id: "item-4",
+	perspective: "security",
+	projectId: "proj-1",
+	status: "active",
+	title: "Authentication Security Check",
+	type: "security",
 	updatedAt: "2024-01-01T00:00:00Z",
 } as any;
 
 const mockPivotTargets: PivotTarget[] = [
 	{
+		confidence: 0.95,
 		item: mockTechnicalItem,
 		perspectiveId: "technical",
-		confidence: 0.95,
 		source: "equivalence",
 	},
 	{
+		confidence: 0.85,
 		item: mockUIItem,
 		perspectiveId: "ui",
-		confidence: 0.85,
 		source: "canonical",
 	},
 	{
+		confidence: 0.75,
 		item: mockSecurityItem,
 		perspectiveId: "security",
-		confidence: 0.75,
 		source: "equivalence",
 	},
 ];
@@ -145,9 +145,9 @@ describe("PivotNavigation Component", () => {
 			const targetsWithAll: PivotTarget[] = [
 				...mockPivotTargets,
 				{
+					confidence: 1,
 					item: mockCurrentItem,
 					perspectiveId: "all",
-					confidence: 1.0,
 					source: "equivalence",
 				},
 			];
@@ -184,9 +184,9 @@ describe("PivotNavigation Component", () => {
 		it("shows button with item details when single equivalent exists", () => {
 			const singleTarget: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 			];
@@ -206,9 +206,9 @@ describe("PivotNavigation Component", () => {
 		it("navigates directly when clicking single item button", async () => {
 			const singleTarget: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 			];
@@ -233,9 +233,9 @@ describe("PivotNavigation Component", () => {
 		it("displays confidence indicator for single item", () => {
 			const singleTarget: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 			];
@@ -256,9 +256,9 @@ describe("PivotNavigation Component", () => {
 		it("shows item details in tooltip", async () => {
 			const singleTarget: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 			];
@@ -285,9 +285,9 @@ describe("PivotNavigation Component", () => {
 		it("shows confidence percentage in tooltip", async () => {
 			const singleTarget: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 			];
@@ -316,15 +316,15 @@ describe("PivotNavigation Component", () => {
 		it("shows badge with count when multiple equivalents exist", () => {
 			const multipleTargets: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 				{
+					confidence: 0.85,
 					item: mockSecurityItem,
 					perspectiveId: "technical",
-					confidence: 0.85,
 					source: "canonical",
 				},
 			];
@@ -344,15 +344,15 @@ describe("PivotNavigation Component", () => {
 		it("opens popover when clicking multi-item button", async () => {
 			const multipleTargets: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 				{
+					confidence: 0.85,
 					item: mockSecurityItem,
 					perspectiveId: "technical",
-					confidence: 0.85,
 					source: "canonical",
 				},
 			];
@@ -379,15 +379,15 @@ describe("PivotNavigation Component", () => {
 		it("displays all items in popover", async () => {
 			const multipleTargets: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 				{
+					confidence: 0.85,
 					item: mockSecurityItem,
 					perspectiveId: "technical",
-					confidence: 0.85,
 					source: "canonical",
 				},
 			];
@@ -417,15 +417,15 @@ describe("PivotNavigation Component", () => {
 		it("navigates when clicking item in popover", async () => {
 			const multipleTargets: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 				{
+					confidence: 0.85,
 					item: mockSecurityItem,
 					perspectiveId: "technical",
-					confidence: 0.85,
 					source: "canonical",
 				},
 			];
@@ -455,9 +455,9 @@ describe("PivotNavigation Component", () => {
 		it("displays type information in popover", async () => {
 			const multipleTargets: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 			];
@@ -500,15 +500,15 @@ describe("PivotNavigation Component", () => {
 		it("shows different colors for different confidence levels", () => {
 			const mixedConfidenceTargets: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 				{
+					confidence: 0.5,
 					item: mockUIItem,
 					perspectiveId: "ui",
-					confidence: 0.5,
 					source: "canonical",
 				},
 			];
@@ -555,7 +555,7 @@ describe("PivotNavigation Component", () => {
 					currentPerspective="product"
 					equivalentItems={mockPivotTargets}
 					onPivot={onPivot}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -571,7 +571,7 @@ describe("PivotNavigation Component", () => {
 					currentPerspective="product"
 					equivalentItems={mockPivotTargets}
 					onPivot={onPivot}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -585,7 +585,7 @@ describe("PivotNavigation Component", () => {
 					currentPerspective="product"
 					equivalentItems={mockPivotTargets}
 					onPivot={onPivot}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -606,7 +606,7 @@ describe("PivotNavigation Component", () => {
 					currentPerspective="product"
 					equivalentItems={mockPivotTargets}
 					onPivot={onPivot}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -627,7 +627,7 @@ describe("PivotNavigation Component", () => {
 					currentPerspective="product"
 					equivalentItems={mockPivotTargets}
 					onPivot={onPivot}
-					compact={true}
+					compact
 				/>,
 			);
 
@@ -649,7 +649,7 @@ describe("PivotNavigation Component", () => {
 					currentPerspective="product"
 					equivalentItems={[]}
 					onPivot={onPivot}
-					compact={true}
+					compact
 					showEmpty={false}
 				/>,
 			);
@@ -666,7 +666,7 @@ describe("PivotNavigation Component", () => {
 					currentPerspective="product"
 					equivalentItems={[]}
 					onPivot={onPivot}
-					showEmpty={true}
+					showEmpty
 				/>,
 			);
 
@@ -682,7 +682,7 @@ describe("PivotNavigation Component", () => {
 					currentPerspective="product"
 					equivalentItems={[]}
 					onPivot={onPivot}
-					showEmpty={true}
+					showEmpty
 				/>,
 			);
 
@@ -700,15 +700,15 @@ describe("PivotNavigation Component", () => {
 		it("handles duplicate items in pivot targets", () => {
 			const duplicateTargets: PivotTarget[] = [
 				{
+					confidence: 0.95,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.95,
 					source: "equivalence",
 				},
 				{
+					confidence: 0.85,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.85,
 					source: "canonical",
 				},
 			];
@@ -728,9 +728,9 @@ describe("PivotNavigation Component", () => {
 		it("handles items with very low confidence", () => {
 			const lowConfidenceTargets: PivotTarget[] = [
 				{
+					confidence: 0.1,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 0.1,
 					source: "equivalence",
 				},
 			];
@@ -750,9 +750,9 @@ describe("PivotNavigation Component", () => {
 		it("handles items with 100% confidence", () => {
 			const perfectConfidenceTargets: PivotTarget[] = [
 				{
+					confidence: 1,
 					item: mockTechnicalItem,
 					perspectiveId: "technical",
-					confidence: 1.0,
 					source: "equivalence",
 				},
 			];
@@ -796,7 +796,7 @@ describe("PivotNavigation Component", () => {
 // UTILITY FUNCTION TESTS
 // =============================================================================
 
-describe("buildPivotTargets", () => {
+describe(buildPivotTargets, () => {
 	const mockAllItems = [
 		mockCurrentItem,
 		mockTechnicalItem,
@@ -807,12 +807,12 @@ describe("buildPivotTargets", () => {
 	it("builds pivot targets from equivalence links", () => {
 		const equivalenceLinks = [
 			{
+				confidence: 0.95,
 				id: "link-1",
 				sourceItemId: "item-1",
-				targetItemId: "item-2",
-				confidence: 0.95,
 				status: "confirmed",
 				strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+				targetItemId: "item-2",
 			},
 		];
 
@@ -832,13 +832,13 @@ describe("buildPivotTargets", () => {
 	it("builds pivot targets from canonical projections", () => {
 		const projections = [
 			{
-				id: "proj-1",
 				canonicalConceptId: "concept-1",
-				itemId: "item-2",
-				perspective: "technical",
 				confidence: 0.9,
+				id: "proj-1",
 				isConfirmed: true,
 				isRejected: false,
+				itemId: "item-2",
+				perspective: "technical",
 				strategy: "api_contract",
 			},
 		];
@@ -859,24 +859,24 @@ describe("buildPivotTargets", () => {
 	it("combines equivalence links and projections", () => {
 		const equivalenceLinks = [
 			{
+				confidence: 0.95,
 				id: "link-1",
 				sourceItemId: "item-1",
-				targetItemId: "item-2",
-				confidence: 0.95,
 				status: "confirmed",
 				strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+				targetItemId: "item-2",
 			},
 		];
 
 		const projections = [
 			{
-				id: "proj-1",
 				canonicalConceptId: "concept-1",
-				itemId: "item-3",
-				perspective: "ui",
 				confidence: 0.85,
+				id: "proj-1",
 				isConfirmed: true,
 				isRejected: false,
+				itemId: "item-3",
+				perspective: "ui",
 				strategy: "api_contract",
 			},
 		];
@@ -894,20 +894,20 @@ describe("buildPivotTargets", () => {
 	it("sorts by confidence descending", () => {
 		const equivalenceLinks = [
 			{
+				confidence: 0.5,
 				id: "link-1",
 				sourceItemId: "item-1",
-				targetItemId: "item-2",
-				confidence: 0.5,
 				status: "confirmed",
 				strategies: [{ strategy: "explicit_annotation", confidence: 0.5 }],
+				targetItemId: "item-2",
 			},
 			{
+				confidence: 0.95,
 				id: "link-2",
 				sourceItemId: "item-1",
-				targetItemId: "item-3",
-				confidence: 0.95,
 				status: "confirmed",
 				strategies: [{ strategy: "semantic_similarity", confidence: 0.95 }],
+				targetItemId: "item-3",
 			},
 		];
 
@@ -930,7 +930,7 @@ describe("buildPivotTargets", () => {
 				targetItemId: "item-1", // Same as current
 				confidence: 0.95,
 				status: "confirmed",
-				strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+				strategies: [{ confidence: 0.95, strategy: "explicit_annotation" }],
 			},
 		];
 
@@ -947,12 +947,12 @@ describe("buildPivotTargets", () => {
 	it("handles items not found in items list", () => {
 		const equivalenceLinks = [
 			{
+				confidence: 0.95,
 				id: "link-1",
 				sourceItemId: "item-1",
-				targetItemId: "nonexistent",
-				confidence: 0.95,
 				status: "confirmed",
 				strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+				targetItemId: "nonexistent",
 			},
 		];
 
@@ -969,12 +969,12 @@ describe("buildPivotTargets", () => {
 	it("deduplicates items across sources", () => {
 		const equivalenceLinks = [
 			{
+				confidence: 0.95,
 				id: "link-1",
 				sourceItemId: "item-1",
-				targetItemId: "item-2",
-				confidence: 0.95,
 				status: "confirmed",
 				strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+				targetItemId: "item-2",
 			},
 		];
 

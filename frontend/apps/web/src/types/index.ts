@@ -1,3 +1,4 @@
+/* eslint-disable import/exports-last, import/first, import/group-exports, import/no-named-export, id-length */
 // Re-export types from packages
 export type {
 	Agent,
@@ -190,9 +191,10 @@ export interface UploadFile {
 	url?: string;
 }
 
-export interface ExportFilter {
-	[key: string]: string | number | boolean | string[] | undefined;
-}
+export type ExportFilter = Record<
+	string,
+	string | number | boolean | string[] | undefined
+>;
 
 export interface ApiErrorResponse {
 	message: string;
@@ -210,11 +212,11 @@ export interface ExportConfig {
 
 // Utility types
 
-export type AsyncState<T> = {
+export interface AsyncState<T> {
 	data: T | null;
 	loading: boolean;
 	error: Error | null;
-};
+}
 
 export type DeepPartial<T> = {
 	[P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
@@ -251,9 +253,10 @@ export interface ErrorBoundaryProps extends BaseComponentProps {
 
 // API request/response types
 
-export interface SearchFilter {
-	[key: string]: string | number | boolean | string[] | undefined;
-}
+export type SearchFilter = Record<
+	string,
+	string | number | boolean | string[] | undefined
+>;
 
 export interface SearchParams {
 	query: string;
@@ -264,9 +267,10 @@ export interface SearchParams {
 	pageSize?: number;
 }
 
-export interface BulkOperationData {
-	[key: string]: string | number | boolean | null | undefined;
-}
+export type BulkOperationData = Record<
+	string,
+	string | number | boolean | null | undefined
+>;
 
 export interface BulkOperation {
 	operation: "update" | "delete";
@@ -278,8 +282,8 @@ export interface ImportResult {
 	total: number;
 	success: number;
 	failed: number;
-	errors: Array<{
+	errors: {
 		row: number;
 		message: string;
-	}>;
+	}[];
 }

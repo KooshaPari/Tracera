@@ -15,11 +15,7 @@ export type ThemeMode = "light" | "dark";
  */
 export async function setTheme(page: Page, theme: ThemeMode): Promise<void> {
 	await page.evaluate((t) => {
-		if (t === "dark") {
-			document.documentElement.classList.add("dark");
-		} else {
-			document.documentElement.classList.remove("dark");
-		}
+		document.documentElement.classList.toggle("dark", t === "dark");
 	}, theme);
 
 	// Wait for theme transition to complete
@@ -61,7 +57,7 @@ export async function createShowcasePage(
 	await page.goto("http://localhost:5173");
 
 	await page.evaluate((content) => {
-		const root = document.getElementById("root");
+		const root = document.querySelector("#root");
 		if (root) {
 			root.innerHTML = content;
 		}
@@ -170,39 +166,39 @@ export async function waitForStableElement(
  * Screenshot comparison options optimized for component testing
  */
 export const COMPONENT_SCREENSHOT_OPTIONS = {
+	animations: "disabled" as const,
 	maxDiffPixels: 100,
 	threshold: 0.2,
-	animations: "disabled" as const,
 };
 
 /**
  * Screenshot comparison options optimized for layout testing
  */
 export const LAYOUT_SCREENSHOT_OPTIONS = {
-	maxDiffPixels: 200,
-	threshold: 0.3,
 	animations: "disabled" as const,
 	fullPage: true,
+	maxDiffPixels: 200,
+	threshold: 0.3,
 };
 
 /**
  * Screenshot comparison options optimized for theme testing
  */
 export const THEME_SCREENSHOT_OPTIONS = {
+	animations: "disabled" as const,
 	maxDiffPixels: 150,
 	threshold: 0.25,
-	animations: "disabled" as const,
 };
 
 /**
  * Common viewport sizes for responsive testing
  */
 export const VIEWPORTS = {
-	mobile: { width: 375, height: 667 },
-	mobileLarge: { width: 428, height: 926 },
-	tablet: { width: 768, height: 1024 },
-	desktop: { width: 1280, height: 800 },
-	desktopLarge: { width: 1920, height: 1080 },
+	desktop: { height: 800, width: 1280 },
+	desktopLarge: { height: 1080, width: 1920 },
+	mobile: { height: 667, width: 375 },
+	mobileLarge: { height: 926, width: 428 },
+	tablet: { height: 1024, width: 768 },
 } as const;
 
 /**

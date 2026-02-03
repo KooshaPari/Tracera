@@ -17,18 +17,18 @@ export const appState$ = observable({
 
 	// UI State
 	ui: {
-		sidebarOpen: true,
 		currentView: "FEATURE" as string,
-		selectedItemId: null as string | null,
-		searchQuery: "",
 		isDarkMode: false,
+		searchQuery: "",
+		selectedItemId: null as string | null,
+		sidebarOpen: true,
 	},
 
 	// Sync state
 	sync: {
 		isOnline: true,
-		pendingMutations: 0,
 		lastSyncedAt: null as string | null,
+		pendingMutations: 0,
 	},
 });
 
@@ -39,6 +39,14 @@ export const isOnline$ = appState$.sync.isOnline;
 
 // Actions
 export const actions = {
+	selectItem: (id: string | null) => {
+		appState$.ui.selectedItemId.set(id);
+	},
+
+	setOnline: (online: boolean) => {
+		appState$.sync.isOnline.set(online);
+	},
+
 	setProject: (project: Project) => {
 		appState$.currentProject.set(project);
 	},
@@ -47,19 +55,11 @@ export const actions = {
 		appState$.ui.currentView.set(view);
 	},
 
-	selectItem: (id: string | null) => {
-		appState$.ui.selectedItemId.set(id);
-	},
-
-	toggleSidebar: () => {
-		appState$.ui.sidebarOpen.set(!appState$.ui.sidebarOpen.get());
-	},
-
 	toggleDarkMode: () => {
 		appState$.ui.isDarkMode.set(!appState$.ui.isDarkMode.get());
 	},
 
-	setOnline: (online: boolean) => {
-		appState$.sync.isOnline.set(online);
+	toggleSidebar: () => {
+		appState$.ui.sidebarOpen.set(!appState$.ui.sidebarOpen.get());
 	},
 };

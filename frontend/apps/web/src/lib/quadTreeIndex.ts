@@ -12,7 +12,7 @@
  * @see docs/architecture/quadtree-culling.md
  */
 
-import { quadtree, type Quadtree } from 'd3-quadtree';
+import { quadtree, type Quadtree } from "d3-quadtree";
 
 /**
  * Node position in graph coordinate space
@@ -130,7 +130,10 @@ export class QuadTreeNodeIndex {
 	 * @param buffer - Buffer distance in pixels (default: 200)
 	 * @returns Array of nodes within viewport + buffer
 	 */
-	queryViewportWithBuffer(viewport: Rectangle, buffer: number = 200): QuadTreeNode[] {
+	queryViewportWithBuffer(
+		viewport: Rectangle,
+		buffer: number = 200,
+	): QuadTreeNode[] {
 		return this.queryViewport({
 			x: viewport.x - buffer,
 			y: viewport.y - buffer,

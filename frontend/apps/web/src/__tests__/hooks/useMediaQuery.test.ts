@@ -79,13 +79,13 @@ describe("useMediaQuery Hook", () => {
 
 		it("should detect addEventListener availability", () => {
 			const media = { addEventListener: () => {} };
-			const hasEventListener = !!media.addEventListener;
+			const hasEventListener = Boolean(media.addEventListener);
 			expect(hasEventListener).toBe(true);
 		});
 
 		it("should handle fallback detection", () => {
 			const media = { addListener: () => {} };
-			const hasAddListener = !!media.addListener;
+			const hasAddListener = Boolean(media.addListener);
 			expect(hasAddListener).toBe(true);
 		});
 	});
@@ -114,12 +114,12 @@ describe("useMediaQuery Hook", () => {
 
 	describe("Window Availability Check", () => {
 		it("should check if window is defined", () => {
-			const windowDefined = typeof window !== "undefined";
+			const windowDefined = typeof globalThis.window !== "undefined";
 			expect(typeof windowDefined).toBe("boolean");
 		});
 
 		it("should handle SSR environment", () => {
-			const isBrowser = typeof window !== "undefined";
+			const isBrowser = typeof globalThis.window !== "undefined";
 			expect(typeof isBrowser).toBe("boolean");
 		});
 	});

@@ -48,16 +48,16 @@ export const handlers = [
 	http.get(`${API_BASE}/health`, async () => {
 		await delay();
 		return HttpResponse.json({
-			status: "ok",
 			service: "tracertm-api",
+			status: "ok",
 		});
 	}),
 
 	http.get(`${API_BASE}/api/v1/health`, async () => {
 		await delay();
 		return HttpResponse.json({
-			status: "ok",
 			service: "tracertm-api",
+			status: "ok",
 		});
 	}),
 
@@ -73,8 +73,8 @@ export const handlers = [
 		const paginatedProjects = mockProjects.slice(offset, offset + limit);
 		// API returns { total: number, projects: Project[] }
 		return HttpResponse.json({
-			total: mockProjects.length,
 			projects: paginatedProjects,
+			total: mockProjects.length,
 		});
 	}),
 
@@ -122,9 +122,9 @@ export const handlers = [
 			name: body.name ?? baseProject.name,
 			...(body.description !== undefined
 				? { description: body.description }
-				: baseProject.description !== undefined
+				: (baseProject.description !== undefined
 					? { description: baseProject.description }
-					: {}),
+					: {})),
 			createdAt: baseProject.createdAt,
 			updatedAt: new Date().toISOString(),
 		};
@@ -161,7 +161,7 @@ export const handlers = [
 		items = items.slice(offset, offset + limit);
 
 		// API returns { total: number, items: Item[] }
-		return HttpResponse.json({ total, items });
+		return HttpResponse.json({ items, total });
 	}),
 
 	http.get(`${API_BASE}/api/v1/items/:id`, async ({ params }) => {
@@ -271,7 +271,7 @@ export const handlers = [
 		const total = links.length;
 		const paginatedLinks = links.slice(offset, offset + limit);
 		// API returns { total: number, links: Link[] }
-		return HttpResponse.json({ total, links: paginatedLinks });
+		return HttpResponse.json({ links: paginatedLinks, total });
 	}),
 
 	http.get(`${API_BASE}/api/v1/links/:id`, async ({ params }) => {
@@ -355,13 +355,17 @@ export const handlers = [
 		const projectId = url.searchParams.get("project_id");
 
 		const items = projectId ? filterItemsByProject(projectId) : mockItems;
-		const nodes = items.map((item) => ({
-			id: item.id,
-			type: item.type,
-			title: item.title,
-			status: item.status,
-			...(item.metadata !== undefined && { metadata: item.metadata }),
-		}));
+		const nodes = items.map((item) =>
+			Object.assign(
+				{
+					id: item.id,
+					status: item.status,
+					title: item.title,
+					type: item.type,
+				},
+				item.metadata !== undefined && { metadata: item.metadata },
+			),
+		);
 
 		const edges = mockLinks.map((link) => ({
 			id: link.id,
@@ -370,7 +374,7 @@ export const handlers = [
 			type: link.type,
 		}));
 
-		const graphData: GraphData = { nodes, edges };
+		const graphData: GraphData = { edges, nodes };
 		return HttpResponse.json(graphData);
 	}),
 
@@ -389,10 +393,10 @@ export const handlers = [
 			.filter(Boolean) as Item[];
 
 		const impactAnalysis: ImpactAnalysis = {
-			itemId: id as string,
-			affectedItems: affectedItems,
 			affectedCount: affectedItems.length,
+			affectedItems: affectedItems,
 			depth: 1,
+			itemId: id as string,
 		};
 
 		return HttpResponse.json(impactAnalysis);
@@ -413,10 +417,10 @@ export const handlers = [
 			.filter(Boolean) as Item[];
 
 		const dependencyAnalysis: DependencyAnalysis = {
-			itemId: id as string,
 			dependencies,
 			dependencyCount: dependencies.length,
 			depth: 1,
+			itemId: id as string,
 		};
 
 		return HttpResponse.json(dependencyAnalysis);
@@ -428,9 +432,9 @@ export const handlers = [
 	http.get(`${API_BASE}/api/v1/sync/status`, async () => {
 		await delay();
 		return HttpResponse.json({
-			status: "synced",
 			last_sync: new Date().toISOString(),
 			pending_changes: 0,
+			status: "synced",
 		});
 	}),
 ];

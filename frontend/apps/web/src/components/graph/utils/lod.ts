@@ -13,11 +13,11 @@
  */
 
 export enum LODLevel {
-	VeryFar = 0, // zoom < 0.2
+	VeryFar = 0, // Zoom < 0.2
 	Far = 1, // 0.2 <= zoom < 0.5
 	Medium = 2, // 0.5 <= zoom < 1.0
 	Close = 3, // 1.0 <= zoom < 2.0
-	VeryClose = 4, // zoom >= 2.0
+	VeryClose = 4, // Zoom >= 2.0
 }
 
 /** Zoom thresholds (inclusive lower bound). */
@@ -25,8 +25,8 @@ const ZOOM_THRESHOLDS: Record<LODLevel, number> = {
 	[LODLevel.VeryFar]: 0,
 	[LODLevel.Far]: 0.2,
 	[LODLevel.Medium]: 0.5,
-	[LODLevel.Close]: 1.0,
-	[LODLevel.VeryClose]: 2.0,
+	[LODLevel.Close]: 1,
+	[LODLevel.VeryClose]: 2,
 };
 
 /** Default node count above which we force at most Medium LOD (simplified nodes). */
@@ -48,11 +48,17 @@ export function determineLODLevel(
 		options ?? {};
 
 	let level: LODLevel;
-	if (zoom < 0.2) level = LODLevel.VeryFar;
-	else if (zoom < 0.5) level = LODLevel.Far;
-	else if (zoom < 1.0) level = LODLevel.Medium;
-	else if (zoom < 2.0) level = LODLevel.Close;
-	else level = LODLevel.VeryClose;
+	if (zoom < 0.2) {
+		level = LODLevel.VeryFar;
+	} else if (zoom < 0.5) {
+		level = LODLevel.Far;
+	} else if (zoom < 1) {
+		level = LODLevel.Medium;
+	} else if (zoom < 2) {
+		level = LODLevel.Close;
+	} else {
+		level = LODLevel.VeryClose;
+	}
 
 	// When there are many nodes, cap at Medium so we use simplified node type
 	if (

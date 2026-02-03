@@ -1,34 +1,33 @@
 // Execution API endpoints for QA Integration
 
+/* oxlint-disable oxc/no-async-await */
 import client from "./client";
+import type { handleApiResponse, safeApiCall } from "./client";
 
-const { apiClient, handleApiResponse, safeApiCall } = client;
+const { apiClient } = client;
 
-/**
- * Configuration object for execution containers and tools
- */
-export type ExecutionConfig = Record<
+// Types for execution API
+type ExecutionConfig = Record<
 	string,
 	string | number | boolean | object | null | undefined
 >;
 
-/**
- * Size configuration for Playwright video recording
- */
-export interface VideoSize {
-	width?: number;
+type VideoSize = {
 	height?: number;
+	width?: number;
 	[key: string]: number | undefined;
-}
+};
 
-/**
- * Resource limits configuration
- */
-export interface ResourceLimits {
+type ResourceLimits = {
 	cpu?: string | number;
 	memory?: string | number;
 	[key: string]: string | number | undefined;
-}
+};
+
+export type ArtifactMetadata = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
 
 export interface Execution {
 	id: string;
@@ -52,14 +51,6 @@ export interface Execution {
 	updated_at: string;
 	artifact_count: number;
 }
-
-/**
- * Artifact metadata for execution artifacts
- */
-export type ArtifactMetadata = Record<
-	string,
-	string | number | boolean | object | null | undefined
->;
 
 export interface ExecutionArtifact {
 	id: string;
@@ -88,227 +79,250 @@ export interface ExecutionCreate {
 }
 
 export interface ExecutionComplete {
-	status: "passed" | "failed" | "cancelled";
-	exit_code?: number;
-	error_message?: string;
-	output_summary?: string;
 	duration_ms?: number;
+	error_message?: string;
+	exit_code?: number;
+	output_summary?: string;
+	status: "passed" | "failed" | "cancelled";
 }
 
 export interface ExecutionEnvironmentConfig {
-	id: string;
-	project_id: string;
-	docker_image: string;
-	resource_limits?: ResourceLimits;
-	working_directory?: string;
-	network_mode: string;
-	vhs_enabled: boolean;
-	playwright_enabled: boolean;
-	codex_enabled: boolean;
 	auto_screenshot: boolean;
 	auto_video: boolean;
-	vhs_theme: string;
-	vhs_font_size: number;
-	vhs_width: number;
-	vhs_height: number;
-	vhs_framerate: number;
-	playwright_browser: string;
-	playwright_headless: boolean;
-	playwright_viewport_width: number;
-	playwright_viewport_height: number;
-	playwright_video_size?: VideoSize;
-	codex_sandbox_mode: string;
-	codex_full_auto: boolean;
-	codex_timeout: number;
 	artifact_retention_days: number;
-	storage_path?: string;
+	codex_enabled: boolean;
+	codex_full_auto: boolean;
+	codex_sandbox_mode: string;
+	codex_timeout: number;
+	created_at: string;
+	docker_image: string;
+	execution_timeout: number;
+	id: string;
 	max_artifact_size_mb: number;
 	max_concurrent_executions: number;
-	execution_timeout: number;
-	created_at: string;
+	network_mode: string;
+	playwright_browser: string;
+	playwright_enabled: boolean;
+	playwright_headless: boolean;
+	playwright_viewport_height: number;
+	playwright_viewport_width: number;
+	playwright_video_size?: VideoSize;
+	storage_path?: string;
+	project_id: string;
 	updated_at: string;
+	vhs_enabled: boolean;
+	vhs_framerate: number;
+	vhs_font_size: number;
+	vhs_height: number;
+	vhs_theme: string;
+	vhs_width: number;
+	vhs_viewport_height: number;
+	vhs_viewport_width: number;
+	working_directory?: string;
+	resource_limits?: ResourceLimits;
 }
 
 export interface ExecutionEnvironmentConfigUpdate {
-	docker_image?: string;
-	resource_limits?: ResourceLimits;
-	working_directory?: string;
-	network_mode?: "bridge" | "host" | "none";
-	vhs_enabled?: boolean;
-	playwright_enabled?: boolean;
-	codex_enabled?: boolean;
+	artifact_retention_days?: number;
 	auto_screenshot?: boolean;
 	auto_video?: boolean;
-	vhs_theme?: string;
-	vhs_font_size?: number;
-	vhs_width?: number;
-	vhs_height?: number;
-	vhs_framerate?: number;
-	playwright_browser?: "chromium" | "firefox" | "webkit";
-	playwright_headless?: boolean;
-	playwright_viewport_width?: number;
-	playwright_viewport_height?: number;
-	playwright_video_size?: VideoSize;
-	codex_sandbox_mode?: "read-only" | "workspace-write" | "danger-full-access";
+	codex_enabled?: boolean;
 	codex_full_auto?: boolean;
+	codex_sandbox_mode?: "read-only" | "workspace-write" | "danger-full-access";
 	codex_timeout?: number;
-	artifact_retention_days?: number;
-	storage_path?: string;
+	docker_image?: string;
+	execution_timeout?: number;
 	max_artifact_size_mb?: number;
 	max_concurrent_executions?: number;
-	execution_timeout?: number;
+	network_mode?: "bridge" | "host" | "none";
+	playwright_browser?: "chromium" | "firefox" | "webkit";
+	playwright_enabled?: boolean;
+	playwright_headless?: boolean;
+	playwright_video_size?: VideoSize;
+	playwright_viewport_height?: number;
+	playwright_viewport_width?: number;
+	resource_limits?: ResourceLimits;
+	storage_path?: string;
+	vhs_enabled?: boolean;
+	vhs_framerate?: number;
+	vhs_font_size?: number;
+	vhs_height?: number;
+	vhs_theme?: string;
+	vhs_width?: number;
+	working_directory?: string;
 }
 
-export const executionsApi = {
-	create: (
-		projectId: string,
-		data: ExecutionCreate,
-	): Promise<Execution> => {
-		return handleApiResponse(
-			safeApiCall(
-				apiClient.POST("/api/v1/projects/{project_id}/executions", {
-					params: { path: { project_id: projectId } },
-					body: data,
-				}),
-			),
-		);
-	},
+type ApiResponse<T> = Promise<{
+	data?: T;
+	error?: unknown;
+	response: Response;
+}>;
 
-	list: (
-		projectId: string,
-		params?: {
-			status?: string;
-			execution_type?: string;
-			limit?: number;
-			offset?: number;
-		},
-	): Promise<{ executions: Execution[]; total: number }> => {
-		return handleApiResponse(
-			safeApiCall(
-				apiClient.GET("/api/v1/projects/{project_id}/executions", {
-					params: {
-						path: { project_id: projectId },
-						query: params,
-					},
-				}),
-			),
-		);
-	},
+type ApiMethod<T> = (
+	path: string,
+	init: Record<string, unknown>,
+) => ApiResponse<T>;
 
-	get: (projectId: string, executionId: string): Promise<Execution> => {
-		return handleApiResponse(
-			safeApiCall(
-				apiClient.GET(
-					"/api/v1/projects/{project_id}/executions/{execution_id}",
-					{
-						params: {
-							path: {
-								project_id: projectId,
-								execution_id: executionId,
-							},
-						},
-					},
-				),
-			),
-		);
-	},
+const complete = async (
+	projectId: string,
+	executionId: string,
+	data: ExecutionComplete,
+): Promise<{ completed: boolean; execution_id: string }> =>
+	handleApiResponse(
+		safeApiCall(
+			(apiClient.POST as ApiMethod<{
+				completed: boolean;
+				execution_id: string;
+			}>),
+			"/api/v1/projects/{project_id}/executions/{execution_id}/complete",
+			{
+				body: data,
+				params: {
+					path: { execution_id: executionId, project_id: projectId },
+				},
+			},
+		),
+	);
 
-	start: (
-		projectId: string,
-		executionId: string,
-	): Promise<{ started: boolean; execution_id: string }> => {
-		return handleApiResponse(
-			safeApiCall(
-				apiClient.POST(
-					"/api/v1/projects/{project_id}/executions/{execution_id}/start",
-					{
-						params: {
-							path: {
-								project_id: projectId,
-								execution_id: executionId,
-							},
-						},
-					},
-				),
-			),
-		);
-	},
+const create = async (
+	projectId: string,
+	data: ExecutionCreate,
+): Promise<Execution> =>
+	handleApiResponse(
+		safeApiCall(
+			(apiClient.POST as ApiMethod<Execution>),
+			"/api/v1/projects/{project_id}/executions",
+			{
+				body: data,
+				params: { path: { project_id: projectId } },
+			},
+		),
+	);
 
-	complete: (
-		projectId: string,
-		executionId: string,
-		data: ExecutionComplete,
-	): Promise<{ completed: boolean; execution_id: string }> => {
-		return handleApiResponse(
-			safeApiCall(
-				apiClient.POST(
-					"/api/v1/projects/{project_id}/executions/{execution_id}/complete",
-					{
-						params: {
-							path: {
-								project_id: projectId,
-								execution_id: executionId,
-							},
-						},
-						body: data,
-					},
-				),
-			),
-		);
-	},
+const downloadArtifact = (
+	projectId: string,
+	executionId: string,
+	artifactId: string,
+): string =>
+	`${import.meta.env.VITE_API_URL ?? "http://localhost:4000"}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
 
-	listArtifacts: (
-		projectId: string,
-		executionId: string,
-		artifactType?: string,
-	): Promise<{ artifacts: ExecutionArtifact[]; total: number }> => {
-		return handleApiResponse(
-			safeApiCall(
-				apiClient.GET(
-					"/api/v1/projects/{project_id}/executions/{execution_id}/artifacts",
-					{
-						params: {
-							path: {
-								project_id: projectId,
-								execution_id: executionId,
-							},
-							query: { artifact_type: artifactType },
-						},
-					},
-				),
-			),
-		);
-	},
+const get = async (
+	projectId: string,
+	executionId: string,
+): Promise<Execution> =>
+	handleApiResponse(
+		safeApiCall(
+			(apiClient.GET as ApiMethod<Execution>),
+			"/api/v1/projects/{project_id}/executions/{execution_id}",
+			{
+				params: {
+					path: { execution_id: executionId, project_id: projectId },
+				},
+			},
+		),
+	);
 
-	downloadArtifact: (
-		projectId: string,
-		executionId: string,
-		artifactId: string,
-	): string => {
-		return `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
-	},
+const getConfig = async (
+	projectId: string,
+): Promise<ExecutionEnvironmentConfig> =>
+	handleApiResponse(
+		safeApiCall(
+			(apiClient.GET as ApiMethod<ExecutionEnvironmentConfig>),
+			"/api/v1/projects/{project_id}/execution-config",
+			{
+				params: { path: { project_id: projectId } },
+			},
+		),
+	);
 
-	getConfig: (projectId: string): Promise<ExecutionEnvironmentConfig> => {
-		return handleApiResponse(
-			safeApiCall(
-				apiClient.GET("/api/v1/projects/{project_id}/execution-config", {
-					params: { path: { project_id: projectId } },
-				}),
-			),
-		);
+const list = async (
+	projectId: string,
+	params?: {
+		execution_type?: string;
+		limit?: number;
+		offset?: number;
+		status?: string;
 	},
+): Promise<{ executions: Execution[]; total: number }> =>
+	handleApiResponse(
+		safeApiCall(
+			(apiClient.GET as ApiMethod<{
+				executions: Execution[];
+				total: number;
+			}>),
+			"/api/v1/projects/{project_id}/executions",
+			{
+				params: { path: { project_id: projectId }, query: params },
+			},
+		),
+	);
 
-	updateConfig: (
-		projectId: string,
-		data: ExecutionEnvironmentConfigUpdate,
-	): Promise<ExecutionEnvironmentConfig> => {
-		return handleApiResponse(
-			safeApiCall(
-				apiClient.PUT("/api/v1/projects/{project_id}/execution-config", {
-					params: { path: { project_id: projectId } },
-					body: data,
-				}),
-			),
-		);
-	},
+const listArtifacts = async (
+	projectId: string,
+	executionId: string,
+	artifactType?: string,
+): Promise<{ artifacts: ExecutionArtifact[]; total: number }> =>
+	handleApiResponse(
+		safeApiCall(
+			(apiClient.GET as ApiMethod<{
+				artifacts: ExecutionArtifact[];
+				total: number;
+			}>),
+			"/api/v1/projects/{project_id}/executions/{execution_id}/artifacts",
+			{
+				params: {
+					path: { execution_id: executionId, project_id: projectId },
+					query: { artifact_type: artifactType },
+				},
+			},
+		),
+	);
+
+const start = async (
+	projectId: string,
+	executionId: string,
+): Promise<{ started: boolean; execution_id: string }> =>
+	handleApiResponse(
+		safeApiCall(
+			(apiClient.POST as ApiMethod<{
+				execution_id: string;
+				started: boolean;
+			}>),
+			"/api/v1/projects/{project_id}/executions/{execution_id}/start",
+			{
+				params: {
+					path: { execution_id: executionId, project_id: projectId },
+				},
+			},
+		),
+	);
+
+const updateConfig = async (
+	projectId: string,
+	data: ExecutionEnvironmentConfigUpdate,
+): Promise<ExecutionEnvironmentConfig> =>
+	handleApiResponse(
+		safeApiCall(
+			(apiClient.PUT as ApiMethod<ExecutionEnvironmentConfig>),
+			"/api/v1/projects/{project_id}/execution-config",
+			{
+				body: data,
+				params: { path: { project_id: projectId } },
+			},
+		),
+	);
+
+const executionsApi = {
+	complete,
+	create,
+	downloadArtifact,
+	get,
+	getConfig,
+	list,
+	listArtifacts,
+	start,
+	updateConfig,
 };
+
+export default executionsApi;
+

@@ -16,7 +16,7 @@ describe("OpenAPI Schema Types", () => {
 	describe("Schema type availability", () => {
 		it("should define paths type for OpenAPI schema", () => {
 			// This test validates that the paths type can be used in type annotations
-			// which demonstrates the schema is correctly exported
+			// Which demonstrates the schema is correctly exported
 			const testSchema: Record<string, unknown> = {} as paths;
 			expect(testSchema).toBeDefined();
 		});
@@ -170,13 +170,13 @@ describe("OpenAPI Schema Types", () => {
 		});
 
 		it("should support optional parameters", () => {
-			// description, metadata are optional
+			// Description, metadata are optional
 			const schema: paths = {};
 			expect(schema).toBeDefined();
 		});
 
 		it("should support required parameters", () => {
-			// name, type, title are required
+			// Name, type, title are required
 			const schema: paths = {};
 			expect(schema).toBeDefined();
 		});
@@ -224,9 +224,9 @@ describe("OpenAPI Schema Types", () => {
 		it("should support PaginatedResponse type", () => {
 			const paginated: PaginatedResponse<Project> = {
 				items: [],
-				total: 0,
 				page: 1,
 				pageSize: 10,
+				total: 0,
 			};
 			expect(paginated.items).toEqual([]);
 		});
@@ -234,9 +234,9 @@ describe("OpenAPI Schema Types", () => {
 		it("should include pagination metadata", () => {
 			const paginated: PaginatedResponse<Item> = {
 				items: [],
-				total: 100,
 				page: 1,
 				pageSize: 10,
+				total: 100,
 			};
 			expect(paginated.total).toBe(100);
 			expect(paginated.page).toBe(1);
@@ -245,9 +245,9 @@ describe("OpenAPI Schema Types", () => {
 		it("should support page size parameter", () => {
 			const paginated: PaginatedResponse<Link> = {
 				items: [],
-				total: 0,
 				page: 1,
 				pageSize: 50,
+				total: 0,
 			};
 			expect(paginated.pageSize).toBe(50);
 		});
@@ -255,25 +255,25 @@ describe("OpenAPI Schema Types", () => {
 
 	describe("Item filtering in schema", () => {
 		it("should support view filter parameter", () => {
-			// view?: ViewType
+			// View?: ViewType
 			const schema: paths = {};
 			expect(schema).toBeDefined();
 		});
 
 		it("should support status filter parameter", () => {
-			// status?: ItemStatus
+			// Status?: ItemStatus
 			const schema: paths = {};
 			expect(schema).toBeDefined();
 		});
 
 		it("should support priority filter parameter", () => {
-			// priority?: Priority
+			// Priority?: Priority
 			const schema: paths = {};
 			expect(schema).toBeDefined();
 		});
 
 		it("should support link type filter parameter", () => {
-			// type?: LinkType for links endpoint
+			// Type?: LinkType for links endpoint
 			const schema: paths = {};
 			expect(schema).toBeDefined();
 		});
@@ -283,8 +283,8 @@ describe("OpenAPI Schema Types", () => {
 		it("should support metadata in items", () => {
 			const item: Item = {
 				id: "item-1",
-				project_id: "proj-1",
 				metadata: { custom: "value" },
+				project_id: "proj-1",
 			};
 			expect(item.metadata).toHaveProperty("custom");
 		});
@@ -292,17 +292,17 @@ describe("OpenAPI Schema Types", () => {
 		it("should support metadata in links", () => {
 			const link: Link = {
 				id: "link-1",
+				metadata: { note: "test" },
 				source_id: "item-1",
 				target_id: "item-2",
-				metadata: { note: "test" },
 			};
 			expect(link.metadata).toHaveProperty("note");
 		});
 
 		it("should support metadata in mutations", () => {
 			const mutation: Mutation = {
-				id: "mut-1",
 				data: { field: "value" },
+				id: "mut-1",
 			};
 			expect(mutation.data).toHaveProperty("field");
 		});

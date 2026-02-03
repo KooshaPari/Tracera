@@ -33,7 +33,7 @@ import {
 	Unlink,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // =============================================================================
 // TYPES
@@ -67,51 +67,51 @@ interface ComponentWithDiffStatus extends LibraryComponent {
 // =============================================================================
 
 const SYNC_STATUS_CONFIG = {
-	synced: {
-		icon: CheckCircle2,
-		label: "Synced",
-		color: "text-green-600",
-		bgColor: "bg-green-50",
-		badgeVariant: "outline" as const,
-	},
-	syncing: {
-		icon: Loader2,
-		label: "Syncing...",
-		color: "text-blue-600",
-		bgColor: "bg-blue-50",
-		badgeVariant: "outline" as const,
-	},
-	outdated: {
-		icon: AlertTriangle,
-		label: "Outdated",
-		color: "text-amber-600",
-		bgColor: "bg-amber-50",
-		badgeVariant: "outline" as const,
-	},
 	error: {
+		badgeVariant: "outline" as const,
+		bgColor: "bg-red-50",
+		color: "text-red-600",
 		icon: AlertCircle,
 		label: "Error",
-		color: "text-red-600",
-		bgColor: "bg-red-50",
+	},
+	outdated: {
 		badgeVariant: "outline" as const,
+		bgColor: "bg-amber-50",
+		color: "text-amber-600",
+		icon: AlertTriangle,
+		label: "Outdated",
+	},
+	synced: {
+		badgeVariant: "outline" as const,
+		bgColor: "bg-green-50",
+		color: "text-green-600",
+		icon: CheckCircle2,
+		label: "Synced",
+	},
+	syncing: {
+		badgeVariant: "outline" as const,
+		bgColor: "bg-blue-50",
+		color: "text-blue-600",
+		icon: Loader2,
+		label: "Syncing...",
 	},
 } as const;
 
 const COMPONENT_STATUS_CONFIG = {
-	synced: {
-		label: "Synced",
-		color: "text-green-600",
-		bg: "bg-green-50",
-	},
 	outdated: {
-		label: "Outdated",
-		color: "text-amber-600",
 		bg: "bg-amber-50",
+		color: "text-amber-600",
+		label: "Outdated",
+	},
+	synced: {
+		bg: "bg-green-50",
+		color: "text-green-600",
+		label: "Synced",
 	},
 	unlinked: {
-		label: "Unlinked",
-		color: "text-slate-500",
 		bg: "bg-slate-50",
+		color: "text-slate-500",
+		label: "Unlinked",
 	},
 } as const;
 
@@ -145,7 +145,9 @@ function FigmaSyncPanelComponent({
 	}, []);
 
 	const handleSync = useCallback(async () => {
-		if (!onSync || isSyncing) return;
+		if (!onSync || isSyncing) {
+			return;
+		}
 		try {
 			await onSync();
 		} catch (error) {
@@ -167,7 +169,7 @@ function FigmaSyncPanelComponent({
 	).length;
 	// Track unlinked count for future use
 	/*
-	const unlinkedCount = enrichedComponents.filter(
+	Const unlinkedCount = enrichedComponents.filter(
 		(c) => c.figmaStatus === "unlinked",
 	).length;
 	*/

@@ -14,11 +14,11 @@ import {
 // Mock endpoints
 vi.mock("@/api/endpoints", () => ({
 	projectsApi: {
-		list: vi.fn(),
-		get: vi.fn(),
 		create: vi.fn(),
-		update: vi.fn(),
 		delete: vi.fn(),
+		get: vi.fn(),
+		list: vi.fn(),
+		update: vi.fn(),
 	},
 }));
 
@@ -30,7 +30,7 @@ describe("Projects API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe("fetchProjects", () => {
+	describe(fetchProjects, () => {
 		it("should fetch projects without params", async () => {
 			vi.mocked(projectsApi.list).mockResolvedValue(mockProjects);
 
@@ -48,7 +48,7 @@ describe("Projects API", () => {
 		});
 	});
 
-	describe("fetchProject", () => {
+	describe(fetchProject, () => {
 		it("should fetch a single project", async () => {
 			vi.mocked(projectsApi.get).mockResolvedValue(mockProjects[0]);
 
@@ -58,9 +58,9 @@ describe("Projects API", () => {
 		});
 	});
 
-	describe("createProject", () => {
+	describe(createProject, () => {
 		it("should create a project", async () => {
-			const newProject = { name: "New Project", description: "Test" };
+			const newProject = { description: "Test", name: "New Project" };
 			const created = { ...mockProjects[0], ...newProject, id: "new-proj" };
 			vi.mocked(projectsApi.create).mockResolvedValue(created);
 
@@ -70,7 +70,7 @@ describe("Projects API", () => {
 		});
 	});
 
-	describe("updateProject", () => {
+	describe(updateProject, () => {
 		it("should update a project", async () => {
 			const updates = { name: "Updated Project" };
 			const updated = { ...mockProjects[0], ...updates };
@@ -82,9 +82,9 @@ describe("Projects API", () => {
 		});
 	});
 
-	describe("deleteProject", () => {
+	describe(deleteProject, () => {
 		it("should delete a project", async () => {
-			vi.mocked(projectsApi.delete).mockResolvedValue(undefined);
+			vi.mocked(projectsApi.delete).mockResolvedValue();
 
 			await expect(deleteProject("proj-1")).resolves.toBeUndefined();
 			expect(projectsApi.delete).toHaveBeenCalledWith("proj-1");

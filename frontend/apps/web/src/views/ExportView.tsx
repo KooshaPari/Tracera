@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import {

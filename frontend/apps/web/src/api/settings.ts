@@ -2,9 +2,12 @@
 import { logger } from "@/lib/logger";
 import client from "./client";
 
-const { apiClient, safeApiCall } = client;
+const apiClient = client.apiClient;
+const safeApiCall = client.safeApiCall;
+const get = apiClient.GET.bind(apiClient);
+const put = apiClient.PUT.bind(apiClient);
 
-export interface Settings {
+interface Settings {
 	general: {
 		theme?: "light" | "dark" | "system";
 		language?: string;
@@ -21,52 +24,54 @@ export interface Settings {
 	};
 }
 
-export const fetchSettings = async (): Promise<Settings> => {
+const DEFAULT_SETTINGS: Settings = {
+	general: {
+		language: "en",
+		theme: "system",
+	},
+	notifications: {
+		email: true,
+		inApp: true,
+		push: true,
+	},
+	security: {
+		sessionTimeout: 30,
+		twoFactor: false,
+	},
+};
+
+const isTheme = (value: unknown): value is "light" | "dark" | "system" =>
+	value === "light" || value === "dark" || value === "system";
+
+const fetchSettings = async (): Promise<Settings> => {
 	// Try to fetch from settings endpoint, fallback to defaults
 	try {
-		const response = await safeApiCall(apiClient.GET("/api/v1/settings", {}));
-		if (response.data) {
-			return response.data as Settings;
+		const response = await safeApiCall<Settings>(
+			get("/api/v1/settings", {}),
+		);
+		if (response.data !== undefined) {
+			return response.data;
 		}
 	} catch {
 		// Return default settings if endpoint doesn't exist
 	}
-	return {
-		general: {
-			theme: "system",
-			language: "en",
-		},
-		notifications: {
-			email: true,
-			push: true,
-			inApp: true,
-		},
-		security: {
-			twoFactor: false,
-			sessionTimeout: 30,
-		},
-	};
+	return DEFAULT_SETTINGS;
 };
 
-export const updateSettings = async (
+const updateSettings = async (
 	settings: Partial<Settings>,
 ): Promise<Settings> => {
 	try {
-		const response = await apiClient.PUT("/api/v1/settings", {
-			body: settings,
-		});
-		if (response.data) {
-			return response.data as Settings;
+		const response = await safeApiCall<Settings>(
+			put("/api/v1/settings", { body: settings }),
+		);
+		if (response.data !== undefined) {
+			return response.data;
 		}
 	} catch {
 		// Return merged settings if endpoint doesn't exist
 	}
-	return Object.assign(
-		{
-			general: {},
-		},
-		settings,
-	) as Settings;
+	return { ...DEFAULT_SETTINGS, ...settings };
 };
 
 /**
@@ -89,8 +94,8 @@ const buildGeneralSettings = (settings: {
 	theme?: string;
 }): GeneralSettingsMap => {
 	const generalSettings: GeneralSettingsMap = {};
-	if (settings.theme) {
-		generalSettings.theme = settings.theme as "light" | "dark" | "system";
+	if (typeof settings.theme === "string" && isTheme(settings.theme)) {
+		generalSettings.theme = settings.theme;
 	}
 	return generalSettings;
 };
@@ -101,20 +106,20 @@ const buildNotificationSettings = (settings: {
 	weeklySummary?: boolean;
 }): NotificationSettingsMap => {
 	const notificationSettings: NotificationSettingsMap = {};
-	if (typeof settings.emailNotifications !== "undefined") {
+	if (settings.emailNotifications !== undefined) {
 		notificationSettings.email = settings.emailNotifications;
 	}
-	if (typeof settings.desktopNotifications !== "undefined") {
+	if (settings.desktopNotifications !== undefined) {
 		notificationSettings.push = settings.desktopNotifications;
 	}
-	if (typeof settings.weeklySummary !== "undefined") {
+	if (settings.weeklySummary !== undefined) {
 		notificationSettings.inApp = settings.weeklySummary;
 	}
 	return notificationSettings;
 };
 
 // Simplified settings save function for SettingsView
-export const saveSettings = async (settings: {
+const saveSettings = async (settings: {
 	displayName?: string;
 	email?: string;
 	theme?: string;
@@ -135,3 +140,5 @@ export const saveSettings = async (settings: {
 		logger.info("Settings saved locally:", settings);
 	}
 };
+
+export { fetchSettings, saveSettings, updateSettings, type Settings };

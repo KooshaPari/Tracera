@@ -2,9 +2,7 @@ import { Badge, Button, Card, cn } from "@tracertm/ui";
 import { Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
-export interface TableExample {
-	[key: string]: string;
-}
+export type TableExample = Record<string, string>;
 
 interface ExamplesTableProps {
 	data: TableExample[];
@@ -82,7 +80,9 @@ export function ExamplesTable({
 	};
 
 	const handleRenameColumn = (oldName: string, newName: string) => {
-		if (!newName.trim() || newName === oldName) return;
+		if (!newName.trim() || newName === oldName) {
+			return;
+		}
 
 		const newColumns = columns.map((c) => (c === oldName ? newName : c));
 		onColumnsChange?.(newColumns);
@@ -210,7 +210,7 @@ export function ExamplesTable({
 												<div
 													onClick={() => {
 														if (editable) {
-															setEditingCell({ rowIndex, colName: col });
+															setEditingCell({ colName: col, rowIndex });
 															setEditValue(row[col] || "");
 														}
 													}}

@@ -10,65 +10,65 @@ import { FigmaSyncPanel } from "../../components/graph/FigmaSyncPanel";
 // =============================================================================
 
 const mockSyncState: FigmaSyncState = {
-	id: "sync-1",
-	libraryId: "lib-1",
-	projectId: "proj-1",
+	componentsSynced: 24,
+	createdAt: new Date().toISOString(),
 	figmaFileKey: "abc123xyz",
 	figmaFileName: "Design System",
 	figmaFileUrl: "https://figma.com/file/abc123xyz/Design-System",
-	lastSyncedAt: new Date(Date.now() - 3600000).toISOString(),
+	id: "sync-1",
 	lastSyncVersion: "1.0.0",
-	syncStatus: "synced",
-	componentsSynced: 24,
-	tokensSynced: 156,
+	lastSyncedAt: new Date(Date.now() - 3_600_000).toISOString(),
+	libraryId: "lib-1",
+	projectId: "proj-1",
 	stylesSynced: 42,
-	createdAt: new Date().toISOString(),
+	syncStatus: "synced",
+	tokensSynced: 156,
 	updatedAt: new Date().toISOString(),
 };
 
 const mockComponents: LibraryComponent[] = [
 	{
-		id: "comp-1",
-		libraryId: "lib-1",
-		projectId: "proj-1",
-		name: "button",
-		displayName: "Button",
-		description: "Primary action button",
 		category: "atom",
+		createdAt: new Date().toISOString(),
+		description: "Primary action button",
+		displayName: "Button",
 		figmaNodeId: "node-123",
 		figmaUrl: "https://figma.com/file/abc/...",
+		id: "comp-1",
+		libraryId: "lib-1",
+		name: "button",
+		projectId: "proj-1",
 		status: "stable",
-		usageCount: 42,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
+		usageCount: 42,
 	},
 	{
+		category: "atom",
+		createdAt: new Date().toISOString(),
+		description: "Text input field",
+		displayName: "Input",
 		id: "comp-2",
 		libraryId: "lib-1",
-		projectId: "proj-1",
 		name: "input",
-		displayName: "Input",
-		description: "Text input field",
-		category: "atom",
+		projectId: "proj-1",
 		status: "stable",
-		usageCount: 28,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
+		usageCount: 28,
 	},
 	{
-		id: "comp-3",
-		libraryId: "lib-1",
-		projectId: "proj-1",
-		name: "card",
-		displayName: "Card",
-		description: "Container component",
 		category: "molecule",
+		createdAt: new Date().toISOString(),
+		description: "Container component",
+		displayName: "Card",
 		figmaNodeId: "node-456",
 		figmaUrl: "https://figma.com/file/abc/...",
+		id: "comp-3",
+		libraryId: "lib-1",
+		name: "card",
+		projectId: "proj-1",
 		status: "stable",
-		usageCount: 15,
-		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
+		usageCount: 15,
 	},
 ];
 
@@ -76,11 +76,9 @@ const mockComponents: LibraryComponent[] = [
 // TESTS
 // =============================================================================
 
-describe("FigmaSyncPanel", () => {
+describe(FigmaSyncPanel, () => {
 	it("renders null when syncState is null", () => {
-		render(
-			<FigmaSyncPanel syncState={null} components={[]} />,
-		);
+		render(<FigmaSyncPanel syncState={null} components={[]} />);
 		expect(
 			screen.getByText("No Figma integration configured"),
 		).toBeInTheDocument();
@@ -128,9 +126,9 @@ describe("FigmaSyncPanel", () => {
 			<FigmaSyncPanel syncState={mockSyncState} components={mockComponents} />,
 		);
 
-		expect(screen.getByText("24")).toBeInTheDocument(); // componentsSynced
-		expect(screen.getByText("156")).toBeInTheDocument(); // tokensSynced
-		expect(screen.getByText("42")).toBeInTheDocument(); // stylesSynced
+		expect(screen.getByText("24")).toBeInTheDocument(); // ComponentsSynced
+		expect(screen.getByText("156")).toBeInTheDocument(); // TokensSynced
+		expect(screen.getByText("42")).toBeInTheDocument(); // StylesSynced
 	});
 
 	it("displays component list with sync status", () => {
@@ -176,7 +174,7 @@ describe("FigmaSyncPanel", () => {
 	});
 
 	it("calls onSync when sync button is clicked", async () => {
-		const onSync = vi.fn().mockResolvedValue(undefined);
+		const onSync = vi.fn().mockResolvedValue();
 
 		render(
 			<FigmaSyncPanel
@@ -202,7 +200,7 @@ describe("FigmaSyncPanel", () => {
 			<FigmaSyncPanel
 				syncState={mockSyncState}
 				components={mockComponents}
-				isSyncing={true}
+				isSyncing
 				onSync={onSync}
 			/>,
 		);

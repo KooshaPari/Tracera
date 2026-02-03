@@ -6,7 +6,9 @@ import { useProjects } from "@/hooks/useProjects";
 function ItemsListView() {
 	const { data: projects } = useProjects();
 	const projectId = useMemo(() => {
-		if (!projects || !Array.isArray(projects)) return undefined;
+		if (!projects || !Array.isArray(projects)) {
+			return undefined;
+		}
 		return projects[0]?.id;
 	}, [projects]);
 

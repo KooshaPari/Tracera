@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui";
 
 const meta: Meta<typeof Card> = {
-	title: "Components/Card",
 	component: Card,
 	tags: ["autodocs"],
+	title: "Components/Card",
 };
 
 export default meta;

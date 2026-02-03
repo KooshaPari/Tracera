@@ -102,7 +102,9 @@ describe("R-tree Spatial Index Benchmarks", () => {
 
 		logger.info("\n📊 1k edges:");
 		logger.info(`  Linear:  ${result.linearSearchMs.toFixed(3)}ms`);
-		logger.info(`  R-tree:  ${result.rtreeSearchMs.toFixed(3)}ms (build: ${result.rtreeBuildMs.toFixed(3)}ms)`);
+		logger.info(
+			`  R-tree:  ${result.rtreeSearchMs.toFixed(3)}ms (build: ${result.rtreeBuildMs.toFixed(3)}ms)`,
+		);
 		logger.info(`  Speedup: ${result.speedup.toFixed(2)}x`);
 
 		expect(result.resultsMatch).toBe(true);
@@ -122,7 +124,9 @@ describe("R-tree Spatial Index Benchmarks", () => {
 
 		logger.info("\n📊 10k edges:");
 		logger.info(`  Linear:  ${result.linearSearchMs.toFixed(3)}ms`);
-		logger.info(`  R-tree:  ${result.rtreeSearchMs.toFixed(3)}ms (build: ${result.rtreeBuildMs.toFixed(3)}ms)`);
+		logger.info(
+			`  R-tree:  ${result.rtreeSearchMs.toFixed(3)}ms (build: ${result.rtreeBuildMs.toFixed(3)}ms)`,
+		);
 		logger.info(`  Speedup: ${result.speedup.toFixed(2)}x`);
 
 		expect(result.resultsMatch).toBe(true);
@@ -142,7 +146,9 @@ describe("R-tree Spatial Index Benchmarks", () => {
 
 		logger.info("\n📊 100k edges:");
 		logger.info(`  Linear:  ${result.linearSearchMs.toFixed(3)}ms`);
-		logger.info(`  R-tree:  ${result.rtreeSearchMs.toFixed(3)}ms (build: ${result.rtreeBuildMs.toFixed(3)}ms)`);
+		logger.info(
+			`  R-tree:  ${result.rtreeSearchMs.toFixed(3)}ms (build: ${result.rtreeBuildMs.toFixed(3)}ms)`,
+		);
 		logger.info(`  Speedup: ${result.speedup.toFixed(2)}x`);
 
 		expect(result.resultsMatch).toBe(true);
@@ -186,7 +192,9 @@ describe("R-tree Spatial Index Benchmarks", () => {
 			const index = createSpatialIndex(edges, nodePositions);
 			const stats = index.getStats();
 
-			logger.info(`  ${size.toLocaleString()} edges: ${stats.memoryEstimate} (depth: ${stats.treeDepth})`);
+			logger.info(
+				`  ${size.toLocaleString()} edges: ${stats.memoryEstimate} (depth: ${stats.treeDepth})`,
+			);
 
 			// Verify memory estimate is reasonable
 			// ~24 bytes per edge * 1.3 overhead
@@ -216,7 +224,9 @@ describe("R-tree Spatial Index Benchmarks", () => {
 			const results = index.searchViewport(viewports[i], 100);
 			const queryMs = performance.now() - start;
 
-			logger.info(`  Viewport ${i + 1}: ${queryMs.toFixed(3)}ms (${results.length} results)`);
+			logger.info(
+				`  Viewport ${i + 1}: ${queryMs.toFixed(3)}ms (${results.length} results)`,
+			);
 
 			// All queries should be fast (<10ms is excellent for 100k edges)
 			expect(queryMs).toBeLessThan(10);
@@ -233,7 +243,12 @@ describe("R-tree Spatial Index Benchmarks", () => {
 		};
 
 		// Linear search (ground truth)
-		const linearResults = linearSearchViewport(edges, nodePositions, viewport, 100);
+		const linearResults = linearSearchViewport(
+			edges,
+			nodePositions,
+			viewport,
+			100,
+		);
 
 		// R-tree search
 		const index = createSpatialIndex(edges, nodePositions);

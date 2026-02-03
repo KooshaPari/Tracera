@@ -15,18 +15,18 @@ import {
 } from "../../../hooks/useCoverage";
 
 const statusColors: Record<string, string> = {
-	passed: "bg-green-100 text-green-700",
 	failed: "bg-red-100 text-red-700",
-	partial: "bg-yellow-100 text-yellow-700",
 	not_tested: "bg-gray-100 text-gray-700",
+	partial: "bg-yellow-100 text-yellow-700",
+	passed: "bg-green-100 text-green-700",
 	pending: "bg-blue-100 text-blue-700",
 };
 
 const statusLabels: Record<string, string> = {
-	passed: "Passed",
 	failed: "Failed",
-	partial: "Partial",
 	not_tested: "Not Tested",
+	partial: "Partial",
+	passed: "Passed",
 	pending: "Pending",
 };
 
@@ -131,9 +131,9 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
 							className={`h-4 rounded-full transition-all ${
 								matrix.coveragePercentage >= 80
 									? "bg-green-500"
-									: matrix.coveragePercentage >= 50
+									: (matrix.coveragePercentage >= 50
 										? "bg-yellow-500"
-										: "bg-red-500"
+										: "bg-red-500")
 							}`}
 							style={{ width: `${matrix.coveragePercentage}%` }}
 						/>
@@ -184,7 +184,7 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
 				<div className="flex items-center justify-center py-12">
 					<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 				</div>
-			) : filteredItems.length === 0 ? (
+			) : (filteredItems.length === 0 ? (
 				<div className="rounded-lg border border-dashed p-12 text-center">
 					<Grid className="mx-auto h-12 w-12 text-muted-foreground" />
 					<h3 className="mt-4 text-lg font-semibold">
@@ -232,7 +232,7 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
 						</table>
 					</div>
 				</div>
-			)}
+			))}
 
 			{/* Coverage Gaps Summary */}
 			{gaps && gaps.gaps.length > 0 && (
@@ -259,9 +259,9 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
 											className={`rounded px-1.5 py-0.5 ${
 												gap.priority === "critical"
 													? "bg-red-100 text-red-700"
-													: gap.priority === "high"
+													: (gap.priority === "high"
 														? "bg-orange-100 text-orange-700"
-														: "bg-gray-100 text-gray-700"
+														: "bg-gray-100 text-gray-700")
 											}`}
 										>
 											{gap.priority}

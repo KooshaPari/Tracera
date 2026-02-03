@@ -3,15 +3,15 @@
 
 import { describe, expect, it } from "vitest";
 import {
-	determineLODLevel,
-	getLODZoomThreshold,
 	LODLevel,
 	LOD_NODE_COUNT_THRESHOLD,
+	determineLODLevel,
+	getLODZoomThreshold,
 	shouldUseSimplifiedNode,
 } from "../../../../components/graph/utils/lod";
 
 describe("LOD utilities", () => {
-	describe("determineLODLevel", () => {
+	describe(determineLODLevel, () => {
 		it("returns VeryFar when zoom < 0.2", () => {
 			expect(determineLODLevel(0)).toBe(LODLevel.VeryFar);
 			expect(determineLODLevel(0.1)).toBe(LODLevel.VeryFar);
@@ -31,26 +31,26 @@ describe("LOD utilities", () => {
 		});
 
 		it("returns Close when 1.0 <= zoom < 2.0", () => {
-			expect(determineLODLevel(1.0)).toBe(LODLevel.Close);
+			expect(determineLODLevel(1)).toBe(LODLevel.Close);
 			expect(determineLODLevel(1.5)).toBe(LODLevel.Close);
 			expect(determineLODLevel(1.99)).toBe(LODLevel.Close);
 		});
 
 		it("returns VeryClose when zoom >= 2.0", () => {
-			expect(determineLODLevel(2.0)).toBe(LODLevel.VeryClose);
+			expect(determineLODLevel(2)).toBe(LODLevel.VeryClose);
 			expect(determineLODLevel(3)).toBe(LODLevel.VeryClose);
 		});
 
 		it("caps at Medium when nodeCount >= threshold and zoom would give Close/VeryClose", () => {
 			const _threshold = LOD_NODE_COUNT_THRESHOLD; // 100
-			expect(determineLODLevel(1.0, { nodeCount: 100 })).toBe(LODLevel.Medium);
+			expect(determineLODLevel(1, { nodeCount: 100 })).toBe(LODLevel.Medium);
 			expect(determineLODLevel(1.5, { nodeCount: 150 })).toBe(LODLevel.Medium);
-			expect(determineLODLevel(2.0, { nodeCount: 200 })).toBe(LODLevel.Medium);
+			expect(determineLODLevel(2, { nodeCount: 200 })).toBe(LODLevel.Medium);
 		});
 
 		it("does not cap when nodeCount is below threshold", () => {
-			expect(determineLODLevel(1.0, { nodeCount: 99 })).toBe(LODLevel.Close);
-			expect(determineLODLevel(2.0, { nodeCount: 50 })).toBe(LODLevel.VeryClose);
+			expect(determineLODLevel(1, { nodeCount: 99 })).toBe(LODLevel.Close);
+			expect(determineLODLevel(2, { nodeCount: 50 })).toBe(LODLevel.VeryClose);
 		});
 
 		it("does not cap when nodeCount is at threshold but zoom already gives Medium or lower", () => {
@@ -59,16 +59,16 @@ describe("LOD utilities", () => {
 		});
 
 		it("respects custom forceSimplifiedAbove option", () => {
-			expect(determineLODLevel(1.5, { nodeCount: 50, forceSimplifiedAbove: 40 })).toBe(
-				LODLevel.Medium,
-			);
-			expect(determineLODLevel(1.5, { nodeCount: 30, forceSimplifiedAbove: 40 })).toBe(
-				LODLevel.Close,
-			);
+			expect(
+				determineLODLevel(1.5, { forceSimplifiedAbove: 40, nodeCount: 50 }),
+			).toBe(LODLevel.Medium);
+			expect(
+				determineLODLevel(1.5, { forceSimplifiedAbove: 40, nodeCount: 30 }),
+			).toBe(LODLevel.Close);
 		});
 	});
 
-	describe("shouldUseSimplifiedNode", () => {
+	describe(shouldUseSimplifiedNode, () => {
 		it("returns true for VeryFar, Far, Medium", () => {
 			expect(shouldUseSimplifiedNode(LODLevel.VeryFar)).toBe(true);
 			expect(shouldUseSimplifiedNode(LODLevel.Far)).toBe(true);
@@ -81,17 +81,17 @@ describe("LOD utilities", () => {
 		});
 	});
 
-	describe("getLODZoomThreshold", () => {
+	describe(getLODZoomThreshold, () => {
 		it("returns correct lower-bound zoom for each level", () => {
 			expect(getLODZoomThreshold(LODLevel.VeryFar)).toBe(0);
 			expect(getLODZoomThreshold(LODLevel.Far)).toBe(0.2);
 			expect(getLODZoomThreshold(LODLevel.Medium)).toBe(0.5);
-			expect(getLODZoomThreshold(LODLevel.Close)).toBe(1.0);
-			expect(getLODZoomThreshold(LODLevel.VeryClose)).toBe(2.0);
+			expect(getLODZoomThreshold(LODLevel.Close)).toBe(1);
+			expect(getLODZoomThreshold(LODLevel.VeryClose)).toBe(2);
 		});
 	});
 
-	describe("LOD_NODE_COUNT_THRESHOLD", () => {
+	describe(LOD_NODE_COUNT_THRESHOLD, () => {
 		it("is 100 by default", () => {
 			expect(LOD_NODE_COUNT_THRESHOLD).toBe(100);
 		});

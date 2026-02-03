@@ -1,9 +1,5 @@
 // Export all API utilities
-
-import client from "./client";
-
-// Re-export commonly used types
-export type {
+import type {
 	Agent,
 	Item,
 	ItemStatus,
@@ -15,15 +11,8 @@ export type {
 	Project,
 	ViewType,
 } from "@tracertm/types";
-export { createAgentSession } from "./agent";
-export {
+import {
 	AuthError,
-	authApi,
-	getAuthErrorMessage,
-	isAuthError,
-	loginWithToast,
-	loginWithToastStore,
-	shouldLogoutOnError,
 	type AuthErrorDetails,
 	type AuthResponse,
 	type ChangePasswordRequest,
@@ -34,9 +23,45 @@ export {
 	type UpdateUserProfileRequest,
 	type User,
 	type UserMetadata,
+	authApi,
+	getAuthErrorMessage,
+	isAuthError,
+	loginWithToast,
+	loginWithToastStore,
+	shouldLogoutOnError,
 } from "./auth";
+import agentApi from "./agent";
+import client from "./client";
+import componentLibraryApi from "./component-library";
 
-const {
+type ClientExports = typeof client;
+
+const clientExports: ClientExports = client;
+
+export type {
+	Agent,
+	AuthErrorDetails,
+	AuthResponse,
+	ChangePasswordRequest,
+	Link,
+	LinkType,
+	LoginRequest,
+	Mutation,
+	Item,
+	ItemStatus,
+	PaginatedResponse,
+	Priority,
+	Project,
+	RefreshTokenRequest,
+	ResetPasswordConfirm,
+	ResetPasswordRequest,
+	UpdateUserProfileRequest,
+	User,
+	UserMetadata,
+	ViewType,
+};
+
+export const {
 	API_BASE_URL,
 	ApiError,
 	apiClient,
@@ -45,16 +70,16 @@ const {
 	handleApiResponse,
 	safeApiCall,
 	validateSession,
-} = client;
+} = clientExports;
 
 export {
-	API_BASE_URL,
-	ApiError,
-	apiClient,
-	getAuthHeaders,
-	getBackendURL,
-	handleApiResponse,
-	safeApiCall,
-	validateSession,
+	AuthError,
+	authApi,
+	componentLibraryApi,
+	getAuthErrorMessage,
+	isAuthError,
+	loginWithToast,
+	loginWithToastStore,
+	shouldLogoutOnError,
 };
-export { default as componentLibraryApi } from "./component-library";
+export const { createAgentSession } = agentApi;

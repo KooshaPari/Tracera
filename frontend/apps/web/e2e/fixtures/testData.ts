@@ -7,33 +7,33 @@ import type { Agent, Item, Link, Project } from "@tracertm/types";
 
 // Helper to generate timestamps
 const now = new Date().toISOString();
-const yesterday = new Date(Date.now() - 86400000).toISOString();
-const lastWeek = new Date(Date.now() - 604800000).toISOString();
+const yesterday = new Date(Date.now() - 86_400_000).toISOString();
+const lastWeek = new Date(Date.now() - 604_800_000).toISOString();
 
 /**
  * Test Projects
  */
 export const testProjects: Project[] = [
 	{
-		id: "test-proj-1",
-		name: "E2E Test Project",
+		createdAt: lastWeek,
 		description: "Test project for E2E testing",
+		id: "test-proj-1",
 		metadata: {
 			team: "QA",
 			status: "active",
 		},
-		createdAt: lastWeek,
+		name: "E2E Test Project",
 		updatedAt: now,
 	},
 	{
-		id: "test-proj-2",
-		name: "Sample Project",
+		createdAt: yesterday,
 		description: "Sample project for testing filters and search",
+		id: "test-proj-2",
 		metadata: {
 			team: "Dev",
 			status: "active",
 		},
-		createdAt: yesterday,
+		name: "Sample Project",
 		updatedAt: now,
 	},
 ];
@@ -43,47 +43,47 @@ export const testProjects: Project[] = [
  */
 export const testItems: Item[] = [
 	{
-		id: "test-item-1",
-		projectId: "test-proj-1",
-		view: "feature",
-		type: "requirement",
-		title: "Test Requirement",
+		createdAt: lastWeek,
 		description: "A requirement for testing",
-		status: "todo",
-		priority: "high",
+		id: "test-item-1",
 		metadata: { tags: ["test", "requirement"] },
-		version: 1,
-		createdAt: lastWeek,
-		updatedAt: now,
-	},
-	{
-		id: "test-item-2",
-		projectId: "test-proj-1",
-		view: "feature",
-		type: "feature",
-		title: "Test Feature",
-		description: "A feature for testing",
-		status: "in_progress",
-		priority: "medium",
-		metadata: { tags: ["test", "feature"] },
-		version: 1,
-		createdAt: lastWeek,
-		updatedAt: now,
-		parentId: "test-item-1",
-	},
-	{
-		id: "test-item-3",
-		projectId: "test-proj-1",
-		view: "code",
-		type: "code",
-		title: "Test Implementation",
-		description: "Code implementation for testing",
-		status: "done",
 		priority: "high",
-		metadata: { file_path: "src/test.ts" },
+		projectId: "test-proj-1",
+		status: "todo",
+		title: "Test Requirement",
+		type: "requirement",
+		updatedAt: now,
 		version: 1,
+		view: "feature",
+	},
+	{
 		createdAt: lastWeek,
+		description: "A feature for testing",
+		id: "test-item-2",
+		metadata: { tags: ["test", "feature"] },
+		parentId: "test-item-1",
+		priority: "medium",
+		projectId: "test-proj-1",
+		status: "in_progress",
+		title: "Test Feature",
+		type: "feature",
+		updatedAt: now,
+		version: 1,
+		view: "feature",
+	},
+	{
+		createdAt: lastWeek,
+		description: "Code implementation for testing",
+		id: "test-item-3",
+		metadata: { file_path: "src/test.ts" },
+		priority: "high",
+		projectId: "test-proj-1",
+		status: "done",
+		title: "Test Implementation",
+		type: "code",
 		updatedAt: yesterday,
+		version: 1,
+		view: "code",
 	},
 ];
 
@@ -92,26 +92,26 @@ export const testItems: Item[] = [
  */
 export const testLinks: Link[] = [
 	{
+		createdAt: lastWeek,
 		id: "test-link-1",
+		metadata: {},
 		projectId: "test-proj-1",
 		sourceId: "test-item-2",
 		targetId: "test-item-1",
 		type: "implements",
-		metadata: {},
-		version: 1,
-		createdAt: lastWeek,
 		updatedAt: lastWeek,
+		version: 1,
 	},
 	{
+		createdAt: lastWeek,
 		id: "test-link-2",
+		metadata: {},
 		projectId: "test-proj-1",
 		sourceId: "test-item-3",
 		targetId: "test-item-2",
 		type: "implements",
-		metadata: {},
-		version: 1,
-		createdAt: lastWeek,
 		updatedAt: lastWeek,
+		version: 1,
 	},
 ];
 
@@ -121,17 +121,17 @@ export const testLinks: Link[] = [
 export const testAgents: Agent[] = [
 	{
 		id: "test-agent-1",
-		name: "Test Agent 1",
-		type: "test",
-		status: "idle",
 		lastSeen: lastWeek,
+		name: "Test Agent 1",
+		status: "idle",
+		type: "test",
 	},
 	{
 		id: "test-agent-2",
-		name: "Test Agent 2",
-		type: "analyzer",
-		status: "active",
 		lastSeen: now,
+		name: "Test Agent 2",
+		status: "active",
+		type: "analyzer",
 	},
 ];
 
@@ -139,9 +139,9 @@ export const testAgents: Agent[] = [
  * Form Input Data
  */
 export const formInputs = {
-	project: {
-		name: "Test Project from E2E",
-		description: "This project was created by an E2E test",
+	agent: {
+		name: "Test Agent from E2E",
+		type: "test",
 	},
 	item: {
 		title: "Test Item from E2E",
@@ -150,9 +150,9 @@ export const formInputs = {
 	link: {
 		type: "implements",
 	},
-	agent: {
-		name: "Test Agent from E2E",
-		type: "test",
+	project: {
+		name: "Test Project from E2E",
+		description: "This project was created by an E2E test",
 	},
 };
 
@@ -160,19 +160,19 @@ export const formInputs = {
  * Search Queries
  */
 export const searchQueries = {
-	valid: ["test", "authentication", "dashboard", "code"],
 	invalid: ["xyznoresults123", "notfound999"],
 	partial: ["auth", "proj", "item"],
+	valid: ["test", "authentication", "dashboard", "code"],
 };
 
 /**
  * Filter Values
  */
 export const filters = {
-	itemType: ["Requirement", "Feature", "Code", "Test", "API", "Database"],
-	itemStatus: ["Pending", "In Progress", "Completed", "Blocked"],
-	itemPriority: ["Critical", "High", "Medium", "Low"],
 	agentStatus: ["Idle", "Busy", "Error", "Offline"],
+	itemPriority: ["Critical", "High", "Medium", "Low"],
+	itemStatus: ["Pending", "In Progress", "Completed", "Blocked"],
+	itemType: ["Requirement", "Feature", "Code", "Test", "API", "Database"],
 	linkType: ["Implements", "Tests", "Documents", "Relates To", "Depends On"],
 };
 
@@ -180,11 +180,11 @@ export const filters = {
  * Validation Error Messages
  */
 export const validationMessages = {
-	required: /required/i,
 	invalidEmail: /invalid.*email/i,
-	tooShort: /too short|minimum length/i,
-	tooLong: /too long|maximum length/i,
 	invalidFormat: /invalid format/i,
+	required: /required/i,
+	tooLong: /too long|maximum length/i,
+	tooShort: /too short|minimum length/i,
 };
 
 /**
@@ -192,9 +192,9 @@ export const validationMessages = {
  */
 export const successMessages = {
 	created: /created successfully|successfully created/i,
-	updated: /updated successfully|successfully updated/i,
 	deleted: /deleted successfully|successfully deleted/i,
 	saved: /saved successfully|successfully saved/i,
+	updated: /updated successfully|successfully updated/i,
 };
 
 /**
@@ -205,7 +205,7 @@ export const successMessages = {
  * Generate a unique test ID
  */
 export function generateTestId(prefix = "test"): string {
-	return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+	return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(7)}`;
 }
 
 /**
@@ -216,7 +216,7 @@ export function generateTestProject(overrides: Partial<Project> = {}): Project {
 		id: generateTestId("proj"),
 		name: `Test Project ${Date.now()}`,
 		description: "Auto-generated test project",
-		metadata: { team: "QA", status: "active" },
+		metadata: { status: "active", team: "QA" },
 		createdAt: now,
 		updatedAt: now,
 		...overrides,
@@ -319,21 +319,6 @@ export async function retryUntil<T>(
  * Mock API Response Helpers
  */
 export const mockResponses = {
-	project: (project: Partial<Project> = {}) => ({
-		data: generateTestProject(project),
-		status: 200,
-	}),
-
-	item: (projectId: string, item: Partial<Item> = {}) => ({
-		data: generateTestItem(projectId, item),
-		status: 200,
-	}),
-
-	link: (projectId: string, sourceId: string, targetId: string, link: Partial<Link> = {}) => ({
-		data: generateTestLink(projectId, sourceId, targetId, link),
-		status: 200,
-	}),
-
 	agent: (agent: Partial<Agent> = {}) => ({
 		data: generateTestAgent(agent),
 		status: 200,
@@ -342,5 +327,25 @@ export const mockResponses = {
 	error: (message: string, status = 400) => ({
 		error: { message },
 		status,
+	}),
+
+	item: (projectId: string, item: Partial<Item> = {}) => ({
+		data: generateTestItem(projectId, item),
+		status: 200,
+	}),
+
+	link: (
+		projectId: string,
+		sourceId: string,
+		targetId: string,
+		link: Partial<Link> = {},
+	) => ({
+		data: generateTestLink(projectId, sourceId, targetId, link),
+		status: 200,
+	}),
+
+	project: (project: Partial<Project> = {}) => ({
+		data: generateTestProject(project),
+		status: 200,
 	}),
 };

@@ -5,9 +5,9 @@
 
 import { QueryClient } from "@tanstack/react-query";
 import {
+	RouterProvider,
 	createMemoryHistory,
 	createRouter,
-	RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -16,8 +16,8 @@ import { routeTree } from "@/routeTree.gen";
 
 vi.mock("@/api/settings", () => ({
 	fetchSettings: vi.fn(),
-	updateSettings: vi.fn(),
 	resetSettings: vi.fn(),
+	updateSettings: vi.fn(),
 }));
 
 describe("Settings Page", () => {
@@ -28,8 +28,8 @@ describe("Settings Page", () => {
 	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries: { retry: false, gcTime: 0 },
 				mutations: { retry: false },
+				queries: { retry: false, gcTime: 0 },
 			},
 		});
 
@@ -38,9 +38,9 @@ describe("Settings Page", () => {
 		});
 
 		router = createRouter({
-			routeTree,
-			history,
 			context: { queryClient },
+			history,
+			routeTree,
 		});
 
 		vi.clearAllMocks();
@@ -55,10 +55,10 @@ describe("Settings Page", () => {
 			const { fetchSettings } = await import("@/api/settings");
 
 			vi.mocked(fetchSettings).mockResolvedValue({
-				general: {},
-				notifications: {},
 				appearance: {},
+				general: {},
 				integrations: {},
+				notifications: {},
 			});
 
 			render(<RouterProvider router={router} />);
@@ -105,10 +105,10 @@ describe("Settings Page", () => {
 
 			vi.mocked(fetchSettings).mockResolvedValue({
 				general: {
-					siteName: "TraceRTM",
-					language: "en",
-					timezone: "UTC",
 					dateFormat: "YYYY-MM-DD",
+					language: "en",
+					siteName: "TraceRTM",
+					timezone: "UTC",
 				},
 			});
 
@@ -186,14 +186,14 @@ describe("Settings Page", () => {
 
 			vi.mocked(fetchSettings).mockResolvedValue({
 				general: {
-					siteName: "Custom Name",
 					language: "es",
+					siteName: "Custom Name",
 				},
 			});
 			vi.mocked(resetSettings).mockResolvedValue({
 				general: {
-					siteName: "TraceRTM",
 					language: "en",
+					siteName: "TraceRTM",
 				},
 			});
 
@@ -227,9 +227,9 @@ describe("Settings Page", () => {
 			vi.mocked(fetchSettings).mockResolvedValue({
 				notifications: {
 					email: true,
+					frequency: "immediate",
 					push: false,
 					slack: true,
-					frequency: "immediate",
 				},
 			});
 
@@ -390,9 +390,9 @@ describe("Settings Page", () => {
 
 			vi.mocked(fetchSettings).mockResolvedValue({
 				appearance: {
-					theme: "dark",
 					accentColor: "#3b82f6",
 					fontSize: "medium",
+					theme: "dark",
 				},
 			});
 
@@ -537,7 +537,7 @@ describe("Settings Page", () => {
 				integrations: {
 					github: { connected: true, repo: "org/repo" },
 					jira: { connected: false },
-					slack: { connected: true, channel: "#general" },
+					slack: { channel: "#general", connected: true },
 				},
 			});
 
@@ -649,7 +649,7 @@ describe("Settings Page", () => {
 
 			vi.mocked(fetchSettings).mockResolvedValue({
 				integrations: {
-					slack: { connected: true, channel: "#general" },
+					slack: { channel: "#general", connected: true },
 				},
 			});
 			vi.mocked(updateSettings).mockResolvedValue({
@@ -697,8 +697,8 @@ describe("Settings Page", () => {
 			vi.mocked(fetchSettings).mockResolvedValue({
 				integrations: {
 					slack: {
-						connected: true,
 						channel: "#general",
+						connected: true,
 						notifications: ["item-created", "item-updated"],
 					},
 				},
@@ -706,8 +706,8 @@ describe("Settings Page", () => {
 			vi.mocked(updateSettings).mockResolvedValue({
 				integrations: {
 					slack: {
-						connected: true,
 						channel: "#dev",
+						connected: true,
 						notifications: ["item-created", "item-updated", "item-deleted"],
 					},
 				},
@@ -759,9 +759,9 @@ describe("Settings Page", () => {
 
 			vi.mocked(fetchSettings).mockResolvedValue({
 				security: {
-					twoFactorEnabled: false,
-					sessionTimeout: 3600,
 					allowedIPs: [],
+					sessionTimeout: 3600,
+					twoFactorEnabled: false,
 				},
 			});
 

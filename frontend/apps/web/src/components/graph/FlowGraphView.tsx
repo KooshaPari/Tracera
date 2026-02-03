@@ -18,11 +18,8 @@ import {
 	Background,
 	BackgroundVariant,
 	Controls,
-	type Edge,
 	MarkerType,
 	MiniMap,
-	type Node,
-	type NodeTypes,
 	Panel,
 	ReactFlow,
 	ReactFlowProvider,
@@ -30,6 +27,7 @@ import {
 	useNodesState,
 	useReactFlow,
 } from "@xyflow/react";
+import type { Edge, Node, NodeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
 	Layers,
@@ -46,7 +44,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NodeDetailPanel } from "./NodeDetailPanel";
 import { QAEnhancedNode } from "./nodes/QAEnhancedNode";
 import { PerspectiveSelector } from "./PerspectiveSelector";
-import { type RichNodeData, RichNodePill } from "./RichNodePill";
+import { RichNodePill } from "./RichNodePill";
+import type { RichNodeData } from "./RichNodePill";
 import type { EnhancedNodeData, GraphPerspective } from "./types";
 import {
 	ENHANCED_TYPE_COLORS,
@@ -58,8 +57,8 @@ import { UIComponentTree } from "./UIComponentTree";
 
 // Custom node types - using as assertion for React Flow compatibility
 const nodeTypes: NodeTypes = {
-	richPill: RichNodePill,
-	qaEnhanced: QAEnhancedNode as any, // Type compatibility workaround for React Flow
+	qaEnhanced: QAEnhancedNode as any,
+	richPill: RichNodePill, // Type compatibility workaround for React Flow
 };
 
 interface FlowGraphViewProps {
@@ -130,36 +129,36 @@ function FlowGraphViewInner({
 			let depth = 0;
 			let currentId = item.parentId;
 			while (currentId && depth < 10) {
-				depth++;
+				depth += 1;
 				const parent = itemMap.get(currentId);
 				currentId = parent?.parentId;
 			}
 
 			return {
-				id: item.id,
-				item,
-				type: itemType,
-				status: item.status,
-				label: item.title || "Untitled",
-				perspective: perspectives,
 				connections: {
+					byType:
+						connectionsByType.get(item.id) || ({} as Record<LinkType, number>),
 					incoming,
 					outgoing,
 					total: incoming + outgoing,
-					byType:
-						connectionsByType.get(item.id) || ({} as Record<LinkType, number>),
 				},
 				depth,
 				hasChildren,
+				id: item.id,
+				item,
+				label: item.title || "Untitled",
 				parentId: item.parentId,
-				uiPreview: item.metadata?.['screenshotUrl']
+				perspective: perspectives,
+				status: item.status,
+				type: itemType,
+				uiPreview: item.metadata?.["screenshotUrl"]
 					? {
-							screenshotUrl: item.metadata['screenshotUrl'] as string,
-							thumbnailUrl: item.metadata['thumbnailUrl'] as string | undefined,
-							interactiveWidgetUrl: item.metadata['interactiveUrl'] as
+							componentCode: item.metadata["code"] as string | undefined,
+							interactiveWidgetUrl: item.metadata["interactiveUrl"] as
 								| string
 								| undefined,
-							componentCode: item.metadata['code'] as string | undefined,
+							screenshotUrl: item.metadata["screenshotUrl"] as string,
+							thumbnailUrl: item.metadata["thumbnailUrl"] as string | undefined,
 						}
 					: undefined,
 			} as EnhancedNodeData;
@@ -168,10 +167,14 @@ function FlowGraphViewInner({
 
 	// Filter nodes by perspective
 	const filteredNodes = useMemo(() => {
-		if (perspective === "all") return enhancedNodes;
+		if (perspective === "all") {
+			return enhancedNodes;
+		}
 
 		const config = PERSPECTIVE_CONFIGS.find((c) => c.id === perspective);
-		if (!config || config.includeTypes.length === 0) return enhancedNodes;
+		if (!config || config.includeTypes.length === 0) {
+			return enhancedNodes;
+		}
 
 		return enhancedNodes.filter((node) => {
 			const nodeType = node.type.toLowerCase();
@@ -195,12 +198,12 @@ function FlowGraphViewInner({
 	const perspectiveCounts = useMemo(() => {
 		const counts: Record<GraphPerspective, number> = {
 			all: enhancedNodes.length,
-			product: 0,
 			business: 0,
+			performance: 0,
+			product: 0,
+			security: 0,
 			technical: 0,
 			ui: 0,
-			security: 0,
-			performance: 0,
 		};
 
 		for (const node of enhancedNodes) {
@@ -218,17 +221,12 @@ function FlowGraphViewInner({
 	const createNodeData = useCallback(
 		(node: EnhancedNodeData): RichNodeData => {
 			const data: RichNodeData = {
-				id: node.id,
-				item: node.item,
-				type: node.type,
-				status: node.status,
-				label: node.label,
-				description: node.item.description ?? undefined,
-				uiPreview: node.uiPreview ?? undefined,
 				connections: node.connections,
+				description: node.item.description ?? undefined,
+				id: node.id,
 				isExpanded: expandedNodes.has(node.id),
-				showPreview: perspective === "ui",
-				onSelect: setSelectedNodeId,
+				item: node.item,
+				label: node.label,
 				onExpand: (id) => {
 					setExpandedNodes((prev) => {
 						const next = new Set(prev);
@@ -238,6 +236,11 @@ function FlowGraphViewInner({
 					});
 				},
 				onNavigate: onNavigateToItem ?? undefined,
+				onSelect: setSelectedNodeId,
+				showPreview: perspective === "ui",
+				status: node.status,
+				type: node.type,
+				uiPreview: node.uiPreview ?? undefined,
 			};
 			return data;
 		},
@@ -260,7 +263,9 @@ function FlowGraphViewInner({
 					const byDepth = new Map<number, EnhancedNodeData[]>();
 					for (const node of nodes) {
 						const depth = node.depth || 0;
-						if (!byDepth.has(depth)) byDepth.set(depth, []);
+						if (!byDepth.has(depth)) {
+							byDepth.set(depth, []);
+						}
 						byDepth.get(depth)!.push(node);
 					}
 
@@ -279,10 +284,10 @@ function FlowGraphViewInner({
 
 						depthNodes.forEach((node, index) => {
 							result.push({
-								id: node.id,
-								type: "richPill",
-								position: { x: startX + index * (nodeWidth + padding), y },
 								data: createNodeData(node),
+								id: node.id,
+								position: { x: startX + index * (nodeWidth + padding), y },
+								type: "richPill",
 							});
 						});
 					});
@@ -295,7 +300,9 @@ function FlowGraphViewInner({
 					const byDepth = new Map<number, EnhancedNodeData[]>();
 					for (const node of nodes) {
 						const depth = node.depth || 0;
-						if (!byDepth.has(depth)) byDepth.set(depth, []);
+						if (!byDepth.has(depth)) {
+							byDepth.set(depth, []);
+						}
 						byDepth.get(depth)!.push(node);
 					}
 
@@ -310,13 +317,13 @@ function FlowGraphViewInner({
 						depthNodes.forEach((node, index) => {
 							const angle = index * angleStep - Math.PI / 2;
 							result.push({
+								data: createNodeData(node),
 								id: node.id,
-								type: "richPill",
 								position: {
 									x: centerX + radius * Math.cos(angle) - nodeWidth / 2,
 									y: centerY + radius * Math.sin(angle) - nodeHeight / 2,
 								},
-								data: createNodeData(node),
+								type: "richPill",
 							});
 						});
 					});
@@ -328,13 +335,13 @@ function FlowGraphViewInner({
 					// Simple grid layout
 					const cols = Math.ceil(Math.sqrt(nodes.length));
 					return nodes.map((node, index) => ({
+						data: createNodeData(node),
 						id: node.id,
-						type: "richPill",
 						position: {
 							x: (index % cols) * (nodeWidth + padding),
 							y: Math.floor(index / cols) * (nodeHeight + padding),
 						},
-						data: createNodeData(node),
+						type: "richPill",
 					}));
 				}
 				default: {
@@ -347,13 +354,13 @@ function FlowGraphViewInner({
 						const jitter = 20;
 
 						return {
+							data: createNodeData(node),
 							id: node.id,
-							type: "richPill",
 							position: {
 								x: baseX + (Math.random() - 0.5) * jitter,
 								y: baseY + (Math.random() - 0.5) * jitter,
 							},
-							data: createNodeData(node),
+							type: "richPill",
 						};
 					});
 				}
@@ -369,29 +376,29 @@ function FlowGraphViewInner({
 	);
 
 	const initialEdges = useMemo((): Edge[] => {
-		const defaultStyle = { color: "#64748b", dashed: true, arrow: false };
+		const defaultStyle = { arrow: false, color: "#64748b", dashed: true };
 		return filteredLinks.map((link) => {
 			const linkStyle = LINK_STYLES[link.type] ?? defaultStyle;
 			const edge: Edge = {
-				id: link.id,
-				source: link.sourceId,
-				target: link.targetId,
-				type: "smoothstep",
 				animated: link.type === "depends_on" || link.type === "blocks",
+				id: link.id,
+				label: link.type.replace(/_/g, " "),
+				labelBgPadding: [4, 2] as [number, number],
+				labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
+				labelStyle: { fill: linkStyle.color, fontSize: 10 },
+				source: link.sourceId,
 				style: {
 					stroke: linkStyle.color,
 					strokeWidth: 2,
 					...(linkStyle.dashed && { strokeDasharray: "5,5" }),
 				},
-				label: link.type.replace(/_/g, " "),
-				labelStyle: { fontSize: 10, fill: linkStyle.color },
-				labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
-				labelBgPadding: [4, 2] as [number, number],
+				target: link.targetId,
+				type: "smoothstep",
 			};
 			if (linkStyle.arrow) {
 				edge.markerEnd = {
-					type: MarkerType.ArrowClosed,
 					color: linkStyle.color,
+					type: MarkerType.ArrowClosed,
 				};
 			}
 			return edge;
@@ -408,13 +415,16 @@ function FlowGraphViewInner({
 		const linkIds = filteredLinks.map((link) => link.id).join("|");
 		return `${layout}|${nodeIds}|${linkIds}`;
 	}, [filteredNodes, filteredLinks, layout]);
-	const edgesSignature = useMemo(() => {
-		return filteredLinks
-			.map(
-				(edge) => `${edge.id}:${edge.sourceId}->${edge.targetId}:${edge.type}`,
-			)
-			.join("|");
-	}, [filteredLinks]);
+	const edgesSignature = useMemo(
+		() =>
+			filteredLinks
+				.map(
+					(edge) =>
+						`${edge.id}:${edge.sourceId}->${edge.targetId}:${edge.type}`,
+				)
+				.join("|"),
+		[filteredLinks],
+	);
 	const prevNodesSignature = useRef<string>("");
 	const prevEdgesSignature = useRef<string>("");
 
@@ -438,7 +448,9 @@ function FlowGraphViewInner({
 
 	// Selected node data
 	const selectedNode = useMemo(() => {
-		if (!selectedNodeId) return null;
+		if (!selectedNodeId) {
+			return null;
+		}
 		return filteredNodes.find((n) => n.id === selectedNodeId) || null;
 	}, [filteredNodes, selectedNodeId]);
 
@@ -481,7 +493,7 @@ function FlowGraphViewInner({
 		}
 	};
 
-	const handleFit = () => void fitView({ padding: 0.2, duration: 300 });
+	const handleFit = () => undefined;
 	const handleReset = () => {
 		setPerspective("all");
 		setLayout("force");
@@ -495,7 +507,7 @@ function FlowGraphViewInner({
 		// Find the node and center on it
 		const node = nodes.find((n) => n.id === nodeId);
 		if (node) {
-			void fitView({ nodes: [node], padding: 0.5, duration: 300 });
+			undefined;
 		}
 	};
 
@@ -580,7 +592,10 @@ function FlowGraphViewInner({
 							value={layout}
 							onValueChange={(v) => setLayout(v as LayoutType)}
 						>
-							<SelectTrigger className="w-[160px] h-9" aria-label="Graph layout selection">
+							<SelectTrigger
+								className="w-[160px] h-9"
+								aria-label="Graph layout selection"
+							>
 								<Layers className="h-4 w-4 mr-2" aria-hidden="true" />
 								<SelectValue />
 							</SelectTrigger>
@@ -592,7 +607,11 @@ function FlowGraphViewInner({
 							</SelectContent>
 						</Select>
 
-						<Separator orientation="vertical" className="h-6" aria-hidden="true" />
+						<Separator
+							orientation="vertical"
+							className="h-6"
+							aria-hidden="true"
+						/>
 
 						{/* UI Tree toggle */}
 						<Button
@@ -726,7 +745,7 @@ function FlowGraphViewInner({
 												style={{ backgroundColor: color }}
 											/>
 											<span className="capitalize">
-												{type.replace(/_/g, " ")}
+												{type.replaceAll(/_/g, " ")}
 											</span>
 										</div>
 									))}

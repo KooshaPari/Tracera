@@ -85,11 +85,11 @@ interface CreateRequirementItemFormProps {
 }
 
 const earsPatternExamples: Record<string, string> = {
-	ubiquitous: "The system shall always validate user input",
 	event_driven: "When user clicks submit, the system shall validate the form",
-	state_driven: "While user is logged in, the system shall display dashboard",
-	unwanted: "The system shall not store passwords in plain text",
 	optional: "Where premium features are enabled, the system shall allow export",
+	state_driven: "While user is logged in, the system shall display dashboard",
+	ubiquitous: "The system shall always validate user input",
+	unwanted: "The system shall not store passwords in plain text",
 };
 
 export function CreateRequirementItemForm({
@@ -108,19 +108,19 @@ export function CreateRequirementItemForm({
 		watch,
 		formState: { errors, isSubmitting },
 	} = useForm<RequirementItemFormData>({
-		resolver: zodResolver(requirementItemSchema),
 		defaultValues: {
-			status: "todo",
-			priority: "medium",
-			ears_pattern_type: "ubiquitous",
-			constraint_type: "hard",
-			risk_level: "medium",
-			verification_status: "unverified",
-			verifiability: 0.5,
-			traceability: 0.5,
 			clarity: 0.5,
+			constraint_type: "hard",
+			ears_pattern_type: "ubiquitous",
+			priority: "medium",
+			risk_level: "medium",
+			status: "todo",
+			traceability: 0.5,
+			verifiability: 0.5,
+			verification_status: "unverified",
 		},
 		mode: "onBlur",
+		resolver: zodResolver(requirementItemSchema),
 	});
 
 	const selectedEarsPattern = watch("ears_pattern_type");
@@ -131,8 +131,8 @@ export function CreateRequirementItemForm({
 			try {
 				await Promise.resolve(onSubmit(data));
 				announceToScreenReader("Requirement created successfully", "polite");
-} catch {
-                announceToScreenReader(
+			} catch {
+				announceToScreenReader(
 					"Error creating requirement. Please check the form and try again.",
 					"assertive",
 				);
@@ -248,7 +248,7 @@ export function CreateRequirementItemForm({
 								placeholder="Enter requirement title"
 								aria-describedby={errors.title ? "title-error" : "title-help"}
 								aria-required="true"
-								aria-invalid={!!errors.title}
+								aria-invalid={Boolean(errors.title)}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							/>
 							{errors.title ? (

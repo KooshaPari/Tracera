@@ -7,7 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CreateItemForm } from "../../components/forms/CreateItemForm";
 
-describe("CreateItemForm", () => {
+describe(CreateItemForm, () => {
 	const mockOnSubmit = vi.fn();
 	const mockOnCancel = vi.fn();
 
@@ -16,9 +16,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should render the form", async () => {
-		render(
-			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
-		);
+		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Check that a form exists
 		const form = container.querySelector("form");
@@ -53,7 +51,7 @@ describe("CreateItemForm", () => {
 		const cancelButton = screen.getByText("Cancel");
 		await userEvent.click(cancelButton);
 
-		expect(mockOnCancel).toHaveBeenCalledTimes(1);
+		expect(mockOnCancel).toHaveBeenCalledOnce();
 	});
 
 	it("should call onCancel when X button is clicked", async () => {
@@ -66,9 +64,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should validate required fields", async () => {
-		render(
-			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
-		);
+		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Find submit button more specifically (within the form)
 		const form = container.querySelector("form");
@@ -84,16 +80,13 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should submit valid form data", async () => {
-		render(
-			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
-		);
+		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Find title input more flexibly
 		const titleEl =
 			container.querySelector('input[name="title"]') ||
 			screen.queryByLabelText(/Title/);
-		const titleInput =
-			titleEl instanceof HTMLInputElement ? titleEl : null;
+		const titleInput = titleEl instanceof HTMLInputElement ? titleEl : null;
 
 		if (titleInput) {
 			await user.type(titleInput, "Test Item");
@@ -119,9 +112,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should update type options when view changes", async () => {
-		render(
-			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
-		);
+		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Verify form rendered
 		expect(container.querySelector("form")).toBeInTheDocument();
@@ -132,7 +123,7 @@ describe("CreateItemForm", () => {
 			<CreateItemForm
 				onSubmit={mockOnSubmit}
 				onCancel={mockOnCancel}
-				isLoading={true}
+				isLoading
 			/>,
 		);
 
@@ -141,9 +132,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should handle all status options", () => {
-		render(
-			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
-		);
+		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Verify status select exists
 		const statusSelect =
@@ -153,9 +142,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should handle all priority options", () => {
-		render(
-			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
-		);
+		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Verify priority select exists
 		const prioritySelect =
@@ -165,9 +152,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should validate title length", async () => {
-		render(
-			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
-		);
+		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Find title input by various selectors with fallbacks
 		let titleEl = container.querySelector('input[name="title"]');
@@ -185,9 +170,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should accept optional owner field", () => {
-		render(
-			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
-		);
+		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Verify owner field exists
 		const ownerInput =

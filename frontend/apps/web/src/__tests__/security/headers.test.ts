@@ -30,14 +30,13 @@ describe("Security Headers Tests", () => {
 		});
 
 		it("should generate CSP header string correctly", () => {
-			const generateCSPHeader = (policy: Record<string, string[]>): string => {
-				return Object.entries(policy)
+			const generateCSPHeader = (policy: Record<string, string[]>): string =>
+				Object.entries(policy)
 					.map(([key, values]) => {
 						if (values.length === 0) return key;
 						return `${key} ${values.join(" ")}`;
 					})
 					.join("; ");
-			};
 
 			const policy = {
 				"default-src": ["'self'"],
@@ -62,7 +61,7 @@ describe("Security Headers Tests", () => {
 			const generateNonce = (): string => {
 				const array = new Uint8Array(16);
 				crypto.getRandomValues(array);
-				return btoa(String.fromCharCode(...array));
+				return btoa(String.fromCodePoint(...array));
 			};
 
 			const nonce = generateNonce();
@@ -104,8 +103,8 @@ describe("Security Headers Tests", () => {
 
 		it("should be set for all responses", () => {
 			const headers = {
-				"X-Content-Type-Options": "nosniff",
 				"Content-Type": "application/json",
+				"X-Content-Type-Options": "nosniff",
 			};
 
 			expect(headers["X-Content-Type-Options"]).toBe("nosniff");
@@ -124,13 +123,13 @@ describe("Security Headers Tests", () => {
 		it("should have minimum max-age of 1 year", () => {
 			const parseMaxAge = (hsts: string): number => {
 				const match = hsts.match(/max-age=(\d+)/);
-				return match ? parseInt(match[1], 10) : 0;
+				return match ? Number.parseInt(match[1], 10) : 0;
 			};
 
 			const hsts = "max-age=31536000";
 			const maxAge = parseMaxAge(hsts);
 
-			expect(maxAge).toBeGreaterThanOrEqual(31536000); // 1 year in seconds
+			expect(maxAge).toBeGreaterThanOrEqual(31_536_000); // 1 year in seconds
 		});
 
 		it("should include subdomains for complete protection", () => {
@@ -185,8 +184,8 @@ describe("Security Headers Tests", () => {
 		it("should restrict browser features", () => {
 			const permissionsPolicy = {
 				camera: [],
-				microphone: [],
 				geolocation: [],
+				microphone: [],
 				payment: [],
 				usb: [],
 			};
@@ -199,14 +198,13 @@ describe("Security Headers Tests", () => {
 		it("should generate Permissions-Policy header", () => {
 			const generatePermissionsPolicy = (
 				policy: Record<string, string[]>,
-			): string => {
-				return Object.entries(policy)
+			): string =>
+				Object.entries(policy)
 					.map(([feature, origins]) => {
 						if (origins.length === 0) return `${feature}=()`;
 						return `${feature}=(${origins.join(" ")})`;
 					})
 					.join(", ");
-			};
 
 			const policy = {
 				camera: [],
@@ -222,13 +220,13 @@ describe("Security Headers Tests", () => {
 
 	describe("CORS Headers", () => {
 		it("should set appropriate Access-Control-Allow-Origin", () => {
-			const allowedOrigins = [
+			const allowedOrigins = new Set([
 				"https://app.tracertm.com",
 				"https://tracertm.com",
-			];
+			]);
 
 			const validateOrigin = (origin: string): boolean => {
-				return allowedOrigins.includes(origin);
+				return allowedOrigins.has(origin);
 			};
 
 			expect(validateOrigin("https://app.tracertm.com")).toBe(true);
@@ -237,8 +235,8 @@ describe("Security Headers Tests", () => {
 
 		it("should not use wildcard for credentialed requests", () => {
 			const corsHeaders = {
-				"Access-Control-Allow-Origin": "https://app.tracertm.com",
 				"Access-Control-Allow-Credentials": "true",
+				"Access-Control-Allow-Origin": "https://app.tracertm.com",
 			};
 
 			expect(corsHeaders["Access-Control-Allow-Origin"]).not.toBe("*");
@@ -270,7 +268,7 @@ describe("Security Headers Tests", () => {
 		});
 
 		it("should set max age for preflight caching", () => {
-			const maxAge = 86400; // 24 hours
+			const maxAge = 86_400; // 24 hours
 
 			const corsHeader = `Access-Control-Max-Age: ${maxAge}`;
 
@@ -282,8 +280,8 @@ describe("Security Headers Tests", () => {
 		it("should prevent caching of sensitive data", () => {
 			const sensitiveHeaders = {
 				"Cache-Control": "no-store, no-cache, must-revalidate, private",
-				Pragma: "no-cache",
 				Expires: "0",
+				Pragma: "no-cache",
 			};
 
 			expect(sensitiveHeaders["Cache-Control"]).toContain("no-store");
@@ -343,9 +341,8 @@ describe("Security Headers Tests", () => {
 				name: string,
 				value: string,
 				maxAge: number,
-			): string => {
-				return `${name}=${value}; Secure; HttpOnly; SameSite=Strict; Max-Age=${maxAge}`;
-			};
+			): string =>
+				`${name}=${value}; Secure; HttpOnly; SameSite=Strict; Max-Age=${maxAge}`;
 
 			const sessionCookie = generateCookie("session", "abc123", 3600);
 
@@ -381,9 +378,8 @@ describe("Security Headers Tests", () => {
 		it("should validate Content-Length for large payloads", () => {
 			const MAX_CONTENT_LENGTH = 10 * 1024 * 1024; // 10 MB
 
-			const validateContentLength = (length: number): boolean => {
-				return length > 0 && length <= MAX_CONTENT_LENGTH;
-			};
+			const validateContentLength = (length: number): boolean =>
+				length > 0 && length <= MAX_CONTENT_LENGTH;
 
 			expect(validateContentLength(1024)).toBe(true);
 			expect(validateContentLength(20 * 1024 * 1024)).toBe(false);
@@ -411,11 +407,11 @@ describe("Security Headers Tests", () => {
 		it("should include all security headers in responses", () => {
 			const securityHeaders = {
 				"Content-Security-Policy": "default-src 'self'",
-				"X-Frame-Options": "DENY",
-				"X-Content-Type-Options": "nosniff",
-				"Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-				"X-XSS-Protection": "1; mode=block",
 				"Referrer-Policy": "strict-origin-when-cross-origin",
+				"Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+				"X-Content-Type-Options": "nosniff",
+				"X-Frame-Options": "DENY",
+				"X-XSS-Protection": "1; mode=block",
 			};
 
 			expect(securityHeaders).toHaveProperty("Content-Security-Policy");
@@ -437,13 +433,13 @@ describe("Security Headers Tests", () => {
 
 	describe("WebSocket Security Headers", () => {
 		it("should validate WebSocket origin", () => {
-			const allowedOrigins = [
+			const allowedOrigins = new Set([
 				"https://app.tracertm.com",
 				"https://tracertm.com",
-			];
+			]);
 
 			const validateWebSocketOrigin = (origin: string): boolean => {
-				return allowedOrigins.includes(origin);
+				return allowedOrigins.has(origin);
 			};
 
 			expect(validateWebSocketOrigin("https://app.tracertm.com")).toBe(true);
@@ -480,9 +476,8 @@ describe("Security Headers Tests", () => {
 		});
 
 		it("should include request ID for tracing", () => {
-			const generateRequestId = (): string => {
-				return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-			};
+			const generateRequestId = (): string =>
+				`req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 			const requestId = generateRequestId();
 
@@ -492,9 +487,8 @@ describe("Security Headers Tests", () => {
 
 	describe("Header Injection Prevention", () => {
 		it("should reject headers with newline characters", () => {
-			const hasHeaderInjection = (value: string): boolean => {
-				return /[\r\n]/.test(value);
-			};
+			const hasHeaderInjection = (value: string): boolean =>
+				/[\r\n]/.test(value);
 
 			expect(hasHeaderInjection("normal-value")).toBe(false);
 			expect(hasHeaderInjection("malicious\r\nX-Injected: true")).toBe(true);
@@ -502,9 +496,8 @@ describe("Security Headers Tests", () => {
 		});
 
 		it("should sanitize custom header values", () => {
-			const sanitizeHeaderValue = (value: string): string => {
-				return value.replace(/[\r\n]/g, "").trim();
-			};
+			const sanitizeHeaderValue = (value: string): string =>
+				value.replace(/[\r\n]/g, "").trim();
 
 			const malicious = "value\r\nX-Injected: true";
 			const sanitized = sanitizeHeaderValue(malicious);
@@ -517,17 +510,17 @@ describe("Security Headers Tests", () => {
 
 	describe("HTTP Method Security", () => {
 		it("should only allow safe HTTP methods", () => {
-			const allowedMethods = [
+			const allowedMethods = new Set([
 				"GET",
 				"POST",
 				"PUT",
 				"PATCH",
 				"DELETE",
 				"OPTIONS",
-			];
+			]);
 
 			const isAllowedMethod = (method: string): boolean => {
-				return allowedMethods.includes(method.toUpperCase());
+				return allowedMethods.has(method.toUpperCase());
 			};
 
 			expect(isAllowedMethod("GET")).toBe(true);
@@ -537,10 +530,10 @@ describe("Security Headers Tests", () => {
 		});
 
 		it("should disable TRACE method", () => {
-			const disabledMethods = ["TRACE", "TRACK"];
+			const disabledMethods = new Set(["TRACE", "TRACK"]);
 
 			const isMethodDisabled = (method: string): boolean => {
-				return disabledMethods.includes(method.toUpperCase());
+				return disabledMethods.has(method.toUpperCase());
 			};
 
 			expect(isMethodDisabled("TRACE")).toBe(true);

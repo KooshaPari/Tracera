@@ -34,7 +34,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CacheStatistics } from "@/lib/graphCache";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 /** Performance metrics snapshot */
 export interface PerformanceMetrics {
@@ -102,8 +102,8 @@ export interface PerformanceMetrics {
 	interaction: {
 		isPanning: boolean;
 		isZooming: boolean;
-		panDuration: number; // ms
-		zoomDuration: number; // ms
+		panDuration: number; // Ms
+		zoomDuration: number; // Ms
 		lastInteractionType: "pan" | "zoom" | "idle";
 	};
 }
@@ -173,10 +173,12 @@ class FPSTracker {
 	private frames: number[] = [];
 	private lastFrameTime: number = performance.now();
 	private rafId: number | null = null;
-	private isRunning: boolean = false;
+	private isRunning = false;
 
 	start(): void {
-		if (this.isRunning) return;
+		if (this.isRunning) {
+			return;
+		}
 		this.isRunning = true;
 		this.tick();
 	}
@@ -190,7 +192,9 @@ class FPSTracker {
 	}
 
 	private tick = (): void => {
-		if (!this.isRunning) return;
+		if (!this.isRunning) {
+			return;
+		}
 
 		const now = performance.now();
 		const delta = now - this.lastFrameTime;
@@ -217,20 +221,20 @@ class FPSTracker {
 		samples: number;
 	} {
 		if (this.frames.length === 0) {
-			return { current: 0, average: 0, min: 0, max: 0, samples: 0 };
+			return { average: 0, current: 0, max: 0, min: 0, samples: 0 };
 		}
 
-		const current = this.frames[this.frames.length - 1] || 0;
+		const current = this.frames.at(-1) || 0;
 		const average =
 			this.frames.reduce((sum, fps) => sum + fps, 0) / this.frames.length;
 		const min = Math.min(...this.frames);
 		const max = Math.max(...this.frames);
 
 		return {
-			current: Math.round(current),
 			average: Math.round(average),
-			min: Math.round(min),
+			current: Math.round(current),
 			max: Math.round(max),
+			min: Math.round(min),
 			samples: this.frames.length,
 		};
 	}
@@ -243,10 +247,10 @@ class FPSTracker {
 
 /** Interaction tracker */
 class InteractionTracker {
-	private isPanning: boolean = false;
-	private isZooming: boolean = false;
-	private panStartTime: number = 0;
-	private zoomStartTime: number = 0;
+	private isPanning = false;
+	private isZooming = false;
+	private panStartTime = 0;
+	private zoomStartTime = 0;
 	private lastInteractionType: "pan" | "zoom" | "idle" = "idle";
 
 	startPan(): void {
@@ -278,9 +282,9 @@ class InteractionTracker {
 		return {
 			isPanning: this.isPanning,
 			isZooming: this.isZooming,
+			lastInteractionType: this.lastInteractionType,
 			panDuration: this.isPanning ? now - this.panStartTime : 0,
 			zoomDuration: this.isZooming ? now - this.zoomStartTime : 0,
-			lastInteractionType: this.lastInteractionType,
 		};
 	}
 
@@ -344,34 +348,30 @@ export function useGraphPerformanceMonitor({
 		const nodeTotal = nodes.length;
 		const nodeRendered = visibleNodes.length;
 		const nodeCulled = nodeTotal - nodeRendered;
-		const nodeCullingRatio =
-			nodeTotal > 0 ? (nodeCulled / nodeTotal) * 100 : 0;
+		const nodeCullingRatio = nodeTotal > 0 ? (nodeCulled / nodeTotal) * 100 : 0;
 
 		const edgeTotal = edges.length;
 		const edgeRendered = visibleEdges.length;
 		const edgeCulled = edgeTotal - edgeRendered;
-		const edgeCullingRatio =
-			edgeTotal > 0 ? (edgeCulled / edgeTotal) * 100 : 0;
+		const edgeCullingRatio = edgeTotal > 0 ? (edgeCulled / edgeTotal) * 100 : 0;
 
 		// LOD distribution
 		const lod = {
 			high: lodDistribution?.high ?? 0,
-			medium: lodDistribution?.medium ?? 0,
 			low: lodDistribution?.low ?? 0,
+			medium: lodDistribution?.medium ?? 0,
 			skeleton: lodDistribution?.skeleton ?? 0,
 		};
 
 		// Cache metrics
-		const getCacheMetrics = (
-			stats?: CacheStatistics,
-		): CacheHitRateMetrics => {
+		const getCacheMetrics = (stats?: CacheStatistics): CacheHitRateMetrics => {
 			if (!stats) {
-				return { hits: 0, misses: 0, hitRatio: 0, totalRequests: 0 };
+				return { hitRatio: 0, hits: 0, misses: 0, totalRequests: 0 };
 			}
 			return {
+				hitRatio: stats.hitRatio,
 				hits: stats.totalHits,
 				misses: stats.totalMisses,
-				hitRatio: stats.hitRatio,
 				totalRequests: stats.totalHits + stats.totalMisses,
 			};
 		};
@@ -380,8 +380,6 @@ export function useGraphPerformanceMonitor({
 		const groupingCache = getCacheMetrics(cacheStats?.grouping);
 		const searchCache = getCacheMetrics(cacheStats?.search);
 		const combinedCache: CacheHitRateMetrics = {
-			hits: layoutCache.hits + groupingCache.hits + searchCache.hits,
-			misses: layoutCache.misses + groupingCache.misses + searchCache.misses,
 			hitRatio:
 				layoutCache.totalRequests +
 					groupingCache.totalRequests +
@@ -392,6 +390,8 @@ export function useGraphPerformanceMonitor({
 							groupingCache.totalRequests +
 							searchCache.totalRequests)
 					: 0,
+			hits: layoutCache.hits + groupingCache.hits + searchCache.hits,
+			misses: layoutCache.misses + groupingCache.misses + searchCache.misses,
 			totalRequests:
 				layoutCache.totalRequests +
 				groupingCache.totalRequests +
@@ -400,17 +400,17 @@ export function useGraphPerformanceMonitor({
 
 		// Timing metrics (from Performance API marks)
 		const timing = {
-			viewportLoadMs: timingMarkers.current.viewportLoadStart
-				? now - timingMarkers.current.viewportLoadStart
+			cullingMs: timingMarkers.current.cullingStart
+				? now - timingMarkers.current.cullingStart
 				: 0,
 			layoutComputeMs: timingMarkers.current.layoutComputeStart
 				? now - timingMarkers.current.layoutComputeStart
 				: 0,
-			cullingMs: timingMarkers.current.cullingStart
-				? now - timingMarkers.current.cullingStart
-				: 0,
 			renderMs: timingMarkers.current.renderStart
 				? now - timingMarkers.current.renderStart
+				: 0,
+			viewportLoadMs: timingMarkers.current.viewportLoadStart
+				? now - timingMarkers.current.viewportLoadStart
 				: 0,
 		};
 
@@ -422,10 +422,10 @@ export function useGraphPerformanceMonitor({
 		) {
 			const mem = (performance as any).memory;
 			memory = {
-				usedJSHeapSize: mem.usedJSHeapSize,
-				totalJSHeapSize: mem.totalJSHeapSize,
-				jsHeapSizeLimit: mem.jsHeapSizeLimit,
 				heapUsagePercent: (mem.usedJSHeapSize / mem.jsHeapSizeLimit) * 100,
+				jsHeapSizeLimit: mem.jsHeapSizeLimit,
+				totalJSHeapSize: mem.totalJSHeapSize,
+				usedJSHeapSize: mem.usedJSHeapSize,
 			};
 		}
 
@@ -433,36 +433,38 @@ export function useGraphPerformanceMonitor({
 		const interaction = interactionTracker.current.getMetrics();
 
 		return {
-			timestamp: now,
-			fps,
-			nodes: {
-				total: nodeTotal,
-				rendered: nodeRendered,
-				culled: nodeCulled,
-				cullingRatio: nodeCullingRatio,
+			cache: {
+				combined: combinedCache,
+				grouping: groupingCache,
+				layout: layoutCache,
+				search: searchCache,
 			},
 			edges: {
-				total: edgeTotal,
-				rendered: edgeRendered,
 				culled: edgeCulled,
 				cullingRatio: edgeCullingRatio,
+				rendered: edgeRendered,
+				total: edgeTotal,
 			},
-			lod,
-			cache: {
-				layout: layoutCache,
-				grouping: groupingCache,
-				search: searchCache,
-				combined: combinedCache,
-			},
-			timing,
-			memory,
+			fps,
 			interaction,
+			lod,
+			memory,
+			nodes: {
+				culled: nodeCulled,
+				cullingRatio: nodeCullingRatio,
+				rendered: nodeRendered,
+				total: nodeTotal,
+			},
+			timestamp: now,
+			timing,
 		};
 	}, [nodes, edges, visibleNodes, visibleEdges, lodDistribution, cacheStats]);
 
 	/** Report metrics to console and storage */
 	const reportMetrics = useCallback(() => {
-		if (!enabled) return;
+		if (!enabled) {
+			return;
+		}
 
 		const metrics = collectMetrics();
 		setCurrentMetrics(metrics);
@@ -490,9 +492,9 @@ export function useGraphPerformanceMonitor({
 				`%cFPS: ${metrics.fps.current} (avg: ${metrics.fps.average}, min: ${metrics.fps.min}, max: ${metrics.fps.max})`,
 				metrics.fps.current >= 55
 					? "color: #10b981"
-					: metrics.fps.current >= 30
+					: (metrics.fps.current >= 30
 						? "color: #f59e0b"
-						: "color: #ef4444",
+						: "color: #ef4444"),
 			);
 
 			logger.info(
@@ -511,7 +513,9 @@ export function useGraphPerformanceMonitor({
 			);
 
 			if (metrics.timing.viewportLoadMs > 0) {
-				logger.info(`Viewport Load: ${metrics.timing.viewportLoadMs.toFixed(1)}ms`);
+				logger.info(
+					`Viewport Load: ${metrics.timing.viewportLoadMs.toFixed(1)}ms`,
+				);
 			}
 
 			if (metrics.memory) {
@@ -546,11 +550,19 @@ export function useGraphPerformanceMonitor({
 				logger.warn("[Graph Performance] Failed to persist metrics:", error);
 			}
 		}
-	}, [enabled, collectMetrics, logToConsole, persistToStorage, onMetricsUpdate]);
+	}, [
+		enabled,
+		collectMetrics,
+		logToConsole,
+		persistToStorage,
+		onMetricsUpdate,
+	]);
 
 	/** Get human-readable summary */
 	const getSummary = useCallback((): string => {
-		if (!currentMetrics) return "No metrics available";
+		if (!currentMetrics) {
+			return "No metrics available";
+		}
 
 		const lines = [
 			`FPS: ${currentMetrics.fps.current} (avg: ${currentMetrics.fps.average})`,
@@ -586,7 +598,9 @@ export function useGraphPerformanceMonitor({
 
 	// Start FPS tracking
 	useEffect(() => {
-		if (!enabled) return;
+		if (!enabled) {
+			return;
+		}
 
 		fpsTracker.current.start();
 
@@ -597,7 +611,9 @@ export function useGraphPerformanceMonitor({
 
 	// Periodic metric reporting
 	useEffect(() => {
-		if (!enabled || reportInterval <= 0) return;
+		if (!enabled || reportInterval <= 0) {
+			return;
+		}
 
 		const interval = setInterval(reportMetrics, reportInterval);
 
@@ -606,12 +622,14 @@ export function useGraphPerformanceMonitor({
 
 	// Track pan/zoom interactions via React Flow events
 	useEffect(() => {
-		if (!enabled) return;
+		if (!enabled) {
+			return;
+		}
 
 		// Listen for viewport changes to detect pan/zoom
-		// const handleViewportChange = () => {
+		// Const handleViewportChange = () => {
 		// 	// Start interaction tracking (will be handled by viewport change listeners in FlowGraphViewInner)
-		// 	timingMarkers.current.viewportLoadStart = performance.now();
+		// 	TimingMarkers.current.viewportLoadStart = performance.now();
 		// };
 
 		// Add event listeners if needed
@@ -624,10 +642,10 @@ export function useGraphPerformanceMonitor({
 
 	return {
 		currentMetrics,
+		getSummary,
 		history,
 		reportMetrics,
 		reset,
-		getSummary,
 	};
 }
 
@@ -660,12 +678,12 @@ export function createProfilerCallback(
 				`%c[Profiler: ${monitorId}]`,
 				"color: #8b5cf6; font-weight: bold",
 				{
-					id,
-					phase,
 					actualDuration: `${actualDuration.toFixed(2)}ms`,
 					baseDuration: `${baseDuration.toFixed(2)}ms`,
-					startTime,
 					commitTime,
+					id,
+					phase,
+					startTime,
 				},
 			);
 		}
@@ -677,19 +695,19 @@ export function createProfilerCallback(
 				const stored = sessionStorage.getItem(key);
 				const history = stored ? JSON.parse(stored) : [];
 				history.push({
-					id,
-					phase,
 					actualDuration,
 					baseDuration,
-					startTime,
 					commitTime,
+					id,
+					phase,
+					startTime,
 					timestamp: Date.now(),
 				});
 				// Keep only last 50 entries
 				const trimmed = history.slice(-50);
 				sessionStorage.setItem(key, JSON.stringify(trimmed));
-            } catch {
-                // Ignore storage errors
+			} catch {
+				// Ignore storage errors
 			}
 		}
 	};
@@ -699,11 +717,6 @@ export function createProfilerCallback(
  * Performance mark helpers for manual timing
  */
 export const perfMark = {
-	start: (name: string) => {
-		if (process.env.NODE_ENV === "development") {
-			performance.mark(`${name}-start`);
-		}
-	},
 	end: (name: string) => {
 		if (process.env.NODE_ENV === "development") {
 			performance.mark(`${name}-end`);
@@ -717,9 +730,14 @@ export const perfMark = {
 						`${measure.duration.toFixed(2)}ms`,
 					);
 				}
-            } catch {
-                // Ignore measurement errors
+			} catch {
+				// Ignore measurement errors
 			}
+		}
+	},
+	start: (name: string) => {
+		if (process.env.NODE_ENV === "development") {
+			performance.mark(`${name}-start`);
 		}
 	},
 };

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import { Plus, Trash2, X } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -34,23 +34,23 @@ const testStepSchema = z.object({
 });
 
 const testCaseSchema = z.object({
-	title: z.string().min(1, "Title is required").max(500, "Title too long"),
-	description: z.string().max(5000).optional(),
-	objective: z.string().max(2000).optional(),
-	testType: z.enum(testTypes),
-	priority: z.enum(priorities),
-	category: z.string().max(100).optional(),
-	tags: z.string().optional(),
-	preconditions: z.string().max(2000).optional(),
-	testSteps: z.array(testStepSchema).optional(),
-	expectedResult: z.string().max(2000).optional(),
-	postconditions: z.string().max(2000).optional(),
-	automationStatus: z.enum(automationStatuses),
-	automationScriptPath: z.string().max(500).optional(),
+	assignedTo: z.string().max(255).optional(),
 	automationFramework: z.string().max(100).optional(),
 	automationNotes: z.string().max(2000).optional(),
+	automationScriptPath: z.string().max(500).optional(),
+	automationStatus: z.enum(automationStatuses),
+	category: z.string().max(100).optional(),
+	description: z.string().max(5000).optional(),
 	estimatedDurationMinutes: z.coerce.number().min(1).optional(),
-	assignedTo: z.string().max(255).optional(),
+	expectedResult: z.string().max(2000).optional(),
+	objective: z.string().max(2000).optional(),
+	postconditions: z.string().max(2000).optional(),
+	preconditions: z.string().max(2000).optional(),
+	priority: z.enum(priorities),
+	tags: z.string().optional(),
+	testSteps: z.array(testStepSchema).optional(),
+	testType: z.enum(testTypes),
+	title: z.string().min(1, "Title is required").max(500, "Title too long"),
 });
 
 type TestCaseFormData = z.infer<typeof testCaseSchema>;
@@ -76,23 +76,23 @@ const categoryOptions = [
 ];
 
 const typeLabels: Record<(typeof testTypes)[number], string> = {
+	accessibility: "Accessibility",
+	e2e: "End-to-End",
+	exploratory: "Exploratory",
 	functional: "Functional",
 	integration: "Integration",
-	unit: "Unit",
-	e2e: "End-to-End",
 	performance: "Performance",
-	security: "Security",
-	accessibility: "Accessibility",
 	regression: "Regression",
+	security: "Security",
 	smoke: "Smoke",
-	exploratory: "Exploratory",
+	unit: "Unit",
 };
 
 const automationLabels: Record<(typeof automationStatuses)[number], string> = {
-	not_automated: "Not Automated (Manual)",
-	in_progress: "Automation In Progress",
 	automated: "Fully Automated",
 	cannot_automate: "Cannot Be Automated",
+	in_progress: "Automation In Progress",
+	not_automated: "Not Automated (Manual)",
 };
 
 export function CreateTestCaseForm({
@@ -108,13 +108,13 @@ export function CreateTestCaseForm({
 		control,
 		formState: { errors },
 	} = useForm<TestCaseFormData>({
-		resolver: zodResolver(testCaseSchema),
 		defaultValues: {
-			testType: "functional",
-			priority: "medium",
 			automationStatus: "not_automated",
+			priority: "medium",
 			testSteps: [],
+			testType: "functional",
 		},
+		resolver: zodResolver(testCaseSchema),
 	});
 
 	const { fields, append, remove } = useFieldArray({
@@ -125,40 +125,59 @@ export function CreateTestCaseForm({
 	const onSubmit = async (data: TestCaseFormData) => {
 		try {
 			const payload: Parameters<typeof createTestCase.mutateAsync>[0] = {
-				projectId,
-				title: data.title,
-				testType: data.testType,
-				priority: data.priority,
 				automationStatus: data.automationStatus,
+				priority: data.priority,
+				projectId,
+				testType: data.testType,
+				title: data.title,
 			};
-			if (data.description) payload.description = data.description;
-			if (data.objective) payload.objective = data.objective;
-			if (data.category) payload.category = data.category;
+			if (data.description) {
+				payload.description = data.description;
+			}
+			if (data.objective) {
+				payload.objective = data.objective;
+			}
+			if (data.category) {
+				payload.category = data.category;
+			}
 			if (data.tags) {
 				payload.tags = data.tags
 					.split(",")
 					.map((s) => s.trim())
 					.filter(Boolean);
 			}
-			if (data.preconditions) payload.preconditions = data.preconditions;
+			if (data.preconditions) {
+				payload.preconditions = data.preconditions;
+			}
 			if (data.testSteps && data.testSteps.length > 0) {
 				payload.testSteps = data.testSteps.map((step, index) => ({
-					stepNumber: index + 1,
 					action: step.action,
 					expectedResult: step.expectedResult || "",
+					stepNumber: index + 1,
 					testData: step.testData || "",
 				}));
 			}
-			if (data.expectedResult) payload.expectedResult = data.expectedResult;
-			if (data.postconditions) payload.postconditions = data.postconditions;
-			if (data.automationScriptPath)
+			if (data.expectedResult) {
+				payload.expectedResult = data.expectedResult;
+			}
+			if (data.postconditions) {
+				payload.postconditions = data.postconditions;
+			}
+			if (data.automationScriptPath) {
 				payload.automationScriptPath = data.automationScriptPath;
-			if (data.automationFramework)
+			}
+			if (data.automationFramework) {
 				payload.automationFramework = data.automationFramework;
-			if (data.automationNotes) payload.automationNotes = data.automationNotes;
-			if (data.estimatedDurationMinutes)
+			}
+			if (data.automationNotes) {
+				payload.automationNotes = data.automationNotes;
+			}
+			if (data.estimatedDurationMinutes) {
 				payload.estimatedDurationMinutes = data.estimatedDurationMinutes;
-			if (data.assignedTo) payload.assignedTo = data.assignedTo;
+			}
+			if (data.assignedTo) {
+				payload.assignedTo = data.assignedTo;
+			}
 
 			await createTestCase.mutateAsync(payload);
 			onSuccess();

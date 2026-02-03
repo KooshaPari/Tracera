@@ -117,22 +117,24 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 			setAdr(editedADR);
 			setIsEditing(false);
 			toast.success("ADR updated successfully");
-        } catch {
-            toast.error("Failed to update ADR");
+		} catch {
+			toast.error("Failed to update ADR");
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
 	const handleDelete = async () => {
-		if (!confirm("Are you sure you want to delete this ADR?")) {return;}
+		if (!confirm("Are you sure you want to delete this ADR?")) {
+			return;
+		}
 		try {
 			// API call would go here
 			await new Promise((resolve) => setTimeout(resolve, 500));
 			toast.success("ADR deleted");
 			undefined;
-        } catch {
-            toast.error("Failed to delete ADR");
+		} catch {
+			toast.error("Failed to delete ADR");
 		}
 	};
 
@@ -149,9 +151,7 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 			{/* Header */}
 			<div className="flex items-center justify-between gap-4">
 				<button
-					onClick={() =>
-						undefined
-					}
+					onClick={() => {}}
 					className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
 				>
 					<ArrowLeft className="h-4 w-4" />

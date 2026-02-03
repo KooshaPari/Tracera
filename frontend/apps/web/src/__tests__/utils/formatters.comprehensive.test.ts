@@ -22,7 +22,7 @@ import {
 	truncate,
 } from "../../utils/formatters";
 
-describe("formatDate", () => {
+describe(formatDate, () => {
 	it("should format Date object in short format", () => {
 		const date = new Date("2024-01-15T10:30:00Z");
 		const result = formatDate(date, "short");
@@ -83,7 +83,7 @@ describe("formatDate", () => {
 	});
 });
 
-describe("formatRelativeTime", () => {
+describe(formatRelativeTime, () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 	});
@@ -145,7 +145,7 @@ describe("formatRelativeTime", () => {
 		const now = new Date("2024-01-15T10:30:00Z");
 		vi.setSystemTime(now);
 
-		const date = new Date("2024-01-15T10:29:00Z"); // exactly 60 seconds
+		const date = new Date("2024-01-15T10:29:00Z"); // Exactly 60 seconds
 		expect(formatRelativeTime(date)).toBe("1m ago");
 	});
 
@@ -153,12 +153,12 @@ describe("formatRelativeTime", () => {
 		const now = new Date("2024-01-15T10:30:00Z");
 		vi.setSystemTime(now);
 
-		const date = new Date("2024-01-15T09:30:00Z"); // exactly 1 hour
+		const date = new Date("2024-01-15T09:30:00Z"); // Exactly 1 hour
 		expect(formatRelativeTime(date)).toBe("1h ago");
 	});
 });
 
-describe("formatTime", () => {
+describe(formatTime, () => {
 	it("should format time from Date object", () => {
 		const date = new Date("2024-01-15T14:30:00Z");
 		const result = formatTime(date);
@@ -183,7 +183,7 @@ describe("formatTime", () => {
 	});
 });
 
-describe("formatNumber", () => {
+describe(formatNumber, () => {
 	it("should format integer with default options", () => {
 		expect(formatNumber(1234)).toBe("1,234");
 	});
@@ -198,7 +198,7 @@ describe("formatNumber", () => {
 	});
 
 	it("should format with custom maximumFractionDigits", () => {
-		const result = formatNumber(10.12345, { maximumFractionDigits: 2 });
+		const result = formatNumber(10.123_45, { maximumFractionDigits: 2 });
 		expect(result).toBe("10.12");
 	});
 
@@ -211,7 +211,7 @@ describe("formatNumber", () => {
 	});
 
 	it("should handle very large numbers", () => {
-		const result = formatNumber(1234567890);
+		const result = formatNumber(1_234_567_890);
 		expect(result).toContain(",");
 	});
 
@@ -221,7 +221,7 @@ describe("formatNumber", () => {
 	});
 });
 
-describe("formatPercentage", () => {
+describe(formatPercentage, () => {
 	it("should format percentage with default decimals", () => {
 		expect(formatPercentage(25, 100)).toBe("25%");
 	});
@@ -255,7 +255,7 @@ describe("formatPercentage", () => {
 	});
 });
 
-describe("formatBytes", () => {
+describe(formatBytes, () => {
 	it("should format 0 bytes", () => {
 		expect(formatBytes(0)).toBe("0 Bytes");
 	});
@@ -269,15 +269,15 @@ describe("formatBytes", () => {
 	});
 
 	it("should format MB", () => {
-		expect(formatBytes(1048576)).toBe("1 MB");
+		expect(formatBytes(1_048_576)).toBe("1 MB");
 	});
 
 	it("should format GB", () => {
-		expect(formatBytes(1073741824)).toBe("1 GB");
+		expect(formatBytes(1_073_741_824)).toBe("1 GB");
 	});
 
 	it("should format TB", () => {
-		expect(formatBytes(1099511627776)).toBe("1 TB");
+		expect(formatBytes(1_099_511_627_776)).toBe("1 TB");
 	});
 
 	it("should format with custom decimals", () => {
@@ -289,12 +289,12 @@ describe("formatBytes", () => {
 	});
 
 	it("should handle very large values", () => {
-		const result = formatBytes(1099511627776 * 10); // 10 TB
+		const result = formatBytes(1_099_511_627_776 * 10); // 10 TB
 		expect(result).toContain("TB");
 	});
 });
 
-describe("truncate", () => {
+describe(truncate, () => {
 	it("should not truncate short text", () => {
 		expect(truncate("Hello", 10)).toBe("Hello");
 	});
@@ -326,7 +326,7 @@ describe("truncate", () => {
 	});
 });
 
-describe("capitalize", () => {
+describe(capitalize, () => {
 	it("should capitalize first letter", () => {
 		expect(capitalize("hello")).toBe("Hello");
 	});
@@ -356,7 +356,7 @@ describe("capitalize", () => {
 	});
 });
 
-describe("titleCase", () => {
+describe(titleCase, () => {
 	it("should capitalize each word", () => {
 		expect(titleCase("hello world")).toBe("Hello World");
 	});
@@ -386,7 +386,7 @@ describe("titleCase", () => {
 	});
 });
 
-describe("kebabCase", () => {
+describe(kebabCase, () => {
 	it("should convert to kebab case", () => {
 		expect(kebabCase("Hello World")).toBe("hello-world");
 	});
@@ -416,7 +416,7 @@ describe("kebabCase", () => {
 	});
 });
 
-describe("camelCase", () => {
+describe(camelCase, () => {
 	it("should convert to camelCase", () => {
 		expect(camelCase("hello world")).toBe("helloWorld");
 	});
@@ -446,7 +446,7 @@ describe("camelCase", () => {
 	});
 });
 
-describe("formatStatus", () => {
+describe(formatStatus, () => {
 	it("should format status with underscores", () => {
 		expect(formatStatus("in_progress")).toBe("In Progress");
 	});
@@ -472,7 +472,7 @@ describe("formatStatus", () => {
 	});
 });
 
-describe("getPriorityColor", () => {
+describe(getPriorityColor, () => {
 	it("should return red for critical", () => {
 		expect(getPriorityColor("critical")).toBe("red");
 	});
@@ -503,7 +503,7 @@ describe("getPriorityColor", () => {
 	});
 });
 
-describe("getStatusColor", () => {
+describe(getStatusColor, () => {
 	it("should return gray for todo", () => {
 		expect(getStatusColor("todo")).toBe("gray");
 	});
@@ -538,7 +538,7 @@ describe("getStatusColor", () => {
 	});
 });
 
-describe("formatDuration", () => {
+describe(formatDuration, () => {
 	it("should format seconds", () => {
 		expect(formatDuration(30)).toBe("30s");
 	});
@@ -568,7 +568,7 @@ describe("formatDuration", () => {
 	});
 
 	it("should handle very large durations", () => {
-		const result = formatDuration(86400); // 24 hours
+		const result = formatDuration(86_400); // 24 hours
 		expect(result).toContain("h");
 	});
 });

@@ -157,7 +157,7 @@ export function Avatar({
   return (
     <div
       className="relative rounded-full overflow-hidden bg-muted"
-      style={{ width: size, height: size }}
+      style={{ height: size, width: size }}
     >
       <OptimizedImage
         src={src}

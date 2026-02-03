@@ -30,7 +30,7 @@ export interface NodeTypeContext {
 	/** Whether this node is currently focused */
 	isFocused: boolean;
 	/** Loading or error state (if applicable) */
-	loadingState?: 'loading' | 'error';
+	loadingState?: "loading" | "error";
 	/** Distance from viewport center (in pixels, optional) */
 	distance?: number;
 }
@@ -110,10 +110,13 @@ export function getNodeTypeLegacy(itemType: string): string {
  * @param context - Viewport and node context for LOD decisions
  * @returns The React Flow node type to use
  */
-export function getNodeType(itemType: string, context: NodeTypeContext): string {
+export function getNodeType(
+	itemType: string,
+	context: NodeTypeContext,
+): string {
 	// Priority 1: Loading or error states
 	if (context.loadingState) {
-		return 'skeleton';
+		return "skeleton";
 	}
 
 	// Priority 2: Always show full detail for selected or focused nodes
@@ -126,13 +129,13 @@ export function getNodeType(itemType: string, context: NodeTypeContext): string 
 	// Priority 3: Use simple representation for high scale or low zoom
 	// Thresholds: >5000 nodes OR zoom < 0.5 OR distance > 800px
 	if (totalNodeCount > 5000 || zoom < 0.5 || distance > 800) {
-		return 'simple';
+		return "simple";
 	}
 
 	// Priority 4: Use medium representation for moderate scale
 	// Thresholds: >2000 nodes OR zoom < 0.8 OR distance > 400px
 	if (totalNodeCount > 2000 || zoom < 0.8 || distance > 400) {
-		return 'medium';
+		return "medium";
 	}
 
 	// Priority 5: Default to type-specific or default
@@ -149,7 +152,9 @@ export function getNodeType(itemType: string, context: NodeTypeContext): string 
 export function shouldUseQAEnhancedNode(
 	nodeData: Record<string, unknown>,
 ): boolean {
-	return !!(nodeData['preview'] || nodeData['artifacts'] || nodeData['metrics']);
+	return Boolean(
+		nodeData["preview"] || nodeData["artifacts"] || nodeData["metrics"],
+	);
 }
 
 /**
