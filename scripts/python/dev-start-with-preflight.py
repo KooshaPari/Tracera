@@ -140,8 +140,6 @@ def main() -> int:
         print(f"{pc_bin} not found; install it (e.g. brew install process-compose)", file=sys.stderr)
         return 1
 
-    return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())
