@@ -436,6 +436,25 @@ def print_issues_by_category(by_file_lint: dict, by_file_test: dict, sep: str) -
         print(f"\n{sep}")
 
 
+def print_step_details_by_file(by_file: dict, display_name: str, log_path: Path) -> None:
+    """Print details for a step grouped by file."""
+    print(f"\n  {c(display_name.split()[0])}[{display_name}]{cr()}  {log_path}")
+
+    for fp in sorted(by_file.keys()):
+        print(f"    {fp}")
+        for line_no, msg in by_file[fp]:
+            loc = f"  line {line_no}" if line_no is not None else ""
+            print(f"      {loc}  {msg[:200]}" + ("..." if len(msg) > 200 else ""))
+
+
+def print_step_excerpt(display_name: str, log_path: Path) -> None:
+    """Print excerpt from log when no by-file details available."""
+    print(f"\n  {c(display_name.split()[0])}[{display_name}]{cr()}  {log_path}")
+    lines = excerpt_lines(log_path)
+    for ln in lines[:15]:
+        print(f"      {ln[:200]}")
+
+
 def print_failed_steps_details(failed_steps: list[str], cwd: Path, sep: str) -> None:
     """Print details for failed steps when no by-file issues found."""
     print(f"\n{sep}")
@@ -453,18 +472,11 @@ def print_failed_steps_details(failed_steps: list[str], cwd: Path, sep: str) -> 
 
         text = log_path.read_text(errors="replace")
         by_file = extract_by_file_from_log_text(text, cwd, suite_for_patterns)
-        print(f"\n  {c(display_name.split()[0])}[{display_name}]{cr()}  {log_path}")
 
         if by_file:
-            for fp in sorted(by_file.keys()):
-                print(f"    {fp}")
-                for line_no, msg in by_file[fp]:
-                    loc = f"  line {line_no}" if line_no is not None else ""
-                    print(f"      {loc}  {msg[:200]}" + ("..." if len(msg) > 200 else ""))
+            print_step_details_by_file(by_file, display_name, log_path)
         else:
-            lines = excerpt_lines(log_path)
-            for ln in lines[:15]:
-                print(f"      {ln[:200]}")
+            print_step_excerpt(display_name, log_path)
 
     print(f"\n{sep}")
 
