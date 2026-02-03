@@ -66,18 +66,20 @@ export async function fetchOpenAPISpec(url: string): Promise<OpenAPISpec> {
 /**
  * Validate OpenAPI specification structure
  */
-export function validateOpenAPISpec(spec: any): spec is OpenAPISpec {
+export function validateOpenAPISpec(spec: unknown): spec is OpenAPISpec {
 	if (!spec || typeof spec !== "object") {
 		return false;
 	}
 
+	const candidate = spec as Record<string, unknown>;
+
 	// Check required fields
-	if (!spec.openapi || !spec.info || !spec.paths) {
+	if (!candidate.openapi || !candidate.info || !candidate.paths) {
 		return false;
 	}
 
 	// Check OpenAPI version
-	if (!spec.openapi.startsWith("3.")) {
+	if (typeof candidate.openapi === "string" && !candidate.openapi.startsWith("3.")) {
 		logger.warn("Only OpenAPI 3.x is fully supported");
 	}
 
@@ -109,9 +111,18 @@ export function getHttpMethods(spec: OpenAPISpec): string[] {
 export function getTags(spec: OpenAPISpec): string[] {
 	const tags = new Set<string>();
 	Object.values(spec.paths).forEach((path) => {
-		Object.values(path).forEach((operation: any) => {
-			if (operation.tags) {
-				operation.tags.forEach((tag: string) => tags.add(tag));
+		Object.values(path).forEach((operation) => {
+			if (
+				operation &&
+				typeof operation === "object" &&
+				"tags" in operation &&
+				Array.isArray(operation.tags)
+			) {
+				operation.tags.forEach((tag) => {
+					if (typeof tag === "string") {
+						tags.add(tag);
+					}
+				});
 			}
 		});
 	});
@@ -146,14 +157,17 @@ export function getSupportedAuthTypes(
 
 	const authTypes: Array<"bearer" | "apiKey" | "oauth2" | "basic"> = [];
 
-	Object.values(securitySchemes).forEach((scheme: any) => {
-		if (scheme.type === "http" && scheme.scheme === "bearer") {
+	Object.values(securitySchemes).forEach((scheme) => {
+		if (!scheme || typeof scheme !== "object") return;
+
+		const schemeObj = scheme as Record<string, unknown>;
+		if (schemeObj.type === "http" && schemeObj.scheme === "bearer") {
 			authTypes.push("bearer");
-		} else if (scheme.type === "http" && scheme.scheme === "basic") {
+		} else if (schemeObj.type === "http" && schemeObj.scheme === "basic") {
 			authTypes.push("basic");
-		} else if (scheme.type === "apiKey") {
+		} else if (schemeObj.type === "apiKey") {
 			authTypes.push("apiKey");
-		} else if (scheme.type === "oauth2") {
+		} else if (schemeObj.type === "oauth2") {
 			authTypes.push("oauth2");
 		}
 	});
@@ -230,7 +244,7 @@ function generateJavaScriptExample(
 	url: string,
 	authToken?: string,
 ): string {
-	const headers: any = {
+	const headers: Record<string, string> = {
 		"Content-Type": "application/json",
 	};
 
@@ -302,7 +316,7 @@ function generateTypeScriptExample(
 	url: string,
 	authToken?: string,
 ): string {
-	const headers: any = {
+	const headers: Record<string, string> = {
 		"Content-Type": "application/json",
 	};
 
@@ -358,14 +372,14 @@ export function downloadSpec(spec: OpenAPISpec, filename = "openapi.json") {
 export function getEndpointByOperationId(
 	spec: OpenAPISpec,
 	operationId: string,
-): { path: string; method: string; operation: any } | null {
+): { path: string; method: string; operation: unknown } | null {
 	for (const [path, pathItem] of Object.entries(spec.paths)) {
 		for (const [method, operation] of Object.entries(pathItem)) {
 			if (
 				typeof operation === "object" &&
 				operation !== null &&
 				"operationId" in operation &&
-				(operation as any).operationId === operationId
+				(operation as Record<string, unknown>).operationId === operationId
 			) {
 				return { path, method, operation };
 			}
@@ -402,22 +416,41 @@ export interface ResponseExamples {
 /**
  * Parse response examples from operation
  */
-export function getResponseExamples(operation: any): ResponseExamples {
+export function getResponseExamples(operation: unknown): ResponseExamples {
 	const examples: ResponseExamples = {};
 
-	if (operation.responses) {
-		Object.entries(operation.responses).forEach(
-			([status, response]: [string, any]) => {
-				if (response.content?.["application/json"]?.example) {
-					examples[status] = response.content["application/json"].example;
-				} else if (response.content?.["application/json"]?.examples) {
-					examples[status] = Object.values(
-						response.content["application/json"].examples,
-					)[0];
-				}
-			},
-		);
+	if (
+		!operation ||
+		typeof operation !== "object" ||
+		!("responses" in operation) ||
+		!operation.responses ||
+		typeof operation.responses !== "object"
+	) {
+		return examples;
 	}
+
+	Object.entries(operation.responses).forEach(([status, response]) => {
+		if (!response || typeof response !== "object") return;
+
+		const responseObj = response as Record<string, unknown>;
+		const content = responseObj.content as Record<string, unknown> | undefined;
+		if (!content) return;
+
+		const jsonContent = content["application/json"] as
+			| Record<string, unknown>
+			| undefined;
+		if (!jsonContent) return;
+
+		if (jsonContent.example) {
+			examples[status] = jsonContent.example;
+		} else if (jsonContent.examples && typeof jsonContent.examples === "object") {
+			const examplesObj = jsonContent.examples as Record<string, unknown>;
+			const firstExample = Object.values(examplesObj)[0];
+			if (firstExample) {
+				examples[status] = firstExample;
+			}
+		}
+	});
 
 	return examples;
 }

@@ -13,7 +13,7 @@ export type NATSEventMessage = {
 		project_id: string;
 		entity_id: string;
 		entity_type: string;
-		data: any;
+		data: Record<string, unknown>;
 		timestamp: string;
 		source: string; // "go" or "python"
 	};
@@ -32,7 +32,7 @@ export type WebSocketMessage =
 	  }
 	| { type: "error"; message: string };
 
-export type EventListener = (data: any) => void;
+export type EventListener = (data: NATSEventMessage["data"]) => void;
 
 export class RealtimeClient {
 	private ws: WebSocket | null = null;
@@ -100,7 +100,7 @@ export class RealtimeClient {
 				const message: WebSocketMessage = JSON.parse(event.data);
 				this.handleMessage(message);
 			} catch (error) {
-				logger.error("Failed to parse WebSocket message:", err);
+				logger.error("Failed to parse WebSocket message:", error);
 			}
 		};
 
@@ -258,13 +258,13 @@ export class RealtimeClient {
 		this.listeners.delete(eventType);
 	}
 
-	private send(message: any) {
+	private send(message: Record<string, unknown>): void {
 		if (this.ws?.readyState === WebSocket.OPEN) {
 			this.ws.send(JSON.stringify(message));
 		}
 	}
 
-	private startPingInterval() {
+	private startPingInterval(): void {
 		this.pingInterval = setInterval(() => {
 			this.send({ type: "ping" });
 		}, 30000); // Ping every 30 seconds
