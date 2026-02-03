@@ -21,69 +21,72 @@ import time
 from pathlib import Path
 
 
-def main() -> int:
-    # Script lives in scripts/python/ so parent.parent = scripts/, parent.parent.parent = repo root
-    repo_root = Path(__file__).resolve().parent.parent.parent
-    os.chdir(repo_root)
-    sys.path.insert(0, str(repo_root / "src"))
-    pc_config_path = repo_root / "config" / "process-compose.yaml"
-    if not pc_config_path.exists():
-        print("config/process-compose.yaml not found", file=sys.stderr)
-        return 1
-
-    # Load .env into process so preflight sees DATABASE_URL etc.
+def load_env_file(repo_root: Path) -> dict[str, str]:
+    """Load environment variables from .env file."""
     env = os.environ.copy()
     env_file = repo_root / ".env"
-    if env_file.exists():
-        for line in env_file.read_text().splitlines():
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                k = k.strip()
-                v = v.strip().strip('"').strip("'")
-                if k:
-                    env[k] = v
 
-    from tracertm.preflight import (
-        build_dev_start_checks,
-        format_preflight_failures,
-        run_preflight_with_results,
-    )
+    if not env_file.exists():
+        return env
+
+    for line in env_file.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, _, v = line.partition("=")
+            k = k.strip()
+            v = v.strip().strip('"').strip("'")
+            if k:
+                env[k] = v
+
+    return env
+
+
+def start_failed_services(failed_names: set[str], repo_root: Path, env: dict[str, str]) -> None:
+    """Start services that failed preflight checks."""
+    service_map = {
+        "database": "postgres",
+        "redis": "redis",
+        "nats": "nats",
+        "neo4j": "neo4j",
+    }
+    start_script = repo_root / "scripts" / "shell" / "start-services.sh"
+
+    if not start_script.exists():
+        return
+
+    for check_name, svc in service_map.items():
+        if check_name in failed_names:
+            subprocess.run(
+                [str(start_script), svc],
+                cwd=repo_root,
+                env=env,
+                capture_output=True,
+                timeout=60,
+            )
+
+
+def run_preflight_checks(repo_root: Path, env: dict[str, str]) -> tuple[bool, list]:
+    """Run preflight checks and retry if failed services can be started."""
+    from tracertm.preflight import build_dev_start_checks, run_preflight_with_results
 
     checks = build_dev_start_checks()
     passed, results = run_preflight_with_results("dev", checks, strict=False)
 
     if not passed:
-        # Map check names to start-services.sh service names
         failed_names = {r.name for r in results if not r.ok}
-        service_map = {
-            "database": "postgres",
-            "redis": "redis",
-            "nats": "nats",
-            "neo4j": "neo4j",
-        }
-        start_script = repo_root / "scripts" / "shell" / "start-services.sh"
-        if start_script.exists():
-            for check_name, svc in service_map.items():
-                if check_name in failed_names:
-                    subprocess.run(
-                        [str(start_script), svc],
-                        cwd=repo_root,
-                        env=env,
-                        capture_output=True,
-                        timeout=60,
-                    )
-            time.sleep(5)
-            passed, results = run_preflight_with_results("dev", checks, strict=False)
+        start_failed_services(failed_names, repo_root, env)
+        time.sleep(5)
+        passed, results = run_preflight_with_results("dev", checks, strict=False)
 
-    if not passed:
-        print(format_preflight_failures(results), file=sys.stderr)
-        return 1
+    return passed, results
 
-    # Run process-compose with config. Use absolute path so it is found regardless of cwd (e.g. when invoked via "rtm dev start").
+
+def build_process_compose_config(repo_root: Path, pc_config_path: Path) -> list[str]:
+    """Build process-compose configuration from environment or default."""
     pc_config_raw = os.environ.get("PC_CONFIG", "").strip().split()
     pc_config = []
     i = 0
+
     while i < len(pc_config_raw):
         part = pc_config_raw[i]
         if part == "-f" and i + 1 < len(pc_config_raw):
@@ -95,15 +98,48 @@ def main() -> int:
             continue
         pc_config.append(part)
         i += 1
+
     if not pc_config:
         pc_config = ["-f", str(pc_config_path)]
+
+    return pc_config
+
+
+def main() -> int:
+    """Main entry point: run preflight, start services if needed, exec process-compose."""
+    # Setup paths
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    os.chdir(repo_root)
+    sys.path.insert(0, str(repo_root / "src"))
+
+    pc_config_path = repo_root / "config" / "process-compose.yaml"
+    if not pc_config_path.exists():
+        print("config/process-compose.yaml not found", file=sys.stderr)
+        return 1
+
+    # Load environment
+    env = load_env_file(repo_root)
+
+    # Run preflight checks
+    passed, results = run_preflight_checks(repo_root, env)
+
+    if not passed:
+        from tracertm.preflight import format_preflight_failures
+
+        print(format_preflight_failures(results), file=sys.stderr)
+        return 1
+
+    # Build and execute process-compose
+    pc_config = build_process_compose_config(repo_root, pc_config_path)
     pc_args = pc_config + (sys.argv[1:] if len(sys.argv) > 1 else ["up", "--logs-truncate"])
     pc_bin = "process-compose"
+
     try:
         os.execvp(pc_bin, [pc_bin, *pc_args])
     except FileNotFoundError:
         print(f"{pc_bin} not found; install it (e.g. brew install process-compose)", file=sys.stderr)
         return 1
+
     return 0
 
 
