@@ -21,33 +21,28 @@ def get_database_url() -> str:
     return os.getenv("DATABASE_URL", "postgresql://localhost/tracertm_test")
 
 
-def test_migrations():
-    """Test that migrations create expected schema."""
-    database_url = get_database_url()
-    print(f"Testing migrations on: {database_url}\n")
-
-    engine = create_engine(database_url)
-    inspector = inspect(engine)
-
-    # Expected tables
+def check_tables(inspector) -> bool:
+    """Check that all expected tables exist."""
     expected_tables = {"projects", "items", "links", "agents", "agent_events", "change_log", "alembic_version"}
-
-    # Check tables exist
     print("Checking tables...")
     actual_tables = set(inspector.get_table_names())
 
     missing_tables = expected_tables - actual_tables
-    extra_tables = actual_tables - expected_tables
-
     if missing_tables:
         print(f"  ERROR: Missing tables: {missing_tables}")
         return False
+
     print(f"  OK: All expected tables exist ({len(actual_tables)} total)")
 
+    extra_tables = actual_tables - expected_tables
     if extra_tables:
         print(f"  INFO: Additional tables: {extra_tables}")
 
-    # Check extensions
+    return True
+
+
+def check_extensions(engine) -> None:
+    """Check that required PostgreSQL extensions are installed."""
     print("\nChecking PostgreSQL extensions...")
     with engine.connect() as conn:
         result = conn.execute(
@@ -58,17 +53,15 @@ def test_migrations():
         )
         extensions = {row[0] for row in result}
 
-    if "vector" not in extensions:
-        print("  WARNING: vector extension not installed")
-    else:
-        print("  OK: vector extension installed")
+    for ext in ["vector", "pg_trgm"]:
+        if ext not in extensions:
+            print(f"  WARNING: {ext} extension not installed")
+        else:
+            print(f"  OK: {ext} extension installed")
 
-    if "pg_trgm" not in extensions:
-        print("  WARNING: pg_trgm extension not installed")
-    else:
-        print("  OK: pg_trgm extension installed")
 
-    # Check indexes on items table
+def check_indexes(inspector) -> None:
+    """Check that expected indexes exist on items table."""
     print("\nChecking indexes on items table...")
     indexes = inspector.get_indexes("items")
     index_names = {idx["name"] for idx in indexes}
@@ -87,28 +80,31 @@ def test_migrations():
     else:
         print(f"  OK: All expected indexes exist ({len(indexes)} total)")
 
-    # Check foreign keys
+
+def check_foreign_keys(inspector) -> bool:
+    """Check that expected foreign keys exist."""
     print("\nChecking foreign keys...")
 
     # Items should have FK to projects
     items_fks = inspector.get_foreign_keys("items")
-    project_fk = any(fk["referred_table"] == "projects" for fk in items_fks)
-    if project_fk:
-        print("  OK: items -> projects foreign key exists")
-    else:
+    if not any(fk["referred_table"] == "projects" for fk in items_fks):
         print("  ERROR: items -> projects foreign key missing")
         return False
+    print("  OK: items -> projects foreign key exists")
 
     # Links should have FK to items
     links_fks = inspector.get_foreign_keys("links")
     items_fk_count = sum(1 for fk in links_fks if fk["referred_table"] == "items")
-    if items_fk_count >= 2:
-        print(f"  OK: links -> items foreign keys exist ({items_fk_count} FKs)")
-    else:
+    if items_fk_count < 2:
         print(f"  ERROR: links -> items foreign keys missing (found {items_fk_count}, expected 2+)")
         return False
+    print(f"  OK: links -> items foreign keys exist ({items_fk_count} FKs)")
 
-    # Check triggers
+    return True
+
+
+def check_triggers(engine) -> None:
+    """Check that triggers are present."""
     print("\nChecking triggers...")
     with engine.connect() as conn:
         result = conn.execute(
@@ -131,6 +127,27 @@ def test_migrations():
             print(f"    - {trigger_name} on {table_name}")
     else:
         print("  WARNING: No triggers found")
+
+
+def test_migrations():
+    """Test that migrations create expected schema."""
+    database_url = get_database_url()
+    print(f"Testing migrations on: {database_url}\n")
+
+    engine = create_engine(database_url)
+    inspector = inspect(engine)
+
+    # Run tests
+    if not check_tables(inspector):
+        return False
+
+    check_extensions(engine)
+    check_indexes(inspector)
+
+    if not check_foreign_keys(inspector):
+        return False
+
+    check_triggers(engine)
 
     # Check columns on items table
     print("\nChecking items table columns...")
