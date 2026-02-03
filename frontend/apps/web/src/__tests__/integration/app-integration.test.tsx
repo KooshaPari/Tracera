@@ -55,10 +55,12 @@ import type {
 	SearchResult,
 } from "../../api/types";
 // Stores
-import { useAuthStore } from "../../stores/authStore";
-import { useItemsStore } from "../../stores/itemsStore";
-import { useProjectStore } from "../../stores/projectStore";
-import { useSyncStore } from "../../stores/syncStore";
+import {
+	useAuthStore,
+	useItemsStore,
+	useProjectStore,
+	useSyncStore,
+} from "../../stores";
 // Views
 import { DashboardView } from "../../views/DashboardView";
 import { ReportsView } from "../../views/ReportsView";

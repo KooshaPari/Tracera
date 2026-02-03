@@ -188,7 +188,7 @@ const parseRepoResponse = (data: unknown): GitHubRepo => {
 	return data;
 };
 
-interface GitHubRepo {
+export interface GitHubRepo {
 	id: number;
 	name: string;
 	full_name: string;
@@ -209,7 +209,7 @@ interface GitHubRepoListResponse {
 	per_page: number;
 }
 
-interface GitHubAppInstallation {
+export interface GitHubAppInstallation {
 	id: string;
 	installation_id: number;
 	account_login: string;

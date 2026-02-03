@@ -20,7 +20,7 @@ interface CreateProjectFormProps {
 }
 
 const createProjectFormProps = ({
-	_onSubmit,
+	onSubmit: _onSubmit,
 	onCancel,
 	isLoading,
 }: CreateProjectFormProps) => {

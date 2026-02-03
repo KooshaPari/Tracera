@@ -9,6 +9,14 @@ const CHECKBOX_ID_RANDOM_START = 2;
 const CHECKBOX_ID_RANDOM_END =
 	CHECKBOX_ID_RANDOM_START + CHECKBOX_ID_RANDOM_LENGTH;
 
+export interface FormCheckboxProps extends Omit<CheckboxProps, "id"> {
+	className?: string;
+	label?: string;
+	error?: boolean;
+	errorMessage?: string;
+	required?: boolean;
+}
+
 export const FormCheckbox = React.forwardRef<
 	HTMLInputElement,
 	FormCheckboxProps

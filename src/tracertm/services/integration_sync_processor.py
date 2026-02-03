@@ -93,7 +93,7 @@ class IntegrationSyncProcessor:
         provider: str,
         token: str,
         mapping,
-        payload: dict,
+        payload: dict[str, Any],
         direction: str,
     ) -> dict[str, Any]:
         if provider == "github":

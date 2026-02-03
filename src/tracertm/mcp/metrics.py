@@ -139,7 +139,7 @@ class MetricsMiddleware(Middleware):
         self,
         ctx: MiddlewareContext,
         tool_name: str,
-        arguments: dict,
+        arguments: dict[str, Any],
     ) -> None:
         """Collect metrics for tool call.
 

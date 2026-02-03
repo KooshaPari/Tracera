@@ -147,7 +147,7 @@ def _add_providers(mcp: FastMCP) -> None:
 
     openapi_spec = os.getenv("TRACERTM_MCP_OPENAPI_SPEC")
     if openapi_spec:
-        # OpenAPIProvider requires (openapi_spec: dict, client: httpx.AsyncClient); skip if only URL/path string
+        # OpenAPIProvider requires (openapi_spec: dict[str, Any], client: httpx.AsyncClient); skip if only URL/path string
         pass
 
     proxy_targets = _parse_csv(os.getenv("TRACERTM_MCP_PROXY_TARGETS"))

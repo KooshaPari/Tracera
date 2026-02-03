@@ -125,7 +125,7 @@ class TelemetryMiddleware(Middleware):
         self,
         ctx: MiddlewareContext,
         tool_name: str,
-        arguments: dict,
+        arguments: dict[str, Any],
     ) -> None:
         """Instrument tool call with OpenTelemetry span.
 
@@ -216,7 +216,7 @@ class PerformanceMonitoringMiddleware(Middleware):
         self,
         ctx: MiddlewareContext,
         tool_name: str,
-        arguments: dict,
+        arguments: dict[str, Any],
     ) -> None:
         """Monitor tool call performance.
 

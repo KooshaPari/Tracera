@@ -76,7 +76,8 @@ const requirementItemSchema = z.object({
 	source_reference: z.string().max(500).optional(),
 });
 
-type RequirementItemFormData = z.infer<typeof requirementItemSchema>;
+// Skip z.infer to avoid TypeScript parser issue
+// type RequirementItemFormData = z.infer<typeof requirementItemSchema>;
 
 type CreateRequirementItemFormProps = {
 	onSubmit: (data: unknown) => void;

@@ -1345,7 +1345,7 @@ async def _list_items_impl(
     parent_id: str | None,
     skip: int,
     limit: int,
-    claims: dict,
+    claims: dict[str, Any],
     db: AsyncSession,
     cache: CacheService,
     request: Request | None,
@@ -2601,7 +2601,7 @@ async def auth_logout_endpoint(
 
 @app.post("/api/v1/auth/signup")
 async def signup_endpoint(
-    data: dict,
+    data: dict[str, Any],
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new user account and initial account."""
@@ -2655,7 +2655,7 @@ async def signup_endpoint(
 
 @app.post("/api/v1/auth/login")
 async def login_endpoint(
-    data: dict,
+    data: dict[str, Any],
     db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - currently delegates to WorkOS AuthKit."""
@@ -2682,7 +2682,7 @@ _device_code_store: dict[str, dict] = {}
 
 @app.post("/api/v1/auth/device/code")
 async def device_code_endpoint(
-    data: dict,
+    data: dict[str, Any],
 ):
     """Start device authorization flow. Returns device code and verification URL.
 
@@ -2740,7 +2740,7 @@ async def device_code_endpoint(
 
 @app.post("/api/v1/auth/device/token")
 async def device_token_endpoint(
-    data: dict,
+    data: dict[str, Any],
 ):
     """Poll for device authorization completion.
 
@@ -2795,7 +2795,7 @@ async def device_token_endpoint(
 # Internal endpoint for the browser to complete device authorization
 @app.post("/api/v1/auth/device/complete")
 async def device_complete_endpoint(
-    data: dict,
+    data: dict[str, Any],
 ):
     """Complete device authorization from browser.
 
@@ -2877,7 +2877,7 @@ async def list_accounts_endpoint(
 
 @app.post("/api/v1/accounts")
 async def create_account_endpoint(
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -3755,7 +3755,7 @@ async def import_project(
 
 @app.post("/api/v1/import")
 async def import_full_project(
-    body: dict,
+    body: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -4079,7 +4079,7 @@ async def download_artifact(
 @app.post("/api/v1/projects/{project_id}/codex/review-image")
 async def codex_review_image(
     project_id: str,
-    body: dict,
+    body: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -4129,7 +4129,7 @@ async def codex_review_image(
 @app.post("/api/v1/projects/{project_id}/codex/review-video")
 async def codex_review_video(
     project_id: str,
-    body: dict,
+    body: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -6078,7 +6078,7 @@ async def get_test_suite(
 @app.post("/api/v1/test-suites")
 async def create_test_suite(
     project_id: str,
-    suite_data: dict,
+    suite_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -6118,7 +6118,7 @@ async def create_test_suite(
 @app.put("/api/v1/test-suites/{suite_id}")
 async def update_test_suite(
     suite_id: str,
-    suite_data: dict,
+    suite_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -6149,7 +6149,7 @@ async def update_test_suite(
 @app.post("/api/v1/test-suites/{suite_id}/status")
 async def transition_test_suite_status(
     suite_id: str,
-    status_data: dict,
+    status_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -6184,7 +6184,7 @@ async def transition_test_suite_status(
 @app.post("/api/v1/test-suites/{suite_id}/test-cases")
 async def add_test_case_to_suite(
     suite_id: str,
-    tc_data: dict,
+    tc_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -6506,7 +6506,7 @@ async def get_test_run(
 @app.post("/api/v1/test-runs")
 async def create_test_run(
     project_id: str,
-    run_data: dict,
+    run_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -6544,7 +6544,7 @@ async def create_test_run(
 @app.put("/api/v1/test-runs/{run_id}")
 async def update_test_run(
     run_id: str,
-    run_data: dict,
+    run_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -6681,7 +6681,7 @@ async def cancel_test_run(
 @app.post("/api/v1/test-runs/{run_id}/results")
 async def submit_test_result(
     run_id: str,
-    result_data: dict,
+    result_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -6729,7 +6729,7 @@ async def submit_test_result(
 @app.post("/api/v1/test-runs/{run_id}/bulk-results")
 async def submit_bulk_test_results(
     run_id: str,
-    bulk_data: dict,
+    bulk_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -8222,7 +8222,7 @@ async def get_execution_history(
 
 @app.post("/api/v1/integrations/oauth/start")
 async def start_oauth_flow(
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -8294,7 +8294,7 @@ async def start_oauth_flow(
 
 @app.post("/api/v1/integrations/oauth/callback")
 async def oauth_callback(
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -8643,7 +8643,7 @@ async def list_mappings(
 
 @app.post("/api/v1/integrations/mappings")
 async def create_mapping(
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -8756,7 +8756,7 @@ async def create_mapping(
 @app.put("/api/v1/integrations/mappings/{mapping_id}")
 async def update_mapping(
     mapping_id: str,
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -8938,7 +8938,7 @@ async def get_sync_status(
 
 @app.post("/api/v1/integrations/sync/trigger")
 async def trigger_sync(
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -9112,7 +9112,7 @@ async def list_conflicts(
 @app.post("/api/v1/integrations/conflicts/{conflict_id}/resolve")
 async def resolve_conflict(
     conflict_id: str,
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -9317,7 +9317,7 @@ async def list_github_repos(
 
 @app.post("/api/v1/integrations/github/repos")
 async def create_github_repo(
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
@@ -9631,7 +9631,7 @@ async def list_github_app_installations(
 @app.post("/api/v1/integrations/github/app/installations/{installation_id}/link")
 async def link_github_app_installation(
     installation_id: str,
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -9787,7 +9787,7 @@ async def list_github_projects(
 
 @app.post("/api/v1/integrations/github/projects/auto-link")
 async def auto_link_github_projects(
-    data: dict,
+    data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request = None,

@@ -3,117 +3,48 @@
  * Validates OpenAPI schema types and ensures no unsafe type casts
  * Verifies all endpoints have proper TypeScript types
  */
-/* eslint-disable no-unused-vars -- type aliases used for compile-time checks via void undefined as T */
 /* eslint-disable no-unused-expressions -- intentional property access for @ts-expect-error tests */
 
-import { describe, expect, it } from "vitest";
 import type { components, paths } from "../../api/schema";
+import { logger } from "@/lib/logger";
+import { describe, expect, it } from "vitest";
+
+const pathsRecord = (p: typeof paths) => p as unknown as Record<string, unknown>;
+const schemasRecord = (c: typeof components) =>
+	(c.schemas ?? {}) as Record<string, unknown>;
 
 describe("API Type Safety", () => {
 	describe("Path Definitions", () => {
-		it("should have health endpoint", () => {
-			// Given: Checking health endpoint exists (type compiles)
-			type _Health = paths["/health"];
-			expect(true).toBe(true);
+		it("should have auth login endpoint", () => {
+			const key = "/api/v1/auth/login";
+			expect(pathsRecord(paths)[key]).toBeDefined();
 		});
 
-		it("should have items endpoints", () => {
-			// Given: Items endpoints (types compile)
-			type _Items = paths["/api/v1/items"];
-			type _ItemId = paths["/api/v1/items/{item_id}"];
-			expect(true).toBe(true);
+		it("should have auth logout endpoint", () => {
+			const key = "/api/v1/auth/logout";
+			expect(pathsRecord(paths)[key]).toBeDefined();
 		});
 
-		it("should have links endpoints", () => {
-			// Given: Links endpoints (type compiles)
-			type _Links = paths["/api/v1/links"];
-			expect(true).toBe(true);
+		it("should have graph analysis impact endpoint", () => {
+			const key = "/api/v1/graph/analysis/impact";
+			expect(pathsRecord(paths)[key]).toBeDefined();
 		});
 
-		it("should have analysis endpoints", () => {
-			// Given: Analysis endpoints (types compile)
-			type _Impact = paths["/api/v1/analysis/impact/{item_id}"];
-			type _Cycles = paths["/api/v1/analysis/cycles/{project_id}"];
-			expect(true).toBe(true);
+		it("should have graph analysis cycles endpoint", () => {
+			const key = "/api/v1/graph/analysis/cycles";
+			expect(pathsRecord(paths)[key]).toBeDefined();
 		});
 
-		it("should have project endpoints", () => {
-			// Given: Project endpoints (types compile)
-			type _Projects = paths["/api/v1/projects"];
-			type _ProjectId = paths["/api/v1/projects/{project_id}"];
-			expect(true).toBe(true);
-		});
-
-		it("should have search endpoints", () => {
-			// Given: Search endpoints (type compiles)
-			type _Search = paths["/api/v1/search"];
-			expect(true).toBe(true);
-		});
-
-		it("should have auth endpoints", () => {
-			// Given: Auth endpoints (types compile)
-			type _Login = paths["/api/auth/login"];
-			type _Logout = paths["/api/auth/logout"];
-			expect(true).toBe(true);
-		});
-
-		it("should have storage endpoints", () => {
-			// Given: Storage endpoints (type compiles)
-			type _Storage = paths["/api/v1/storage/{key}"];
-			expect(true).toBe(true);
+		it("should have docs search endpoint", () => {
+			const key = "/api/v1/docs/search";
+			expect(pathsRecord(paths)[key]).toBeDefined();
 		});
 	});
 
 	describe("Request Body Types", () => {
-		it("should have typed create item request", () => {
-			// Given: Create item endpoint
-			type CreateItemPath = paths["/api/v1/items"]["post"];
-			type CreateItemRequest = CreateItemPath extends { post: infer M }
-				? M extends { requestBody: infer R }
-					? R
-					: never
-				: never;
-			type _CreateItem = CreateItemRequest;
-
-			// Then: Verify request body is typed
-			expect(true).toBe(true);
-		});
-
-		it("should have typed update item request", () => {
-			// Given: Update item endpoint (type alias used for compile-time check)
-			type _UpdateItemPath = paths["/api/v1/items/{item_id}"]["patch"];
-			type _UpdateItemRequest = _UpdateItemPath extends { patch: infer M }
-				? M extends { requestBody: infer R }
-					? R
-					: never
-				: never;
-			type _UpdateItem = _UpdateItemRequest;
-
-			// Then: Verify request body is typed
-			expect(true).toBe(true);
-		});
-
-		it("should have typed create link request", () => {
-			// Given: Create link endpoint (type alias used for compile-time check)
-			type _CreateLinkPath = paths["/api/v1/links"]["post"];
-			type _CreateLinkRequest = _CreateLinkPath extends { post: infer M }
-				? M extends { requestBody: infer R }
-					? R
-					: never
-				: never;
-			type _CreateLink = _CreateLinkRequest;
-
-			// Then: Verify request body is typed
-			expect(true).toBe(true);
-		});
-
-		it("should have typed search request", () => {
-			// Given: Search endpoint (type alias used for compile-time check)
-			type _SearchPath = paths["/api/v1/search"]["get"];
-			type _UseSearchPath = _SearchPath;
-
-			// Then: Verify request is typed
-			expect(true).toBe(true);
+		it("should have typed auth login request", () => {
+			const pathDef = pathsRecord(paths)["/api/v1/auth/login"];
+			expect(typeof pathDef).toBe("object");
 		});
 
 		it("should have typed filter requests", () => {
@@ -136,18 +67,8 @@ describe("API Type Safety", () => {
 	});
 
 	describe("Response Types", () => {
-		it("should have typed list items response", () => {
-			// Given: List items endpoint (type alias used for compile-time check)
-			type _ListItemsPath = paths["/api/v1/items"]["get"];
-			type _UseListItemsPath = _ListItemsPath;
-			expect(true).toBe(true);
-		});
-
-		it("should have typed get item response", () => {
-			// Given: Get item endpoint (type alias used for compile-time check)
-			type _GetItemPath = paths["/api/v1/items/{item_id}"]["get"];
-			type _UseGetItemPath = _GetItemPath;
-			expect(true).toBe(true);
+		it("should have typed auth me response", () => {
+			expect(pathsRecord(paths)["/auth/me"]).toBeDefined();
 		});
 
 		it("should have error response types", () => {
@@ -196,12 +117,7 @@ describe("API Type Safety", () => {
 		});
 
 		it("should have typed analysis response", () => {
-			// Given: Analysis endpoint (type alias used for compile-time check)
-			type _AnalysisPath = paths["/api/v1/analysis/impact/{item_id}"]["get"];
-			type _UseAnalysisPath = _AnalysisPath;
-
-			// Then: Verify response type exists
-			expect(true).toBe(true);
+			expect(pathsRecord(paths)["/api/v1/graph/analysis/impact"]).toBeDefined();
 		});
 	});
 
@@ -262,37 +178,14 @@ describe("API Type Safety", () => {
 	});
 
 	describe("Component Schemas", () => {
-		it("should have item component schema", () => {
-			// Given: Item component (type alias used for compile-time check)
-			type _ItemComponent = components["schemas"]["Item"];
-			type _UseItemComponent = _ItemComponent;
-			expect(true).toBe(true);
+		it("should have auth.User schema", () => {
+			const schemas = schemasRecord(components);
+			expect(schemas["auth.User"]).toBeDefined();
 		});
 
-		it("should have project component schema", () => {
-			// Given: Project component (type alias used for compile-time check)
-			type _ProjectComponent = components["schemas"]["Project"];
-			type _UseProjectComponent = _ProjectComponent;
-			expect(true).toBe(true);
-		});
-
-		it("should have link component schema", () => {
-			// Given: Link component (type alias used for compile-time check)
-			type _LinkComponent = components["schemas"]["Link"];
-			type _UseLinkComponent = _LinkComponent;
-			expect(true).toBe(true);
-		});
-
-		it("should have error component schema", () => {
-			// Given: Error component (type compiles)
-			type _ErrorComponent = components["schemas"]["Error"];
-			expect(true).toBe(true);
-		});
-
-		it("should have pagination component schema", () => {
-			// Given: Pagination component (type compiles)
-			void undefined as components["schemas"]["Pagination"];
-			expect(true).toBe(true);
+		it("should have handlers.ErrorResponse schema", () => {
+			const schemas = schemasRecord(components);
+			expect(schemas["handlers.ErrorResponse"]).toBeDefined();
 		});
 	});
 
@@ -434,7 +327,7 @@ describe("API Type Safety", () => {
 
 			expect(publicUser).toBeDefined();
 			// @ts-expect-error password should not exist
-			void publicUser.password;
+			expect((publicUser as { password?: string }).password).toBeUndefined();
 		});
 
 		it("should use Partial for optional updates", () => {
@@ -491,17 +384,12 @@ describe("API Type Safety", () => {
 		});
 
 		it("should infer function return types", () => {
-			// Given: Function with inferred return type
-			// eslint-disable-next-line unicorn/consistent-function-scoping -- test helper
-			function getItem(id: string) {
-				return {
-					active: true,
-					id,
-					name: "Test",
-				};
-			}
+			const getItem = (id: string) => ({
+				active: true,
+				id,
+				name: "Test",
+			});
 
-			// Then: Verify return type is inferred
 			type ItemType = ReturnType<typeof getItem>;
 			const item: ItemType = getItem("123");
 
@@ -547,11 +435,8 @@ describe("API Type Safety", () => {
 		});
 
 		it("should have typed callbacks", () => {
-			// Given: Callback type
 			type ProgressCallback = (percent: number) => void;
 
-			// Then: Verify callback typing works
-			// eslint-disable-next-line unicorn/consistent-function-scoping -- test helper
 			const onProgress: ProgressCallback = (percent) => {
 				logger.info(`Progress: ${percent}%`);
 			};

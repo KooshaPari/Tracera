@@ -135,6 +135,173 @@ const runImport = async (
 	return data;
 };
 
+type SetState<T> = (value: T) => void;
+type SetStep = (value: ImportStep | ((prev: ImportStep) => ImportStep)) => void;
+
+const createHandleFileSelect =
+	(setFile: SetState<File | null>, setError: SetState<string | null>) =>
+	(event: ChangeEvent<HTMLInputElement>) => {
+		const selectedFile = event.target.files?.[0] ?? null;
+		if (selectedFile) {
+			setFile(selectedFile);
+			setError(null);
+		}
+	};
+
+const createHandleValidate = (params: {
+	file: File | null;
+	projectId: string;
+	setError: SetState<string | null>;
+	setIsLoading: SetState<boolean>;
+	setStep: SetStep;
+	setValidation: SetState<ValidationResult | null>;
+}) => async () => {
+	if (!params.file) {
+		params.setError("Please select a file");
+		return;
+	}
+	params.setIsLoading(true);
+	params.setError(null);
+	try {
+		const result = await validateImportFile(params.projectId, params.file);
+		params.setValidation(result);
+		params.setStep("validate");
+	} catch (validationError) {
+		params.setError(
+			validationError instanceof Error
+				? validationError.message
+				: "Validation failed",
+		);
+		params.setValidation(null);
+		params.setStep("upload");
+	} finally {
+		params.setIsLoading(false);
+	}
+};
+
+const createHandleProceedToConflicts =
+	(validation: ValidationResult | null, setStep: SetStep) => () => {
+		if (validation?.conflicts?.length) {
+			setStep("conflicts");
+		} else {
+			setStep("confirm");
+		}
+	};
+
+const createHandleImport = (params: {
+	conflictStrategy: ConflictStrategy;
+	file: File | null;
+	onImport?: (file: File, strategy: ConflictStrategy) => Promise<void>;
+	projectId: string;
+	setError: SetState<string | null>;
+	setImportResult: SetState<ImportResult | null>;
+	setIsLoading: SetState<boolean>;
+	setStep: SetStep;
+}) => async () => {
+	if (!params.file) {
+		return;
+	}
+	params.setIsLoading(true);
+	params.setError(null);
+	try {
+		if (params.onImport) {
+			await params.onImport(params.file, params.conflictStrategy);
+		} else {
+			const result = await runImport(
+				params.projectId,
+				params.file,
+				params.conflictStrategy,
+			);
+			params.setImportResult(result);
+			params.setStep("complete");
+		}
+	} catch (importError) {
+		params.setError(
+			importError instanceof Error ? importError.message : "Import failed",
+		);
+	} finally {
+		params.setIsLoading(false);
+	}
+};
+
+const createHandleClose = (params: {
+	onClose: () => void;
+	setError: SetState<string | null>;
+	setFile: SetState<File | null>;
+	setImportResult: SetState<ImportResult | null>;
+	setStep: SetStep;
+	setValidation: SetState<ValidationResult | null>;
+}) => () => {
+	params.setStep("upload");
+	params.setFile(null);
+	params.setError(null);
+	params.setValidation(null);
+	params.setImportResult(null);
+	params.onClose();
+};
+
+const createHandleStrategyChange =
+	(setConflictStrategy: SetState<ConflictStrategy>) => (value: string) => {
+		setConflictStrategy(value as ConflictStrategy);
+	};
+
+const createHandleBackFromConflicts = (setStep: SetStep) => () => {
+	setStep((prevStep) => (prevStep === "conflicts" ? "validate" : "conflicts"));
+};
+
+const buildBodyProps = (params: {
+	conflictStrategy: ConflictStrategy;
+	error: string | null;
+	file: File | null;
+	importResult: ImportResult | null;
+	onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
+	onStrategyChange: (value: string) => void;
+	projectName: string;
+	step: ImportStep;
+	validation: ValidationResult | null;
+}): ImportWizardBodyProps => ({
+	step: params.step,
+	uploadProps: { error: params.error, file: params.file, onFileSelect: params.onFileSelect },
+	validationProps: { validation: params.validation },
+	conflictProps: {
+		conflictStrategy: params.conflictStrategy,
+		conflictsCount: params.validation?.conflicts?.length ?? 0,
+		onStrategyChange: params.onStrategyChange,
+	},
+	confirmProps: {
+		conflictStrategy: params.conflictStrategy,
+		projectName: params.projectName,
+		validation: params.validation,
+	},
+	completeProps: { result: params.importResult },
+});
+
+const buildFooterProps = (params: {
+	isLoading: boolean;
+	isValid: boolean;
+	onBackFromConflicts: () => void;
+	onBackFromValidate: () => void;
+	onCancel: () => void;
+	onClose: () => void;
+	onImport: () => void;
+	onNextFromConflicts: () => void;
+	onNextFromValidate: () => void;
+	onValidate: () => void;
+	step: ImportStep;
+}): ImportFooterProps => ({
+	isLoading: params.isLoading,
+	isValid: params.isValid,
+	onBackFromConflicts: params.onBackFromConflicts,
+	onBackFromValidate: params.onBackFromValidate,
+	onCancel: params.onCancel,
+	onClose: params.onClose,
+	onImport: params.onImport,
+	onNextFromConflicts: params.onNextFromConflicts,
+	onNextFromValidate: params.onNextFromValidate,
+	onValidate: params.onValidate,
+	step: params.step,
+});
+
 type FileDropZoneProps = {
 	onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
 };
@@ -211,6 +378,41 @@ type ImportWizardLayoutProps = {
 	isOpen: boolean;
 	onClose: () => void;
 	projectName: string;
+};
+
+type ConflictOptionProps = {
+	description: string;
+	id: string;
+	label: string;
+	value: ConflictStrategy;
+};
+
+type ResultStatProps = {
+	label: string;
+	value: number | undefined;
+};
+
+type UploadFooterProps = {
+	isLoading: boolean;
+	onCancel: () => void;
+	onValidate: () => void;
+};
+
+type ValidateFooterProps = {
+	isValid: boolean;
+	onBack: () => void;
+	onNext: () => void;
+};
+
+type ConflictFooterProps = {
+	isLoading: boolean;
+	onBack: () => void;
+	onPrimary: () => void;
+	primaryLabel: string;
+};
+
+type CompleteFooterProps = {
+	onClose: () => void;
 };
 
 const FileDropZone: FC<FileDropZoneProps> = ({ onFileSelect }) => (
@@ -357,6 +559,23 @@ const ValidateStep: FC<ValidationTabsProps> = ({ validation }) => (
 	</div>
 );
 
+const ConflictOption: FC<ConflictOptionProps> = ({
+	description,
+	id,
+	label,
+	value,
+}) => (
+	<div className="flex items-start space-x-2">
+		<RadioGroupItem value={value} id={id} className="mt-1" />
+		<div className="flex-1">
+			<Label htmlFor={id} className="font-normal cursor-pointer">
+				{label}
+			</Label>
+			<div className="text-sm text-gray-600">{description}</div>
+		</div>
+	</div>
+);
+
 const ConflictStep: FC<ConflictStepProps> = ({
 	conflictStrategy,
 	conflictsCount,
@@ -374,45 +593,30 @@ const ConflictStep: FC<ConflictStepProps> = ({
 			<Label className="text-base font-semibold mb-3 block">
 				Conflict Resolution Strategy
 			</Label>
-			<RadioGroup value={conflictStrategy} onValueChange={onStrategyChange}>
-				<div className="space-y-3">
-					<div className="flex items-start space-x-2">
-						<RadioGroupItem value="skip" id="skip" className="mt-1" />
-						<div className="flex-1">
-							<Label htmlFor="skip" className="font-normal cursor-pointer">
-								Skip conflicting items
-							</Label>
-							<div className="text-sm text-gray-600">
-								Keep existing data, don't import conflicts
-							</div>
-						</div>
-					</div>
-					<div className="flex items-start space-x-2">
-						<RadioGroupItem value="replace" id="replace" className="mt-1" />
-						<div className="flex-1">
-							<Label htmlFor="replace" className="font-normal cursor-pointer">
-								Replace existing data
-							</Label>
-							<div className="text-sm text-gray-600">
-								Overwrite with imported data
-							</div>
-						</div>
-					</div>
-					<div className="flex items-start space-x-2">
-						<RadioGroupItem value="merge" id="merge" className="mt-1" />
-						<div className="flex-1">
-							<Label htmlFor="merge" className="font-normal cursor-pointer">
-								Merge intelligently
-							</Label>
-							<div className="text-sm text-gray-600">
-								Keep highest confidence, most recent data
-							</div>
-						</div>
-					</div>
-				</div>
-			</RadioGroup>
-		</div>
+		<RadioGroup value={conflictStrategy} onValueChange={onStrategyChange}>
+			<div className="space-y-3">
+				<ConflictOption
+					id="skip"
+					value="skip"
+					label="Skip conflicting items"
+					description="Keep existing data, don't import conflicts"
+				/>
+				<ConflictOption
+					id="replace"
+					value="replace"
+					label="Replace existing data"
+					description="Overwrite with imported data"
+				/>
+				<ConflictOption
+					id="merge"
+					value="merge"
+					label="Merge intelligently"
+					description="Keep highest confidence, most recent data"
+				/>
+			</div>
+		</RadioGroup>
 	</div>
+</div>
 );
 
 const ConfirmStep: FC<ConfirmStepProps> = ({
@@ -443,6 +647,13 @@ const ConfirmStep: FC<ConfirmStepProps> = ({
 	</div>
 );
 
+const ResultStat: FC<ResultStatProps> = ({ label, value }) => (
+	<div className="rounded-lg bg-gray-50 p-3">
+		<div className="font-semibold text-lg">{value}</div>
+		<div className="text-gray-600">{label}</div>
+	</div>
+);
+
 const CompleteStep: FC<CompleteStepProps> = ({ result }) => (
 	<div className="space-y-4">
 		{result?.status === "success" ? (
@@ -462,30 +673,13 @@ const CompleteStep: FC<CompleteStepProps> = ({ result }) => (
 		)}
 
 		<div className="grid grid-cols-2 gap-4 text-sm">
-			<div className="rounded-lg bg-gray-50 p-3">
-				<div className="font-semibold text-lg">
-					{result?.concepts_imported}
-				</div>
-				<div className="text-gray-600">Concepts imported</div>
-			</div>
-			<div className="rounded-lg bg-gray-50 p-3">
-				<div className="font-semibold text-lg">
-					{result?.projections_imported}
-				</div>
-				<div className="text-gray-600">Projections imported</div>
-			</div>
-			<div className="rounded-lg bg-gray-50 p-3">
-				<div className="font-semibold text-lg">
-					{result?.links_imported}
-				</div>
-				<div className="text-gray-600">Links imported</div>
-			</div>
-			<div className="rounded-lg bg-gray-50 p-3">
-				<div className="font-semibold text-lg">
-					{result?.errors?.length || 0}
-				</div>
-				<div className="text-gray-600">Errors</div>
-			</div>
+			<ResultStat label="Concepts imported" value={result?.concepts_imported} />
+			<ResultStat
+				label="Projections imported"
+				value={result?.projections_imported}
+			/>
+			<ResultStat label="Links imported" value={result?.links_imported} />
+			<ResultStat label="Errors" value={result?.errors?.length || 0} />
 		</div>
 
 		{result?.summary ? (
@@ -519,6 +713,62 @@ const ImportWizardBody: FC<ImportWizardBodyProps> = ({
 	return <CompleteStep {...completeProps} />;
 };
 
+const UploadFooter: FC<UploadFooterProps> = ({ isLoading, onCancel, onValidate }) => (
+	<>
+		<Button variant="outline" onClick={onCancel}>
+			Cancel
+		</Button>
+		<Button onClick={onValidate} disabled={isLoading} className="gap-2">
+			{isLoading ? (
+				<>
+					<Loader2 className="h-4 w-4 animate-spin" />
+					Validating...
+				</>
+			) : (
+				"Validate"
+			)}
+		</Button>
+	</>
+);
+
+const ValidateFooter: FC<ValidateFooterProps> = ({ isValid, onBack, onNext }) => (
+	<>
+		<Button variant="outline" onClick={onBack}>
+			Back
+		</Button>
+		<Button onClick={onNext} disabled={!isValid}>
+			Next
+		</Button>
+	</>
+);
+
+const ConflictFooter: FC<ConflictFooterProps> = ({
+	isLoading,
+	onBack,
+	onPrimary,
+	primaryLabel,
+}) => (
+	<>
+		<Button variant="outline" onClick={onBack}>
+			Back
+		</Button>
+		<Button onClick={onPrimary} disabled={isLoading} className="gap-2">
+			{isLoading ? (
+				<>
+					<Loader2 className="h-4 w-4 animate-spin" />
+					Importing...
+				</>
+			) : (
+				primaryLabel
+			)}
+		</Button>
+	</>
+);
+
+const CompleteFooter: FC<CompleteFooterProps> = ({ onClose }) => (
+	<Button onClick={onClose}>Close</Button>
+);
+
 const ImportFooter: FC<ImportFooterProps> = ({
 	isLoading,
 	isValid,
@@ -534,56 +784,36 @@ const ImportFooter: FC<ImportFooterProps> = ({
 }) => (
 	<DialogFooter>
 		{step === "upload" ? (
-			<>
-				<Button variant="outline" onClick={onCancel}>
-					Cancel
-				</Button>
-				<Button onClick={onValidate} disabled={isLoading} className="gap-2">
-					{isLoading ? (
-						<>
-							<Loader2 className="h-4 w-4 animate-spin" />
-							Validating...
-						</>
-					) : (
-						"Validate"
-					)}
-				</Button>
-			</>
+			<UploadFooter
+				isLoading={isLoading}
+				onCancel={onCancel}
+				onValidate={onValidate}
+			/>
 		) : null}
 		{step === "validate" ? (
-			<>
-				<Button variant="outline" onClick={onBackFromValidate}>
-					Back
-				</Button>
-				<Button onClick={onNextFromValidate} disabled={!isValid}>
-					Next
-				</Button>
-			</>
+			<ValidateFooter
+				isValid={isValid}
+				onBack={onBackFromValidate}
+				onNext={onNextFromValidate}
+			/>
 		) : null}
-		{step === "conflicts" || step === "confirm" ? (
-			<>
-				<Button variant="outline" onClick={onBackFromConflicts}>
-					Back
-				</Button>
-				<Button
-					onClick={step === "conflicts" ? onNextFromConflicts : onImport}
-					disabled={isLoading}
-					className="gap-2"
-				>
-					{isLoading ? (
-						<>
-							<Loader2 className="h-4 w-4 animate-spin" />
-							Importing...
-						</>
-					) : step === "conflicts" ? (
-						"Next"
-					) : (
-						"Import"
-					)}
-				</Button>
-			</>
+		{step === "conflicts" ? (
+			<ConflictFooter
+				isLoading={isLoading}
+				onBack={onBackFromConflicts}
+				onPrimary={onNextFromConflicts}
+				primaryLabel="Next"
+			/>
 		) : null}
-		{step === "complete" ? <Button onClick={onClose}>Close</Button> : null}
+		{step === "confirm" ? (
+			<ConflictFooter
+				isLoading={isLoading}
+				onBack={onBackFromConflicts}
+				onPrimary={onImport}
+				primaryLabel="Import"
+			/>
+		) : null}
+		{step === "complete" ? <CompleteFooter onClose={onClose} /> : null}
 	</DialogFooter>
 );
 
@@ -619,137 +849,21 @@ export const ImportWizard: FC<ImportWizardProps> = ({
 }) => {
 	const [step, setStep] = useState<ImportStep>("upload");
 	const [file, setFile] = useState<File | null>(null);
-	const [conflictStrategy, setConflictStrategy] =
-		useState<ConflictStrategy>("skip");
+	const [conflictStrategy, setConflictStrategy] = useState<ConflictStrategy>("skip");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [validation, setValidation] = useState<ValidationResult | null>(null);
 	const [importResult, setImportResult] = useState<ImportResult | null>(null);
-
-	const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
-		const selectedFile = event.target.files?.[0] ?? null;
-		if (selectedFile) {
-			setFile(selectedFile);
-			setError(null);
-		}
-	};
-
-	const handleValidate = async () => {
-		if (!file) {
-			setError("Please select a file");
-			return;
-		}
-		setIsLoading(true);
-		setError(null);
-		try {
-			const result = await validateImportFile(projectId, file);
-			setValidation(result);
-			setStep("validate");
-		} catch (validationError) {
-			setError(
-				validationError instanceof Error
-					? validationError.message
-					: "Validation failed",
-			);
-			setValidation(null);
-			setStep("upload");
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const handleProceedToConflicts = () => {
-		if (validation?.conflicts?.length) {
-			setStep("conflicts");
-		} else {
-			setStep("confirm");
-		}
-	};
-
-	const handleImport = async () => {
-		if (!file) {
-			return;
-		}
-		setIsLoading(true);
-		setError(null);
-		try {
-			if (onImport) {
-				await onImport(file, conflictStrategy);
-			} else {
-				const result = await runImport(projectId, file, conflictStrategy);
-				setImportResult(result);
-				setStep("complete");
-			}
-		} catch (importError) {
-			setError(
-				importError instanceof Error ? importError.message : "Import failed",
-			);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const handleClose = () => {
-		setStep("upload");
-		setFile(null);
-		setError(null);
-		setValidation(null);
-		setImportResult(null);
-		onClose();
-	};
-
-	const handleStrategyChange = (value: string) => {
-		setConflictStrategy(value as ConflictStrategy);
-	};
-
-	const handleBackFromValidate = () => {
-		setStep("upload");
-	};
-
-	const handleBackFromConflicts = () => {
-		setStep((prevStep) =>
-			prevStep === "conflicts" ? "validate" : "conflicts",
-		);
-	};
-
-	const handleNextFromConflicts = () => {
-		setStep("confirm");
-	};
-
-	const bodyProps = {
-		step,
-		uploadProps: { error, file, onFileSelect: handleFileSelect },
-		validationProps: { validation },
-		conflictProps: {
-			conflictStrategy,
-			conflictsCount: validation?.conflicts?.length ?? 0,
-			onStrategyChange: handleStrategyChange,
-		},
-		confirmProps: { conflictStrategy, projectName, validation },
-		completeProps: { result: importResult },
-	};
-
-	const footerProps = {
-		isLoading,
-		isValid: Boolean(validation?.valid),
-		onBackFromConflicts: handleBackFromConflicts,
-		onBackFromValidate: handleBackFromValidate,
-		onCancel: handleClose,
-		onClose: handleClose,
-		onImport: handleImport,
-		onNextFromConflicts: handleNextFromConflicts,
-		onNextFromValidate: handleProceedToConflicts,
-		onValidate: handleValidate,
-		step,
-	};
-
-	return (
-		<ImportWizardLayout
-			bodyProps={bodyProps}
-			footerProps={footerProps}
-			isOpen={isOpen}
-			onClose={handleClose}
-			projectName={projectName}
-		/>
-	);
+	const handleFileSelect = createHandleFileSelect(setFile, setError);
+	const handleValidate = createHandleValidate({ file, projectId, setError, setIsLoading, setStep, setValidation });
+	const handleProceedToConflicts = createHandleProceedToConflicts(validation, setStep);
+	const handleImport = createHandleImport({ conflictStrategy, file, onImport, projectId, setError, setImportResult, setIsLoading, setStep });
+	const handleClose = createHandleClose({ onClose, setError, setFile, setImportResult, setStep, setValidation });
+	const handleStrategyChange = createHandleStrategyChange(setConflictStrategy);
+	const handleBackFromValidate = () => setStep("upload");
+	const handleBackFromConflicts = createHandleBackFromConflicts(setStep);
+	const handleNextFromConflicts = () => setStep("confirm");
+	const bodyProps = buildBodyProps({ conflictStrategy, error, file, importResult, onFileSelect: handleFileSelect, onStrategyChange: handleStrategyChange, projectName, step, validation });
+	const footerProps = buildFooterProps({ isLoading, isValid: Boolean(validation?.valid), onBackFromConflicts: handleBackFromConflicts, onBackFromValidate: handleBackFromValidate, onCancel: handleClose, onClose: handleClose, onImport: handleImport, onNextFromConflicts: handleNextFromConflicts, onNextFromValidate: handleProceedToConflicts, onValidate: handleValidate, step });
+	return <ImportWizardLayout bodyProps={bodyProps} footerProps={footerProps} isOpen={isOpen} onClose={handleClose} projectName={projectName} />;
 };

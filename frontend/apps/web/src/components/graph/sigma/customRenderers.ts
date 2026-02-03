@@ -1,8 +1,39 @@
 import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
 
+const DEFAULT_COLOR = "#64748b";
+const DEFAULT_STATUS_COLOR = "#10b981";
+const EDGE_COLOR = "#94a3b8";
+const LABEL_COLOR = "#ffffff";
+const LABEL_BG = "rgba(26, 26, 46, 0.9)";
+
+const BORDER_WIDTH = 2;
+const HIGHLIGHT_WIDTH = 3;
+const EDGE_HIGHLIGHT_WIDTH = 2;
+const DASH_SEGMENT = 5;
+const FULL_CIRCLE = Math.PI * 2;
+const HALF_DIVISOR = 2;
+const DEFAULT_EDGE_SIZE = 1;
+const LABEL_FONT_SIZE = 10;
+
+const STATUS_SCALE = 0.3;
+const STATUS_OFFSET_SCALE = 0.7;
+const ICON_FONT_SCALE = 0.6;
+const LABEL_FONT_SCALE = 0.5;
+const LABEL_MIN_SIZE = 10;
+const LABEL_MAX_LENGTH = 20;
+const LABEL_OFFSET = 10;
+const LABEL_PADDING = 8;
+const LABEL_HEIGHT = 20;
+const LABEL_HALF_HEIGHT = 10;
+
+const ZOOM_ICON_THRESHOLD = 0.3;
+const ZOOM_LABEL_THRESHOLD = 0.5;
+const ZOOM_EDGE_LABEL_THRESHOLD = 0.7;
+const EDGE_ALPHA = 0.3;
+
 // Import type colors from existing types
 const ENHANCED_TYPE_COLORS: Record<string, string> = {
-	default: "#64748b",
+	default: DEFAULT_COLOR,
 	defect: "#ef4444",
 	epic: "#8b5cf6",
 	feature: "#ec4899",
@@ -12,152 +43,273 @@ const ENHANCED_TYPE_COLORS: Record<string, string> = {
 	test: "#10b981",
 };
 
+const ICONS: Record<string, string> = {
+	default: "●",
+	defect: "🐛",
+	epic: "🎯",
+	feature: "⭐",
+	requirement: "📋",
+	story: "📖",
+	task: "📝",
+	test: "✓",
+};
+
+const isRecordObject = (value: unknown): value is Record<string, unknown> =>
+	Object.prototype.toString.call(value) === "[object Object]";
+
+const readNumber = (obj: Record<string, unknown>, key: string): number | undefined => {
+	const value = obj[key];
+	return typeof value === "number" ? value : undefined;
+};
+
+const readString = (obj: Record<string, unknown>, key: string): string | undefined => {
+	const value = obj[key];
+	return typeof value === "string" ? value : undefined;
+};
+
+const getZoomRatio = (settings: Record<string, unknown>): number => {
+	const value = settings["zoomRatio"];
+	return typeof value === "number" ? value : 0;
+};
+
+const getTypeColor = (typeValue: unknown): string => {
+	if (typeof typeValue === "string" && ENHANCED_TYPE_COLORS[typeValue]) {
+		return ENHANCED_TYPE_COLORS[typeValue];
+	}
+	return ENHANCED_TYPE_COLORS.default;
+};
+
+const drawNodeBase = (
+	context: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	size: number,
+	color: string,
+): void => {
+	context.beginPath();
+context.arc(x, y, size, 0, FULL_CIRCLE);
+	context.fillStyle = `${color}40`;
+	context.fill();
+	context.strokeStyle = color;
+	context.lineWidth = BORDER_WIDTH;
+	context.stroke();
+};
+
+const drawStatusIndicator = (
+	context: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	size: number,
+	statusColor: string,
+): void => {
+	const statusSize = size * STATUS_SCALE;
+	context.beginPath();
+	context.arc(
+		x + size * STATUS_OFFSET_SCALE,
+		y - size * STATUS_OFFSET_SCALE,
+		statusSize,
+		0,
+		FULL_CIRCLE,
+	);
+	context.fillStyle = statusColor;
+	context.fill();
+};
+
+const drawNodeIcon = (
+	context: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	size: number,
+	color: string,
+	icon: string,
+): void => {
+	context.fillStyle = color;
+	context.font = `${size * ICON_FONT_SCALE}px sans-serif`;
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillText(icon, x, y);
+};
+
+const drawNodeLabel = (
+	context: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	size: number,
+	label: string,
+): void => {
+	context.fillStyle = LABEL_COLOR;
+	context.font = `${Math.max(LABEL_MIN_SIZE, size * LABEL_FONT_SCALE)}px sans-serif`;
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+
+	const displayLabel =
+		label.length > LABEL_MAX_LENGTH
+			? `${label.slice(0, LABEL_MAX_LENGTH)}...`
+			: label;
+
+	context.fillText(displayLabel, x, y + size + LABEL_OFFSET);
+};
+
+const drawNodeHighlight = (
+	context: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	size: number,
+	color: string,
+): void => {
+	context.beginPath();
+context.arc(x, y, size + HIGHLIGHT_WIDTH, 0, FULL_CIRCLE);
+	context.strokeStyle = color;
+	context.lineWidth = HIGHLIGHT_WIDTH;
+	context.setLineDash([DASH_SEGMENT, DASH_SEGMENT]);
+	context.stroke();
+	context.setLineDash([]);
+};
+
+const drawEdgeLine = (
+	context: CanvasRenderingContext2D,
+	x1: number,
+	y1: number,
+	x2: number,
+	y2: number,
+	color: string,
+	lineWidth: number,
+): void => {
+	context.beginPath();
+	context.moveTo(x1, y1);
+	context.lineTo(x2, y2);
+	context.strokeStyle = color;
+	context.lineWidth = lineWidth;
+	context.globalAlpha = EDGE_ALPHA;
+	context.stroke();
+	context.globalAlpha = 1;
+};
+
+const drawEdgeLabel = (
+	context: CanvasRenderingContext2D,
+	x1: number,
+	y1: number,
+	x2: number,
+	y2: number,
+	label: string,
+	color: string,
+): void => {
+const midX = (x1 + x2) / HALF_DIVISOR;
+const midY = (y1 + y2) / HALF_DIVISOR;
+	const labelWidth = context.measureText(label).width + LABEL_PADDING;
+
+	context.fillStyle = LABEL_BG;
+context.fillRect(
+	midX - labelWidth / HALF_DIVISOR,
+	midY - LABEL_HALF_HEIGHT,
+	labelWidth,
+	LABEL_HEIGHT,
+);
+
+	context.fillStyle = color;
+context.font = `${LABEL_FONT_SIZE}px sans-serif`;
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillText(label, midX, midY);
+};
+
+const drawEdgeHighlight = (
+	context: CanvasRenderingContext2D,
+	x1: number,
+	y1: number,
+	x2: number,
+	y2: number,
+	color: string,
+	lineWidth: number,
+): void => {
+	context.beginPath();
+	context.moveTo(x1, y1);
+	context.lineTo(x2, y2);
+	context.strokeStyle = color;
+	context.lineWidth = lineWidth + EDGE_HIGHLIGHT_WIDTH;
+	context.stroke();
+};
+
 /**
  * Custom node renderer matching TraceRTM node styles
  * Renders simplified nodes for WebGL performance
- *
- * IMPORTANT: WebGL mode sacrifices rich interactivity for scale:
- * - No embedded images (placeholder icons only)
- * - No progress bars (status color indicator)
- * - No interactive buttons (use detail panel on click)
- * - Text labels remain (zoom-dependent)
  */
-export function customNodeRenderer(
+const customNodeRenderer = (
 	context: CanvasRenderingContext2D,
 	data: NodeDisplayData,
 	settings: Record<string, unknown>,
-): void {
-	const { x, y, size, label, type = "default" } = data;
-	const typeColor =
-		ENHANCED_TYPE_COLORS[type as string] || ENHANCED_TYPE_COLORS["default"];
+): void => {
+	const { x, y, size, label, type } = data;
+	const extra: Record<string, unknown> = data;
+	const zoomRatio = getZoomRatio(settings);
+	const typeColor = getTypeColor(type);
 
-	// Draw node circle with border
-	context.beginPath();
-	context.arc(x, y, size, 0, Math.PI * 2);
+	drawNodeBase(context, x, y, size, typeColor);
 
-	// Fill with 25% opacity background
-	context.fillStyle = typeColor + "40";
-	context.fill();
-
-	// Border
-	context.strokeStyle = typeColor;
-	context.lineWidth = 2;
-	context.stroke();
-
-	// Draw status indicator (replaces progress bar for performance)
-	if ((data as any).status) {
-		const statusSize = size * 0.3;
-		context.beginPath();
-		context.arc(x + size * 0.7, y - size * 0.7, statusSize, 0, Math.PI * 2);
-		context.fillStyle = (data as any).statusColor || "#10b981";
-		context.fill();
+	const status = readString(extra, "status");
+	if (status) {
+		const statusColor = readString(extra, "statusColor") ?? DEFAULT_STATUS_COLOR;
+		drawStatusIndicator(context, x, y, size, statusColor);
 	}
 
-	// Draw type icon (replaces embedded image for performance)
-	// Only show when zoomed in enough
-	if (settings.zoomRatio > 0.3) {
-		context.fillStyle = typeColor;
-		context.font = `${size * 0.6}px sans-serif`;
-		context.textAlign = "center";
-		context.textBaseline = "middle";
-
-		// Icon mapping
-		const icons: Record<string, string> = {
-			default: "●",
-			defect: "🐛",
-			epic: "🎯",
-			feature: "⭐",
-			requirement: "📋",
-			story: "📖",
-			task: "📝",
-			test: "✓",
-		};
-
-		const icon = icons[type as string] || icons.default;
-		context.fillText(icon, x, y);
+	if (zoomRatio > ZOOM_ICON_THRESHOLD) {
+		const icon = ICONS[typeof type === "string" ? type : "default"] ?? ICONS.default;
+		drawNodeIcon(context, x, y, size, typeColor, icon);
 	}
 
-	// Draw label (only if zoomed in)
-	if (settings.zoomRatio > 0.5 && label) {
-		context.fillStyle = "#ffffff";
-		context.font = `${Math.max(10, size * 0.5)}px sans-serif`;
-		context.textAlign = "center";
-		context.textBaseline = "middle";
-
-		// Truncate long labels
-		const maxLength = 20;
-		const displayLabel =
-			(label as string).length > maxLength
-				? (label as string).slice(0, maxLength) + "..."
-				: label;
-
-		context.fillText(displayLabel as string, x, y + size + 10);
+	if (zoomRatio > ZOOM_LABEL_THRESHOLD && typeof label === "string") {
+		drawNodeLabel(context, x, y, size, label);
 	}
 
-	// Highlight on hover
-	if ((data as any).highlighted) {
-		context.beginPath();
-		context.arc(x, y, size + 3, 0, Math.PI * 2);
-		context.strokeStyle = typeColor;
-		context.lineWidth = 3;
-		context.setLineDash([5, 5]);
-		context.stroke();
-		context.setLineDash([]);
+	if (extra["highlighted"] === true) {
+		drawNodeHighlight(context, x, y, size, typeColor);
 	}
-}
+};
 
 /**
  * Custom edge renderer matching TraceRTM edge styles
  * Simplified for WebGL performance
  */
-export function customEdgeRenderer(
+const customEdgeRenderer = (
 	context: CanvasRenderingContext2D,
 	data: EdgeDisplayData,
 	settings: Record<string, unknown>,
-): void {
-	const { x1, y1, x2, y2, color = "#94a3b8", size = 1, label } = data;
+): void => {
+	const extra: Record<string, unknown> = data;
+	const x1 = readNumber(extra, "x1");
+	const y1 = readNumber(extra, "y1");
+	const x2 = readNumber(extra, "x2");
+	const y2 = readNumber(extra, "y2");
 
-	// Draw edge line
-	context.beginPath();
-	context.moveTo(x1, y1);
-	context.lineTo(x2, y2);
-	context.strokeStyle = color as string;
-	context.lineWidth = size;
-	context.globalAlpha = 0.3;
-	context.stroke();
-	context.globalAlpha = 1;
-
-	// Draw edge label (only if zoomed in very close)
-	if (settings.zoomRatio > 0.7 && label) {
-		const midX = (x1 + x2) / 2;
-		const midY = (y1 + y2) / 2;
-
-		// Background
-		context.fillStyle = "rgba(26, 26, 46, 0.9)";
-		const labelWidth = context.measureText(label as string).width + 8;
-		context.fillRect(midX - labelWidth / 2, midY - 10, labelWidth, 20);
-
-		// Text
-		context.fillStyle = color as string;
-		context.font = "10px sans-serif";
-		context.textAlign = "center";
-		context.textBaseline = "middle";
-		context.fillText(label as string, midX, midY);
+	if (
+		x1 === undefined ||
+		y1 === undefined ||
+		x2 === undefined ||
+		y2 === undefined
+	) {
+		return;
 	}
 
-	// Highlight on hover
-	if ((data as any).highlighted) {
-		context.beginPath();
-		context.moveTo(x1, y1);
-		context.lineTo(x2, y2);
-		context.strokeStyle = color as string;
-		context.lineWidth = size + 2;
-		context.stroke();
+	const color = readString(extra, "color") ?? EDGE_COLOR;
+const size = readNumber(extra, "size") ?? DEFAULT_EDGE_SIZE;
+	const label = readString(extra, "label");
+	const zoomRatio = getZoomRatio(settings);
+
+	drawEdgeLine(context, x1, y1, x2, y2, color, size);
+
+	if (zoomRatio > ZOOM_EDGE_LABEL_THRESHOLD && label) {
+		drawEdgeLabel(context, x1, y1, x2, y2, label, color);
 	}
-}
+
+	if (extra["highlighted"] === true) {
+		drawEdgeHighlight(context, x1, y1, x2, y2, color, size);
+	}
+};
 
 // Export renderer configuration for Sigma
-export const sigmaRenderers = {
+const sigmaRenderers = {
 	edge: customEdgeRenderer,
 	node: customNodeRenderer,
 };
+
+export { customEdgeRenderer, customNodeRenderer, sigmaRenderers };

@@ -400,7 +400,7 @@ class IntegrationSyncQueueRepository:
         mapping_id: str,
         event_type: str,
         direction: str,
-        payload: dict,
+        payload: dict[str, Any],
         priority: str = "normal",
         idempotency_key: str | None = None,
     ) -> IntegrationSyncQueue:

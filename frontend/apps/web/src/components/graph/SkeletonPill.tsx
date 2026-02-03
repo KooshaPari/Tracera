@@ -1,5 +1,5 @@
-import { memo } from "react";
 import type { Node, NodeProps } from "@xyflow/react";
+import { memo } from "react";
 
 export interface SkeletonPillData extends Record<string, unknown> {
 	distance?: "near" | "medium" | "far";

@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { requireAdmin } from "@/lib/route-guards";
+import { createFileRoute } from "@tanstack/react-router";
 import { Shield } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({
@@ -7,7 +7,7 @@ export const Route = createFileRoute("/admin/")({
 	component: AdminPage,
 });
 
-function AdminPage() {
+const AdminPage = () => {
 	return (
 		<div className="flex-1 p-6 space-y-6">
 			<div className="flex items-center gap-3">
@@ -36,4 +36,4 @@ function AdminPage() {
 			</div>
 		</div>
 	);
-}
+};

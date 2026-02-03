@@ -308,7 +308,7 @@ export function SearchIndexExample() {
 
 		try {
 			const searchResults = await worker.search(
-				index as unknown,
+				index as unknown as { documents: Map<string, { id: string; fields: Record<string, string | number | boolean> }>; invertedIndex: Map<string, Set<string>>; fieldWeights: Record<string, number> },
 				query,
 				{
 					fuzzy: true,

@@ -4,9 +4,6 @@
  */
 
 import type { LinkType } from "@tracertm/types";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
-import { Card } from "@tracertm/ui/components/Card";
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -15,8 +12,11 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@tracertm/ui/components/DropdownMenu";
-import { Filter, _X } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
+import { Filter, X } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { LINK_STYLES } from "./types";
 
 export interface EdgeTypeFilterProps {
@@ -217,9 +217,7 @@ export function EdgeTypeFilter({
  * Hook for managing edge type filter state
  */
 export function useEdgeTypeFilter(availableTypes: LinkType[]) {
-	const [enabledTypes, setEnabledTypes] = React.useState<Set<LinkType>>(
-		new Set(),
-	);
+	const [enabledTypes, setEnabledTypes] = useState<Set<LinkType>>(new Set());
 
 	const toggleType = useCallback((type: LinkType) => {
 		setEnabledTypes((prev) => {
@@ -254,6 +252,3 @@ export function useEdgeTypeFilter(availableTypes: LinkType[]) {
 		toggleType,
 	};
 }
-
-// Missing React import
-import React from "react";

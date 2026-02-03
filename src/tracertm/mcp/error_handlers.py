@@ -257,7 +257,7 @@ class ErrorEnhancementMiddleware(Middleware):
         self,
         ctx: MiddlewareContext,
         tool_name: str,
-        arguments: dict,
+        arguments: dict[str, Any],
     ) -> None:
         """Enhance errors from tool calls.
 

@@ -37,10 +37,7 @@ const DEFAULT_SETTINGS: Settings = {
 const isTheme = (value: unknown): value is "light" | "dark" | "system" =>
 	value === "light" || value === "dark" || value === "system";
 
-const mergeSettings = (
-	baseSettings: Settings,
-	overrides: Partial<Settings>,
-): Settings => {
+const createBaseSettings = (baseSettings: Settings): Settings => {
 	const mergedSettings: Settings = {
 		general: {
 			language: baseSettings.general.language,
@@ -64,55 +61,81 @@ const mergeSettings = (
 		};
 	}
 
-	if (overrides.general) {
-		if (overrides.general.language !== undefined) {
-			mergedSettings.general.language = overrides.general.language;
-		}
-		if (overrides.general.theme !== undefined) {
-			mergedSettings.general.theme = overrides.general.theme;
-		}
-		if (overrides.general.timezone !== undefined) {
-			mergedSettings.general.timezone = overrides.general.timezone;
-		}
-	}
+	return mergedSettings;
+};
 
-	if (overrides.notifications) {
-		if (!mergedSettings.notifications) {
-			mergedSettings.notifications = {};
-		}
-		if (overrides.notifications.email !== undefined) {
-			mergedSettings.notifications.email = overrides.notifications.email;
-		}
-		if (overrides.notifications.inApp !== undefined) {
-			mergedSettings.notifications.inApp = overrides.notifications.inApp;
-		}
-		if (overrides.notifications.push !== undefined) {
-			mergedSettings.notifications.push = overrides.notifications.push;
-		}
+const applyGeneralOverrides = (
+	target: Settings,
+	overrides?: Settings["general"],
+): void => {
+	if (!overrides) {
+		return;
 	}
-
-	if (overrides.security) {
-		if (!mergedSettings.security) {
-			mergedSettings.security = {};
-		}
-		if (overrides.security.sessionTimeout !== undefined) {
-			mergedSettings.security.sessionTimeout = overrides.security.sessionTimeout;
-		}
-		if (overrides.security.twoFactor !== undefined) {
-			mergedSettings.security.twoFactor = overrides.security.twoFactor;
-		}
+	if (overrides.language !== undefined) {
+		target.general.language = overrides.language;
 	}
+	if (overrides.theme !== undefined) {
+		target.general.theme = overrides.theme;
+	}
+	if (overrides.timezone !== undefined) {
+		target.general.timezone = overrides.timezone;
+	}
+};
 
+const applyNotificationOverrides = (
+	target: Settings,
+	overrides?: Settings["notifications"],
+): void => {
+	if (!overrides) {
+		return;
+	}
+	if (!target.notifications) {
+		target.notifications = {};
+	}
+	if (overrides.email !== undefined) {
+		target.notifications.email = overrides.email;
+	}
+	if (overrides.inApp !== undefined) {
+		target.notifications.inApp = overrides.inApp;
+	}
+	if (overrides.push !== undefined) {
+		target.notifications.push = overrides.push;
+	}
+};
+
+const applySecurityOverrides = (
+	target: Settings,
+	overrides?: Settings["security"],
+): void => {
+	if (!overrides) {
+		return;
+	}
+	if (!target.security) {
+		target.security = {};
+	}
+	if (overrides.sessionTimeout !== undefined) {
+		target.security.sessionTimeout = overrides.sessionTimeout;
+	}
+	if (overrides.twoFactor !== undefined) {
+		target.security.twoFactor = overrides.twoFactor;
+	}
+};
+
+const mergeSettings = (
+	baseSettings: Settings,
+	overrides: Partial<Settings>,
+): Settings => {
+	const mergedSettings = createBaseSettings(baseSettings);
+	applyGeneralOverrides(mergedSettings, overrides.general);
+	applyNotificationOverrides(mergedSettings, overrides.notifications);
+	applySecurityOverrides(mergedSettings, overrides.security);
 	return mergedSettings;
 };
 
 const fetchSettings = async (): Promise<Settings> => {
 	try {
-		const response = await QueryClient.api.get<Settings>(
-			"/api/v1/settings",
-			{},
-		);
-		const data = await QueryClient.handleApiResponse(response);
+		const response = QueryClient.api.get<Settings>("/api/v1/settings", {});
+		const data = await QueryClient.handleApiResponse<Settings>(response);
 		return data;
 	} catch {
 		return DEFAULT_SETTINGS;
@@ -123,10 +146,10 @@ const updateSettings = async (
 	settings: Partial<Settings>,
 ): Promise<Settings> => {
 	try {
-		const response = await QueryClient.api.put<Settings>("/api/v1/settings", {
+		const response = QueryClient.api.put<Settings>("/api/v1/settings", {
 			body: settings,
 		});
-		const data = await QueryClient.handleApiResponse(response);
+		const data = await QueryClient.handleApiResponse<Settings>(response);
 		return data;
 	} catch {
 		return mergeSettings(DEFAULT_SETTINGS, settings);

@@ -2,7 +2,8 @@
  * Example component demonstrating NDJSON streaming usage
  */
 
-import { useState } from "react";
+import type { ChangeEvent } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	useStreamExport,
 	useStreamGraph,
@@ -10,55 +11,132 @@ import {
 } from "../../hooks/useStreaming";
 import { StreamingProgress, StreamingProgressBar } from "../StreamingProgress";
 
-export function StreamItemsExample() {
+const SLICE_SIZE = 10;
+const PREVIEW_SIZE = 3;
+const DATE_SPLIT_INDEX = 0;
+
+const getItemKey = (item: { id?: string }, index: number) =>
+	`item-${item.id ?? index}`;
+
+const getNodeKey = (node: { id?: string }, index: number) =>
+	`node-${node.id ?? index}`;
+
+type ErrorNoticeProps = { error?: Error };
+
+const ErrorNotice = ({ error }: ErrorNoticeProps) => {
+	if (!error) {
+		return null;
+	}
+	return (
+		<div className="p-3 bg-destructive/10 text-destructive rounded">
+			Error: {error.message}
+		</div>
+	);
+};
+
+type ItemsListProps = { items: unknown[] };
+
+const ItemsList = ({ items }: ItemsListProps) => (
+	<div className="space-y-2">
+		<h4 className="font-medium">Received Items ({items.length})</h4>
+		<div className="max-h-64 overflow-y-auto space-y-1">
+			{items.map((item, index) => (
+				<div
+					key={getItemKey(item as { id?: string }, index)}
+					className="p-2 bg-muted rounded text-sm"
+				>
+					{JSON.stringify(item)}
+				</div>
+			))}
+		</div>
+	</div>
+);
+
+type ItemsControlsProps = {
+	isStreaming: boolean;
+	onReset: () => void;
+	onStart: () => void;
+	onStop: () => void;
+	projectId: string;
+	onProjectIdChange: (value: string) => void;
+};
+
+const ItemsControls = ({
+	isStreaming,
+	onReset,
+	onStart,
+	onStop,
+	projectId,
+	onProjectIdChange,
+}: ItemsControlsProps) => {
+	const handleInputChange = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => {
+			onProjectIdChange(event.target.value);
+		},
+		[onProjectIdChange],
+	);
+
+	return (
+		<div className="flex gap-2">
+			<input
+				type="text"
+				placeholder="Project ID"
+				value={projectId}
+				onChange={handleInputChange}
+				className="px-3 py-2 border rounded"
+				disabled={isStreaming}
+			/>
+			<button
+				onClick={onStart}
+				disabled={isStreaming || !projectId}
+				className="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
+			>
+				Start Streaming
+			</button>
+			<button
+				onClick={onStop}
+				disabled={!isStreaming}
+				className="px-4 py-2 bg-destructive text-white rounded disabled:opacity-50"
+			>
+				Stop
+			</button>
+			<button
+				onClick={onReset}
+				disabled={isStreaming}
+				className="px-4 py-2 bg-secondary rounded disabled:opacity-50"
+			>
+				Reset
+			</button>
+		</div>
+	);
+};
+
+const StreamItemsExample = () => {
 	const [projectId, setProjectId] = useState("");
 	const { items, state, startStreaming, stopStreaming, reset } =
 		useStreamItems();
 
-	const handleStart = () => {
+	const handleStart = useCallback(() => {
 		if (projectId) {
 			startStreaming({ projectId });
 		}
-	};
+	}, [projectId, startStreaming]);
+
+	const displayItems = useMemo(() => items.slice(-SLICE_SIZE), [items]);
 
 	return (
 		<div className="space-y-4 p-4 border rounded-lg">
 			<h3 className="text-lg font-semibold">Stream Items Example</h3>
 
-			{/* Controls */}
-			<div className="flex gap-2">
-				<input
-					type="text"
-					placeholder="Project ID"
-					value={projectId}
-					onChange={(e) => setProjectId(e.target.value)}
-					className="px-3 py-2 border rounded"
-					disabled={state.isStreaming}
-				/>
-				<button
-					onClick={handleStart}
-					disabled={state.isStreaming || !projectId}
-					className="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
-				>
-					Start Streaming
-				</button>
-				<button
-					onClick={stopStreaming}
-					disabled={!state.isStreaming}
-					className="px-4 py-2 bg-destructive text-white rounded disabled:opacity-50"
-				>
-					Stop
-				</button>
-				<button
-					onClick={reset}
-					disabled={state.isStreaming}
-					className="px-4 py-2 bg-secondary rounded disabled:opacity-50"
-				>
-					Reset
-				</button>
-			</div>
+			<ItemsControls
+				isStreaming={state.isStreaming}
+				onReset={reset}
+				onStart={handleStart}
+				onStop={stopStreaming}
+				projectId={projectId}
+				onProjectIdChange={setProjectId}
+			/>
 
-			{/* Progress */}
 			<StreamingProgress
 				stats={state.stats}
 				isStreaming={state.isStreaming}
@@ -66,224 +144,354 @@ export function StreamItemsExample() {
 				showBytes
 			/>
 
-			{/* Error display */}
-			{state.error && (
-				<div className="p-3 bg-destructive/10 text-destructive rounded">
-					Error: {state.error.message}
-				</div>
-			)}
+			<ErrorNotice error={state.error ?? undefined} />
 
-			{/* Items display */}
-			<div className="space-y-2">
-				<h4 className="font-medium">Received Items ({items.length})</h4>
-				<div className="max-h-64 overflow-y-auto space-y-1">
-					{items.slice(-10).map((item, i) => {
-						const itemKey = item.id ?? `index-${i}`;
-						return (
-							<div key={itemKey} className="p-2 bg-muted rounded text-sm">
-								{JSON.stringify(item)}
-							</div>
-						);
-					})}
-				</div>
-			</div>
+			<ItemsList items={displayItems} />
 		</div>
 	);
-}
+};
 
-export function StreamGraphExample() {
-	const [graphId, setGraphId] = useState("");
-	const { nodes, edges, state, startStreaming, stopStreaming, reset } =
-		useStreamGraph();
+type GraphControlsProps = {
+	graphId: string;
+	isStreaming: boolean;
+	onGraphIdChange: (value: string) => void;
+	onReset: () => void;
+	onStart: () => void;
+	onStop: () => void;
+};
 
-	const handleStart = () => {
-		if (graphId) {
-			startStreaming(graphId);
-		}
-	};
+const GraphControls = ({
+	graphId,
+	isStreaming,
+	onGraphIdChange,
+	onReset,
+	onStart,
+	onStop,
+}: GraphControlsProps) => {
+	const handleInputChange = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => {
+			onGraphIdChange(event.target.value);
+		},
+		[onGraphIdChange],
+	);
 
 	return (
-		<div className="space-y-4 p-4 border rounded-lg">
-			<h3 className="text-lg font-semibold">Stream Graph Example</h3>
-
-			{/* Controls */}
-			<div className="flex gap-2">
-				<input
-					type="text"
-					placeholder="Graph ID"
-					value={graphId}
-					onChange={(e) => setGraphId(e.target.value)}
-					className="px-3 py-2 border rounded"
-					disabled={state.isStreaming}
-				/>
-				<button
-					onClick={handleStart}
-					disabled={state.isStreaming || !graphId}
-					className="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
-				>
-					Stream Graph
-				</button>
-				<button
-					onClick={stopStreaming}
-					disabled={!state.isStreaming}
-					className="px-4 py-2 bg-destructive text-white rounded disabled:opacity-50"
-				>
-					Stop
-				</button>
-				<button
-					onClick={reset}
-					disabled={state.isStreaming}
-					className="px-4 py-2 bg-secondary rounded disabled:opacity-50"
-				>
-					Reset
-				</button>
-			</div>
-
-			{/* Progress */}
-			<StreamingProgress
-				stats={state.stats}
-				isStreaming={state.isStreaming}
-				showThroughput
+		<div className="flex gap-2">
+			<input
+				type="text"
+				placeholder="Graph ID"
+				value={graphId}
+				onChange={handleInputChange}
+				className="px-3 py-2 border rounded"
+				disabled={isStreaming}
 			/>
-
-			{/* Graph stats */}
-			<div className="grid grid-cols-2 gap-4">
-				<div className="p-3 bg-muted rounded">
-					<div className="text-sm text-muted-foreground">Nodes</div>
-					<div className="text-2xl font-bold">{nodes.length}</div>
-				</div>
-				<div className="p-3 bg-muted rounded">
-					<div className="text-sm text-muted-foreground">Edges</div>
-					<div className="text-2xl font-bold">{edges.length}</div>
-				</div>
-			</div>
-
-			{/* Graph visualization preview */}
-			<div className="p-4 bg-muted/50 rounded">
-				<div className="text-sm text-muted-foreground mb-2">Graph Preview</div>
-				<div className="text-xs space-y-1">
-					{nodes.slice(0, 3).map((node, i) => {
-						const nodeKey = node.id ?? `index-${i}`;
-						return (
-							<div key={nodeKey}>Node: {JSON.stringify(node)}</div>
-						);
-					})}
-					{nodes.length > 3 && <div>... and {nodes.length - 3} more</div>}
-				</div>
-			</div>
-		</div>
-	);
-}
-
-export function StreamExportExample() {
-	const [projectId, setProjectId] = useState("");
-	const [exportType, setExportType] = useState<"json" | "csv">("json");
-	const { data, state, startExport, stopExport, downloadAsFile, reset } =
-		useStreamExport();
-
-	const handleStart = () => {
-		if (projectId) {
-			startExport({ projectId, type: exportType });
-		}
-	};
-
-	const handleDownload = () => {
-		const timestamp = new Date().toISOString().split("T")[0];
-		downloadAsFile(`export-${projectId}-${timestamp}.json`);
-	};
-
-	return (
-		<div className="space-y-4 p-4 border rounded-lg">
-			<h3 className="text-lg font-semibold">Stream Export Example</h3>
-
-			{/* Controls */}
-			<div className="flex gap-2">
-				<input
-					type="text"
-					placeholder="Project ID"
-					value={projectId}
-					onChange={(e) => setProjectId(e.target.value)}
-					className="px-3 py-2 border rounded"
-					disabled={state.isStreaming}
-				/>
-				<select
-					value={exportType}
-					onChange={(e) => setExportType(e.target.value as "json" | "csv")}
-					className="px-3 py-2 border rounded"
-					disabled={state.isStreaming}
-				>
-					<option value="json">JSON</option>
-					<option value="csv">CSV</option>
-				</select>
-				<button
-					onClick={handleStart}
-					disabled={state.isStreaming || !projectId}
-					className="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
-				>
-					Start Export
-				</button>
-				<button
-					onClick={stopExport}
-					disabled={!state.isStreaming}
-					className="px-4 py-2 bg-destructive text-white rounded disabled:opacity-50"
-				>
-					Stop
-				</button>
-			</div>
-
-			{/* Progress with progress bar */}
-			<div className="space-y-2">
-				<StreamingProgress
-					stats={state.stats}
-					isStreaming={state.isStreaming}
-					showThroughput
-					showBytes
-				/>
-				{state.stats && (
-					<StreamingProgressBar
-						current={state.stats.itemsReceived}
-						isStreaming={state.isStreaming}
-					/>
-				)}
-			</div>
-
-			{/* Export stats */}
-			<div className="p-3 bg-muted rounded">
-				<div className="text-sm text-muted-foreground">Export Size</div>
-				<div className="text-2xl font-bold">{data.length} items</div>
-			</div>
-
-			{/* Download button */}
-			{data.length > 0 && !state.isStreaming && (
-				<button
-					onClick={handleDownload}
-					className="px-4 py-2 bg-primary text-white rounded"
-				>
-					Download Export
-				</button>
-			)}
-
-			{/* Reset button */}
 			<button
-				onClick={reset}
-				disabled={state.isStreaming}
+				onClick={onStart}
+				disabled={isStreaming || !graphId}
+				className="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
+			>
+				Stream Graph
+			</button>
+			<button
+				onClick={onStop}
+				disabled={!isStreaming}
+				className="px-4 py-2 bg-destructive text-white rounded disabled:opacity-50"
+			>
+				Stop
+			</button>
+			<button
+				onClick={onReset}
+				disabled={isStreaming}
 				className="px-4 py-2 bg-secondary rounded disabled:opacity-50"
 			>
 				Reset
 			</button>
 		</div>
 	);
-}
+};
 
-export function StreamingExamples() {
+type GraphStatsProps = { edgeCount: number; nodeCount: number };
+
+const GraphStats = ({ edgeCount, nodeCount }: GraphStatsProps) => (
+	<div className="grid grid-cols-2 gap-4">
+		<div className="p-3 bg-muted rounded">
+			<div className="text-sm text-muted-foreground">Nodes</div>
+			<div className="text-2xl font-bold">{nodeCount}</div>
+		</div>
+		<div className="p-3 bg-muted rounded">
+			<div className="text-sm text-muted-foreground">Edges</div>
+			<div className="text-2xl font-bold">{edgeCount}</div>
+		</div>
+	</div>
+);
+
+type GraphPreviewProps = {
+	nodes: unknown[];
+	previewNodes: unknown[];
+	remainingCount: number;
+};
+
+const GraphPreview = ({
+	nodes,
+	previewNodes,
+	remainingCount,
+}: GraphPreviewProps) => (
+	<div className="p-4 bg-muted/50 rounded">
+		<div className="text-sm text-muted-foreground mb-2">Graph Preview</div>
+		<div className="text-xs space-y-1">
+			{previewNodes.map((node, index) => (
+				<div key={getNodeKey(node as { id?: string }, index)}>
+					Node: {JSON.stringify(node)}
+				</div>
+			))}
+			{remainingCount > 0 && <div>... and {remainingCount} more</div>}
+		</div>
+		{nodes.length === 0 && (
+			<div className="text-xs text-muted-foreground">No nodes yet</div>
+		)}
+	</div>
+);
+
+const StreamGraphExample = () => {
+	const [graphId, setGraphId] = useState("");
+	const { nodes, edges, state, startStreaming, stopStreaming, reset } =
+		useStreamGraph();
+
+	const handleStart = useCallback(() => {
+		if (graphId) {
+			startStreaming(graphId);
+		}
+	}, [graphId, startStreaming]);
+
+	const previewNodes = useMemo(() => nodes.slice(0, PREVIEW_SIZE), [nodes]);
+	const remainingCount = Math.max(0, nodes.length - PREVIEW_SIZE);
+
 	return (
-		<div className="space-y-8 p-6">
-			<h2 className="text-2xl font-bold">NDJSON Streaming Examples</h2>
-			<div className="grid gap-6">
-				<StreamItemsExample />
-				<StreamGraphExample />
-				<StreamExportExample />
-			</div>
+		<div className="space-y-4 p-4 border rounded-lg">
+			<h3 className="text-lg font-semibold">Stream Graph Example</h3>
+
+			<GraphControls
+				graphId={graphId}
+				isStreaming={state.isStreaming}
+				onGraphIdChange={setGraphId}
+				onReset={reset}
+				onStart={handleStart}
+				onStop={stopStreaming}
+			/>
+
+			<StreamingProgress
+				stats={state.stats}
+				isStreaming={state.isStreaming}
+				showThroughput
+			/>
+
+			<GraphStats edgeCount={edges.length} nodeCount={nodes.length} />
+
+			<GraphPreview
+				nodes={nodes}
+				previewNodes={previewNodes}
+				remainingCount={remainingCount}
+			/>
 		</div>
 	);
-}
+};
+
+type ExportControlsProps = {
+	isStreaming: boolean;
+	onExportTypeChange: (value: "json" | "csv") => void;
+	onProjectIdChange: (value: string) => void;
+	onStart: () => void;
+	onStop: () => void;
+	projectId: string;
+	value: "json" | "csv";
+};
+
+const ExportControls = ({
+	isStreaming,
+	onExportTypeChange,
+	onProjectIdChange,
+	onStart,
+	onStop,
+	projectId,
+	value,
+}: ExportControlsProps) => {
+	const handleProjectChange = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => {
+			onProjectIdChange(event.target.value);
+		},
+		[onProjectIdChange],
+	);
+
+	const handleTypeChange = useCallback(
+		(event: ChangeEvent<HTMLSelectElement>) => {
+			const nextType = event.target.value === "csv" ? "csv" : "json";
+			onExportTypeChange(nextType);
+		},
+		[onExportTypeChange],
+	);
+
+	return (
+		<div className="flex gap-2">
+			<input
+				type="text"
+				placeholder="Project ID"
+				value={projectId}
+				onChange={handleProjectChange}
+				className="px-3 py-2 border rounded"
+				disabled={isStreaming}
+			/>
+			<select
+				value={value}
+				onChange={handleTypeChange}
+				className="px-3 py-2 border rounded"
+				disabled={isStreaming}
+			>
+				<option value="json">JSON</option>
+				<option value="csv">CSV</option>
+			</select>
+			<button
+				onClick={onStart}
+				disabled={isStreaming || !projectId}
+				className="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
+			>
+				Start Export
+			</button>
+			<button
+				onClick={onStop}
+				disabled={!isStreaming}
+				className="px-4 py-2 bg-destructive text-white rounded disabled:opacity-50"
+			>
+				Stop
+			</button>
+		</div>
+	);
+};
+
+type ExportProgressProps = {
+	isStreaming: boolean;
+	itemsReceived?: number;
+	stats?: { itemsReceived: number } | null;
+};
+
+const ExportProgress = ({ isStreaming, itemsReceived, stats }: ExportProgressProps) => (
+	<div className="space-y-2">
+		<StreamingProgress
+			stats={stats ?? undefined}
+			isStreaming={isStreaming}
+			showThroughput
+			showBytes
+		/>
+		{stats && (
+			<StreamingProgressBar
+				current={itemsReceived ?? stats.itemsReceived}
+				isStreaming={isStreaming}
+			/>
+		)}
+	</div>
+);
+
+type ExportActionsProps = {
+	canDownload: boolean;
+	isStreaming: boolean;
+	onDownload: () => void;
+	onReset: () => void;
+};
+
+const ExportActions = ({
+	canDownload,
+	isStreaming,
+	onDownload,
+	onReset,
+}: ExportActionsProps) => (
+	<div className="space-y-2">
+		{canDownload && (
+			<button
+				onClick={onDownload}
+				className="px-4 py-2 bg-primary text-white rounded"
+			>
+				Download Export
+			</button>
+		)}
+		<button
+			onClick={onReset}
+			disabled={isStreaming}
+			className="px-4 py-2 bg-secondary rounded disabled:opacity-50"
+		>
+			Reset
+		</button>
+	</div>
+);
+
+const StreamExportExample = () => {
+	const [projectId, setProjectId] = useState("");
+	const [exportType, setExportType] = useState<"json" | "csv">("json");
+	const { data, state, startExport, stopExport, downloadAsFile, reset } =
+		useStreamExport();
+
+	const handleStart = useCallback(() => {
+		if (projectId) {
+			startExport({ projectId, type: exportType });
+		}
+	}, [exportType, projectId, startExport]);
+
+	const handleDownload = useCallback(() => {
+		const timestamp = new Date()
+			.toISOString()
+			.split("T")[DATE_SPLIT_INDEX];
+		downloadAsFile(`export-${projectId}-${timestamp}.json`);
+	}, [downloadAsFile, projectId]);
+
+	const canDownload = data.length > 0 && !state.isStreaming;
+
+	return (
+		<div className="space-y-4 p-4 border rounded-lg">
+			<h3 className="text-lg font-semibold">Stream Export Example</h3>
+
+			<ExportControls
+				isStreaming={state.isStreaming}
+				onExportTypeChange={setExportType}
+				onProjectIdChange={setProjectId}
+				onStart={handleStart}
+				onStop={stopExport}
+				projectId={projectId}
+				value={exportType}
+			/>
+
+			<ExportProgress
+				isStreaming={state.isStreaming}
+				itemsReceived={state.stats?.itemsReceived}
+				stats={state.stats}
+			/>
+
+			<div className="p-3 bg-muted rounded">
+				<div className="text-sm text-muted-foreground">Export Size</div>
+				<div className="text-2xl font-bold">{data.length} items</div>
+			</div>
+
+			<ExportActions
+				canDownload={canDownload}
+				isStreaming={state.isStreaming}
+				onDownload={handleDownload}
+				onReset={reset}
+			/>
+		</div>
+	);
+};
+
+const StreamingExamples = () => (
+	<div className="space-y-8 p-6">
+		<h2 className="text-2xl font-bold">NDJSON Streaming Examples</h2>
+		<div className="grid gap-6">
+			<StreamItemsExample />
+			<StreamGraphExample />
+			<StreamExportExample />
+		</div>
+	</div>
+);
+
+export {
+	StreamExportExample,
+	StreamGraphExample,
+	StreamItemsExample,
+	StreamingExamples,
+};

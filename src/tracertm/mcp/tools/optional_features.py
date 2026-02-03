@@ -1,9 +1,9 @@
 """Priority 3 MCP tools: Optional but useful features.
 
 This module provides optional feature tools:
-- View management: list, switch, current, stats, show
+- View management: list[Any], switch, current, stats, show
 - History: show, version, rollback
-- Agents: list, activity, metrics, workload, health
+- Agents: list[Any], activity, metrics, workload, health
 - State: get/show state
 - Drill: drill into item details
 """

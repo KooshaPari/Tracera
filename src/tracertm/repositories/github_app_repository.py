@@ -23,7 +23,7 @@ class GitHubAppInstallationRepository:
         account_login: str,
         target_type: str,
         target_id: int,
-        permissions: dict,
+        permissions: dict[str, Any],
         repository_selection: str = "all",
     ) -> GitHubAppInstallation:
         """Create a new GitHub App installation."""

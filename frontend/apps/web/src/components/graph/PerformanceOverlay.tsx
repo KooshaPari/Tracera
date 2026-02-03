@@ -1,6 +1,6 @@
-import { memo } from "react";
 import { useFPSMonitor } from "@/hooks/useFPSMonitor";
 import { useMemoryMonitor } from "@/hooks/useMemoryMonitor";
+import { memo } from "react";
 import { PerformanceStats } from "./PerformanceStats";
 
 interface PerformanceOverlayProps {

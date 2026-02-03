@@ -4,27 +4,26 @@
  * @vitest-environment jsdom
  */
 
-import { describe, expect, it } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { Edge, Node } from "@xyflow/react";
+import { describe, expect, it } from "vitest";
+
 import { useGPUForceLayout } from "../useGPUForceLayout";
 
-function createNodes(count: number): Node[] {
-	return Array.from({ length: count }, (_, i) => ({
+const createNodes = (count: number): Node[] =>
+	Array.from({ length: count }, (_, i) => ({
 		data: {},
 		id: `node-${i}`,
 		position: { x: 0, y: 0 },
 		type: "default",
 	}));
-}
 
-function createEdges(count: number): Edge[] {
-	return Array.from({ length: count - 1 }, (_, i) => ({
+const createEdges = (count: number): Edge[] =>
+	Array.from({ length: count - 1 }, (_, i) => ({
 		id: `edge-${i}`,
 		source: `node-${i}`,
 		target: `node-${i + 1}`,
 	}));
-}
 
 describe(useGPUForceLayout, () => {
 	describe("basic functionality", () => {
@@ -52,7 +51,9 @@ describe(useGPUForceLayout, () => {
 			});
 
 			// Positions should be updated
-			expect(result.current.nodes[0].position.x).not.toBe(0);
+			const node0 = result.current.nodes[0];
+			expect(node0).toBeDefined();
+			expect(node0!.position.x).not.toBe(0);
 		});
 
 		it("should handle disabled option", () => {
@@ -134,7 +135,9 @@ describe(useGPUForceLayout, () => {
 				expect(result.current.nodes.length).toBe(20);
 			});
 
-			expect(result.current.nodes[0].position.x).not.toBe(0);
+			const node0 = result.current.nodes[0];
+			expect(node0).toBeDefined();
+			expect(node0!.position.x).not.toBe(0);
 		});
 
 		it("should handle animation duration", async () => {
@@ -166,7 +169,9 @@ describe(useGPUForceLayout, () => {
 			const layoutedNodes = await result.current.calculateLayout(nodes, edges);
 
 			expect(layoutedNodes).toHaveLength(5);
-			expect(layoutedNodes[0].position.x).not.toBe(0);
+			const firstNode = layoutedNodes[0];
+			expect(firstNode).toBeDefined();
+			expect(firstNode!.position.x).not.toBe(0);
 		});
 
 		it("should return original nodes when disabled", async () => {
@@ -211,7 +216,9 @@ describe(useGPUForceLayout, () => {
 				expect(result.current.nodes.length).toBe(1);
 			});
 
-			expect(result.current.nodes[0].data).toEqual({ label: "Test" });
+			const node0 = result.current.nodes[0];
+			expect(node0).toBeDefined();
+			expect(node0!.data).toEqual({ label: "Test" });
 		});
 	});
 
@@ -231,8 +238,6 @@ describe(useGPUForceLayout, () => {
 			await waitFor(() => {
 				expect(result.current.nodes.length).toBe(5);
 			});
-
-			const _firstPositions = result.current.nodes.map((n) => n.position);
 
 			// Update with new nodes
 			rerender({

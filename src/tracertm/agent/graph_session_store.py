@@ -158,7 +158,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         self,
         session_id: str,
         tool_name: str,
-        input_data: dict,
+        input_data: dict[str, Any],
         output_data: Any = None,
         success: bool = True,
         project_id: str | None = None,

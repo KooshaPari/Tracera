@@ -43,7 +43,7 @@ class AuthMiddleware(Middleware):
         self,
         ctx: MiddlewareContext,
         tool_name: str,
-        arguments: dict,
+        arguments: dict[str, Any],
     ) -> None:
         """Intercept tool calls to enforce auth.
 
@@ -194,7 +194,7 @@ class LoggingMiddleware(Middleware):
         self,
         ctx: MiddlewareContext,
         tool_name: str,
-        arguments: dict,
+        arguments: dict[str, Any],
     ) -> None:
         """Log tool calls.
 
@@ -268,7 +268,7 @@ class RateLimitMiddleware(Middleware):
         self,
         ctx: MiddlewareContext,
         tool_name: str,
-        arguments: dict,
+        arguments: dict[str, Any],
     ) -> None:
         """Check rate limits before allowing tool call.
 

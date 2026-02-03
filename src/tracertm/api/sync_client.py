@@ -459,7 +459,7 @@ class ApiClient:
                 conflicts: list[Conflict] = [
                     Conflict.from_dict(c) if isinstance(c, dict[str, Any]) else c
                     for c in conflicts_raw
-                    if isinstance(c, (dict, Conflict))
+                    if isinstance(c, (dict[str, Any], Conflict))
                 ]
                 raise ConflictError("Sync conflicts detected", conflicts=conflicts) from exc
             raise

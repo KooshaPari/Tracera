@@ -2765,7 +2765,7 @@ async def analyze_impact(
                 adjacency = cast(dict[str, list[str]], request.adjacency or {})
             if hasattr(request, "item_metadata"):
                 raw = request.item_metadata
-                item_metadata = cast("dict[str, dict[str, Any]] | None", raw if isinstance(raw, (dict, type(None))) else None)
+                item_metadata = cast("dict[str, dict[str, Any]] | None", raw if isinstance(raw, (dict[str, Any], type(None))) else None)
             if hasattr(request, "max_depth"):
                 max_depth = request.max_depth or 5
 

@@ -16,6 +16,4 @@ export const Route = createFileRoute("/projects/$projectId/adrs")({
 	component: ADRsPage,
 });
 
-function ADRsPage() {
-	return null;
-}
+const ADRsPage = () => null;

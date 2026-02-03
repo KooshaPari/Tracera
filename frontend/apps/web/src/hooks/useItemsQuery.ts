@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/endpoints";
 import type { CreateItemInput, UpdateItemInput } from "../api/types";
-import { useItemsStore } from "../stores/itemsStore";
+import { useItemsStore } from "../stores";
 
 // Query keys
 export const itemKeys = {

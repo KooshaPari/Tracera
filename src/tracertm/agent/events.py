@@ -310,7 +310,7 @@ class AgentEventPublisher:
         session_id: str,
         project_id: str | None,
         tool_name: str,
-        tool_input: dict,
+        tool_input: dict[str, Any],
         tool_output: Any | None = None,
         success: bool = True,
         error: str | None = None,

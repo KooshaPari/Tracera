@@ -5,10 +5,11 @@
 
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { api } from "../../api/endpoints";
 import { useSearch, useSearchSuggestions } from "../../hooks/useSearch";
 import { createWrapper } from "../utils/test-utils";
 
-// Mock the API
 vi.mock("../../api/endpoints", () => ({
 	api: {
 		search: {
@@ -17,8 +18,6 @@ vi.mock("../../api/endpoints", () => ({
 		},
 	},
 }));
-
-import { api } from "../../api/endpoints";
 
 describe("useSearch - Comprehensive Coverage", () => {
 	beforeEach(() => {
@@ -49,7 +48,14 @@ describe("useSearch - Comprehensive Coverage", () => {
 		});
 
 		it("should debounce search query", async () => {
-			const mockResults = { items: [], page: 1, query: "test", total: 0 };
+			const mockResults = {
+				hasMore: false,
+				items: [],
+				page: 1,
+				pageSize: 10,
+				query: "test",
+				total: 0,
+			};
 			vi.mocked(api.search.search).mockResolvedValue(mockResults);
 
 			const { result } = renderHook(() => useSearch(), {

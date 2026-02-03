@@ -8,7 +8,7 @@
 import { Suspense, lazy } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Button } from "@tracertm/ui/components/Button";
 
 // Lazy load form components for better code splitting

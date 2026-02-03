@@ -19,14 +19,14 @@ export const LoadingTransition = memo(function LoadingTransition({
 		if (isLoading) {
 			setShowSkeleton(true);
 			setFadeOut(false);
-		} else {
-			// Smooth transition: fade out skeleton before hiding
-			setFadeOut(true);
-			const timer = setTimeout(() => {
-				setShowSkeleton(false);
-			}, minDisplayTime);
-			return () => clearTimeout(timer);
+			return undefined;
 		}
+		// Smooth transition: fade out skeleton before hiding
+		setFadeOut(true);
+		const timer = setTimeout(() => {
+			setShowSkeleton(false);
+		}, minDisplayTime);
+		return () => clearTimeout(timer);
 	}, [isLoading, minDisplayTime]);
 
 	if (showSkeleton) {
@@ -39,5 +39,5 @@ export const LoadingTransition = memo(function LoadingTransition({
 		);
 	}
 
-	return <>{children}</>;
+	return children;
 });

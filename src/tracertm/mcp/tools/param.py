@@ -156,7 +156,7 @@ def _resolve_project_id(payload: dict[str, Any], ctx: Any | None) -> str | None:
     project_ids = claims.get("project_ids")
     if isinstance(project_ids, str):
         allowed.extend([p.strip() for p in project_ids.split(",") if p.strip()])
-    elif isinstance(project_ids, (list, tuple, set)):
+    elif isinstance(project_ids, (list[Any], tuple, set)):
         allowed.extend([str(p) for p in project_ids if p])
 
     if allowed:

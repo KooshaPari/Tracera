@@ -11,8 +11,6 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from "@tracertm/ui/components/Alert";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
 import {
 	Card,
 	CardContent,
@@ -28,8 +26,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@tracertm/ui/components/Dialog";
-import { Input } from "@tracertm/ui/components/Input";
-import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import {
 	Select,
 	SelectContent,
@@ -37,7 +33,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
-import { Separator } from "@tracertm/ui/components/Separator";
 import {
 	AlertTriangle,
 	ChevronDown,
@@ -45,7 +40,6 @@ import {
 	Trash2,
 	Upload,
 } from "lucide-react";
-import { memo, useCallback, useState } from "react";
 import type {
 	EquivalenceExportPackage,
 	EquivalenceImportOptions,
@@ -55,6 +49,12 @@ import {
 	mergeExportPackages,
 	validateExportPackage,
 } from "./utils/equivalenceIO";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
+import { Separator } from "@tracertm/ui/components/Separator";
+import { memo, useCallback, useState } from "react";
 
 // =============================================================================
 // TYPES
@@ -168,7 +168,7 @@ function EquivalenceImportComponent({
 					existingLinks,
 					existingConcepts,
 					existingProjections,
-					parsedData,
+					parsedData ?? undefined,
 				);
 
 				setState({
@@ -194,7 +194,8 @@ function EquivalenceImportComponent({
 
 	// Apply import
 	const handleApplyImport = useCallback(async () => {
-		if (!state.parsedData) {
+		const parsedData = state.parsedData;
+		if (!parsedData) {
 			return;
 		}
 
@@ -203,9 +204,9 @@ function EquivalenceImportComponent({
 			const targetProjectId = state.options.targetProjectId || projectId;
 
 			// Merge data if needed
-			let finalLinks = state.parsedData.equivalenceLinks;
-			let finalConcepts = state.parsedData.canonicalConcepts;
-			let finalProjections = state.parsedData.canonicalProjections;
+			let finalLinks = parsedData.equivalenceLinks;
+			let finalConcepts = parsedData.canonicalConcepts;
+			let finalProjections = parsedData.canonicalProjections;
 
 			if (state.options.mode === "merge" && state.options.updateProjectId) {
 				const merged = mergeExportPackages(
@@ -221,7 +222,7 @@ function EquivalenceImportComponent({
 						canonicalConcepts: finalConcepts,
 						canonicalProjections: finalProjections,
 						equivalenceLinks: finalLinks,
-						exportedAt: state.parsedData.exportedAt,
+						exportedAt: parsedData.exportedAt,
 						projectId: targetProjectId,
 						version: "1.0",
 					},
@@ -526,16 +527,15 @@ function EquivalenceImportComponent({
 										{/* Other Options */}
 										<div className="space-y-2">
 											<div className="flex items-center gap-2">
-												<Input
-													type="checkbox"
+												<Checkbox
 													id="validate-refs"
 													checked={state.options.validateReferences}
-													onCheckedChange={(checked) =>
+													onCheckedChange={(checked: boolean) =>
 														setState({
 															...state,
 															options: {
 																...state.options,
-																validateReferences: checked === true,
+																validateReferences: checked,
 															},
 														})
 													}
@@ -549,16 +549,15 @@ function EquivalenceImportComponent({
 											</div>
 
 											<div className="flex items-center gap-2">
-												<Input
-													type="checkbox"
+												<Checkbox
 													id="preserve-timestamps"
 													checked={state.options.preserveTimestamps}
-													onCheckedChange={(checked) =>
+													onCheckedChange={(checked: boolean) =>
 														setState({
 															...state,
 															options: {
 																...state.options,
-																preserveTimestamps: checked === true,
+																preserveTimestamps: checked,
 															},
 														})
 													}
@@ -572,16 +571,15 @@ function EquivalenceImportComponent({
 											</div>
 
 											<div className="flex items-center gap-2">
-												<Input
-													type="checkbox"
+												<Checkbox
 													id="update-project"
 													checked={state.options.updateProjectId}
-													onCheckedChange={(checked) =>
+													onCheckedChange={(checked: boolean) =>
 														setState({
 															...state,
 															options: {
 																...state.options,
-																updateProjectId: checked === true,
+																updateProjectId: checked,
 															},
 														})
 													}

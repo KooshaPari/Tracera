@@ -1,5 +1,5 @@
-import { memo } from "react";
 import { Progress } from "@tracertm/ui/components/Progress";
+import { memo } from "react";
 
 interface LoadingProgressProps {
 	loaded: number;
@@ -12,7 +12,8 @@ export const LoadingProgress = memo(function LoadingProgress({
 	total,
 	label = "Loading graph data",
 }: LoadingProgressProps) {
-	const progress = total > 0 ? (loaded / total) * 100 : 0;
+	const PERCENT_MULTIPLIER = 100;
+	const progress = total > 0 ? (loaded / total) * PERCENT_MULTIPLIER : 0;
 
 	return (
 		<div className="absolute top-4 right-4 bg-card border rounded-lg p-4 shadow-lg z-50 min-w-[200px]">

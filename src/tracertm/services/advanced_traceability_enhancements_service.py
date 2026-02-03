@@ -38,7 +38,7 @@ class AdvancedTraceabilityEnhancementsService:
             "items_in_cycles": cycles,
         }
 
-    def _has_cycle(self, item_id: str, visited: set, rec_stack: set, items: list[Any]) -> bool:
+    def _has_cycle(self, item_id: str, visited: set[Any], rec_stack: set[Any], items: list[Any]) -> bool:
         """Check if item has cycle using DFS."""
         visited.add(item_id)
         rec_stack.add(item_id)
