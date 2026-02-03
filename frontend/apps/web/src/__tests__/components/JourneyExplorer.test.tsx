@@ -2,6 +2,7 @@
 // Tests visualization, filtering, overlay, and export functionality
 
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { Item, Link } from "@tracertm/types";
 import { describe, expect, it, vi } from "vitest";
 import { JourneyExplorer } from "@/components/graph/JourneyExplorer";
@@ -11,64 +12,66 @@ import type { DerivedJourney } from "@/components/graph/JourneyExplorer";
 // TEST DATA
 // =============================================================================
 
+const now = new Date().toISOString();
+
 const mockItems: Item[] = [
 	{
-		createdAt: new Date().toISOString(),
+		createdAt: now,
 		id: "item-1",
 		priority: "high" as any,
 		projectId: "proj-1",
 		status: "done",
 		title: "Login Page",
 		type: "page",
-		updatedAt: new Date().toISOString(),
+		updatedAt: now,
 		version: 1,
 		view: "product" as any,
 	},
 	{
-		createdAt: new Date().toISOString(),
+		createdAt: now,
 		id: "item-2",
 		priority: "high" as any,
 		projectId: "proj-1",
 		status: "done",
 		title: "Dashboard",
 		type: "page",
-		updatedAt: new Date().toISOString(),
+		updatedAt: now,
 		version: 1,
 		view: "product" as any,
 	},
 	{
-		createdAt: new Date().toISOString(),
+		createdAt: now,
 		id: "item-3",
 		priority: "high" as any,
 		projectId: "proj-1",
 		status: "done",
 		title: "Auth API",
 		type: "api",
-		updatedAt: new Date().toISOString(),
+		updatedAt: now,
 		version: 1,
 		view: "technical" as any,
 	},
 	{
-		createdAt: new Date().toISOString(),
+		createdAt: now,
 		id: "item-4",
 		priority: "high" as any,
 		projectId: "proj-1",
 		status: "done",
 		title: "User Database",
 		type: "database",
-		updatedAt: new Date().toISOString(),
+		updatedAt: now,
 		version: 1,
 		view: "technical" as any,
 	},
 	{
-		createdAt: new Date().toISOString(),
+		createdAt: now,
 		id: "item-5",
 		priority: "high" as any,
 		projectId: "proj-1",
 		status: "in_progress",
 		title: "Checkout Flow",
 		type: "user_story",
-		updatedAt: new Date().toISOString(),
+		updatedAt: now,
 		version: 1,
 		view: "product" as any,
 	},
@@ -76,30 +79,38 @@ const mockItems: Item[] = [
 
 const mockLinks: Link[] = [
 	{
-		createdAt: new Date().toISOString(),
+		createdAt: now,
 		id: "link-1",
 		projectId: "proj-1",
 		sourceId: "item-1",
 		targetId: "item-3",
 		type: "implements",
+		updatedAt: now,
+		version: 1,
 	},
 	{
-		createdAt: new Date().toISOString(),
+		createdAt: now,
 		id: "link-2",
 		projectId: "proj-1",
 		sourceId: "item-3",
 		targetId: "item-4",
 		type: "depends_on",
+		updatedAt: now,
+		version: 1,
 	},
 	{
-		createdAt: new Date().toISOString(),
+		createdAt: now,
 		id: "link-3",
 		projectId: "proj-1",
 		sourceId: "item-1",
 		targetId: "item-2",
 		type: "related_to",
+		updatedAt: now,
+		version: 1,
 	},
 ];
+
+const setupUser = () => userEvent.setup();
 
 const mockJourneys: DerivedJourney[] = [
 	{
@@ -243,34 +254,36 @@ describe(JourneyExplorer, () => {
 		});
 	});
 
-	describe("Filtering", () => {
-		it("should filter journeys by search term", async () => {
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-				/>,
-			);
+		describe("Filtering", () => {
+			it("should filter journeys by search term", async () => {
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+					/>,
+				);
 
-			const searchInput = screen.getByPlaceholderText("Search journeys...");
-			await user.type(searchInput, "Login");
+				const user = setupUser();
+				const searchInput = screen.getByPlaceholderText("Search journeys...");
+				await user.type(searchInput, "Login");
 
 			expect(screen.getByText("Login Flow")).toBeInTheDocument();
 			expect(screen.queryByText("Data Flow")).not.toBeInTheDocument();
 		});
 
-		it("should clear filters with clear button", async () => {
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-				/>,
-			);
+			it("should clear filters with clear button", async () => {
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+					/>,
+				);
 
-			const searchInput = screen.getByPlaceholderText("Search journeys...");
-			await user.type(searchInput, "Login");
+				const user = setupUser();
+				const searchInput = screen.getByPlaceholderText("Search journeys...");
+				await user.type(searchInput, "Login");
 
 			expect(screen.queryByText("Data Flow")).not.toBeInTheDocument();
 
@@ -290,17 +303,18 @@ describe(JourneyExplorer, () => {
 			}
 		});
 
-		it("should show empty state when no journeys match filter", async () => {
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-				/>,
-			);
+			it("should show empty state when no journeys match filter", async () => {
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+					/>,
+				);
 
-			const searchInput = screen.getByPlaceholderText("Search journeys...");
-			await user.type(searchInput, "NonExistent");
+				const user = setupUser();
+				const searchInput = screen.getByPlaceholderText("Search journeys...");
+				await user.type(searchInput, "NonExistent");
 
 			expect(
 				screen.getByText("No journeys match your filters"),
@@ -341,18 +355,19 @@ describe(JourneyExplorer, () => {
 		});
 	});
 
-	describe("Interactions", () => {
-		it("should expand/collapse journey details", async () => {
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-				/>,
-			);
+		describe("Interactions", () => {
+			it("should expand/collapse journey details", async () => {
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+					/>,
+				);
 
-			const detailsButtons = screen.getAllByText("Details");
-			await user.click(detailsButtons[0]);
+				const user = setupUser();
+				const detailsButtons = screen.getAllByText("Details");
+				await user.click(detailsButtons[0]);
 
 			// After expand, should show additional details
 			await waitFor(() => {
@@ -361,21 +376,22 @@ describe(JourneyExplorer, () => {
 			});
 		});
 
-		it("should call onJourneySelect when journey is clicked", async () => {
-			const onJourneySelect = vi.fn();
+			it("should call onJourneySelect when journey is clicked", async () => {
+				const onJourneySelect = vi.fn();
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-					onJourneySelect={onJourneySelect}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+						onJourneySelect={onJourneySelect}
+					/>,
+				);
 
-			const journeyCard = screen
-				.getByText("Login Flow")
-				.closest("[class*='Card']");
+				const user = setupUser();
+				const journeyCard = screen
+					.getByText("Login Flow")
+					.closest("[class*='Card']");
 			if (journeyCard) {
 				await user.click(journeyCard);
 				expect(onJourneySelect).toHaveBeenCalledWith(
@@ -384,20 +400,21 @@ describe(JourneyExplorer, () => {
 			}
 		});
 
-		it("should call onJourneyDelete when delete button is clicked", async () => {
-			const onJourneyDelete = vi.fn();
+			it("should call onJourneyDelete when delete button is clicked", async () => {
+				const onJourneyDelete = vi.fn();
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-					onJourneyDelete={onJourneyDelete}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+						onJourneyDelete={onJourneyDelete}
+					/>,
+				);
 
-			const deleteButtons = screen
-				.getAllByRole("button")
+				const user = setupUser();
+				const deleteButtons = screen
+					.getAllByRole("button")
 				.filter(
 					(btn) =>
 						btn.querySelector('[data-lucide="trash-2"]') !== null ||
@@ -411,22 +428,23 @@ describe(JourneyExplorer, () => {
 		});
 	});
 
-	describe("Overlay Mode", () => {
-		it("should toggle overlay mode", async () => {
-			const onJourneyOverlay = vi.fn();
+		describe("Overlay Mode", () => {
+			it("should toggle overlay mode", async () => {
+				const onJourneyOverlay = vi.fn();
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-					selectedJourneyIds={["journey-1"]}
-					onJourneyOverlay={onJourneyOverlay}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+						selectedJourneyIds={["journey-1"]}
+						onJourneyOverlay={onJourneyOverlay}
+					/>,
+				);
 
-			// Find and click the overlay button (Eye icon)
-			const eyeButtons = screen
+				const user = setupUser();
+				// Find and click the overlay button (Eye icon)
+				const eyeButtons = screen
 				.getAllByRole("button")
 				.filter((btn) => btn.querySelector('[data-lucide="eye"]') !== null);
 
@@ -458,19 +476,20 @@ describe(JourneyExplorer, () => {
 		});
 	});
 
-	describe("Export Functionality", () => {
-		it("should open export dialog when export button clicked", async () => {
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-					selectedJourneyIds={["journey-1"]}
-				/>,
-			);
+		describe("Export Functionality", () => {
+			it("should open export dialog when export button clicked", async () => {
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+						selectedJourneyIds={["journey-1"]}
+					/>,
+				);
 
-			// Find download button
-			const downloadButtons = screen
+				const user = setupUser();
+				// Find download button
+				const downloadButtons = screen
 				.getAllByRole("button")
 				.filter(
 					(btn) => btn.querySelector('[data-lucide="download"]') !== null,
@@ -482,21 +501,22 @@ describe(JourneyExplorer, () => {
 			}
 		});
 
-		it("should call onExport with correct format", async () => {
-			const onExport = vi.fn();
+			it("should call onExport with correct format", async () => {
+				const onExport = vi.fn();
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-					selectedJourneyIds={["journey-1"]}
-					onExport={onExport}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+						selectedJourneyIds={["journey-1"]}
+						onExport={onExport}
+					/>,
+				);
 
-			const downloadButtons = screen
-				.getAllByRole("button")
+				const user = setupUser();
+				const downloadButtons = screen
+					.getAllByRole("button")
 				.filter(
 					(btn) => btn.querySelector('[data-lucide="download"]') !== null,
 				);
@@ -513,18 +533,19 @@ describe(JourneyExplorer, () => {
 		});
 	});
 
-	describe("Create Journey", () => {
-		it("should open create journey dialog", async () => {
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-				/>,
-			);
+		describe("Create Journey", () => {
+			it("should open create journey dialog", async () => {
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+					/>,
+				);
 
-			const createButtons = screen
-				.getAllByRole("button")
+				const user = setupUser();
+				const createButtons = screen
+					.getAllByRole("button")
 				.filter((btn) => btn.querySelector('[data-lucide="plus"]') !== null);
 
 			if (createButtons.length > 0) {
@@ -533,20 +554,21 @@ describe(JourneyExplorer, () => {
 			}
 		});
 
-		it("should call onJourneyCreate with correct data", async () => {
-			const onJourneyCreate = vi.fn();
+			it("should call onJourneyCreate with correct data", async () => {
+				const onJourneyCreate = vi.fn();
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-					onJourneyCreate={onJourneyCreate}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+						onJourneyCreate={onJourneyCreate}
+					/>,
+				);
 
-			const createButtons = screen
-				.getAllByRole("button")
+				const user = setupUser();
+				const createButtons = screen
+					.getAllByRole("button")
 				.filter((btn) => btn.querySelector('[data-lucide="plus"]') !== null);
 
 			if (createButtons.length > 0) {
@@ -569,17 +591,18 @@ describe(JourneyExplorer, () => {
 			}
 		});
 
-		it("should disable create button when name is empty", async () => {
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
-				/>,
-			);
+			it("should disable create button when name is empty", async () => {
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
+					/>,
+				);
 
-			const createButtons = screen
-				.getAllByRole("button")
+				const user = setupUser();
+				const createButtons = screen
+					.getAllByRole("button")
 				.filter((btn) => btn.querySelector('[data-lucide="plus"]') !== null);
 
 			if (createButtons.length > 0) {
@@ -624,13 +647,13 @@ describe(JourneyExplorer, () => {
 		});
 	});
 
-	describe("Loading State", () => {
-		it("should disable controls when loading", () => {
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={mockJourneys}
+		describe("Loading State", () => {
+			it("should disable controls when loading", () => {
+				const { rerender } = render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={mockJourneys}
 					isLoading={false}
 				/>,
 			);

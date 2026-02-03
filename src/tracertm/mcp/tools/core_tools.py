@@ -177,7 +177,7 @@ async def snapshot_project(project_id: str, label: str) -> dict[str, Any]:
 
 
 @mcp.tool()
-async def create_item(
+async def create_item(  # noqa: PLR0913
     title: str,
     view: str,
     item_type: str,
@@ -335,7 +335,7 @@ async def get_item(item_id: str) -> dict[str, Any]:
 
 
 @mcp.tool()
-def update_item(
+def update_item(  # noqa: C901, PLR0913
     item_id: str,
     title: str | None = None,
     description: str | None = None,
@@ -407,7 +407,7 @@ def update_item(
 
 
 @mcp.tool()
-def delete_item(item_id: str) -> dict[str, Any]:
+def delete_item(item_id: str) -> dict[str, Any]:  # noqa: C901
     """Soft-delete an item in the current project (sets deleted_at)."""
 
     config = _get_config_manager()
@@ -711,7 +711,7 @@ def create_link(
 
 
 @mcp.tool()
-async def list_links(
+async def list_links(  # noqa: C901
     item_id: str | None = None,
     link_type: str | None = None,
     limit: int = 50,

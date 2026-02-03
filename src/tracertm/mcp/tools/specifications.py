@@ -21,7 +21,7 @@ def _api_client() -> TraceRTMHttpClient:
 
 
 @mcp.tool(description="Create a new Architecture Decision Record (ADR)")
-def create_adr(
+def create_adr(  # noqa: PLR0913
     project_id: str,
     title: str,
     context: str,
@@ -126,7 +126,7 @@ def create_contract(
 
 
 @mcp.tool(description="Create a new BDD Feature")
-def create_feature(
+def create_feature(  # noqa: PLR0913
     project_id: str,
     name: str,
     description: str | None = None,

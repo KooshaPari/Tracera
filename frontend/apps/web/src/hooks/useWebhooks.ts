@@ -191,7 +191,7 @@ async function updateWebhook(
 ): Promise<WebhookIntegration> {
 	const payload: Record<string, unknown> = {};
 	if (data["name"] !== undefined) {
-		payload.name = data["name"] as string;
+		payload["name"] = data["name"] as string;
 	}
 	if (data["description"] !== undefined) {
 		payload["description"] = data["description"];
@@ -378,11 +378,11 @@ export function useCreateWebhook() {
 }
 
 export function useUpdateWebhook() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: ({ id, data }: { id: string; data: UpdateWebhookData }) =>
 			updateWebhook(id, data),
-		onSuccess: (data) => {
+		onSuccess: (_data) => {
 			undefined;
 			undefined;
 		},
@@ -390,11 +390,11 @@ export function useUpdateWebhook() {
 }
 
 export function useSetWebhookStatus() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: ({ id, status }: { id: string; status: WebhookStatus }) =>
 			setWebhookStatus(id, status),
-		onSuccess: (data) => {
+		onSuccess: (_data) => {
 			undefined;
 			undefined;
 		},
@@ -402,17 +402,17 @@ export function useSetWebhookStatus() {
 }
 
 export function useRegenerateWebhookSecret() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: regenerateSecret,
-		onSuccess: (data) => {
+		onSuccess: (_data) => {
 			undefined;
 		},
 	});
 }
 
 export function useDeleteWebhook() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: deleteWebhook,
 		onSuccess: () => {

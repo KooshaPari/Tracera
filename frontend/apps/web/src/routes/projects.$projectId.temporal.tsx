@@ -6,9 +6,6 @@ import { ProgressDashboard, TemporalNavigator } from "@/components/temporal";
 import { logger } from "@/lib/logger";
 import { requireAuth } from "@/lib/route-guards";
 
-// Animation constants
-const ANIMATION_DURATION_MS = 500;
-
 // Mock branch data factory
 const createMockBranches = (): Branch[] => [
 	{

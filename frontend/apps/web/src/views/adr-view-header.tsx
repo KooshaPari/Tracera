@@ -3,7 +3,8 @@
 
 import { Button, Tabs, TabsList, TabsTrigger } from "@tracertm/ui";
 import { History, LayoutList, Plus } from "lucide-react";
-import React from "react";
+import type React from "react";
+import { useCallback } from "react";
 
 interface ADRViewHeaderProps {
 	onCreate: () => void;
@@ -15,8 +16,8 @@ const ADRViewHeader = ({
 	onCreate,
 	onViewChange,
 	viewMode,
-}: ADRViewHeaderProps): JSX.Element => {
-	const handleValueChange = React.useCallback(
+}: ADRViewHeaderProps): React.ReactElement => {
+	const handleValueChange = useCallback(
 		(nextValue: string) => {
 			if (nextValue === "list") {
 				onViewChange("list");

@@ -235,7 +235,9 @@ export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
 	const links: EquivalenceLink[] = [];
 
 	for (let i = 1; i < lines.length; i += 1) {
-		const values = parseCSVLine(lines[i]);
+		const line = lines[i];
+		if (line === undefined) continue;
+		const values = parseCSVLine(line);
 		if (values.length !== header.length) {
 			continue;
 		}
@@ -247,24 +249,24 @@ export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
 
 		try {
 			const link: EquivalenceLink = {
-				canonicalId: record["canonicalId"],
-				confidence: parseFloat(record["confidence"]),
-				confirmedAt: record["confirmedAt"],
-				confirmedBy: record["confirmedBy"],
-				createdAt: record["createdAt"],
+				canonicalId: record["canonicalId"] ?? "",
+				confidence: parseFloat(record["confidence"] ?? "0"),
+				confirmedAt: record["confirmedAt"] ?? "",
+				confirmedBy: record["confirmedBy"] ?? "",
+				createdAt: record["createdAt"] ?? "",
 				equivalenceType: record["equivalenceType"] as EquivalenceLinkType,
-				id: record["id"],
-				projectId: record["projectId"],
-				rejectedReason: record["rejectedReason"],
-				sourceItemId: record["sourceItemId"],
+				id: record["id"] ?? "",
+				projectId: record["projectId"] ?? "",
+				rejectedReason: record["rejectedReason"] ?? "",
+				sourceItemId: record["sourceItemId"] ?? "",
 				status: record["status"] as
 					| "suggested"
 					| "confirmed"
 					| "rejected"
 					| "auto_confirmed",
 				strategies: JSON.parse(record["strategies"] || "[]"),
-				targetItemId: record["targetItemId"],
-				updatedAt: record["updatedAt"],
+				targetItemId: record["targetItemId"] ?? "",
+				updatedAt: record["updatedAt"] ?? "",
 			};
 			EquivalenceLinkSchema.parse(link);
 			links.push(link);
@@ -289,7 +291,9 @@ export function deserializeConceptsFromCSV(csv: string): CanonicalConcept[] {
 	const concepts: CanonicalConcept[] = [];
 
 	for (let i = 1; i < lines.length; i += 1) {
-		const values = parseCSVLine(lines[i]);
+		const line = lines[i];
+		if (line === undefined) continue;
+		const values = parseCSVLine(line);
 		if (values.length !== header.length) {
 			continue;
 		}
@@ -305,32 +309,32 @@ export function deserializeConceptsFromCSV(csv: string): CanonicalConcept[] {
 				childConceptIds: record["childConceptIds"]
 					? record["childConceptIds"].split("|")
 					: undefined,
-				confidence: parseFloat(record["confidence"]!),
-				createdAt: record["createdAt"]!,
+				confidence: parseFloat(record["confidence"] ?? "0"),
+				createdAt: record["createdAt"] ?? "",
 				createdBy: record["createdBy"],
 				description: record["description"],
-				domain: record["domain"]!,
+				domain: record["domain"] ?? "",
 				embedding: record["embedding"]
 					? JSON.parse(record["embedding"])
 					: undefined,
 				embeddingModel: record["embeddingModel"],
 				embeddingUpdatedAt: record["embeddingUpdatedAt"],
-				id: record["id"]!,
-				name: record["name"]!,
+				id: record["id"] ?? "",
+				name: record["name"] ?? "",
 				parentConceptId: record["parentConceptId"],
-				projectId: record["projectId"]!,
-				projectionCount: parseInt(record["projectionCount"]!, 10),
+				projectId: record["projectId"] ?? "",
+				projectionCount: parseInt(record["projectionCount"] ?? "0", 10),
 				projectionIds: record["projectionIds"]
 					? record["projectionIds"].split("|")
 					: undefined,
 				relatedConceptIds: record["relatedConceptIds"]
 					? record["relatedConceptIds"].split("|")
 					: undefined,
-				slug: record["slug"]!,
+				slug: record["slug"] ?? "",
 				source: record["source"] as "manual" | "inferred" | "imported",
 				tags: record["tags"] ? record["tags"].split("|") : undefined,
-				updatedAt: record["updatedAt"]!,
-				version: parseInt(record["version"]!, 10),
+				updatedAt: record["updatedAt"] ?? "",
+				version: parseInt(record["version"] ?? "0", 10),
 			};
 			CanonicalConceptSchema.parse(concept);
 			concepts.push(concept);
@@ -357,7 +361,9 @@ export function deserializeProjectionsFromCSV(
 	const projections: CanonicalProjection[] = [];
 
 	for (let i = 1; i < lines.length; i += 1) {
-		const values = parseCSVLine(lines[i]);
+		const line = lines[i];
+		if (line === undefined) continue;
+		const values = parseCSVLine(line);
 		if (values.length !== header.length) {
 			continue;
 		}
@@ -369,22 +375,22 @@ export function deserializeProjectionsFromCSV(
 
 		try {
 			const projection: CanonicalProjection = {
-				canonicalId: record["canonicalId"]!,
-				confidence: parseFloat(record["confidence"]!),
+				canonicalId: record["canonicalId"] ?? "",
+				confidence: parseFloat(record["confidence"] ?? "0"),
 				confirmedAt: record["confirmedAt"],
 				confirmedBy: record["confirmedBy"],
-				createdAt: record["createdAt"]!,
-				id: record["id"]!,
+				createdAt: record["createdAt"] ?? "",
+				id: record["id"] ?? "",
 				isConfirmed: record["isConfirmed"] === "true",
 				isRejected: record["isRejected"] === "true",
-				itemId: record["itemId"]!,
+				itemId: record["itemId"] ?? "",
 				metadata: record["metadata"]
 					? JSON.parse(record["metadata"])
 					: undefined,
-				perspective: record["perspective"]!,
-				projectId: record["projectId"]!,
+				perspective: record["perspective"] ?? "",
+				projectId: record["projectId"] ?? "",
 				strategy: record["strategy"] as EquivalenceStrategy,
-				updatedAt: record["updatedAt"]!,
+				updatedAt: record["updatedAt"] ?? "",
 			};
 			CanonicalProjectionSchema.parse(projection);
 			projections.push(projection);

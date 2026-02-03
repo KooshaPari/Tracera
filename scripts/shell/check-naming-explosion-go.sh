@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Go Naming Explosion Detection Script
-# Prevents AI from creating versioned/prefixed package/file names
-# Part of AI coding quality gates
+# Prevents AI from creating versioned/prefixed package/file names.
+# Catches all casing styles (Pascal, camel, snake, kebab) and positions (prefix, suffix, middle).
 
 set -e
 
@@ -13,80 +13,65 @@ NC='\033[0m' # No Color
 
 echo "🔍 Checking Go files for naming explosion patterns..."
 
-# Search in Go backend (exclude vendor, generated)
-# Check if Go backend exists - TraceRTM uses backend/ with Go files at root
 if [ ! -d "backend" ]; then
   echo -e "${GREEN}✅ No backend directory found - skipping check${NC}"
   exit 0
 fi
 
 SEARCH_DIRS="backend"
+# shellcheck disable=SC2086
+# Exclude domain paths: temporal (Temporal.io), template — avoid false positives on "temp"
+run_find() { find $SEARCH_DIRS -type f -name '*.go' -not -path '*/vendor/*' -not -path '*_test.go' -not -path '*/pb/*.pb.go' "$@" | grep -v -iE 'temporal|template' || true; }
 
-# Check for versioned file names (V2, _v2, etc.)
-VERSIONED_FILES=$(find $SEARCH_DIRS -type f -name "*.go" \
-  -not -path "*/vendor/*" \
-  -not -path "*_test.go" \
-  -not -path "*/pb/*.pb.go" | \
-  grep -E '(_v|_V|V)[0-9]+\.go$' || true)
+# Domain-specific exceptions (legitimate use of otherwise forbidden words)
+# These patterns are excluded from forbidden word checks:
+# - backup: backup/restore functionality (services, handlers, repositories)
+# - benchmark: performance benchmarking (test files, utilities)
+filter_domain_exceptions() {
+  grep -v -E 'backup|benchmark'
+}
 
-# Check for prefixed naming (Go uses PascalCase for exported)
-# Match New*, Improved*, Enhanced*, etc. at file level
-PREFIXED_FILES=$(find $SEARCH_DIRS -type f -name "*.go" \
-  -not -path "*/vendor/*" \
-  -not -path "*_test.go" \
-  -not -path "*/pb/*.pb.go" | \
-  grep -E '(New|Improved|Enhanced|Updated|Fixed|Refactored|Modified|Revised)[A-Z][a-zA-Z0-9]*\.go$' || true)
+# Forbidden words (all casings via grep -iE); use -e for pattern on macOS
+WORDS="new|improved|enhanced|updated|fixed|refactored|modified|revised|copy|backup|old|draft|final|latest|temp|tmp|wip|legacy|deprecated|duplicate|alternate|iteration|replacement|variant"
 
-# Check for suffixed naming (*New, *Improved, etc.)
-SUFFIXED_FILES=$(find $SEARCH_DIRS -type f -name "*.go" \
-  -not -path "*/vendor/*" \
-  -not -path "*_test.go" \
-  -not -path "*/pb/*.pb.go" | \
-  grep -E '(New|Improved|Enhanced|Updated|Fixed|Refactored)\.go$' || true)
+# --- Version / rev / iter (all casings) ---
+VERSIONED_FILES=$(run_find | grep -iE '(_v|V|v|version|ver|rev|iter)[-_]?[0-9]+\.go$' || true)
+# At least 2 letters then digits (exclude s3.go, a1.go)
+NAME_DIGITS_FILES=$(run_find | grep -E '[A-Za-z]{2,}[0-9]+\.go$' || true)
+NUMBERED_FILES=$(run_find | grep -E '_[0-9]+\.go$' || true)
 
-# Check for numbered suffixes (_2, _3, etc.)
-NUMBERED_FILES=$(find $SEARCH_DIRS -type f -name "*.go" \
-  -not -path "*/vendor/*" \
-  -not -path "*_test.go" \
-  -not -path "*/pb/*.pb.go" | \
-  grep -E '_[0-9]+\.go$' || true)
+# --- Phase (all casings) ---
+PHASE_END_FILES=$(run_find | grep -iE 'phase[-_]?[0-9][0-9]*\.go$' || true)
+PHASE_MID_FILES=$(run_find | grep -iE '_phase[0-9][0-9]*_|phase[0-9][0-9]*_|Phase[0-9]|phase[-_]?[0-9][0-9]*_' || true)
 
-# Check for phase suffixes (*_phase2, *_phase3, *Phase2*, etc.)
-PHASE_FILES=$(find $SEARCH_DIRS -type f -name "*.go" \
-  -not -path "*/vendor/*" \
-  -not -path "*_test.go" \
-  -not -path "*/pb/*.pb.go" | \
-  grep -E '(_phase[0-9]|_phase[0-9][0-9]|phase[0-9]_|phase[0-9][0-9]_|Phase[0-9])\.go$' || true)
-
-# Check for other common AI versioning (*Final, *Latest, *_final, etc.)
-OTHER_VERSION_FILES=$(find $SEARCH_DIRS -type f -name "*.go" \
-  -not -path "*/vendor/*" \
-  -not -path "*_test.go" \
-  -not -path "*/pb/*.pb.go" | \
-  grep -E '(Final|Latest|Revised|_final|_latest|_revised)\.go$' || true)
+# --- Forbidden words: prefix (New*, Improved*), suffix (*New, *_final), middle (*_backup_*) ---
+# Apply domain exceptions to filter out legitimate uses (backup, benchmark)
+SUFFIX_PAT="_(${WORDS})\\.go\$"
+PREFIX_PAT="/(${WORDS})_[a-zA-Z0-9_]+\\.go\$"
+# Word boundary: _word_ or _word. so "temp" doesn't match "temporal"
+MIDDLE_PAT="_(${WORDS})(_|\\.)"
+KEBAB_PAT="-(${WORDS})(\\.go\$|_)"
+FORBIDDEN_SUFFIX=$(run_find | grep -i -E -e "$SUFFIX_PAT" | filter_domain_exceptions || true)
+FORBIDDEN_PREFIX=$(run_find | grep -i -E -e "$PREFIX_PAT" | filter_domain_exceptions || true)
+FORBIDDEN_MIDDLE=$(run_find | grep -i -E -e "$MIDDLE_PAT" | filter_domain_exceptions || true)
+FORBIDDEN_KEBAB=$(run_find | grep -i -E -e "$KEBAB_PAT" | filter_domain_exceptions || true)
+# Pascal prefix/suffix: New*.go, *New.go, *Final.go (use -e for macOS grep)
+PASCAL_PREFIX_PAT="/(New|Improved|Enhanced|Updated|Fixed|Refactored|Modified|Revised|Copy|Backup|Old|Draft|Final|Latest|Temp|Tmp|Wip|Legacy|Deprecated|Duplicate|Alternate)[A-Z][a-zA-Z0-9]*\\.go\$"
+PASCAL_SUFFIX_PAT="(New|Improved|Enhanced|Updated|Fixed|Refactored|Modified|Revised|Final|Latest|Revised)\\.go\$"
+PASCAL_PREFIX=$(run_find | grep -i -E -e "$PASCAL_PREFIX_PAT" || true)
+PASCAL_SUFFIX=$(run_find | grep -i -E -e "$PASCAL_SUFFIX_PAT" || true)
 
 # Combine all violations
 ALL_VIOLATIONS=""
-if [ -n "$VERSIONED_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$VERSIONED_FILES\n"
-fi
-if [ -n "$PREFIXED_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$PREFIXED_FILES\n"
-fi
-if [ -n "$SUFFIXED_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$SUFFIXED_FILES\n"
-fi
-if [ -n "$NUMBERED_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$NUMBERED_FILES\n"
-fi
-if [ -n "$PHASE_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$PHASE_FILES\n"
-fi
-if [ -n "$OTHER_VERSION_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$OTHER_VERSION_FILES\n"
-fi
+for var in VERSIONED_FILES NAME_DIGITS_FILES NUMBERED_FILES PHASE_END_FILES PHASE_MID_FILES \
+  FORBIDDEN_SUFFIX FORBIDDEN_PREFIX FORBIDDEN_MIDDLE FORBIDDEN_KEBAB PASCAL_PREFIX PASCAL_SUFFIX; do
+  eval "val=\$$var"
+  if [ -n "$val" ]; then
+    ALL_VIOLATIONS="$ALL_VIOLATIONS$val
+"
+  fi
+done
 
-# Report results
 if [ -n "$ALL_VIOLATIONS" ]; then
   echo -e "${RED}❌ NAMING EXPLOSION DETECTED${NC}"
   echo ""
@@ -94,30 +79,11 @@ if [ -n "$ALL_VIOLATIONS" ]; then
   echo ""
   echo -e "$ALL_VIOLATIONS" | sort | uniq
   echo ""
-  echo -e "${YELLOW}Forbidden patterns (Go PascalCase):${NC}"
-  echo "  • Versioned: DashboardV2.go, ServiceV2.go, api_v2.go"
-  echo "  • Prefixed: NewDashboard.go, ImprovedService.go, EnhancedAPI.go"
-  echo "  • Suffixed: DashboardNew.go, ServiceImproved.go"
-  echo "  • Numbered: Dashboard_2.go, Service_3.go"
-  echo "  • Phase suffixes: benchmark_phase2.go, servicePhase3.go"
-  echo "  • Other versions: ServiceFinal.go, handlerLatest.go"
-  echo ""
-  echo -e "${YELLOW}Required action:${NC}"
-  echo "  1. Identify the canonical (currently used) file"
-  echo "  2. Edit the canonical file in place"
-  echo "  3. Delete ALL versioned/prefixed variants"
-  echo "  4. Update imports to use canonical names only"
-  echo ""
-  echo -e "${YELLOW}Why this matters:${NC}"
-  echo "  • This is an AI-coded project"
-  echo "  • Naming explosion creates orphaned files"
-  echo "  • Each 'version' confuses future AI sessions"
-  echo "  • Backward compatibility is NOT a goal here"
-  echo "  • We aggressively evolve - edit in place always"
-  echo ""
-  echo -e "${YELLOW}Exception:${NC}"
-  echo "  • /v2/, /v3/ in import paths for true API versioning is acceptable"
-  echo "  • This script checks FILE names, not import path versions"
+  echo -e "${YELLOW}Forbidden patterns (all casings):${NC}"
+  echo "  • Versioned: *_v2.go, *V2.go, *v2.go, *version2.go, *HandlerV2.go"
+  echo "  • Name+digits: *Handler2.go, *Service3.go"
+  echo "  • Phase: *phase1.go, *Phase2.go, *_phase3_*.go"
+  echo "  • Forbidden words (prefix/suffix/middle): New*, *New, *_new, *_backup_*, etc."
   echo ""
   echo "See: docs/reports/NAMING_EXPLOSION_GUARD_STATUS.md"
   echo ""

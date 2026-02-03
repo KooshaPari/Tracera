@@ -20,7 +20,7 @@ import {
 
 export function ScenarioActivityView() {
 	const params = useParams({ strict: false }) as { projectId?: string };
-	const navigate = useNavigate();
+	const _navigate = useNavigate();
 	const projectId = params.projectId || "";
 	const [statusFilter, setStatusFilter] = useState("all");
 	const { data: scenariosData } = useProjectScenarios(

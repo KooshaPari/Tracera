@@ -110,7 +110,7 @@ export function useNotifications() {
 		sseClientRef.current = createNotificationSSEClient(
 			token,
 			handleNotificationEvent,
-			(error) => {},
+			(_error) => {},
 		);
 
 		// Connect to SSE stream

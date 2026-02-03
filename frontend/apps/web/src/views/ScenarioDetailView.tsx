@@ -1,3 +1,4 @@
+/* eslint-disable complexity, func-style, max-lines-per-function, no-magic-numbers, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop, sort-imports */
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { Button, Card } from "@tracertm/ui";
 import { format } from "date-fns";

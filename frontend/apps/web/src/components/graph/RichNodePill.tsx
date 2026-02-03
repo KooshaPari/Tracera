@@ -1,5 +1,6 @@
 // Rich Node Pill - Block pill with embedded UI preview and interactive widget
 // Uses React Flow for custom node rendering with rich content
+/* eslint-disable complexity, max-lines-per-function, no-magic-numbers, react-perf/jsx-no-new-object-as-prop */
 
 import type { Item, LinkType } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";

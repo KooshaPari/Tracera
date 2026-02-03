@@ -140,7 +140,7 @@ class GraphService:
     """
 
     @staticmethod
-    def AnalyzeImpact(
+    def AnalyzeImpact(  # noqa: PLR0913
         request,
         target,
         options=(),
@@ -170,7 +170,7 @@ class GraphService:
         )
 
     @staticmethod
-    def FindCycles(
+    def FindCycles(  # noqa: PLR0913
         request,
         target,
         options=(),
@@ -200,7 +200,7 @@ class GraphService:
         )
 
     @staticmethod
-    def CalculatePath(
+    def CalculatePath(  # noqa: PLR0913
         request,
         target,
         options=(),
@@ -230,7 +230,7 @@ class GraphService:
         )
 
     @staticmethod
-    def StreamGraphUpdates(
+    def StreamGraphUpdates(  # noqa: PLR0913
         request,
         target,
         options=(),
@@ -373,7 +373,7 @@ class AIService:
     """
 
     @staticmethod
-    def AnalyzeRequirement(
+    def AnalyzeRequirement(  # noqa: PLR0913
         request,
         target,
         options=(),
@@ -403,7 +403,7 @@ class AIService:
         )
 
     @staticmethod
-    def GenerateSuggestions(
+    def GenerateSuggestions(  # noqa: PLR0913
         request,
         target,
         options=(),
@@ -433,7 +433,7 @@ class AIService:
         )
 
     @staticmethod
-    def DetectEquivalences(
+    def DetectEquivalences(  # noqa: PLR0913
         request,
         target,
         options=(),
@@ -463,7 +463,7 @@ class AIService:
         )
 
     @staticmethod
-    def ExtractEntities(
+    def ExtractEntities(  # noqa: PLR0913
         request,
         target,
         options=(),

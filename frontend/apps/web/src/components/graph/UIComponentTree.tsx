@@ -77,6 +77,9 @@ function buildUITree(items: Item[], links: Link[]): TreeNode[] {
 		if (link.type === "related_to" || link.type === "depends_on") {
 			const source = itemMap.get(link.sourceId);
 			const target = itemMap.get(link.targetId);
+			if (!source || !target) {
+				continue;
+			}
 			const srcType = source.type ? source.type.toLowerCase() : "";
 			const tgtType = target.type ? target.type.toLowerCase() : "";
 			if (source && target && UI_TYPES.has(srcType) && UI_TYPES.has(tgtType)) {
@@ -145,7 +148,6 @@ interface TreeItemProps {
 	expandedIds: Set<string>;
 	onToggle: (id: string) => void;
 	onSelect: (id: string) => void;
-	itemMap: Map<string, Item>;
 }
 
 interface TreeToolbarProps {
@@ -564,15 +566,14 @@ function UIComponentTreeComponent({
 						{/* Tree */}
 						{filteredTree.length > 0 ? (
 							filteredTree.map((node) => (
-								<TreeItem
-									key={node.id}
-									node={node}
-									selectedId={selectedItemId}
-									expandedIds={expandedIds}
-									onToggle={handleToggle}
-									onSelect={onSelectItem}
-									itemMap={itemMap}
-								/>
+									<TreeItem
+										key={node.id}
+										node={node}
+										selectedId={selectedItemId}
+										expandedIds={expandedIds}
+										onToggle={handleToggle}
+										onSelect={onSelectItem}
+									/>
 							))
 						) : (
 							<EmptyTreeState />

@@ -12,7 +12,7 @@ from __future__ import annotations
 import asyncio
 import uuid
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, TypedDict
 
 from fastmcp.exceptions import ToolError
 from sqlalchemy import func
@@ -26,34 +26,71 @@ from tracertm.mcp.tools.response_optimizer import (
 from tracertm.models.item import Item
 
 
+class CreateItemOptionsV2(TypedDict, total=False):
+    """Optional fields for create_item_v2."""
+
+    description: str | None
+    status: str
+    priority: str
+    owner: str | None
+    parent_id: str | None
+    metadata: dict[str, Any] | None
+
+
+class UpdateItemOptionsV2(TypedDict, total=False):
+    """Optional fields for update_item_v2."""
+
+    title: str | None
+    description: str | None
+    status: str | None
+    priority: str | None
+    owner: str | None
+    metadata: dict[str, Any] | None
+
+
+class QueryItemsFiltersV2(TypedDict, total=False):
+    """Filters for query_items_v2."""
+
+    view: str | None
+    item_type: str | None
+    status: str | None
+    owner: str | None
+
+
+def _apply_item_updates_v2(item: Item, opts: UpdateItemOptionsV2) -> None:
+    """Apply optional update fields to an Item. Mutates item in place."""
+    if opts.get("title") is not None:
+        item.title = opts["title"]
+    if opts.get("description") is not None:
+        item.description = opts["description"]
+    if opts.get("status") is not None:
+        item.status = opts["status"]
+    if opts.get("priority") is not None:
+        item.priority = opts["priority"]
+    if opts.get("owner") is not None:
+        item.owner = opts["owner"]
+    if opts.get("metadata") is not None:
+        current = item.item_metadata or {}
+        current.update(opts["metadata"])
+        item.item_metadata = current
+    item.updated_at = datetime.now(UTC)
+
+
 @mcp.tool(description="Create item (optimized)")
 async def create_item_v2(
     title: str,
     view: str,
     item_type: str,
-    description: str | None = None,
-    status: str = "todo",
-    priority: str = "medium",
-    owner: str | None = None,
-    parent_id: str | None = None,
-    metadata: dict[str, Any] | None = None,
+    options: CreateItemOptionsV2 | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Create a new item (optimized, lean response).
-
-    This is a token-optimized version of create_item that returns
-    minimal response data (50% fewer tokens).
 
     Args:
         title: Item title (required)
         view: View category (FEATURE, REQUIREMENT, TEST, etc.)
         item_type: Specific type within the view
-        description: Detailed description
-        status: Item status (todo, in_progress, done, etc.)
-        priority: Priority level (low, medium, high, critical)
-        owner: Owner/assignee
-        parent_id: Parent item ID for hierarchical items
-        metadata: Additional metadata as key-value pairs
+        options: Optional dict with description, status, priority, owner, parent_id, metadata
         ctx: MCP context
 
     Returns:
@@ -76,9 +113,15 @@ async def create_item_v2(
             )
 
         view = view.upper()
+        opts = options or {}
+        description = opts.get("description")
+        status = opts.get("status", "todo")
+        priority = opts.get("priority", "medium")
+        owner = opts.get("owner")
+        parent_id = opts.get("parent_id")
+        metadata = opts.get("metadata")
 
         with get_session() as session:
-            # Generate external ID
             count = session.query(func.count(Item.id)).filter(Item.project_id == project_id, Item.view == view).scalar()
             external_id = f"{view[:3].upper()}-{count + 1}"
 
@@ -101,7 +144,6 @@ async def create_item_v2(
             session.add(item)
             session.commit()
 
-            # Return lean response
             return optimize_item_response(item, include_metadata=False)
 
     except ToolError as e:
@@ -189,23 +231,14 @@ async def get_item_v2(
 
 @mcp.tool(description="Query items (optimized)")
 async def query_items_v2(
-    view: str | None = None,
-    item_type: str | None = None,
-    status: str | None = None,
-    owner: str | None = None,
+    filters: QueryItemsFiltersV2 | None = None,
     limit: int = 50,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Query items with filters (optimized, lean response).
 
-    Returns minimal item data by default. For large queries (>50 items),
-    use stream_items instead for better token efficiency.
-
     Args:
-        view: Filter by view (FEATURE, REQUIREMENT, TEST, etc.)
-        item_type: Filter by item type
-        status: Filter by status
-        owner: Filter by owner
+        filters: Optional dict with view, item_type, status, owner
         limit: Maximum results (default 50, max 100)
         ctx: MCP context
 
@@ -216,6 +249,7 @@ async def query_items_v2(
     try:
         project_id = require_project()
         limit = min(limit, 100)
+        flt = filters or {}
 
         with get_session() as session:
             query = session.query(Item).filter(
@@ -223,16 +257,15 @@ async def query_items_v2(
                 Item.deleted_at.is_(None),
             )
 
-            if view:
-                query = query.filter(Item.view == view.upper())
-            if item_type:
-                query = query.filter(Item.item_type == item_type)
-            if status:
-                query = query.filter(Item.status == status)
-            if owner:
-                query = query.filter(Item.owner == owner)
+            if flt.get("view"):
+                query = query.filter(Item.view == (flt["view"] or "").upper())
+            if flt.get("item_type"):
+                query = query.filter(Item.item_type == flt["item_type"])
+            if flt.get("status"):
+                query = query.filter(Item.status == flt["status"])
+            if flt.get("owner"):
+                query = query.filter(Item.owner == flt["owner"])
 
-            # Get total count for has_more
             total = query.count()
             items = query.limit(limit).all()
 
@@ -252,24 +285,14 @@ async def query_items_v2(
 @mcp.tool(description="Update item (optimized)")
 async def update_item_v2(
     item_id: str,
-    title: str | None = None,
-    description: str | None = None,
-    status: str | None = None,
-    priority: str | None = None,
-    owner: str | None = None,
-    metadata: dict[str, Any] | None = None,
+    options: UpdateItemOptionsV2 | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Update an existing item (optimized, lean response).
 
     Args:
         item_id: Item ID to update (required)
-        title: New title
-        description: New description
-        status: New status
-        priority: New priority
-        owner: New owner
-        metadata: Metadata to merge
+        options: Optional dict with title, description, status, priority, owner, metadata
         ctx: MCP context
 
     Returns:
@@ -285,11 +308,11 @@ async def update_item_v2(
             )
 
         project_id = require_project()
+        opts = options or {}
 
         with get_session() as session:
             item = (
-                session
-                .query(Item)
+                session.query(Item)
                 .filter(
                     Item.project_id == project_id,
                     Item.deleted_at.is_(None),
@@ -305,25 +328,7 @@ async def update_item_v2(
                     ctx=ctx,
                 )
 
-            # Update fields if provided
-            if title is not None:
-                item.title = title
-            if description is not None:
-                item.description = description
-            if status is not None:
-                item.status = status
-            if priority is not None:
-                item.priority = priority
-            if owner is not None:
-                item.owner = owner
-            if metadata is not None:
-                # Merge metadata
-                current = item.item_metadata or {}
-                current.update(metadata)
-                item.item_metadata = current
-
-            item.updated_at = datetime.now(UTC)
-
+            _apply_item_updates_v2(item, opts)
             session.commit()
 
             return optimize_item_response(item, include_metadata=False)
@@ -433,7 +438,7 @@ async def summarize_view_v2(
                 .all()
             )
 
-            counts = dict[str, Any](status_counts)
+            counts = dict(status_counts)
             total = sum(counts.values())
 
             return {

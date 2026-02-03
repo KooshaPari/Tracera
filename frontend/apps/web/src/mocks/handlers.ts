@@ -294,6 +294,7 @@ export const handlers = [
 		const sourceItem = findItemById(body.sourceId);
 		const projectId = sourceItem?.projectId || "unknown";
 
+		const now = new Date().toISOString();
 		const newLink: Link = {
 			id: generateLinkId(),
 			projectId: projectId,
@@ -301,7 +302,9 @@ export const handlers = [
 			targetId: body.targetId,
 			type: body.type,
 			...(body.description !== undefined && { description: body.description }),
-			createdAt: new Date().toISOString(),
+			createdAt: now,
+			updatedAt: now,
+			version: 1,
 		};
 
 		mockLinks.push(newLink);
@@ -327,6 +330,8 @@ export const handlers = [
 			type: body.type ?? baseLink.type,
 			...(body.description !== undefined && { description: body.description }),
 			createdAt: baseLink.createdAt,
+			updatedAt: new Date().toISOString(),
+			version: (baseLink.version ?? 1) + 1,
 		};
 
 		mockLinks[linkIndex] = updatedLink;

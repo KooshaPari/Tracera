@@ -93,7 +93,9 @@ describe(FilteredEmptyState, () => {
 
 describe(ErrorEmptyState, () => {
 	it("renders error message", () => {
-		render(<ErrorEmptyState error="Network error" />);
+		render(
+			<ErrorEmptyState description="Network error" error="Network error" />,
+		);
 		expect(screen.getByText("Something went wrong")).toBeInTheDocument();
 		expect(screen.getByText("Network error")).toBeInTheDocument();
 	});

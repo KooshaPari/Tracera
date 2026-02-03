@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 type ConnectionStatus = "connecting" | "lost" | "online" | "reconnecting";
 
-interface ConnectionStatusState {
+export interface ConnectionStatusState {
 	lastChecked: number;
 	/** Last failure message for display */
 	lastError: string;

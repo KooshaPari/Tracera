@@ -179,7 +179,7 @@ export function useGraphWorker() {
             self.postMessage({
               id,
               type: 'error',
-              error: err instanceof Error ? err.message : String(err)
+              error: error instanceof Error ? error.message : String(error)
             });
           }
         };
@@ -232,6 +232,7 @@ export function useGraphWorker() {
 		} catch (error) {
 			setError(error instanceof Error ? error : new Error(String(error)));
 		}
+		return undefined;
 	}, []);
 
 	// Layout computation function
@@ -273,7 +274,6 @@ export function useGraphWorker() {
 						edges: LayoutEdge[];
 						options: LayoutOptions;
 					},
-					self.location.origin,
 				);
 			}),
 		[],

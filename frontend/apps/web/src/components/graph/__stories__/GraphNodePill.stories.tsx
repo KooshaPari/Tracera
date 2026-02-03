@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import type { Item } from "@tracertm/types";
+import type { Item, LinkType } from "@tracertm/types";
 import { GraphNodePill } from "../GraphNodePill";
 import type { EnhancedNodeData } from "../types";
 
@@ -11,6 +11,30 @@ function makeNode(
 		status: Item["status"];
 	}> = {},
 ): EnhancedNodeData {
+	const linkTypes: LinkType[] = [
+		"implements",
+		"tests",
+		"depends_on",
+		"related_to",
+		"blocks",
+		"parent_of",
+		"same_as",
+		"represents",
+		"manifests_as",
+		"documents",
+		"mentions",
+		"calls",
+		"imports",
+		"derives_from",
+		"alternative_to",
+		"conflicts_with",
+		"supersedes",
+		"validates",
+		"traces_to",
+	];
+	const emptyLinkTypeCounts = Object.fromEntries(
+		linkTypes.map((type) => [type, 0]),
+	) as Record<LinkType, number>;
 	const item: Item = {
 		createdAt: new Date().toISOString(),
 		description: "",
@@ -22,10 +46,15 @@ function makeNode(
 		type: (overrides.type as Item["type"]) ?? "feature",
 		updatedAt: new Date().toISOString(),
 		version: 1,
-		view: "technical",
+		view: "feature",
 	};
 	return {
-		connections: { byType: {}, incoming: 0, outgoing: 0, total: 0 },
+		connections: {
+			byType: emptyLinkTypeCounts,
+			incoming: 0,
+			outgoing: 0,
+			total: 0,
+		},
 		depth: 0,
 		hasChildren: false,
 		id: item.id,

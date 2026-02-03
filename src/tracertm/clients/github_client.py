@@ -5,6 +5,16 @@ import time
 from datetime import UTC, datetime
 from typing import Any
 
+# HTTP status codes
+_STATUS_CREATED = 201
+_STATUS_NO_CONTENT = 204
+_STATUS_BAD_REQUEST = 400
+_STATUS_UNAUTHORIZED = 401
+_STATUS_FORBIDDEN = 403
+_STATUS_NOT_FOUND = 404
+_STATUS_SERVER_ERROR = 500
+_STATUS_TOO_MANY_REQUESTS = 429
+
 import httpx
 import jwt
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
@@ -147,7 +157,7 @@ class GitHubClient:
         retry=retry_if_exception(
             lambda e: (
                 isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
-                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= 500)
+                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= _STATUS_SERVER_ERROR)
             )
         ),
         reraise=True,
@@ -162,7 +172,7 @@ class GitHubClient:
         """Perform one request; raises on 5xx so tenacity can retry."""
         client = await self._get_client()
         response = await client.request(method, path, params=params, json=json)
-        if response.status_code >= 500:
+        if response.status_code >= _STATUS_SERVER_ERROR:
             response.raise_for_status()
         return response
 
@@ -177,7 +187,7 @@ class GitHubClient:
         response = await self._request_once(method, path, params=params, json=json)
 
         # Handle rate limiting
-        if response.status_code == 403 and "X-RateLimit-Remaining" in response.headers:
+        if response.status_code == _STATUS_FORBIDDEN and "X-RateLimit-Remaining" in response.headers:
             remaining = int(response.headers.get("X-RateLimit-Remaining", 0))
             if remaining == 0:
                 reset_timestamp = int(response.headers.get("X-RateLimit-Reset", 0))
@@ -185,17 +195,17 @@ class GitHubClient:
                 raise GitHubRateLimitError(reset_at)
 
         # Handle auth errors
-        if response.status_code == 401:
+        if response.status_code == _STATUS_UNAUTHORIZED:
             raise GitHubAuthError("Invalid or expired token")
 
         # Handle not found
-        if response.status_code == 404:
+        if response.status_code == _STATUS_NOT_FOUND:
             raise GitHubNotFoundError(f"Resource not found: {path}")
 
         # Raise for other errors
         response.raise_for_status()
 
-        if response.status_code == 204:
+        if response.status_code == _STATUS_NO_CONTENT:
             return None
 
         return response.json()

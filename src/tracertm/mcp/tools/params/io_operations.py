@@ -32,6 +32,24 @@ from tracertm.storage.local_storage import LocalStorageManager
 from .common import _wrap
 
 
+def _path_write_text(path_str: str, content: str, encoding: str = "utf-8") -> None:
+    """Sync helper: write text to path (run via asyncio.to_thread)."""
+    Path(path_str).write_text(content, encoding=encoding)
+
+
+def _load_data_from_path(path: str) -> Any:
+    """Sync helper: load import data from file path (run via asyncio.to_thread)."""
+    p = Path(path)
+    if not p.exists():
+        raise ToolError(f"File not found: {path}")
+    if p.suffix.lower() in {".yaml", ".yml"}:
+        result = yaml.safe_load(p.read_text(encoding="utf-8"))
+        if result is None:
+            raise ToolError(f"Failed to parse YAML file: {path}")
+        return result
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
 @mcp.tool(description="Unified export operations")
 async def export_manage(
     action: str,
@@ -76,10 +94,9 @@ async def export_manage(
 
     output = payload.get("output")
     if output:
-        output_path = Path(output)
-        output_path.write_text(content, encoding="utf-8")
+        await asyncio.to_thread(_path_write_text, output, content)
         return _wrap(
-            {"format": action, "output": str(output_path), "bytes": len(content)},
+            {"format": action, "output": str(output), "bytes": len(content)},
             ctx,
             action,
         )
@@ -116,12 +133,11 @@ async def import_manage(
     action = action.lower()
     project_name = payload.get("project_name")
 
-    def _load_data() -> Any:
+    def _load_data_no_path() -> Any:
         data = payload.get("data")
         if isinstance(data, dict[str, Any]):
             return data
         content = payload.get("content")
-        path = payload.get("path")
         if content:
             try:
                 return json.loads(content)
@@ -130,24 +146,17 @@ async def import_manage(
                 if result is None:
                     raise ToolError("Failed to parse YAML content")
                 return result
-        if path:
-            file_path = Path(path)
-            if not file_path.exists():
-                raise ToolError(f"File not found: {path}")
-            if file_path.suffix.lower() in {".yaml", ".yml"}:
-                result = yaml.safe_load(file_path.read_text(encoding="utf-8"))
-                if result is None:
-                    raise ToolError(f"Failed to parse YAML file: {path}")
-                return result
-            return json.loads(file_path.read_text(encoding="utf-8"))
         raise ToolError("Provide data, content, or path for import.")
 
+    path = payload.get("path")
+    if path:
+        data = await asyncio.to_thread(_load_data_from_path, path)
+    else:
+        data = _load_data_no_path()
+
     if action == "validate":
-        data = _load_data()
         errors, warnings = import_cmd_module._validate_import_data(data)
         return _wrap({"errors": errors, "warnings": warnings, "valid": len(errors) == 0}, ctx, action)
-
-    data = _load_data()
 
     if action == "full":
         errors, _ = import_cmd_module._validate_import_data(data)

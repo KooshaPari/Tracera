@@ -76,8 +76,7 @@ const requirementItemSchema = z.object({
 	source_reference: z.string().max(500).optional(),
 });
 
-// Skip z.infer to avoid TypeScript parser issue
-// type RequirementItemFormData = z.infer<typeof requirementItemSchema>;
+type RequirementItemFormData = z.infer<typeof requirementItemSchema>;
 
 type CreateRequirementItemFormProps = {
 	onSubmit: (data: unknown) => void;
@@ -97,7 +96,6 @@ export const CreateRequirementItemForm = ({
 	onSubmit,
 	onCancel,
 	isLoading,
-	// @ts-expect-error TypeScript parser issue with complex form type annotation
 }: CreateRequirementItemFormProps) => {
 	const dialogRef = useRef<HTMLDivElement>(null);
 	const formRef = useRef<HTMLFormElement>(null);
@@ -109,7 +107,7 @@ export const CreateRequirementItemForm = ({
 		handleSubmit,
 		watch,
 		formState: { errors, isSubmitting },
-	} = useForm<any>({
+	} = useForm<RequirementItemFormData>({
 		defaultValues: {
 			clarity: 0.5,
 			constraint_type: "hard",
@@ -126,6 +124,9 @@ export const CreateRequirementItemForm = ({
 	});
 
 	const selectedEarsPattern = watch("ears_pattern_type");
+	const titleError = errors["title"];
+	const titleErrorMessage =
+		typeof titleError?.message === "string" ? titleError.message : undefined;
 
 	// Handle form submission with error announcements
 	const onSubmitWithAnnouncement = useCallback(
@@ -248,12 +249,12 @@ export const CreateRequirementItemForm = ({
 								id="title"
 								{...register("title")}
 								placeholder="Enter requirement title"
-								aria-describedby={errors.title ? "title-error" : "title-help"}
+								aria-describedby={titleError ? "title-error" : "title-help"}
 								aria-required="true"
-								aria-invalid={Boolean(errors.title)}
+								aria-invalid={Boolean(titleError)}
 								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							/>
-							{errors.title ? (
+							{titleError ? (
 								<p
 									id="title-error"
 									role="alert"
@@ -261,7 +262,7 @@ export const CreateRequirementItemForm = ({
 									aria-live="polite"
 									aria-atomic="true"
 								>
-									{errors.title.message}
+									{titleErrorMessage || "Title is required"}
 								</p>
 							) : (
 								<span

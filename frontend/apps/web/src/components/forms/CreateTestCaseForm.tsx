@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { logger } from "@/lib/logger";
 import { Plus, Trash2, X } from "lucide-react";
+import type { Resolver, SubmitHandler } from "react-hook-form";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useCreateTestCase } from "../../hooks/useTestCases";
@@ -114,7 +115,8 @@ export function CreateTestCaseForm({
 			testSteps: [],
 			testType: "functional",
 		},
-		resolver: zodResolver(testCaseSchema),
+		resolver:
+			zodResolver(testCaseSchema) as unknown as Resolver<TestCaseFormData>,
 	});
 
 	const { fields, append, remove } = useFieldArray({
@@ -122,7 +124,7 @@ export function CreateTestCaseForm({
 		name: "testSteps",
 	});
 
-	const onSubmit = async (data: TestCaseFormData) => {
+	const onSubmit: SubmitHandler<TestCaseFormData> = async (data) => {
 		try {
 			const payload: Parameters<typeof createTestCase.mutateAsync>[0] = {
 				automationStatus: data.automationStatus,

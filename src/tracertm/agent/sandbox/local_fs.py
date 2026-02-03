@@ -134,7 +134,7 @@ class LocalFilesystemSandboxProvider:
         metadata.status = SandboxStatus.CLEANED
         metadata.completed_at = datetime.now(UTC)
         # Do not delete directory by default so chat/session can persist
-        remove = os.getenv("AGENT_SANDBOX_CLEANUP_REMOVE_DIR", "").lower() in ("1", "true", "yes")
+        remove = os.getenv("AGENT_SANDBOX_CLEANUP_REMOVE_DIR", "").lower() in {"1", "true", "yes"}
         root = metadata.sandbox_root
         if remove and root is not None and await asyncio.to_thread(Path(root).is_dir):
             await asyncio.to_thread(_rmtree_safe, root)

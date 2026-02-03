@@ -1,4 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	useNavigate,
+} from "@tanstack/react-router";
 import { useAuth } from "@workos-inc/authkit-react";
 import { Loader2, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";

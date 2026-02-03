@@ -27,7 +27,7 @@ export {
 	ODCBadge,
 	ODCClassificationCard,
 	ODCTriggerBadge,
-} from "./ODCClassificationCard";
+} from "./OdcClassificationCard";
 // ISO 29148 Quality Dimensions
 export {
 	QualityDimensionBars,

@@ -77,8 +77,10 @@ export function useCreateBranch() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: createBranch,
-		onSuccess: (_, variables) => {
-			undefined;
+		onSuccess: (_data, variables) => {
+			return queryClient.invalidateQueries({
+				queryKey: [queryKeys.branches, variables.projectId],
+			});
 		},
 	});
 }
@@ -111,8 +113,10 @@ export function useCreateVersion() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: createVersion,
-		onSuccess: (_, variables) => {
-			undefined;
+		onSuccess: (_data, variables) => {
+			return queryClient.invalidateQueries({
+				queryKey: [queryKeys.versions, variables.branchId],
+			});
 		},
 	});
 }
@@ -148,9 +152,20 @@ export function useMergeBranch() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: mergeBranch,
-		onSuccess: (_, variables) => {
-			undefined;
-			undefined;
+		onSuccess: (_data, variables) => {
+			void queryClient.invalidateQueries({
+				queryKey: [queryKeys.versions, variables.sourceBranchId],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [queryKeys.versions, variables.targetBranchId],
+			});
+			return queryClient.invalidateQueries({
+				queryKey: [
+					queryKeys.branchComparison,
+					variables.sourceBranchId,
+					variables.targetBranchId,
+				],
+			});
 		},
 	});
 }
@@ -210,8 +225,10 @@ export function useUpdateBranch() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: updateBranch,
-		onSuccess: (_data) => {
-			undefined;
+		onSuccess: () => {
+			return queryClient.invalidateQueries({
+				queryKey: [queryKeys.branches],
+			});
 		},
 	});
 }
@@ -247,7 +264,9 @@ export function useUpdateVersion() {
 	return useMutation({
 		mutationFn: updateVersion,
 		onSuccess: () => {
-			undefined;
+			return queryClient.invalidateQueries({
+				queryKey: [queryKeys.versions],
+			});
 		},
 	});
 }
@@ -268,7 +287,9 @@ export function useDeleteBranch() {
 	return useMutation({
 		mutationFn: deleteBranch,
 		onSuccess: () => {
-			undefined;
+			return queryClient.invalidateQueries({
+				queryKey: [queryKeys.branches],
+			});
 		},
 	});
 }

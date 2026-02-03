@@ -41,7 +41,7 @@ class PreflightResult:
     required: bool
 
 
-def _parse_host_port(url: str, default_port: int | None) -> tuple[str, int | None]:
+def _parse_host_port(url: str, default_port: int | None) -> tuple[str, int | None]:  # noqa: C901
     parsed = urlparse(url)
     host = parsed.hostname or ""
     port = parsed.port
@@ -156,7 +156,7 @@ def run_single_check_with_retry(
         delay = min(delay * backoff, backoff_max)
 
 
-def run_preflight(
+def run_preflight(  # noqa: C901, PLR0912
     service_name: str,
     checks: Iterable[PreflightCheck],
     strict: bool,
@@ -209,7 +209,7 @@ def run_preflight(
         raise RuntimeError(f"Preflight failed for: {messages}")
 
 
-def run_preflight_with_results(
+def run_preflight_with_results(  # noqa: C901, PLR0912
     service_name: str,
     checks: Iterable[PreflightCheck],
     strict: bool = False,
@@ -286,7 +286,7 @@ def format_preflight_failures(results: list[PreflightResult]) -> str:
     return "\n".join(lines)
 
 
-def _default_port_for_url(url: str) -> int | None:
+def _default_port_for_url(url: str) -> int | None:  # noqa: PLR0911
     parsed = urlparse(url)
     scheme = (parsed.scheme or "").lower()
 

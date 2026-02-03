@@ -1,7 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { ItemsTableView } from "@/views/ItemsTableView";
 
-export function SecurityView() {
+export const SecurityView = () => {
 	const { projectId } = useParams({ from: "/projects/$projectId" });
 	return (
 		<div className="flex-1 p-6 space-y-6">
@@ -19,7 +19,7 @@ export function SecurityView() {
 			<ItemsTableView projectId={projectId} view="security" />
 		</div>
 	);
-}
+};
 
 export const SECURITY_VIEW = SecurityView;
 

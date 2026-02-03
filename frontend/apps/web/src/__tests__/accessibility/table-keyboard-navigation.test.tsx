@@ -13,6 +13,12 @@ import { axe } from "../a11y/setup";
 
 let user: ReturnType<typeof userEvent.setup>;
 
+const getRow = (rows: HTMLElement[], index: number) => {
+	const row = rows[index];
+	expect(row).toBeTruthy();
+	return row as HTMLElement;
+};
+
 // Mock table component for testing
 function MockDataTable({
 	rows = [
@@ -109,7 +115,7 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const firstDataRow = rows[1]; // Skip header
+		const firstDataRow = getRow(rows, 1); // Skip header
 
 		firstDataRow.focus();
 		expect(firstDataRow).toHaveFocus();
@@ -117,7 +123,7 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 		await user.keyboard("{ArrowDown}");
 		// Focus should move to next row
 		await waitFor(() => {
-			const secondDataRow = rows[2];
+			const secondDataRow = getRow(rows, 2);
 			expect(secondDataRow).toHaveFocus();
 		});
 	});
@@ -126,13 +132,13 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const secondDataRow = rows[2];
+		const secondDataRow = getRow(rows, 2);
 
 		secondDataRow.focus();
 		await user.keyboard("{ArrowUp}");
 
 		await waitFor(() => {
-			const firstDataRow = rows[1];
+			const firstDataRow = getRow(rows, 1);
 			expect(firstDataRow).toHaveFocus();
 		});
 	});
@@ -141,7 +147,7 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const firstDataRow = rows[1];
+		const firstDataRow = getRow(rows, 1);
 
 		firstDataRow.focus();
 		await user.keyboard("{ArrowUp}");
@@ -154,7 +160,7 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const lastDataRow = rows.at(-1);
+		const lastDataRow = getRow(rows, rows.length - 1);
 
 		lastDataRow.focus();
 		await user.keyboard("{ArrowDown}");
@@ -173,13 +179,13 @@ describe("Table Keyboard Navigation - Home/End Keys", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const lastDataRow = rows.at(-1);
+		const lastDataRow = getRow(rows, rows.length - 1);
 
 		lastDataRow.focus();
 		await user.keyboard("{Home}");
 
 		await waitFor(() => {
-			const firstDataRow = rows[1];
+			const firstDataRow = getRow(rows, 1);
 			expect(firstDataRow).toHaveFocus();
 		});
 	});
@@ -188,13 +194,13 @@ describe("Table Keyboard Navigation - Home/End Keys", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const firstDataRow = rows[1];
+		const firstDataRow = getRow(rows, 1);
 
 		firstDataRow.focus();
 		await user.keyboard("{End}");
 
 		await waitFor(() => {
-			const lastDataRow = rows.at(-1);
+			const lastDataRow = getRow(rows, rows.length - 1);
 			expect(lastDataRow).toHaveFocus();
 		});
 	});
@@ -240,7 +246,7 @@ describe("Table Accessibility - ARIA Attributes", () => {
 		expect(table).toHaveAttribute("aria-rowcount", "3");
 
 		const results = await axe(container);
-		expect(results).toHaveNoViolations();
+		expect(results.violations).toHaveLength(0);
 	});
 
 	it("should have aria-rowindex on all rows", () => {
@@ -292,7 +298,6 @@ describe("Table Focus Management", () => {
 		firstRow.focus();
 
 		// Check for visual focus indicator
-		const _style = globalThis.getComputedStyle(firstRow);
 		// Should have ring or outline
 		expect(firstRow.className).toContain("ring");
 	});
@@ -301,7 +306,7 @@ describe("Table Focus Management", () => {
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
-		const lastRow = rows.at(-1);
+		const lastRow = getRow(rows, rows.length - 1);
 
 		lastRow.focus();
 		await user.keyboard("{ArrowDown}");
@@ -364,7 +369,7 @@ describe("Table Screen Reader Announcements", () => {
 		);
 
 		const results = await axe(container);
-		expect(results).toHaveNoViolations();
+		expect(results.violations).toHaveLength(0);
 	});
 
 	it("should provide context for each cell", () => {

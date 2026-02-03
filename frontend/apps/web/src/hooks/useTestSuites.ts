@@ -14,51 +14,53 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformTestSuite(data: Record<string, unknown>): TestSuite {
+	const payload = data as Record<string, any>;
 	return {
-		automatedCount: data["automated_count"],
-		category: data["category"],
-		createdAt: data["created_at"],
-		description: data["description"],
-		environmentVariables: data["environment_variables"],
-		estimatedDurationMinutes: data["estimated_duration_minutes"],
-		id: data["id"],
-		isParallelExecution: data["is_parallel_execution"],
-		lastRunAt: data["last_run_at"],
-		lastRunStatus: data["last_run_status"],
-		manualCount: data["manual_count"],
-		metadata: data["suite_metadata"],
-		name: data.name,
-		objective: data["objective"],
-		orderIndex: data["order_index"],
-		owner: data["owner"],
-		parentId: data["parent_id"],
-		passRate: data["pass_rate"],
-		projectId: data["project_id"],
-		requiredEnvironment: data["required_environment"],
-		responsibleTeam: data["responsible_team"],
-		setupInstructions: data["setup_instructions"],
-		status: data.status,
-		suiteNumber: data["suite_number"],
-		tags: data["tags"],
-		teardownInstructions: data["teardown_instructions"],
-		totalTestCases: data["total_test_cases"],
-		updatedAt: data["updated_at"],
-		version: data["version"],
+		automatedCount: payload["automated_count"],
+		category: payload["category"],
+		createdAt: payload["created_at"],
+		description: payload["description"],
+		environmentVariables: payload["environment_variables"],
+		estimatedDurationMinutes: payload["estimated_duration_minutes"],
+		id: payload["id"],
+		isParallelExecution: payload["is_parallel_execution"],
+		lastRunAt: payload["last_run_at"],
+		lastRunStatus: payload["last_run_status"],
+		manualCount: payload["manual_count"],
+		metadata: payload["suite_metadata"],
+		name: payload["name"],
+		objective: payload["objective"],
+		orderIndex: payload["order_index"],
+		owner: payload["owner"],
+		parentId: payload["parent_id"],
+		passRate: payload["pass_rate"],
+		projectId: payload["project_id"],
+		requiredEnvironment: payload["required_environment"],
+		responsibleTeam: payload["responsible_team"],
+		setupInstructions: payload["setup_instructions"],
+		status: payload["status"],
+		suiteNumber: payload["suite_number"],
+		tags: payload["tags"],
+		teardownInstructions: payload["teardown_instructions"],
+		totalTestCases: payload["total_test_cases"],
+		updatedAt: payload["updated_at"],
+		version: payload["version"],
 	};
 }
 
 function transformTestSuiteTestCase(
 	data: Record<string, unknown>,
 ): TestSuiteTestCase {
+	const payload = data as Record<string, any>;
 	return {
-		createdAt: data["created_at"],
-		customParameters: data["custom_parameters"],
-		id: data["id"],
-		isMandatory: data["is_mandatory"],
-		orderIndex: data["order_index"],
-		skipReason: data["skip_reason"],
-		suiteId: data["suite_id"],
-		testCaseId: data["test_case_id"],
+		createdAt: payload["created_at"],
+		customParameters: payload["custom_parameters"],
+		id: payload["id"],
+		isMandatory: payload["is_mandatory"],
+		orderIndex: payload["order_index"],
+		skipReason: payload["skip_reason"],
+		suiteId: payload["suite_id"],
+		testCaseId: payload["test_case_id"],
 	};
 }
 
@@ -338,16 +340,16 @@ async function fetchTestSuiteActivities(
 	const data = await res.json();
 	return {
 		activities: (data["activities"] || []).map(
-			(a: Record<string, unknown>) => ({
-				activityType: a.activity_type,
-				createdAt: a.created_at,
-				description: a.description,
-				fromValue: a.from_value,
-				id: a.id,
-				metadata: a.activity_metadata,
-				performedBy: a.performed_by,
-				suiteId: a.suite_id,
-				toValue: a.to_value,
+			(a: Record<string, any>) => ({
+				activityType: a["activity_type"],
+				createdAt: a["created_at"],
+				description: a["description"],
+				fromValue: a["from_value"],
+				id: a["id"],
+				metadata: a["activity_metadata"],
+				performedBy: a["performed_by"],
+				suiteId: a["suite_id"],
+				toValue: a["to_value"],
 			}),
 		),
 		suiteId: data["suite_id"],
@@ -395,8 +397,11 @@ export function useCreateTestSuite() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: createTestSuite,
-		onSuccess: () => {
-			undefined;
+		onSuccess: (_, variables) => {
+			void queryClient.invalidateQueries({ queryKey: ["testSuites"] });
+			return queryClient.invalidateQueries({
+				queryKey: ["testSuiteStats", variables.projectId],
+			});
 		},
 	});
 }
@@ -412,8 +417,8 @@ export function useUpdateTestSuite() {
 			data: Partial<CreateTestSuiteData>;
 		}) => updateTestSuite(id, data),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["testSuites", id] });
+			return queryClient.invalidateQueries({ queryKey: ["testSuites"] });
 		},
 	});
 }
@@ -431,9 +436,9 @@ export function useTransitionTestSuiteStatus() {
 			reason?: string;
 		}) => transitionTestSuiteStatus(id, newStatus, reason),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["testSuites", id] });
+			void queryClient.invalidateQueries({ queryKey: ["testSuites"] });
+			return queryClient.invalidateQueries({ queryKey: ["testSuiteStats"] });
 		},
 	});
 }
@@ -443,7 +448,8 @@ export function useDeleteTestSuite() {
 	return useMutation({
 		mutationFn: deleteTestSuite,
 		onSuccess: () => {
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["testSuites"] });
+			return queryClient.invalidateQueries({ queryKey: ["testSuiteStats"] });
 		},
 	});
 }

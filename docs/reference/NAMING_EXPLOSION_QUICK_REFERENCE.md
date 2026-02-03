@@ -21,38 +21,41 @@ cd frontend && ./scripts/check-naming-explosion.sh
 
 ## Forbidden Patterns (All Languages)
 
+Guards check **all casing styles** (snake, camel, Pascal, kebab, UPPER) and **all positions** (prefix, suffix, middle). They also catch **more wording**: version/rev/iter, phase, and a broad forbidden-word list.
+
 ### ❌ NEVER DO THIS
 
 ```
-# Versioned
-Dashboard_v2.tsx       (frontend)
-service_v2.py          (python)
-dashboardV2.go         (go)
+# Versioned (all casings: _v2, V2, v2, version2, rev3, iter1, dashboardv2)
+Dashboard_v2.tsx       service_v2.py          dashboardV2.go
+dashboardv2.tsx       version2.py            HandlerV2.go
 
-# Prefixed
-NewDashboard.tsx       (frontend)
-enhanced_service.py    (python)
-ImprovedHandler.go     (go)
+# Name + digits (no separator): dashboard2.py, Component3.tsx
+dashboard2.tsx        dashboard2.py          Handler2.go
 
-# Suffixed
-Dashboard_new.tsx      (frontend)
-service_improved.py    (python)
-handlerNew.go          (go)
+# Prefixed (new_, New*, /new_*, etc.)
+NewDashboard.tsx      new_service.py         NewHandler.go
+enhanced_service.py    ImprovedHandler.go     EnhancedGraphView.tsx
+
+# Suffixed (*_new, *New, *.enhanced)
+Dashboard_new.tsx     service_improved.py    handlerNew.go
+*.enhanced.tsx        *_final.py             *Final.go
+
+# Middle (*_new_*, *_copy_*, *_temp_ but not *_temporal_*)
+foo_new_bar.py        handler_copy_impl.go   component_final_tests.tsx
+
+# Kebab (*-new.tsx, *-final-*)
+component-new.tsx     service-final.py
 
 # Numbered
-Dashboard_2.tsx        (frontend)
-service_2.py           (python)
-handler_2.go           (go)
+Dashboard_2.tsx        service_2.py           handler_2.go
 
-# Phase suffixes (CAUGHT NOW!)
-benchmark_phase2.tsx   (frontend)
-benchmark_phase3.py    (python)
-servicePhase2.go       (go)
+# Phase (any casing/position: phase1, Phase2, phase_3, *_phase4_*)
+benchmark_phase2.tsx  components_phase3_tests.py  servicePhase2.go
 
-# Other AI versioning
-component_final.tsx    (frontend)
-service_latest.py      (python)
-handlerFinal.go        (go)
+# Forbidden words (prefix/suffix/middle): new, improved, enhanced, updated, fixed,
+# refactored, modified, revised, copy, backup, old, draft, final, latest, temp, tmp,
+# wip, legacy, deprecated, duplicate, alternate, iteration, replacement, variant
 ```
 
 ### ✅ DO THIS INSTEAD

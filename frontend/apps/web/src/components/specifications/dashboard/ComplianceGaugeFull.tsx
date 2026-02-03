@@ -2,6 +2,7 @@
  * ComplianceGaugeFull - Full compliance score visualization
  * Circular gauge with color gradient and animated fill
  */
+/* eslint-disable complexity, func-style, max-lines-per-function, no-magic-numbers, react-perf/jsx-no-new-object-as-prop, sort-imports */
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";

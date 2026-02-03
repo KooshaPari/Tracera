@@ -1,8 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type {
-	WorkflowRun,
-	WorkflowSchedule,
-} from "../../../packages/types/src/index";
+import type { WorkflowRun, WorkflowSchedule } from "@tracertm/types";
 import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
@@ -22,21 +19,21 @@ function transformRun(data: Record<string, unknown>): WorkflowRun {
 		projectId: data["project_id"],
 		result: data["result"],
 		startedAt: data["started_at"],
-		status: data.status,
+		status: data["status"],
 		updatedAt: data["updated_at"],
 		workflowName: data["workflow_name"],
-	};
+	} as WorkflowRun;
 }
 
 function transformSchedule(data: Record<string, unknown>): WorkflowSchedule {
 	return {
 		id: data["id"] || data["cron_id"],
-		cronName: data["cron_name"] || data.name,
+		cronName: data["cron_name"] || data["name"],
 		expression: data["expression"] || data["cron_expression"],
 		workflowName: data["workflow_name"],
 		additionalMetadata: data["additional_metadata"],
 		...data,
-	};
+	} as WorkflowSchedule;
 }
 
 export function useWorkflowRuns(

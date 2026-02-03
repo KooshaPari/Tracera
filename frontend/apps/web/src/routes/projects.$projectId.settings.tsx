@@ -4,10 +4,8 @@ import { ProjectSettingsView } from "@/views/ProjectSettingsView";
 
 export const Route = createFileRoute("/projects/$projectId/settings")({
 	beforeLoad: () => requireAuth(),
-	component: ProjectSettingsPage,
+	component: function ProjectSettingsPage() {
+		const { projectId } = Route.useParams();
+		return <ProjectSettingsView projectId={projectId} />;
+	},
 });
-
-const ProjectSettingsPage = () => {
-	const { projectId } = Route.useParams();
-	return <ProjectSettingsView projectId={projectId} />;
-};

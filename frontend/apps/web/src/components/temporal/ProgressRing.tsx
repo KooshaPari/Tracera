@@ -1,5 +1,9 @@
 import type React from "react";
 
+const PERCENTAGE_EXCELLENT = 75;
+const PERCENTAGE_GOOD = 50;
+const PERCENTAGE_FAIR = 25;
+
 export interface ProgressRingProps {
 	percentage: number;
 	radius?: number;
@@ -32,11 +36,11 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 	// Determine color based on percentage
 	let ringColor = color;
 	if (!ringColor) {
-		if (percentage >= 75) {
+		if (percentage >= PERCENTAGE_EXCELLENT) {
 			ringColor = "#22c55e"; // Green
-		} else if (percentage >= 50) {
+		} else if (percentage >= PERCENTAGE_GOOD) {
 			ringColor = "#3b82f6"; // Blue
-		} else if (percentage >= 25) {
+		} else if (percentage >= PERCENTAGE_FAIR) {
 			ringColor = "#eab308"; // Yellow
 		} else {
 			ringColor = "#ef4444"; // Red
@@ -121,11 +125,11 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 	// Determine color based on percentage
 	let barColor = color;
 	if (!barColor) {
-		if (percentage >= 75) {
+		if (percentage >= PERCENTAGE_EXCELLENT) {
 			barColor = "bg-green-500";
-		} else if (percentage >= 50) {
+		} else if (percentage >= PERCENTAGE_GOOD) {
 			barColor = "bg-blue-500";
-		} else if (percentage >= 25) {
+		} else if (percentage >= PERCENTAGE_FAIR) {
 			barColor = "bg-yellow-500";
 		} else {
 			barColor = "bg-red-500";

@@ -32,7 +32,7 @@ describe("ItemsStore", () => {
 		type: "feature",
 		updatedAt: "2024-01-01T00:00:00Z",
 		version: 1,
-		view: "technical",
+		view: "FEATURE",
 	};
 
 	const mockItem2: Item = {
@@ -45,7 +45,7 @@ describe("ItemsStore", () => {
 		type: "task",
 		updatedAt: "2024-01-01T00:00:00Z",
 		version: 1,
-		view: "technical",
+		view: "FEATURE",
 	};
 
 	const mockItem3: Item = {
@@ -58,7 +58,7 @@ describe("ItemsStore", () => {
 		type: "bug",
 		updatedAt: "2024-01-01T00:00:00Z",
 		version: 1,
-		view: "technical",
+		view: "FEATURE",
 	};
 
 	describe("addItem", () => {

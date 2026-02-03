@@ -35,7 +35,7 @@ const drawGridLines = (
 const drawFpsLine = (
 	ctx: CanvasRenderingContext2D,
 	history: number[],
-	width: number,
+	_width: number,
 	height: number,
 	fps: number,
 ) => {

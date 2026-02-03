@@ -51,7 +51,7 @@ describe("API Client", () => {
 		});
 	});
 
-	describe(safeApiCall, () => {
+	describe("safeApiCall", () => {
 		it("should return promise when valid", async () => {
 			const mockPromise = Promise.resolve({
 				data: "test",
@@ -74,7 +74,7 @@ describe("API Client", () => {
 		});
 
 		it("should reject when promise is undefined", async () => {
-			await expect(safeApiCall()).rejects.toThrow(ApiError);
+			await expect(safeApiCall(undefined)).rejects.toThrow(ApiError);
 		});
 	});
 
@@ -98,7 +98,7 @@ describe("API Client", () => {
 		});
 
 		it("should throw ApiError when promise is undefined", async () => {
-			await expect(handleApiResponse()).rejects.toThrow(ApiError);
+			await expect(handleApiResponse(undefined)).rejects.toThrow(ApiError);
 		});
 
 		it("should throw ApiError when error is present", async () => {
@@ -113,8 +113,9 @@ describe("API Client", () => {
 				await handleApiResponse(mockPromise);
 			} catch (error) {
 				expect(error).toBeInstanceOf(ApiError);
-				expect((error as ApiError).status).toBe(404);
-				expect((error as ApiError).statusText).toBe("Not Found");
+				const apiError = error as InstanceType<typeof ApiError>;
+				expect(apiError.status).toBe(404);
+				expect(apiError.statusText).toBe("Not Found");
 			}
 		});
 
@@ -130,8 +131,9 @@ describe("API Client", () => {
 				await handleApiResponse(mockPromise);
 			} catch (error) {
 				expect(error).toBeInstanceOf(ApiError);
-				expect((error as ApiError).status).toBe(204);
-				expect((error as ApiError).statusText).toBe("No data returned");
+				const apiError = error as InstanceType<typeof ApiError>;
+				expect(apiError.status).toBe(204);
+				expect(apiError.statusText).toBe("No data returned");
 			}
 		});
 
@@ -147,8 +149,9 @@ describe("API Client", () => {
 				await handleApiResponse(mockPromise);
 			} catch (error) {
 				expect(error).toBeInstanceOf(ApiError);
-				expect((error as ApiError).status).toBe(500);
-				expect((error as ApiError).statusText).toBe("Unknown error");
+				const apiError = error as InstanceType<typeof ApiError>;
+				expect(apiError.status).toBe(500);
+				expect(apiError.statusText).toBe("Unknown error");
 			}
 		});
 
@@ -164,8 +167,9 @@ describe("API Client", () => {
 				await handleApiResponse(mockPromise);
 			} catch (error) {
 				expect(error).toBeInstanceOf(ApiError);
-				expect((error as ApiError).status).toBe(500);
-				expect((error as ApiError).statusText).toBe("No data returned");
+				const apiError = error as InstanceType<typeof ApiError>;
+				expect(apiError.status).toBe(500);
+				expect(apiError.statusText).toBe("No data returned");
 			}
 		});
 	});

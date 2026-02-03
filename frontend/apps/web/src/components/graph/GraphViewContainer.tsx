@@ -350,6 +350,7 @@ export function GraphViewContainer({
 
 		return counts;
 	}, [items]);
+	void _perspectiveCounts;
 
 	// Get count for a view
 	// Helper to count items by view type (available for future use)

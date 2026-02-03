@@ -17,6 +17,9 @@ from fastmcp.server.middleware import Middleware, MiddlewareContext
 
 logger = logging.getLogger(__name__)
 
+# Seconds considered "expiring soon" for token warning (5 minutes)
+_TOKEN_EXPIRING_SOON_SEC = 300
+
 
 class AuthMiddleware(Middleware):
     """Validates token claims and enforces scope-based access control."""
@@ -39,7 +42,7 @@ class AuthMiddleware(Middleware):
         """
         self._tool_scopes[tool_name] = scopes
 
-    async def on_tool_call(
+    async def on_tool_call(  # noqa: C901
         self,
         ctx: MiddlewareContext,
         tool_name: str,
@@ -127,7 +130,7 @@ class AuthMiddleware(Middleware):
             raise PermissionError(f"Token expired {abs(expires_in):.0f}s ago")
 
         # Warn if expiring soon (within 5 minutes)
-        if expires_in < 300:
+        if expires_in < _TOKEN_EXPIRING_SOON_SEC:
             logger.warning(f"Token expiring soon: {expires_in:.0f}s remaining")
 
     def _get_required_scopes(self, tool_name: str) -> list[str]:

@@ -600,7 +600,7 @@ temporal_worker: python -m tracertm.workflows.worker
 
 ### 3. gRPC Inter-Service Communication
 
-**Protocol Buffers:** `/proto/tracertm.proto`
+**Protocol Buffers:** `/proto/tracertm/v1/tracertm.proto`
 
 **Services:**
 

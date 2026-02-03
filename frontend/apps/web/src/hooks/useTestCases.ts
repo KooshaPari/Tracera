@@ -17,6 +17,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformTestCase(data: Record<string, unknown>): TestCase {
+	const rawSteps = Array.isArray(data["test_steps"]) ? data["test_steps"] : [];
 	return {
 		approvedAt: data["approved_at"],
 		approvedBy: data["approved_by"],
@@ -46,11 +47,11 @@ function transformTestCase(data: Record<string, unknown>): TestCase {
 		projectId: data["project_id"],
 		reviewedAt: data["reviewed_at"],
 		reviewedBy: data["reviewed_by"],
-		status: data.status,
+		status: data["status"],
 		tags: data["tags"],
 		testCaseNumber: data["test_case_number"],
 		testData: data["test_data"],
-		testSteps: data["test_steps"]?.map((step: any) => ({
+		testSteps: rawSteps.map((step: any) => ({
 			action: step.action,
 			expectedResult: step.expected_result,
 			stepNumber: step.step_number,
@@ -61,7 +62,7 @@ function transformTestCase(data: Record<string, unknown>): TestCase {
 		totalExecutions: data["total_executions"] || 0,
 		updatedAt: data["updated_at"],
 		version: data["version"],
-	};
+	} as TestCase;
 }
 
 interface TestCaseFilters {
@@ -386,22 +387,22 @@ async function fetchTestCaseActivities(
 	}
 	const data = await res.json();
 	return {
-		activities: (data["activities"] || []).map(
-			(a: Record<string, unknown>) => ({
-				activityType: a.activity_type,
-				createdAt: a.created_at,
-				description: a.description,
-				fromValue: a.from_value,
-				id: a.id,
-				metadata: a.metadata,
-				performedBy: a.performed_by,
-				testCaseId: a.test_case_id,
-				toValue: a.to_value,
-			}),
-		),
-		testCaseId: data["test_case_id"],
-	};
-}
+			activities: (data["activities"] || []).map(
+				(a: Record<string, unknown>) => ({
+					activityType: a["activity_type"],
+					createdAt: a["created_at"],
+					description: a["description"],
+					fromValue: a["from_value"],
+					id: a["id"],
+					metadata: a["metadata"],
+					performedBy: a["performed_by"],
+					testCaseId: a["test_case_id"],
+					toValue: a["to_value"],
+				}),
+			),
+			testCaseId: data["test_case_id"],
+		};
+	}
 
 async function fetchTestCaseStats(projectId: string): Promise<TestCaseStats> {
 	const res = await fetch(
@@ -450,8 +451,7 @@ export function useCreateTestCase() {
 	return useMutation({
 		mutationFn: createTestCase,
 		onSuccess: () => {
-			undefined;
-			undefined;
+			queryClient.invalidateQueries({ queryKey: ["testCases"] });
 		},
 	});
 }
@@ -467,8 +467,8 @@ export function useUpdateTestCase() {
 			data: Partial<CreateTestCaseData>;
 		}) => updateTestCase(id, data),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
+			queryClient.invalidateQueries({ queryKey: ["testCases"] });
+			queryClient.invalidateQueries({ queryKey: ["testCases", id] });
 		},
 	});
 }
@@ -480,16 +480,14 @@ export function useTransitionTestCaseStatus() {
 			id,
 			newStatus,
 			reason,
-		}: {
-			id: string;
-			newStatus: TestCaseStatus;
-			reason?: string;
-		}) => transitionTestCaseStatus(id, newStatus, reason),
+			}: {
+				id: string;
+				newStatus: TestCaseStatus;
+				reason?: string;
+			}) => transitionTestCaseStatus(id, newStatus, reason),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
-			undefined;
+			queryClient.invalidateQueries({ queryKey: ["testCases"] });
+			queryClient.invalidateQueries({ queryKey: ["testCases", id] });
 		},
 	});
 }
@@ -501,15 +499,14 @@ export function useSubmitTestCaseForReview() {
 			id,
 			reviewer,
 			notes,
-		}: {
-			id: string;
-			reviewer: string;
-			notes?: string;
-		}) => submitTestCaseForReview(id, reviewer, notes),
+			}: {
+				id: string;
+				reviewer: string;
+				notes?: string;
+			}) => submitTestCaseForReview(id, reviewer, notes),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
+			queryClient.invalidateQueries({ queryKey: ["testCases"] });
+			queryClient.invalidateQueries({ queryKey: ["testCases", id] });
 		},
 	});
 }
@@ -520,10 +517,8 @@ export function useApproveTestCase() {
 		mutationFn: ({ id, notes }: { id: string; notes?: string }) =>
 			approveTestCase(id, notes),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
-			undefined;
+			queryClient.invalidateQueries({ queryKey: ["testCases"] });
+			queryClient.invalidateQueries({ queryKey: ["testCases", id] });
 		},
 	});
 }
@@ -535,15 +530,14 @@ export function useDeprecateTestCase() {
 			id,
 			reason,
 			replacementTestCaseId,
-		}: {
-			id: string;
-			reason: string;
-			replacementTestCaseId?: string;
-		}) => deprecateTestCase(id, reason, replacementTestCaseId),
+			}: {
+				id: string;
+				reason: string;
+				replacementTestCaseId?: string;
+			}) => deprecateTestCase(id, reason, replacementTestCaseId),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
+			queryClient.invalidateQueries({ queryKey: ["testCases"] });
+			queryClient.invalidateQueries({ queryKey: ["testCases", id] });
 		},
 	});
 }
@@ -553,8 +547,7 @@ export function useDeleteTestCase() {
 	return useMutation({
 		mutationFn: deleteTestCase,
 		onSuccess: () => {
-			undefined;
-			undefined;
+			queryClient.invalidateQueries({ queryKey: ["testCases"] });
 		},
 	});
 }

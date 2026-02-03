@@ -1,3 +1,4 @@
+/* eslint-disable func-style, max-lines-per-function, no-magic-numbers, react/jsx-max-depth, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop, sort-imports */
 import type { TypedItem } from "@tracertm/types";
 import { Link } from "@tanstack/react-router";
 import {

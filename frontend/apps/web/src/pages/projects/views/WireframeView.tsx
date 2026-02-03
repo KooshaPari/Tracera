@@ -103,30 +103,62 @@ export function WireframeView() {
 					<div className="flex rounded-lg border p-1">
 						<button
 							onClick={() => setFilter(null)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									setFilter(null);
+								}
+							}}
+							type="button"
 							className={`rounded px-2 py-1 text-sm ${!filter ? "bg-accent" : ""}`}
 						>
 							All
 						</button>
 						<button
 							onClick={() => setFilter("desktop")}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									setFilter("desktop");
+								}
+							}}
+							type="button"
 							className={`rounded px-2 py-1 text-sm ${filter === "desktop" ? "bg-accent" : ""}`}
 						>
 							<Monitor className="h-4 w-4" />
 						</button>
 						<button
 							onClick={() => setFilter("tablet")}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									setFilter("tablet");
+								}
+							}}
+							type="button"
 							className={`rounded px-2 py-1 text-sm ${filter === "tablet" ? "bg-accent" : ""}`}
 						>
 							<Tablet className="h-4 w-4" />
 						</button>
 						<button
 							onClick={() => setFilter("mobile")}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									setFilter("mobile");
+								}
+							}}
+							type="button"
 							className={`rounded px-2 py-1 text-sm ${filter === "mobile" ? "bg-accent" : ""}`}
 						>
 							<Smartphone className="h-4 w-4" />
 						</button>
 					</div>
-					<button className="flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground">
+					<button
+						className="flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground"
+						onKeyDown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								// Add wireframe handler would go here
+							}
+						}}
+						type="button"
+					>
 						<Plus className="h-4 w-4" /> Add Wireframe
 					</button>
 				</div>
@@ -141,6 +173,12 @@ export function WireframeView() {
 							<div
 								key={wf.id}
 								onClick={() => setSelected(wf)}
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										setSelected(wf);
+									}
+								}}
+								tabIndex={0}
 								className={`cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md ${selected?.id === wf.id ? "ring-2 ring-primary" : ""}`}
 							>
 								<div className="flex aspect-video items-center justify-center rounded-lg bg-muted">
@@ -167,7 +205,15 @@ export function WireframeView() {
 					<div className="w-72 rounded-lg border bg-card p-4">
 						<div className="flex items-center justify-between">
 							<h4 className="font-semibold">{selected.name}</h4>
-							<button className="rounded p-1 hover:bg-accent">
+							<button
+								className="rounded p-1 hover:bg-accent"
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										// Open external link handler would go here
+									}
+								}}
+								type="button"
+							>
 								<ExternalLink className="h-4 w-4" />
 							</button>
 						</div>
@@ -202,10 +248,26 @@ export function WireframeView() {
 							</div>
 						</div>
 						<div className="mt-4 flex gap-2">
-							<button className="flex-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent">
+							<button
+								className="flex-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent"
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										// Edit handler would go here
+									}
+								}}
+								type="button"
+							>
 								Edit
 							</button>
-							<button className="flex-1 rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground">
+							<button
+								className="flex-1 rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground"
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										// Preview handler would go here
+									}
+								}}
+								type="button"
+							>
 								Preview
 							</button>
 						</div>

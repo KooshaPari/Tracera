@@ -12,6 +12,7 @@ LOG_DIR=".quality/logs"
 
 # Step name, make target, log file (no path - we prepend LOG_DIR)
 STEPS=(
+  naming
   go-lint
   go-proto
   go-build
@@ -30,6 +31,7 @@ run_one() {
   local log="$LOG_DIR/$step.log"
   local exitf="$LOG_DIR/$step.exit"
   case "$step" in
+    naming)    make quality-naming               > "$log" 2>&1; echo $? > "$exitf" ;;
     go-lint)   PORT=18080 make quality-go-lint   > "$log" 2>&1; echo $? > "$exitf" ;;
     go-proto)  make quality-go-proto            > "$log" 2>&1; echo $? > "$exitf" ;;
     go-build)  make quality-go-build            > "$log" 2>&1; echo $? > "$exitf" ;;

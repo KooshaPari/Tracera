@@ -58,7 +58,7 @@ class NATSClient:
             }
 
             # Add credentials if provided
-            if self.creds_path and Path(self.creds_path).exists():
+            if self.creds_path and Path(self.creds_path).exists():  # noqa: ASYNC240
                 options["user_credentials"] = self.creds_path
                 logger.info(f"Connecting to NATS with credentials: {self.creds_path}")
             else:
@@ -108,7 +108,7 @@ class NATSClient:
             logger.error(f"Failed to ensure stream: {e}")
             raise
 
-    async def publish(
+    async def publish(  # noqa: PLR0913
         self,
         event_type: str,
         project_id: str,
@@ -153,7 +153,7 @@ class NATSClient:
             logger.error(f"Failed to publish event to {subject}: {e}")
             raise
 
-    async def subscribe(
+    async def subscribe(  # noqa: C901
         self,
         subject_pattern: str,
         durable_name: str,

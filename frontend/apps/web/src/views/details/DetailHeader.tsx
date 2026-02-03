@@ -47,7 +47,7 @@ function viewHeadingLabel(view: string | undefined): string {
 }
 
 function handleShare() {
-	const shareUrl = `${globalThis.location.origin}${globalThis.location.pathname}`;
+	const _shareUrl = `${globalThis.location.origin}${globalThis.location.pathname}`;
 	undefined;
 }
 

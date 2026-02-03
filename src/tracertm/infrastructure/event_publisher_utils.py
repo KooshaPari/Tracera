@@ -9,7 +9,7 @@ from tracertm.infrastructure.event_bus import EventBus
 logger = logging.getLogger(__name__)
 
 
-async def publish_with_retry(
+async def publish_with_retry(  # noqa: PLR0913
     event_bus: EventBus,
     event_type: str,
     project_id: str,
@@ -46,7 +46,7 @@ async def publish_with_retry(
             await asyncio.sleep(0.1 * (attempt + 1))
 
 
-async def safe_publish(
+async def safe_publish(  # noqa: PLR0913
     event_bus: EventBus,
     event_type: str,
     project_id: str,
@@ -76,7 +76,7 @@ async def safe_publish(
         logger.error(f"Failed to publish {event_type} event (non-blocking): {e}")
 
 
-async def safe_publish_with_retry(
+async def safe_publish_with_retry(  # noqa: PLR0913
     event_bus: EventBus,
     event_type: str,
     project_id: str,

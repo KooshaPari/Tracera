@@ -265,7 +265,7 @@ void main() {
 
 export class GPUForceLayout {
 	private canvas: HTMLCanvasElement | null = null;
-	private /* _gl */: WebGLRenderingContext | null = null;
+	private gl: WebGLRenderingContext | null = null;
 	private useGPU = false;
 	private quadTree: BarnesHutQuadTree;
 

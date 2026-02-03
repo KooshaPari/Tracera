@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Python Naming Explosion Detection Script
-# Prevents AI from creating versioned/prefixed module names
-# Part of AI coding quality gates
+# Prevents AI from creating versioned/prefixed module names.
+# Catches all casing styles (snake, camel, Pascal, kebab, UPPER) and positions (prefix, suffix, middle).
 
 set -e
 
@@ -13,85 +13,64 @@ NC='\033[0m' # No Color
 
 echo "🔍 Checking Python files for naming explosion patterns..."
 
-# Search in source and tests (exclude vendored, migrations, generated)
 SEARCH_DIRS="src/tracertm tests"
+# shellcheck disable=SC2086
+run_find() { find $SEARCH_DIRS -type f -name '*.py' -not -path '*/ARCHIVE/*' -not -path '*/__pycache__/*' -not -path '*/migrations/*' -not -path '*_pb2.py' -not -path '*_pb2_grpc.py' "$@"; }
 
-# Check for versioned naming (_v2, _version2, etc.)
-VERSIONED_FILES=$(find $SEARCH_DIRS -type f -name "*.py" \
-  -not -path "*/ARCHIVE/*" \
-  -not -path "*/__pycache__/*" \
-  -not -path "*/migrations/*" \
-  -not -path "*_pb2.py" \
-  -not -path "*_pb2_grpc.py" | \
-  grep -E '(_v|_V|V)[0-9]+\.py$' || true)
+# Domain-specific exceptions (legitimate use of otherwise forbidden words)
+# These patterns are excluded from forbidden word checks:
+# - backup: backup/restore functionality (services, commands, tests)
+# - benchmark: performance benchmarking (services, commands, tests)
+# - final: test coverage files (test_final_*.py, *_final_coverage.py)
+# - batch/part: test files split for size/performance (test_*_batch[0-9].py, test_*_part[0-9].py)
+filter_domain_exceptions() {
+  grep -v -E '(backup|benchmark)' | grep -v -E 'test_final_(gap_|edge_)?coverage\.py$'
+}
 
-# Check for prefixed naming (new_*, improved_*, enhanced_*, etc.)
-# Python uses snake_case, so check lowercase prefixes
-PREFIXED_FILES=$(find $SEARCH_DIRS -type f -name "*.py" \
-  -not -path "*/ARCHIVE/*" \
-  -not -path "*/__pycache__/*" \
-  -not -path "*/migrations/*" \
-  -not -path "*_pb2.py" \
-  -not -path "*_pb2_grpc.py" | \
-  grep -E '^.*(new_|improved_|enhanced_|updated_|fixed_|refactored_|modified_|revised_)[a-z_]+\.py$' || true)
+filter_numbered_exceptions() {
+  grep -v -E 'test_.*_(batch|part)[0-9]+\.py$'
+}
 
-# Check for suffixed naming (*_new, *_improved, etc.)
-SUFFIXED_FILES=$(find $SEARCH_DIRS -type f -name "*.py" \
-  -not -path "*/ARCHIVE/*" \
-  -not -path "*/__pycache__/*" \
-  -not -path "*/migrations/*" \
-  -not -path "*_pb2.py" \
-  -not -path "*_pb2_grpc.py" | \
-  grep -E '_(new|improved|enhanced|updated|fixed|refactored|modified|revised)\.py$' || true)
+# Forbidden words (all casings via grep -iE): prefix, suffix, middle
+WORDS="new|improved|enhanced|updated|fixed|refactored|modified|revised|copy|backup|old|draft|final|latest|temp|tmp|wip|legacy|deprecated|duplicate|alternate|iteration|replacement|variant"
 
-# Check for numbered suffixes (*_2, *_3, etc.) - exclude test fixtures
-NUMBERED_FILES=$(find $SEARCH_DIRS -type f -name "*.py" \
-  -not -path "*/ARCHIVE/*" \
-  -not -path "*/__pycache__/*" \
-  -not -path "*/migrations/*" \
-  -not -path "*_pb2.py" \
-  -not -path "*_pb2_grpc.py" \
-  -not -path "*/fixtures/*" | \
-  grep -E '_[0-9]+\.py$' || true)
+# --- Version / rev / iter (all casings) ---
+# _v2, V2, v2, dashboardv2.py, version2.py, rev3.py, iter1.py
+VERSIONED_FILES=$(run_find | grep -iE '(_v|V|v|version|ver|rev|iter)[-_]?[0-9]+\.py$' || true)
+# Name then digits (no separator): dashboard2.py, component3.py
+# At least 2 letters then digits (exclude a1.py)
+NAME_DIGITS_FILES=$(run_find | grep -E '[A-Za-z]{2,}[0-9]+\.py$' || true)
 
-# Check for phase suffixes (*_phase2, *_phase3, *phase2_*, etc.)
-PHASE_FILES=$(find $SEARCH_DIRS -type f -name "*.py" \
-  -not -path "*/ARCHIVE/*" \
-  -not -path "*/__pycache__/*" \
-  -not -path "*/migrations/*" \
-  -not -path "*_pb2.py" \
-  -not -path "*_pb2_grpc.py" | \
-  grep -E '(_phase[0-9]|_phase[0-9][0-9]|phase[0-9]_|phase[0-9][0-9]_)\.py$' || true)
+# --- Numbered suffix: *_2.py, *_3.py ---
+# Exclude legitimate test batches/parts: test_*_batch1.py, test_*_part2.py
+NUMBERED_FILES=$(run_find -not -path '*/fixtures/*' | grep -E '_[0-9]+\.py$' | filter_numbered_exceptions || true)
 
-# Check for other common AI versioning (*_final, *_latest, etc.)
-OTHER_VERSION_FILES=$(find $SEARCH_DIRS -type f -name "*.py" \
-  -not -path "*/ARCHIVE/*" \
-  -not -path "*/__pycache__/*" \
-  -not -path "*/migrations/*" \
-  -not -path "*_pb2.py" \
-  -not -path "*_pb2_grpc.py" | \
-  grep -E '_(final|latest|revised)\.py$' || true)
+# --- Phase (all casings): phase1, Phase2, phase_3, PHASE_4, _phase5_, phase6_, phase-2 ---
+PHASE_END_FILES=$(run_find | grep -iE 'phase[-_]?[0-9][0-9]*\.py$' || true)
+PHASE_MID_FILES=$(run_find | grep -iE '_phase[0-9][0-9]*_|phase[0-9][0-9]*_|phase[-_]?[0-9][0-9]*_' || true)
+
+# --- Forbidden words: prefix, suffix, middle (all casings); kebab: *-new.py, *-new-* ---
+# Suffix: *_new.py, *_Final.py (case-insensitive). Use pattern var so grep gets one arg.
+# Apply domain exceptions to filter out legitimate uses (backup, benchmark, final coverage tests)
+SUFFIX_PAT="_(${WORDS})\\.py\$"
+PREFIX_PAT="/(${WORDS})_[a-zA-Z0-9_]+\\.py\$"
+# Word boundary: _word_ or _word. so "temp" doesn't match "temporal"
+MIDDLE_PAT="_(${WORDS})(_|\\.)"
+KEBAB_PAT="-(${WORDS})(\\.py\$|_)"
+FORBIDDEN_SUFFIX=$(run_find | grep -i -E -e "$SUFFIX_PAT" | filter_domain_exceptions || true)
+FORBIDDEN_PREFIX=$(run_find | grep -i -E -e "$PREFIX_PAT" | filter_domain_exceptions || true)
+FORBIDDEN_MIDDLE=$(run_find | grep -i -E -e "$MIDDLE_PAT" | filter_domain_exceptions || true)
+FORBIDDEN_KEBAB=$(run_find | grep -i -E -e "$KEBAB_PAT" | filter_domain_exceptions || true)
 
 # Combine all violations
 ALL_VIOLATIONS=""
-if [ -n "$VERSIONED_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$VERSIONED_FILES\n"
-fi
-if [ -n "$PREFIXED_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$PREFIXED_FILES\n"
-fi
-if [ -n "$SUFFIXED_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$SUFFIXED_FILES\n"
-fi
-if [ -n "$NUMBERED_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$NUMBERED_FILES\n"
-fi
-if [ -n "$PHASE_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$PHASE_FILES\n"
-fi
-if [ -n "$OTHER_VERSION_FILES" ]; then
-  ALL_VIOLATIONS="$ALL_VIOLATIONS$OTHER_VERSION_FILES\n"
-fi
+for var in VERSIONED_FILES NAME_DIGITS_FILES NUMBERED_FILES PHASE_END_FILES PHASE_MID_FILES FORBIDDEN_SUFFIX FORBIDDEN_PREFIX FORBIDDEN_MIDDLE FORBIDDEN_KEBAB; do
+  eval "val=\$$var"
+  if [ -n "$val" ]; then
+    ALL_VIOLATIONS="$ALL_VIOLATIONS$val
+"
+  fi
+done
 
 # Report results
 if [ -n "$ALL_VIOLATIONS" ]; then
@@ -101,26 +80,20 @@ if [ -n "$ALL_VIOLATIONS" ]; then
   echo ""
   echo -e "$ALL_VIOLATIONS" | sort | uniq
   echo ""
-  echo -e "${YELLOW}Forbidden patterns (Python snake_case):${NC}"
-  echo "  • Versioned: service_v2.py, api_V2.py"
-  echo "  • Prefixed: new_dashboard.py, improved_service.py, enhanced_api.py"
-  echo "  • Suffixed: dashboard_new.py, service_improved.py"
-  echo "  • Numbered: dashboard_2.py, service_3.py"
-  echo "  • Phase suffixes: benchmark_phase2.py, service_phase3.py"
-  echo "  • Other versions: service_final.py, module_latest.py"
+  echo -e "${YELLOW}Forbidden patterns (all casings: snake, camel, Pascal, kebab, UPPER):${NC}"
+  echo "  • Versioned: *_v2.py, *V2.py, *v2.py, *version2.py, *rev3.py, *iter1.py, *dashboardv2.py"
+  echo "  • Name+digits: *dashboard2.py, *component3.py"
+  echo "  • Numbered suffix: *_2.py, *_3.py"
+  echo "  • Phase: *phase1.py, *Phase2.py, *_phase_3.py, *phase4_*.py, *_phase5_*.py"
+  echo "  • Forbidden words (prefix/suffix/middle): new, improved, enhanced, updated, fixed,"
+  echo "    refactored, modified, revised, copy, backup, old, draft, final, latest, temp, tmp,"
+  echo "    wip, legacy, deprecated, duplicate, alternate, iteration, replacement, variant"
   echo ""
   echo -e "${YELLOW}Required action:${NC}"
   echo "  1. Identify the canonical (currently used) module"
   echo "  2. Edit the canonical module in place"
   echo "  3. Delete ALL versioned/prefixed variants"
   echo "  4. Update imports to use canonical names only"
-  echo ""
-  echo -e "${YELLOW}Why this matters:${NC}"
-  echo "  • This is an AI-coded project"
-  echo "  • Naming explosion creates orphaned modules"
-  echo "  • Each 'version' confuses future AI sessions"
-  echo "  • Backward compatibility is NOT a goal here"
-  echo "  • We aggressively evolve - edit in place always"
   echo ""
   echo "See: docs/reports/NAMING_EXPLOSION_GUARD_STATUS.md"
   echo ""

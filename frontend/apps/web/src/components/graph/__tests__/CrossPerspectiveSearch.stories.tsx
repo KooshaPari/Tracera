@@ -193,6 +193,8 @@ const createSampleLinks = (): Link[] => [
 		status: "confirmed",
 		targetId: "code-auth-service",
 		type: "represents",
+		updatedAt: "2025-01-10",
+		version: 1,
 	},
 	{
 		confidence: 0.98,
@@ -203,6 +205,8 @@ const createSampleLinks = (): Link[] => [
 		status: "confirmed",
 		targetId: "api-login",
 		type: "same_as",
+		updatedAt: "2025-01-10",
+		version: 1,
 	},
 	{
 		confidence: 1,
@@ -213,6 +217,8 @@ const createSampleLinks = (): Link[] => [
 		status: "auto",
 		targetId: "db-users",
 		type: "depends_on",
+		updatedAt: "2025-01-10",
+		version: 1,
 	},
 	{
 		confidence: 0.9,
@@ -223,6 +229,8 @@ const createSampleLinks = (): Link[] => [
 		status: "confirmed",
 		targetId: "feat-auth",
 		type: "tests",
+		updatedAt: "2025-01-15",
+		version: 1,
 	},
 	{
 		confidence: 0.85,
@@ -233,6 +241,8 @@ const createSampleLinks = (): Link[] => [
 		status: "suggested",
 		targetId: "code-login-component",
 		type: "represents",
+		updatedAt: "2025-01-20",
+		version: 1,
 	},
 	{
 		confidence: 0.8,
@@ -243,6 +253,8 @@ const createSampleLinks = (): Link[] => [
 		status: "confirmed",
 		targetId: "feat-auth",
 		type: "related_to",
+		updatedAt: "2025-01-25",
+		version: 1,
 	},
 ];
 
@@ -250,7 +262,7 @@ const createSampleLinks = (): Link[] => [
  * Basic full-featured search component
  */
 export const Default: Story = {
-	render: () => {
+	render: (_args) => {
 		const [selectedId, setSelectedId] = useState<string | null>(null);
 		const [_highlightedId, setHighlightedId] = useState<string | null>(null);
 
@@ -283,7 +295,7 @@ export const Default: Story = {
  * Compact search component for inline use
  */
 export const Compact: Story = {
-	render: () => {
+	render: (_args) => {
 		const [selectedId, setSelectedId] = useState<string | null>(null);
 
 		return (
@@ -315,7 +327,7 @@ export const Compact: Story = {
  * Search with demonstrated keyboard navigation
  */
 export const KeyboardNavigation: Story = {
-	render: () => {
+	render: (_args) => {
 		const [selectedId, setSelectedId] = useState<string | null>(null);
 		const [keyboardTips] = useState(
 			"Use ↑↓ to navigate results | Enter to select | Esc to clear",

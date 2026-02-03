@@ -138,15 +138,15 @@ export function useVirtualization(
 					// Only show ID and type for very zoomed out
 					return {
 						id: nodeId,
-						type: data.type,
+						type: data["type"],
 					};
 				}
 				case "medium": {
 					// Show ID, type, and label
 					return {
 						id: nodeId,
-						label: data.label,
-						type: data.type,
+						label: data["label"],
+						type: data["type"],
 					};
 				}
 				case "high": {
@@ -288,7 +288,7 @@ export function useProgressiveLoading<T extends { id: string }>(
 	delay = 100,
 ) {
 	const [loadedItems, setLoadedItems] = useState<Set<string>>(new Set());
-	const loaderRef = useRef<number>();
+	const loaderRef = useRef<ReturnType<typeof setTimeout>>();
 
 	useEffect(() => {
 		if (loadedItems.size >= items.length) {

@@ -539,7 +539,7 @@ const api = {
 	filterData,
 	joinData,
 	normalizeData,
-pivotData,
+	pivotData,
 	sortData,
 };
 

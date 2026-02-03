@@ -384,7 +384,7 @@ function PageDecompositionViewComponent({
 // =============================================================================
 
 interface StatBadgeProps {
-	icon: React.ComponentType<{ className?: string }>;
+	icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 	count: number;
 	label: string;
 	color: string;
@@ -421,7 +421,9 @@ function DecompositionTreeItem({
 	expandedIds,
 	onToggle,
 	onSelect,
-	onViewInCodeIndicator: _onViewInCodeIndicator,
+	onViewInCode,
+	onViewInDesign: _onViewInDesign,
+	showDepthIndicator,
 	viewMode,
 }: DecompositionTreeItemProps) {
 	const isExpanded = expandedIds.has(node.id);
@@ -668,14 +670,11 @@ function buildDecompositionTree(
 		childrenMap.get(parentId)!.push(item);
 	}
 
-	// Build interaction counts
+	// Build interaction counts (include UI interaction link types; LinkType union may not include these in all packages)
 	const interactionCounts = new Map<string, number>();
+	const interactionTypes = ["navigates_to", "opens", "triggers"];
 	for (const link of links) {
-		if (
-			link.type === "navigates_to" ||
-			link.type === "opens" ||
-			link.type === "triggers"
-		) {
+		if (interactionTypes.includes(link.type as string)) {
 			interactionCounts.set(
 				link.sourceId,
 				(interactionCounts.get(link.sourceId) || 0) + 1,
@@ -708,14 +707,14 @@ function buildDecompositionTree(
 		return {
 			childCount: countAllChildren(children),
 			children,
-			componentPath: (metadata?.componentPath as string) || undefined,
+			componentPath: (metadata?.["componentPath"] as string) || undefined,
 			depth,
 			entityType,
-			hasScreenshot: !!(metadata?.screenshotUrl || metadata?.thumbnailUrl),
+			hasScreenshot: !!(metadata?.["screenshotUrl"] || metadata?.["thumbnailUrl"]),
 			id: item.id,
 			interactionCount: interactionCounts.get(item.id) || 0,
 			item,
-			route: (metadata?.route as string) || undefined,
+			route: (metadata?.["route"] as string) || undefined,
 		};
 	}
 

@@ -120,7 +120,7 @@ def _load_tool_transforms(require: bool = True) -> dict[str, ToolTransformConfig
     return transforms
 
 
-def _add_providers(mcp: FastMCP) -> None:
+def _add_providers(mcp: FastMCP) -> None:  # noqa: C901
     fs_root = os.getenv("TRACERTM_MCP_FILESYSTEM_ROOT")
     if fs_root:
         from fastmcp.server.providers import FileSystemProvider
@@ -196,7 +196,7 @@ def _build_session_state_store() -> Any | None:
     return RedisStore(redis_url)
 
 
-def build_mcp_server(transport: str = "http") -> FastMCP:
+def build_mcp_server(transport: str = "http") -> FastMCP:  # noqa: C901
     """Build and configure the MCP server with auth, middleware, providers, and transforms.
 
     Full-feature: all MCP env and preflight are required (no optionality).

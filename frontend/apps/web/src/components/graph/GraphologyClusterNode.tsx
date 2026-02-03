@@ -1,5 +1,5 @@
 import { memo } from "react";
-import type { NodeProps } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -14,10 +14,12 @@ interface ClusterNodeData {
 	isExpanded?: boolean;
 }
 
+type ClusterNode = Node<ClusterNodeData, "cluster">;
+
 export const GraphologyClusterNode = memo(function GraphologyClusterNode({
 	id,
 	data,
-}: NodeProps<ClusterNodeData>) {
+}: NodeProps<ClusterNode>) {
 	const handleToggle = () => {
 		if (data.isExpanded && data.onCollapse) {
 			data.onCollapse(id);

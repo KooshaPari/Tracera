@@ -86,7 +86,8 @@ describe(ReportsView, () => {
 		// Click on CSV badge for coverage report
 		const csvBadges = screen.getAllByText("CSV");
 		expect(csvBadges.length).toBeGreaterThan(0);
-		await user.click(csvBadges[0]);
+		const firstCsv = csvBadges[0];
+		if (firstCsv) await user.click(firstCsv);
 
 		// Format badge should still be present after click
 		await waitFor(() => {
@@ -130,11 +131,13 @@ describe(ReportsView, () => {
 
 		// Select format (CSV)
 		const csvBadges = screen.getAllByText("CSV");
-		await user.click(csvBadges[0]);
+		const firstCsv = csvBadges[0];
+		if (firstCsv) await user.click(firstCsv);
 
 		// Click generate button
 		const generateButtons = screen.getAllByText("Generate Report");
-		await user.click(generateButtons[0]);
+		const generateBtn = generateButtons[0];
+		if (generateBtn) await user.click(generateBtn);
 
 		await waitFor(() => {
 			expect(api.exportImport.export).toHaveBeenCalled();

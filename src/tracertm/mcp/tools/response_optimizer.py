@@ -75,7 +75,7 @@ def format_response(
     return response
 
 
-def format_error(
+def format_error(  # noqa: C901, PLR0913
     error: str | Exception,
     action: str | None = None,
     suggestions: list[str] | None = None,
@@ -167,7 +167,7 @@ def _extract_actor(ctx: Any) -> dict[str, Any] | None:
     }
 
 
-def _generate_suggestions(error_msg: str, category: str) -> list[str]:
+def _generate_suggestions(error_msg: str, category: str) -> list[str]:  # noqa: C901
     """Generate helpful suggestions based on error message and category."""
     suggestions = []
 

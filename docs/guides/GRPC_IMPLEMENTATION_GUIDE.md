@@ -112,13 +112,13 @@ protoc --go_out=backend/pkg/proto \
   --go_opt=paths=source_relative \
   --go-grpc_out=backend/pkg/proto \
   --go-grpc_opt=paths=source_relative \
-  proto/tracertm.proto
+  proto/tracertm/v1/tracertm.proto
 
 # Generate Python code
 python -m grpc_tools.protoc -I. \
   --python_out=src/tracertm/proto \
   --grpc_python_out=src/tracertm/proto \
-  proto/tracertm.proto
+  proto/tracertm/v1/tracertm.proto
 ```
 
 ### 3. Start the Go Backend
@@ -162,7 +162,7 @@ asyncio.run(example())
 
 ## Protocol Buffers Schema
 
-The gRPC services are defined in `proto/tracertm.proto`.
+The gRPC services are defined in `proto/tracertm/v1/tracertm.proto`.
 
 ### Key Message Types
 
@@ -506,7 +506,7 @@ ModuleNotFoundError: No module named 'tracertm_pb2'
 python -m grpc_tools.protoc -I. \
   --python_out=src/tracertm/proto \
   --grpc_python_out=src/tracertm/proto \
-  proto/tracertm.proto
+  proto/tracertm/v1/tracertm.proto
 ```
 
 #### 3. Method Not Found

@@ -4,7 +4,7 @@
 
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useWebSocketStore } from "../../stores/websocketStore";
+import { useWebSocketStore } from "../../stores/websocket-store";
 
 describe("websocketStore", () => {
 	afterEach(() => {

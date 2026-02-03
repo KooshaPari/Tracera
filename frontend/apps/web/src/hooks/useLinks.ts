@@ -140,8 +140,8 @@ export function useCreateLink() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: createLink,
-		onSuccess: () => {
-			undefined;
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: ["links"] });
 		},
 	});
 }
@@ -150,8 +150,8 @@ export function useDeleteLink() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: deleteLink,
-		onSuccess: () => {
-			undefined;
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: ["links"] });
 		},
 	});
 }

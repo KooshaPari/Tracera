@@ -3,6 +3,8 @@
 
 import type { Item, Link } from "@tracertm/types";
 
+const NOT_FOUND_DEPTH = -1;
+
 /**
  * Hierarchy node with computed properties
  */
@@ -228,7 +230,7 @@ export function getDepth(
 	itemId: string,
 	hierarchyMap: Map<string, HierarchyNode>,
 ): number {
-	return hierarchyMap.get(itemId)?.depth ?? -1;
+	return hierarchyMap.get(itemId)?.depth ?? NOT_FOUND_DEPTH;
 }
 
 /**

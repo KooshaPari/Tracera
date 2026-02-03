@@ -1,6 +1,12 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type {
+	CanonicalConcept,
+	CanonicalProjection,
+	EquivalenceLink,
+	Item,
+} from "@tracertm/types";
 import { Download, Link2, Upload } from "lucide-react";
 import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	EquivalenceExport,
 	EquivalenceImport,
@@ -21,18 +27,11 @@ export function EquivalenceManager({ projectId }: EquivalenceManagerProps) {
 	);
 
 	// Mock data for equivalence components (would be loaded from API)
-	const mockEquivalenceLinks: { id: string; source: string; target: string }[] =
-		[];
-	const mockCanonicalConcepts: {
-		id: string;
-		name: string;
-		description: string;
-	}[] = [];
-	const mockCanonicalProjections: {
-		id: string;
-		conceptId: string;
-		projection: string;
-	}[] = [];
+	const mockEquivalenceLinks: EquivalenceLink[] = [];
+	const mockCanonicalConcepts: CanonicalConcept[] = [];
+	const mockCanonicalProjections: CanonicalProjection[] = [];
+	const mockItems: Item[] = [];
+	const selectedItem: Item | null = null;
 
 	return (
 		<div className="space-y-6">
@@ -76,7 +75,12 @@ export function EquivalenceManager({ projectId }: EquivalenceManagerProps) {
 							concept with confidence levels.
 						</p>
 					</div>
-					<EquivalencePanel projectId={projectId} />
+					<EquivalencePanel
+						selectedItem={selectedItem}
+						equivalenceLinks={mockEquivalenceLinks}
+						items={mockItems}
+						onViewItem={(): void => {}}
+					/>
 				</TabsContent>
 
 				<TabsContent value="export" className="space-y-4">
@@ -101,7 +105,12 @@ export function EquivalenceManager({ projectId }: EquivalenceManagerProps) {
 							existing mappings or overwrite based on your preferences.
 						</p>
 					</div>
-					<EquivalenceImport projectId={projectId} />
+					<EquivalenceImport
+						projectId={projectId}
+						existingLinks={mockEquivalenceLinks}
+						existingConcepts={mockCanonicalConcepts}
+						existingProjections={mockCanonicalProjections}
+					/>
 				</TabsContent>
 			</Tabs>
 		</div>

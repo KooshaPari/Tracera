@@ -1,6 +1,10 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/route-guards";
 
+function ADRsPage() {
+	return null;
+}
+
 export const Route = createFileRoute("/projects/$projectId/adrs")({
 	beforeLoad: ({ params }) => {
 		// Check auth first
@@ -15,5 +19,3 @@ export const Route = createFileRoute("/projects/$projectId/adrs")({
 	},
 	component: ADRsPage,
 });
-
-const ADRsPage = () => null;

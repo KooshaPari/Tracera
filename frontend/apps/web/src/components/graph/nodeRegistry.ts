@@ -193,10 +193,10 @@ export function getNodeTypeWithLOD(
 	nodeData: Record<string, unknown>,
 	options: { nodeCount: number; zoom?: number },
 ): string {
-	if (nodeData.loading === true) {
+	if (nodeData["loading"] === true) {
 		return "nodeLoading";
 	}
-	if (nodeData.error != null && nodeData.error !== false) {
+	if (nodeData["error"] != null && nodeData["error"] !== false) {
 		return "nodeError";
 	}
 	const { nodeCount } = options;

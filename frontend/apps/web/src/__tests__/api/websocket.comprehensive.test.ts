@@ -48,7 +48,8 @@ globalThis.window = {
 		protocol: "ws:",
 	},
 	setInterval: vi.fn(
-		(_fn: TimerHandler, _delay?: number) => 1 as ReturnType<typeof setInterval>,
+		(_fn: TimerHandler, _delay?: number) =>
+			1 as unknown as ReturnType<typeof setInterval>,
 	),
 } as any;
 
@@ -91,7 +92,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 
 		it("should not send heartbeat when connection is not open", async () => {
 			const manager = getWebSocketManager();
-			const _sendSpy = vi.spyOn(manager as any, "send");
+			const sendSpy = vi.spyOn(manager as any, "send");
 
 			// Create a WebSocket that stays in CONNECTING state
 			class ConnectingWebSocket extends MockWebSocket {
@@ -118,6 +119,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			// Should not send ping when not open
 			await new Promise((resolve) => setTimeout(resolve, 10));
 			// SendSpy might not be called if readyState check fails
+			expect(sendSpy).not.toHaveBeenCalledWith({ type: "ping" });
 		});
 	});
 
@@ -215,10 +217,11 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			(globalThis as any).window = undefined;
 
 			const manager = getWebSocketManager();
-			const _startHeartbeatSpy = vi.spyOn(manager as any, "startHeartbeat");
+			const startHeartbeatSpy = vi.spyOn(manager as any, "startHeartbeat");
 
 			// Should not start heartbeat without window
 			await connectWebSocket();
+			expect(startHeartbeatSpy).not.toHaveBeenCalled();
 
 			// Restore window
 			globalThis.window = originalWindow;
@@ -260,7 +263,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			const sendSpy = vi.spyOn(manager as any, "send");
 
 			// Try to send without connecting
-			manager.send({ type: "test" });
+			(manager as any).send({ type: "test" });
 
 			// Should not throw, but may not send
 			expect(sendSpy).toHaveBeenCalled();

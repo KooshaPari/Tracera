@@ -86,8 +86,7 @@ function AuthCallback() {
 
 		// Use a small delay to show success state
 		const redirectTimeout = setTimeout(() => {
-			// Use navigate for proper router integration
-			undefined;
+			globalThis.location.href = returnTo;
 		}, 500);
 
 		return () => clearTimeout(redirectTimeout);

@@ -7,7 +7,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { axe } from "../a11y/setup";
 
 let user: ReturnType<typeof userEvent.setup>;
@@ -16,10 +15,13 @@ beforeEach(() => {
 	user = userEvent.setup();
 });
 
-function validateFormData(
-	formData: Record<string, string>,
-): Record<string, string> {
-	const newErrors: Record<string, string> = {};
+type FormField = "email" | "message" | "name";
+type FormData = Partial<Record<FormField, string>>;
+type FormErrors = Partial<Record<FormField, string>>;
+type FormTouched = Partial<Record<FormField, boolean>>;
+
+function validateFormData(formData: FormData): FormErrors {
+	const newErrors: FormErrors = {};
 
 	if (!formData.email) {
 		newErrors.email = "Email is required";
@@ -42,10 +44,10 @@ function validateFormData(
 function MockAccessibleForm({
 	onSubmit = vi.fn(),
 }: {
-	onSubmit?: (data: any) => void;
+	onSubmit?: (data: FormData) => void;
 }) {
-	const [errors, setErrors] = React.useState<Record<string, string>>({});
-	const [touched, setTouched] = React.useState<Record<string, boolean>>({});
+	const [errors, setErrors] = React.useState<FormErrors>({});
+	const [touched, setTouched] = React.useState<FormTouched>({});
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -53,10 +55,10 @@ function MockAccessibleForm({
 		setIsSubmitting(true);
 
 		const formData = new FormData(e.currentTarget);
-		const data = {
-			email: formData.get("email"),
-			message: formData.get("message"),
-			name: formData.get("name"),
+		const data: FormData = {
+			email: String(formData.get("email") ?? ""),
+			message: String(formData.get("message") ?? ""),
+			name: String(formData.get("name") ?? ""),
 		};
 
 		const validationErrors = validateFormData(data as Record<string, string>);
@@ -78,20 +80,20 @@ function MockAccessibleForm({
 		setIsSubmitting(false);
 	};
 
-	const handleBlur = (fieldName: string) => {
+	const handleBlur = (fieldName: FormField) => {
 		setTouched({ ...touched, [fieldName]: true });
 
 		// Validate single field on blur
 		const formElement = document.querySelector("form");
 		if (formElement) {
 			const formData = new FormData(formElement);
-			const data = {
-				email: formData.get("email") || "",
-				message: formData.get("message") || "",
-				name: formData.get("name") || "",
+			const data: FormData = {
+				email: String(formData.get("email") ?? ""),
+				message: String(formData.get("message") ?? ""),
+				name: String(formData.get("name") ?? ""),
 			};
 
-			const fieldErrors = validateFormData(data as Record<string, string>);
+			const fieldErrors = validateFormData(data);
 			const fieldError = fieldErrors[fieldName];
 
 			if (fieldError) {
@@ -411,7 +413,9 @@ describe("Form Validation - Field Focus Management", () => {
 	it("should focus first invalid field on submit", async () => {
 		render(<MockAccessibleForm />);
 
-		const nameInput = screen.getByPlaceholderText("Your name");
+	const nameInput = screen.getByPlaceholderText(
+		"Your name",
+	) as HTMLInputElement;
 		const submitBtn = screen.getByRole("button", { name: "Send Message" });
 
 		await user.click(submitBtn);
@@ -437,7 +441,9 @@ describe("Form Validation - Field Focus Management", () => {
 	it("should maintain focus during validation", async () => {
 		render(<MockAccessibleForm />);
 
-		const nameInput = screen.getByPlaceholderText("Your name");
+		const nameInput = screen.getByPlaceholderText(
+			"Your name",
+		) as HTMLInputElement;
 		nameInput.focus();
 		expect(nameInput).toHaveFocus();
 
@@ -456,7 +462,9 @@ describe("Form Validation - Error Recovery", () => {
 
 		render(<MockAccessibleForm onSubmit={handleSubmit} />);
 
-		const nameInput = screen.getByPlaceholderText("Your name");
+		const nameInput = screen.getByPlaceholderText(
+			"Your name",
+		) as HTMLInputElement;
 		const emailInput = screen.getByPlaceholderText("your@email.com");
 		const messageInput = screen.getByPlaceholderText("Your message here...");
 		const submitBtn = screen.getByRole("button", { name: "Send Message" });
@@ -486,13 +494,13 @@ describe("Form Validation - Error Recovery", () => {
 	it("should clear form on reset button click", async () => {
 		render(<MockAccessibleForm />);
 
-		const nameInput = screen.getByPlaceholderText("Your name");
+		const nameInput = screen.getByPlaceholderText(
+			"Your name",
+		) as HTMLInputElement;
 		const resetBtn = screen.getByRole("button", { name: "Clear" });
 
 		await user.type(nameInput, "John");
-		expect(nameInput instanceof HTMLInputElement ? nameInput.value : "").toBe(
-			"John",
-		);
+		expect(nameInput.value).toBe("John");
 
 		await user.click(resetBtn);
 

@@ -361,9 +361,9 @@ export function ItemsKanbanView() {
 		setIsDraggingOver(null);
 	}, []);
 
-	const handleProjectFilterChange = useCallback((v: string) => {}, [navigate]);
+	const handleProjectFilterChange = useCallback((_v: string) => {}, [navigate]);
 
-	const handleTypeFilterChange = useCallback((v: string) => {}, [navigate]);
+	const handleTypeFilterChange = useCallback((_v: string) => {}, [navigate]);
 
 	const handleNavigateToTable = useCallback(() => {}, [
 		navigate,

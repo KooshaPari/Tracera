@@ -35,6 +35,11 @@ import {
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 
+// === Constants ===
+
+const PASS_RATE_EXCELLENT = 90;
+const PASS_RATE_GOOD = 70;
+
 // === Types ===
 
 export interface QANodeMetrics {
@@ -84,10 +89,10 @@ export interface QAEnhancedNodeData {
 // === Main Component ===
 
 function getPassRateColor(rate: number): string {
-	if (rate >= 90) {
+	if (rate >= PASS_RATE_EXCELLENT) {
 		return "text-green-500 bg-green-500/10 border-green-500/30";
 	}
-	if (rate >= 70) {
+	if (rate >= PASS_RATE_GOOD) {
 		return "text-yellow-500 bg-yellow-500/10 border-yellow-500/30";
 	}
 	return "text-red-500 bg-red-500/10 border-red-500/30";
@@ -139,9 +144,9 @@ function QAEnhancedNodeComponent({
 							<div
 								className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border ${getPassRateColor(passRate)}`}
 							>
-								{passRate >= 90 ? (
+								{passRate >= PASS_RATE_EXCELLENT ? (
 									<CheckCircle2 className="h-3.5 w-3.5" />
-								) : (passRate >= 70 ? (
+								) : (passRate >= PASS_RATE_GOOD ? (
 									<Clock className="h-3.5 w-3.5" />
 								) : (
 									<XCircle className="h-3.5 w-3.5" />
@@ -572,9 +577,9 @@ function TestsTab({ data }: { data: QAEnhancedNodeData }) {
 				<div className="w-full h-2 bg-muted rounded-full overflow-hidden">
 					<div
 						className={`h-full transition-all ${
-							metrics.passRate >= 90
+							metrics.passRate >= PASS_RATE_EXCELLENT
 								? "bg-green-500"
-								: (metrics.passRate >= 70
+								: (metrics.passRate >= PASS_RATE_GOOD
 									? "bg-yellow-500"
 									: "bg-red-500")
 						}`}
@@ -673,7 +678,6 @@ function ActionsTab({
 	data: QAEnhancedNodeData;
 	onClose: () => void;
 }) {
-	undefined; // Reserved for future use
 	const handleRunTests = useCallback(() => {
 		data.onRunTests?.(data.id);
 	}, [data]);

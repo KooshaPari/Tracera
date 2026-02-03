@@ -87,7 +87,6 @@ export const SigmaGraphView = memo(function SigmaGraphView(
 			settings={{
 				// Performance optimizations
 				renderEdgeLabels: false, // Labels only on zoom
-				enableEdgeHoverEvents: false,
 				enableEdgeClickEvents: false,
 
 				// Rendering settings

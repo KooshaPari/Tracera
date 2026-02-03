@@ -203,6 +203,7 @@ quality-frontend: ## Frontend only: lint (oxlint), typecheck (oxlint --type-awar
 	@cd frontend && bun run quality
 
 # Per-step targets for parallel quality (make quality-split)
+quality-naming:    ; @$(MAKE) lint-naming
 quality-go-lint:   ; @$(MAKE) lint-go
 quality-go-proto:  ; @$(MAKE) proto-lint
 quality-go-build:  ; @$(MAKE) -C backend build
@@ -344,7 +345,13 @@ chaos-report: ## Open chaos test HTML report
 # Code Quality (see also: quality, quality-go, quality-python, quality-frontend)
 #############################################################################
 
-lint: lint-go lint-python lint-frontend ## Run Go, Python, and frontend linters
+lint: lint-naming lint-go lint-python lint-frontend ## Run naming guards, then Go, Python, and frontend linters
+
+lint-naming: ## Naming explosion guards (forbids components_phase3_tests.py, dashboardv2.py, etc.)
+	@echo '$(GREEN)Running naming explosion guards (Python, Go, frontend)...$(NC)'
+	@bash scripts/shell/check-naming-explosion-python.sh
+	@bash scripts/shell/check-naming-explosion-go.sh
+	@cd frontend && bash scripts/check-naming-explosion.sh
 
 lint-frontend: ## Frontend linters only (oxlint via bun). See docs/checklists/OXC_IMPLEMENTATION_CHECKLIST.md
 	@echo '$(GREEN)Running frontend linters (oxlint)...$(NC)'
@@ -522,7 +529,7 @@ proto-test: ## Test gRPC connection and services
 proto-lint: ## Lint proto files (requires buf)
 	@if command -v buf &> /dev/null; then \
 		echo '$(GREEN)Linting proto files...$(NC)'; \
-		buf lint; \
+		buf lint proto; \
 	else \
 		echo '$(YELLOW)buf not installed. Install with: brew install bufbuild/buf/buf$(NC)'; \
 	fi
@@ -544,7 +551,7 @@ install: ## Install dependencies
 
 install-tools: ## Install development tools
 	@echo '$(GREEN)Installing development tools...$(NC)'
-	go install github.com/cosmtrek/air@latest
+	go install github.com/air-verse/air@latest
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	go install golang.org/x/vuln/cmd/govulncheck@latest
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest

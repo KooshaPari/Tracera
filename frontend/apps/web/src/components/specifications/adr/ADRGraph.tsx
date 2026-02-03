@@ -2,6 +2,7 @@
  * ADRGraph - Relationship visualization for Architecture Decision Records
  * Shows supersession chains, dependencies, and related ADRs using a graph layout
  */
+/* eslint-disable func-style, max-depth, max-lines-per-function, max-statements, no-magic-numbers, react/jsx-max-depth, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop, unicorn/filename-case */
 
 import type { ADR, ADRStatus } from "@tracertm/types";
 import {

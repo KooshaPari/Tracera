@@ -33,7 +33,7 @@ export function useAutoRecovery(
 		retryCount: 0,
 	});
 
-	const retryTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+	const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => {
 		if (!error) {

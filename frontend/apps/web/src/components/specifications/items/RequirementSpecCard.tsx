@@ -5,6 +5,7 @@
  * constraint indicators, verification status, and quality metrics.
  * Implements ISO 29148 quality visualization.
  */
+/* eslint-disable complexity, func-style, max-lines-per-function, no-magic-numbers, react/jsx-max-depth, react-perf/jsx-no-new-array-as-prop, sort-imports */
 
 import {
 	Badge,

@@ -20,6 +20,21 @@ from tracertm.mcp.core import mcp
 logger = logging.getLogger(__name__)
 
 
+def _path_exists(path: Path) -> bool:
+    """Sync helper for Path.exists (run via asyncio.to_thread)."""
+    return path.exists()
+
+
+def _path_glob(path: Path, pattern: str) -> list[Path]:
+    """Sync helper for Path.glob (run via asyncio.to_thread)."""
+    return list(path.glob(pattern))
+
+
+def _read_text_sync(path: Path) -> str:
+    """Sync helper to read file text (run via asyncio.to_thread)."""
+    return path.read_text()
+
+
 def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
     """Wrap result in standard MCP response format."""
     actor = None
@@ -340,12 +355,12 @@ async def ingest_directory(
     await asyncio.sleep(0)
     try:
         source_path = Path(directory_path)
-        if not source_path.exists():
+        if not await asyncio.to_thread(_path_exists, source_path):
             return _error(f"Directory not found: {directory_path}", "ingest_directory")
 
         # Count files
         pattern = "**/*" if recursive else "*"
-        files = list(source_path.glob(pattern))
+        files = await asyncio.to_thread(_path_glob, source_path, pattern)
 
         return _wrap(
             {
@@ -381,15 +396,14 @@ async def ingest_markdown(
     await asyncio.sleep(0)
     try:
         md_path = Path(file_path)
-        if not md_path.exists():
+        if not await asyncio.to_thread(_path_exists, md_path):
             return _error(f"File not found: {file_path}", "ingest_markdown")
 
         if md_path.suffix not in [".md", ".markdown"]:
             return _error(f"Not a Markdown file: {file_path}", "ingest_markdown")
 
-        # Count headings
-        with md_path.open() as f:
-            content = f.read()
+        # Count headings (read file in thread to avoid blocking)
+        content = await asyncio.to_thread(_read_text_sync, md_path)
         headings = content.count("\n# ") + content.count("\n## ") + content.count("\n### ")
 
         return _wrap(
@@ -425,7 +439,7 @@ async def ingest_yaml(
     await asyncio.sleep(0)
     try:
         yaml_path = Path(file_path)
-        if not yaml_path.exists():
+        if not await asyncio.to_thread(_path_exists, yaml_path):
             return _error(f"File not found: {file_path}", "ingest_yaml")
 
         return _wrap(
@@ -462,7 +476,7 @@ async def ingest_file(
     await asyncio.sleep(0)
     try:
         source_path = Path(file_path)
-        if not source_path.exists():
+        if not await asyncio.to_thread(_path_exists, source_path):
             return _error(f"File not found: {file_path}", "ingest_file")
 
         return _wrap(
@@ -505,7 +519,7 @@ async def migrate_project(
     await asyncio.sleep(0)
     try:
         source = Path(source_path)
-        if not source.exists():
+        if not await asyncio.to_thread(_path_exists, source):
             return _error(f"Source directory not found: {source_path}", "migrate_project")
 
         return _wrap(

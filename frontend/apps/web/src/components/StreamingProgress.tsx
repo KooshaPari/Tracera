@@ -8,8 +8,12 @@ import { calculateThroughput } from "../lib/ndjson-parser";
 
 const BYTES_IN_KB = 1024;
 const BYTES_IN_MB = BYTES_IN_KB * BYTES_IN_KB;
+const DECIMAL_PLACES_BYTES = 2;
+const DECIMAL_PLACES_MS = 0;
+const DECIMAL_PLACES_SECONDS = 1;
 const MS_PER_SECOND = 1000;
-const MS_PER_MINUTE = 60 * MS_PER_SECOND;
+const MINUTES_PER_HOUR = 60;
+const MS_PER_MINUTE = MINUTES_PER_HOUR * MS_PER_SECOND;
 const PERCENTAGE_SCALE = 100;
 
 export interface StreamingProgressProps {
@@ -25,19 +29,19 @@ const formatBytes = (bytes: number): string => {
 		return `${bytes} B`;
 	}
 	if (bytes < BYTES_IN_MB) {
-		return `${(bytes / BYTES_IN_KB).toFixed(2)} KB`;
+		return `${(bytes / BYTES_IN_KB).toFixed(DECIMAL_PLACES_BYTES)} KB`;
 	}
-	return `${(bytes / BYTES_IN_MB).toFixed(2)} MB`;
+	return `${(bytes / BYTES_IN_MB).toFixed(DECIMAL_PLACES_BYTES)} MB`;
 };
 
 const formatDuration = (ms: number): string => {
 	if (ms < MS_PER_SECOND) {
-		return `${ms.toFixed(0)}ms`;
+		return `${ms.toFixed(DECIMAL_PLACES_MS)}ms`;
 	}
 	if (ms < MS_PER_MINUTE) {
-		return `${(ms / MS_PER_SECOND).toFixed(1)}s`;
+		return `${(ms / MS_PER_SECOND).toFixed(DECIMAL_PLACES_SECONDS)}s`;
 	}
-	return `${(ms / MS_PER_MINUTE).toFixed(1)}m`;
+	return `${(ms / MS_PER_MINUTE).toFixed(DECIMAL_PLACES_SECONDS)}m`;
 };
 
 const hasErrors = (stats: StreamingStats | null): boolean => {
@@ -88,7 +92,7 @@ const StatsRow = ({
 	stats: StreamingStats | null;
 	showBytes: boolean;
 	showThroughput: boolean;
-	throughput: ReturnType<typeof calculateThroughput>;
+	throughput: ReturnType<typeof calculateThroughput> | null;
 }) => (
 	<div className="flex gap-6 text-sm">
 		<StatItem label="Items" value={stats?.itemsReceived.toLocaleString() || 0} />
@@ -158,7 +162,7 @@ export const StreamingProgress = ({
 				<StatusText isStreaming={isStreaming} />
 			</div>
 
-			{isStreaming && <ProgressBar isStreaming={isStreaming} />}
+			{isStreaming && <ProgressBar />}
 
 			{errorStats && <ErrorDetails errors={errorStats.errors} />}
 		</div>
@@ -216,7 +220,7 @@ export const StreamingProgressBar = ({
 				</span>
 				{showPercentage && (
 					<span className="font-mono font-semibold">
-						{percentage.toFixed(1)}%
+						{percentage.toFixed(DECIMAL_PLACES_SECONDS)}%
 					</span>
 				)}
 			</div>

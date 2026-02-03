@@ -85,7 +85,7 @@ function FlowGraphViewInner({
 	const [showUITree, setShowUITree] = useState(false);
 	const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
-	const { fitView, zoomIn, zoomOut } = useReactFlow();
+	const { zoomIn, zoomOut } = useReactFlow();
 
 	// Build enhanced node data
 	const enhancedNodes = useMemo((): EnhancedNodeData[] => {

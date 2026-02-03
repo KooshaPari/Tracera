@@ -3,6 +3,7 @@
 import type {
 	Item,
 	ItemStatus,
+	LayoutType,
 	LinkType,
 	PerspectiveType,
 } from "@tracertm/types";
@@ -118,7 +119,7 @@ export interface PerspectiveConfig {
 	color: string;
 	includeTypes: string[];
 	excludeTypes: string[];
-	layoutPreference: "cose" | "breadthfirst" | "circle" | "elk";
+	layoutPreference: LayoutType;
 }
 
 // Build PERSPECTIVE_CONFIGS from canonical DEFAULT_PERSPECTIVES

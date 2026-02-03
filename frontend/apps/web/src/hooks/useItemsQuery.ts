@@ -22,11 +22,12 @@ export function useItemsQuery(projectId?: string) {
 		queryFn: async () => {
 			setLoading(true);
 			try {
-				const items = await api.items.list(
+				const response = await api.items.list(
 					projectId ? { project_id: projectId } : {},
 				);
+				const items = Array.isArray(response) ? response : response.items;
 				addItems(items);
-				return items;
+				return response;
 			} finally {
 				setLoading(false);
 			}
@@ -68,9 +69,8 @@ export function useCreateItem() {
 				throw error;
 			}
 		},
-		onSuccess: (data) => {
-			undefined;
-			undefined;
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: itemKeys.all });
 		},
 	});
 }
@@ -92,9 +92,8 @@ export function useUpdateItem() {
 				throw error;
 			}
 		},
-		onSuccess: (data) => {
-			undefined;
-			undefined;
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: itemKeys.all });
 		},
 	});
 }
@@ -121,8 +120,8 @@ export function useDeleteItem() {
 				throw error;
 			}
 		},
-		onSuccess: () => {
-			undefined;
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: itemKeys.all });
 		},
 	});
 }

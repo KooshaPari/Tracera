@@ -2,6 +2,8 @@
  * Accessibility Tests for Navigation and Keyboard Interactions
  * Tests keyboard navigation, focus management, and interactive elements
  */
+/// <reference path="../../test/user-event.d.ts" />
+/// <reference path="../../test/jest-axe.d.ts" />
 
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
@@ -35,7 +37,7 @@ vi.mock("@tanstack/react-router", async () => {
 
 describe("Command Palette Keyboard Navigation", () => {
 	it("should not have accessibility violations", async () => {
-		render(<CommandPalette />);
+		const { container } = render(<CommandPalette />);
 
 		// Open command palette
 		pressKey("k", { metaKey: true });
@@ -142,14 +144,14 @@ describe("Command Palette Keyboard Navigation", () => {
 		pressKey("k", { metaKey: true });
 		const searchInput = await screen.findByPlaceholderText(/search commands/i);
 
-		await user.type(searchInput, "dashboard");
+		await globalThis.user.type(searchInput, "dashboard");
 		// Should filter to dashboard-related commands
 	});
 });
 
 describe("Skip Links", () => {
 	it("should provide skip to main content link", async () => {
-		render(
+		const { container } = render(
 			<div>
 				<a href="#main-content" className="sr-only focus:not-sr-only">
 					Skip to main content
@@ -214,19 +216,19 @@ describe("Focus Management", () => {
 		firstField.focus();
 		expect(firstField).toHaveFocus();
 
-		await user.tab();
+		await globalThis.user.tab();
 		expect(secondField).toHaveFocus();
 
-		await user.tab();
+		await globalThis.user.tab();
 		expect(closeButton).toHaveFocus();
 
 		// Tabbing from last element should wrap to first
-		await user.tab();
+		await globalThis.user.tab();
 		// Should trap focus within dialog
 	});
 
 	it("should restore focus after dialog closes", async () => {
-		render(
+		const { rerender } = render(
 			<div>
 				<button>Open Dialog</button>
 			</div>,
@@ -281,22 +283,22 @@ describe("Focus Indicators", () => {
 		);
 
 		const button = screen.getByRole("button");
-		await user.tab();
+		await globalThis.user.tab();
 		expect(button).toHaveFocus();
 
 		const link = screen.getByRole("link");
-		await user.tab();
+		await globalThis.user.tab();
 		expect(link).toHaveFocus();
 
 		const input = screen.getByPlaceholderText("Input");
-		await user.tab();
+		await globalThis.user.tab();
 		expect(input).toHaveFocus();
 	});
 });
 
 describe("Landmark Regions", () => {
 	it("should have proper landmark structure", async () => {
-		render(
+		const { container } = render(
 			<div>
 				<header>
 					<nav aria-label="Main navigation">
@@ -329,7 +331,7 @@ describe("Landmark Regions", () => {
 	});
 
 	it("should label multiple navigation regions", async () => {
-		render(
+		const { container } = render(
 			<div>
 				<nav aria-label="Main navigation">
 					<a href="/">Home</a>
@@ -373,13 +375,13 @@ describe("Tab Navigation Order", () => {
 		first.focus();
 		expect(first).toHaveFocus();
 
-		await user.tab();
+		await globalThis.user.tab();
 		expect(second).toHaveFocus();
 
-		await user.tab();
+		await globalThis.user.tab();
 		expect(third).toHaveFocus();
 
-		await user.tab();
+		await globalThis.user.tab();
 		expect(fourth).toHaveFocus();
 	});
 
@@ -398,7 +400,7 @@ describe("Tab Navigation Order", () => {
 		enabled1.focus();
 		expect(enabled1).toHaveFocus();
 
-		await user.tab();
+		await globalThis.user.tab();
 		expect(enabled2).toHaveFocus();
 	});
 });
@@ -426,10 +428,10 @@ describe("Custom Controls Keyboard Support", () => {
 		const customButton = screen.getByRole("button");
 		customButton.focus();
 
-		await user.keyboard("{Enter}");
+		await globalThis.user.keyboard("{Enter}");
 		expect(handleClick).toHaveBeenCalledOnce();
 
-		await user.keyboard(" ");
+		await globalThis.user.keyboard(" ");
 		expect(handleClick).toHaveBeenCalledTimes(2);
 	});
 
@@ -448,14 +450,18 @@ describe("Custom Controls Keyboard Support", () => {
 			</div>,
 		);
 
-		const _listbox = screen.getByRole("listbox");
+		const listbox = screen.getByRole("listbox");
 		const options = screen.getAllByRole("option");
+		expect(listbox).toBeInTheDocument();
 
-		options[0].focus();
-		expect(options[0]).toHaveFocus();
+		const firstOption = options[0];
+		if (firstOption) {
+			firstOption.focus();
+			expect(firstOption).toHaveFocus();
+		}
 
 		// Arrow down should move to next option
-		await user.keyboard("{ArrowDown}");
+		await globalThis.user.keyboard("{ArrowDown}");
 		// Should focus next option
 	});
 });

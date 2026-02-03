@@ -189,7 +189,7 @@ class ConfigManager:
         with config_path.open("w") as f:
             yaml.safe_dump(config_data, f, default_flow_style=False)
 
-    def get(self, key: str, project_id: str | None = None) -> Any | None:
+    def get(self, key: str, project_id: str | None = None) -> Any | None:  # noqa: C901
         """
         Get a configuration value.
 

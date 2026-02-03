@@ -1,5 +1,6 @@
 import { Loader2, WifiOff } from "lucide-react";
-import { useConnectionStatusStore } from "@/stores/connectionStatusStore";
+import type { ConnectionStatusState } from "@/stores/connection-status-store";
+import { useConnectionStatusStore } from "@/stores/connection-status-store";
 
 /**
  * Full-page overlay when connection is lost or reconnecting.
@@ -7,8 +8,8 @@ import { useConnectionStatusStore } from "@/stores/connectionStatusStore";
  * amber strip for connecting/reconnecting, red accent for lost.
  */
 export function LostConnectionBanner() {
-	const status = useConnectionStatusStore((s) => s.status);
-	const lastError = useConnectionStatusStore((s) => s.lastError);
+	const status = useConnectionStatusStore((s: ConnectionStatusState) => s.status);
+	const lastError = useConnectionStatusStore((s: ConnectionStatusState) => s.lastError);
 
 	if (status === "online") {
 		return null;

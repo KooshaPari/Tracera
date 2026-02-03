@@ -19,6 +19,11 @@ from tracertm.mcp.database_manager import get_database_manager
 from tracertm.mcp.query_optimizer import QueryOptimizer
 from tracertm.models.item import Item
 
+# Target improvement percentage for benchmark success
+_TARGET_IMPROVEMENT_PCT = 50
+# Minimum CLI args: script name, database_url, project_id
+_MIN_CLI_ARGS = 3
+
 
 class BenchmarkRunner:
     """Run performance benchmarks comparing old vs new implementation."""
@@ -279,7 +284,7 @@ class BenchmarkRunner:
             print(f"  Total improvement: {total_improvement:+.1f}%")
             print()
 
-            if total_improvement >= 50:
+            if total_improvement >= _TARGET_IMPROVEMENT_PCT:
                 print("✓ Target of 50% improvement ACHIEVED!")
             else:
                 print(f"⚠ Target of 50% improvement not met (achieved {total_improvement:.1f}%)")
@@ -311,7 +316,7 @@ async def run_benchmark(database_url: str, project_id: str):
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < _MIN_CLI_ARGS:
         print("Usage: python db_benchmark.py <database_url> <project_id>")
         sys.exit(1)
 

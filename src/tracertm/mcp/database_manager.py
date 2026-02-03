@@ -23,6 +23,9 @@ from sqlalchemy.pool import AsyncAdaptedQueuePool
 
 from tracertm.config.manager import ConfigManager
 
+# Max number of slow queries to retain in memory
+_MAX_SLOW_QUERIES = 100
+
 
 class QueryMetrics:
     """Track query performance metrics."""
@@ -45,8 +48,8 @@ class QueryMetrics:
                 "params": params,
                 "timestamp": time.time(),
             })
-            # Keep only last 100 slow queries
-            if len(self.slow_queries) > 100:
+            # Keep only last N slow queries
+            if len(self.slow_queries) > _MAX_SLOW_QUERIES:
                 self.slow_queries.pop(0)
 
     def get_stats(self) -> dict[str, Any]:
@@ -156,11 +159,11 @@ class DatabaseManager:
             return
 
         @event.listens_for(self._engine.sync_engine, "before_cursor_execute")
-        def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):  # noqa: PLR0913
             context._query_start_time = time.perf_counter()
 
         @event.listens_for(self._engine.sync_engine, "after_cursor_execute")
-        def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):  # noqa: PLR0913
             duration_ms = (time.perf_counter() - context._query_start_time) * 1000
             self.metrics.record_query(statement, duration_ms, parameters)
 

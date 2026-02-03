@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/route-guards";
 
+const CompliancePage = () => null;
+
 export const Route = createFileRoute("/projects/$projectId/compliance")({
 	beforeLoad: ({ params }) => {
 		// Check auth first
@@ -15,5 +17,3 @@ export const Route = createFileRoute("/projects/$projectId/compliance")({
 	},
 	component: CompliancePage,
 });
-
-const CompliancePage = () => null;

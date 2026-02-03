@@ -11,7 +11,6 @@ import {
 } from "@tanstack/react-router";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { routeTree } from "@/routeTree.gen";
 
 // Mock API modules
@@ -63,31 +62,25 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({
-				data: [
-					{
-						created_at: "2024-01-01",
-						id: "1",
-						name: "Project Alpha",
-						status: "active",
-					},
-					{
-						created_at: "2024-01-02",
-						id: "2",
-						name: "Project Beta",
-						status: "active",
-					},
-				],
-				total: 2,
-			});
+			vi.mocked(fetchProjects).mockResolvedValue([
+				{
+					created_at: "2024-01-01",
+					id: "1",
+					name: "Project Alpha",
+					status: "active",
+				},
+				{
+					created_at: "2024-01-02",
+					id: "2",
+					name: "Project Beta",
+					status: "active",
+				},
+			]);
 
-			vi.mocked(fetchRecentItems).mockResolvedValue({
-				data: [
-					{ id: "i1", status: "active", title: "Item 1", type: "feature" },
-					{ id: "i2", status: "resolved", title: "Item 2", type: "bug" },
-				],
-				total: 2,
-			});
+			vi.mocked(fetchRecentItems).mockResolvedValue([
+				{ id: "i1", status: "active", title: "Item 1", type: "feature" },
+				{ id: "i2", status: "resolved", title: "Item 2", type: "bug" },
+			]);
 
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
 				queuedJobs: 12,
@@ -113,8 +106,8 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
 				queuedJobs: 150,
 				status: "healthy",
@@ -136,9 +129,9 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -161,31 +154,28 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({
-				data: [
-					{
-						id: "i1",
-						title: "Bug Fix",
-						type: "bug",
-						updated_at: "2024-01-10T10:00:00Z",
-					},
-					{
-						id: "i2",
-						title: "Feature Request",
-						type: "feature",
-						updated_at: "2024-01-10T09:00:00Z",
-					},
-					{
-						id: "i3",
-						title: "Documentation",
-						type: "doc",
-						updated_at: "2024-01-10T08:00:00Z",
-					},
-				],
-				total: 3,
-			});
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([
+				{
+					id: "i1",
+					title: "Bug Fix",
+					type: "bug",
+					updated_at: "2024-01-10T10:00:00Z",
+				},
+				{
+					id: "i2",
+					title: "Feature Request",
+					type: "feature",
+					updated_at: "2024-01-10T09:00:00Z",
+				},
+				{
+					id: "i3",
+					title: "Documentation",
+					type: "doc",
+					updated_at: "2024-01-10T08:00:00Z",
+				},
+			]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -202,17 +192,12 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({
-				data: [
-					{ id: "1", itemCount: 50, linkCount: 100, name: "Project 1" },
-					{ id: "2", itemCount: 30, linkCount: 60, name: "Project 2" },
-				],
-				total: 2,
-				totalItems: 80,
-				totalLinks: 160,
-			});
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([
+				{ id: "1", itemCount: 50, linkCount: 100, name: "Project 1" },
+				{ id: "2", itemCount: 30, linkCount: 60, name: "Project 2" },
+			]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -234,11 +219,11 @@ describe("Dashboard Page", () => {
 			vi.mocked(fetchProjects).mockImplementation(
 				() =>
 					new Promise((resolve) =>
-						setTimeout(() => resolve({ data: [], total: 0 }), 100),
+						setTimeout(() => resolve([]), 100),
 					),
 			);
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -260,14 +245,14 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
 			vi.mocked(fetchRecentItems).mockImplementation(
 				() =>
 					new Promise((resolve) =>
-						setTimeout(() => resolve({ data: [], total: 0 }), 100),
+						setTimeout(() => resolve([]), 100),
 					),
 			);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -287,10 +272,10 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			const mockData = { data: [{ id: "1", name: "Project 1" }], total: 1 };
+			const mockData = [{ id: "1", name: "Project 1" }];
 			vi.mocked(fetchProjects).mockResolvedValue(mockData);
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -301,10 +286,9 @@ describe("Dashboard Page", () => {
 			// Trigger refetch
 			void queryClient.invalidateQueries({ queryKey: ["projects"] });
 
-			vi.mocked(fetchProjects).mockResolvedValue({
-				data: [{ id: "1", name: "Project 1 Updated" }],
-				total: 1,
-			});
+			vi.mocked(fetchProjects).mockResolvedValue([
+				{ id: "1", name: "Project 1 Updated" },
+			]);
 
 			await waitFor(() => {
 				expect(screen.getByText(/Project 1 Updated/i)).toBeInTheDocument();
@@ -321,8 +305,8 @@ describe("Dashboard Page", () => {
 			vi.mocked(fetchProjects).mockRejectedValue(
 				new Error("Failed to fetch projects"),
 			);
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -342,8 +326,8 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
 			vi.mocked(fetchSystemStatus).mockRejectedValue(
 				new Error("System unavailable"),
 			);
@@ -360,12 +344,11 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({
-				data: [{ id: "1", name: "Project Alpha" }],
-				total: 1,
-			});
+			vi.mocked(fetchProjects).mockResolvedValue([
+				{ id: "1", name: "Project Alpha" },
+			]);
 			vi.mocked(fetchRecentItems).mockRejectedValue(new Error("Items failed"));
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -383,12 +366,11 @@ describe("Dashboard Page", () => {
 
 			vi.mocked(fetchProjects)
 				.mockRejectedValueOnce(new Error("Network error"))
-				.mockResolvedValueOnce({
-					data: [{ id: "1", name: "Project Recovered" }],
-					total: 1,
-				});
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+				.mockResolvedValueOnce([
+					{ id: "1", name: "Project Recovered" },
+				]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -423,12 +405,11 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({
-				data: [{ id: "proj-123", name: "Target Project", status: "active" }],
-				total: 1,
-			});
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([
+				{ id: "proj-123", name: "Target Project", status: "active" },
+			]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -449,9 +430,9 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -474,9 +455,9 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -503,19 +484,16 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({
-				data: [
-					{
-						id: "item-456",
-						projectId: "proj-123",
-						title: "Recent Item",
-						type: "feature",
-					},
-				],
-				total: 1,
-			});
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([
+				{
+					id: "item-456",
+					projectId: "proj-123",
+					title: "Recent Item",
+					type: "feature",
+				},
+			]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -538,12 +516,11 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValueOnce({
-				data: [{ id: "1", name: "Old Project" }],
-				total: 1,
-			});
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValueOnce([
+				{ id: "1", name: "Old Project" },
+			]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -551,10 +528,9 @@ describe("Dashboard Page", () => {
 				expect(screen.getByText(/Old Project/i)).toBeInTheDocument();
 			});
 
-			vi.mocked(fetchProjects).mockResolvedValueOnce({
-				data: [{ id: "1", name: "New Project" }],
-				total: 1,
-			});
+			vi.mocked(fetchProjects).mockResolvedValueOnce([
+				{ id: "1", name: "New Project" },
+			]);
 
 			const refreshButton = screen.getByRole("button", { name: /refresh/i });
 			await userEvent.click(refreshButton);
@@ -574,10 +550,10 @@ describe("Dashboard Page", () => {
 			let callCount = 0;
 			vi.mocked(fetchProjects).mockImplementation(async () => {
 				callCount++;
-				return { data: [{ id: "1", name: `Project ${callCount}` }], total: 1 };
+				return [{ id: "1", name: `Project ${callCount}` }];
 			});
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -602,9 +578,9 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -627,15 +603,12 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({
-				data: [
-					{ id: "1", name: "Project 1" },
-					{ id: "2", name: "Project 2" },
-				],
-				total: 2,
-			});
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([
+				{ id: "1", name: "Project 1" },
+				{ id: "2", name: "Project 2" },
+			]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -665,9 +638,9 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -691,9 +664,9 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -717,10 +690,12 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
+				queuedJobs: 5,
 				status: "healthy",
+				uptime: 99.9,
 			});
 
 			render(<RouterProvider router={router} />);
@@ -731,7 +706,9 @@ describe("Dashboard Page", () => {
 
 			// Simulate status update
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
+				queuedJobs: 10,
 				status: "healthy",
+				uptime: 99.9,
 			});
 
 			void queryClient.invalidateQueries({ queryKey: ["system-status"] });
@@ -748,9 +725,9 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -771,12 +748,11 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({
-				data: [{ id: "1", name: "Project 1" }],
-				total: 1,
-			});
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([
+				{ id: "1", name: "Project 1" },
+			]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -792,15 +768,12 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({
-				data: [
-					{ id: "1", name: "Active Project", status: "active" },
-					{ id: "2", name: "Archived Project", status: "archived" },
-				],
-				total: 2,
-			});
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([
+				{ id: "1", name: "Active Project", status: "active" },
+				{ id: "2", name: "Archived Project", status: "archived" },
+			]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 
@@ -825,15 +798,12 @@ describe("Dashboard Page", () => {
 			const { fetchRecentItems } = await import("@/api/items");
 			const { fetchSystemStatus } = await import("@/api/system");
 
-			vi.mocked(fetchProjects).mockResolvedValue({
-				data: [
-					{ created_at: "2024-01-01", id: "1", name: "Older Project" },
-					{ created_at: "2024-02-01", id: "2", name: "Newer Project" },
-				],
-				total: 2,
-			});
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
+			vi.mocked(fetchProjects).mockResolvedValue([
+				{ created_at: "2024-01-01", id: "1", name: "Older Project" },
+				{ created_at: "2024-02-01", id: "2", name: "Newer Project" },
+			]);
+			vi.mocked(fetchRecentItems).mockResolvedValue([]);
+			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
 
 			render(<RouterProvider router={router} />);
 

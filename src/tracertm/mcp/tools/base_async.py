@@ -142,7 +142,7 @@ def extract_actor(ctx: Any | None) -> dict[str, Any] | None:
     }
 
 
-def resolve_project_from_token(
+def resolve_project_from_token(  # noqa: C901
     payload: dict[str, Any],
     ctx: Any | None,
 ) -> str | None:

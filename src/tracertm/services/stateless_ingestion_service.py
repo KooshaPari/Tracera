@@ -2,8 +2,9 @@
 
 import re
 import uuid
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable, cast
+from typing import Any, cast
 from uuid import uuid4
 
 import yaml

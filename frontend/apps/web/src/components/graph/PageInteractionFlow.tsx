@@ -315,7 +315,7 @@ function PageInteractionFlowInner({
 			const data: PageNodeData = {
 				description: page.description ?? undefined,
 				deviceType:
-					((page.metadata?.deviceType as "desktop" | "tablet" | "mobile") ??
+					((page.metadata?.["deviceType"] as "desktop" | "tablet" | "mobile") ??
 						undefined) ||
 					"desktop",
 				id: page.id,
@@ -324,8 +324,8 @@ function PageInteractionFlowInner({
 				label: page.title || "Untitled",
 				onPreview: onPreviewItem ?? undefined,
 				onSelect: onSelectItem ?? undefined,
-				screenshotUrl: (page.metadata?.screenshotUrl as string) ?? undefined,
-				thumbnailUrl: (page.metadata?.thumbnailUrl as string) ?? undefined,
+				screenshotUrl: (page.metadata?.["screenshotUrl"] as string) ?? undefined,
+				thumbnailUrl: (page.metadata?.["thumbnailUrl"] as string) ?? undefined,
 			};
 			return data;
 		},

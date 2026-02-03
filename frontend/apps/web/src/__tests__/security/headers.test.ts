@@ -123,7 +123,7 @@ describe("Security Headers Tests", () => {
 		it("should have minimum max-age of 1 year", () => {
 			const parseMaxAge = (hsts: string): number => {
 				const match = hsts.match(/max-age=(\d+)/);
-				return match ? Number.parseInt(match[1], 10) : 0;
+				return match && match[1] != null ? Number.parseInt(match[1], 10) : 0;
 			};
 
 			const hsts = "max-age=31536000";

@@ -6,19 +6,24 @@ type ApiResult<TData> = Promise<{
 	response: Response;
 }>;
 
+type ApiMethod = <TData>(
+	path: string,
+	init: Record<string, unknown>,
+) => ApiResult<TData>;
+
 interface ApiClient {
-	del: <TData>(path: string, init: unknown) => ApiResult<TData>;
-	get: <TData>(path: string, init: unknown) => ApiResult<TData>;
-	post: <TData>(path: string, init: unknown) => ApiResult<TData>;
-	put: <TData>(path: string, init: unknown) => ApiResult<TData>;
+	del: ApiMethod;
+	get: ApiMethod;
+	post: ApiMethod;
+	put: ApiMethod;
 }
 
 const { apiClient, handleApiResponse } = client;
 const api: ApiClient = {
-	del: apiClient.DELETE.bind(apiClient),
-	get: apiClient.GET.bind(apiClient),
-	post: apiClient.POST.bind(apiClient),
-	put: apiClient.PUT.bind(apiClient),
+	del: apiClient.DELETE as unknown as ApiMethod,
+	get: apiClient.GET as unknown as ApiMethod,
+	post: apiClient.POST as unknown as ApiMethod,
+	put: apiClient.PUT as unknown as ApiMethod,
 };
 
 export { api, handleApiResponse, type ApiClient, type ApiResult };

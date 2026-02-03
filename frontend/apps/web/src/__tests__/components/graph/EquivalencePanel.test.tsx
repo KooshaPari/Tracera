@@ -11,7 +11,6 @@ import type {
 	EquivalenceLink,
 	Item,
 } from "@tracertm/types";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EquivalencePanel } from "@/components/graph/EquivalencePanel";
 
 // =============================================================================

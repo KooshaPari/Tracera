@@ -1,0 +1,7 @@
+80	PLR0913	too-many-arguments
+42	C901   	complex-structure
+10	PLR0912	too-many-branches
+ 7	PLR0915	too-many-statements
+ 6	PLR0911	too-many-return-statements
+ 2	PLR1702	too-many-nested-blocks
+Found 147 errors.

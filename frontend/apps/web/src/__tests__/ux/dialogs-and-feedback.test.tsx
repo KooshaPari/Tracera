@@ -96,6 +96,7 @@ function MockToast({
 			const timer = setTimeout(onClose, duration);
 			return () => clearTimeout(timer);
 		}
+		return undefined;
 	}, [open, duration, onClose]);
 
 	if (!open) {
@@ -134,11 +135,11 @@ class MockErrorBoundary extends React.Component<
 		this.state = { error: null, hasError: false };
 	}
 
-	static getDerivedStateFromError(error: Error) {
+	static override getDerivedStateFromError(error: Error) {
 		return { error, hasError: true };
 	}
 
-	componentDidCatch(error: Error) {
+	override componentDidCatch(error: Error) {
 		this.props.onError?.(error);
 	}
 

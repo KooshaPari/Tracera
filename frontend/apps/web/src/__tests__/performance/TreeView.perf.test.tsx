@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as hooks from "../../hooks/useItems";
 import * as projectHooks from "../../hooks/useProjects";
 import { ItemsTreeView } from "../../views/ItemsTreeView";
@@ -90,6 +89,9 @@ describe("ItemsTreeView Performance", () => {
 
 		if (chevronButtons.length > 0) {
 			const firstButton = chevronButtons[0];
+			if (!firstButton) {
+				return;
+			}
 
 			// Click to expand
 			await user.click(firstButton);
@@ -169,7 +171,8 @@ describe("ItemsTreeView Performance", () => {
 
 		// Get initial state
 		const initialItems = container.querySelectorAll('[style*="marginLeft"]');
-		const _initialCount = initialItems.length;
+		const initialCount = initialItems.length;
+		void initialCount;
 
 		// Toggle expand state
 		const expandButtons = container.querySelectorAll("button");
@@ -178,7 +181,11 @@ describe("ItemsTreeView Performance", () => {
 		);
 
 		if (chevronButtons.length > 0) {
-			await user.click(chevronButtons[0]);
+			const firstButton = chevronButtons[0];
+			if (!firstButton) {
+				return;
+			}
+			await user.click(firstButton);
 			const expandedItems = container.querySelectorAll('[style*="marginLeft"]');
 
 			// Count should change based on expand state

@@ -15,7 +15,7 @@ import {
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
-import { Filter, X } from "lucide-react";
+import { Filter } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { LINK_STYLES } from "./types";
 

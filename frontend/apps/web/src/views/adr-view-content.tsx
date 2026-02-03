@@ -3,7 +3,7 @@
 import type { ADR } from "@tracertm/types";
 import { ADRCard } from "@/components/specifications/adr/ADRCard";
 import { ADRTimeline } from "@/components/specifications/adr/ADRTimeline";
-import React from "react";
+import type React from "react";
 
 interface ADRViewContentProps {
 	adrs: ADR[];
@@ -13,7 +13,7 @@ interface ADRViewContentProps {
 const ADRViewContent = ({
 	adrs,
 	viewMode,
-}: ADRViewContentProps): JSX.Element => {
+}: ADRViewContentProps): React.ReactElement => {
 	if (viewMode === "list") {
 		return (
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

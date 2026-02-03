@@ -165,43 +165,51 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 						ForceLayoutResponse | ForceLayoutProgress | ForceLayoutError
 					>,
 				) => {
-					if (ev.data.type === "result") {
-						worker.terminate();
-						workerRef.current = null;
+					const message = ev.data;
+					switch (message.type) {
+						case "result": {
+							worker.terminate();
+							workerRef.current = null;
 
-						const positionMap = new Map(
-							ev.data.positions.map((p) => [p.id, { x: p.x, y: p.y }]),
-						);
+							const positionMap = new Map(
+								message.positions.map((p) => [p.id, { x: p.x, y: p.y }]),
+							);
 
-						const result = inputNodes.map((node) => {
-							const pos = positionMap.get(node.id);
-							if (!pos) return node;
-							return { ...node, position: pos };
-						});
+							const result = inputNodes.map((node) => {
+								const pos = positionMap.get(node.id);
+								if (!pos) return node;
+								return { ...node, position: pos };
+							});
 
-						setState((prev) => ({
-							...prev,
-							duration: ev.data.duration,
-							isComputing: false,
-						}));
+							setState((prev) => ({
+								...prev,
+								duration: message.duration,
+								isComputing: false,
+							}));
 
-						resolve(result);
-					} else if (ev.data.type === "progress") {
-						setState((prev) => ({
-							...prev,
-							progress: ev.data.progress,
-						}));
-					} else if (ev.data.type === "error") {
-						worker.terminate();
-						workerRef.current = null;
+							resolve(result);
+							break;
+						}
+						case "progress": {
+							setState((prev) => ({
+								...prev,
+								progress: message.progress,
+							}));
+							break;
+						}
+						case "error": {
+							worker.terminate();
+							workerRef.current = null;
 
-						setState((prev) => ({
-							...prev,
-							error: ev.data.error,
-							isComputing: false,
-						}));
+							setState((prev) => ({
+								...prev,
+								error: message.error,
+								isComputing: false,
+							}));
 
-						reject(new Error(ev.data.error));
+							reject(new Error(message.error));
+							break;
+						}
 					}
 				};
 
@@ -232,7 +240,7 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 					type: "simulate",
 				};
 
-				worker.postMessage(request, worker.location.origin);
+				worker.postMessage(request);
 			}),
 		[config],
 	);
@@ -331,8 +339,37 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
 
 		// Calculate new layout
 		const oldNodes = layoutedNodes.length > 0 ? layoutedNodes : nodes;
+		let cancelled = false;
 
-		undefined;
+		const runLayout = async () => {
+			const newNodes = await calculateLayout(nodes, edges);
+			if (cancelled) {
+				return;
+			}
+
+			if (animateTransitions) {
+				await animateLayout(oldNodes, newNodes, animationDuration);
+				return;
+			}
+
+			setLayoutedNodes(newNodes);
+		};
+
+		runLayout().catch((error) => {
+			if (cancelled) {
+				return;
+			}
+
+			setState((prev) => ({
+				...prev,
+				error: error instanceof Error ? error.message : String(error),
+				isComputing: false,
+			}));
+		});
+
+		return () => {
+			cancelled = true;
+		};
 	}, [
 		enabled,
 		nodes,

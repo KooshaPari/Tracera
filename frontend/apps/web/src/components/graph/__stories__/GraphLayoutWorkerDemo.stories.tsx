@@ -10,10 +10,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import { useGraphLayoutWorker } from "@/hooks/useGraphLayoutWorker";
-import {
-	formatBenchmarkResult,
-	generateTestGraph,
-} from "@/lib/graphLayoutBenchmark";
+import { generateTestGraph } from "@/lib/graphLayoutBenchmark";
 import type { BenchmarkResult } from "@/lib/graphLayoutBenchmark";
 import type { LayoutOptions } from "@/workers/graphLayout.worker";
 import { logger } from "@/lib/logger";

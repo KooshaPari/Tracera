@@ -11,6 +11,9 @@ from sqlalchemy.orm import Session
 
 from tracertm.models.agent import Agent
 from tracertm.models.event import Event
+
+# Decimal precision for rounding
+_DECIMAL_PRECISION = 2
 from tracertm.models.item import Item
 
 
@@ -96,12 +99,12 @@ class AgentMetricsService:
                 "agent_id": aid,
                 "agent_name": agent_name,
                 "total_operations": total_ops,
-                "operations_per_hour": round(ops_per_hour, 2),
-                "success_rate": round(success_rate, 2),
-                "conflict_rate": round(conflict_rate, 2),
+                "operations_per_hour": round(ops_per_hour, _DECIMAL_PRECISION),
+                "success_rate": round(success_rate, _DECIMAL_PRECISION),
+                "conflict_rate": round(conflict_rate, _DECIMAL_PRECISION),
                 "conflicts": conflicts,
-                "avg_response_time_ms": round(avg_response_time, 2) if avg_response_time else None,
-                "time_range_hours": round(hours, 2),
+                "avg_response_time_ms": round(avg_response_time, _DECIMAL_PRECISION) if avg_response_time else None,
+                "time_range_hours": round(hours, _DECIMAL_PRECISION),
             })
 
         return {"metrics": metrics_list, "since": since.isoformat()}

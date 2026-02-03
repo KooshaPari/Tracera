@@ -428,7 +428,7 @@ export function useItem(id: string) {
 }
 
 export function useCreateItem() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	const token = useAuthToken();
 	return useMutation({
 		mutationFn: (data: CreateItemData) => createItem(data, token),
@@ -439,12 +439,12 @@ export function useCreateItem() {
 }
 
 export function useUpdateItem() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	const token = useAuthToken();
 	return useMutation({
 		mutationFn: ({ id, data }: { id: string; data: Partial<Item> }) =>
 			updateItem(id, data, token),
-		onSuccess: (_, { id }) => {
+		onSuccess: (_data, _variables) => {
 			undefined;
 			undefined;
 		},
@@ -452,7 +452,7 @@ export function useUpdateItem() {
 }
 
 export function useDeleteItem() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	const token = useAuthToken();
 	return useMutation({
 		mutationFn: (id: string) => deleteItem(id, token),
@@ -464,7 +464,7 @@ export function useDeleteItem() {
 
 // Phase 6.1: New hook for creating items with specifications
 export function useCreateItemWithSpec() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	const token = useAuthToken();
 	return useMutation({
 		mutationFn: (data: CreateItemWithSpecData) =>

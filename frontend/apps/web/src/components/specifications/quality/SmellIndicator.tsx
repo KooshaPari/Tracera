@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import type { SmellType } from "@tracertm/types";
 import { Badge, Tooltip, TooltipContent, TooltipTrigger } from "@tracertm/ui";
 import { ShieldAlert } from "lucide-react";
@@ -36,7 +37,7 @@ const smellDescriptions: Record<SmellType, string> = {
 export const SmellIndicator = ({
 	smells,
 	className = "",
-}: SmellIndicatorProps): JSX.Element | null => {
+}: SmellIndicatorProps): ReactElement | null => {
 	if (!smells || smells.length === 0) {
 		return null;
 	}

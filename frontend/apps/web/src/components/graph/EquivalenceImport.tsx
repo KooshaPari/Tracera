@@ -176,7 +176,7 @@ function EquivalenceImportComponent({
 					fileContent: content,
 					fileType,
 					options: { ...state.options, targetProjectId: projectId },
-					parsedData,
+					parsedData: parsedData ?? undefined,
 					showPreview: true,
 					validationErrors,
 				});

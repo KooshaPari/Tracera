@@ -9,7 +9,16 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from typing import Any
+
+# Token validation constants
+_EXPECTED_TOKEN_COUNT = 2
+
 from urllib.parse import parse_qs, urlparse
+
+# Minimum path components required for valid Figma URL (file key + at least one name component)
+_FIGMA_PATH_MIN_PARTS = 2
+# Expected path components for full Figma URL (file + file_key + file_name)
+_FIGMA_PATH_FULL_PARTS = 3
 
 
 @dataclass
@@ -93,11 +102,11 @@ def parse_figma_url(url: str) -> FigmaMetadata:
     path_parts = [p for p in parsed.path.split("/") if p]
 
     # Check for valid path
-    if len(path_parts) < 2 or path_parts[0] not in ("file", "design"):
+    if len(path_parts) < _FIGMA_PATH_MIN_PARTS or path_parts[0] not in ("file", "design"):
         raise ValueError(f"Invalid Figma URL format: {url}")
 
     file_key = path_parts[1]
-    file_name = path_parts[2] if len(path_parts) > 2 else None
+    file_name = path_parts[_FIGMA_PATH_FULL_PARTS - 1] if len(path_parts) > _FIGMA_PATH_FULL_PARTS - 1 else None
 
     # Extract node-id from query parameters
     query_params = parse_qs(parsed.query)
@@ -215,6 +224,68 @@ class FigmaAPIError(Exception):
     """Exception raised for Figma API errors."""
 
 
+def _validate_figma_url(figma_url: str, metadata: dict[str, Any]) -> list[str]:
+    """Validate Figma URL and its consistency with metadata.
+
+    Args:
+        figma_url: Figma URL string
+        metadata: Dictionary containing figma_file_key and figma_node_id
+
+    Returns:
+        List of validation error messages
+    """
+    errors: list[str] = []
+
+    if not is_figma_url(figma_url):
+        errors.append(f"Invalid Figma URL: {figma_url}")
+        return errors
+
+    try:
+        parsed = parse_figma_url(figma_url)
+
+        # Validate file_key matches if provided separately
+        file_key = metadata.get("figma_file_key")
+        if file_key and file_key != parsed.file_key:
+            errors.append(
+                f"figma_file_key '{file_key}' does not match URL file key '{parsed.file_key}'"
+            )
+
+        # Validate node_id matches if provided separately
+        node_id = metadata.get("figma_node_id")
+        if node_id and node_id != parsed.node_id:
+            errors.append(
+                f"figma_node_id '{node_id}' does not match URL node ID '{parsed.node_id}'"
+            )
+    except ValueError as e:
+        errors.append(str(e))
+
+    return errors
+
+
+def _validate_file_key_format(file_key: str) -> bool:
+    """Validate file_key format (alphanumeric, no special chars).
+
+    Args:
+        file_key: File key to validate
+
+    Returns:
+        True if valid format, False otherwise
+    """
+    return bool(re.match(r"^[a-zA-Z0-9]+$", file_key))
+
+
+def _validate_node_id_format(node_id: str) -> bool:
+    """Validate node_id format (number:number).
+
+    Args:
+        node_id: Node ID to validate
+
+    Returns:
+        True if valid format, False otherwise
+    """
+    return bool(re.match(r"^\d+:\d+$", node_id))
+
+
 def validate_figma_metadata(metadata: dict[str, Any]) -> list[str]:
     """Validate Figma metadata fields.
 
@@ -234,32 +305,16 @@ def validate_figma_metadata(metadata: dict[str, Any]) -> list[str]:
 
     figma_url = metadata.get("figma_url")
     if figma_url:
-        if not is_figma_url(figma_url):
-            errors.append(f"Invalid Figma URL: {figma_url}")
-        else:
-            try:
-                parsed = parse_figma_url(figma_url)
-
-                # Validate file_key matches if provided separately
-                file_key = metadata.get("figma_file_key")
-                if file_key and file_key != parsed.file_key:
-                    errors.append(f"figma_file_key '{file_key}' does not match URL file key '{parsed.file_key}'")
-
-                # Validate node_id matches if provided separately
-                node_id = metadata.get("figma_node_id")
-                if node_id and node_id != parsed.node_id:
-                    errors.append(f"figma_node_id '{node_id}' does not match URL node ID '{parsed.node_id}'")
-            except ValueError as e:
-                errors.append(str(e))
+        errors.extend(_validate_figma_url(figma_url, metadata))
 
     # Validate file_key format (alphanumeric, no special chars)
     file_key = metadata.get("figma_file_key")
-    if file_key and not re.match(r"^[a-zA-Z0-9]+$", file_key):
+    if file_key and not _validate_file_key_format(file_key):
         errors.append(f"Invalid figma_file_key format: {file_key}")
 
     # Validate node_id format (number:number)
     node_id = metadata.get("figma_node_id")
-    if node_id and not re.match(r"^\d+:\d+$", node_id):
+    if node_id and not _validate_node_id_format(node_id):
         errors.append(f"Invalid figma_node_id format: {node_id} (expected format: '1:42')")
 
     return errors

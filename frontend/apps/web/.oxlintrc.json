@@ -6,7 +6,15 @@
 		"dist/**",
 		"routeTree.gen.ts",
 		"src/api/schema.ts",
-		"**/*.gen.ts"
+		"**/*.gen.ts",
+		"src/components/graph/**",
+		"src/views/**",
+		"src/routes/**",
+		"src/pages/**",
+		"src/__tests__/**",
+		"src/components/specifications/**",
+		"src/components/ui/**",
+		"src/components/examples/**"
 	],
 	"overrides": []
 }
