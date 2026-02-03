@@ -39,7 +39,8 @@ WORDS="new|improved|enhanced|updated|fixed|refactored|modified|revised|copy|back
 VERSIONED_FILES=$(run_find | grep -iE '(_v|V|v|version|ver|rev|iter)[-_]?[0-9]+\.py$' || true)
 # Name then digits (no separator): dashboard2.py, component3.py
 # At least 2 letters then digits (exclude a1.py)
-NAME_DIGITS_FILES=$(run_find | grep -E '[A-Za-z]{2,}[0-9]+\.py$' || true)
+# Exclude legitimate test batches/parts: test_*batch1.py, test_*part2.py
+NAME_DIGITS_FILES=$(run_find | grep -E '[A-Za-z]{2,}[0-9]+\.py$' | filter_numbered_exceptions || true)
 
 # --- Numbered suffix: *_2.py, *_3.py ---
 # Exclude legitimate test batches/parts: test_*_batch1.py, test_*_part2.py

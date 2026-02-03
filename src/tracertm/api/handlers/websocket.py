@@ -60,14 +60,16 @@ def extract_token_from_request(websocket: WebSocket) -> str | None:
     return None
 
 
-async def receive_auth_message(websocket: WebSocket, timeout: float = 10.0) -> str | None:
+async def receive_auth_message(
+    websocket: WebSocket, timeout_seconds: float = 10.0
+) -> str | None:
     """Receive auth message from WebSocket client.
 
     Waits for first message with format: { "type": "auth", "token": "..." }
 
     Args:
         websocket: WebSocket connection
-        timeout: Timeout in seconds
+        timeout_seconds: Timeout in seconds
 
     Returns:
         Token string or None if auth failed
@@ -76,7 +78,7 @@ async def receive_auth_message(websocket: WebSocket, timeout: float = 10.0) -> s
         TimeoutError: If no message received within timeout
         WebSocketDisconnect: If client disconnected
     """
-    msg = await asyncio.wait_for(websocket.receive_json(), timeout=timeout)
+    msg = await asyncio.wait_for(websocket.receive_json(), timeout=timeout_seconds)
     if isinstance(msg, dict) and msg.get("type") == "auth":
         token = (msg.get("token") or "").strip()
         return token if token else None
@@ -127,7 +129,7 @@ async def authenticate_websocket(websocket: WebSocket, verify_token_func) -> dic
     # If no token yet, expect auth in first message
     if not token:
         try:
-            token = await receive_auth_message(websocket, timeout=10.0)
+            token = await receive_auth_message(websocket, timeout_seconds=10.0)
             if not token:
                 await handle_auth_failure(websocket, ws_closed, "Missing auth message")
                 return None

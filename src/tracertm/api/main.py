@@ -3511,14 +3511,15 @@ async def download_artifact(
     if not artifact_obj:
         raise HTTPException(status_code=404, detail="Artifact not found")
 
-    file_path = Path(artifact_obj.file_path)
-    if not file_path.exists():
+    path_str = artifact_obj.file_path
+    if not await asyncio.to_thread(_path_exists_str, path_str):
         raise HTTPException(status_code=404, detail="Artifact file not found")
 
+    filename = await asyncio.to_thread(_path_name_str, path_str)
     return FileResponse(
-        str(file_path),
+        path_str,
         media_type=artifact_obj.mime_type or "application/octet-stream",
-        filename=file_path.name,
+        filename=filename,
     )
 
 
