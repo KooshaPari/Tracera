@@ -91,7 +91,7 @@ class TelemetryMiddleware(Middleware):
         except Exception:
             return 0
 
-    def _sanitize_arguments(self, arguments: dict) -> dict:
+    def _sanitize_arguments(self, arguments: dict[str, Any]) -> dict[str, Any]:
         """Remove sensitive data from arguments for logging.
 
         Args:
@@ -158,7 +158,7 @@ class TelemetryMiddleware(Middleware):
 
                 # Add auth context if available
                 auth = getattr(ctx, "auth", None)
-                if isinstance(auth, dict):
+                if isinstance(auth, dict[str, Any]):
                     claims = auth.get("claims", {}) or {}
                     span.set_attribute("mcp.auth.subject", claims.get("sub", "unknown"))
                     span.set_attribute("mcp.auth.client_id", claims.get("client_id", "unknown"))

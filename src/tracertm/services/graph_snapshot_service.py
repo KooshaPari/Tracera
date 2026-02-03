@@ -110,15 +110,15 @@ class GraphSnapshotService:
 
         from_nodes_raw = (from_snapshot.snapshot_json or {}).get("nodes")
         to_nodes_raw = (to_snapshot.snapshot_json or {}).get("nodes")
-        from_nodes_list = from_nodes_raw if isinstance(from_nodes_raw, list) else []
-        to_nodes_list = to_nodes_raw if isinstance(to_nodes_raw, list) else []
+        from_nodes_list = from_nodes_raw if isinstance(from_nodes_raw, list[Any]) else []
+        to_nodes_list = to_nodes_raw if isinstance(to_nodes_raw, list[Any]) else []
         from_nodes = {cast(dict[str, Any], n).get("id", "") for n in from_nodes_list}
         to_nodes = {cast(dict[str, Any], n).get("id", "") for n in to_nodes_list}
 
         from_links_raw = (from_snapshot.snapshot_json or {}).get("links")
         to_links_raw = (to_snapshot.snapshot_json or {}).get("links")
-        from_links_list = from_links_raw if isinstance(from_links_raw, list) else []
-        to_links_list = to_links_raw if isinstance(to_links_raw, list) else []
+        from_links_list = from_links_raw if isinstance(from_links_raw, list[Any]) else []
+        to_links_list = to_links_raw if isinstance(to_links_raw, list[Any]) else []
         from_links = {cast(dict[str, Any], link).get("id", "") for link in from_links_list}
         to_links = {cast(dict[str, Any], link).get("id", "") for link in to_links_list}
 

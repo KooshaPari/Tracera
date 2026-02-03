@@ -15,12 +15,6 @@ vi.mock("@tanstack/react-router", async () => {
 	const actual = await vi.importActual("@tanstack/react-router");
 	return {
 		...actual,
-		useNavigate: () => mockNavigate,
-		useRouter: () => ({
-			navigate: mockNavigate,
-		}),
-		useLocation: () => ({ pathname: "/" }),
-		useParams: () => ({}),
 		Link: ({
 			children,
 			to,
@@ -37,6 +31,12 @@ vi.mock("@tanstack/react-router", async () => {
 				{children}
 			</a>
 		),
+		useLocation: () => ({ pathname: "/" }),
+		useNavigate: () => mockNavigate,
+		useParams: () => ({}),
+		useRouter: () => ({
+			navigate: mockNavigate,
+		}),
 	};
 });
 
@@ -44,9 +44,7 @@ vi.mock("@tanstack/react-router", async () => {
 const createTestQueryClient = () =>
 	new QueryClient({
 		defaultOptions: {
-			mutations: {
-				retry: false,
-			},
+			mutations: { retry: false },
 			queries: {
 				gcTime: 0,
 				retry: false,

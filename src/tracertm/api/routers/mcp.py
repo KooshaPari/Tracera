@@ -83,7 +83,7 @@ class ToolsListResponse(BaseModel):
 # =============================================================================
 
 
-def _set_user_context(claims: dict) -> None:
+def _set_user_context(claims: dict[str, Any]) -> None:
     """Set user context variables from auth claims.
 
     Args:
@@ -102,7 +102,7 @@ def _set_user_context(claims: dict) -> None:
         logger.debug(f"Set account context: {account_id}")
 
 
-async def _handle_mcp_call(method: str, params: dict[str, Any] | None, claims: dict) -> Any:
+async def _handle_mcp_call(method: str, params: dict[str, Any] | None, claims: dict[str, Any]) -> Any:
     """Handle an MCP method call.
 
     Args:
@@ -308,7 +308,7 @@ async def mcp_messages_options() -> Response:
 @router.post("/messages", response_model=JSONRPCResponse)
 async def mcp_messages(
     request: JSONRPCRequest,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
 ) -> JSONRPCResponse:
     """Handle JSON-RPC 2.0 MCP messages.
 
@@ -357,7 +357,7 @@ async def mcp_messages(
 @router.get("/sse")
 async def mcp_sse(
     request: Request,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
 ) -> EventSourceResponse:
     """Server-Sent Events endpoint for streaming MCP responses.
 
@@ -424,7 +424,7 @@ async def mcp_sse(
 
 @router.get("/tools", response_model=ToolsListResponse)
 async def mcp_tools(
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
 ) -> ToolsListResponse:
     """List available MCP tools.
 

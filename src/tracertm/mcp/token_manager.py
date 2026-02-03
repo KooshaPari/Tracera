@@ -14,6 +14,7 @@ import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class TokenInfo:
         if self.scopes is None:
             self.scopes = []
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "access_token": self.access_token,
             "token_type": self.token_type,
@@ -46,7 +47,7 @@ class TokenInfo:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> TokenInfo:
+    def from_dict(cls, data: dict[str, Any]) -> TokenInfo:
         return cls(
             access_token=data.get("access_token", ""),
             token_type=data.get("token_type", "bearer"),

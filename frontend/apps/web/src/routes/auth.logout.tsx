@@ -1,16 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { logger } from "@/lib/logger";
 import { useAuth } from "@workos-inc/authkit-react";
 import { Loader2, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
-import config from "@/config/constants";
+import { logger } from "@/lib/logger";
 import { useAuthStore } from "@/stores/authStore";
 
-/**
- * Logout page component
- * Handles clearing auth state and redirecting to login
- */
-function LogoutPage() {
+const LOGOUT_REDIRECT_DELAY_MS = 500;
+
+const LogoutPage = () => {
 	const navigate = useNavigate();
 	const { signOut } = useAuth();
 	const logout = useAuthStore((state) => state.logout);
@@ -19,28 +16,20 @@ function LogoutPage() {
 	useEffect(() => {
 		const performLogout = async () => {
 			try {
-				// Clear local auth state first
 				await logout();
-
-				// Sign out from WorkOS
-				// This will clear the WorkOS session and redirect to login
 				await Promise.resolve(signOut());
-
-				// Navigate to login page as fallback
-				// (WorkOS signOut may handle redirect automatically)
 				setTimeout(() => {
-					undefined;
-				}, 500);
+					void navigate({ to: "/auth/login" });
+				}, LOGOUT_REDIRECT_DELAY_MS);
 			} catch (error) {
 				logger.error("Logout error:", error);
-				// Even if there's an error, navigate to login
-				undefined;
+				void navigate({ to: "/auth/login" });
 			} finally {
 				setIsLoggingOut(false);
 			}
 		};
 
-		undefined;
+		void performLogout();
 	}, [logout, signOut, navigate]);
 
 	return (

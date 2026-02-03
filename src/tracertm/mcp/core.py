@@ -110,11 +110,11 @@ def _load_tool_transforms(require: bool = True) -> dict[str, ToolTransformConfig
             raise RuntimeError("TRACERTM_MCP_TOOL_TRANSFORMS is required for MCP startup")
         return {}
     data = json.loads(raw)
-    if not isinstance(data, dict):
+    if not isinstance(data, dict[str, Any]):
         raise ValueError("TRACERTM_MCP_TOOL_TRANSFORMS must be a JSON object")
     transforms: dict[str, ToolTransformConfig] = {}
     for name, config in data.items():
-        if not isinstance(config, dict):
+        if not isinstance(config, dict[str, Any]):
             raise ValueError(f"Tool transform for {name} must be a JSON object")
         transforms[name] = ToolTransformConfig(**config)
     return transforms

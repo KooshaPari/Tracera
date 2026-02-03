@@ -1,4 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
 	ImpactLevel,
 	Problem,
@@ -8,6 +7,7 @@ import type {
 	ResolutionType,
 	RootCauseCategory,
 } from "@tracertm/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import client from "@/api/client";
 
 const { getAuthHeaders } = client;
@@ -62,18 +62,20 @@ function transformProblem(data: Record<string, unknown>): Problem {
 		rootCauseConfidence: data["root_cause_confidence"] as number | undefined,
 		rootCauseDescription: data["root_cause_description"] as string | undefined,
 		rootCauseIdentified: data["root_cause_identified"] as boolean,
-		status: data.status as ProblemStatus,
+		status: data["status"] as ProblemStatus,
 		subCategory: data["sub_category"] as string | undefined,
 		tags: data["tags"] as string[] | undefined,
 		targetResolutionDate: data["target_resolution_date"] as string | undefined,
 		title: data["title"] as string,
 		updatedAt: data["updated_at"] as string,
 		urgency: data["urgency"] as ImpactLevel,
-		version: data["version"] as number,
+		version: (data["version"] as number | undefined) ?? 0,
 		workaroundAvailable: data["workaround_available"] as boolean,
 		workaroundDescription: data["workaround_description"] as string | undefined,
 		workaroundEffectiveness: data["workaround_effectiveness"] as
-			| ImpactLevel
+			| "permanent_fix"
+			| "partial"
+			| "temporary"
 			| undefined,
 	};
 }
@@ -334,15 +336,15 @@ async function fetchProblemActivities(
 	return {
 		activities: (data["activities"] || []).map(
 			(a: Record<string, unknown>) => ({
-				activityType: a.activity_type,
-				createdAt: a.created_at,
-				description: a.description,
-				fromValue: a.from_value,
-				id: a.id,
-				metadata: a.metadata,
-				performedBy: a.performed_by,
-				problemId: a.problem_id,
-				toValue: a.to_value,
+				activityType: a["activity_type"],
+				createdAt: a["created_at"],
+				description: a["description"],
+				fromValue: a["from_value"],
+				id: a["id"],
+				metadata: a["metadata"],
+				performedBy: a["performed_by"],
+				problemId: a["problem_id"],
+				toValue: a["to_value"],
 			}),
 		),
 		problemId: data["problem_id"],
@@ -394,7 +396,7 @@ export function useCreateProblem() {
 	return useMutation({
 		mutationFn: createProblem,
 		onSuccess: () => {
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -409,9 +411,8 @@ export function useUpdateProblem() {
 			id: string;
 			data: Partial<CreateProblemData>;
 		}) => updateProblem(id, data),
-		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
+		onSuccess: (_, _vars) => {
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -428,10 +429,8 @@ export function useTransitionProblemStatus() {
 			toStatus: ProblemStatus;
 			reason?: string;
 		}) => transitionProblemStatus(id, toStatus, reason),
-		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -441,9 +440,8 @@ export function useRecordRCA() {
 	return useMutation({
 		mutationFn: ({ id, data }: { id: string; data: RCAData }) =>
 			recordRCA(id, data),
-		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -460,10 +458,8 @@ export function useCloseProblem() {
 			resolutionType: ResolutionType;
 			closureNotes?: string;
 		}) => closeProblem(id, resolutionType, closureNotes),
-		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -473,7 +469,7 @@ export function useDeleteProblem() {
 	return useMutation({
 		mutationFn: deleteProblem,
 		onSuccess: () => {
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }

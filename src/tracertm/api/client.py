@@ -986,7 +986,7 @@ class TraceRTMClient:
         project_id = project_id or self.config_manager.get("current_project_id")
         created: list[ItemView | Any] = []
         for data in items_data:
-            data = dict(data)
+            data = dict[str, Any](data)
             data.setdefault("project_id", project_id)
             created.append(self.create_item(**data))
         return created if self._patched_session else BatchResult(created, {"items_created": len(created)})
@@ -994,7 +994,7 @@ class TraceRTMClient:
     def batch_update_items(self, updates: list[dict[str, Any]]) -> list[ItemView | Any] | BatchResult:
         updated: list[ItemView | Any] = []
         for upd in updates:
-            payload = dict(upd)
+            payload = dict[str, Any](upd)
             # Normalize id alias
             if "item_id" in payload and "id" not in payload:
                 payload["id"] = payload.pop("item_id")
@@ -1031,13 +1031,13 @@ class TraceRTMClient:
         items = self.query_items()
         data = [
             {
-                "id": item.get("id") if isinstance(item, dict) else item["id"],
-                "title": item.get("title") if isinstance(item, dict) else item["title"],
-                "view": item.get("view") if isinstance(item, dict) else item["view"],
-                "type": item.get("type") if isinstance(item, dict) else item["type"],
-                "description": item.get("description") if isinstance(item, dict) else item["description"],
-                "project_id": item.get("project_id") if isinstance(item, dict) else item["project_id"],
-                "metadata": item.get("metadata") if isinstance(item, dict) else item["metadata"],
+                "id": item.get("id") if isinstance(item, dict[str, Any]) else item["id"],
+                "title": item.get("title") if isinstance(item, dict[str, Any]) else item["title"],
+                "view": item.get("view") if isinstance(item, dict[str, Any]) else item["view"],
+                "type": item.get("type") if isinstance(item, dict[str, Any]) else item["type"],
+                "description": item.get("description") if isinstance(item, dict[str, Any]) else item["description"],
+                "project_id": item.get("project_id") if isinstance(item, dict[str, Any]) else item["project_id"],
+                "metadata": item.get("metadata") if isinstance(item, dict[str, Any]) else item["metadata"],
             }
             for item in items
         ]

@@ -143,7 +143,7 @@ class TokenBridge:
         # Optional manual audience check only when token has aud (avoid MissingRequiredClaimError)
         token_aud = decoded.get("aud")
         if self.audience and token_aud:
-            if isinstance(token_aud, list):
+            if isinstance(token_aud, list[Any]):
                 if self.audience not in token_aud:
                     raise InvalidAudienceError(f"Invalid audience: expected {self.audience!r}, got {token_aud!r}")
             elif token_aud != self.audience:

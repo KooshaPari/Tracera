@@ -4,13 +4,13 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
-import React from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	useCreateProject,
 	useProject,
 	useProjects,
 } from "../../hooks/useProjects";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import React from "react";
 
 // Mock fetch (vi.fn() compatible with fetch at runtime)
 const mockFetch = vi.fn();

@@ -78,11 +78,11 @@ const requirementItemSchema = z.object({
 
 type RequirementItemFormData = z.infer<typeof requirementItemSchema>;
 
-interface CreateRequirementItemFormProps {
-	onSubmit: (data: RequirementItemFormData) => void;
+type CreateRequirementItemFormProps = {
+	onSubmit: (data: unknown) => void;
 	onCancel: () => void;
 	isLoading?: boolean;
-}
+};
 
 const earsPatternExamples: Record<string, string> = {
 	event_driven: "When user clicks submit, the system shall validate the form",

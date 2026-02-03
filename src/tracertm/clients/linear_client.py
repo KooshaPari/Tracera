@@ -104,7 +104,7 @@ class LinearClient:
         self,
         query: str,
         variables: dict | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Execute a GraphQL query (with wait+retry on 5xx/network)."""
         response = await self._query_once(query, variables)
 
@@ -140,7 +140,7 @@ class LinearClient:
 
     # ==================== VIEWER & AUTH ====================
 
-    async def get_viewer(self) -> dict:
+    async def get_viewer(self) -> dict[str, Any]:
         """Get the authenticated user's profile."""
         query = """
         query {
@@ -168,7 +168,7 @@ class LinearClient:
 
     # ==================== ORGANIZATION & TEAMS ====================
 
-    async def get_organization(self) -> dict:
+    async def get_organization(self) -> dict[str, Any]:
         """Get the organization for the API key."""
         query = """
         query {
@@ -206,7 +206,7 @@ class LinearClient:
         result = await self._query(query)
         return result.get("teams", {}).get("nodes", [])
 
-    async def get_team(self, team_id: str) -> dict:
+    async def get_team(self, team_id: str) -> dict[str, Any]:
         """Get a team by ID."""
         query = """
         query($id: String!) {
@@ -258,7 +258,7 @@ class LinearClient:
         state_filter: str | None = None,
         first: int = 50,
         after: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """List issues, optionally filtered by team and state."""
         filter_parts = []
         if team_id:
@@ -322,7 +322,7 @@ class LinearClient:
         """
         return await self._query(query, {"first": first, "after": after})
 
-    async def get_issue(self, issue_id: str) -> dict:
+    async def get_issue(self, issue_id: str) -> dict[str, Any]:
         """Get an issue by ID."""
         query = """
         query($id: String!) {
@@ -383,7 +383,7 @@ class LinearClient:
         result = await self._query(query, {"id": issue_id})
         return result.get("issue", {})
 
-    async def get_issue_by_identifier(self, identifier: str) -> dict:
+    async def get_issue_by_identifier(self, identifier: str) -> dict[str, Any]:
         """Get an issue by identifier (e.g., 'TEAM-123')."""
         # Parse the identifier
         parts = identifier.split("-")
@@ -452,7 +452,7 @@ class LinearClient:
         label_ids: list[str] | None = None,
         estimate: int | None = None,
         due_date: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Create a new issue."""
         query = """
         mutation($input: IssueCreateInput!) {
@@ -510,7 +510,7 @@ class LinearClient:
         label_ids: list[str] | None = None,
         estimate: int | None = None,
         due_date: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Update an existing issue."""
         query = """
         mutation($id: String!, $input: IssueUpdateInput!) {
@@ -563,7 +563,7 @@ class LinearClient:
         result = await self._query(query, {"id": issue_id})
         return result.get("issueArchive", {}).get("success", False)
 
-    async def add_comment(self, issue_id: str, body: str) -> dict:
+    async def add_comment(self, issue_id: str, body: str) -> dict[str, Any]:
         """Add a comment to an issue."""
         query = """
         mutation($input: CommentCreateInput!) {
@@ -618,7 +618,7 @@ class LinearClient:
         result = await self._query(query)
         return result.get("projects", {}).get("nodes", [])
 
-    async def get_project(self, project_id: str) -> dict:
+    async def get_project(self, project_id: str) -> dict[str, Any]:
         """Get a project by ID."""
         query = """
         query($id: String!) {
@@ -707,7 +707,7 @@ class LinearClient:
         team_id: str | None = None,
         label: str | None = None,
         resource_types: list[str] | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Create a webhook.
 
         Args:

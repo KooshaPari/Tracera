@@ -4,6 +4,7 @@ Specification tools for MCP.
 
 from fastmcp.exceptions import ToolError
 
+from typing import Any
 from tracertm.api.http_client import TraceRTMHttpClient, TraceRTMHttpError
 from tracertm.mcp.api_client import get_api_client
 from tracertm.mcp.core import mcp
@@ -28,7 +29,7 @@ def create_adr(
     status: str = "proposed",
     decision_drivers: list[str] | None = None,
     tags: list[str] | None = None,
-) -> dict:
+) -> dict[str, Any]:
     decision_drivers = decision_drivers if decision_drivers is not None else []
     tags = tags if tags is not None else []
     client = _api_client()
@@ -95,7 +96,7 @@ def create_contract(
     title: str,
     contract_type: str,
     status: str = "draft",
-) -> dict:
+) -> dict[str, Any]:
     client = _api_client()
     try:
         contract = client.post(
@@ -131,7 +132,7 @@ def create_feature(
     as_a: str | None = None,
     i_want: str | None = None,
     so_that: str | None = None,
-) -> dict:
+) -> dict[str, Any]:
     client = _api_client()
     try:
         feature = client.post(
@@ -160,7 +161,7 @@ def create_scenario(
     feature_id: str,
     title: str,
     gherkin_text: str,
-) -> dict:
+) -> dict[str, Any]:
     client = _api_client()
     try:
         scenario = client.post(
@@ -185,7 +186,7 @@ def create_scenario(
 @mcp.tool(description="Analyze requirements quality (smells, ambiguity)")
 def analyze_quality(
     item_id: str,
-) -> dict:
+) -> dict[str, Any]:
     client = _api_client()
     try:
         quality = client.post(f"/api/v1/quality/items/{item_id}/analyze")

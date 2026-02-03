@@ -99,7 +99,7 @@ async def list_projects() -> dict[str, Any]:
     except TraceRTMHttpError as exc:
         raise ToolError(str(exc)) from exc
 
-    projects = result.get("projects", result if isinstance(result, list) else [])
+    projects = result.get("projects", result if isinstance(result, list[Any]) else [])
     return {"projects": projects}
 
 
@@ -157,7 +157,7 @@ async def snapshot_project(project_id: str, label: str) -> dict[str, Any]:
     snapshots: list[dict[str, Any]] = []
     if snapshots_file.exists():
         existing = yaml.safe_load(snapshots_file.read_text()) or []
-        if isinstance(existing, list):
+        if isinstance(existing, list[Any]):
             snapshots = existing
 
     snapshot_id = str(uuid.uuid4())
@@ -260,7 +260,7 @@ async def query_items(
     except TraceRTMHttpError as exc:
         raise ToolError(str(exc)) from exc
 
-    items = result.get("items", result if isinstance(result, list) else [])
+    items = result.get("items", result if isinstance(result, list[Any]) else [])
     if item_type:
         items = [item for item in items if item.get("type") == item_type or item.get("item_type") == item_type]
     if owner:
@@ -442,8 +442,8 @@ def delete_item(item_id: str) -> dict[str, Any]:
             raise ToolError(str(inner_exc)) from inner_exc
 
     return {
-        "id": result.get("id", resolved_id) if isinstance(result, dict) else resolved_id,
-        "status": result.get("status") if isinstance(result, dict) else "deleted",
+        "id": result.get("id", resolved_id) if isinstance(result, dict[str, Any]) else resolved_id,
+        "status": result.get("status") if isinstance(result, dict[str, Any]) else "deleted",
     }
 
 

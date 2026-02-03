@@ -4,10 +4,15 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useDeleteItem, useItems, useUpdateItem } from "../../hooks/useItems";
+import userEvent from "@testing-library/user-event";
+import {
+	useDeleteItem,
+	useItems,
+	useUpdateItem,
+} from "../../hooks/useItems";
 import { useProjects } from "../../hooks/useProjects";
 import { ItemsTableView } from "../../views/ItemsTableView";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock TanStack Router
 vi.mock("@tanstack/react-router", async () => {
@@ -34,6 +39,7 @@ vi.mock("../../hooks/useProjects", () => ({
 
 describe(ItemsTableView, () => {
 	let queryClient: QueryClient;
+	const user = userEvent.setup();
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
@@ -59,7 +65,7 @@ describe(ItemsTableView, () => {
 		];
 
 		vi.mocked(useItems).mockReturnValue({
-			data: mockItems,
+			data: { items: mockItems },
 			error: null,
 			isError: false,
 			isLoading: false,
@@ -82,7 +88,7 @@ describe(ItemsTableView, () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<ItemsTableView items={mockItems} type="feature" loading={false} />
+				<ItemsTableView projectId="proj-1" type="feature" />
 			</QueryClientProvider>,
 		);
 
@@ -90,9 +96,15 @@ describe(ItemsTableView, () => {
 	});
 
 	it("displays loading state", () => {
+		vi.mocked(useItems).mockReturnValue({
+			data: undefined,
+			error: null,
+			isError: false,
+			isLoading: true,
+		} as any);
 		render(
 			<QueryClientProvider client={queryClient}>
-				<ItemsTableView items={[]} type="feature" loading />
+				<ItemsTableView projectId="proj-1" type="feature" />
 			</QueryClientProvider>,
 		);
 
@@ -120,7 +132,7 @@ describe(ItemsTableView, () => {
 		];
 
 		vi.mocked(useItems).mockReturnValue({
-			data: mockItems,
+			data: { items: mockItems },
 			error: null,
 			isError: false,
 			isLoading: false,
@@ -143,7 +155,7 @@ describe(ItemsTableView, () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<ItemsTableView />
+				<ItemsTableView projectId="proj-1" />
 			</QueryClientProvider>,
 		);
 
@@ -179,7 +191,7 @@ describe(ItemsTableView, () => {
 		];
 
 		vi.mocked(useItems).mockReturnValue({
-			data: mockItems,
+			data: { items: mockItems },
 			error: null,
 			isError: false,
 			isLoading: false,
@@ -202,7 +214,7 @@ describe(ItemsTableView, () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<ItemsTableView />
+				<ItemsTableView projectId="proj-1" />
 			</QueryClientProvider>,
 		);
 
@@ -237,9 +249,24 @@ describe(ItemsTableView, () => {
 			},
 		];
 
+		vi.mocked(useItems).mockReturnValue({
+			data: { items: mockItems },
+			error: null,
+			isError: false,
+			isLoading: false,
+		} as any);
+		vi.mocked(useUpdateItem).mockReturnValue({ mutate: vi.fn() } as any);
+		vi.mocked(useDeleteItem).mockReturnValue({ mutate: vi.fn() } as any);
+		vi.mocked(useProjects).mockReturnValue({
+			data: [],
+			error: null,
+			isError: false,
+			isLoading: false,
+		} as any);
+
 		render(
 			<QueryClientProvider client={queryClient}>
-				<ItemsTableView items={mockItems} type="feature" loading={false} />
+				<ItemsTableView projectId="proj-1" type="feature" />
 			</QueryClientProvider>,
 		);
 

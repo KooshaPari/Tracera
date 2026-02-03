@@ -9,6 +9,7 @@ synchronized on demand with a 5-minute TTL.
 from sqlalchemy import Boolean, Column, DateTime, Index, String
 from sqlalchemy.sql import func
 
+from typing import Any
 from tracertm.models.base import Base
 
 
@@ -59,7 +60,7 @@ class User(Base):
         Index("ix_users_synced_at", "synced_at"),
     )
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Convert user model to dictionary for API responses.
 
         Returns:

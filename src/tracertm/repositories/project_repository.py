@@ -6,6 +6,7 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.models.project import Project
 
 
@@ -19,7 +20,7 @@ class ProjectRepository:
         self,
         name: str,
         description: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
         account_id: str | None = None,
     ) -> Project:
         """Create new project."""
@@ -58,7 +59,7 @@ class ProjectRepository:
         project_id: str | uuid.UUID,
         name: str | None = None,
         description: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Project | None:
         """Update project."""
         # Get project using ORM for tracking

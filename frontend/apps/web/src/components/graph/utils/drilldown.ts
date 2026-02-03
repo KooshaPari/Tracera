@@ -1,8 +1,8 @@
 // Drill-down navigation utilities for graph visualization
 // Supports progressive disclosure: Project → Repository → Module → File → Function
 
-import type { Item } from "@tracertm/types";
 import type { HierarchyNode } from "./hierarchy";
+import type { Item } from "@tracertm/types";
 
 /**
  * Drill-down level definitions
@@ -91,7 +91,7 @@ const LEVEL_COLORS: Record<DrillDownLevel, string> = {
 /**
  * Infer drill-down level from item type
  */
-export function inferDrillDownLevel(itemType: string): DrillDownLevel {
+export const inferDrillDownLevel = (itemType: string): DrillDownLevel => {
 	const lower = itemType.toLowerCase();
 
 	if (lower.includes("project")) {
@@ -111,12 +111,12 @@ export function inferDrillDownLevel(itemType: string): DrillDownLevel {
 	}
 
 	return "module"; // Default
-}
+};
 
 /**
  * Determine next drill-down level
  */
-export function getNextLevel(current: DrillDownLevel): DrillDownLevel | null {
+export const getNextLevel = (current: DrillDownLevel): DrillDownLevel | null => {
 	const levels: DrillDownLevel[] = [
 		"project",
 		"repository",
@@ -129,15 +129,15 @@ export function getNextLevel(current: DrillDownLevel): DrillDownLevel | null {
 	if (currentIndex === -1 || currentIndex === levels.length - 1) {
 		return null;
 	}
-	return levels[currentIndex + 1];
-}
+	return levels[currentIndex + 1] ?? null;
+};
 
 /**
  * Determine previous drill-down level
  */
-export function getPreviousLevel(
+export const getPreviousLevel = (
 	current: DrillDownLevel,
-): DrillDownLevel | null {
+): DrillDownLevel | null => {
 	const levels: DrillDownLevel[] = [
 		"project",
 		"repository",
@@ -150,16 +150,16 @@ export function getPreviousLevel(
 	if (currentIndex <= 0) {
 		return null;
 	}
-	return levels[currentIndex - 1];
-}
+	return levels[currentIndex - 1] ?? null;
+};
 
 /**
  * Create drill-down breadcrumbs from hierarchy path
  */
-export function createBreadcrumbs(
+export const createBreadcrumbs = (
 	itemId: string,
 	hierarchyMap: Map<string, HierarchyNode>,
-): DrillDownBreadcrumb[] {
+): DrillDownBreadcrumb[] => {
 	const node = hierarchyMap.get(itemId);
 	if (!node) {
 		return [];
@@ -181,12 +181,12 @@ export function createBreadcrumbs(
 	}
 
 	return breadcrumbs;
-}
+};
 
 /**
  * Get children grouped by drill-down level
  */
-export function getChildrenByDrillDownLevel(
+export const getChildrenByDrillDownLevel = (
 	itemId: string,
 	hierarchyMap: Map<string, HierarchyNode>,
 	items: Item[],
@@ -212,17 +212,22 @@ export function getChildrenByDrillDownLevel(
 	}
 
 	return levelGroups;
+};
+
+export interface CreateDrillDownContextOptions {
+	itemId: string;
+	items: Item[];
+	hierarchyMap: Map<string, HierarchyNode>;
+	expandedGroups?: Set<string>;
 }
 
 /**
  * Create drill-down context for current navigation state
  */
-export function createDrillDownContext(
-	itemId: string,
-	items: Item[],
-	hierarchyMap: Map<string, HierarchyNode>,
-	_expandedGroups: Set<string> = new Set(),
-): DrillDownContext {
+export const createDrillDownContext = (
+	opts: CreateDrillDownContextOptions,
+): DrillDownContext => {
+	const { itemId, items, hierarchyMap } = opts;
 	const node = hierarchyMap.get(itemId);
 	const item = items.find((i) => i.id === itemId);
 
@@ -266,23 +271,82 @@ export function createDrillDownContext(
 		parentTitle: parentNode?.item.title,
 		visibleItems,
 	};
+};
+
+const DEFAULT_MAX_ITEMS_PER_GROUP = 20;
+
+const buildLevelGroup = (
+	opts: {
+		itemId: string;
+		level: DrillDownLevel;
+		children: Item[];
+		subGroupIndex: number;
+		totalSubGroups: number;
+		start: number;
+		end: number;
+		hierarchyMap: Map<string, HierarchyNode>;
+	},
+): DrillDownNodeGroup => {
+	const {
+		itemId,
+		level,
+		children,
+		subGroupIndex: i,
+		totalSubGroups: subGroups,
+		start,
+		end,
+		hierarchyMap,
+	} = opts;
+	const groupChildren = children.slice(start, end);
+	const label =
+		subGroups > 1
+			? `${level} (${start + 1}-${end})`
+			: `${level} (${groupChildren.length})`;
+	return {
+		canExpand: groupChildren.some(
+			(c) => (hierarchyMap.get(c.id)?.childrenIds.length ?? 0) > 0,
+		),
+		color: LEVEL_COLORS[level],
+		groupId: `dd-${itemId}-${level}-${i}`,
+		icon: LEVEL_ICONS[level],
+		isExpanded: false,
+		itemCount: groupChildren.length,
+		itemIds: groupChildren.map((c) => c.id),
+		label,
+		level,
+		metadata: {
+			level,
+			subGroupIndex: i,
+			totalSubGroups: subGroups,
+		},
+		parentItemId: itemId,
+	};
+};
+
+export interface CreateDrillDownNodeGroupsOptions {
+	itemId: string;
+	items: Item[];
+	hierarchyMap: Map<string, HierarchyNode>;
+	maxItemsPerGroup?: number;
 }
 
 /**
  * Create node groups for drill-down expansion
  */
-export function createDrillDownNodeGroups(
-	itemId: string,
-	items: Item[],
-	hierarchyMap: Map<string, HierarchyNode>,
-	maxItemsPerGroup = 20,
-): DrillDownNodeGroup[] {
+export const createDrillDownNodeGroups = (
+	opts: CreateDrillDownNodeGroupsOptions,
+): DrillDownNodeGroup[] => {
+	const {
+		itemId,
+		items,
+		hierarchyMap,
+		maxItemsPerGroup = DEFAULT_MAX_ITEMS_PER_GROUP,
+	} = opts;
 	const node = hierarchyMap.get(itemId);
 	if (!node) {
 		return [];
 	}
 
-	// 	Const __itemMap = new Map(items.map((i) => [i.id, i]));
 	const childrenByLevel = getChildrenByDrillDownLevel(
 		itemId,
 		hierarchyMap,
@@ -290,82 +354,63 @@ export function createDrillDownNodeGroups(
 	);
 	const groups: DrillDownNodeGroup[] = [];
 
-	// 	Const _groupIndex = 0;
-
 	for (const [level, children] of childrenByLevel) {
 		if (children.length === 0) {
 			continue;
 		}
-
-		// Split into sub-groups if too many items
 		const subGroups = Math.ceil(children.length / maxItemsPerGroup);
-
 		for (let i = 0; i < subGroups; i += 1) {
 			const start = i * maxItemsPerGroup;
 			const end = Math.min(start + maxItemsPerGroup, children.length);
-			const groupChildren = children.slice(start, end);
-
-			const label =
-				subGroups > 1
-					? `${level} (${start + 1}-${end})`
-					: `${level} (${groupChildren.length})`;
-
-			groups.push({
-				canExpand: groupChildren.some(
-					(c) => (hierarchyMap.get(c.id)?.childrenIds.length ?? 0) > 0,
-				),
-				color: LEVEL_COLORS[level],
-				groupId: `dd-${itemId}-${level}-${i}`,
-				icon: LEVEL_ICONS[level],
-				isExpanded: false,
-				itemCount: groupChildren.length,
-				itemIds: groupChildren.map((c) => c.id),
-				label,
-				level,
-				metadata: {
+			groups.push(
+				buildLevelGroup({
+					children,
+					end,
+					hierarchyMap,
+					itemId,
 					level,
+					start,
 					subGroupIndex: i,
 					totalSubGroups: subGroups,
-				},
-				parentItemId: itemId,
-			});
+				}),
+			);
 		}
 	}
 
 	return groups;
-}
+};
 
 /**
  * Expand a drill-down node group
  */
-export function expandDrillDownGroup(
+export const expandDrillDownGroup = (
 	groupId: string,
 	expandedGroups: Set<string>,
-): Set<string> {
+): Set<string> => {
 	const newExpanded = new Set(expandedGroups);
 	newExpanded.add(groupId);
 	return newExpanded;
-}
+};
 
 /**
  * Collapse a drill-down node group
  */
-export function collapseDrillDownGroup(
+export const collapseDrillDownGroup = (
 	groupId: string,
 	expandedGroups: Set<string>,
-): Set<string> {
+): Set<string> => {
 	const newExpanded = new Set(expandedGroups);
 	newExpanded.delete(groupId);
 	return newExpanded;
-}
+};
 
 /**
  * Toggle drill-down node group expansion
  */
-export function toggleDrillDownGroup(
+export const toggleDrillDownGroup = (
 	groupId: string,
 	expandedGroups: Set<string>,
-): Set<string> {
+): Set<string> => {
 	const newExpanded = new Set(expandedGroups);
 
 	if (newExpanded.has(groupId)) {
@@ -375,17 +420,22 @@ export function toggleDrillDownGroup(
 	}
 
 	return newExpanded;
+};
+
+export interface GetVisibleDrillDownItemsOptions {
+	itemId: string;
+	items: Item[];
+	hierarchyMap: Map<string, HierarchyNode>;
+	expandedGroups: Set<string>;
 }
 
 /**
  * Get all visible items for drill-down navigation
  */
-export function getVisibleDrillDownItems(
-	itemId: string,
-	items: Item[],
-	hierarchyMap: Map<string, HierarchyNode>,
-	expandedGroups: Set<string>,
-): Item[] {
+export const getVisibleDrillDownItems = (
+	opts: GetVisibleDrillDownItemsOptions,
+): Item[] => {
+	const { itemId, items, hierarchyMap, expandedGroups } = opts;
 	const node = hierarchyMap.get(itemId);
 	if (!node) {
 		return [];
@@ -416,64 +466,86 @@ export function getVisibleDrillDownItems(
 	return [...visibleIds]
 		.map((id) => itemMap.get(id))
 		.filter((item): item is Item => item !== undefined);
-}
+};
 
 /**
  * Navigate to parent in drill-down
  */
-export function navigateUp(
+export const navigateUp = (
 	itemId: string,
 	hierarchyMap: Map<string, HierarchyNode>,
-): string | null {
+): string | null => {
 	const node = hierarchyMap.get(itemId);
-	return node?.parentId ?? null;
-}
+	const pid = node?.parentId;
+	return pid !== undefined ? pid : null;
+};
 
 /**
  * Navigate to specific child in drill-down
  */
-export function navigateToChild(
+export const navigateToChild = (
 	itemId: string,
 	childIndex: number,
 	hierarchyMap: Map<string, HierarchyNode>,
-): string | null {
+): string | null => {
 	const node = hierarchyMap.get(itemId);
 	if (!node || childIndex < 0 || childIndex >= node.childrenIds.length) {
 		return null;
 	}
 
 	return node.childrenIds[childIndex];
-}
+};
 
 /**
  * Get drill-down path for lazy loading
  * Returns the sequence of item IDs from root to target
  */
-export function getDrillDownPath(
+export const getDrillDownPath = (
 	itemId: string,
 	hierarchyMap: Map<string, HierarchyNode>,
-): string[] {
+): string[] => {
 	const node = hierarchyMap.get(itemId);
 	if (!node) {
 		return [];
 	}
 
 	return node.hierarchyPath;
-}
+};
+
+const processQueueNode = (
+	itemId: string,
+	currentDepth: number,
+	itemsToLoad: Set<string>,
+	hierarchyMap: Map<string, HierarchyNode>,
+	queue: { itemId: string; currentDepth: number }[],
+): void => {
+	const node = hierarchyMap.get(itemId);
+	if (!node) {
+		return;
+	}
+	for (const childId of node.childrenIds) {
+		if (!itemsToLoad.has(childId)) {
+			queue.push({
+				currentDepth: currentDepth + 1,
+				itemId: childId,
+			});
+		}
+	}
+};
 
 /**
  * Calculate lazy loading requirements for drill-down
  * Returns items that need to be fetched for full drill-down experience
  */
-export function calculateLazyLoadingRequirements(
+export const calculateLazyLoadingRequirements = (
 	rootItemId: string,
 	maxDepth: number,
 	hierarchyMap: Map<string, HierarchyNode>,
 ): {
-	itemsToLoad: string[];
 	depth: number;
 	estimatedSize: number;
-} {
+	itemsToLoad: string[];
+} => {
 	const itemsToLoad = new Set<string>();
 	const queue = [
 		{
@@ -485,7 +557,8 @@ export function calculateLazyLoadingRequirements(
 	let maxDepthReached = 0;
 
 	while (queue.length > 0) {
-		const { itemId, currentDepth } = queue.shift()!;
+		const entry = queue.shift()!;
+		const { itemId, currentDepth } = entry;
 
 		if (currentDepth > maxDepth) {
 			continue;
@@ -493,18 +566,13 @@ export function calculateLazyLoadingRequirements(
 
 		itemsToLoad.add(itemId);
 		maxDepthReached = Math.max(maxDepthReached, currentDepth);
-
-		const node = hierarchyMap.get(itemId);
-		if (node) {
-			for (const childId of node.childrenIds) {
-				if (!itemsToLoad.has(childId)) {
-					queue.push({
-						currentDepth: currentDepth + 1,
-						itemId: childId,
-					});
-				}
-			}
-		}
+		processQueueNode(
+			itemId,
+			currentDepth,
+			itemsToLoad,
+			hierarchyMap,
+			queue,
+		);
 	}
 
 	return {
@@ -512,20 +580,20 @@ export function calculateLazyLoadingRequirements(
 		estimatedSize: itemsToLoad.size,
 		itemsToLoad: [...itemsToLoad],
 	};
-}
+};
 
 /**
  * Get drill-down statistics
  */
-export function getDrillDownStats(
+export const getDrillDownStats = (
 	itemId: string,
 	hierarchyMap: Map<string, HierarchyNode>,
 ): {
-	totalDescendants: number;
-	depth: number;
 	childCount: number;
+	depth: number;
 	expandableCount: number;
-} {
+	totalDescendants: number;
+} => {
 	const node = hierarchyMap.get(itemId);
 	if (!node) {
 		return {
@@ -547,4 +615,4 @@ export function getDrillDownStats(
 		expandableCount,
 		totalDescendants: node.descendants.length,
 	};
-}
+};

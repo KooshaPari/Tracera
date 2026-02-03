@@ -138,7 +138,7 @@ class CoverageAggregator:
 
             lang_data = by_language[report.language]
             files = lang_data.get("files")
-            if isinstance(files, list):
+            if isinstance(files, list[Any]):
                 files.append(report.file)
             total_lr = lang_data.get("total_line_rate")
             if isinstance(total_lr, (int, float)):

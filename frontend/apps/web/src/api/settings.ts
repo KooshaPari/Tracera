@@ -1,11 +1,5 @@
-// Settings API stub
+import * as QueryClient from "./query-client";
 import { logger } from "@/lib/logger";
-import client from "./client";
-
-const apiClient = client.apiClient;
-const safeApiCall = client.safeApiCall;
-const get = apiClient.GET.bind(apiClient);
-const put = apiClient.PUT.bind(apiClient);
 
 interface Settings {
 	general: {
@@ -43,47 +37,106 @@ const DEFAULT_SETTINGS: Settings = {
 const isTheme = (value: unknown): value is "light" | "dark" | "system" =>
 	value === "light" || value === "dark" || value === "system";
 
-const fetchSettings = async (): Promise<Settings> => {
-	// Try to fetch from settings endpoint, fallback to defaults
-	try {
-		const response = await safeApiCall<Settings>(
-			get("/api/v1/settings", {}),
-		);
-		if (response.data !== undefined) {
-			return response.data;
-		}
-	} catch {
-		// Return default settings if endpoint doesn't exist
+const mergeSettings = (
+	baseSettings: Settings,
+	overrides: Partial<Settings>,
+): Settings => {
+	const mergedSettings: Settings = {
+		general: {
+			language: baseSettings.general.language,
+			theme: baseSettings.general.theme,
+			timezone: baseSettings.general.timezone,
+		},
+	};
+
+	if (baseSettings.notifications) {
+		mergedSettings.notifications = {
+			email: baseSettings.notifications.email,
+			inApp: baseSettings.notifications.inApp,
+			push: baseSettings.notifications.push,
+		};
 	}
-	return DEFAULT_SETTINGS;
+
+	if (baseSettings.security) {
+		mergedSettings.security = {
+			sessionTimeout: baseSettings.security.sessionTimeout,
+			twoFactor: baseSettings.security.twoFactor,
+		};
+	}
+
+	if (overrides.general) {
+		if (overrides.general.language !== undefined) {
+			mergedSettings.general.language = overrides.general.language;
+		}
+		if (overrides.general.theme !== undefined) {
+			mergedSettings.general.theme = overrides.general.theme;
+		}
+		if (overrides.general.timezone !== undefined) {
+			mergedSettings.general.timezone = overrides.general.timezone;
+		}
+	}
+
+	if (overrides.notifications) {
+		if (!mergedSettings.notifications) {
+			mergedSettings.notifications = {};
+		}
+		if (overrides.notifications.email !== undefined) {
+			mergedSettings.notifications.email = overrides.notifications.email;
+		}
+		if (overrides.notifications.inApp !== undefined) {
+			mergedSettings.notifications.inApp = overrides.notifications.inApp;
+		}
+		if (overrides.notifications.push !== undefined) {
+			mergedSettings.notifications.push = overrides.notifications.push;
+		}
+	}
+
+	if (overrides.security) {
+		if (!mergedSettings.security) {
+			mergedSettings.security = {};
+		}
+		if (overrides.security.sessionTimeout !== undefined) {
+			mergedSettings.security.sessionTimeout = overrides.security.sessionTimeout;
+		}
+		if (overrides.security.twoFactor !== undefined) {
+			mergedSettings.security.twoFactor = overrides.security.twoFactor;
+		}
+	}
+
+	return mergedSettings;
+};
+
+const fetchSettings = async (): Promise<Settings> => {
+	try {
+		const response = await QueryClient.api.get<Settings>(
+			"/api/v1/settings",
+			{},
+		);
+		const data = await QueryClient.handleApiResponse(response);
+		return data;
+	} catch {
+		return DEFAULT_SETTINGS;
+	}
 };
 
 const updateSettings = async (
 	settings: Partial<Settings>,
 ): Promise<Settings> => {
 	try {
-		const response = await safeApiCall<Settings>(
-			put("/api/v1/settings", { body: settings }),
-		);
-		if (response.data !== undefined) {
-			return response.data;
-		}
+		const response = await QueryClient.api.put<Settings>("/api/v1/settings", {
+			body: settings,
+		});
+		const data = await QueryClient.handleApiResponse(response);
+		return data;
 	} catch {
-		// Return merged settings if endpoint doesn't exist
+		return mergeSettings(DEFAULT_SETTINGS, settings);
 	}
-	return { ...DEFAULT_SETTINGS, ...settings };
 };
 
-/**
- * General settings map
- */
 interface GeneralSettingsMap {
 	theme?: "light" | "dark" | "system";
 }
 
-/**
- * Notification settings map
- */
 interface NotificationSettingsMap {
 	email?: boolean;
 	push?: boolean;
@@ -118,7 +171,6 @@ const buildNotificationSettings = (settings: {
 	return notificationSettings;
 };
 
-// Simplified settings save function for SettingsView
 const saveSettings = async (settings: {
 	displayName?: string;
 	email?: string;
@@ -136,7 +188,6 @@ const saveSettings = async (settings: {
 			notifications: notificationSettings,
 		});
 	} catch {
-		// Settings endpoint may not exist yet, that's okay
 		logger.info("Settings saved locally:", settings);
 	}
 };

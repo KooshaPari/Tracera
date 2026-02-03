@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.services.cache_service import CacheService
@@ -180,7 +181,7 @@ class ShortestPathService:
 
         # Priority queue: (distance, node)
         pq = [(0, source_id)]
-        visited: set = set()
+        visited: set[Any] = set()
 
         while pq:
             current_distance, current_node = heapq.heappop(pq)
@@ -360,7 +361,7 @@ class ShortestPathService:
         link_types_used: dict[str, str] = {}
 
         pq = [(0, source_id)]
-        visited: set = set()
+        visited: set[Any] = set()
 
         while pq:
             current_distance, current_node = heapq.heappop(pq)

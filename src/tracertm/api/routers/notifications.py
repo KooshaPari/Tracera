@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.models.notification import Notification
 
@@ -29,7 +30,7 @@ class NotificationResponse(BaseModel):
 @router.get("/", response_model=list[NotificationResponse])
 async def list_notifications(
     limit: int = 20,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     user_id = claims.get("sub")
@@ -61,7 +62,7 @@ async def list_notifications(
 @router.post("/{notification_id}/read")
 async def mark_as_read(
     notification_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     user_id = claims.get("sub")
@@ -87,7 +88,7 @@ async def mark_as_read(
 
 @router.post("/read-all")
 async def mark_all_as_read(
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     user_id = claims.get("sub")

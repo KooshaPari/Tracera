@@ -62,7 +62,7 @@ class StorageAdapter:
         project_storage = self.storage.get_project_storage(project_name)
         return project_storage.get_project()
 
-    def create_project(self, name: str, description: str | None = None, metadata: dict | None = None) -> Project:
+    def create_project(self, name: str, description: str | None = None, metadata: dict[str, Any] | None = None) -> Project:
         """
         Create or update project.
 
@@ -141,7 +141,7 @@ class StorageAdapter:
         priority: str = "medium",
         owner: str | None = None,
         parent_id: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Item:
         """
         Create a new item.
@@ -190,7 +190,7 @@ class StorageAdapter:
         status: str | None = None,
         priority: str | None = None,
         owner: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Item:
         """
         Update an existing item.
@@ -279,7 +279,7 @@ class StorageAdapter:
         source_id: str,
         target_id: str,
         link_type: str,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Link:
         """
         Create a traceability link.

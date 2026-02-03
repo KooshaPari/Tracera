@@ -6,6 +6,7 @@ from collections.abc import AsyncGenerator
 from fastapi import HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.config.manager import ConfigManager
 from tracertm.core.context import current_user_id
 from tracertm.infrastructure.event_bus import EventBus
@@ -102,7 +103,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-def verify_token(token: str) -> dict:
+def verify_token(token: str) -> dict[str, Any]:
     """Verify WorkOS AuthKit access tokens or internal service tokens.
 
     Uses TokenBridge to validate both RS256 (WorkOS) and HS256 (service) tokens.
@@ -115,7 +116,7 @@ def verify_token(token: str) -> dict:
         raise ValueError(str(exc)) from exc
 
 
-def auth_guard(request: Request) -> dict:
+def auth_guard(request: Request) -> dict[str, Any]:
     """Authenticate incoming requests when auth is enabled."""
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.lower().startswith("bearer ") or "  " in auth_header:

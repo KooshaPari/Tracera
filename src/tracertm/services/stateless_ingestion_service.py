@@ -363,7 +363,7 @@ class StatelessIngestionService:
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML: {e}") from e
 
-        if not isinstance(data, dict):
+        if not isinstance(data, dict[str, Any]):
             raise ValueError("YAML root must be a dictionary")
 
         # Detect format
@@ -407,11 +407,11 @@ class StatelessIngestionService:
             # Generic YAML - estimate from structure
             def count_items(d: Any) -> int:
                 count = 0
-                if isinstance(d, dict):
+                if isinstance(d, dict[str, Any]):
                     count += len(d)
                     for v in d.values():
                         count += count_items(v)
-                elif isinstance(d, list):
+                elif isinstance(d, list[Any]):
                     count += len(d)
                     for item in d:
                         count += count_items(item)
@@ -488,7 +488,7 @@ class StatelessIngestionService:
         for path, methods in paths.items():
             path_item_map[path] = {}
             for method, operation in methods.items():
-                if not isinstance(operation, dict) or method.startswith("x-"):
+                if not isinstance(operation, dict[str, Any]) or method.startswith("x-"):
                     continue
 
                 operation_id = operation.get("operationId", f"{method}_{path}")
@@ -539,7 +539,7 @@ class StatelessIngestionService:
                 # Link to response schemas
                 responses_op = operation.get("responses", {})
                 for response_def in responses_op.values():
-                    if isinstance(response_def, dict):
+                    if isinstance(response_def, dict[str, Any]):
                         content = response_def.get("content", {})
                         for content_schema in content.values():
                             schema_ref = content_schema.get("schema", {}).get("$ref", "")
@@ -748,7 +748,7 @@ class StatelessIngestionService:
         # Recursively process YAML structure
         def process_dict(d: dict[str, Any], parent_id: str | None = None) -> None:
             for key, value in d.items():
-                if isinstance(value, dict):
+                if isinstance(value, dict[str, Any]):
                     # Create item for this key
                     item = Item(
                         id=str(uuid4()),
@@ -771,9 +771,9 @@ class StatelessIngestionService:
                     items_created.append(str(item.id))
                     # Recursively process nested dict
                     process_dict(value, str(item.id))
-                elif isinstance(value, list):
+                elif isinstance(value, list[Any]):
                     for i, item_data in enumerate(value):
-                        if isinstance(item_data, dict):
+                        if isinstance(item_data, dict[str, Any]):
                             item = Item(
                                 id=str(uuid4()),
                                 project_id=project_id,

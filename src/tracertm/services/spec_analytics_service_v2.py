@@ -1973,7 +1973,7 @@ class ImpactAnalyzer:
 
         Args:
             source_item_id: The item being changed
-            adjacency: Dict mapping item_id -> list of dependent item_ids
+            adjacency: Dict mapping item_id -> list[Any] of dependent item_ids
             item_metadata: Optional metadata for items (type, criticality, etc.)
             max_depth: Maximum traversal depth
         """

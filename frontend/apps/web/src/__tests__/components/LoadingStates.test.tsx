@@ -1,9 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen, waitFor } from "@testing-library/react";
 import { GraphSkeleton } from "@/components/graph/GraphSkeleton";
 import { ErrorState } from "@/components/graph/ErrorState";
-import { LoadingTransition } from "@/components/graph/LoadingTransition";
 import { LoadingProgress } from "@/components/graph/LoadingProgress";
+import { LoadingTransition } from "@/components/graph/LoadingTransition";
+import { act, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
 
 describe(GraphSkeleton, () => {
 	it("should render with default node and edge count", () => {
@@ -101,6 +102,7 @@ describe(ErrorState, () => {
 	});
 
 	it("should call onRetry when retry button is clicked", async () => {
+		const user = userEvent.setup();
 		const onRetry = vi.fn();
 
 		render(<ErrorState onRetry={onRetry} />);
@@ -153,7 +155,7 @@ describe(LoadingTransition, () => {
 	});
 
 	it("should transition from loading to content smoothly", async () => {
-		render(
+		const { rerender } = render(
 			<LoadingTransition isLoading minDisplayTime={300}>
 				<div data-testid="content">Content</div>
 			</LoadingTransition>,
@@ -186,7 +188,7 @@ describe(LoadingTransition, () => {
 	});
 
 	it("should reset to skeleton when switching back to loading", () => {
-		render(
+		const { rerender } = render(
 			<LoadingTransition isLoading={false}>
 				<div data-testid="content">Content</div>
 			</LoadingTransition>,
@@ -206,7 +208,7 @@ describe(LoadingTransition, () => {
 	});
 
 	it("should respect custom minDisplayTime", async () => {
-		render(
+		const { rerender } = render(
 			<LoadingTransition isLoading minDisplayTime={500}>
 				<div data-testid="content">Content</div>
 			</LoadingTransition>,
@@ -290,7 +292,7 @@ describe(LoadingProgress, () => {
 describe("Loading States Integration", () => {
 	it("should work together in a complete loading flow", async () => {
 		const onRetry = vi.fn();
-		render(
+		const { rerender } = render(
 			<LoadingTransition isLoading>
 				<div data-testid="content">Graph Content</div>
 			</LoadingTransition>,

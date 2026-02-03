@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.schemas.specification import RequirementQualityRead
 from tracertm.services.requirement_quality_service import RequirementQualityService
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/quality", tags=["Quality"])
 @router.post("/items/{item_id}/analyze", response_model=RequirementQualityRead)
 async def analyze_quality(
     item_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = RequirementQualityService(db)
@@ -24,7 +25,7 @@ async def analyze_quality(
 @router.get("/items/{item_id}", response_model=RequirementQualityRead)
 async def get_quality(
     item_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = RequirementQualityService(db)

@@ -299,7 +299,7 @@ class RequirementSpecRepository(BaseSpecRepository):
         completeness_score: float | None = None,
         testability_score: float | None = None,
         overall_quality_score: float | None = None,
-        quality_issues: list | None = None,
+        quality_issues: list[Any] | None = None,
     ) -> Any:
         """Update quality scores for a requirement spec."""
         return await self.update(

@@ -15,6 +15,7 @@ from pathlib import Path
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
+from typing import Any
 from tracertm.config.manager import ConfigManager
 from tracertm.core.context import current_user_id
 
@@ -171,7 +172,7 @@ async def reset_engine():
         _async_session_factory = None
 
 
-async def get_pool_status() -> dict:
+async def get_pool_status() -> dict[str, Any]:
     """
     Get current connection pool status.
 

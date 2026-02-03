@@ -742,7 +742,7 @@ async def import_manage(
 
     def _load_data() -> dict[str, Any]:
         data = payload.get("data")
-        if isinstance(data, dict):
+        if isinstance(data, dict[str, Any]):
             return data
         content = payload.get("content")
         path = payload.get("path")
@@ -922,7 +922,7 @@ async def backup_manage(
         else:
             backup_data = json.loads(backup_file.read_text(encoding="utf-8"))
 
-        if not isinstance(backup_data, dict) or "tables" not in backup_data:
+        if not isinstance(backup_data, dict[str, Any]) or "tables" not in backup_data:
             raise ToolError("Invalid backup format.")
 
         with storage.get_session() as session:
@@ -1597,16 +1597,16 @@ async def design_manage(
     if action == "init":
         figma_key = payload.get("figma_key", "")
         figma_token = payload.get("figma_token", "")
-        designs_config = dict(design_module.DESIGNS_YAML_TEMPLATE)
+        designs_config = dict[str, Any](design_module.DESIGNS_YAML_TEMPLATE)
         figma_config = designs_config.get("figma")
-        if isinstance(figma_config, dict):
+        if isinstance(figma_config, dict[str, Any]):
             figma_config["file_key"] = figma_key
             figma_config["access_token"] = figma_token
         design_module._save_designs_config(trace_dir, designs_config)
 
-        components_config = dict(design_module.COMPONENTS_YAML_TEMPLATE)
+        components_config = dict[str, Any](design_module.COMPONENTS_YAML_TEMPLATE)
         metadata = components_config.get("metadata")
-        if isinstance(metadata, dict):
+        if isinstance(metadata, dict[str, Any]):
             metadata["created_at"] = datetime.now(UTC).isoformat()
         design_module._save_components_config(trace_dir, components_config)
         return _wrap({"initialized": True}, ctx, action)

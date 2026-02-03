@@ -184,7 +184,7 @@ def backup_manage(
         else:
             backup_data = json.loads(backup_file.read_text(encoding="utf-8"))
 
-        if not isinstance(backup_data, dict) or "tables" not in backup_data:
+        if not isinstance(backup_data, dict[str, Any]) or "tables" not in backup_data:
             raise ToolError("Invalid backup format.")
 
         with storage.get_session() as session:

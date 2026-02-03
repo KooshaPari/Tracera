@@ -1,16 +1,23 @@
-import type { CheckboxProps } from "@/components/ui/checkbox";
 import * as React from "react";
+import type { CheckboxProps } from "@/components/ui/checkbox";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
+const CHECKBOX_ID_RADIX = 36;
 const CHECKBOX_ID_RANDOM_LENGTH = 9;
 const CHECKBOX_ID_RANDOM_START = 2;
+const CHECKBOX_ID_RANDOM_END =
+	CHECKBOX_ID_RANDOM_START + CHECKBOX_ID_RANDOM_LENGTH;
 
 export const FormCheckbox = React.forwardRef<
 	HTMLInputElement,
 	FormCheckboxProps
 >(({ className, label, error, errorMessage, required, id, ...props }, ref) => {
-	const checkboxId = id || `checkbox-${Math.random().toString(36).slice(CHECKBOX_ID_RANDOM_START, CHECKBOX_ID_RANDOM_LENGTH + CHECKBOX_ID_RANDOM_START)}`;
+	const checkboxId =
+		id ||
+		`checkbox-${Math.random()
+			.toString(CHECKBOX_ID_RADIX)
+			.slice(CHECKBOX_ID_RANDOM_START, CHECKBOX_ID_RANDOM_END)}`;
 	const errorId = errorMessage ? `${checkboxId}-error` : undefined;
 
 	return (

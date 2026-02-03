@@ -40,6 +40,72 @@ const REDOC_DEFAULTS = {
 	specUrl: "/specs/openapi.json",
 };
 
+const DARK_COLORS = {
+	border: {
+		dark: "#404040",
+		light: "#505050",
+	},
+	http: {
+		basic: "#999",
+		delete: "#e27a7a",
+		get: "#6bbd5b",
+		head: "#c167e4",
+		link: "#31bbb6",
+		options: "#d3ca12",
+		patch: "#e09d43",
+		post: "#248fb2",
+		put: "#9b708b",
+	},
+	primary: {
+		main: "#4a90e2",
+	},
+	text: {
+		primary: "#f0f0f0",
+		secondary: "#b0b0b0",
+	},
+};
+
+const LIGHT_COLORS = {
+	border: {
+		dark: "#e0e0e0",
+		light: "#f0f0f0",
+	},
+	http: {
+		basic: "#999",
+		delete: "#f93e3e",
+		get: "#61affe",
+		head: "#c167e4",
+		link: "#31bbb6",
+		options: "#d3ca12",
+		patch: "#50e3c2",
+		post: "#49cc90",
+		put: "#fca130",
+	},
+	primary: {
+		main: "#4a90e2",
+	},
+	text: {
+		primary: "#333",
+		secondary: "#666",
+	},
+};
+
+const TYPOGRAPHY = {
+	code: {
+		fontFamily: '"Fira Code", "Courier New", monospace',
+		fontSize: "14px",
+		fontWeight: "400",
+	},
+	fontFamily:
+		'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+	fontSize: "16px",
+	headings: {
+		fontFamily:
+			'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+		fontWeight: "700",
+	},
+};
+
 const downloadOpenApiJson = (data: unknown): void => {
 	const blob = new Blob([JSON.stringify(data, null, JSON_INDENT)], {
 		type: "application/json",
@@ -61,6 +127,37 @@ const openInSwagger = (): void => {
 const resolveDarkModePreference = (): boolean =>
 	document.documentElement.classList.contains("dark") ||
 	globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
+
+const writeToClipboard = async (value: string) => {
+	if (navigator.clipboard?.writeText) {
+		await navigator.clipboard.writeText(value);
+		return;
+	}
+
+	const textarea = document.createElement("textarea");
+	textarea.value = value;
+	textarea.setAttribute("readonly", "true");
+	textarea.style.position = "absolute";
+	textarea.style.left = "-9999px";
+	document.body.append(textarea);
+	textarea.select();
+	document.execCommand("copy");
+	document.body.removeChild(textarea);
+};
+
+const fetchSpecFromUrl = async (specUrl?: string) => {
+	if (!specUrl) {
+		return null;
+	}
+
+	const response = await fetch(specUrl);
+	return response.json();
+};
+
+const normalizeRedocProps = (props: RedocWrapperProps) => ({
+	...REDOC_DEFAULTS,
+	...props,
+});
 
 const useSpecData = (specUrl?: string, spec?: object) => {
 	const [specData, setSpecData] = useState<object | null>(null);
@@ -113,20 +210,7 @@ const useCopySpecUrl = (specUrl?: string) => {
 
 		const fullUrl = new URL(specUrl, globalThis.location.origin).toString();
 		try {
-			if (navigator.clipboard?.writeText) {
-				await navigator.clipboard.writeText(fullUrl);
-			} else {
-				const textarea = document.createElement("textarea");
-				textarea.value = fullUrl;
-				textarea.setAttribute("readonly", "true");
-				textarea.style.position = "absolute";
-				textarea.style.left = "-9999px";
-				document.body.append(textarea);
-				textarea.select();
-				document.execCommand("copy");
-				document.body.removeChild(textarea);
-			}
-
+			await writeToClipboard(fullUrl);
 			setCopied(true);
 			window.setTimeout(() => setCopied(false), COPY_RESET_MS);
 		} catch (error) {
@@ -137,86 +221,30 @@ const useCopySpecUrl = (specUrl?: string) => {
 	return { copied, copySpecUrl };
 };
 
-const buildTheme = (darkMode: boolean) => {
-	const colors = darkMode
-		? {
-				border: {
-					dark: "#404040",
-					light: "#505050",
-				},
-				http: {
-					basic: "#999",
-					delete: "#e27a7a",
-					get: "#6bbd5b",
-					head: "#c167e4",
-					link: "#31bbb6",
-					options: "#d3ca12",
-					patch: "#e09d43",
-					post: "#248fb2",
-					put: "#9b708b",
-				},
-				primary: {
-					main: "#4a90e2",
-				},
-				text: {
-					primary: "#f0f0f0",
-					secondary: "#b0b0b0",
-				},
-			}
-		: {
-				border: {
-					dark: "#e0e0e0",
-					light: "#f0f0f0",
-				},
-				http: {
-					basic: "#999",
-					delete: "#f93e3e",
-					get: "#61affe",
-					head: "#c167e4",
-					link: "#31bbb6",
-					options: "#d3ca12",
-					patch: "#50e3c2",
-					post: "#49cc90",
-					put: "#fca130",
-				},
-				primary: {
-					main: "#4a90e2",
-				},
-				text: {
-					primary: "#333",
-					secondary: "#666",
-				},
-			};
+const useDownloadSpec = (resolvedSpec: object | null, specUrl?: string) =>
+	useCallback(async () => {
+		const dataToDownload = resolvedSpec ?? (await fetchSpecFromUrl(specUrl));
+		if (!dataToDownload) {
+			return;
+		}
 
-	return {
-		colors,
-		rightPanel: {
-			backgroundColor: darkMode ? "#1a1a1a" : "#263238",
-			textColor: "#ffffff",
-		},
-		sidebar: {
-			activeTextColor: "#4a90e2",
-			backgroundColor: darkMode ? "#2d2d2d" : "#fafafa",
-			textColor: darkMode ? "#f0f0f0" : "#333",
-			width: "280px",
-		},
-		typography: {
-			code: {
-				fontFamily: '"Fira Code", "Courier New", monospace',
-				fontSize: "14px",
-				fontWeight: "400",
-			},
-			fontFamily:
-				'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-			fontSize: "16px",
-			headings: {
-				fontFamily:
-					'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-				fontWeight: "700",
-			},
-		},
-	};
-};
+		downloadOpenApiJson(dataToDownload);
+	}, [resolvedSpec, specUrl]);
+
+const buildTheme = (darkMode: boolean) => ({
+	colors: darkMode ? DARK_COLORS : LIGHT_COLORS,
+	rightPanel: {
+		backgroundColor: darkMode ? "#1a1a1a" : "#263238",
+		textColor: "#ffffff",
+	},
+	sidebar: {
+		activeTextColor: "#4a90e2",
+		backgroundColor: darkMode ? "#2d2d2d" : "#fafafa",
+		textColor: darkMode ? "#f0f0f0" : "#333",
+		width: "280px",
+	},
+	typography: TYPOGRAPHY,
+});
 
 const buildOptions = (props: {
 	darkMode: boolean;
@@ -245,6 +273,65 @@ const buildOptions = (props: {
 	sortPropsAlphabetically: props.sortPropsAlphabetically,
 	theme: buildTheme(props.darkMode),
 });
+
+const useRedocOptions = (params: {
+	darkMode: boolean;
+	disableSearch: boolean;
+	expandResponses: string;
+	expandSingleSchemaField: boolean;
+	hideDownloadButton: boolean;
+	hideHostname: boolean;
+	nativeScrollbars: boolean;
+	pathInMiddlePanel: boolean;
+	requiredPropsFirst: boolean;
+	scrollYOffset: number;
+	showExtensions: boolean;
+	sortPropsAlphabetically: boolean;
+}) =>
+	useMemo(
+		() =>
+			buildOptions({
+				darkMode: params.darkMode,
+				disableSearch: params.disableSearch,
+				expandResponses: params.expandResponses,
+				expandSingleSchemaField: params.expandSingleSchemaField,
+				hideDownloadButton: params.hideDownloadButton,
+				hideHostname: params.hideHostname,
+				nativeScrollbars: params.nativeScrollbars,
+				pathInMiddlePanel: params.pathInMiddlePanel,
+				requiredPropsFirst: params.requiredPropsFirst,
+				scrollYOffset: params.scrollYOffset,
+				showExtensions: params.showExtensions,
+				sortPropsAlphabetically: params.sortPropsAlphabetically,
+			}),
+		[
+			params.darkMode,
+			params.disableSearch,
+			params.expandResponses,
+			params.expandSingleSchemaField,
+			params.hideDownloadButton,
+			params.hideHostname,
+			params.nativeScrollbars,
+			params.pathInMiddlePanel,
+			params.requiredPropsFirst,
+			params.scrollYOffset,
+			params.showExtensions,
+			params.sortPropsAlphabetically,
+		],
+	);
+
+const useStandaloneProps = (
+	resolvedSpec: object | null,
+	specUrl: string | undefined,
+	options: ReturnType<typeof buildOptions>,
+) =>
+	useMemo(() => {
+		if (resolvedSpec) {
+			return { options, spec: resolvedSpec };
+		}
+
+		return { options, specUrl };
+	}, [options, resolvedSpec, specUrl]);
 
 const LoadingState = ({ label }: { label: string }) => (
 	<div className="redoc-loading">
@@ -317,6 +404,22 @@ const RedocToolbar = ({
 		</div>
 	</div>
 );
+
+const RedocContent = ({
+	hasSpec,
+	standaloneProps,
+}: {
+	hasSpec: boolean;
+	standaloneProps: { options: ReturnType<typeof buildOptions> } & (
+		| { spec: object }
+		| { specUrl?: string }
+	);
+}) =>
+	hasSpec ? (
+		<RedocStandalone {...standaloneProps} />
+	) : (
+		<LoadingState label="Loading API Reference..." />
+	);
 
 const REDOC_STYLES = `
   .redoc-container {
@@ -464,81 +567,32 @@ const REDOC_STYLES = `
   }
 `;
 
-export const RedocWrapper = ({
-	specUrl = REDOC_DEFAULTS.specUrl,
-	spec,
-	scrollYOffset = REDOC_DEFAULTS.scrollYOffset,
-	hideDownloadButton = REDOC_DEFAULTS.hideDownloadButton,
-	disableSearch = REDOC_DEFAULTS.disableSearch,
-	expandResponses = REDOC_DEFAULTS.expandResponses,
-	requiredPropsFirst = REDOC_DEFAULTS.requiredPropsFirst,
-	sortPropsAlphabetically = REDOC_DEFAULTS.sortPropsAlphabetically,
-	showExtensions = REDOC_DEFAULTS.showExtensions,
-	nativeScrollbars = REDOC_DEFAULTS.nativeScrollbars,
-	pathInMiddlePanel = REDOC_DEFAULTS.pathInMiddlePanel,
-	hideHostname = REDOC_DEFAULTS.hideHostname,
-	expandSingleSchemaField = REDOC_DEFAULTS.expandSingleSchemaField,
-}: RedocWrapperProps) => {
+export const RedocWrapper = (props: RedocWrapperProps) => {
+	const normalized = normalizeRedocProps(props);
 	const { darkMode, toggleDarkMode } = useDarkMode();
-	const { copied, copySpecUrl } = useCopySpecUrl(specUrl);
-	const specData = useSpecData(specUrl, spec);
-	const resolvedSpec = specData ?? spec ?? null;
-
-	const downloadSpec = useCallback(async () => {
-		const dataToDownload = resolvedSpec;
-		if (dataToDownload) {
-			downloadOpenApiJson(dataToDownload);
-			return;
-		}
-
-		if (!specUrl) {
-			return;
-		}
-
-		const response = await fetch(specUrl);
-		const data = await response.json();
-		downloadOpenApiJson(data);
-	}, [resolvedSpec, specUrl]);
-
-	const redocOptions = useMemo(
-		() =>
-			buildOptions({
-				darkMode,
-				disableSearch,
-				expandResponses,
-				expandSingleSchemaField,
-				hideDownloadButton,
-				hideHostname,
-				nativeScrollbars,
-				pathInMiddlePanel,
-				requiredPropsFirst,
-				scrollYOffset,
-				showExtensions,
-				sortPropsAlphabetically,
-			}),
-		[
-			darkMode,
-			disableSearch,
-			expandResponses,
-			expandSingleSchemaField,
-			hideDownloadButton,
-			hideHostname,
-			nativeScrollbars,
-			pathInMiddlePanel,
-			requiredPropsFirst,
-			scrollYOffset,
-			showExtensions,
-			sortPropsAlphabetically,
-		],
+	const { copied, copySpecUrl } = useCopySpecUrl(normalized.specUrl);
+	const specData = useSpecData(normalized.specUrl, normalized.spec);
+	const resolvedSpec = specData ?? normalized.spec ?? null;
+	const redocOptions = useRedocOptions({
+		darkMode,
+		disableSearch: normalized.disableSearch,
+		expandResponses: normalized.expandResponses,
+		expandSingleSchemaField: normalized.expandSingleSchemaField,
+		hideDownloadButton: normalized.hideDownloadButton,
+		hideHostname: normalized.hideHostname,
+		nativeScrollbars: normalized.nativeScrollbars,
+		pathInMiddlePanel: normalized.pathInMiddlePanel,
+		requiredPropsFirst: normalized.requiredPropsFirst,
+		scrollYOffset: normalized.scrollYOffset,
+		showExtensions: normalized.showExtensions,
+		sortPropsAlphabetically: normalized.sortPropsAlphabetically,
+	});
+	const standaloneProps = useStandaloneProps(
+		resolvedSpec,
+		normalized.specUrl,
+		redocOptions,
 	);
-
-	const redocStandaloneProps = useMemo(() => {
-		if (resolvedSpec) {
-			return { options: redocOptions, spec: resolvedSpec };
-		}
-
-		return { options: redocOptions, specUrl };
-	}, [redocOptions, resolvedSpec, specUrl]);
+	const downloadSpec = useDownloadSpec(resolvedSpec, normalized.specUrl);
 
 	return (
 		<div className={`redoc-container ${darkMode ? "dark-mode" : ""}`}>
@@ -550,11 +604,10 @@ export const RedocWrapper = ({
 				onOpenSwagger={openInSwagger}
 				onToggleDarkMode={toggleDarkMode}
 			/>
-			{resolvedSpec || specUrl ? (
-				<RedocStandalone {...redocStandaloneProps} />
-			) : (
-				<LoadingState label="Loading API Reference..." />
-			)}
+			<RedocContent
+				hasSpec={Boolean(resolvedSpec || normalized.specUrl)}
+				standaloneProps={standaloneProps}
+			/>
 			<style>{REDOC_STYLES}</style>
 		</div>
 	);

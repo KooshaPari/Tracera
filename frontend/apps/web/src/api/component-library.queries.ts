@@ -1,7 +1,7 @@
 import type * as ReactQuery from "@tanstack/react-query";
 import type * as TracerTypes from "@tracertm/types";
-import * as QueryKeys from "./component-library-keys";
 import * as QueryClient from "./query-client";
+import * as QueryKeys from "./component-library-keys";
 import * as ReactQueryHooks from "./react-query-hooks";
 
 const useComponentLibraries = (
@@ -26,8 +26,10 @@ const useComponentLibraries = (
 
 	const queryOptions: ReactQuery.UseQueryOptions<
 		TracerTypes.ComponentLibrary[]
-	> = {};
-	Object.assign(queryOptions, baseOptions, options);
+	> = baseOptions;
+	if (options) {
+		Object.assign(queryOptions, options);
+	}
 
 	return ReactQueryHooks.useQuery(queryOptions);
 };
@@ -54,8 +56,10 @@ const useComponentLibrary = (
 
 	const queryOptions: ReactQuery.UseQueryOptions<
 		TracerTypes.ComponentLibrary
-	> = {};
-	Object.assign(queryOptions, baseOptions, options);
+	> = baseOptions;
+	if (options) {
+		Object.assign(queryOptions, options);
+	}
 
 	return ReactQueryHooks.useQuery(queryOptions);
 };
@@ -82,8 +86,10 @@ const useLibraryComponents = (
 
 	const queryOptions: ReactQuery.UseQueryOptions<
 		TracerTypes.LibraryComponent[]
-	> = {};
-	Object.assign(queryOptions, baseOptions, options);
+	> = baseOptions;
+	if (options) {
+		Object.assign(queryOptions, options);
+	}
 
 	return ReactQueryHooks.useQuery(queryOptions);
 };
@@ -110,8 +116,10 @@ const useLibraryComponent = (
 
 	const queryOptions: ReactQuery.UseQueryOptions<
 		TracerTypes.LibraryComponent
-	> = {};
-	Object.assign(queryOptions, baseOptions, options);
+	> = baseOptions;
+	if (options) {
+		Object.assign(queryOptions, options);
+	}
 
 	return ReactQueryHooks.useQuery(queryOptions);
 };
@@ -138,8 +146,10 @@ const useComponentUsage = (
 
 	const queryOptions: ReactQuery.UseQueryOptions<
 		TracerTypes.ComponentUsage[]
-	> = {};
-	Object.assign(queryOptions, baseOptions, options);
+	> = baseOptions;
+	if (options) {
+		Object.assign(queryOptions, options);
+	}
 
 	return ReactQueryHooks.useQuery(queryOptions);
 };
@@ -162,8 +172,11 @@ const useDesignTokens = (
 		queryKey: QueryKeys.componentLibraryQueryKeys.tokens(libraryId),
 	};
 
-	const queryOptions: ReactQuery.UseQueryOptions<TracerTypes.DesignToken[]> = {};
-	Object.assign(queryOptions, baseOptions, options);
+	const queryOptions: ReactQuery.UseQueryOptions<TracerTypes.DesignToken[]> =
+		baseOptions;
+	if (options) {
+		Object.assign(queryOptions, options);
+	}
 
 	return ReactQueryHooks.useQuery(queryOptions);
 };
@@ -176,3 +189,5 @@ export {
 	useLibraryComponent,
 	useLibraryComponents,
 };
+
+export { componentLibraryQueryKeys } from "./component-library-keys";

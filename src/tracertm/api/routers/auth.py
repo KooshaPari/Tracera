@@ -18,6 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.services.workos_auth_service import WorkOSAuthService, get_user
 
@@ -73,8 +74,8 @@ class TokenResponse(BaseModel):
 class MeResponse(BaseModel):
     """Current user information."""
 
-    user: dict = Field(..., description="User object")
-    claims: dict = Field(..., description="JWT claims")
+    user: dict[str, Any] = Field(..., description="User object")
+    claims: dict[str, Any] = Field(..., description="JWT claims")
     account: dict | None = Field(None, description="Account information")
 
 
@@ -243,7 +244,7 @@ async def exchange_device_code(
 
 @router.get("/me", response_model=MeResponse)
 async def get_current_user(
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> MeResponse:
     """Get current authenticated user from WorkOS.
@@ -369,7 +370,7 @@ async def refresh_access_token(
 async def revoke_token(
     request: RevokeTokenRequest,
     db: AsyncSession = Depends(get_db),
-) -> dict:
+) -> dict[str, Any]:
     """Revoke an access or refresh token.
 
     Args:
@@ -388,7 +389,7 @@ async def revoke_token(
 @router.post("/logout", response_model=LogoutResponse)
 async def logout(
     response: Response,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> LogoutResponse:
     """Log out current user.

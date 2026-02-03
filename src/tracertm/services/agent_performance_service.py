@@ -64,7 +64,7 @@ class AgentPerformanceService:
         }
 
         agents_list = team_stats.get("agents")
-        if not isinstance(agents_list, list):
+        if not isinstance(agents_list, list[Any]):
             agents_list = []
             team_stats["agents"] = agents_list
         for agent in agents:

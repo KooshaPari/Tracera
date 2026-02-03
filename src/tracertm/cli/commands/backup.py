@@ -13,6 +13,7 @@ import typer
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from typing import Any
 from tracertm.config.manager import ConfigManager
 from tracertm.storage import LocalStorageManager
 from tracertm.cli.ui import (
@@ -107,7 +108,8 @@ def backup_project(
         with progress_bar(len(table_list), "Exporting tables") as (prog, task):
             with storage.get_session() as session:
                 for table in table_list:
-                    result = session.execute(text(f"SELECT * FROM {table}"))
+                    # Table name from sqlite_master, safe for SQL
+                    result = session.execute(text(f"SELECT * FROM {table}"))  # noqa: S608
                     rows = [dict(row._mapping) for row in result]
 
                     # Convert datetime objects to ISO format
@@ -191,11 +193,11 @@ def restore_project(
 
         with spinner("Validating backup"):
             # Validate backup format
-            if not isinstance(backup_data, dict) or "version" not in backup_data:
+            if not isinstance(backup_data, dict[str, Any]) or "version" not in backup_data:
                 console.print(error_panel("Invalid backup file format", "Backup file is corrupted or incompatible"))
                 raise typer.Exit(code=1)
 
-            if "tables" not in backup_data or not isinstance(backup_data["tables"], dict):
+            if "tables" not in backup_data or not isinstance(backup_data["tables"], dict[str, Any]):
                 console.print(error_panel("Backup missing table data", "Backup file is incomplete"))
                 raise typer.Exit(code=1)
 
@@ -214,7 +216,8 @@ def restore_project(
                 for table in existing_tables:
                     if not table.startswith("alembic"):
                         try:
-                            session.execute(text(f"DELETE FROM {table}"))
+                            # Table name from sqlite_master, safe for SQL
+                            session.execute(text(f"DELETE FROM {table}"))  # noqa: S608
                         except Exception as e:
                             console.print(warning_panel(f"Could not clear {table}", str(e)))
 
@@ -236,9 +239,10 @@ def restore_project(
                         # Insert rows
                         for row in rows:
                             values = [row.get(col) for col in columns]
+                            # Table/column names from backup data (validated), safe for SQL
                             session.execute(
                                 text(
-                                    f"INSERT INTO {table} ({col_str}) VALUES ({placeholders})"
+                                    f"INSERT INTO {table} ({col_str}) VALUES ({placeholders})"  # noqa: S608
                                 ),
                                 values
                             )

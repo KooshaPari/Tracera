@@ -160,7 +160,7 @@ class AgentEventPublisher:
         checkpoint_id: str,
         turn_number: int,
         s3_key: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Publish session checkpoint event.
 
@@ -268,7 +268,7 @@ class AgentEventPublisher:
         role: str,
         content: str,
         turn_number: int,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Publish chat message event.
 

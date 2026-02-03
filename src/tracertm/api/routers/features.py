@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.schemas.specification import (
@@ -24,7 +25,7 @@ router = APIRouter(prefix="/features", tags=["BDD Features"])
 @router.post("/", response_model=FeatureRead, status_code=201)
 async def create_feature(
     feature: FeatureCreate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = FeatureService(db)
@@ -44,7 +45,7 @@ async def create_feature(
 @router.get("/{feature_id}", response_model=FeatureRead)
 async def get_feature(
     feature_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = FeatureService(db)
@@ -71,7 +72,7 @@ async def get_feature(
 async def get_feature_activities(
     feature_id: str,
     limit: int = Query(100, description="Max activities to return"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     repo = EventRepository(db)
@@ -81,11 +82,11 @@ async def get_feature_activities(
             "id": str(event.id),
             "feature_id": feature_id,
             "activity_type": event.event_type,
-            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
-            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
-            "description": event.data.get("description") if isinstance(event.data, dict) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
-            "metadata": event.data if isinstance(event.data, dict) else {},
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict[str, Any]) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict[str, Any]) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict[str, Any]) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict[str, Any]) else None,
+            "metadata": event.data if isinstance(event.data, dict[str, Any]) else {},
             "created_at": event.created_at,
         }
         for event in events
@@ -97,7 +98,7 @@ async def get_feature_activities(
 @router.delete("/{feature_id}", status_code=204)
 async def delete_feature(
     feature_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = FeatureService(db)
@@ -110,7 +111,7 @@ async def delete_feature(
 async def list_features(
     project_id: str = Query(..., description="Project ID"),
     status: str | None = Query(None, description="Filter by status"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = FeatureService(db)
@@ -126,7 +127,7 @@ async def list_features(
 async def create_scenario(
     feature_id: str,
     scenario: ScenarioCreate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ScenarioService(db)
@@ -153,7 +154,7 @@ async def create_scenario(
 @router.get("/scenarios/{scenario_id}", response_model=ScenarioRead)
 async def get_scenario(
     scenario_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ScenarioService(db)
@@ -167,7 +168,7 @@ async def get_scenario(
 async def get_scenario_activities(
     scenario_id: str,
     limit: int = Query(100, description="Max activities to return"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     repo = EventRepository(db)
@@ -177,11 +178,11 @@ async def get_scenario_activities(
             "id": str(event.id),
             "scenario_id": scenario_id,
             "activity_type": event.event_type,
-            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
-            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
-            "description": event.data.get("description") if isinstance(event.data, dict) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
-            "metadata": event.data if isinstance(event.data, dict) else {},
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict[str, Any]) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict[str, Any]) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict[str, Any]) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict[str, Any]) else None,
+            "metadata": event.data if isinstance(event.data, dict[str, Any]) else {},
             "created_at": event.created_at,
         }
         for event in events
@@ -193,7 +194,7 @@ async def get_scenario_activities(
 @router.delete("/scenarios/{scenario_id}", status_code=204)
 async def delete_scenario(
     scenario_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ScenarioService(db)

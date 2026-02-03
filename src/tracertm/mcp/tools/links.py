@@ -257,7 +257,7 @@ async def show_links(
         incoming = incoming_query.all()
 
         # Build result with item details
-        def link_with_item(link: Link, direction: str) -> dict:
+        def link_with_item(link: Link, direction: str) -> dict[str, Any]:
             other_id = link.target_item_id if direction == "outgoing" else link.source_item_id
             other = session.query(Item).filter(Item.id == other_id).first()
             return {

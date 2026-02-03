@@ -5,14 +5,14 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
-import React from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	useCreateLink,
 	useDeleteLink,
 	useLinks,
 	useTraceabilityGraph,
 } from "../../hooks/useLinks";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import React from "react";
 
 // Mock fetch
 const mockFetch = vi.fn();
@@ -317,8 +317,8 @@ describe("useLinks - Comprehensive Coverage", () => {
 
 			expect(result.current.nodes).toHaveLength(2);
 			expect(result.current.edges).toHaveLength(1);
-			expect(result.current.nodes[0].data.id).toBe("item-1");
-			expect(result.current.edges[0].data.source).toBe("item-1");
+			expect(result.current.nodes[0]?.data?.id).toBe("item-1");
+			expect(result.current.edges[0]?.data?.source).toBe("item-1");
 			expect(result.current.isLoading).toBe(false);
 		});
 

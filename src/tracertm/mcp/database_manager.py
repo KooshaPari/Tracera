@@ -33,7 +33,7 @@ class QueryMetrics:
         self.total_duration = 0.0
         self.slow_threshold_ms = 100.0
 
-    def record_query(self, query: str, duration_ms: float, params: dict | None = None):
+    def record_query(self, query: str, duration_ms: float, params: dict[str, Any] | None = None):
         """Record a query execution."""
         self.query_count += 1
         self.total_duration += duration_ms

@@ -3,9 +3,9 @@
  * Tests all CRUD operations, optimistic updates, and state management
  */
 
-import { beforeEach, describe, expect, it } from "vitest";
 import type { CreateItemInput, Item, UpdateItemInput } from "../../api/types";
-import { useItemsStore } from "../../stores/itemsStore";
+import { useItemsStore } from "../../stores/items-store";
+import { beforeEach, describe, expect, it } from "vitest";
 
 describe("ItemsStore", () => {
 	beforeEach(() => {
@@ -22,7 +22,7 @@ describe("ItemsStore", () => {
 	});
 
 	const mockItem: Item = {
-		created_at: "2024-01-01T00:00:00Z",
+		createdAt: "2024-01-01T00:00:00Z",
 		description: "Test description",
 		id: "item-1",
 		priority: "high",
@@ -30,29 +30,35 @@ describe("ItemsStore", () => {
 		status: "todo",
 		title: "Test Feature",
 		type: "feature",
-		updated_at: "2024-01-01T00:00:00Z",
+		updatedAt: "2024-01-01T00:00:00Z",
+		version: 1,
+		view: "technical",
 	};
 
 	const mockItem2: Item = {
-		created_at: "2024-01-01T00:00:00Z",
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "item-2",
 		priority: "medium",
 		projectId: "proj-1",
 		status: "in_progress",
 		title: "Test Task",
 		type: "task",
-		updated_at: "2024-01-01T00:00:00Z",
+		updatedAt: "2024-01-01T00:00:00Z",
+		version: 1,
+		view: "technical",
 	};
 
 	const mockItem3: Item = {
-		created_at: "2024-01-01T00:00:00Z",
+		createdAt: "2024-01-01T00:00:00Z",
 		id: "item-3",
 		priority: "low",
 		projectId: "proj-2",
 		status: "done",
 		title: "Test Bug",
 		type: "bug",
-		updated_at: "2024-01-01T00:00:00Z",
+		updatedAt: "2024-01-01T00:00:00Z",
+		version: 1,
+		view: "technical",
 	};
 
 	describe("addItem", () => {

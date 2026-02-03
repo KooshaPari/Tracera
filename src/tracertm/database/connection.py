@@ -8,6 +8,7 @@ from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
+from typing import Any
 from tracertm.models.base import Base
 
 
@@ -116,7 +117,7 @@ class DatabaseConnection:
 
         Base.metadata.drop_all(self._engine)
 
-    def health_check(self) -> dict:
+    def health_check(self) -> dict[str, Any]:
         """
         Check database health and return status.
 

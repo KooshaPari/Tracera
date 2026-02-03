@@ -136,7 +136,7 @@ class VersionChainStatsResponse(BaseModel):
 async def create_baseline(
     project_id: str = Path(..., description="Project ID"),
     request: CreateBaselineRequest = Body(...),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new baseline snapshot.
@@ -204,7 +204,7 @@ async def list_baselines(
     spec_type: str | None = Query(None, description="Filter by spec type"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List baselines for a project.
@@ -278,7 +278,7 @@ async def list_baselines(
 async def get_baseline(
     project_id: str = Path(..., description="Project ID"),
     baseline_id: str = Path(..., description="Baseline ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get baseline details with items.
@@ -350,7 +350,7 @@ async def get_baseline(
 async def delete_baseline(
     project_id: str = Path(..., description="Project ID"),
     baseline_id: str = Path(..., description="Baseline ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a baseline.
@@ -398,7 +398,7 @@ async def delete_baseline(
 async def generate_embeddings(
     project_id: str = Path(..., description="Project ID"),
     request: GenerateEmbeddingsRequest = Body(...),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Generate embeddings for specifications.
@@ -507,7 +507,7 @@ async def generate_embeddings(
 )
 async def get_embedding_stats(
     project_id: str = Path(..., description="Project ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get embedding statistics for a project.
@@ -566,7 +566,7 @@ async def delete_embeddings(
     project_id: str = Path(..., description="Project ID"),
     spec_type: str | None = Query(None, description="Filter by spec type"),
     model_name: str | None = Query(None, description="Filter by model"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete embeddings for a project.
@@ -609,7 +609,7 @@ async def delete_embeddings(
 )
 async def get_version_chain_stats(
     project_id: str = Path(..., description="Project ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get version chain statistics for a project.

@@ -4,7 +4,7 @@ Conflict panel widget for TUI.
 Displays and manages sync conflicts with resolution options.
 """
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, Any
 
 try:
     from textual.app import ComposeResult
@@ -117,7 +117,7 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        def __init__(self, conflicts: list | None = None, *args, **kwargs):
+        def __init__(self, conflicts: list[Any] | None = None, *args, **kwargs):
             """
             Initialize conflict panel.
 
@@ -274,7 +274,7 @@ if not TEXTUAL_AVAILABLE:
         conflicts: list
         selected_conflict: object | None
 
-        def __init__(self, conflicts: list | None = None, *args: object, **kwargs: object) -> None:
+        def __init__(self, conflicts: list[Any] | None = None, *args: object, **kwargs: object) -> None:
             self.conflicts = conflicts or []
             self.selected_conflict = None
 

@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.models.user import User
 
 
@@ -20,7 +21,7 @@ class UserRepository:
     """
 
     @staticmethod
-    async def get_or_create_from_workos(db: AsyncSession, workos_user: dict) -> User:
+    async def get_or_create_from_workos(db: AsyncSession, workos_user: dict[str, Any]) -> User:
         """Get user from database or create from WorkOS data.
 
         If user exists, updates cached data. If not, creates new user.

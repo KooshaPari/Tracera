@@ -1,4 +1,5 @@
 """
+from typing import Any
 Visualization service for TraceRTM.
 
 Provides ASCII graph and tree visualization for items and links.
@@ -43,7 +44,7 @@ class VisualizationService:
 
             # Add children
             children = item.get("children", [])
-            if isinstance(children, list):
+            if isinstance(children, list[Any]):
                 extension = "    " if is_last_item else "│   "
                 child_prefix = prefix + extension if prefix else extension
                 child_tree = VisualizationService.render_tree(
@@ -121,7 +122,7 @@ class VisualizationService:
             if isinstance(source_key, str) and isinstance(target_key, str):
                 source_item = items.get(source_key, {})
                 target_item = items.get(target_key, {})
-                if isinstance(source_item, dict) and isinstance(target_item, dict):
+                if isinstance(source_item, dict[str, Any]) and isinstance(target_item, dict[str, Any]):
                     source = source_item.get("title", source_key)
                     target = target_item.get("title", target_key)
                     link_type = link.get("type", "relates_to")

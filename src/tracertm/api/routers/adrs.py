@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.schemas.specification import (
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/adrs", tags=["ADRs"])
 @router.post("/", response_model=ADRResponse, status_code=201)
 async def create_adr(
     adr: ADRCreate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ADRService(db)
@@ -39,7 +40,7 @@ async def create_adr(
 @router.get("/{adr_id}", response_model=ADRResponse)
 async def get_adr(
     adr_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ADRService(db)
@@ -53,7 +54,7 @@ async def get_adr(
 async def get_adr_activities(
     adr_id: str,
     limit: int = Query(100, description="Max activities to return"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     repo = EventRepository(db)
@@ -63,11 +64,11 @@ async def get_adr_activities(
             "id": str(event.id),
             "adr_id": adr_id,
             "activity_type": event.event_type,
-            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
-            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
-            "description": event.data.get("description") if isinstance(event.data, dict) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
-            "metadata": event.data if isinstance(event.data, dict) else {},
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict[str, Any]) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict[str, Any]) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict[str, Any]) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict[str, Any]) else None,
+            "metadata": event.data if isinstance(event.data, dict[str, Any]) else {},
             "created_at": event.created_at,
         }
         for event in events
@@ -80,7 +81,7 @@ async def get_adr_activities(
 async def update_adr(
     adr_id: str,
     updates: ADRUpdate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ADRService(db)
@@ -95,7 +96,7 @@ async def update_adr(
 @router.delete("/{adr_id}", status_code=204)
 async def delete_adr(
     adr_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ADRService(db)
@@ -108,7 +109,7 @@ async def delete_adr(
 async def list_adrs(
     project_id: str = Query(..., description="Project ID"),
     status: str | None = Query(None, description="Filter by status"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ADRService(db)
