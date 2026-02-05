@@ -218,8 +218,8 @@ describe('API Routes Validation', () => {
     if (failedRoutes.length > 0) {
       console.log('');
       console.log('FAILED ROUTES:');
-      failedRoutes.forEach((route) => {
-        console.log(`  ❌ ${route.method} ${route.path} (Status: ${route.status})`);
+      failedRoutes.forEach((route: ApiTestResult) => {
+        console.log(`  ❌ ${route.method} ${route.route} (Status: ${route.status})`);
         route.errors.forEach((error) => {
           console.log(`     - ${error}`);
         });
@@ -229,8 +229,8 @@ describe('API Routes Validation', () => {
     if (warningRoutes.length > 0) {
       console.log('');
       console.log('ROUTES WITH WARNINGS:');
-      warningRoutes.forEach((route) => {
-        console.log(`  ⚠️  ${route.method} ${route.path} (Status: ${route.status})`);
+      warningRoutes.forEach((route: ApiTestResult) => {
+        console.log(`  ⚠️  ${route.method} ${route.route} (Status: ${route.status})`);
         route.warnings.forEach((warning) => {
           console.log(`     - ${warning}`);
         });
