@@ -52,7 +52,7 @@ class TestRouteValidation:
     )
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
-    def test_route_responds(self, mock_db, mock_auth, route, caplog):
+    def test_route_responds(self, mock_db, mock_auth, route):
         """Test that each route responds without server errors (5xx).
 
         This test validates that routes are defined and respond with a valid
@@ -155,7 +155,7 @@ class TestRouteValidation:
 
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
-    def test_all_routes_summary(self, mock_db, mock_auth, capsys):
+    def test_all_routes_summary(self, mock_db, mock_auth):
         """Generate summary report of all routes.
 
         Validates that all routes respond without 5xx server errors.
