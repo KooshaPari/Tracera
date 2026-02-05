@@ -12,7 +12,12 @@ import { collectBrowserLogs, collectNetworkLogs } from './fixtures/test-helpers'
  * Authentication is mocked by the API layer.
  */
 
-const ROUTES_TO_TEST = [
+interface RouteTest {
+  path: string;
+  name: string;
+}
+
+const ROUTES_TO_TEST: RouteTest[] = [
   { path: '/', name: 'Dashboard' },
   { path: '/projects', name: 'Projects List' },
   { path: '/settings', name: 'Settings' },
@@ -55,7 +60,7 @@ test.describe('Route Validation', () => {
        * Verify no console errors (excluding deprecation warnings)
        */
       const consoleErrors = logs.errors.filter(
-        (e) =>
+        (e: { message: string }) =>
           !e.message.includes('Deprecation') &&
           !e.message.includes('ResizeObserver loop') &&
           !e.message.includes('WARNING'),
@@ -71,7 +76,7 @@ test.describe('Route Validation', () => {
        * Exclude mock URLs and successful requests
        */
       const failedRequests = networkLogs.filter(
-        (req) =>
+        (req: { status: number; url: string }) =>
           req.status >= 400 &&
           !req.url.includes('mock') &&
           !req.url.includes('favicon') &&
@@ -84,7 +89,7 @@ test.describe('Route Validation', () => {
 
       expect(
         failedRequests,
-        `No failed API requests on ${route.path}. Failed: ${JSON.stringify(failedRequests.map((r) => ({ url: r.url, status: r.status })))}`,
+        `No failed API requests on ${route.path}. Failed: ${JSON.stringify(failedRequests.map((r: { url: string; status: number }) => ({ url: r.url, status: r.status })))}`,
       ).toHaveLength(0);
 
       /**
@@ -117,7 +122,6 @@ test.describe('Route Validation', () => {
 
     for (const route of ROUTES_TO_TEST) {
       const logs = await collectBrowserLogs(page);
-      const networkLogs = await collectNetworkLogs(page);
 
       await page.goto(`http://localhost:5173${route.path}`, { waitUntil: 'networkidle' });
       await page.waitForLoadState('networkidle');
@@ -126,7 +130,7 @@ test.describe('Route Validation', () => {
        * Check for errors after navigation
        */
       const consoleErrors = logs.errors.filter(
-        (e) =>
+        (e: { message: string }) =>
           !e.message.includes('Deprecation') &&
           !e.message.includes('ResizeObserver loop') &&
           !e.message.includes('WARNING'),
