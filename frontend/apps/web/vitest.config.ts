@@ -25,7 +25,11 @@ export default defineConfig({
 		environment: "jsdom",
 		globals: true,
 		include: ["src/**/*.{test,spec}.{ts,tsx}"],
-		reporters: ["verbose"],
+		reporters: [
+			"verbose",
+			["json", { outputFile: "./test-results/api-routes.json" }],
+			["html", { outputFile: "./test-results/api-routes.html" }],
+		],
 		setupFiles: ["./src/test/setup.ts"],
 		ui: true,
 	},
