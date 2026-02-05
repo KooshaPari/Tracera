@@ -1,7 +1,8 @@
 .PHONY: help dev dev-tui dev-down dev-logs dev-restart dev-status install-native \
 	quality quality-backend quality-frontend quality-pc quality-report quality-report-watch quality-watch quality-last quality-rerun check lint type-check format test \
-	type-check-ty type-check-basedpyright type-check-pyright test-python-parallel test-python-uv \
-	load-test-smoke load-test-load load-test-stress load-test-spike load-test-soak load-test-websocket load-test-database load-test-all load-test-compare load-test-report
+	type-check-ty test-python-parallel test-python-uv \
+	load-test-smoke load-test-load load-test-stress load-test-spike load-test-soak load-test-websocket load-test-database load-test-all load-test-compare load-test-report \
+	generate-contracts check-contracts
 
 # Platform detection
 PLATFORM := $(shell uname -s | tr '[:upper:]' '[:lower:]')
@@ -9,9 +10,9 @@ ARCH := $(shell uname -m)
 
 # Process Compose config selection (all under config/)
 ifeq ($(PLATFORM),linux)
-    PC_CONFIG := -f config/process-compose.linux.yaml
+    PC_CONFIG := -f config/process-compose.yaml -f config/process-compose.linux.yaml
 else ifeq ($(findstring mingw,$(PLATFORM)),mingw)
-    PC_CONFIG := -f config/process-compose.windows.yaml
+    PC_CONFIG := -f config/process-compose.yaml -f config/process-compose.windows.yaml
 else
     PC_CONFIG := -f config/process-compose.yaml
 endif
@@ -20,13 +21,10 @@ endif
 NAMESPACE ?= tracertm
 # Prefer venv tools so "make quality" / "make quality-python" work without them on PATH (pip install -e ".[dev]" or uv sync)
 RUFF  := $(if $(wildcard .venv/bin/ruff),.venv/bin/ruff,ruff)
-MYPY  := $(if $(wildcard .venv/bin/mypy),.venv/bin/mypy,mypy)
 PYTEST := $(if $(wildcard .venv/bin/pytest),.venv/bin/pytest,pytest)
 # Optional faster/alternative type checkers (venv-first)
 TY           := $(if $(wildcard .venv/bin/ty),.venv/bin/ty,ty)
-BASEDPYRIGHT := $(if $(wildcard .venv/bin/basedpyright),.venv/bin/basedpyright,basedpyright)
-PYRIGHT      := $(if $(wildcard .venv/bin/pyright),.venv/bin/pyright,pyright)
-# PYTHONPATH for mypy/pytest so src/ is importable; set in Python targets
+# PYTHONPATH for ty/pytest so src/ is importable; set in Python targets
 export PYTHONPATH ?= $(shell pwd)/src
 # Optional: PYTEST_EXTRA="-n auto" for parallel tests (pytest-xdist)
 PYTEST_EXTRA ?=
@@ -147,6 +145,26 @@ dev-init: ## Initialize development environment
 dev-cli: ## Show dev CLI help
 	@./scripts/dev --help
 
+test-setup: ## Create test users (WorkOS + DB) for comprehensive testing
+	@echo '$(GREEN)[Setup] Creating test users...$(NC)'
+	@if [ -z "$(WORKOS_API_KEY)" ]; then \
+		echo "$(YELLOW)⚠️  WORKOS_API_KEY not set - skipping WorkOS user creation$(NC)"; \
+	else \
+		cd frontend && bun scripts/test-setup/create-workos-test-user.ts; \
+	fi
+	@cd frontend && bun scripts/test-setup/seed-test-user-db.ts
+	@echo '$(GREEN)✅ Test users created$(NC)'
+
+#############################################################################
+# Contracts & SDKs
+#############################################################################
+
+generate-contracts: ## Generate OpenAPI specs + SDKs/types for Go/Python/Frontend
+	@bash scripts/shell/generate-contracts.sh
+
+check-contracts: ## Verify generated OpenAPI specs + SDKs/types are up-to-date
+	@bash scripts/shell/check-generated-contracts.sh
+
 #############################################################################
 # Unified quality (lint, typecheck, build, tests) by codebase
 # quality = per-step parallel run + report (run-quality-split.sh). REFRESH_INTERVAL=2 refreshes report as logs arrive.
@@ -188,12 +206,12 @@ quality-go: ## Go only: lint, proto-lint (if buf), build, test (no Python/ruff r
 	@echo '$(GREEN)[Go] Tests...$(NC)'
 	@$(MAKE) test-go
 
-quality-python: ## Python only: lint (ruff), architecture (tach), type-check (mypy), test (pytest) (no Go required)
+quality-python: ## Python only: lint (ruff), architecture (tach), type-check (ty), test (pytest) (no Go required)
 	@echo '$(GREEN)[Python] Lint (ruff)...$(NC)'
 	@$(MAKE) lint-python
 	@echo '$(GREEN)[Python] Architecture (tach)...$(NC)'
 	@$(MAKE) tach-check
-	@echo '$(GREEN)[Python] Type-check (mypy)...$(NC)'
+	@echo '$(GREEN)[Python] Type-check (ty)...$(NC)'
 	@$(MAKE) type-check
 	@echo '$(GREEN)[Python] Tests (pytest)...$(NC)'
 	@$(MAKE) test-python
@@ -345,17 +363,21 @@ chaos-report: ## Open chaos test HTML report
 # Code Quality (see also: quality, quality-go, quality-python, quality-frontend)
 #############################################################################
 
-lint: lint-naming lint-go lint-python lint-frontend ## Run naming guards, then Go, Python, and frontend linters
+lint: lint-naming lint-go lint-python lint-frontend ## Run naming/LOC guards, then Go, Python, and frontend linters
 
-lint-naming: ## Naming explosion guards (forbids components_phase3_tests.py, dashboardv2.py, etc.)
-	@echo '$(GREEN)Running naming explosion guards (Python, Go, frontend)...$(NC)'
+lint-naming: ## Naming explosion + LOC guards (forbids components_phase3_tests.py, dashboardv2.py, etc.)
+	@echo '$(GREEN)Running naming explosion guards and file LOC limits...$(NC)'
+	@bash scripts/shell/check-file-loc.sh
 	@bash scripts/shell/check-naming-explosion-python.sh
 	@bash scripts/shell/check-naming-explosion-go.sh
 	@cd frontend && bash scripts/check-naming-explosion.sh
 
 lint-frontend: ## Frontend linters only (oxlint via bun). See docs/checklists/OXC_IMPLEMENTATION_CHECKLIST.md
 	@echo '$(GREEN)Running frontend linters (oxlint)...$(NC)'
+	@cd frontend && bun run format
 	@cd frontend && bun run lint
+	# Note: oxlint uses -f stylish format (compact, file-grouped output)
+	# Alternative formats: compact, json, stylish (default), github
 
 lint-frontend-fix: ## Frontend lint auto-fix (oxlint --fix)
 	@echo '$(GREEN)Fixing frontend lint (oxlint --fix)...$(NC)'
@@ -367,18 +389,25 @@ typecheck-frontend: ## Frontend typecheck (oxlint --type-check --type-aware)
 
 lint-go: ## Go linters only (gofumpt check + vet + golangci-lint)
 	@echo '$(GREEN)Running Go linters...$(NC)'
-	@cd backend && OUT=$$(gofumpt -l .); \
-	if [ -n "$$OUT" ]; then echo '$(YELLOW)Go format: run make go-format$(NC)'; echo "$$OUT"; exit 1; fi; \
-	go vet ./... && golangci-lint run --timeout=5m
+	@cd backend && gofumpt -w .
+	@cd backend && go vet ./...
+	@GOMAXPROCS=1 GOGC=20 ./scripts/lint-go-chunks.sh
+	# Note: grouped-line-number format groups issues by file for easy processing by agents
+	# Alternative formats: json, json-line, tab, colored-line-number, line-number, checkstyle
 
 lint-python: ## Python linters only (ruff check + format check)
 	@echo '$(GREEN)Running Python linters...$(NC)'
-	$(RUFF) check src/ tests/
-	$(RUFF) format --check src/ tests/
+	$(RUFF) format src/ tests/
+	$(RUFF) check src/ tests/ --output-format=grouped
+	lint-imports
+	# Note: grouped format groups issues by file for easy processing by agents
+	# Alternative formats: concise, json, github, gitlab, junit, azure, grouped, stylish
 
-lint-python-fix: ## Python lint auto-fix (ruff check --fix; does not format)
-	@echo '$(GREEN)Fixing Python lint (ruff check --fix)...$(NC)'
-	$(RUFF) check src/ tests/ --fix
+lint-python-fix: ## Python lint auto-fix (ruff format + ruff check --fix)
+	@echo '$(GREEN)Fixing Python lint (ruff format + ruff check --fix)...$(NC)'
+	$(RUFF) format src/ tests/
+	$(RUFF) check src/ tests/ --fix --output-format=grouped
+	# Note: grouped format groups issues by file for easy processing by agents
 
 tach-check: ## Python module boundaries (tach); requires tach.toml and tach installed
 	@command -v tach >/dev/null 2>&1 || (echo 'tach not found (pip install tach or uv sync)' >&2; exit 1)
@@ -405,21 +434,13 @@ go-format: ## Go format only (gofumpt)
 	cd backend && gofumpt -w .
 go-test: ; @$(MAKE) test-go
 
-type-check: ## Run type checking (mypy; default for quality)
-	@echo '$(GREEN)Running mypy...$(NC)'
-	PYTHONPATH="$(shell pwd)/src" $(MYPY) src/
-
-type-check-ty: ## Run type checking with ty (Astral; fast, beta). Requires: uv/pip install ty
+type-check: ## Run type checking (ty; default for quality)
 	@echo '$(GREEN)Running ty...$(NC)'
 	PYTHONPATH="$(shell pwd)/src" $(TY) check src/
 
-type-check-basedpyright: ## Run type checking with basedpyright. Requires: pip install basedpyright
-	@echo '$(GREEN)Running basedpyright...$(NC)'
-	PYTHONPATH="$(shell pwd)/src" $(BASEDPYRIGHT) src/
-
-type-check-pyright: ## Run type checking with pyright. Requires: pip install pyright
-	@echo '$(GREEN)Running pyright...$(NC)'
-	PYTHONPATH="$(shell pwd)/src" $(PYRIGHT) src/
+type-check-ty: ## Run type checking with ty (Astral). Requires: uv/pip install ty
+	@echo '$(GREEN)Running ty...$(NC)'
+	PYTHONPATH="$(shell pwd)/src" $(TY) check src/
 
 security-scan: ## Run security scans (semgrep, bandit, pip-audit, govulncheck)
 	@echo '$(GREEN)Running security scans...$(NC)'
@@ -568,7 +589,6 @@ clean: ## Clean build artifacts and logs
 	@echo '$(GREEN)Cleaning build artifacts...$(NC)'
 	@find . -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
 	@find . -type d -name '.pytest_cache' -exec rm -rf {} + 2>/dev/null || true
-	@find . -type d -name '.mypy_cache' -exec rm -rf {} + 2>/dev/null || true
 	@rm -rf .process-compose/logs/* 2>/dev/null || true
 	@rm -rf htmlcov/
 	@cd backend && go clean
