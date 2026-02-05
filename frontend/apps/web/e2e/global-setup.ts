@@ -7,6 +7,8 @@
  * - Generating authentication tokens
  * - Setting test user environment variables
  */
+import { expect, test } from '@playwright/test';
+
 // Global setup runs once before all tests
 
 async function globalSetup(): Promise<void> {
@@ -44,3 +46,4 @@ async function globalSetup(): Promise<void> {
 }
 
 export default globalSetup;
+export { expect, test };

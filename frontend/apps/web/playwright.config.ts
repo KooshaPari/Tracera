@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Playwright configuration for TraceRTM E2E tests
@@ -31,7 +36,7 @@ export default defineConfig({
     ['junit', { outputFile: 'playwright-report/junit.xml' }],
     ['list'],
     // Custom reporter for failed routes
-    [require.resolve('./e2e/reporters/failed-routes-reporter.ts')],
+    [join(__dirname, './e2e/reporters/failed-routes-reporter.ts')],
   ],
 
   // Shared settings for all the projects below
