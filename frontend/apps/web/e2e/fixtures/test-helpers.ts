@@ -374,22 +374,23 @@ export class TestHelpers {
    */
   async measureLoadTime(): Promise<number> {
     return this.page.evaluate(() => {
-      const {timing} = performance;
-      return timing.loadEventEnd - timing.navigationStart;
+      // Use PerformanceNavigationTiming instead of deprecated timing API
+      const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      return navEntry?.loadEventEnd || 0;
     });
   }
 
   async getPerformanceMetrics() {
     return this.page.evaluate(() => {
-      const {timing} = performance;
+      const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const paintEntries = performance.getEntriesByType('paint');
+
       return {
-        domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
-        firstContentfulPaint: performance
-          .getEntriesByType('paint')
+        domContentLoaded: navEntry?.domContentLoadedEventEnd || 0,
+        firstContentfulPaint: paintEntries
           .find((e) => e.name === 'first-contentful-paint')?.startTime,
-        firstPaint: performance.getEntriesByType('paint').find((e) => e.name === 'first-paint')
-          ?.startTime,
-        loadTime: timing.loadEventEnd - timing.navigationStart,
+        firstPaint: paintEntries.find((e) => e.name === 'first-paint')?.startTime,
+        loadTime: navEntry?.loadEventEnd || 0,
       };
     });
   }

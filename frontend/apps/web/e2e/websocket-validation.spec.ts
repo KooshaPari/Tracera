@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { collectBrowserLogs, collectNetworkLogs } from './fixtures/test-helpers';
+import { collectBrowserLogs } from './fixtures/test-helpers';
 
 test.describe('WebSocket CORS Validation', () => {
-  test('should establish WebSocket connection with CORS headers', async ({ page, context }) => {
+  test('should establish WebSocket connection with CORS headers', async ({ page }) => {
     const logs: Record<string, any[]> = {
       console: [],
       network: [],

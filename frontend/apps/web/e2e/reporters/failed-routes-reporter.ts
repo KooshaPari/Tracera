@@ -16,7 +16,6 @@ class FailedRoutesReporter implements Reporter {
     status: 'passed' | 'failed' | 'skipped' | 'timedout';
     error?: string;
     duration: number;
-    retries: number;
   }> = [];
   private totalDuration = 0;
   private startTime = Date.now();
@@ -31,14 +30,23 @@ class FailedRoutesReporter implements Reporter {
       this.failedRoutes.add(url);
     }
 
+    // Map Playwright status to our status type
+    let status: 'passed' | 'failed' | 'skipped' | 'timedout' = 'passed';
+    if (result.status === 'failed') {
+      status = 'failed';
+    } else if (result.status === 'skipped') {
+      status = 'skipped';
+    } else if (result.status === 'timedOut' || result.status === 'interrupted') {
+      status = 'timedout';
+    }
+
     // Store test result details
     this.testResults.push({
       title: test.title,
       url,
-      status: result.status,
+      status,
       error: result.error?.message,
       duration: result.duration,
-      retries: result.retries,
     });
 
     this.totalDuration += result.duration;

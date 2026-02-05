@@ -7,9 +7,9 @@
  * - Generating authentication tokens
  * - Setting test user environment variables
  */
-import type { FullConfig } from '@playwright/test';
+// Global setup runs once before all tests
 
-async function globalSetup(config: FullConfig) {
+async function globalSetup(): Promise<void> {
   console.log('🚀 Global setup starting...');
 
   // Set test user environment variables
