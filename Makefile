@@ -1,6 +1,7 @@
 .PHONY: help dev dev-tui dev-down dev-logs dev-restart dev-status install-native \
 	quality quality-backend quality-frontend quality-pc quality-report quality-report-watch quality-watch quality-last quality-rerun check lint type-check format test \
 	type-check-ty test-python-parallel test-python-uv \
+	test-setup test-validate-comprehensive test-validate-frontend test-validate-backend test-validate-backend-go test-validate-backend-python test-validate-report \
 	load-test-smoke load-test-load load-test-stress load-test-spike load-test-soak load-test-websocket load-test-database load-test-all load-test-compare load-test-report \
 	generate-contracts check-contracts
 
@@ -32,6 +33,8 @@ PYTEST_EXTRA ?=
 # Colors
 GREEN  := \033[0;32m
 YELLOW := \033[1;33m
+BLUE   := \033[0;34m
+CYAN   := \033[0;36m
 NC     := \033[0m
 
 help: ## Show this help
@@ -146,7 +149,7 @@ dev-cli: ## Show dev CLI help
 	@./scripts/dev --help
 
 test-setup: ## Create test users (WorkOS + DB) for comprehensive testing
-	@echo '$(GREEN)[Setup] Creating test users...$(NC)'
+	@echo '$(BLUE)[Setup] Creating test users...$(NC)'
 	@if [ -z "$(WORKOS_API_KEY)" ]; then \
 		echo "$(YELLOW)⚠️  WORKOS_API_KEY not set - skipping WorkOS user creation$(NC)"; \
 	else \
@@ -154,6 +157,48 @@ test-setup: ## Create test users (WorkOS + DB) for comprehensive testing
 	fi
 	@cd frontend && bun scripts/test-setup/seed-test-user-db.ts
 	@echo '$(GREEN)✅ Test users created$(NC)'
+
+test-validate-comprehensive: test-validate-frontend test-validate-backend ## Run all comprehensive validation tests
+	@echo '$(GREEN)✅ Comprehensive validation complete$(NC)'
+
+test-validate-frontend: ## Frontend: Playwright E2E + Vitest API tests
+	@echo '$(BLUE)[Frontend] Running comprehensive tests...$(NC)'
+	@cd frontend/apps/web && \
+		echo '$(CYAN)  → Playwright E2E WebSocket validation...$(NC)' && \
+		bun run test:e2e -- websocket-validation.spec.ts && \
+		echo '$(CYAN)  → Playwright E2E route validation...$(NC)' && \
+		bun run test:e2e -- route-validation.spec.ts && \
+		echo '$(CYAN)  → Vitest API routes validation...$(NC)' && \
+		bun run test -- src/__tests__/api/routes-validation.comprehensive.test.ts && \
+		echo '$(GREEN)  ✅ Frontend tests complete$(NC)'
+
+test-validate-backend: test-validate-backend-go test-validate-backend-python ## Backend: Go + Python tests
+
+test-validate-backend-go: ## Go: route validation tests
+	@echo '$(BLUE)[Backend] Running Go route validation tests...$(NC)'
+	@cd backend && \
+		go test -v -race ./internal/handlers -run TestAllRoutes && \
+		go test -v -race ./internal/handlers -run TestWebSocketCORSHeaders && \
+		echo '$(GREEN)  ✅ Go tests complete$(NC)'
+
+test-validate-backend-python: ## Python: route validation tests
+	@echo '$(BLUE)[Backend] Running Python route validation tests...$(NC)'
+	@cd backend && \
+		PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/unit/api/test_routes_validation.py -v && \
+		echo '$(GREEN)  ✅ Python tests complete$(NC)'
+
+test-validate-report: ## Generate comprehensive test report across all suites
+	@echo '$(BLUE)[Report] Generating comprehensive test validation report...$(NC)'
+	@echo '$(CYAN)Frontend E2E Report:$(NC)'
+	@[ -f frontend/apps/web/playwright-report/results.json ] && \
+		cat frontend/apps/web/playwright-report/results.json | jq . || echo "No Playwright results yet"
+	@echo '\n$(CYAN)Frontend Vitest Report:$(NC)'
+	@[ -f frontend/apps/web/test-results/api-routes.json ] && \
+		cat frontend/apps/web/test-results/api-routes.json | jq . || echo "No Vitest results yet"
+	@echo '\n$(CYAN)Failed Routes Summary:$(NC)'
+	@[ -f frontend/apps/web/playwright-report/failed-routes.json ] && \
+		cat frontend/apps/web/playwright-report/failed-routes.json | jq . || echo "No failed routes"
+	@echo '$(GREEN)✅ Report generation complete$(NC)'
 
 #############################################################################
 # Contracts & SDKs
