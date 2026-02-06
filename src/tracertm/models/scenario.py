@@ -13,8 +13,8 @@ from .base import Base, TimestampMixin, generate_uuid
 class Scenario(Base, TimestampMixin):
     """BDD Scenario."""
 
-    __tablename__ = "scenarios"
-    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}
+    __tablename__: ClassVar[str] = "scenarios"  # type: ignore[misc]
+    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}  # type: ignore[misc]
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     feature_id: Mapped[str] = mapped_column(String(36), ForeignKey("features.id", ondelete="CASCADE"), nullable=False)
@@ -24,14 +24,14 @@ class Scenario(Base, TimestampMixin):
     gherkin_text: Mapped[str] = mapped_column(Text, nullable=False)
 
     # Steps
-    background: Mapped[list[dict]] = mapped_column(JSON, default=list)
-    given_steps: Mapped[list[dict]] = mapped_column(JSON, default=list)
-    when_steps: Mapped[list[dict]] = mapped_column(JSON, default=list)
-    then_steps: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    background: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    given_steps: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    when_steps: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    then_steps: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
 
     # Outline
     is_outline: Mapped[bool] = mapped_column(Boolean, default=False)
-    examples: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    examples: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
 
     # Metadata & Traceability
     tags: Mapped[list[str]] = mapped_column(JSON, default=list)
@@ -43,7 +43,7 @@ class Scenario(Base, TimestampMixin):
     pass_rate: Mapped[float] = mapped_column(Float, default=0.0)
 
     version: Mapped[int] = mapped_column(default=1)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, nullable=True)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column("metadata", JSON, nullable=True)
 
     # Relationships
     feature = relationship(
