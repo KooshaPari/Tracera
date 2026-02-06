@@ -6,10 +6,11 @@
  */
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 
 import { logger } from '@/lib/logger';
+import { useAuthToken } from '@/context/AuthTokenContext';
 
 import { realtimeClient } from '../lib/websocket';
 
@@ -17,18 +18,17 @@ export interface RealtimeConfig {
   projectId?: string;
   onEvent?: (event: any) => void;
   enableToasts?: boolean;
+  onTokenRefreshNeeded?: () => Promise<void>;
 }
 
 export function useRealtime(config: RealtimeConfig = {}) {
-  const { projectId, onEvent } = config;
+  const { projectId, onEvent, onTokenRefreshNeeded } = config;
   // Const queryClient = useQueryClient();
   const [isConnected, setIsConnected] = useState(false);
+  const { token, isTokenExpired } = useAuthToken();
+  const tokenRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Get auth token from storage or context
-    // TODO: Replace with your actual auth token retrieval
-    const token = localStorage.getItem('auth_token') || '';
-
     if (!token) {
       logger.warn('No auth token found, skipping WebSocket connection');
       return;
@@ -42,12 +42,34 @@ export function useRealtime(config: RealtimeConfig = {}) {
       setIsConnected(realtimeClient.isConnected());
     }, 1000);
 
+    // Set up token refresh interval (refresh every 50 minutes for 1-hour tokens)
+    const tokenRefreshInterval = setInterval(async () => {
+      if (isTokenExpired()) {
+        logger.warn('Token expired, triggering refresh');
+        if (onTokenRefreshNeeded) {
+          try {
+            await onTokenRefreshNeeded();
+          } catch (error) {
+            logger.error('Failed to refresh token', error);
+            realtimeClient.disconnect();
+          }
+        } else {
+          realtimeClient.disconnect();
+        }
+      }
+    }, 50 * 60 * 1000); // 50 minutes
+
+    tokenRefreshIntervalRef.current = tokenRefreshInterval;
+
     // Cleanup
     return () => {
       clearInterval(checkConnection);
+      if (tokenRefreshIntervalRef.current) {
+        clearInterval(tokenRefreshIntervalRef.current);
+      }
       realtimeClient.disconnect();
     };
-  }, [projectId]);
+  }, [projectId, token, onTokenRefreshNeeded, isTokenExpired]);
 
   // Listen for all events and call custom handler
   useEffect(() => {
@@ -64,15 +86,10 @@ export function useRealtime(config: RealtimeConfig = {}) {
 
 export function useRealtimeUpdates(projectId?: string) {
   const queryClient = useQueryClient();
+  const { token } = useAuthToken();
 
   useEffect(() => {
-    if (!projectId) {
-      return;
-    }
-
-    // Get auth token
-    const token = localStorage.getItem('auth_token') || '';
-    if (!token) {
+    if (!projectId || !token) {
       return;
     }
 

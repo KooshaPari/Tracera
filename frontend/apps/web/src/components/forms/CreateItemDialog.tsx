@@ -16,11 +16,26 @@
  * conditionally renders either the type selector dialog or delegates to the form.
  */
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
+import type { CreateItemInput } from '@tracertm/types';
 import type { ViewType } from '@tracertm/types';
 
+import { createItem } from '@/api/items';
+import {
+  buildErrorMetadata,
+  extractValidationErrors,
+  formatValidationErrorMessage,
+  isAuthError,
+} from '@/lib/api-error-handler';
 import { logger } from '@/lib/logger';
+import {
+  queueMutation,
+  removeMutationFromQueue,
+  updateMutationError,
+} from '@/lib/mutation-queue';
+import { withRetry } from '@/lib/retry';
+import { toast } from '@/components/ui/toaster';
 
 import { CreateDefectItemForm } from './CreateDefectItemForm';
 import { CreateEpicItemForm } from './CreateEpicItemForm';
@@ -65,29 +80,139 @@ export function CreateItemDialog({
   };
 
   // Handle form submission (step 2)
-  const handleFormSubmit = async (data: unknown) => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Replace with actual API call
-      logger.info('Creating item:', {
-        data,
-        projectId,
-        type: selectedType,
-        view: defaultView,
-      });
+  const handleFormSubmit = useCallback(
+    async (data: unknown) => {
+      setIsSubmitting(true);
+      const toastId = `create_item_${Date.now()}`;
 
-      // Mock API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      try {
+        // Validate form data
+        if (!data || typeof data !== 'object') {
+          toast.error('Invalid form data', { id: toastId });
+          setIsSubmitting(false);
+          return;
+        }
 
-      // Success - close dialog and reset
-      handleOpenChange(false);
-    } catch (error) {
-      logger.error('Failed to create item:', error);
-      // TODO: Show error notification
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+        const formData = data as Record<string, unknown>;
+
+        // Build CreateItemInput with required fields
+        const itemInput: CreateItemInput = {
+          description: formData.description as string | undefined,
+          name: (formData.name || formData.title) as string,
+          type: selectedType || 'item',
+          ...formData,
+        };
+
+        // Show retrying toast
+        const retryingToastId = `create_item_retrying_${Date.now()}`;
+
+        // Attempt to create item with retry logic
+        const result = await withRetry(
+          () => createItem(itemInput),
+          {
+            maxAttempts: 3,
+            baseDelayMs: 1000,
+            onRetry: (attempt, error) => {
+              toast.loading(`Retrying... (Attempt ${attempt}/3)`, {
+                id: retryingToastId,
+              });
+              logger.warn(`Retry attempt ${attempt} after error:`, error.message);
+            },
+          },
+        );
+
+        if (!result.success) {
+          // Handle failed creation after all retries
+          const errorMetadata = buildErrorMetadata(result.error);
+          logger.error('Failed to create item after retries:', {
+            ...errorMetadata,
+            attempts: result.attempts,
+          });
+
+          // Special handling for auth errors
+          if (isAuthError(result.error)) {
+            toast.error('Your session has expired. Please log in again.', {
+              id: toastId,
+            });
+            // Redirect to login would happen via auth store
+            setIsSubmitting(false);
+            return;
+          }
+
+          // Check for validation errors
+          const validationErrors = extractValidationErrors(result.error);
+          if (validationErrors) {
+            const errorMessage = formatValidationErrorMessage(validationErrors);
+            toast.error(errorMessage, {
+              description: 'Please fix the errors and try again.',
+              id: toastId,
+            });
+            setIsSubmitting(false);
+            return;
+          }
+
+          // For transient errors, offer queue option
+          if (errorMetadata.retryable) {
+            const mutationId = queueMutation({
+              createdAt: new Date().toISOString(),
+              data: itemInput,
+              failedAttempts: result.attempts,
+              lastError: result.error?.message,
+              type: 'create_item',
+            });
+
+            toast.error(errorMetadata.userMessage, {
+              action: {
+                label: 'Undo',
+                onClick: () => {
+                  removeMutationFromQueue(mutationId);
+                  toast.success('Operation cancelled', { id: toastId });
+                },
+              },
+              description: 'Your operation has been queued and will retry when you reconnect.',
+              id: toastId,
+            });
+
+            // Still close the dialog since mutation is queued
+            handleOpenChange(false);
+            setIsSubmitting(false);
+            return;
+          }
+
+          // Unknown error
+          toast.error(errorMetadata.userMessage, {
+            description: 'Please try again or contact support if the problem persists.',
+            id: toastId,
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Success!
+        logger.info('Item created successfully:', {
+          itemId: (result.data as { id?: string }).id,
+          type: selectedType,
+        });
+
+        toast.success('Item created successfully', { id: toastId });
+
+        // Close dialog and reset
+        handleOpenChange(false);
+      } catch (error) {
+        // Catch any unexpected errors not caught by retry logic
+        const errorMetadata = buildErrorMetadata(error);
+        logger.error('Unexpected error creating item:', errorMetadata);
+
+        toast.error(errorMetadata.userMessage, {
+          description: 'An unexpected error occurred. Please try again.',
+          id: toastId,
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [selectedType, handleOpenChange],
+  );
 
   // Handle cancel (go back to step 1 or close dialog)
   const handleCancel = () => {

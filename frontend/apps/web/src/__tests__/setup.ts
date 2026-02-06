@@ -68,22 +68,26 @@ vi.mock('sigma', () => ({
 }));
 
 // Setup localStorage mock BEFORE importing MSW
-const localStorageMock = (() => {
+const localStorageMock: Storage = (() => {
   let store: Record<string, string> = {};
   return {
-    clear: () => {
+    clear() {
       store = {};
     },
-    getItem: (key: string) => store[key] || null,
-    key: (index: number) => {
-      const keys = Object.keys(store);
-      return keys[index] || null;
+    getItem(key: string) {
+      return store[key] ?? null;
     },
-    length: 0,
-    removeItem: (key: string) => {
+    key(index: number) {
+      const keys = Object.keys(store);
+      return keys[index] ?? null;
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
+    removeItem(key: string) {
       delete store[key];
     },
-    setItem: (key: string, value: string) => {
+    setItem(key: string, value: string) {
       store[key] = value.toString();
     },
   };

@@ -146,3 +146,61 @@ foo
 child
 promise resolved"
 `;
+
+exports[`fixtures import-map: stdout 1`] = `""`;
+
+exports[`fixtures native: stdout 1`] = `""`;
+
+exports[`fixtures esm: stdout 1`] = `""`;
+
+exports[`fixtures export-promise: stdout 1`] = `""`;
+
+exports[`fixtures proto: stdout 1`] = `""`;
+
+exports[`fixtures cjs-interop: stdout 1`] = `""`;
+
+exports[`fixtures error-parse: stderr 1`] = `[]`;
+
+exports[`fixtures error-parse: stdout 1`] = `""`;
+
+exports[`fixtures resolve: stdout 1`] = `""`;
+
+exports[`fixtures mixed: stdout 1`] = `""`;
+
+exports[`fixtures typescript: stdout 1`] = `""`;
+
+exports[`fixtures async: stdout 1`] = `""`;
+
+exports[`fixtures top-level-await: stdout 1`] = `""`;
+
+exports[`fixtures hashbang: stdout 1`] = `""`;
+
+exports[`fixtures env: stdout 1`] = `""`;
+
+exports[`fixtures json: stdout 1`] = `""`;
+
+exports[`fixtures error-runtime: stderr 1`] = `[]`;
+
+exports[`fixtures error-runtime: stdout 1`] = `""`;
+
+exports[`fixtures import-meta: stdout 1`] = `""`;
+
+exports[`fixtures require-esm: stderr 1`] = `[]`;
+
+exports[`fixtures require-esm: stdout 1`] = `""`;
+
+exports[`fixtures node: stdout 1`] = `""`;
+
+exports[`fixtures require-json: stdout 1`] = `""`;
+
+exports[`fixtures syntax: stdout 1`] = `""`;
+
+exports[`fixtures jsx: stdout 1`] = `""`;
+
+exports[`fixtures data-uri: stdout 1`] = `""`;
+
+exports[`fixtures circular: stdout 1`] = `""`;
+
+exports[`fixtures deps: stdout 1`] = `""`;
+
+exports[`fixtures pure-esm-dep: stdout 1`] = `""`;

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createRootRoute, createRouter } from '@tanstack/react-router';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ItemsTableView } from '../ItemsTableView';
@@ -48,19 +49,23 @@ const router = createRouter({
 
 describe('ItemsTableView - Virtual Scrolling', () => {
   let queryClient: QueryClient;
+  let user: ReturnType<typeof userEvent.setup>;
+  let container: HTMLElement;
 
   beforeEach(() => {
     queryClient = new QueryClient();
+    user = userEvent.setup();
   });
 
   it('should render virtual table with 1000 items', async () => {
-    render(
+    const { container: renderContainer } = render(
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router}>
           <ItemsTableView />
         </RouterProvider>
       </QueryClientProvider>,
     );
+    container = renderContainer;
 
     // Wait for items to load
     await screen.findByText(/Item 0/i);
@@ -71,13 +76,14 @@ describe('ItemsTableView - Virtual Scrolling', () => {
   });
 
   it('should only render visible rows (not all 1000)', async () => {
-    render(
+    const { container: renderContainer } = render(
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router}>
           <ItemsTableView />
         </RouterProvider>
       </QueryClientProvider>,
     );
+    container = renderContainer;
 
     await screen.findByText(/Item 0/i);
 

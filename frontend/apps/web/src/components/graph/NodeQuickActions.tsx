@@ -129,7 +129,7 @@ const NoteAction = ({ note, onChange, onSave }: NoteActionProps) => {
 };
 
 const NodeQuickActions = memo(
-  ({ nodeId, onAddLink, onAddTag, onEditNote }: NodeQuickActionsProps) => {
+  function NodeQuickActions({ nodeId, onAddLink, onAddTag, onEditNote }: NodeQuickActionsProps) {
     const [linkTarget, setLinkTarget] = useState('');
     const [tag, setTag] = useState('');
     const [note, setNote] = useState('');
