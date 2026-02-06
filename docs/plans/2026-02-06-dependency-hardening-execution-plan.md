@@ -1070,15 +1070,68 @@ Estimates:
 - Tool calls: 6 to 12
 - Wall clock: 10 to 20 minutes
 
+### Phase 6: Observability Extensions
+
+#### P10-01: OpenTelemetry Collector Mode in Dev Stack
+
+Files:
+
+- `config/process-compose.yaml`
+- `config/otel-collector.yaml` (new)
+
+Requirements:
+
+1. Collector mode is enabled only by explicit configuration and is visible in startup and health output.
+2. When enabled, app OTLP export goes to the collector and the collector exports onward to the chosen backend.
+3. Failures in collector mode are loud and actionable, not a silent "no traces" state.
+
+Acceptance:
+
+- With collector mode enabled, a developer can confirm end to end trace flow without manual wiring changes.
+
+Estimates:
+
+- Tool calls: 8 to 16
+- Wall clock: 15 to 30 minutes
+
+#### P10-02: Collector Mode Smoke Validation
+
+Files:
+
+- The smoke script introduced by P8-01
+
+Requirements:
+
+1. Smoke check proves that OTLP export succeeds in collector mode.
+2. Smoke check failure output names the failing component and the configuration mode in use.
+
+Acceptance:
+
+- In collector mode, the smoke script fails loudly if traces cannot be exported.
+
+Estimates:
+
+- Tool calls: 6 to 12
+- Wall clock: 10 to 20 minutes
+
 ## Recommended PR Slices (Agent Executable)
 
 To reduce risk and maximize parallelism, land changes in small, reviewable slices:
 
-1. Temporal PingWorkflow plus worker registration (Packet A).
-2. Temporal worker process-compose wiring plus readiness probe (Packet B).
-3. Temporal health and preflight semantics plus tests (Packet C).
-4. NATS config plus Go publish/consume standardization plus tests (Packets D, E, F).
-5. Postgres perf activation plus gates (Packet H).
-6. Neo4j strict schema and guardrails (Packet I).
-7. Infrastructure refactor for lint governance (Packet J).
-8. End to end smoke plus checklist updates (Packet K).
+1. CI enforcement inventory and required-vs-informational classification (P1-04, Packet L partial).
+2. Temporal PingWorkflow plus worker registration (Packet A).
+3. Temporal worker process-compose wiring plus readiness probe (Packet B).
+4. Temporal health and preflight semantics plus tests (Packet C).
+5. NATS config plus Go publish and consume standardization plus tests (Packets D, E, F).
+6. Redis policy enforcement plus regression tests (Packet G).
+7. Postgres perf activation plus gates (Packet H).
+8. Neo4j strict schema, guardrails, and tests (Packet I).
+9. Infrastructure refactor for lint governance (Packet J).
+10. End to end smoke plus checklist updates, including extension mode smoke checks (Packet K).
+11. CI gate hardening implementation and single `quality-gate` aggregator job (P1-05, P1-06, Packet L remainder).
+12. Redis compatibility harness and optional Valkey dev backend mode (Packet M).
+13. Neo4j plugin policy alignment for tests (Packet N).
+14. Temporal capability extensions: schedules, Search Attributes mode, worker versioning policy (Packet O).
+15. NATS capability extensions: observability, JetStream KV mode, JetStream Object Store mode (Packet P).
+16. Postgres capability extensions: PgBouncer mode and `pg_cron` mode (Packet Q).
+17. Observability extension: OpenTelemetry Collector mode and smoke validation (Packet R).

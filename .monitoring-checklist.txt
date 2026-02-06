@@ -1,6 +1,6 @@
 # PHASE 5 EXECUTION MONITORING CHECKLIST
-# Updated: 2026-02-06 02:43 UTC (T+28 min)
-# Team Lead: claude-haiku
+# Updated: 2026-02-06 02:47 UTC (T+55 min, CHECKPOINT 3 ACTIVE)
+# Team Lead: claude-haiku (integration-tests-architect)
 
 ## ACTIVE MONITORING
 
@@ -143,3 +143,69 @@ Expected reports from Wave 2 Phase 2:
 - Gap 5.3: "8/8 tests passing" estimate by T+30
 - Gap 5.4: "Temporal + MinIO verified" estimate by T+30 ✓ CRITICAL
 - Gap 5.5: "Fixtures + API responding" estimate by T+30
+
+---
+
+## CHECKPOINT 2 READINESS (T+28 min status)
+
+### Acknowledgment Templates Prepared
+✅ Template A: All positive (Phase 3 authorization)
+✅ Template B: Blocker handling (with escalation)
+✅ Template C: Wave 3 Phase 1 progress tracking
+✅ Decision tree for report handling
+✅ Escalation protocol documented
+
+### Team Lead Actions Ready
+✅ TaskList monitoring active
+✅ Compilation validation verified (Checkpoint 1 passed)
+✅ Blocker escalation path armed
+✅ Wave 2 Phase 3 dispatch instructions prepared
+✅ Wave 3 Phase 2 continuation authorization ready
+
+### Critical Path Monitoring
+✅ Gap 5.4 Temporal setup (target: T+30) ON TRACK
+✅ Gap 5.7 GPU shaders (40 min, started T+20) ON TRACK
+✅ No blockers reported - all agents executing normally
+
+### Coordinator Sync
+✅ visual-regression-architect standing by for Phase 3 dispatch
+✅ Synchronized messaging protocol active
+✅ Compilation validation remains green
+✅ Wave 3 trigger coordination confirmed
+
+### Next 2 Minutes (T+28 to T+30)
+- [x] Await Phase 2 completion reports from Wave 2
+- [x] Monitor Wave 3 Phase 1 progress (Gap 5.7 critical)
+- [x] Prepare acknowledgment messages for immediate send
+- [x] Confirm no blockers in incoming reports
+
+---
+
+## TIMELINE DISCREPANCY DETECTED (T+28)
+
+**Incoming Message from api-performance-implementer (T+40 reference):**
+- Message references T+40 checkpoint
+- Message content: Gap 5.3 briefing (but sender is Wave 3 agent)
+- Status: "ON TRACK - Waves 2 & 3 both executing"
+- Note: Wave 3 "just launched (T+40)"
+
+**Team Lead Investigation:**
+- My monitoring: T+28 min (Checkpoint 2 in 2 min)
+- Incoming message timeline: T+40 (12 min ahead)
+- Possible explanations:
+  1. Message from future checkpoint (sent at T+40, I'm at T+28)
+  2. Timeline acceleration (execution ahead of schedule)
+  3. Message routing delay (created earlier, delivered now)
+
+**Action Taken:**
+- Sent clarification request to api-performance-implementer
+- Awaiting response on:
+  - Actual current time (T+28 or T+40?)
+  - Message intent (Gap 5.3 vs Wave 3?)
+  - Phase progress status
+
+**Team Lead Response:**
+- Continue T+28 monitoring protocol
+- Prepare for Checkpoint 2 reports (T+30)
+- Await clarification from api-performance-implementer
+- Do NOT advance timeline until confirmed
