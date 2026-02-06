@@ -49,6 +49,20 @@ func (ep *EventPublisher) PublishOAuthStarted(ctx context.Context, clientID, red
 	return ep.publish(ctx, "oauth.started", event)
 }
 
+// PublishOAuthLoginStarted publishes when OAuth login is initiated (alias for PublishOAuthStarted)
+func (ep *EventPublisher) PublishOAuthLoginStarted(ctx context.Context, provider, stateToken string) error {
+	event := &OAuthEvent{
+		EventID:   uuid.New().String(),
+		EventType: "oauth_login_started",
+		Timestamp: time.Now(),
+		ClientID:  provider,
+		Metadata: map[string]interface{}{
+			"state_token": maskToken(stateToken),
+		},
+	}
+	return ep.publish(ctx, "oauth.login_started", event)
+}
+
 // PublishCallbackReceived publishes an oauth_callback_received event
 // Emitted when OAuth provider redirects back with authorization code
 // Token and code are masked for security
@@ -60,6 +74,20 @@ func (ep *EventPublisher) PublishCallbackReceived(ctx context.Context, code, sta
 		Metadata: map[string]interface{}{
 			"code":  maskToken(code),
 			"state": maskToken(state),
+		},
+	}
+	return ep.publish(ctx, "oauth.callback_received", event)
+}
+
+// PublishOAuthCallbackReceived publishes OAuth callback received event with provider and auth code
+func (ep *EventPublisher) PublishOAuthCallbackReceived(ctx context.Context, provider, authCode string) error {
+	event := &OAuthEvent{
+		EventID:   uuid.New().String(),
+		EventType: "oauth_callback_received",
+		Timestamp: time.Now(),
+		ClientID:  provider,
+		Metadata: map[string]interface{}{
+			"auth_code": maskToken(authCode),
 		},
 	}
 	return ep.publish(ctx, "oauth.callback_received", event)
@@ -77,6 +105,18 @@ func (ep *EventPublisher) PublishTokenExchanged(ctx context.Context, clientID st
 		Metadata: map[string]interface{}{
 			"scopes": scopes,
 		},
+	}
+	return ep.publish(ctx, "oauth.token_exchanged", event)
+}
+
+// PublishOAuthTokenExchanged publishes token exchanged event with provider and user
+func (ep *EventPublisher) PublishOAuthTokenExchanged(ctx context.Context, provider, userID string) error {
+	event := &OAuthEvent{
+		EventID:   uuid.New().String(),
+		EventType: "oauth_token_exchanged",
+		Timestamp: time.Now(),
+		UserID:    userID,
+		ClientID:  provider,
 	}
 	return ep.publish(ctx, "oauth.token_exchanged", event)
 }
@@ -99,6 +139,20 @@ func (ep *EventPublisher) PublishUserCreated(ctx context.Context, userID, email 
 // PublishSessionCreated publishes an oauth_session_created event
 // Emitted when a new session is established after OAuth
 func (ep *EventPublisher) PublishSessionCreated(ctx context.Context, sessionID, userID string) error {
+	event := &OAuthEvent{
+		EventID:   uuid.New().String(),
+		EventType: "oauth_session_created",
+		Timestamp: time.Now(),
+		UserID:    userID,
+		Metadata: map[string]interface{}{
+			"session_id": sessionID,
+		},
+	}
+	return ep.publish(ctx, "oauth.session_created", event)
+}
+
+// PublishOAuthSessionCreated publishes session created event with user and session IDs
+func (ep *EventPublisher) PublishOAuthSessionCreated(ctx context.Context, userID, sessionID string) error {
 	event := &OAuthEvent{
 		EventID:   uuid.New().String(),
 		EventType: "oauth_session_created",
@@ -149,6 +203,21 @@ func (ep *EventPublisher) PublishAuthenticationFailed(ctx context.Context, clien
 		},
 	}
 	return ep.publish(ctx, "oauth.authentication_failed", event)
+}
+
+// PublishOAuthError publishes an OAuth error event
+func (ep *EventPublisher) PublishOAuthError(ctx context.Context, userID, provider, reason string) error {
+	event := &OAuthEvent{
+		EventID:   uuid.New().String(),
+		EventType: "oauth_error",
+		Timestamp: time.Now(),
+		UserID:    userID,
+		ClientID:  provider,
+		Metadata: map[string]interface{}{
+			"reason": reason,
+		},
+	}
+	return ep.publish(ctx, "oauth.error", event)
 }
 
 // publish publishes an event to NATS JetStream
