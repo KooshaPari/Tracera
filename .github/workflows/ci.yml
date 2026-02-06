@@ -86,8 +86,8 @@ jobs:
         uv pip install --system -e ".[dev,test]"
 
     - name: Run Ruff linting (strict enforcement)
-        run: |
-          # Use grouped output format for file-based processing (easier for agents to fix)
+      run: |
+        # Use grouped output format for file-based processing (easier for agents to fix)
           ruff check src/ tests/ --output-format=grouped > /tmp/ruff-results-grouped.txt || true
           # Also output JSON for CI parsing
           ruff check src/ tests/ --output-format=json > /tmp/ruff-results.json || true
@@ -201,6 +201,39 @@ jobs:
           echo "- Total: $TOTAL, Passed: ✅ $PASSED, Failed: ❌ $FAILURES" >> $GITHUB_STEP_SUMMARY
         fi
 
+    - name: Convert Python coverage to JSON for comparison
+      if: always()
+      run: |
+        python3 << 'EOF'
+        import json
+        import xml.etree.ElementTree as ET
+
+        # Parse coverage.xml and extract per-package stats
+        coverage_data = {}
+        try:
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+
+          # Extract line-rate (%) per package
+          for package in root.findall('.//package'):
+            name = package.get('name', 'unknown')
+            line_rate = float(package.get('line-rate', '0')) * 100
+            coverage_data[name] = round(line_rate, 2)
+        except Exception as e:
+          print(f"Warning: Could not parse coverage.xml: {e}")
+
+        # Write JSON for artifact
+        with open('python-coverage-data.json', 'w') as f:
+          json.dump(coverage_data, f, indent=2)
+
+        # Also write simple format for comparison
+        with open('python-coverage-by-package.txt', 'w') as f:
+          for pkg, cov in sorted(coverage_data.items()):
+            f.write(f"{pkg}|{cov}\n")
+
+        print("Python coverage data exported")
+        EOF
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
@@ -218,6 +251,14 @@ jobs:
           htmlcov/
           test-results/
           coverage.xml
+
+    - name: Store Python coverage baseline
+      if: github.ref == 'refs/heads/main' && success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-coverage-baseline
+        path: python-coverage-by-package.txt
+        retention-days: 90
 
   # Python Exploratory Tests (property-based + chaos)
   python-exploratory-tests:
@@ -460,6 +501,20 @@ jobs:
         fi
         echo "Go coverage ${TOTAL}% meets threshold ${THRESHOLD}%"
 
+    - name: Generate Go coverage JSON
+      working-directory: backend
+      run: |
+        go tool cover -func=coverage.out -o coverage.json.tmp || true
+        # Parse coverage output and create JSON structure
+        go tool cover -func=coverage.out | awk '
+        NR==1 {next}  # Skip header
+        NF >= 3 {
+          file = $1
+          cov = $NF
+          gsub(/%$/, "", cov)
+          print file "|" cov
+        }' > coverage-by-file.txt || true
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
@@ -476,6 +531,14 @@ jobs:
         path: |
           backend/coverage.out
           backend/coverage.html
+
+    - name: Store Go coverage baseline
+      if: github.ref == 'refs/heads/main' && success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-coverage-baseline
+        path: backend/coverage-by-file.txt
+        retention-days: 90
 
   # Frontend (JS/TS) - Lint, format, typecheck
   frontend-checks:
@@ -539,9 +602,66 @@ jobs:
           path: /tmp/oxlint-results.json
           retention-days: 90
 
-      - name: Vitest (unit tests)
+      - name: Vitest (unit tests with coverage)
         working-directory: frontend
-        run: bun run test -- --run
+        run: bun run test -- --run --coverage
+
+      - name: Extract frontend coverage data
+        if: always()
+        working-directory: frontend
+        run: |
+          # Extract coverage from vitest output or coverage-final.json
+          if [ -f "coverage/coverage-final.json" ]; then
+            node << 'EOF'
+            const fs = require('fs');
+            const coverage = JSON.parse(fs.readFileSync('coverage/coverage-final.json', 'utf8'));
+
+            // Calculate per-file coverage
+            const fileCoverage = {};
+            let totalLines = 0, coveredLines = 0;
+
+            Object.entries(coverage).forEach(([file, stats]) => {
+              if (stats.l) {
+                const lines = Object.values(stats.l);
+                const covered = lines.filter(v => v > 0).length;
+                const total = lines.length;
+                if (total > 0) {
+                  fileCoverage[file] = Math.round((covered / total) * 100 * 100) / 100;
+                  totalLines += total;
+                  coveredLines += covered;
+                }
+              }
+            });
+
+            // Write simple format for comparison
+            const fs2 = require('fs');
+            let output = '';
+            Object.entries(fileCoverage)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .forEach(([file, cov]) => {
+                output += `${file}|${cov}\n`;
+              });
+            fs2.writeFileSync('coverage-by-file.txt', output);
+
+            // Write summary
+            if (totalLines > 0) {
+              const totalCov = Math.round((coveredLines / totalLines) * 100 * 100) / 100;
+              fs2.appendFileSync('coverage-by-file.txt', `TOTAL|${totalCov}\n`);
+            }
+
+            console.log('Frontend coverage data extracted');
+            EOF
+          else
+            echo "Warning: coverage-final.json not found"
+          fi
+
+      - name: Store frontend coverage baseline
+        if: github.ref == 'refs/heads/main' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-baseline
+          path: frontend/coverage-by-file.txt
+          retention-days: 90
 
   # Frontend E2E Tests (Playwright)
   frontend-e2e:
@@ -918,6 +1038,193 @@ jobs:
       uses: returntocorp/semgrep-action@v1
       with:
         config: p/security-audit
+
+  # Coverage Regression Detection
+  coverage-regression-check:
+    name: Coverage Regression Detection
+    runs-on: ubuntu-latest
+    needs: [python-tests, go-tests, frontend-checks]
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download current coverage artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: current-coverage
+      continue-on-error: true
+
+    - name: Download baseline coverage (if available)
+      uses: actions/download-artifact@v4
+      with:
+        name: go-coverage-baseline
+        path: baseline-coverage
+      continue-on-error: true
+
+    - name: Compare coverage and report regressions
+      run: |
+        python3 << 'EOF'
+        import os
+        import json
+        from pathlib import Path
+
+        # Coverage comparison function
+        def compare_coverage():
+            regressions = []
+            improvements = []
+
+            # Go coverage comparison
+            print("\n=== Go Coverage Analysis ===")
+            current_go = "current-coverage/go-test-results/backend/coverage-by-file.txt"
+            baseline_go = "baseline-coverage/coverage-by-file.txt"
+
+            current_go_data = {}
+            baseline_go_data = {}
+
+            if os.path.exists(current_go):
+                with open(current_go) as f:
+                    for line in f:
+                        if line.strip():
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                current_go_data[parts[0]] = float(parts[1])
+
+            if os.path.exists(baseline_go):
+                with open(baseline_go) as f:
+                    for line in f:
+                        if line.strip():
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                baseline_go_data[parts[0]] = float(parts[1])
+
+            # Detect Go regressions
+            if baseline_go_data:
+                for pkg, current_cov in current_go_data.items():
+                    if pkg in baseline_go_data:
+                        baseline_cov = baseline_go_data[pkg]
+                        diff = current_cov - baseline_cov
+                        if diff < -0.1:  # 0.1% regression threshold
+                            regressions.append({
+                                'type': 'Go',
+                                'package': pkg,
+                                'current': current_cov,
+                                'previous': baseline_cov,
+                                'diff': diff
+                            })
+                        elif diff > 0.1:
+                            improvements.append({
+                                'type': 'Go',
+                                'package': pkg,
+                                'current': current_cov,
+                                'previous': baseline_cov,
+                                'diff': diff
+                            })
+                print(f"✓ Compared {len(current_go_data)} Go packages against baseline")
+            else:
+                print("ℹ No baseline found (first run), skipping Go regression check")
+
+            # Python coverage comparison
+            print("\n=== Python Coverage Analysis ===")
+            current_python = "current-coverage/python-test-results/python-coverage-by-package.txt"
+            baseline_python = "baseline-coverage/python-coverage-by-package.txt"
+
+            current_python_data = {}
+            baseline_python_data = {}
+
+            if os.path.exists(current_python):
+                with open(current_python) as f:
+                    for line in f:
+                        if line.strip():
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                current_python_data[parts[0]] = float(parts[1])
+
+            if os.path.exists(baseline_python):
+                with open(baseline_python) as f:
+                    for line in f:
+                        if line.strip():
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                baseline_python_data[parts[0]] = float(parts[1])
+
+            # Detect Python regressions
+            if baseline_python_data:
+                for pkg, current_cov in current_python_data.items():
+                    if pkg in baseline_python_data:
+                        baseline_cov = baseline_python_data[pkg]
+                        diff = current_cov - baseline_cov
+                        if diff < -0.1:
+                            regressions.append({
+                                'type': 'Python',
+                                'package': pkg,
+                                'current': current_cov,
+                                'previous': baseline_cov,
+                                'diff': diff
+                            })
+                        elif diff > 0.1:
+                            improvements.append({
+                                'type': 'Python',
+                                'package': pkg,
+                                'current': current_cov,
+                                'previous': baseline_cov,
+                                'diff': diff
+                            })
+                print(f"✓ Compared {len(current_python_data)} Python packages against baseline")
+            else:
+                print("ℹ No baseline found (first run), skipping Python regression check")
+
+            # Frontend coverage comparison
+            print("\n=== Frontend Coverage Analysis ===")
+            current_frontend = "current-coverage/frontend-lint-results/coverage-by-file.txt"
+            baseline_frontend = "baseline-coverage/frontend-coverage-by-file.txt"
+
+            if os.path.exists(current_frontend):
+                with open(current_frontend) as f:
+                    for line in f:
+                        if line.strip() and line.startswith("TOTAL|"):
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                current_frontend_cov = float(parts[1])
+                                print(f"Current Frontend Coverage: {current_frontend_cov}%")
+
+            # Print summary
+            print("\n" + "="*60)
+            print("COVERAGE REGRESSION REPORT")
+            print("="*60)
+
+            if regressions:
+                print(f"\n❌ REGRESSIONS DETECTED ({len(regressions)} packages):\n")
+                for item in sorted(regressions, key=lambda x: x['diff']):
+                    prev_str = f"{item['previous']:.2f}%"
+                    curr_str = f"{item['current']:.2f}%"
+                    diff_str = f"{item['diff']:+.2f}%"
+                    print(f"  • {item['type']:8} {item['package']:30} {prev_str:>8} → {curr_str:>8} ({diff_str})")
+            else:
+                print("\n✓ No regressions detected")
+
+            if improvements:
+                print(f"\n✅ IMPROVEMENTS ({len(improvements)} packages):\n")
+                for item in sorted(improvements, key=lambda x: -x['diff'])[:5]:  # Show top 5
+                    prev_str = f"{item['previous']:.2f}%"
+                    curr_str = f"{item['current']:.2f}%"
+                    diff_str = f"{item['diff']:+.2f}%"
+                    print(f"  • {item['type']:8} {item['package']:30} {prev_str:>8} → {curr_str:>8} ({diff_str})")
+
+            print("\n" + "="*60)
+
+            return regressions
+
+        regressions = compare_coverage()
+
+        # Exit with error if regressions found
+        if regressions:
+            print("\n::error::Coverage regression detected! Some packages have lower coverage than baseline.")
+            exit(1)
+        else:
+            print("\n::notice::Coverage check passed - no regressions detected")
+            exit(0)
+        EOF
 
   # Docker Build
   docker-build:
