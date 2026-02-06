@@ -10,6 +10,8 @@
  */
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 import type { DashboardSummary } from '@/hooks/useDashboardSummary';
 
