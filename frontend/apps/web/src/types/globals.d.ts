@@ -76,15 +76,15 @@ declare module '*.module.css' {
   export default classes;
 }
 
-// Extend JSX namespace for React components
-declare namespace JSX {
-  interface Element extends React.ReactElement<unknown, unknown> {}
-  interface ElementClass extends React.Component<unknown> {
-    render(): React.ReactNode;
+// Merge React's JSX namespace into global scope for element type support
+declare global {
+  namespace JSX {
+    type Element = React.JSX.Element;
+    type ElementClass = React.JSX.ElementClass;
+    type ElementAttributesProperty = React.JSX.ElementAttributesProperty;
+    type ElementChildrenAttribute = React.JSX.ElementChildrenAttribute;
+    type IntrinsicElements = React.JSX.IntrinsicElements;
   }
-  type ElementAttributesProperty = Record<string, unknown>;
-  type ElementChildrenAttribute = Record<string, unknown>;
-  type IntrinsicElements = Record<string, unknown>;
 }
 
 export type GlobalTypesModule = Record<string, unknown>;
