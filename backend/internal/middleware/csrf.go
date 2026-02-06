@@ -279,6 +279,12 @@ func CSRFSkipper(c echo.Context) bool {
 		return true
 	}
 
+	// Skip CSRF for OAuth flow endpoints.
+	// OAuth uses state/PKCE and the browser typically arrives via cross-site navigation.
+	if strings.Contains(path, "/oauth/") {
+		return true
+	}
+
 	// Skip CSRF for webhooks and external integrations
 	if strings.Contains(path, "/webhook") {
 		return true

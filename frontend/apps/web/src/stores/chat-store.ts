@@ -375,7 +375,7 @@ const buildChatStore = (set: StoreSetter, get: StoreGetter): ChatState => ({
 });
 
 export const useChatStore = create<ChatState>()(
-  persist((set, get) => buildChatStore(set, get), {
+  persist<ChatState>((set, get) => buildChatStore(set, get), {
     name: 'tracertm-chat-store',
     partialize: (state) => ({
       activeConversationId: state.activeConversationId,

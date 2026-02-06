@@ -218,7 +218,7 @@ const buildGraphCacheStore = (set: StoreSetter, get: StoreGetter): GraphCacheSto
 };
 
 const useGraphCacheStore = create<GraphCacheStoreState>()(
-  immer((set, get) => buildGraphCacheStore(set, get)),
+  immer<GraphCacheStoreState>((set, get) => buildGraphCacheStore(set, get)),
 );
 
 export { useGraphCacheStore };

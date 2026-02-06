@@ -208,7 +208,8 @@ interface EnterpriseState {
 }
 
 export const useEnterpriseStore = create<EnterpriseState>()(
-  persist(
+  // @ts-expect-error - Zustand v5 persist middleware type inference issue
+  persist<EnterpriseState>(
     (set) => ({
       // Initial state
       preferences: {

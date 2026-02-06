@@ -25,11 +25,7 @@ func TestProjectCreation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
 	}
-	defer func() {
-		if err := pool.Close(); err != nil {
-			// ignore error
-		}
-	}()
+	defer pool.Close()
 
 	// Run migrations
 	err = testutil.ExecuteMigrations(ctx, pool, "../../schema.sql")
@@ -63,11 +59,7 @@ func TestItemCreation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
 	}
-	defer func() {
-		if err := pool.Close(); err != nil {
-			// ignore error
-		}
-	}()
+	defer pool.Close()
 
 	// Run migrations
 	err = testutil.ExecuteMigrations(ctx, pool, "../../schema.sql")
@@ -106,11 +98,7 @@ func TestLinkCreation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
 	}
-	defer func() {
-		if err := pool.Close(); err != nil {
-			// ignore error
-		}
-	}()
+	defer pool.Close()
 
 	// Run migrations
 	err = testutil.ExecuteMigrations(ctx, pool, "../../schema.sql")
@@ -149,11 +137,7 @@ func TestSuiteWithContainerReuse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
 	}
-	defer func() {
-		if err := pool.Close(); err != nil {
-			// ignore error
-		}
-	}()
+	defer pool.Close()
 
 	// Run migrations once
 	err = testutil.ExecuteMigrations(ctx, pool, "../../src/schema.sql")
@@ -182,18 +166,10 @@ func TestSuiteWithContainerReuse(t *testing.T) {
 func TestWithMockServers(t *testing.T) {
 	// Start mock servers
 	supabaseServer := testutil.MockSupabaseServer()
-	defer func() {
-		if err := supabaseServer.Close(); err != nil {
-			// ignore error
-		}
-	}()
+	defer supabaseServer.Close()
 
 	voyageServer := testutil.MockVoyageAIServer()
-	defer func() {
-		if err := voyageServer.Close(); err != nil {
-			// ignore error
-		}
-	}()
+	defer voyageServer.Close()
 
 	// Use mock server URLs in tests
 	t.Logf("Supabase URL: %s", supabaseServer.URL)

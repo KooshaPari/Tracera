@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -21,10 +20,6 @@ func setupPythonClient(t *testing.T, handler http.HandlerFunc) (*clients.PythonS
 	server := httptest.NewServer(handler)
 
 	// Setup Redis cache for testing (use mock or in-memory)
-	redisClient := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
-	})
-
 	redisCache, err := cache.NewRedisCache(cache.RedisCacheConfig{
 		RedisURL:      "redis://localhost:6379",
 		DefaultTTL:    5 * time.Minute,

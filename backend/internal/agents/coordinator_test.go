@@ -786,3 +786,212 @@ func BenchmarkTaskQueueOperations(b *testing.B) {
 		}
 	}
 }
+
+// ============================================================================
+// Consolidated Edge Case & Unit Tests
+// ============================================================================
+
+// TestTaskQueue_EnqueueDuplicateID enqueues task with existing ID
+func TestTaskQueue_EnqueueDuplicateID(t *testing.T) {
+	tq := NewTaskQueue(nil)
+	taskID := uuid.New().String()
+
+	task1 := &Task{ID: taskID, ProjectID: "p1"}
+	err := tq.EnqueueTask(task1)
+	assert.NoError(t, err)
+
+	task2 := &Task{ID: taskID, ProjectID: "p1"}
+	err = tq.EnqueueTask(task2)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, tq.queue.Len())
+}
+
+// TestTaskQueue_DequeueTask_SingleCapabilityMatch dequeues with matching capability
+func TestTaskQueue_DequeueTask_SingleCapabilityMatch(t *testing.T) {
+	tq := NewTaskQueue(nil)
+
+	task := &Task{
+		ProjectID:            "p1",
+		RequiredCapabilities: []string{"read"},
+	}
+	tq.EnqueueTask(task)
+
+	caps := []AgentCapability{{Name: "read"}}
+	dequeued := tq.DequeueTask("p1", caps)
+	assert.NotNil(t, dequeued)
+}
+
+// TestTaskQueue_DequeueTask_PartialCapabilityMatch returns nil with partial match
+func TestTaskQueue_DequeueTask_PartialCapabilityMatch(t *testing.T) {
+	tq := NewTaskQueue(nil)
+
+	task := &Task{
+		ProjectID:            "p1",
+		RequiredCapabilities: []string{"read", "write"},
+	}
+	tq.EnqueueTask(task)
+
+	// Only has read, but needs read and write
+	caps := []AgentCapability{{Name: "read"}}
+	dequeued := tq.DequeueTask("p1", caps)
+	assert.Nil(t, dequeued)
+}
+
+// TestTaskQueue_DequeueTask_FirstMatchWins priority order respected
+func TestTaskQueue_DequeueTask_FirstMatchWins(t *testing.T) {
+	tq := NewTaskQueue(nil)
+
+	// Queue tasks in order
+	t1 := &Task{ProjectID: "p1", Priority: PriorityLow}
+	t2 := &Task{ProjectID: "p1", Priority: PriorityHigh}
+	t3 := &Task{ProjectID: "p1", Priority: PriorityNormal}
+
+	tq.EnqueueTask(t1)
+	tq.EnqueueTask(t2)
+	tq.EnqueueTask(t3)
+
+	// Should get high priority task first
+	dequeued := tq.DequeueTask("p1", nil)
+	assert.Equal(t, PriorityHigh, dequeued.Priority)
+}
+
+// TestTaskQueue_RequeueTask_ClearsAssignment resets assignment
+func TestTaskQueue_RequeueTask_ClearsAssignment(t *testing.T) {
+	tq := NewTaskQueue(nil)
+
+	task := &Task{
+		ID:         uuid.New().String(),
+		ProjectID:  "p1",
+		AssignedTo: "agent1",
+		Status:     TaskStatusRunning,
+	}
+
+	err := tq.RequeueTask(task)
+	assert.NoError(t, err)
+	assert.Empty(t, task.AssignedTo)
+	assert.Equal(t, TaskStatusPending, task.Status)
+}
+
+// TestCoordinator_RegisterAgent_DuplicateProject multiple agents same project
+func TestCoordinator_RegisterAgent_DuplicateProject(t *testing.T) {
+	coord := NewCoordinator(nil, 30*time.Second)
+	defer coord.Shutdown()
+
+	a1 := &RegisteredAgent{Name: "a1", ProjectID: "p1"}
+	a2 := &RegisteredAgent{Name: "a2", ProjectID: "p1"}
+
+	coord.RegisterAgent(a1)
+	coord.RegisterAgent(a2)
+
+	agents := coord.ListAgents("p1")
+	assert.Equal(t, 2, len(agents))
+}
+
+// TestCoordinator_Heartbeat_Busy updates status to busy
+func TestCoordinator_Heartbeat_Busy(t *testing.T) {
+	coord := NewCoordinator(nil, 30*time.Second)
+	defer coord.Shutdown()
+
+	agent := &RegisteredAgent{Name: "a1", ProjectID: "p1"}
+	coord.RegisterAgent(agent)
+
+	coord.Heartbeat(agent.ID, StatusBusy)
+	retrieved, _ := coord.GetAgent(agent.ID)
+	assert.Equal(t, StatusBusy, retrieved.Status)
+}
+
+// TestCoordinator_Heartbeat_Offline updates status to offline
+func TestCoordinator_Heartbeat_Offline(t *testing.T) {
+	coord := NewCoordinator(nil, 30*time.Second)
+	defer coord.Shutdown()
+
+	agent := &RegisteredAgent{Name: "a1", ProjectID: "p1"}
+	coord.RegisterAgent(agent)
+
+	coord.Heartbeat(agent.ID, StatusOffline)
+	retrieved, _ := coord.GetAgent(agent.ID)
+	assert.Equal(t, StatusOffline, retrieved.Status)
+}
+
+// TestMessageTypes tests message type enum values.
+func TestMessageTypes(t *testing.T) {
+	tests := []struct {
+		name    string
+		msgType MessageType
+		value   string
+	}{
+		{"Register", MsgTypeRegister, "register"},
+		{"Heartbeat", MsgTypeHeartbeat, "heartbeat"},
+		{"TaskRequest", MsgTypeTaskRequest, "task_request"},
+		{"TaskResult", MsgTypeTaskResult, "task_result"},
+		{"TaskError", MsgTypeTaskError, "task_error"},
+		{"Unregister", MsgTypeUnregister, "unregister"},
+		{"Ack", MsgTypeAck, "ack"},
+		{"TaskAssigned", MsgTypeTaskAssigned, "task_assigned"},
+		{"NoTask", MsgTypeNoTask, "no_task"},
+		{"Error", MsgTypeError, "error"},
+		{"Shutdown", MsgTypeShutdown, "shutdown"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, MessageType(tc.value), tc.msgType)
+		})
+	}
+}
+
+// TestAgentStatusValues tests agent status enum values.
+func TestAgentStatusValues(t *testing.T) {
+	tests := []struct {
+		name   string
+		status AgentStatus
+		value  string
+	}{
+		{"Idle", StatusIdle, "idle"},
+		{"Active", StatusActive, "active"},
+		{"Busy", StatusBusy, "busy"},
+		{"Error", StatusError, "error"},
+		{"Offline", StatusOffline, "offline"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, AgentStatus(tc.value), tc.status)
+		})
+	}
+}
+
+// TestTaskStatuses tests task status enum values.
+func TestTaskStatuses(t *testing.T) {
+	tests := []struct {
+		name   string
+		status TaskStatus
+		value  string
+	}{
+		{"Pending", TaskStatusPending, "pending"},
+		{"Assigned", TaskStatusAssigned, "assigned"},
+		{"Running", TaskStatusRunning, "running"},
+		{"Completed", TaskStatusCompleted, "completed"},
+		{"Failed", TaskStatusFailed, "failed"},
+		{"Canceled", TaskStatusCanceled, "canceled"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, TaskStatus(tc.value), tc.status)
+		})
+	}
+}
+
+// TestTaskPriorities tests task priority enum values.
+func TestTaskPriorities(t *testing.T) {
+	assert.Equal(t, TaskPriority(0), PriorityLow)
+	assert.Equal(t, TaskPriority(1), PriorityNormal)
+	assert.Equal(t, TaskPriority(2), PriorityHigh)
+	assert.Equal(t, TaskPriority(3), PriorityCritical)
+
+	// Higher priority should have higher numeric value
+	assert.True(t, PriorityCritical > PriorityHigh)
+	assert.True(t, PriorityHigh > PriorityNormal)
+	assert.True(t, PriorityNormal > PriorityLow)
+}

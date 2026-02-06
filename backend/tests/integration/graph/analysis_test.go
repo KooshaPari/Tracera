@@ -357,7 +357,7 @@ func TestGetGraphMetrics(t *testing.T) {
 	require.NoError(t, err)
 
 	// Get metrics
-	metrics, err := fix.service.GetGraphMetrics(fix.ctx, projectID)
+	metrics, err := fix.service.GetMetrics(fix.ctx, projectID)
 	require.NoError(t, err)
 	assert.NotNil(t, metrics)
 	assert.Equal(t, projectID, metrics.ProjectID)
@@ -375,7 +375,7 @@ func TestInvalidateCache(t *testing.T) {
 	require.NoError(t, err)
 
 	// Populate cache
-	_, err = fix.service.GetGraphMetrics(fix.ctx, projectID)
+	_, err = fix.service.GetMetrics(fix.ctx, projectID)
 	require.NoError(t, err)
 
 	// Verify cache has data
@@ -434,7 +434,7 @@ func TestLargeGraph_Performance(t *testing.T) {
 
 	// Test metrics calculation performance
 	start := time.Now()
-	metrics, err := fix.service.GetGraphMetrics(ctx, projectID)
+	metrics, err := fix.service.GetMetrics(ctx, projectID)
 	duration := time.Since(start)
 
 	require.NoError(t, err)

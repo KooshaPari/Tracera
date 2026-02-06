@@ -453,7 +453,7 @@ const buildAuthStore = (set: StoreSetter, get: StoreGetter): AuthState => ({
 });
 
 export const useAuthStore = create<AuthState>()(
-  persist((set, get) => buildAuthStore(set, get), {
+  persist<AuthState>((set, get) => buildAuthStore(set, get), {
     name: 'tracertm-auth-store',
     partialize: (state) => ({
       account: state.account,

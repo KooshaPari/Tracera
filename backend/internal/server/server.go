@@ -334,6 +334,8 @@ func (s *Server) setupRoutes() {
 	authProvider, realtimeBroadcaster := s.resolveAdapters()
 	log.Println("✓ Injecting services into handlers")
 
+	s.registerOAuthRoutes(authProvider)
+
 	protected := s.registerAuthRoutes(api, authProvider)
 	s.registerWebSocketRoutes(api, authProvider)
 	s.registerNotificationRoutes(protected, authProvider)
@@ -423,6 +425,126 @@ func (s *Server) registerAuthRoutes(api *echo.Group, authProvider interface{}) *
 	}
 
 	return protected
+}
+
+func (s *Server) registerOAuthRoutes(authProvider interface{}) {
+	var ap auth.Provider
+	if p, ok := authProvider.(auth.Provider); ok {
+		ap = p
+	}
+
+	oauthHandler := handlers.NewOAuthHandler(s.redisClient, ap)
+	oauth := s.echo.Group("/oauth")
+
+	// OAuth endpoints must not be cached or embedded.
+	oauth.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			h := c.Response().Header()
+			h.Set("Cache-Control", "no-store")
+			h.Set("Pragma", "no-cache")
+			h.Set("X-Frame-Options", "DENY")
+			return next(c)
+		}
+	})
+
+	// Strict CORS allowlist for browser calls to OAuth helper endpoints.
+	oauth.Use(custommw.SecureCORS(parseAllowedOriginsEnv("CORS_ALLOWED_ORIGINS")))
+
+	// Dedicated OAuth rate limiting (stricter than default /api/v1/*).
+	oauthLimiter := custommw.NewEnhancedRateLimiter(custommw.EnhancedRateLimitConfig{
+		RedisClient:              s.redisClient,
+		DefaultRequestsPerMinute: 30,
+		DefaultBurstSize:         10,
+		AddHeaders:               true,
+		RateLimitTTL:             1 * time.Hour,
+		EndpointLimits: []custommw.EndpointLimit{
+			{
+				Pattern:           "/oauth/login",
+				RequestsPerMinute: 10,
+				BurstSize:         5,
+				KeyExtractor: func(c *echo.Context) string {
+					return "ip:" + (*c).RealIP() + ":oauth_login"
+				},
+			},
+			{
+				Pattern:           "/oauth/callback",
+				RequestsPerMinute: 20,
+				BurstSize:         10,
+				KeyExtractor: func(c *echo.Context) string {
+					return "ip:" + (*c).RealIP() + ":oauth_callback"
+				},
+			},
+			{
+				Pattern:           "/oauth/status",
+				RequestsPerMinute: 60,
+				BurstSize:         20,
+				KeyExtractor: func(c *echo.Context) string {
+					return "ip:" + (*c).RealIP() + ":oauth_status"
+				},
+			},
+			{
+				Pattern:           "/oauth/logout",
+				RequestsPerMinute: 30,
+				BurstSize:         10,
+				KeyExtractor: func(c *echo.Context) string {
+					return "ip:" + (*c).RealIP() + ":oauth_logout"
+				},
+			},
+		},
+	})
+	oauth.Use(oauthLimiter.Middleware())
+
+	// Validate request content-type and body size for POSTs.
+	oauth.Use(custommw.ContentTypeValidator("application/json"))
+	oauth.Use(custommw.RequestSizeLimiter(16 * 1024)) // 16KB
+
+	oauth.POST("/login", oauthHandler.Login)
+	oauth.GET("/callback", oauthHandler.Callback)
+
+	// Logout should be authenticated. If no auth provider is configured, the handler fails loudly.
+	if ap != nil {
+		protected := oauth.Group("")
+		protected.Use(custommw.AuthAdapterMiddleware(custommw.AuthAdapterConfig{
+			AuthProvider: ap,
+		}))
+		protected.POST("/logout", oauthHandler.Logout)
+		protected.GET("/status", oauthHandler.Status)
+	} else {
+		oauth.POST("/logout", oauthHandler.Logout)
+		oauth.GET("/status", oauthHandler.Status)
+	}
+}
+
+func parseAllowedOriginsEnv(envKey string) []string {
+	raw := strings.TrimSpace(os.Getenv(envKey))
+	if raw == "" {
+		return []string{
+			"http://localhost:4000", "http://127.0.0.1:4000",
+			"http://localhost:5173", "http://127.0.0.1:5173",
+			"http://localhost:3000", "http://127.0.0.1:3000",
+		}
+	}
+
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		v := strings.TrimSpace(p)
+		if v == "" {
+			continue
+		}
+		if v == "*" || strings.Contains(v, "*") {
+			continue
+		}
+		out = append(out, v)
+	}
+	if len(out) == 0 {
+		return []string{
+			"http://localhost:4000", "http://127.0.0.1:4000",
+			"http://localhost:5173", "http://127.0.0.1:5173",
+			"http://localhost:3000", "http://127.0.0.1:3000",
+		}
+	}
+	return out
 }
 
 func (s *Server) registerProjectRoutes(api *echo.Group, authProvider, realtimeBroadcaster interface{}) {

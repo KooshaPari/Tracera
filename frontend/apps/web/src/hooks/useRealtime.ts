@@ -9,8 +9,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { logger } from '@/lib/logger';
-import { useAuthStore } from '../stores/auth-store';
+
 import { realtimeClient } from '../lib/websocket';
+import { useAuthStore } from '../stores/auth-store';
 
 export interface RealtimeConfig {
   projectId?: string;

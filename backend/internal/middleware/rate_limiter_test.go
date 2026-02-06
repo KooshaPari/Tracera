@@ -428,7 +428,7 @@ func TestCreateStandardRateLimiter(t *testing.T) {
 
 		assert.NotNil(t, limiter)
 		assert.Equal(t, 100, limiter.config.DefaultRequestsPerMinute)
-		assert.Len(t, limiter.config.EndpointLimits, 4) // auth, api, static, assets
+		assert.Len(t, limiter.config.EndpointLimits, 5) // auth, oauth, api, static, assets
 	})
 
 	t.Run("creates limiter with Redis", func(t *testing.T) {

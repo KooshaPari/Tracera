@@ -417,6 +417,16 @@ func CreateStandardRateLimiter(redisClient *redis.Client) *EnhancedRateLimiter {
 					return "ip:" + (*c).RealIP() + ":auth"
 				},
 			},
+			// OAuth endpoints - strictest limits (per IP)
+			{
+				Pattern:           "/oauth/*",
+				RequestsPerMinute: authRPM,
+				BurstSize:         authBurstSize,
+				KeyExtractor: func(c *echo.Context) string {
+					// Always use IP for OAuth endpoints
+					return "ip:" + (*c).RealIP() + ":oauth"
+				},
+			},
 			// API endpoints - moderate limits (per user if authenticated, per IP otherwise)
 			{
 				Pattern:           "/api/v1/*",

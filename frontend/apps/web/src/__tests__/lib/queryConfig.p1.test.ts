@@ -180,22 +180,21 @@ describe('queryConfig - P1 Coverage', () => {
     describe('config consistency', () => {
       it('should have staleTime <= gcTime for all configs', () => {
         Object.entries(QUERY_CONFIGS).forEach(([key, config]) => {
-          expect(config.staleTime).toBeLessThanOrEqual(
+          expect(config.staleTime, `${key}: staleTime should be <= gcTime`).toBeLessThanOrEqual(
             config.gcTime,
-            `${key}: staleTime should be <= gcTime`,
           );
         });
       });
 
       it('should have staleTime >= 0', () => {
         Object.entries(QUERY_CONFIGS).forEach(([key, config]) => {
-          expect(config.staleTime).toBeGreaterThanOrEqual(0, `${key}: staleTime should be >= 0`);
+          expect(config.staleTime, `${key}: staleTime should be >= 0`).toBeGreaterThanOrEqual(0);
         });
       });
 
       it('should have gcTime > 0', () => {
         Object.entries(QUERY_CONFIGS).forEach(([key, config]) => {
-          expect(config.gcTime).toBeGreaterThan(0, `${key}: gcTime should be > 0`);
+          expect(config.gcTime, `${key}: gcTime should be > 0`).toBeGreaterThan(0);
         });
       });
 
@@ -680,7 +679,7 @@ describe('queryConfig - P1 Coverage', () => {
       const realtimeConfig = getQueryConfig('realtime');
 
       expect(healthKey).toContain('system');
-      expect(realtimeConfig.refetchInterval).toBeDefined();
+      expect((realtimeConfig as any).refetchInterval).toBeDefined();
     });
 
     it('should support session management pattern', () => {

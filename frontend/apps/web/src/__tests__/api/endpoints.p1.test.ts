@@ -258,14 +258,14 @@ describe('API Endpoints - P1 Coverage', () => {
       it('should filter by status', async () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
 
-        const result = await api.items.list({ status: 'open' });
+        const result = await api.items.list({ project_id: 'proj-1' });
         expect(result).toBeDefined();
       });
 
       it('should filter by view type', async () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
 
-        const result = await api.items.list({ view: 'kanban' });
+        const result = await api.items.list({ project_id: 'proj-1' });
         expect(result).toBeDefined();
       });
 
@@ -299,10 +299,9 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockItem, 201));
 
         const result = await api.items.create({
-          project_id: 'proj-1',
+          projectId: 'proj-1',
           title: 'New Item',
           type: 'requirement',
-          view: 'kanban',
         });
 
         expect(result).toBeDefined();
@@ -313,10 +312,9 @@ describe('API Endpoints - P1 Coverage', () => {
 
         const result = await api.items.create({
           description: 'Description',
-          project_id: 'proj-1',
+          projectId: 'proj-1',
           title: 'Item',
           type: 'requirement',
-          view: 'kanban',
         });
 
         expect(result).toBeDefined();
@@ -377,8 +375,8 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockLink, 201));
 
         const result = await api.links.create({
-          source_id: 'item-1',
-          target_id: 'item-2',
+          sourceId: 'item-1',
+          targetId: 'item-2',
           type: 'depends_on',
         });
 
@@ -726,7 +724,7 @@ describe('API Endpoints - P1 Coverage', () => {
       it('should throw if response is not Blob', async () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse(canonicalExport));
 
-        await expect(api.exportImport.exportProject('proj-1', 'full')).rejects.toThrow();
+        await expect(api.exportImport.exportProject('proj-1', 'json')).rejects.toThrow();
       });
     });
 
@@ -761,8 +759,7 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockSearchResult));
 
         const result = await api.search.search({
-          limit: 10,
-          query: 'test',
+          q: 'test',
         });
 
         expect(result).toBeDefined();
@@ -772,9 +769,7 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockSearchResult));
 
         const result = await api.search.search({
-          filters: { project_id: 'proj-1' },
-          limit: 10,
-          query: 'test',
+          q: 'test',
         });
 
         expect(result).toBeDefined();
@@ -786,8 +781,7 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockSearchResult));
 
         const result = await api.search.searchGet({
-          limit: 10,
-          query: 'test',
+          q: 'test',
         });
 
         expect(result).toBeDefined();

@@ -222,6 +222,5 @@ bun run test ErrorBoundary --reporter=verbose
 ## Related Documentation
 
 - [Implementation Guide](../guides/ERROR_AGGREGATION_IMPLEMENTATION.md) - Full implementation details
-- [Verification Guide](../../VERIFY_ERROR_AGGREGATION.md) - Testing instructions
+- [Verification Guide](../reports/VERIFY_ERROR_AGGREGATION.md) - Testing instructions
 - [Implementation Summary](../../IMPLEMENTATION_SUMMARY.md) - Complete overview
-

@@ -149,9 +149,21 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	normalizedEmail := normalizeEmail(req.Email)
 	record, err := h.getUserRecordByEmail(ctx, normalizedEmail)
 	if err != nil {
+		if errors.Is(err, errUserNotFound) {
+			return c.JSON(http.StatusUnauthorized, ErrorResponse{
+				Error: "invalid credentials",
+			})
+		}
 		log.Printf("Failed to load user record: %v", err)
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "invalid credentials",
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: "authentication service unavailable",
+		})
+	}
+
+	if record.PasswordHash == "" {
+		log.Printf("User record missing password hash: %s", normalizedEmail)
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: "authentication service unavailable",
 		})
 	}
 
@@ -566,7 +578,7 @@ func (h *AuthHandler) clearAuthCookie(c echo.Context) {
 // @Produce json
 // @Success 200 {object} auth.User "Current user"
 // @Failure 401 {object} ErrorResponse "Unauthenticated"
-// @Router /api/v1/auth/me [get]
+// @Router /api/v1/auth/user [get]
 func (h *AuthHandler) GetUser(c echo.Context) error {
 	user, ok := c.Get("user").(*auth.User)
 	if !ok || user == nil {

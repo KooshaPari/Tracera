@@ -164,7 +164,7 @@ const buildProjectStore = (set: StoreSetter, get: StoreGetter): ProjectState => 
 });
 
 export const useProjectStore = create<ProjectState>()(
-  persist((set, get) => buildProjectStore(set, get), {
+  persist<ProjectState>((set, get) => buildProjectStore(set, get), {
     name: 'tracertm-project-store',
     partialize: (state) => ({
       currentProjectId: state.currentProjectId,

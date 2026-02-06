@@ -1,16 +1,14 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useAuth } from '@workos-inc/authkit-react';
 import { Loader2, LogOut } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { logger } from '@/lib/logger';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuthStore } from '@/stores/auth-store';
 
 const LOGOUT_REDIRECT_DELAY_MS = 500;
 
 const LogoutPage = () => {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
   const logout = useAuthStore((state) => state.logout);
   const [isLoggingOut, setIsLoggingOut] = useState(true);
 
@@ -18,7 +16,6 @@ const LogoutPage = () => {
     const performLogout = async () => {
       try {
         await logout();
-        await Promise.resolve(signOut());
         setTimeout(() => {
           navigate({ to: '/auth/login' });
         }, LOGOUT_REDIRECT_DELAY_MS);
@@ -31,7 +28,7 @@ const LogoutPage = () => {
     };
 
     performLogout();
-  }, [logout, signOut, navigate]);
+  }, [logout, navigate]);
 
   return (
     <div className='bg-background flex min-h-screen items-center justify-center'>

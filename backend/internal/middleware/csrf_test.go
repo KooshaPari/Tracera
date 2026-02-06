@@ -339,6 +339,26 @@ func TestCSRFSkipper(t *testing.T) {
 			expected: true,
 		},
 		{
+			name:     "OAuth login should be skipped",
+			path:     "/oauth/login",
+			expected: true,
+		},
+		{
+			name:     "OAuth callback should be skipped",
+			path:     "/oauth/callback",
+			expected: true,
+		},
+		{
+			name:     "OAuth logout should be skipped",
+			path:     "/oauth/logout",
+			expected: true,
+		},
+		{
+			name:     "OAuth status should be skipped",
+			path:     "/oauth/status",
+			expected: true,
+		},
+		{
 			name:     "Webhook should be skipped",
 			path:     "/webhook/stripe",
 			expected: true,
