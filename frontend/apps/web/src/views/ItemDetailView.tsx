@@ -88,7 +88,7 @@ const integrationKeys = new Set([
   'issue_number',
   'state',
   'labels',
-  'project_id',
+  'projectId',
   'team_id',
   'identifier',
   'url',

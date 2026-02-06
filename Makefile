@@ -1,7 +1,7 @@
 .PHONY: help dev dev-tui dev-down dev-logs dev-restart dev-status install-native \
 	quality quality-backend quality-frontend quality-pc quality-report quality-report-watch quality-watch quality-last quality-rerun check lint type-check format test \
 	type-check-ty test-python-parallel test-python-uv \
-	test-setup test-validate-comprehensive test-validate-frontend test-validate-backend test-validate-backend-go test-validate-backend-python test-validate-report \
+	test-setup test-validate-comprehensive test-validate-frontend test-validate-backend test-validate-backend-go test-validate-backend-python test-validate-report test-pyramid \
 	load-test-smoke load-test-load load-test-stress load-test-spike load-test-soak load-test-websocket load-test-database load-test-all load-test-compare load-test-report \
 	generate-contracts check-contracts
 
@@ -199,6 +199,14 @@ test-validate-report: ## Generate comprehensive test report across all suites
 	@[ -f frontend/apps/web/playwright-report/failed-routes.json ] && \
 		cat frontend/apps/web/playwright-report/failed-routes.json | jq . || echo "No failed routes"
 	@echo '$(GREEN)✅ Report generation complete$(NC)'
+
+test-pyramid: ## Verify test pyramid ratios (unit >> integration >> E2E). Fails if imbalanced.
+	@echo '$(BLUE)[Test Pyramid] Verifying test pyramid structure...$(NC)'
+	@bash backend/scripts/verify-test-pyramid.sh
+
+test-pyramid-verbose: ## Verify test pyramid with detailed file listing
+	@echo '$(BLUE)[Test Pyramid] Verifying test pyramid structure (verbose)...$(NC)'
+	@bash backend/scripts/verify-test-pyramid.sh -v
 
 #############################################################################
 # Contracts & SDKs

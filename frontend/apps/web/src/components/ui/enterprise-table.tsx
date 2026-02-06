@@ -257,24 +257,28 @@ export function DataTable<TData, TValue>({
   const selectedRowCount = table.getFilteredSelectedRowModel().rows.length;
 
   // Memoized column visibility items to prevent recreation on each render
-  const ColumnVisibilityItems = React.useMemo(() => table
-      .getAllColumns()
-      .filter((column) => column.getCanHide())
-      .map((column) => {
-        const handleToggle = (value: boolean) => {
-          column.toggleVisibility(!!value);
-        };
-        return (
-          <DropdownMenuCheckboxItem
-            key={column.id}
-            className='capitalize'
-            checked={column.getIsVisible()}
-            onCheckedChange={handleToggle}
-          >
-            {column.id}
-          </DropdownMenuCheckboxItem>
-        );
-      }), [table]);
+  const ColumnVisibilityItems = React.useMemo(
+    () =>
+      table
+        .getAllColumns()
+        .filter((column) => column.getCanHide())
+        .map((column) => {
+          const handleToggle = (value: boolean) => {
+            column.toggleVisibility(!!value);
+          };
+          return (
+            <DropdownMenuCheckboxItem
+              key={column.id}
+              className='capitalize'
+              checked={column.getIsVisible()}
+              onCheckedChange={handleToggle}
+            >
+              {column.id}
+            </DropdownMenuCheckboxItem>
+          );
+        }),
+    [table],
+  );
 
   return (
     <div className='space-y-4'>
@@ -417,7 +421,7 @@ export function DataTable<TData, TValue>({
                     ))}
                   </TableRow>
                 ))
-              ) : (table.getRowModel().rows?.length ? (
+              ) : table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <motion.tr
                     key={row.id}
@@ -444,7 +448,7 @@ export function DataTable<TData, TValue>({
                     No results found.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </AnimatePresence>
           </TableBody>
         </Table>

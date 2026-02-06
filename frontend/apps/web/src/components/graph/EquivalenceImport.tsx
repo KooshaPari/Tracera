@@ -471,12 +471,12 @@ function EquivalenceImportComponent({
                         <Checkbox
                           id='validate-refs'
                           checked={state.options.validateReferences}
-                          onCheckedChange={(checked: boolean) =>
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setState({
                               ...state,
                               options: {
                                 ...state.options,
-                                validateReferences: checked,
+                                validateReferences: e.target.checked,
                               },
                             })
                           }
@@ -493,12 +493,12 @@ function EquivalenceImportComponent({
                         <Checkbox
                           id='preserve-timestamps'
                           checked={state.options.preserveTimestamps}
-                          onCheckedChange={(checked: boolean) =>
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setState({
                               ...state,
                               options: {
                                 ...state.options,
-                                preserveTimestamps: checked,
+                                preserveTimestamps: e.target.checked,
                               },
                             })
                           }
@@ -515,12 +515,12 @@ function EquivalenceImportComponent({
                         <Checkbox
                           id='update-project'
                           checked={state.options.updateProjectId}
-                          onCheckedChange={(checked: boolean) =>
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setState({
                               ...state,
                               options: {
                                 ...state.options,
-                                updateProjectId: checked,
+                                updateProjectId: e.target.checked,
                               },
                             })
                           }

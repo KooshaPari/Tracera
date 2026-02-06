@@ -265,10 +265,10 @@ function EquivalenceExportComponent({
                   <Checkbox
                     id='include-links'
                     checked={options.includeLinks}
-                    onCheckedChange={(checked: boolean) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setOptions({
                         ...options,
-                        includeLinks: checked,
+                        includeLinks: e.target.checked,
                       })
                     }
                     className='h-4 w-4'
@@ -286,10 +286,10 @@ function EquivalenceExportComponent({
                   <Checkbox
                     id='include-concepts'
                     checked={options.includeConcepts}
-                    onCheckedChange={(checked: boolean) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setOptions({
                         ...options,
-                        includeConcepts: checked,
+                        includeConcepts: e.target.checked,
                       })
                     }
                   />
@@ -306,10 +306,10 @@ function EquivalenceExportComponent({
                   <Checkbox
                     id='include-projections'
                     checked={options.includeProjections}
-                    onCheckedChange={(checked: boolean) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setOptions({
                         ...options,
-                        includeProjections: checked,
+                        includeProjections: e.target.checked,
                       })
                     }
                   />
@@ -334,10 +334,10 @@ function EquivalenceExportComponent({
                   <Checkbox
                     id='include-confidence'
                     checked={options.includeConfidenceScores}
-                    onCheckedChange={(checked: boolean) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setOptions({
                         ...options,
-                        includeConfidenceScores: checked,
+                        includeConfidenceScores: e.target.checked,
                       })
                     }
                   />
@@ -353,10 +353,10 @@ function EquivalenceExportComponent({
                   <Checkbox
                     id='include-sources'
                     checked={options.includeSources}
-                    onCheckedChange={(checked: boolean) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setOptions({
                         ...options,
-                        includeSources: checked,
+                        includeSources: e.target.checked,
                       })
                     }
                   />
@@ -426,9 +426,9 @@ function EquivalenceExportComponent({
                           <Checkbox
                             id={`status-${status}`}
                             checked={filters.selectedStatuses.has(status)}
-                            onCheckedChange={(checked: boolean) => {
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                               const newStatuses = new Set(filters.selectedStatuses);
-                              if (checked) {
+                              if (e.target.checked) {
                                 newStatuses.add(status);
                               } else {
                                 newStatuses.delete(status);
@@ -465,13 +465,13 @@ function EquivalenceExportComponent({
                                 filters.selectedDomains.size === 0 ||
                                 filters.selectedDomains.has(domain)
                               }
-                              onCheckedChange={(checked: boolean) => {
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 const newDomains = new Set(
                                   filters.selectedDomains.size === 0
                                     ? uniqueDomains
                                     : filters.selectedDomains,
                                 );
-                                if (checked) {
+                                if (e.target.checked) {
                                   newDomains.add(domain);
                                 } else {
                                   newDomains.delete(domain);

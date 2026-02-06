@@ -423,7 +423,11 @@ const FormatSelector: FC<FormatSelectorProps> = ({ format, onChange }) => (
 
 const CheckboxRow: FC<CheckboxRowProps> = ({ id, label, checked, onChange }) => (
   <div className='flex items-center space-x-2'>
-    <Checkbox id={id} checked={checked} onCheckedChange={onChange} />
+    <Checkbox
+      id={id}
+      checked={checked}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.checked)}
+    />
     <Label htmlFor={id} className='cursor-pointer font-normal'>
       {label}
     </Label>

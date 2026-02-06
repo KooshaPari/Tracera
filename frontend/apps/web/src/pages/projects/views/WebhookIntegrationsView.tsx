@@ -277,9 +277,7 @@ export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewPr
                 <Checkbox
                   id='autoCreateRun'
                   checked={formData.autoCreateRun}
-                  onCheckedChange={(v: boolean) =>
-                    setFormData((prev) => ({ ...prev, autoCreateRun: v }))
-                  }
+                  onChange={(v: boolean) => setFormData((prev) => ({ ...prev, autoCreateRun: v }))}
                 />
               </div>
               <div className='flex items-center justify-between'>
@@ -287,7 +285,7 @@ export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewPr
                 <Checkbox
                   id='autoCompleteRun'
                   checked={formData.autoCompleteRun}
-                  onCheckedChange={(v: boolean) =>
+                  onChange={(v: boolean) =>
                     setFormData((prev) => ({ ...prev, autoCompleteRun: v }))
                   }
                 />
@@ -297,7 +295,7 @@ export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewPr
                 <Checkbox
                   id='verifySignatures'
                   checked={formData.verifySignatures}
-                  onCheckedChange={(v: boolean) =>
+                  onChange={(v: boolean) =>
                     setFormData((prev) => ({ ...prev, verifySignatures: v }))
                   }
                 />
