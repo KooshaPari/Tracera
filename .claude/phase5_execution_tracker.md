@@ -1,17 +1,25 @@
 # Phase 5 Execution Tracker (Real-Time)
 
 **Session Start:** 2026-02-05 T+0
-**Updated:** 2026-02-05 T+X (see checkpoints)
-**Status:** LIVE EXECUTION - Monitoring Active
+**Updated:** 2026-02-06 T+15 (Checkpoint 1 - Phase 1 reporting)
+**Status:** 🟡 CHECKPOINT 1 ACTIVE - Wave 2 Phase 1 completion reports expected now
 
 ---
 
-## Phase 5.3-5.5: PARALLEL EXECUTION (LIVE)
+## EXECUTION WAVES OVERVIEW
+
+**Wave 1 (Gaps 5.1-5.2):** Visual Regression + OAuth Integration - ⏳ QUEUED & READY
+**Wave 2 (Gaps 5.3-5.5):** Integration Tests + Temporal Workflows - 🟢 LIVE EXECUTING
+**Wave 3 (Gaps 5.6-5.8):** API Tests + GPU Shaders + Spatial Indexing - ⏳ STANDBY (unblocked by Gap 5.4)
+
+---
+
+## Phase 5.3-5.5 (WAVE 2): PARALLEL EXECUTION (LIVE)
 
 ### Timeline
 | Checkpoint | Time | Status | Events |
 |-----------|------|--------|--------|
-| **Phase 1** | T+15 | 🟡 EXPECTED | Gap 5.3, 5.4, 5.5 agents report "Phase 1 complete" |
+| **Phase 1** | T+15 | 🟡 REPORTING NOW | Gap 5.3, 5.4, 5.5 agents report "Phase 1 complete" |
 | **Phase 2** | T+30 | ⏳ PENDING | Gap 5.3, 5.4, 5.5 agents report "Phase 2 complete" |
 | **Phase 3** | T+45 | ⏳ PENDING | Gap 5.3, 5.4, 5.5 agents report "Phase 3 complete" |
 | **Phase 4** | T+60 | ⏳ PENDING | Gap 5.3, 5.4, 5.5 agents report "Phase 4 complete - ALL TESTS PASSING" |
@@ -19,29 +27,43 @@
 ### Gap Progress
 
 **Gap 5.3 (8 tests) - integration-tests-architect**
-- Phase 1 Status: ⏳ Handlers + fixtures
+- Phase 1 Status: 🟢 EXECUTING (MSW handlers)
 - Phase 2 Status: ⏳ Cleanup + helpers
 - Phase 3 Status: ⏳ Tests re-enabled
 - Phase 4 Status: ⏳ All 8/8 passing
-- Checkpoint Reports: (none yet)
+- ETA Phase 1 Complete: T+15 min
+- Target Success: 8/8 passing, 5x flake-free, ≥85% coverage
 
 **Gap 5.4 (1 test) - general-purpose**
-- Phase 1 Status: ⏳ Activities + workflows
+- Phase 1 Status: 🟢 EXECUTING (activities.go)
 - Phase 2 Status: ⏳ Service integration
 - Phase 3 Status: ⏳ Workflow registered
 - Phase 4 Status: ⏳ 1/1 passing
-- Checkpoint Reports: (none yet)
+- ETA Phase 1 Complete: T+15 min
+- Target Success: 1/1 passing, MinIO verified, metadata updated
+- **CRITICAL:** Unblocks Wave 3 GPU work at T+20 min
 
 **Gap 5.5 (6 tests) - general-purpose**
-- Phase 1 Status: ⏳ Table data + handlers
+- Phase 1 Status: 🟢 EXECUTING (table test data)
 - Phase 2 Status: ⏳ Fixture setup
 - Phase 3 Status: ⏳ Tests re-enabled
 - Phase 4 Status: ⏳ 6/6 passing
-- Checkpoint Reports: (none yet)
+- ETA Phase 1 Complete: T+15 min
+- Target Success: 6/6 passing, WCAG 2.1 AA compliant
 
 ---
 
-## Phase 5.6-5.8: STAGED (AWAITING ASSIGNMENT)
+## Phase 5.1-5.2 (WAVE 1): QUEUED & READY FOR ASSIGNMENT
+
+**Status:** ⏳ READY - Awaiting team lead assignment
+**Gaps:** 5.1 (visual regression), 5.2 (OAuth + NATS)
+**Tasks:** #13-14 (visual regression), #15-17 (OAuth+NATS)
+**Can Execute:** Immediately in parallel with Wave 2 (independent scope)
+**Target:** 17+ visual tests + OAuth/NATS integration complete by T+40 min
+
+---
+
+## Phase 5.6-5.8 (WAVE 3): STANDBY (UNBLOCKED BY GAP 5.4 AT T+20)
 
 ### Timeline
 | Checkpoint | Time | Status | Events |
@@ -54,48 +76,64 @@
 
 ### Gap Progress
 
-**Gap 5.6 (15+ tests) - PENDING ASSIGNMENT**
+**Gap 5.6 (15+ API tests) - STANDBY FOR ASSIGNMENT**
 - Task: #20
 - Scope: API endpoint tests, MSW mocking, snapshots
+- Status: ⏳ Ready to assign when Gap 5.4 completes (T+20)
 - Phase 1 Status: ⏳ Not started
-- Phase 2 Status: ⏳ Not started
-- Phase 3 Status: ⏳ Not started
-- Phase 4 Status: ⏳ Not started
-- Checkpoint Reports: (none yet)
+- Target Success: 15+ tests passing, snapshots validated, coverage ≥85%
+- Estimated Duration: 30-45 min (T+20 to T+50-65)
 
-**Gap 5.7 (GPU Shaders) - PENDING ASSIGNMENT**
+**Gap 5.7 (GPU Compute Shaders) - STANDBY FOR ASSIGNMENT (CRITICAL PATH)**
 - Task: #21
-- Scope: WebGPU + WebGL compute implementation
+- Scope: WebGPU + WebGL GPGPU compute shader implementation
+- Status: ⏳ Ready to assign when Gap 5.4 completes (T+20)
 - Phase 1 Status: ⏳ Not started
-- Phase 2 Status: ⏳ Not started
-- Phase 3 Status: ⏳ Not started
-- Phase 4 Status: ⏳ Not started
-- Checkpoint Reports: (none yet)
+- Target Success: 50-100x speedup verified for 10k+ nodes
+- Estimated Duration: 40-60 min (T+20 to T+60-80)
+- **CRITICAL:** Determines Phase 5 completion timeline
 
-**Gap 5.8 (Spatial Indexing) - PENDING ASSIGNMENT**
+**Gap 5.8 (Spatial Indexing) - STANDBY FOR ASSIGNMENT**
 - Task: #22
-- Scope: Edge midpoint indexing + line clipping
+- Scope: Edge midpoint indexing + Cohen-Sutherland line clipping
+- Status: ⏳ Ready to assign when Gap 5.4 completes (T+20)
 - Phase 1 Status: ⏳ Not started
-- Phase 2 Status: ⏳ Not started
-- Phase 3 Status: ⏳ Not started
-- Phase 4 Status: ⏳ Not started
-- Checkpoint Reports: (none yet)
+- Target Success: 98% culling accuracy, <5% memory overhead, <50ms perf
+- Estimated Duration: 20-30 min (T+20 to T+40-50)
 
 ---
 
-## SUMMARY
+## EXECUTION SUMMARY
 
-**Phase 5.3-5.5:** 🟢 LIVE - 3 agents executing in parallel
-- Expected to complete: T+60 minutes
-- Total tests: 15 (8 + 1 + 6)
-- Success criteria: All 15 passing
+### Wave 2 (Gaps 5.3-5.5) - LIVE NOW
+- **Status:** 🟢 EXECUTING Phase 1
+- **Agents:** 3 (integration-tests-architect + 2x general-purpose)
+- **Tests:** 15 total (8 + 1 + 6)
+- **Timeline:** T+0 to T+60 min
+- **Completion:** Expected T+60 min (4 phases × 15 min each)
 
-**Phase 5.6-5.8:** 🟡 READY - Awaiting assignment
-- Expected to complete: T+90-120 minutes (if assigned at T+15)
-- Total tests: 15+ (15+ API tests + GPU verification + spatial tests)
-- Success criteria: API tests passing, GPU speedup verified, spatial accuracy 98%
+### Wave 1 (Gaps 5.1-5.2) - QUEUED & READY
+- **Status:** ⏳ READY FOR ASSIGNMENT
+- **Scope:** Visual regression (4+13 tests) + OAuth/NATS integration
+- **Timeline:** T+0 to T+40 min (can start immediately)
+- **Independence:** No dependencies on Wave 2
+- **Completion:** Expected T+40 min if assigned now
 
-**Combined:** ✅ 6-gap execution achievable in ~120 minutes with parallel assignment
+### Wave 3 (Gaps 5.6-5.8) - STANDBY (UNBLOCKED AT T+20)
+- **Status:** ⏳ STANDBY - Unblocked when Gap 5.4 test passes (T+20)
+- **Tasks:** #20 (API tests), #21 (GPU shaders), #22 (spatial indexing)
+- **Timeline:** T+20 to T+80-90 min
+- **Critical Path:** Gap 5.7 (GPU shaders) determines total Phase 5 time
+- **Completion:** Expected T+80-90 min from T+20 start
+
+### Total Phase 5 Execution
+**Optimal Parallel Strategy:**
+- Wave 2 (T+0 to T+60): Integration tests - 3 agents
+- Wave 1 (T+0 to T+40): Visual regression + OAuth - 2-3 agents (parallel)
+- Wave 3 (T+20 to T+80-90): API + GPU + Spatial - 3 agents (parallel, unblocked at T+20)
+
+**Total Wall-Clock:** ~90 minutes for all 8 gaps (35+ tests) with full parallelization
+**Quality Target:** 97-98/100 (up from 96)
 
 ---
 
