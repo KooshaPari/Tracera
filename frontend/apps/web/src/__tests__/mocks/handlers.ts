@@ -48,4 +48,56 @@ export const handlers = [
       total: mockLinks.length,
     }),
   ),
+  // Reports endpoints
+  http.get(`${API_BASE}/api/v1/reports/templates`, () =>
+    HttpResponse.json({
+      templates: [
+        {
+          id: 'template-1',
+          name: 'Traceability Report',
+          description: 'Standard traceability analysis',
+          fields: ['project', 'items', 'links', 'coverage'],
+        },
+        {
+          id: 'template-2',
+          name: 'Impact Analysis',
+          description: 'Change impact assessment',
+          fields: ['changes', 'affected_items', 'risk_level'],
+        },
+      ],
+    }),
+  ),
+  http.post(`${API_BASE}/api/v1/reports/export`, () =>
+    HttpResponse.json({
+      exportId: 'export-12345',
+      status: 'completed',
+      url: 'https://example.com/reports/export-12345.pdf',
+      createdAt: new Date().toISOString(),
+    }),
+  ),
+  // Search endpoint
+  http.get(`${API_BASE}/api/v1/search`, ({ request }) => {
+    const url = new URL(request.url);
+    const query = url.searchParams.get('q') || '';
+
+    return HttpResponse.json({
+      results: [
+        {
+          id: 'item-1',
+          title: 'User Authentication',
+          type: 'item',
+          projectId: 'proj-1',
+          highlight: query ? `User <mark>${query}</mark> Authentication` : 'User Authentication',
+        },
+        {
+          id: 'item-2',
+          title: 'Project Dashboard',
+          type: 'item',
+          projectId: 'proj-1',
+          highlight: query ? `Project <mark>${query}</mark> Dashboard` : 'Project Dashboard',
+        },
+      ],
+      total: 2,
+    });
+  }),
 ];

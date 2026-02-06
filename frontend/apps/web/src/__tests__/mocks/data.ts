@@ -66,8 +66,56 @@ export const mockLinks: Link[] = [
   },
 ];
 
+// Mock Reports
+export const mockReports = [
+  {
+    id: 'report-1',
+    name: 'Q1 Traceability Report',
+    template: 'Traceability Report',
+    projectId: 'proj-1',
+    createdAt: yesterday,
+    status: 'completed' as const,
+    url: '/reports/report-1.pdf',
+  },
+  {
+    id: 'report-2',
+    name: 'Authentication Feature Impact',
+    template: 'Impact Analysis',
+    projectId: 'proj-1',
+    createdAt: now,
+    status: 'completed' as const,
+    url: '/reports/report-2.pdf',
+  },
+];
+
+// Mock Search Results
+export const mockSearchResults = [
+  {
+    id: 'item-1',
+    title: 'User Authentication',
+    type: 'item' as const,
+    projectId: 'proj-1',
+    excerpt: 'Implement secure user authentication system',
+  },
+  {
+    id: 'item-2',
+    title: 'Project Dashboard',
+    type: 'item' as const,
+    projectId: 'proj-1',
+    excerpt: 'Create comprehensive project dashboard with metrics',
+  },
+  {
+    id: 'proj-1',
+    title: 'TraceRTM Core',
+    type: 'project' as const,
+    excerpt: 'Core traceability management system',
+  },
+];
+
 export const mockData = {
   items: mockItems,
   links: mockLinks,
   projects: mockProjects,
+  reports: mockReports,
+  searchResults: mockSearchResults,
 };
