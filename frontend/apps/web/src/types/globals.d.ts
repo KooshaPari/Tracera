@@ -2,6 +2,7 @@
 // Global type definitions
 
 /// <reference types="vite/client" />
+/// <reference types="react" />
 
 declare global {
   // Vite environment variables

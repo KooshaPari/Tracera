@@ -327,36 +327,40 @@ export * from '@testing-library/react';
 
 import { getServer } from './mocks/server';
 
+// MSW TEMPORARILY DISABLED DUE TO GRAPHQL ESM/COMMONJS IMPORT ISSUE
+// See: CRITICAL_BLOCKER_MSW_GRAPHQL.md
+// TODO: Re-enable after fixing graphql import or replacing MSW
+
 // Start MSW server before all tests
-beforeAll(() => {
-  try {
-    const server = getServer();
-    server.listen();
-  } catch (error) {
-    console.warn('MSW server initialization failed:', error);
-    // Continue anyway - tests that don't need HTTP mocking will still work
-  }
-});
+// beforeAll(() => {
+//   try {
+//     const server = getServer();
+//     server.listen();
+//   } catch (error) {
+//     console.warn('MSW server initialization failed:', error);
+//     // Continue anyway - tests that don't need HTTP mocking will still work
+//   }
+// });
 
 // Stop MSW server after all tests
-afterAll(() => {
-  try {
-    const server = getServer();
-    server.close();
-  } catch (error) {
-    // Ignore cleanup errors
-  }
-});
+// afterAll(() => {
+//   try {
+//     const server = getServer();
+//     server.close();
+//   } catch (error) {
+//     // Ignore cleanup errors
+//   }
+// });
 
 // Reset handlers after each test
-afterEach(() => {
-  try {
-    const server = getServer();
-    server.resetHandlers();
-  } catch (error) {
-    // Ignore reset errors
-  }
-});
+// afterEach(() => {
+//   try {
+//     const server = getServer();
+//     server.resetHandlers();
+//   } catch (error) {
+//     // Ignore reset errors
+//   }
+// });
 
 // ============================================================================
 // Async Test Helpers
