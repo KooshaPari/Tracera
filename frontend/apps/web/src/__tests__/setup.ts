@@ -324,26 +324,36 @@ export * from '@testing-library/react';
 // ============================================================================
 // MSW Server Setup
 // ============================================================================
-// TEMPORARILY DISABLED: MSW graphql ESM/CommonJS compatibility issue
-// Tests that don't need HTTP mocking can still run without MSW
-// Re-enable after resolving graphql@16.12.0 ESM export issue with vitest jsdom
 
-// import { getServer } from './mocks/server';
+import { getServer } from './mocks/server';
 
-// // Start MSW server before all tests
-// beforeAll(() => {
-//   const server = getServer();
-//   server.listen();
-// });
+// Start MSW server before all tests
+beforeAll(() => {
+  try {
+    const server = getServer();
+    server.listen();
+  } catch (error) {
+    console.warn('MSW server initialization failed:', error);
+    // Continue anyway - tests that don't need HTTP mocking will still work
+  }
+});
 
-// // Stop MSW server after all tests
-// afterAll(() => {
-//   const server = getServer();
-//   server.close();
-// });
+// Stop MSW server after all tests
+afterAll(() => {
+  try {
+    const server = getServer();
+    server.close();
+  } catch (error) {
+    // Ignore cleanup errors
+  }
+});
 
-// // Reset handlers after each test
-// afterEach(() => {
-//   const server = getServer();
-//   server.resetHandlers();
-// });
+// Reset handlers after each test
+afterEach(() => {
+  try {
+    const server = getServer();
+    server.resetHandlers();
+  } catch (error) {
+    // Ignore reset errors
+  }
+});
