@@ -357,3 +357,101 @@ afterEach(() => {
     // Ignore reset errors
   }
 });
+
+// ============================================================================
+// Async Test Helpers
+// ============================================================================
+
+import { waitFor } from '@testing-library/react';
+
+/**
+ * Wait for loading state to appear and then disappear
+ * Useful for async operations that show loading UI
+ */
+export const waitForLoadingState = async (
+  container: HTMLElement,
+  timeout: number = 3000,
+) => {
+  // Wait for loading indicator to appear
+  await waitFor(
+    () => {
+      const loader = container.querySelector('[data-testid="loading"]');
+      if (!loader) {
+        throw new Error('Loading indicator not found');
+      }
+    },
+    { timeout: 500 },
+  ).catch(() => {
+    // Some tests may not have a loading indicator
+  });
+
+  // Wait for loading indicator to disappear
+  await waitFor(
+    () => {
+      const loader = container.querySelector('[data-testid="loading"]');
+      if (loader) {
+        throw new Error('Loading indicator still visible');
+      }
+    },
+    { timeout },
+  );
+};
+
+/**
+ * Wait for an element with text content to appear
+ */
+export const waitForElementWithText = async (
+  container: HTMLElement,
+  text: string,
+  timeout: number = 3000,
+) => {
+  let element: HTMLElement | null = null;
+  await waitFor(
+    () => {
+      element = Array.from(container.querySelectorAll('*')).find((el) =>
+        el.textContent?.includes(text),
+      ) as HTMLElement | undefined;
+      if (!element) {
+        throw new Error(`Element with text "${text}" not found`);
+      }
+    },
+    { timeout },
+  );
+  return element;
+};
+
+/**
+ * Clear all stores and caches for a clean test state
+ * Includes: zustand stores, React Query cache, localStorage
+ */
+export const clearAllStores = () => {
+  // Clear localStorage
+  if (typeof localStorage !== 'undefined') {
+    localStorage.clear();
+  }
+
+  // Clear React Query cache (if it exists in the test)
+  if (typeof window !== 'undefined') {
+    (window as any).__REACT_QUERY_CACHE__ = undefined;
+  }
+
+  // Clear any zustand stores by removing from localStorage
+  Object.keys(localStorageMock).forEach((key) => {
+    if (key.includes('store') || key.includes('zustand')) {
+      localStorageMock.removeItem(key);
+    }
+  });
+};
+
+/**
+ * Wrapper for async test operations with auto-cleanup
+ */
+export const withAsyncCleanup = async (
+  testFn: () => Promise<void>,
+) => {
+  try {
+    await testFn();
+  } finally {
+    clearAllStores();
+  }
+};
