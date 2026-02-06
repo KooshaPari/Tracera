@@ -2,9 +2,10 @@
  * Test setup and configuration
  */
 
+import React from 'react';
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import { afterEach, afterAll, beforeAll, vi } from 'vitest';
 
 type TestGlobals = typeof globalThis & {
   WebGL2RenderingContext?: unknown;
@@ -46,11 +47,15 @@ vi.mock('@tanstack/react-router', async () => {
     }),
     useLocation: () => ({ pathname: '/' }),
     useParams: () => ({}),
-    Link: ({ children, to, ...props }: any) => (
-      <a href={typeof to === 'string' ? to : to?.toString?.()} {...props}>
-        {children}
-      </a>
-    ),
+    Link: ({ children, to, ...props }: any) =>
+      React.createElement(
+        'a',
+        {
+          href: typeof to === 'string' ? to : to?.toString?.(),
+          ...props,
+        },
+        children
+      ),
   };
 });
 
@@ -304,7 +309,6 @@ import type { RenderOptions } from '@testing-library/react';
 
 import { render as rtlRender } from '@testing-library/react';
 // Add React testing utilities wrapper for provider-based tests
-import React from 'react';
 
 // Create test wrapper with all necessary providers
 const AllTheProviders = ({ children }: { children: React.ReactNode }) =>
@@ -321,7 +325,6 @@ export * from '@testing-library/react';
 // MSW Server Setup
 // ============================================================================
 import { getServer } from './mocks/server';
-import { beforeAll, afterAll, afterEach } from 'vitest';
 
 // Start MSW server before all tests
 beforeAll(() => {
