@@ -339,7 +339,7 @@ describe('Store Integration Tests', () => {
       expect(state.currentProjectId).toBe(project.id);
     });
 
-    it.skip('should maintain recent projects list', () => {
+    it('should maintain recent projects list', () => {
       const { setCurrentProject } = useProjectStore.getState();
 
       const project1 = createMockProject({ id: 'p1', name: 'Project 1' });
@@ -684,7 +684,7 @@ describe('View Integration Tests', () => {
       expect(screen.getByText('New Project')).toBeInTheDocument();
     });
 
-    it.skip('should show loading state', () => {
+    it('should show loading state', () => {
       vi.spyOn(api.projects, 'list').mockImplementation(
         async () => new Promise(() => {}), // Never resolves
       );
@@ -699,7 +699,7 @@ describe('View Integration Tests', () => {
   });
 
   describe('ReportsView Integration', () => {
-    it.skip('should render reports templates', async () => {
+    it('should render reports templates', async () => {
       vi.spyOn(api.projects, 'list').mockResolvedValue([createMockProject()]);
 
       renderWithProviders(<ReportsView />);
@@ -713,7 +713,7 @@ describe('View Integration Tests', () => {
       expect(screen.getByText('Items Export')).toBeInTheDocument();
     });
 
-    it.skip('should allow format selection', async () => {
+    it('should allow format selection', async () => {
       vi.spyOn(api.projects, 'list').mockResolvedValue([]);
 
       renderWithProviders(<ReportsView />);
@@ -730,7 +730,7 @@ describe('View Integration Tests', () => {
       expect(pdfBadge).toBeInTheDocument();
     });
 
-    it.skip('should generate report on button click', async () => {
+    it('should generate report on button click', async () => {
       const mockProject = createMockProject();
       vi.spyOn(api.projects, 'list').mockResolvedValue([mockProject]);
       vi.spyOn(api.exportImport, 'export').mockResolvedValue(new Blob());
@@ -821,7 +821,7 @@ describe('View Integration Tests', () => {
       expect(screen.getByPlaceholderText('Search everything...')).toBeInTheDocument();
     });
 
-    it.skip('should perform search on input', async () => {
+    it('should perform search on input', async () => {
       const mockResults = createMockSearchResult([createMockItem({ title: 'Found Item' })]);
 
       vi.spyOn(api.search, 'search').mockResolvedValue(mockResults);
@@ -845,7 +845,7 @@ describe('View Integration Tests', () => {
       expect(typeSelect).toHaveValue('requirement');
     });
 
-    it.skip('should show no results message', async () => {
+    it('should show no results message', async () => {
       vi.spyOn(api.search, 'search').mockResolvedValue(createMockSearchResult([]));
 
       renderWithProviders(<SearchView />);
@@ -975,7 +975,7 @@ describe('End-to-End Workflow Tests', () => {
     expect(state.items.get(tempId)).toBeUndefined();
   });
 
-  it.skip('should handle offline-to-online sync workflow', async () => {
+  it('should handle offline-to-online sync workflow', async () => {
     const { setOnline, addPendingMutation, startSync, finishSync, removePendingMutation } =
       useSyncStore.getState();
 
