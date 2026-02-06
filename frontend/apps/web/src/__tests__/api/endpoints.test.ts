@@ -7,6 +7,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../../api/endpoints';
 import { mockItems, mockLinks, mockProjects } from '../mocks/data';
 
+// Simple console-based logger
+const logger = {
+  info: (msg: string) => console.log(msg),
+  warn: (msg: string) => console.warn(msg),
+  error: (msg: string) => console.error(msg),
+};
+
 // Mock fetch responses for API tests
 function createMockApiResponse(data: any, status = 200) {
   return Response.json(data, {
@@ -18,7 +25,7 @@ function createMockApiResponse(data: any, status = 200) {
 // NOTE: These tests require proper mocking of openapi-fetch client
 // The actual API endpoints are tested at integration level via hooks tests
 // Which properly validate the query patterns and response handling
-describe.skip('API Endpoints', () => {
+describe('API Endpoints', () => {
   beforeEach(() => {
     // Mock fetch directly  - replace the global fetch with our mock implementation
     const fetchImpl = async (url: string | Request, options?: any) => {
