@@ -15,8 +15,8 @@ from .base import Base, TimestampMixin, generate_uuid
 class Contract(Base, TimestampMixin):
     """Formal specification contract."""
 
-    __tablename__ = "contracts"
-    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}
+    __tablename__: ClassVar[str] = "contracts"  # type: ignore[misc]
+    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}  # type: ignore[misc]
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
@@ -29,13 +29,13 @@ class Contract(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft")
 
     # Contract Definition
-    preconditions: Mapped[list[dict]] = mapped_column(JSON, default=list)
-    postconditions: Mapped[list[dict]] = mapped_column(JSON, default=list)
-    invariants: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    preconditions: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    postconditions: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    invariants: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
 
     # State Machine
     states: Mapped[list[str]] = mapped_column(JSON, default=list)
-    transitions: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    transitions: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
 
     # Executable Spec
     executable_spec: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -43,12 +43,12 @@ class Contract(Base, TimestampMixin):
 
     # Verification
     last_verified_at: Mapped[datetime | None] = mapped_column(String(50), nullable=True)
-    verification_result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    verification_result: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
 
     # Metadata
     tags: Mapped[list[str]] = mapped_column(JSON, default=list)
     version: Mapped[int] = mapped_column(default=1)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, nullable=True)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column("metadata", JSON, nullable=True)
 
     # Relationships
     project = relationship("Project", backref="contracts")

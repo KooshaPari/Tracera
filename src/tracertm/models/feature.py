@@ -14,8 +14,8 @@ from .base import Base, TimestampMixin, generate_uuid
 class Feature(Base, TimestampMixin):
     """BDD Feature."""
 
-    __tablename__ = "features"
-    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}
+    __tablename__: ClassVar[str] = "features"  # type: ignore[misc]
+    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}  # type: ignore[misc]
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
@@ -39,7 +39,7 @@ class Feature(Base, TimestampMixin):
     related_adrs: Mapped[list[str]] = mapped_column(JSON, default=list)
 
     version: Mapped[int] = mapped_column(default=1)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, nullable=True)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column("metadata", JSON, nullable=True)
 
     # Relationships
     project = relationship("Project", backref="features")

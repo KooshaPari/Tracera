@@ -16,8 +16,8 @@ from .base import Base, TimestampMixin, generate_uuid
 class ADR(Base, TimestampMixin):
     """Architecture Decision Record (MADR 4.0 format)."""
 
-    __tablename__ = "adrs"
-    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}
+    __tablename__: ClassVar[str] = "adrs"  # type: ignore[misc]
+    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}  # type: ignore[misc]
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
@@ -34,7 +34,7 @@ class ADR(Base, TimestampMixin):
 
     # Details
     decision_drivers: Mapped[list[str]] = mapped_column(JSON, default=list)
-    considered_options: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    considered_options: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
 
     # Traceability
     related_requirements: Mapped[list[str]] = mapped_column(JSON, default=list)
@@ -54,7 +54,7 @@ class ADR(Base, TimestampMixin):
     tags: Mapped[list[str]] = mapped_column(JSON, default=list)
     date: Mapped[date_type] = mapped_column(Date, nullable=False)
     version: Mapped[int] = mapped_column(default=1)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, nullable=True)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column("metadata", JSON, nullable=True)
 
     # Relationships
     project = relationship("Project", backref="adrs")
