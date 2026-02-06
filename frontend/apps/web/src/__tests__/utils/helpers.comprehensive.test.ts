@@ -231,8 +231,8 @@ describe(shuffle, () => {
   it('should contain all original elements', () => {
     const arr = [1, 2, 3, 4, 5];
     const result = shuffle(arr);
-    expect(result.toSorted((a, b) => (a < b ? -1 : (a > b ? 1 : 0)))).toEqual(
-      arr.toSorted((a, b) => (a < b ? -1 : (a > b ? 1 : 0))),
+    expect(result.toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0))).toEqual(
+      arr.toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
     );
   });
 

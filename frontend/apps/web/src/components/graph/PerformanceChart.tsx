@@ -35,7 +35,7 @@ const drawFpsLine = (
   height: number,
   fps: number,
 ) => {
-  ctx.strokeStyle = fps >= FPS_GOOD ? '#10b981' : (fps >= FPS_WARN ? '#f59e0b' : '#ef4444');
+  ctx.strokeStyle = fps >= FPS_GOOD ? '#10b981' : fps >= FPS_WARN ? '#f59e0b' : '#ef4444';
   ctx.lineWidth = LINE_WIDTH_THICK;
   ctx.beginPath();
   history.forEach((value, index) => {

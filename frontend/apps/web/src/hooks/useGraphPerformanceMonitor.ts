@@ -473,9 +473,9 @@ export function useGraphPerformanceMonitor({
         `%cFPS: ${metrics.fps.current} (avg: ${metrics.fps.average}, min: ${metrics.fps.min}, max: ${metrics.fps.max})`,
         metrics.fps.current >= 55
           ? 'color: #10b981'
-          : (metrics.fps.current >= 30
+          : metrics.fps.current >= 30
             ? 'color: #f59e0b'
-            : 'color: #ef4444'),
+            : 'color: #ef4444',
       );
 
       logger.info(

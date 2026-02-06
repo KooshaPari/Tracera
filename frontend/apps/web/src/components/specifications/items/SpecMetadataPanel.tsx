@@ -134,9 +134,9 @@ export function SpecMetadataPanel({
                 'text-[10px]',
                 volatilityIndex > 0.7
                   ? 'border-red-500 text-red-600'
-                  : (volatilityIndex > 0.4
+                  : volatilityIndex > 0.4
                     ? 'border-yellow-500 text-yellow-600'
-                    : 'border-green-500 text-green-600'),
+                    : 'border-green-500 text-green-600',
               )}
             >
               {(volatilityIndex * 100).toFixed(0)}%

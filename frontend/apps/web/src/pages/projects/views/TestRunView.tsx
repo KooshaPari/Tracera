@@ -164,7 +164,7 @@ export function TestRunView({ projectId }: TestRunViewProps) {
         <div className='flex items-center justify-center py-12'>
           <div className='border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent' />
         </div>
-      ) : (filteredRuns.length === 0 ? (
+      ) : filteredRuns.length === 0 ? (
         <div className='rounded-lg border border-dashed p-12 text-center'>
           <Play className='text-muted-foreground mx-auto h-12 w-12' />
           <h3 className='mt-4 text-lg font-semibold'>No test runs found</h3>
@@ -205,7 +205,7 @@ export function TestRunView({ projectId }: TestRunViewProps) {
             </table>
           </div>
         </div>
-      ))}
+      )}
 
       {/* Create Modal - placeholder */}
       {showCreateModal && (
@@ -325,9 +325,9 @@ function TestRunRow({ run }: { run: TestRun }) {
                 className={`h-2 rounded-full ${
                   run.passRate >= 90
                     ? 'bg-green-500'
-                    : (run.passRate >= 70
+                    : run.passRate >= 70
                       ? 'bg-yellow-500'
-                      : 'bg-red-500')
+                      : 'bg-red-500'
                 }`}
                 style={{ width: `${run.passRate}%` }}
               />

@@ -458,7 +458,7 @@ export function SigmaProofOfConcept() {
             <Badge
               variant='outline'
               className={
-                stats.fps >= 55 ? 'bg-green-50' : (stats.fps >= 30 ? 'bg-yellow-50' : 'bg-red-50')
+                stats.fps >= 55 ? 'bg-green-50' : stats.fps >= 30 ? 'bg-yellow-50' : 'bg-red-50'
               }
             >
               FPS: <span className='ml-1 font-mono font-bold'>{stats.fps}</span>

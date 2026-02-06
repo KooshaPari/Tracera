@@ -116,7 +116,7 @@ describe('Virtual Rendering Utilities', () => {
     it('should return high LOD above zoom threshold', () => {
       const zoom = 0.9;
       const threshold = 0.8;
-      const lodLevel = zoom >= threshold ? 'high' : (zoom >= threshold / 2 ? 'medium' : 'low');
+      const lodLevel = zoom >= threshold ? 'high' : zoom >= threshold / 2 ? 'medium' : 'low';
       expect(lodLevel).toBe('high');
     });
 
@@ -124,7 +124,7 @@ describe('Virtual Rendering Utilities', () => {
       const zoom = 0.6;
       const highThreshold = 0.8;
       const mediumThreshold = 0.5;
-      const lodLevel = zoom >= highThreshold ? 'high' : (zoom >= mediumThreshold ? 'medium' : 'low');
+      const lodLevel = zoom >= highThreshold ? 'high' : zoom >= mediumThreshold ? 'medium' : 'low';
       expect(lodLevel).toBe('medium');
     });
 
@@ -132,7 +132,7 @@ describe('Virtual Rendering Utilities', () => {
       const zoom = 0.3;
       const highThreshold = 0.8;
       const mediumThreshold = 0.5;
-      const lodLevel = zoom >= highThreshold ? 'high' : (zoom >= mediumThreshold ? 'medium' : 'low');
+      const lodLevel = zoom >= highThreshold ? 'high' : zoom >= mediumThreshold ? 'medium' : 'low';
       expect(lodLevel).toBe('low');
     });
   });

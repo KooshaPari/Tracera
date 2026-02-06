@@ -139,9 +139,9 @@ export const TestCaseView = ({ projectId }: TestCaseViewProps) => {
 
   // Calculate pass rate
   const passRate = stats?.executionSummary
-    ? (stats.executionSummary.totalRuns > 0
+    ? stats.executionSummary.totalRuns > 0
       ? Math.round((stats.executionSummary.totalPassed / stats.executionSummary.totalRuns) * 100)
-      : 0)
+      : 0
     : 0;
 
   if (error) {
@@ -291,7 +291,7 @@ export const TestCaseView = ({ projectId }: TestCaseViewProps) => {
         <div className='flex items-center justify-center py-12'>
           <div className='border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent' />
         </div>
-      ) : (testCases.length === 0 ? (
+      ) : testCases.length === 0 ? (
         <div className='rounded-lg border border-dashed p-12 text-center'>
           <FlaskConical className='text-muted-foreground mx-auto h-12 w-12' />
           <h3 className='mt-4 text-lg font-semibold'>No test cases found</h3>
@@ -332,7 +332,7 @@ export const TestCaseView = ({ projectId }: TestCaseViewProps) => {
             </table>
           </div>
         </div>
-      ))}
+      )}
 
       {/* Create Modal */}
       {showCreateModal && (
@@ -394,18 +394,18 @@ function TestCaseRow({ testCase }: { testCase: TestCase }) {
             className={`inline-flex items-center gap-1 text-sm ${
               testCase.lastExecutionResult === 'passed'
                 ? 'text-green-600'
-                : (testCase.lastExecutionResult === 'failed'
+                : testCase.lastExecutionResult === 'failed'
                   ? 'text-red-600'
-                  : 'text-yellow-600')
+                  : 'text-yellow-600'
             }`}
           >
             {testCase.lastExecutionResult === 'passed' ? (
               <CheckCircle className='h-4 w-4' />
-            ) : (testCase.lastExecutionResult === 'failed' ? (
+            ) : testCase.lastExecutionResult === 'failed' ? (
               <XCircle className='h-4 w-4' />
             ) : (
               <Clock className='h-4 w-4' />
-            ))}
+            )}
             {testCase.lastExecutionResult}
           </span>
         ) : (

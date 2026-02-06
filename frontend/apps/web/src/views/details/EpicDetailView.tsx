@@ -105,7 +105,7 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
           <div className='flex items-center justify-center py-12'>
             <div className='h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent' />
           </div>
-        ) : (!epicSpec ? (
+        ) : !epicSpec ? (
           <Card className='bg-card/50 border-none'>
             <CardContent className='pt-6'>
               <p className='text-muted-foreground text-center text-sm'>
@@ -257,7 +257,7 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
               </CardContent>
             </Card>
           </div>
-        )),
+        ),
         id: 'overview',
         label: 'Overview',
       },

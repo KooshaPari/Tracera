@@ -604,9 +604,9 @@ function FlowGraphViewInnerComponent({
     const nodeIdsForEdges =
       canvasNodes.length > 0
         ? new Set(domNodes.map((n) => n.id))
-        : (viewportBounds && dagreLaidoutNodes.length > VIEWPORT_WINDOW_THRESHOLD
+        : viewportBounds && dagreLaidoutNodes.length > VIEWPORT_WINDOW_THRESHOLD
           ? new Set(nodesToRender.map((n) => n.id))
-          : null);
+          : null;
     if (!nodeIdsForEdges) {
       return initialEdges;
     }
@@ -990,9 +990,9 @@ function FlowGraphViewInnerComponent({
                           className={
                             performanceMonitor.currentMetrics.fps.current >= 55
                               ? 'text-green-500'
-                              : (performanceMonitor.currentMetrics.fps.current >= 30
+                              : performanceMonitor.currentMetrics.fps.current >= 30
                                 ? 'text-yellow-500'
-                                : 'text-red-500')
+                                : 'text-red-500'
                           }
                         >
                           {performanceMonitor.currentMetrics.fps.current}

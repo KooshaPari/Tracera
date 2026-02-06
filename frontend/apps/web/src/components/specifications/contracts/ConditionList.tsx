@@ -155,7 +155,7 @@ function ConditionItem({ condition, type, onClick }: ConditionItemProps) {
           </div>
           {status !== 'undefined' && (
             <span className={`font-medium ${verificationStatusColors[status]}`}>
-              {status === 'pass' ? '✓ Verified' : (status === 'fail' ? '✗ Failed' : '⊘ Skipped')}
+              {status === 'pass' ? '✓ Verified' : status === 'fail' ? '✗ Failed' : '⊘ Skipped'}
             </span>
           )}
         </div>

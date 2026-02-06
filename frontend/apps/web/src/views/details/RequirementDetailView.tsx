@@ -188,7 +188,7 @@ function QualityGauge({
 }) {
   const percentage = Math.round(score * 100);
   const color =
-    percentage >= 80 ? 'bg-green-500' : (percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500');
+    percentage >= 80 ? 'bg-green-500' : percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500';
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -653,9 +653,9 @@ export function RequirementDetailView({ item, projectId }: RequirementDetailView
                             'p-3 rounded-lg flex items-start gap-3',
                             issue.severity === 'error'
                               ? 'bg-red-500/10 border border-red-500/20'
-                              : (issue.severity === 'warning'
+                              : issue.severity === 'warning'
                                 ? 'bg-yellow-500/10 border border-yellow-500/20'
-                                : 'bg-blue-500/10 border border-blue-500/20'),
+                                : 'bg-blue-500/10 border border-blue-500/20',
                           )}
                         >
                           <AlertCircle
@@ -663,9 +663,9 @@ export function RequirementDetailView({ item, projectId }: RequirementDetailView
                               'h-4 w-4 shrink-0 mt-0.5',
                               issue.severity === 'error'
                                 ? 'text-red-600'
-                                : (issue.severity === 'warning'
+                                : issue.severity === 'warning'
                                   ? 'text-yellow-600'
-                                  : 'text-blue-600'),
+                                  : 'text-blue-600',
                             )}
                           />
                           <div className='flex-1 space-y-1'>

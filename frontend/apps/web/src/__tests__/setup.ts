@@ -2,9 +2,9 @@
  * Test setup and configuration
  */
 
-import React from 'react';
-import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import React from 'react';
 import { afterEach, afterAll, beforeAll, vi } from 'vitest';
 
 type TestGlobals = typeof globalThis & {
@@ -54,7 +54,7 @@ vi.mock('@tanstack/react-router', async () => {
           href: typeof to === 'string' ? to : to?.toString?.(),
           ...props,
         },
-        children
+        children,
       ),
   };
 });
@@ -324,22 +324,26 @@ export * from '@testing-library/react';
 // ============================================================================
 // MSW Server Setup
 // ============================================================================
-import { getServer } from './mocks/server';
+// TEMPORARILY DISABLED: MSW graphql ESM/CommonJS compatibility issue
+// Tests that don't need HTTP mocking can still run without MSW
+// Re-enable after resolving graphql@16.12.0 ESM export issue with vitest jsdom
 
-// Start MSW server before all tests
-beforeAll(() => {
-  const server = getServer();
-  server.listen();
-});
+// import { getServer } from './mocks/server';
 
-// Stop MSW server after all tests
-afterAll(() => {
-  const server = getServer();
-  server.close();
-});
+// // Start MSW server before all tests
+// beforeAll(() => {
+//   const server = getServer();
+//   server.listen();
+// });
 
-// Reset handlers after each test
-afterEach(() => {
-  const server = getServer();
-  server.resetHandlers();
-});
+// // Stop MSW server after all tests
+// afterAll(() => {
+//   const server = getServer();
+//   server.close();
+// });
+
+// // Reset handlers after each test
+// afterEach(() => {
+//   const server = getServer();
+//   server.resetHandlers();
+// });

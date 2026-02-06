@@ -387,9 +387,9 @@ function EquivalenceImportComponent({
                                 Will be{' '}
                                 {state.options.conflictResolution === 'overwrite'
                                   ? 'overwritten'
-                                  : (state.options.conflictResolution === 'merge_metadata'
+                                  : state.options.conflictResolution === 'merge_metadata'
                                     ? 'merged'
-                                    : 'skipped')}
+                                    : 'skipped'}
                               </p>
                             </div>
                           </div>

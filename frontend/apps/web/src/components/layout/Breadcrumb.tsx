@@ -165,13 +165,13 @@ export const Breadcrumbs = function Breadcrumbs() {
                 <div className='flex items-center gap-2'>
                   <Skeleton className='h-4 w-16' />
                 </div>
-              ) : (index === uniqueBreadcrumbs.length - 1 ? (
+              ) : index === uniqueBreadcrumbs.length - 1 ? (
                 <BreadcrumbPage className={pageClassName}>{item.label}</BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild className={`${linkClassName} font-medium`}>
                   <Link to={item.href}>{item.label}</Link>
                 </BreadcrumbLink>
-              ))}
+              )}
             </BreadcrumbItem>
           </Fragment>
         ))}

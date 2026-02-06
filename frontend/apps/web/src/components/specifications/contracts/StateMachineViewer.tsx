@@ -208,9 +208,9 @@ export function StateMachineViewer({
                   className={`cursor-pointer transition-all ${
                     isCurrent
                       ? 'fill-primary stroke-primary'
-                      : (isInitial
+                      : isInitial
                         ? 'fill-green-500/20 stroke-green-600'
-                        : 'fill-background stroke-border hover:fill-muted')
+                        : 'fill-background stroke-border hover:fill-muted'
                   }`}
                   strokeWidth={isCurrent ? 3 : 2}
                   onClick={() => onStateSelect?.(pos.state)}

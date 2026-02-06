@@ -55,7 +55,7 @@ export function DecisionMatrix({
   const sortedOptions = [...options].toSorted((a, b) => {
     switch (sortBy) {
       case 'chosen': {
-        return a.isChosen ? -1 : (b.isChosen ? 1 : 0);
+        return a.isChosen ? -1 : b.isChosen ? 1 : 0;
       }
       case 'pros': {
         return (b.pros?.length || 0) - (a.pros?.length || 0);
@@ -190,9 +190,9 @@ export function DecisionMatrix({
                         className={`text-sm font-bold ${
                           calculateScore(option) > 0
                             ? 'text-green-600'
-                            : (calculateScore(option) < 0
+                            : calculateScore(option) < 0
                               ? 'text-red-600'
-                              : 'text-muted-foreground')
+                              : 'text-muted-foreground'
                         }`}
                       >
                         {calculateScore(option) > 0 ? '+' : ''}

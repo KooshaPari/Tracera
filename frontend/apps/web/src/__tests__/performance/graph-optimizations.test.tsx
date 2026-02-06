@@ -370,8 +370,8 @@ describe('Phase 5: Edge Style Caching', () => {
       // Simulate expensive style computation
       computeCount++;
       const style = {
-        stroke: tier === 1 ? '#333' : (tier === 2 ? '#666' : '#999'),
-        strokeWidth: tier === 1 ? 2 : (tier === 2 ? 1.5 : 1),
+        stroke: tier === 1 ? '#333' : tier === 2 ? '#666' : '#999',
+        strokeWidth: tier === 1 ? 2 : tier === 2 ? 1.5 : 1,
       };
 
       styleCache.set(edgeId, style);

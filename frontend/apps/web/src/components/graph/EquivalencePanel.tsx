@@ -200,7 +200,7 @@ function EquivalencePanelComponent({
               <div className='flex items-center justify-center py-8'>
                 <div className='border-primary h-5 w-5 animate-spin rounded-full border-2 border-t-transparent' />
               </div>
-            ) : (equivalenceItems.length === 0 ? (
+            ) : equivalenceItems.length === 0 ? (
               <div className='text-muted-foreground py-6 text-center'>
                 <Link2 className='mx-auto mb-2 h-6 w-6 opacity-50' />
                 <p className='text-sm'>No equivalences found</p>
@@ -281,7 +281,7 @@ function EquivalencePanelComponent({
                   )}
                 </div>
               </ScrollArea>
-            ))}
+            )}
           </CardContent>
         )}
       </Card>
@@ -527,9 +527,9 @@ function buildEquivalenceItems(
       projection,
       status: projection.isConfirmed
         ? 'confirmed'
-        : (projection.isRejected
+        : projection.isRejected
           ? 'rejected'
-          : 'suggested'),
+          : 'suggested',
       strategy: projection.strategy,
     });
   }

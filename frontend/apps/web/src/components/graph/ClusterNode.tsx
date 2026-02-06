@@ -270,7 +270,7 @@ function ExpandedClusterView({ data, onToggle }: { data: ClusterNodeData; onTogg
               className='h-full transition-all'
               style={{
                 backgroundColor:
-                  cohesion > 0.7 ? '#22c55e' : (cohesion > 0.4 ? '#f59e0b' : '#ef4444'),
+                  cohesion > 0.7 ? '#22c55e' : cohesion > 0.4 ? '#f59e0b' : '#ef4444',
                 width: `${cohesion * 100}%`,
               }}
             />

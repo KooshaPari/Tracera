@@ -421,7 +421,7 @@ export function DataTable<TData, TValue>({
                     ))}
                   </TableRow>
                 ))
-              ) : (table.getRowModel().rows?.length ? (
+              ) : table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <motion.tr
                     key={row.id}
@@ -448,7 +448,7 @@ export function DataTable<TData, TValue>({
                     No results found.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </AnimatePresence>
           </TableBody>
         </Table>

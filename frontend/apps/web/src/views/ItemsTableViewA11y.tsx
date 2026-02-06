@@ -520,9 +520,9 @@ export function ItemsTableViewA11y({ projectId, view, type }: ItemsTableViewA11y
                     isSortable
                     sortDirection={
                       sortColumn === 'title'
-                        ? (sortOrder === 'asc'
+                        ? sortOrder === 'asc'
                           ? 'ascending'
-                          : 'descending')
+                          : 'descending'
                         : 'none'
                     }
                   >
