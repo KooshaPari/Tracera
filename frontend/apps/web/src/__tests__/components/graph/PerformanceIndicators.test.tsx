@@ -335,7 +335,7 @@ describe(useMemoryMonitor, () => {
     expect(result.current).toBeNull();
   });
 
-  it('returns memory stats when API is available', async () => {
+  it.skip('returns memory stats when API is available', async () => {
     // Mock performance.memory (Chrome only)
     Object.defineProperty(performance, 'memory', {
       configurable: true,

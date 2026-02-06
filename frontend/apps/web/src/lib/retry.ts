@@ -29,7 +29,7 @@ export interface RetryResult<T> {
  * Retryable: network errors, timeouts, 5xx, 429
  * Not retryable: 4xx (except 429), 401, 403, validation errors
  */
-function isRetryableError(error: unknown): boolean {
+export function isRetryableError(error: unknown): boolean {
   // Network errors are retryable
   if (error instanceof TypeError) {
     const message = error.message.toLowerCase();
@@ -213,3 +213,6 @@ export function isServerError(error: unknown): boolean {
   }
   return false;
 }
+
+// Re-export from api-error-handler for convenience
+export { getErrorType, getUserFriendlyMessage, buildErrorMetadata, extractValidationErrors, formatValidationErrorMessage } from '@/lib/api-error-handler';

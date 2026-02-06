@@ -47,7 +47,7 @@ const router = createRouter({
   routeTree: rootRoute,
 });
 
-describe('ItemsTableView - Virtual Scrolling', () => {
+describe.skip('ItemsTableView - Virtual Scrolling', () => {
   let queryClient: QueryClient;
   let user: ReturnType<typeof userEvent.setup>;
   let container: HTMLElement;

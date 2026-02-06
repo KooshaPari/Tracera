@@ -57,6 +57,7 @@ export class RealtimeClient {
 
   /**
    * Connect to WebSocket with authentication token and optional project ID
+   * SECURITY: Token is sent in auth message, never in URL
    */
   connect(token: string, projectID?: string) {
     this.token = token;
@@ -64,7 +65,12 @@ export class RealtimeClient {
     logger.info(`[WebSocket] connect() called with projectID: ${projectID || 'undefined'}`);
 
     if (this.ws?.readyState === WebSocket.OPEN) {
-      // Already connected, subscribe to project if needed
+      // Already connected, re-authenticate with new token
+      if (token !== this.token) {
+        logger.info('[WebSocket] Token changed, re-authenticating');
+        this.sendAuth();
+      }
+      // Subscribe to project if needed
       if (projectID && projectID !== this.currentProjectID) {
         this.subscribeToProject(projectID);
       }
