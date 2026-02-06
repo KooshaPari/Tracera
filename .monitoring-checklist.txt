@@ -235,3 +235,37 @@ Expected reports from Wave 2 Phase 2:
 - Prepare for Checkpoint 2 reports (T+30)
 - Await clarification from api-performance-implementer
 - Do NOT advance timeline until confirmed
+
+---
+
+## SESSION 5 TIMELINE DISCREPANCY #2 (T+55+)
+
+**Incoming Message from integration-tests-architect (T+0 reference):**
+- Message presents: Full 4-wave execution grid with T+0→T+60 timeline
+- Message tone: "Execution authorization"
+- Actual context: We are at T+55+ with Wave 1 complete
+
+**Root Cause Analysis:**
+1. Message references "T+15 checkpoint" for Gap 5.4 Phase 1
+2. Gap 5.4 is already COMPLETE (1/1 test passing) as of this session
+3. Timeline suggests execution just starting; reality shows 55+ min elapsed
+4. Possible explanation: Message from previous planning cycle queued for delivery
+
+**Current Reality vs Message:**
+| Aspect | Message Says | Actual Status |
+|--------|--------------|---------------|
+| Current time | T+0 | T+55+ |
+| Wave 1 status | "T+0→T+40" | ✅ COMPLETE (delivered T+15) |
+| Gap 5.4 Phase 1 | "Due T+15" | ✅ COMPLETE (all phases done) |
+| Waves executing | 4 waves | 3 waves active, 1 staged |
+| Expected completion | T+60 | T+75-80 (realistic with 40-min GPU task) |
+
+**Action Taken:**
+- Sent timeline clarification request to integration-tests-architect
+- Documenting discrepancy for audit trail
+- Continuing T+55+ Checkpoint 3 monitoring (presumed correct)
+
+**Team Lead Decision:**
+- Do NOT adopt T+0 timeline (contradicts observable reality)
+- Continue Checkpoint 3+ protocol (currently monitoring)
+- Await confirmation from integration-tests-architect on timeline sync
