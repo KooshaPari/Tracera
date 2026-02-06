@@ -1,0 +1,30 @@
+{
+  "include": ["src/tracertm"],
+  "typeCheckingMode": "basic",
+  "reportMissingParameterType": "error",
+  "exclude": [
+    "**/__pycache__",
+    "**/.mypy_cache",
+    "**/.pytest_cache",
+    "**/.ruff_cache",
+    ".venv",
+    "venv",
+    "node_modules",
+    "frontend",
+    "backend",
+    "apps",
+    "docs",
+    "alembic",
+    "artifacts",
+    "data",
+    "deploy",
+    "load-tests",
+    "openapi",
+    "samples",
+    "scripts",
+    "sql",
+    "temp",
+    "test-results",
+    "tests"
+  ]
+}

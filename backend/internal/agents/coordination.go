@@ -3,6 +3,8 @@ package agents
 
 import (
 	"context"
+	"database/sql/driver"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -56,7 +58,7 @@ type AgentLock struct {
 	LockType  LockType               `json:"lock_type"`
 	Version   int64                  `json:"version"`
 	ExpireAt  time.Time              `json:"expire_at" gorm:"index:idx_lock_expire"`
-	Metadata  map[string]interface{} `json:"metadata" gorm:"type:jsonb"`
+	Metadata  JSONMap `json:"metadata" gorm:"type:jsonb"`
 	CreatedAt time.Time              `json:"created_at"`
 	UpdatedAt time.Time              `json:"updated_at"`
 }
@@ -67,10 +69,57 @@ type AgentTeam struct {
 	ProjectID   string                 `json:"project_id" gorm:"index:idx_team_project"`
 	Name        string                 `json:"name"`
 	Description string                 `json:"description"`
-	Roles       map[string]TeamRole    `json:"roles" gorm:"type:jsonb"`
-	Metadata    map[string]interface{} `json:"metadata" gorm:"type:jsonb"`
+	Roles       map[string]TeamRole `json:"roles" gorm:"serializer:json"`
+	Metadata    JSONMap `json:"metadata" gorm:"type:jsonb"`
 	CreatedAt   time.Time              `json:"created_at"`
 	UpdatedAt   time.Time              `json:"updated_at"`
+}
+
+// JSONMap persists map[string]interface{} as JSON for sqlite/mysql/postgres.
+type JSONMap map[string]interface{}
+
+func (m JSONMap) Value() (driver.Value, error) {
+	if m == nil {
+		return []byte("{}"), nil
+	}
+	b, err := json.Marshal(map[string]interface{}(m))
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func (m *JSONMap) Scan(value interface{}) error {
+	if m == nil {
+		return errors.New("JSONMap: Scan on nil receiver")
+	}
+
+	if value == nil {
+		*m = JSONMap{}
+		return nil
+	}
+
+	var data []byte
+	switch v := value.(type) {
+	case []byte:
+		data = v
+	case string:
+		data = []byte(v)
+	default:
+		return fmt.Errorf("JSONMap: unsupported Scan type %T", value)
+	}
+
+	if len(data) == 0 {
+		*m = JSONMap{}
+		return nil
+	}
+
+	var out map[string]interface{}
+	if err := json.Unmarshal(data, &out); err != nil {
+		return err
+	}
+	*m = JSONMap(out)
+	return nil
 }
 
 // TeamRole defines permissions for a role
@@ -96,7 +145,7 @@ type ItemVersion struct {
 	ItemID       string                 `json:"item_id" gorm:"index:idx_version_item"`
 	Version      int64                  `json:"version"`
 	AgentID      string                 `json:"agent_id"`
-	Changes      map[string]interface{} `json:"changes" gorm:"type:jsonb"`
+	Changes      JSONMap `json:"changes" gorm:"type:jsonb"`
 	PreviousHash string                 `json:"previous_hash"`
 	CurrentHash  string                 `json:"current_hash" gorm:"index:idx_version_hash"`
 	CreatedAt    time.Time              `json:"created_at"`
@@ -112,7 +161,7 @@ type ConflictRecord struct {
 	ResolutionStrategy ConflictResolutionStrategy `json:"resolution_strategy"`
 	// pending, resolved, failed
 	ResolutionStatus string                 `json:"resolution_status"`
-	ConflictData     map[string]interface{} `json:"conflict_data" gorm:"type:jsonb"`
+	ConflictData     JSONMap `json:"conflict_data" gorm:"type:jsonb"`
 	ResolvedBy       string                 `json:"resolved_by,omitempty"`
 	ResolvedAt       *time.Time             `json:"resolved_at,omitempty"`
 	CreatedAt        time.Time              `json:"created_at"`

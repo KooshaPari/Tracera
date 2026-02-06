@@ -29,7 +29,7 @@ type DistributedOperation struct {
 	ParticipantIDs []string               `json:"participant_i_ds" gorm:"type:jsonb"`
 	CoordinatorID  string                 `json:"coordinator_id"`
 	TargetItems    []string               `json:"target_items" gorm:"type:jsonb"`
-	OperationData  map[string]interface{} `json:"operation_data" gorm:"type:jsonb"`
+	OperationData  JSONMap `json:"operation_data" gorm:"type:jsonb"`
 	StartedAt      *time.Time             `json:"started_at,omitempty"`
 	CompletedAt    *time.Time             `json:"completed_at,omitempty"`
 	CreatedAt      time.Time              `json:"created_at"`
