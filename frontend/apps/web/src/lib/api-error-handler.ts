@@ -14,6 +14,9 @@ import {
   isValidationError,
 } from '@/lib/retry';
 
+// Re-export error predicates for convenience
+export { isAuthError, isNetworkError, isServerError, isTimeoutError, isValidationError };
+
 export type ErrorType = 'network' | 'validation' | 'auth' | 'server' | 'unknown' | 'timeout';
 
 export interface ErrorMetadata {

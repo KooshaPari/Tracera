@@ -18,8 +18,8 @@
 
 import { useCallback, useState } from 'react';
 
-import type { CreateItemInput } from '@tracertm/types';
-import type { ViewType } from '@tracertm/types';
+import type { CreateItemInput } from '@/lib/validation/schemas';
+import type { ViewType } from '@/types';
 
 import { createItem } from '@/api/items';
 import { toast } from '@/components/ui/toaster';
@@ -27,8 +27,8 @@ import {
   buildErrorMetadata,
   extractValidationErrors,
   formatValidationErrorMessage,
-  isAuthError,
 } from '@/lib/api-error-handler';
+import { isAuthError } from '@/lib/api-error-handler';
 import { logger } from '@/lib/logger';
 import { queueMutation, removeMutationFromQueue, updateMutationError } from '@/lib/mutation-queue';
 import { withRetry } from '@/lib/retry';
