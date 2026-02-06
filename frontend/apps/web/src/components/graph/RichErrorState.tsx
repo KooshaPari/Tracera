@@ -36,12 +36,12 @@ export const EnhancedErrorState = memo(function EnhancedErrorState({
   const errorDetails: ErrorDetails =
     typeof error === 'string'
       ? { message: error }
-      : (error instanceof Error
+      : error instanceof Error
         ? {
             message: error.message,
             ...(error.stack !== undefined && { stack: error.stack }),
           }
-        : error);
+        : error;
 
   const handleCopyError = () => {};
 

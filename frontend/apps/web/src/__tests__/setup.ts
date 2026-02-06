@@ -325,12 +325,10 @@ export * from '@testing-library/react';
 // MSW Server Setup
 // ============================================================================
 
-import { getServer } from './mocks/server';
-
+import { waitFor } from '@testing-library/react';
 // MSW TEMPORARILY DISABLED DUE TO GRAPHQL ESM/COMMONJS IMPORT ISSUE
 // See: CRITICAL_BLOCKER_MSW_GRAPHQL.md
 // TODO: Re-enable after fixing graphql import or replacing MSW
-
 // Start MSW server before all tests
 // beforeAll(() => {
 //   try {
@@ -341,7 +339,6 @@ import { getServer } from './mocks/server';
 //     // Continue anyway - tests that don't need HTTP mocking will still work
 //   }
 // });
-
 // Stop MSW server after all tests
 // afterAll(() => {
 //   try {
@@ -351,7 +348,6 @@ import { getServer } from './mocks/server';
 //     // Ignore cleanup errors
 //   }
 // });
-
 // Reset handlers after each test
 // afterEach(() => {
 //   try {
@@ -361,21 +357,17 @@ import { getServer } from './mocks/server';
 //     // Ignore reset errors
 //   }
 // });
-
 // ============================================================================
 // Async Test Helpers
 // ============================================================================
 
-import { waitFor } from '@testing-library/react';
+import { getServer } from './mocks/server';
 
 /**
  * Wait for loading state to appear and then disappear
  * Useful for async operations that show loading UI
  */
-export const waitForLoadingState = async (
-  container: HTMLElement,
-  timeout: number = 3000,
-) => {
+export const waitForLoadingState = async (container: HTMLElement, timeout: number = 3000) => {
   // Wait for loading indicator to appear
   await waitFor(
     () => {
@@ -450,9 +442,7 @@ export const clearAllStores = () => {
 /**
  * Wrapper for async test operations with auto-cleanup
  */
-export const withAsyncCleanup = async (
-  testFn: () => Promise<void>,
-) => {
+export const withAsyncCleanup = async (testFn: () => Promise<void>) => {
   try {
     await testFn();
   } finally {

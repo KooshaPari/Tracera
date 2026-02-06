@@ -159,6 +159,26 @@ func newAuthHandlerTestEnv(t *testing.T, sessionTTL time.Duration, isProduction 
 	}
 }
 
+func seedAuthUser(t *testing.T, handler *AuthHandler, email, password, name string) *auth.User {
+	t.Helper()
+
+	hashedPassword, err := handler.passwordHasher.HashPassword(password)
+	require.NoError(t, err)
+
+	user := &auth.User{
+		ID:       fmt.Sprintf("user_%d", time.Now().UnixNano()),
+		Email:    email,
+		Name:     name,
+		Role:     "user",
+		Metadata: make(map[string]interface{}),
+	}
+
+	err = handler.storeUserRecord(context.Background(), user, hashedPassword)
+	require.NoError(t, err)
+
+	return user
+}
+
 // TestAuthHandlerLogin tests the Login endpoint
 func TestAuthHandlerLogin(t *testing.T) {
 	env := newAuthHandlerTestEnv(t, authTestSessionTTL, false)
@@ -422,10 +442,12 @@ func TestAuthHandlerHttpOnlyCookie(t *testing.T) {
 
 	e := echo.New()
 
+	seedAuthUser(t, authHandler, "test@example.com", testSecurePassword, "Test User")
+
 	// Test cookie in login response
 	t.Run("secure cookie in login", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login",
-			strings.NewReader(`{"email":"test@example.com","password":"password123"}`))
+			strings.NewReader(`{"email":"test@example.com","password":"SecurePassword123!"}`))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
 
@@ -451,7 +473,7 @@ func TestAuthHandlerHttpOnlyCookie(t *testing.T) {
 	authHandler.isProduction = false
 	t.Run("insecure cookie in dev mode", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login",
-			strings.NewReader(`{"email":"test@example.com","password":"password123"}`))
+			strings.NewReader(`{"email":"test@example.com","password":"SecurePassword123!"}`))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
 
@@ -593,9 +615,11 @@ func TestAuthHandlerGetUser(t *testing.T) {
 }
 
 func runAuthLoginCases(t *testing.T, handler *AuthHandler, e *echo.Echo) {
+	seedAuthUser(t, handler, "test@example.com", testSecurePassword, "Test User")
+
 	t.Run("successful login", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login",
-			strings.NewReader(`{"email":"test@example.com","password":"password123"}`))
+			strings.NewReader(`{"email":"test@example.com","password":"SecurePassword123!"}`))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
 
@@ -608,7 +632,8 @@ func runAuthLoginCases(t *testing.T, handler *AuthHandler, e *echo.Echo) {
 		var resp AuthResponse
 		err = json.Unmarshal(rec.Body.Bytes(), &resp)
 		require.NoError(t, err)
-		assert.NotEmpty(t, resp.Token)
+		assert.NotEmpty(t, resp.AccessToken)
+		assert.Equal(t, resp.AccessToken, resp.Token)
 		assert.NotNil(t, resp.User)
 		assert.Equal(t, "test@example.com", resp.User.Email)
 	})
@@ -651,6 +676,32 @@ func runAuthLoginCases(t *testing.T, handler *AuthHandler, e *echo.Echo) {
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 	})
+
+	t.Run("unknown user", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login",
+			strings.NewReader(`{"email":"unknown@example.com","password":"SecurePassword123!"}`))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+
+		c := e.NewContext(req, rec)
+		err := handler.Login(c)
+
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+	})
+
+	t.Run("wrong password", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login",
+			strings.NewReader(`{"email":"test@example.com","password":"WrongPassword456!"}`))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+
+		c := e.NewContext(req, rec)
+		err := handler.Login(c)
+
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+	})
 }
 
 func authRegisterTestCases() []authRegisterCase {
@@ -673,7 +724,8 @@ func authRegisterSuccessCase() authRegisterCase {
 			var resp AuthResponse
 			err := json.Unmarshal(body, &resp)
 			require.NoError(t, err)
-			assert.NotEmpty(t, resp.Token)
+			assert.NotEmpty(t, resp.AccessToken)
+			assert.Equal(t, resp.AccessToken, resp.Token)
 			assert.NotNil(t, resp.User)
 			assert.Equal(t, "newuser@example.com", resp.User.Email)
 			assert.Equal(t, "New User", resp.User.Name)
@@ -772,7 +824,8 @@ func runAuthRefreshCases(t *testing.T, handler *AuthHandler, e *echo.Echo, user 
 		var resp AuthResponse
 		err = json.Unmarshal(rec.Body.Bytes(), &resp)
 		require.NoError(t, err)
-		assert.NotEmpty(t, resp.Token)
+		assert.NotEmpty(t, resp.AccessToken)
+		assert.Equal(t, resp.AccessToken, resp.Token)
 		assert.NotNil(t, resp.User)
 		assert.Equal(t, user.Email, resp.User.Email)
 	})
