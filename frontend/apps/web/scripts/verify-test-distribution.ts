@@ -57,7 +57,11 @@ function categorize(path: string): 'unit' | 'integration' | 'e2e' | 'other' {
   ) {
     return 'other';
   }
-  if (normalized.includes('.test.') || normalized.includes('.spec.') || normalized.includes('/__tests__/')) {
+  if (
+    normalized.includes('.test.') ||
+    normalized.includes('.spec.') ||
+    normalized.includes('/__tests__/')
+  ) {
     return 'unit';
   }
   return 'unit';

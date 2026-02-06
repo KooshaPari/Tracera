@@ -8,6 +8,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { Project } from '../../api/types';
+
 import { useItemsStore } from '../../stores/items-store';
 import { useProjectStore } from '../../stores/project-store';
 import { useSyncStore } from '../../stores/sync-store';

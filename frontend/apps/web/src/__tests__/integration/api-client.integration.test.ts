@@ -28,7 +28,10 @@ const createJsonResponse = (data: unknown, status = 200): Response =>
 describe('API Client Integration', () => {
   describe('auth flow', () => {
     beforeEach(async () => {
-      await useAuthStore.getState().logout().catch(() => {});
+      await useAuthStore
+        .getState()
+        .logout()
+        .catch(() => {});
       vi.clearAllMocks();
       localStorage.clear();
     });
@@ -71,8 +74,20 @@ describe('API Client Integration', () => {
 
   describe('CRUD', () => {
     const mockProjects = [
-      { id: 'p1', name: 'Project 1', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), metadata: {} },
-      { id: 'p2', name: 'Project 2', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), metadata: {} },
+      {
+        id: 'p1',
+        name: 'Project 1',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        metadata: {},
+      },
+      {
+        id: 'p2',
+        name: 'Project 2',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        metadata: {},
+      },
     ];
     const mockItems = [
       {

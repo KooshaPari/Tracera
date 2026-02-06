@@ -84,7 +84,7 @@ const isAccount = (value: unknown): value is Account => {
   );
 };
 
-const parseLoginResponse = (data: unknown): { user: User; access_token?: string } | undefined => {
+const parseLoginResponse = (data: unknown): { user: User; token?: string } | undefined => {
   if (!isRecordObject(data)) {
     return undefined;
   }
@@ -92,8 +92,9 @@ const parseLoginResponse = (data: unknown): { user: User; access_token?: string 
   if (!isUser(userValue)) {
     return undefined;
   }
-  const accessToken = readStringField(data, 'access_token');
-  return { access_token: accessToken, user: userValue };
+  // Check for 'token' (backend) or 'access_token' (legacy/standard)
+  const token = readStringField(data, 'token') || readStringField(data, 'access_token');
+  return { token, user: userValue };
 };
 
 const parseSessionResponse = (data: unknown): { account?: Account; user?: User } | undefined => {
@@ -112,20 +113,18 @@ const parseSessionResponse = (data: unknown): { account?: Account; user?: User }
   return response;
 };
 
-const parseRefreshResponse = (
-  data: unknown,
-): { access_token?: string; user?: User } | undefined => {
+const parseRefreshResponse = (data: unknown): { token?: string; user?: User } | undefined => {
   if (!isRecordObject(data)) {
     return undefined;
   }
-  const response: { access_token?: string; user?: User } = {};
+  const response: { token?: string; user?: User } = {};
   const userValue = data['user'];
   if (isUser(userValue)) {
     response.user = userValue;
   }
-  const accessToken = readStringField(data, 'access_token');
-  if (accessToken !== undefined) {
-    response.access_token = accessToken;
+  const token = readStringField(data, 'token') || readStringField(data, 'access_token');
+  if (token !== undefined) {
+    response.token = token;
   }
   return response;
 };
@@ -156,7 +155,6 @@ interface AuthStateActions {
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
   setAccount: (account: Account | null) => void;
-  setAuthFromWorkOS: (user: User | null, token: string | null) => void;
   setToken: (token: string | null) => void;
   setUser: (user: User | null) => void;
   stopAutoRefresh: () => void;
@@ -226,24 +224,6 @@ const createSetterActions = (
 ): Pick<AuthStateActions, 'setAccount' | 'setToken' | 'setUser'> => ({
   setAccount: (account) => set({ account }),
   setToken: (token) => {
-    /**
-     * Token Storage Strategy:
-     *
-     * Development (devMode=true):
-     * - WorkOS SDK manages tokens in localStorage
-     * - This store mirrors the token for state management
-     * - Acceptable for development without custom domain
-     *
-     * Production (devMode=false):
-     * - WorkOS SDK uses HttpOnly cookies (requires custom auth domain)
-     * - This localStorage token becomes a fallback/cache
-     * - Backend validates actual HttpOnly cookie tokens
-     *
-     * The token here is primarily for:
-     * 1. State management (isAuthenticated checks)
-     * 2. Development mode compatibility
-     * 3. Backwards compatibility with existing code
-     */
     const normalizedToken = normalizeToken(token);
     persistToken(normalizedToken);
     set({ token: normalizedToken });
@@ -276,10 +256,10 @@ const createLoginAction = (
 
       if (!response.ok) {
         const detail =
-          isRecordObject(data) && typeof data['detail'] === 'string'
-            ? data['detail']
+          isRecordObject(data) && typeof data['error'] === 'string'
+            ? data['error']
             : 'Login failed';
-        throw new Error(`${detail || 'Login failed'}: ${response.status}`);
+        throw new Error(`${detail}: ${response.status}`);
       }
 
       const parsed = parseLoginResponse(data);
@@ -288,8 +268,8 @@ const createLoginAction = (
       }
 
       get().setUser(parsed.user);
-      if (parsed.access_token) {
-        get().setToken(parsed.access_token);
+      if (parsed.token) {
+        get().setToken(parsed.token);
       }
       get().initializeAutoRefresh();
     } catch (error) {
@@ -351,8 +331,8 @@ const createSessionActions = (
       if (parsed?.user) {
         get().setUser(parsed.user);
       }
-      if (parsed?.access_token) {
-        get().setToken(parsed.access_token);
+      if (parsed?.token) {
+        get().setToken(parsed.token);
       }
     } catch (error) {
       logger.error('Token refresh failed:', error);
@@ -429,14 +409,7 @@ const createSessionActions = (
 const createProfileActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<AuthStateActions, 'setAuthFromWorkOS' | 'updateProfile'> => ({
-  setAuthFromWorkOS: (user, token) => {
-    get().setUser(user);
-    if (token) {
-      get().setToken(token);
-    }
-    get().initializeAutoRefresh();
-  },
+): Pick<AuthStateActions, 'updateProfile'> => ({
   updateProfile: (updates) => {
     const currentUser = get().user;
     if (currentUser) {

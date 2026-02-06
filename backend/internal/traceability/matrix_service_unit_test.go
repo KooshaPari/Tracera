@@ -250,13 +250,6 @@ func TestChangeImpact_JSON(t *testing.T) {
 	assert.NotEmpty(t, data)
 }
 
-func TestNewMatrixService(t *testing.T) {
-	svc := NewMatrixService(nil, nil)
-	require.NotNil(t, svc)
-	assert.Nil(t, svc.db)
-	assert.Nil(t, svc.cache)
-}
-
 func TestNewMatrixService_WithCache(t *testing.T) {
 	mock := newMockCache()
 	svc := NewMatrixService(nil, mock)

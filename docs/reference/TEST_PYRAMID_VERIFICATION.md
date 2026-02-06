@@ -1,279 +1,326 @@
 # Test Pyramid Verification
 
+A script and framework for verifying test pyramid shape across a multi-language project (Go, TypeScript, Python).
+
 ## Overview
 
-The test pyramid verification script ensures that your test suite follows the **inverted pyramid principle**:
+The test pyramid is a foundational testing strategy that emphasizes:
+- **Unit tests (60-75%)**: Fast, isolated, low-cost tests
+- **Integration tests (15-35%)**: Mid-level tests verifying component interaction
+- **E2E tests (3-15%)**: Slow, expensive tests covering full workflows
 
-```
-         /\
-        /  \     <- E2E Tests (5-10%)
-       /____\
-      /      \
-     /        \  <- Integration Tests (15-25%)
-    /          \
-   /____________\ <- Unit Tests (70%+)
-```
-
-This structure optimizes for fast feedback, maintainability, and reliability.
+This verification tool scans your entire codebase, classifies tests by type, and validates the pyramid shape is healthy.
 
 ## Quick Start
 
-### Run locally
+Run the verification script:
+
 ```bash
-make test-pyramid                    # Basic verification
-make test-pyramid-verbose            # Detailed file listing
-bash backend/scripts/verify-test-pyramid.sh
+scripts/verify-test-pyramid.sh
 ```
 
-### CI/CD Integration
+With JSON output:
+
+```bash
+scripts/verify-test-pyramid.sh false /tmp/pyramid-report.json
+cat /tmp/pyramid-report.json
+```
+
+With strict mode (fail on imbalance):
+
+```bash
+scripts/verify-test-pyramid.sh true
+```
+
+## Test Classification
+
+Tests are automatically classified using build tags and file naming patterns:
+
+### Go Tests (`backend/`)
+
+Classified via `//go:build` comments:
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| **Unit** | No build tag OR `!integration && !e2e` | `func TestFoo_t() {}` (no tag) |
+| **Integration** | `//go:build integration && !e2e` | `//go:build integration && !e2e` |
+| **E2E** | `//go:build e2e` | `//go:build e2e` |
+
+```go
+// Unit test (no build tag)
+func TestAuthFlow(t *testing.T) {
+  // Fast, isolated test
+}
+
+// Integration test
+//go:build integration && !e2e
+func TestOAuthIntegration(t *testing.T) {
+  // Tests database + cache interaction
+}
+
+// E2E test
+//go:build e2e
+func TestCompleteUserJourney(t *testing.T) {
+  // Tests full auth flow end-to-end
+}
+```
+
+### TypeScript Tests (`frontend/`)
+
+Classified via file location and naming:
+
+| Type | Pattern | Location |
+|------|---------|----------|
+| **Unit** | `*.test.ts(x)` | `__tests__/components/` |
+| **Integration** | `.integration.test.ts(x)` | `__tests__/integration/` or `*.integration.test.ts` |
+| **E2E** | `.spec.ts(x)` | `e2e/*.spec.ts` |
+
+```typescript
+// Unit test
+// src/__tests__/components/Button.test.tsx
+describe('Button', () => {
+  it('renders with label', () => {
+    // Tests component in isolation
+  });
+});
+
+// Integration test
+// src/__tests__/integration/api-client.integration.test.ts
+describe('API Client Integration', () => {
+  it('fetches items and updates state', async () => {
+    // Tests API client + state management
+  });
+});
+
+// E2E test
+// e2e/user-dashboard.spec.ts
+test('User can create and view items', async ({ page }) => {
+  // Tests complete user workflow
+});
+```
+
+### Python Tests (`src/`)
+
+Classified via file location and naming:
+
+| Type | Pattern | Location |
+|------|---------|----------|
+| **Unit** | `test_*.py` or `*_test.py` | `src/tracertm/` (not in integration) |
+| **Integration** | `test_*.py` | `src/tracertm/tests/integration/` |
+| **E2E** | `test_*.py` | `src/tracertm/tests/e2e/` |
+
+```python
+# Unit test
+# src/tracertm/models/test_item.py
+def test_item_creation():
+    """Tests Item model in isolation"""
+    item = Item(name="Test")
+    assert item.id is not None
+
+# Integration test
+# src/tracertm/tests/integration/test_database_service.py
+def test_item_service_with_database():
+    """Tests service layer with actual database"""
+    service = ItemService(db)
+    item = service.create_item(...)
+    assert service.get_item(item.id) == item
+
+# E2E test
+# src/tracertm/tests/e2e/test_api_flows.py
+def test_create_item_workflow():
+    """Tests complete API workflow"""
+    # Create item via API
+    # Verify in database
+    # Check via another API call
+```
+
+## Output Interpretation
+
+### Summary Metrics
+
+```
+Total Tests: 576
+  Unit Tests: 384 (66.0%)        ✓ Within 60-75%
+  Integration Tests: 58 (10.0%)  ⚠ Below 15-35%
+  E2E Tests: 134 (23.0%)         ⚠ Above 3-15%
+```
+
+### Pyramid Shape Checks
+
+```
+✓ Unit tests > Integration tests        (384 > 58)
+⚠ Integration tests < E2E tests         (58 < 134)  ← Pyramid inverted!
+```
+
+A healthy pyramid has:
+- `unit > integration > e2e`
+- Counts: 60-70% unit, 20-30% integration, 5-10% e2e
+
+### JSON Report Format
+
+```json
+{
+  "timestamp": "2026-02-06T08:15:10Z",
+  "summary": {
+    "total": 576,
+    "unit": {
+      "count": 384,
+      "percentage": 66,
+      "target_range": "60-75%",
+      "status": "pass"
+    },
+    "integration": {
+      "count": 58,
+      "percentage": 10,
+      "target_range": "15-35%",
+      "status": "warn"
+    },
+    "e2e": {
+      "count": 134,
+      "percentage": 23,
+      "target_range": "3-15%",
+      "status": "warn"
+    }
+  },
+  "pyramid_shape": {
+    "unit_gt_integration": true,
+    "integration_gt_e2e": false,
+    "status": "imbalanced"
+  }
+}
+```
+
+## Integration with CI
+
+### GitHub Actions
+
+Add to `.github/workflows/quality.yml`:
+
 ```yaml
-# Automatically runs in .github/workflows/test-pyramid.yml
-# on push to main/develop and pull requests
+- name: Verify Test Pyramid
+  run: scripts/verify-test-pyramid.sh false /tmp/pyramid-report.json
+
+- name: Upload Pyramid Report
+  uses: actions/upload-artifact@v3
+  with:
+    name: test-pyramid-report
+    path: /tmp/pyramid-report.json
 ```
 
-## Test Categories
+### Makefile Target
 
-### Unit Tests (Required: >= 70%)
-Single function/component tests without external dependencies.
+```makefile
+.PHONY: verify-pyramid
+verify-pyramid:
+	@scripts/verify-test-pyramid.sh
 
-**File patterns:**
-- **Go**: `*_test.go` (excluding `*_integration_test.go`)
-- **TypeScript/React**: `*.test.ts`, `*.test.tsx` (excluding `.integration.` and `.e2e.`)
-- **Python**: `test_*.py` (excluding `*_integration*`)
-
-**Examples:**
-- `user.test.ts` - Test User component
-- `validator_test.go` - Test validation function
-- `test_parser.py` - Test parsing logic
-
-### Integration Tests (Recommended: 15-25%)
-Tests that use real dependencies: database, Redis, services, etc.
-
-**File patterns:**
-- **Go**: `*_integration_test.go`
-- **TypeScript/React**: `*.integration.test.ts`
-- **Python**: `*_integration_test.py`, `*_integration.py`
-
-**Examples:**
-- `repository_integration_test.go` - Test with real database
-- `auth.integration.test.ts` - Test with real auth service
-- `test_api_integration.py` - Test API with real backend
-
-### E2E Tests (Required: <= 10%)
-End-to-end tests using browser or full application stack.
-
-**File patterns:**
-- **TypeScript/React**: `e2e/*.spec.ts`, `*.e2e.test.ts`
-
-**Examples:**
-- `dashboard.spec.ts` - Test dashboard flow in browser
-- `auth-flow.e2e.test.ts` - Test auth flow end-to-end
-
-## Constraints
-
-### Required Constraints (Fail if violated)
-1. **Unit tests >= 70%** - Ensures fast feedback
-2. **E2E tests <= 10%** - Prevents test brittleness
-
-### Recommended Constraints (Warn if violated)
-1. **Integration tests 15-25%** - Balances coverage and speed
-
-## Output
-
-### Example Output
-```
-Detailed Test Count Report:
-
-Total Tests: 502
-├── Unit Tests:        431 (85%)
-├── Integration Tests: 21 (4%)
-└── E2E Tests:         50 (9%)
-
-Test Pyramid Visualization:
-
-           /\
-          /  \  E2E Tests (9%, 50 tests)
-         /____\
-        /      \
-       /        \  Integration Tests (4%, 21 tests)
-      /          \
-     /____________\
-    Unit Tests (85%, 431 tests)
-
-Constraint Analysis:
-
-✓ Unit tests >= 70% (85%)
-⚠ Integration tests outside 15-25% range (4%) - not ideal
-✓ E2E tests <= 10% (9%)
-
-Pyramid Status:
-
-✓ Test pyramid is HEALTHY
-  • Strong unit test foundation (85%)
-  • Acceptable E2E test coverage (9%)
-
-Recommendations:
-
-⚠ Integration tests below recommended 15%
-  → Consider adding more integration tests
+.PHONY: verify-pyramid-strict
+verify-pyramid-strict:
+	@scripts/verify-test-pyramid.sh true
 ```
 
-### Verbose Output
+Usage:
+
 ```bash
-make test-pyramid-verbose  # Shows file lists
-```
-
-Lists first 5 files in each category:
-```
-Unit Test Files:
-  • backend/internal/temporal/diff_service_test.go
-  • backend/internal/metrics/service_metrics_test.go
-  • ... and 426 more
-
-Integration Test Files:
-  • backend/internal/repository/repository_integration_test.go
-  • backend/internal/embeddings/indexer_integration_test.go
-  • ... and 16 more
-
-E2E Test Files:
-  • frontend/apps/web/e2e/mobile-optimization.spec.ts
-  • frontend/apps/web/e2e/example.perf.spec.ts
-  • ... and 45 more
+make verify-pyramid        # Informational report
+make verify-pyramid-strict # Fail on imbalance
 ```
 
 ## Exit Codes
 
-- **0**: Pyramid is healthy (unit >= 70%, E2E <= 10%)
-- **1**: Pyramid constraints violated
+| Code | Meaning | Strict Mode |
+|------|---------|-------------|
+| `0` | Success (healthy or imbalanced) | Healthy only |
+| `2` | Imbalance detected | Always fails |
+| `3` | Validation issues | Return issue count |
 
-## Scanned Directories
+## Recommended Actions
 
-### Go Backend
-- `backend/internal/` - All `*_test.go` and `*_integration_test.go`
+If your pyramid is imbalanced:
 
-### TypeScript/React Frontend
-- `frontend/apps/web/src/__tests__/` - All `.test.ts(x)` files
-- `frontend/apps/docs/src/__tests__/`
-- `frontend/packages/*/src/__tests__/`
-- `frontend/apps/web/e2e/` - E2E specs
+### Too Few Integration Tests (Below 15%)
 
-### Python Backend
-- `backend/tests/` - All `test_*.py` files
+**Problem:** Direct jumps from unit to E2E, missing interaction testing.
 
-## Fixing Imbalanced Pyramids
+**Solutions:**
+1. Add integration tests for service layers
+2. Test API handlers with mocked database
+3. Verify component interactions with mock state
 
-### Too Many E2E Tests (> 10%)
-1. **Convert browser tests to integration tests**
-   - Use API testing instead of UI testing where possible
-   - Mock browser interactions for unit tests
+### Too Many E2E Tests (Above 15%)
 
-2. **Consolidate E2E scenarios**
-   - Combine related flows into single E2E test
-   - Remove redundant E2E coverage
+**Problem:** Inefficient testing, slow pipelines, brittleness.
 
-3. **Move to integration layer**
-   - Test API endpoints directly
-   - Test business logic without UI
+**Solutions:**
+1. Push API tests down to integration level
+2. Mock external services instead of hitting real endpoints
+3. Test browser interactions only for critical paths
 
-### Too Few Unit Tests (< 70%)
-1. **Add unit tests for untested functions**
-   - Focus on error cases and edge cases
-   - Test validators, parsers, formatters
+### Unit Tests Below 60%
 
-2. **Break down integration tests**
-   - Extract pure logic into unit tests
-   - Keep integration tests for DB/service interactions only
+**Problem:** Insufficient unit test coverage, risky refactoring.
 
-3. **Increase coverage incrementally**
-   - Target 1-2 untested modules per sprint
-   - Use test coverage reports to identify gaps
+**Solutions:**
+1. Add unit tests for utilities, validators, formatters
+2. Test error paths and edge cases
+3. Mock external dependencies
 
-### Imbalanced Integration Tests (< 15% or > 25%)
-1. **Too few (< 15%)**
-   - Add tests for external service interactions
-   - Test database transactions and cleanup
-   - Add API endpoint integration tests
+## Performance Considerations
 
-2. **Too many (> 25%)**
-   - Convert integration tests that don't need external deps to unit tests
-   - Remove redundant integration coverage (covered by E2E)
+The script scans the entire codebase with `find` and `grep`:
 
-## CI/CD Integration
+- **Frontend:** Only `frontend/apps/web/src/__tests__` (excludes `node_modules`)
+- **Backend:** Only `backend/` (excludes `ARCHIVE`)
+- **Python:** Only `src/` (excludes `.pytest_cache`, `__pycache__`)
 
-### GitHub Actions Workflow
-```yaml
-# .github/workflows/test-pyramid.yml
-# Runs on: push to main/develop, all PRs
-# Status: Required check for merging
-```
+Typical runtime: **5-15 seconds**
 
-**Features:**
-- Runs automatically on push and PR
-- Posts results to PR comments
-- Fails if constraints violated
-- Adds summary to workflow run
+## Troubleshooting
 
-### Manual CI Trigger
+### Script Says "No Tests Found"
+
+Check that test files exist in expected directories:
+
 ```bash
-# Local verification before pushing
-make test-pyramid
+# Go tests
+find backend -name "*_test.go" | head -5
 
-# Verbose output for debugging
-make test-pyramid-verbose
+# TypeScript tests
+find frontend -name "*.test.ts*" | head -5
+
+# Python tests
+find src -name "test_*.py" -o -name "*_test.py" | head -5
 ```
 
-## Maintenance
+### Counts Seem Off
 
-### Update Test Categories
-Edit `backend/scripts/verify-test-pyramid.sh`:
+Verify file patterns match your naming conventions:
+
 ```bash
-# Update file pattern functions:
-count_go_unit_tests()
-count_ts_unit_tests()
-count_python_tests()
+# Check Go build tags
+grep -r "^//go:build" backend --include="*_test.go" | head -10
+
+# Check TypeScript integration tests
+find frontend -name "*.integration.test.ts*" | head -10
 ```
 
-### Adjust Constraints
-Update percentage thresholds in `verify-test-pyramid.sh`:
-```bash
-# Change required minimums:
-if [[ $unit_pct -ge 70 ]]; then  # <- Adjust here
-```
+## Best Practices
 
-### Add New Test Directories
-Update `main()` function paths:
-```bash
-count_ts_unit_tests \
-  "frontend/apps/web/src/__tests__" \
-  "frontend/apps/new-app/src/__tests__"  # <- Add here
-```
+1. **Organize by type**: Keep unit, integration, and e2e tests in separate directories
+2. **Use build tags consistently**: All Go tests should have explicit build tags
+3. **Name clearly**: Use `.integration.test` and `.spec` patterns for clarity
+4. **Run regularly**: Add to CI pipeline to catch pyramid drift
+5. **Monitor trends**: Store JSON reports to track pyramid health over time
 
-## Testing the Script
+## Related Documentation
 
-### Verify Script Works
-```bash
-# Run with output
-bash backend/scripts/verify-test-pyramid.sh
-
-# Run with verbose output
-bash backend/scripts/verify-test-pyramid.sh -v
-
-# Check exit code
-bash backend/scripts/verify-test-pyramid.sh
-echo $?  # 0 = healthy, 1 = violated
-```
-
-### Example Output Validation
-```bash
-# Should show healthy pyramid
-make test-pyramid
-
-# Exit code should be 0
-echo $?
-```
+- [CI Quality Gates](./ci-gates-quick-reference.md)
+- [Backend Coverage Quick Reference](./backend-coverage-quick-reference.md)
+- [Frontend Coverage Audit](../reports/frontend-coverage-audit-executive-summary.md)
 
 ## See Also
 
-- [Test Coverage Baseline](./COVERAGE_BASELINE.md) - Code coverage targets
-- [CI/CD Gating](./CI_GATING_VERIFICATION.md) - Quality gates and checks
-- [Quality Reference](./QUALITY_QUICK_REFERENCE.md) - All quality checks
+- **Test Pyramid**: [Martin Fowler - Test Pyramid](https://martinfowler.com/bliki/TestPyramid.html)
+- **Go Build Constraints**: [Go Build Constraints](https://golang.org/doc/effective_go#build-constraints)
+- **Vitest**: [Vitest Documentation](https://vitest.dev/)
+- **Pytest**: [Pytest Best Practices](https://docs.pytest.org/)

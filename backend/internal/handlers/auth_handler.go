@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -19,6 +20,8 @@ import (
 const (
 	defaultSessionHours = 24
 	defaultSessionTTL   = defaultSessionHours * time.Hour
+
+	redisUserEmailKeyPrefix = "auth:user:email:"
 )
 
 // AuthHandler handles authentication endpoints
@@ -70,8 +73,10 @@ type LoginRequest struct {
 
 // AuthResponse represents an authentication response
 type AuthResponse struct {
-	User  *auth.User `json:"user"`
-	Token string     `json:"token"`
+	User        *auth.User `json:"user"`
+	Token       string     `json:"token,omitempty"`
+	AccessToken string     `json:"access_token,omitempty"`
+	ExpiresIn   int64      `json:"expires_in,omitempty"`
 }
 
 // SessionData represents session data stored in Redis
@@ -85,6 +90,23 @@ type SessionData struct {
 	LastActive time.Time              `json:"last_active"`
 	Metadata   map[string]interface{} `json:"metadata"`
 }
+
+type storedUserRecord struct {
+	ID           string                 `json:"id"`
+	Email        string                 `json:"email"`
+	Name         string                 `json:"name"`
+	Role         string                 `json:"role"`
+	ProjectID    string                 `json:"project_id"`
+	Metadata     map[string]interface{} `json:"metadata,omitempty"`
+	PasswordHash string                 `json:"password_hash"`
+	CreatedAt    time.Time              `json:"created_at"`
+	UpdatedAt    time.Time              `json:"updated_at"`
+}
+
+var (
+	errUserAlreadyExists = errors.New("user already exists")
+	errUserNotFound      = errors.New("user not found")
+)
 
 // Login handles POST /api/v1/auth/login
 // Validates credentials and creates a session
@@ -117,20 +139,30 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		})
 	}
 
-	// In a real implementation, you would validate credentials against a user database
-	// For now, we generate a JWT token that would have been issued by WorkOS
-	// This is a temporary implementation until WorkOS API integration is complete
+	if err := h.ensureRedisConfigured(); err != nil {
+		log.Printf("Auth login failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: "authentication service unavailable",
+		})
+	}
 
-	// Generate a mock JWT token (in production, this would come from WorkOS)
-	// We'll create a token that the authProvider can validate
-	// TODO: Once database schema supports password storage, implement actual password verification
-	user, err := h.generateMockAuthToken(ctx, req.Email)
+	normalizedEmail := normalizeEmail(req.Email)
+	record, err := h.getUserRecordByEmail(ctx, normalizedEmail)
 	if err != nil {
-		log.Printf("Failed to generate auth token: %v", err)
+		log.Printf("Failed to load user record: %v", err)
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{
 			Error: "invalid credentials",
 		})
 	}
+
+	if !h.passwordHasher.VerifyPassword(record.PasswordHash, req.Password) {
+		log.Printf("Invalid password for user: %s", normalizedEmail)
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{
+			Error: "invalid credentials",
+		})
+	}
+
+	user := record.toUser()
 
 	// Create session in Redis
 	token, err := h.createSessionToken(ctx, user)
@@ -147,8 +179,10 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	log.Printf("User logged in: %s (%s)", user.Email, user.ID)
 
 	return c.JSON(http.StatusOK, AuthResponse{
-		User:  user,
-		Token: token,
+		User:        user,
+		Token:       token,
+		AccessToken: token,
+		ExpiresIn:   int64(h.sessionTTL.Seconds()),
 	})
 }
 
@@ -167,16 +201,15 @@ func (h *AuthHandler) Login(c echo.Context) error {
 func (h *AuthHandler) Refresh(c echo.Context) error {
 	ctx := context.Background()
 
-	// Get token from cookie
-	token, err := c.Cookie("auth_token")
-	if err != nil || token.Value == "" {
+	tokenString, err := h.extractAuthToken(c)
+	if err != nil {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{
 			Error: "missing authentication token",
 		})
 	}
 
 	// Validate token and get user
-	user, err := h.validateSessionToken(ctx, token.Value)
+	user, err := h.validateSessionToken(ctx, tokenString)
 	if err != nil {
 		log.Printf("Failed to validate token: %v", err)
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{
@@ -199,8 +232,10 @@ func (h *AuthHandler) Refresh(c echo.Context) error {
 	log.Printf("User session refreshed: %s (%s)", user.Email, user.ID)
 
 	return c.JSON(http.StatusOK, AuthResponse{
-		User:  user,
-		Token: newToken,
+		User:        user,
+		Token:       newToken,
+		AccessToken: newToken,
+		ExpiresIn:   int64(h.sessionTTL.Seconds()),
 	})
 }
 
@@ -218,12 +253,12 @@ func (h *AuthHandler) Refresh(c echo.Context) error {
 func (h *AuthHandler) Logout(echoCtx echo.Context) error {
 	ctx := context.Background()
 
-	// Get token from cookie
-	token, err := echoCtx.Cookie("auth_token")
-	if err == nil && token.Value != "" {
+	// Get token from cookie or Authorization header
+	tokenString, err := h.extractAuthToken(echoCtx)
+	if err == nil && tokenString != "" {
 		// Try to revoke session from Redis
 		// Extract user ID from token to delete session
-		user, err := h.validateSessionToken(ctx, token.Value)
+		user, err := h.validateSessionToken(ctx, tokenString)
 		if err == nil && user != nil {
 			sessionKey := "session:" + user.ID
 			if err := h.redisClient.Del(ctx, sessionKey).Err(); err != nil {
@@ -265,9 +300,42 @@ func (h *AuthHandler) Register(c echo.Context) error {
 		return err
 	}
 
-	user, err := h.createRegisterUser(req)
+	if err := h.ensureRedisConfigured(); err != nil {
+		log.Printf("Auth register failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: "authentication service unavailable",
+		})
+	}
+
+	req.Email = normalizeEmail(req.Email)
+	exists, err := h.userExists(ctx, req.Email)
+	if err != nil {
+		log.Printf("Failed to check user existence: %v", err)
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: "failed to process registration",
+		})
+	}
+	if exists {
+		return c.JSON(http.StatusConflict, ErrorResponse{
+			Error: "user already exists",
+		})
+	}
+
+	user, passwordHash, err := h.createRegisterUser(req)
 	if err != nil {
 		log.Printf("Failed to hash password: %v", err)
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: "failed to process registration",
+		})
+	}
+
+	if err := h.storeUserRecord(ctx, user, passwordHash); err != nil {
+		if errors.Is(err, errUserAlreadyExists) {
+			return c.JSON(http.StatusConflict, ErrorResponse{
+				Error: "user already exists",
+			})
+		}
+		log.Printf("Failed to store user record: %v", err)
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error: "failed to process registration",
 		})
@@ -288,8 +356,10 @@ func (h *AuthHandler) Register(c echo.Context) error {
 	log.Printf("User registered: %s (%s)", user.Email, user.ID)
 
 	return c.JSON(http.StatusCreated, AuthResponse{
-		User:  user,
-		Token: token,
+		User:        user,
+		Token:       token,
+		AccessToken: token,
+		ExpiresIn:   int64(h.sessionTTL.Seconds()),
 	})
 }
 
@@ -327,14 +397,12 @@ func (h *AuthHandler) validateRegisterPassword(c echo.Context, password string) 
 	})
 }
 
-func (h *AuthHandler) createRegisterUser(req *RegisterRequest) (*auth.User, error) {
+func (h *AuthHandler) createRegisterUser(req *RegisterRequest) (*auth.User, string, error) {
 	hashedPassword, err := h.passwordHasher.HashPassword(req.Password)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	// TODO: Once database schema supports password storage, implement user creation
-	// For now, create a mock user for demonstration
 	user := &auth.User{
 		ID:       "user_" + strconv.FormatInt(time.Now().UnixNano(), 10),
 		Email:    req.Email,
@@ -343,10 +411,7 @@ func (h *AuthHandler) createRegisterUser(req *RegisterRequest) (*auth.User, erro
 		Metadata: make(map[string]interface{}),
 	}
 
-	// Store hashedPassword in metadata (would be in database in production)
-	user.Metadata["password_hash"] = hashedPassword
-
-	return user, nil
+	return user, hashedPassword, nil
 }
 
 // createSessionToken creates a new session and returns a JWT token
@@ -356,6 +421,10 @@ func (h *AuthHandler) createSessionToken(ctx context.Context, user *auth.User) (
 
 // validateSessionToken validates a JWT token and retrieves session data from Redis
 func (handler *AuthHandler) validateSessionToken(ctx context.Context, tokenString string) (*auth.User, error) {
+	if err := handler.ensureRedisConfigured(); err != nil {
+		return nil, err
+	}
+
 	// Parse JWT token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if token.Method.Alg() != "HS256" {
@@ -418,6 +487,10 @@ func (h *AuthHandler) extendSession(ctx context.Context, user *auth.User) (strin
 }
 
 func (h *AuthHandler) upsertSessionToken(ctx context.Context, user *auth.User, now time.Time) (string, error) {
+	if err := h.ensureRedisConfigured(); err != nil {
+		return "", err
+	}
+
 	sessionKey := "session:" + user.ID
 	sessionData := SessionData{
 		UserID:     user.ID,
@@ -485,25 +558,6 @@ func (h *AuthHandler) clearAuthCookie(c echo.Context) {
 	c.SetCookie(cookie)
 }
 
-// generateMockAuthToken generates a mock user for testing
-// In production, this would be replaced with WorkOS/AuthKit validation
-func (h *AuthHandler) generateMockAuthToken(_ context.Context, email string) (*auth.User, error) {
-	// For now, create a mock user object
-	// In production, this would validate against WorkOS AuthKit API
-	// and the authProvider would sync the profile from WorkOS
-
-	user := &auth.User{
-		ID:        "user_" + strconv.FormatInt(time.Now().UnixNano(), 10),
-		Email:     email,
-		Name:      email,
-		Role:      "user",
-		ProjectID: "",
-		Metadata:  make(map[string]interface{}),
-	}
-
-	return user, nil
-}
-
 // GetUser retrieves the current authenticated user from context
 // @Summary Get current user
 // @Description Get the current authenticated user information
@@ -516,9 +570,20 @@ func (h *AuthHandler) generateMockAuthToken(_ context.Context, email string) (*a
 func (h *AuthHandler) GetUser(c echo.Context) error {
 	user, ok := c.Get("user").(*auth.User)
 	if !ok || user == nil {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "unauthenticated",
-		})
+		tokenString, err := h.extractAuthToken(c)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, ErrorResponse{
+				Error: "unauthenticated",
+			})
+		}
+
+		loadedUser, err := h.validateSessionToken(c.Request().Context(), tokenString)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, ErrorResponse{
+				Error: "unauthenticated",
+			})
+		}
+		user = loadedUser
 	}
 	return c.JSON(http.StatusOK, user)
 }
@@ -561,4 +626,139 @@ func (h *AuthHandler) VerifyToken(echoCtx echo.Context) error {
 	}
 
 	return echoCtx.JSON(http.StatusOK, user)
+}
+
+func (h *AuthHandler) ensureRedisConfigured() error {
+	if h.redisClient == nil {
+		return errors.New("redis client not configured")
+	}
+	return nil
+}
+
+func normalizeEmail(email string) string {
+	return strings.ToLower(strings.TrimSpace(email))
+}
+
+func (h *AuthHandler) userExists(ctx context.Context, email string) (bool, error) {
+	if err := h.ensureRedisConfigured(); err != nil {
+		return false, err
+	}
+	if email == "" {
+		return false, errors.New("email is required")
+	}
+	_, err := h.redisClient.Get(ctx, h.userEmailKey(email)).Result()
+	if err == redis.Nil {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("failed to check user: %w", err)
+	}
+	return true, nil
+}
+
+func (h *AuthHandler) storeUserRecord(ctx context.Context, user *auth.User, passwordHash string) error {
+	if err := h.ensureRedisConfigured(); err != nil {
+		return err
+	}
+	if user == nil {
+		return errors.New("user is required")
+	}
+	if user.Email == "" {
+		return errors.New("user email is required")
+	}
+	if passwordHash == "" {
+		return errors.New("password hash is required")
+	}
+
+	normalizedEmail := normalizeEmail(user.Email)
+	if user.Metadata == nil {
+		user.Metadata = make(map[string]interface{})
+	}
+
+	now := time.Now()
+	record := storedUserRecord{
+		ID:           user.ID,
+		Email:        normalizedEmail,
+		Name:         user.Name,
+		Role:         user.Role,
+		ProjectID:    user.ProjectID,
+		Metadata:     user.Metadata,
+		PasswordHash: passwordHash,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+
+	payload, err := json.Marshal(record)
+	if err != nil {
+		return fmt.Errorf("failed to serialize user record: %w", err)
+	}
+
+	created, err := h.redisClient.SetNX(ctx, h.userEmailKey(normalizedEmail), payload, 0).Result()
+	if err != nil {
+		return fmt.Errorf("failed to store user record: %w", err)
+	}
+	if !created {
+		return errUserAlreadyExists
+	}
+	return nil
+}
+
+func (h *AuthHandler) getUserRecordByEmail(ctx context.Context, email string) (*storedUserRecord, error) {
+	if err := h.ensureRedisConfigured(); err != nil {
+		return nil, err
+	}
+	if email == "" {
+		return nil, errors.New("email is required")
+	}
+
+	result, err := h.redisClient.Get(ctx, h.userEmailKey(email)).Result()
+	if err == redis.Nil {
+		return nil, errUserNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user record: %w", err)
+	}
+
+	var record storedUserRecord
+	if err := json.Unmarshal([]byte(result), &record); err != nil {
+		return nil, fmt.Errorf("failed to decode user record: %w", err)
+	}
+	return &record, nil
+}
+
+func (h *AuthHandler) userEmailKey(email string) string {
+	return redisUserEmailKeyPrefix + normalizeEmail(email)
+}
+
+func (r *storedUserRecord) toUser() *auth.User {
+	if r == nil {
+		return nil
+	}
+	metadata := r.Metadata
+	if metadata == nil {
+		metadata = make(map[string]interface{})
+	}
+
+	return &auth.User{
+		ID:        r.ID,
+		Email:     r.Email,
+		Name:      r.Name,
+		Role:      r.Role,
+		ProjectID: r.ProjectID,
+		Metadata:  metadata,
+	}
+}
+
+func (h *AuthHandler) extractAuthToken(c echo.Context) (string, error) {
+	token, err := c.Cookie("auth_token")
+	if err == nil && token.Value != "" {
+		return token.Value, nil
+	}
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader != "" && len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		return authHeader[7:], nil
+	}
+
+	return "", errors.New("missing authentication token")
 }

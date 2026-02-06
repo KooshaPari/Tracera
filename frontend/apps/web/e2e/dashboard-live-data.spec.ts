@@ -4,7 +4,7 @@ import { expect, test } from './global-setup';
  * Dashboard E2E Tests - LIVE DATA
  *
  * Tests dashboard with real SwiftRide project data (5,686 items).
- * 
+ *
  * Run with:
  * VITE_USE_MOCK_DATA=false npx playwright test dashboard-live-data.spec.ts
  *
@@ -23,10 +23,11 @@ test.describe('Dashboard - Live Data with 5,686 Items', () => {
 
   test('should load dashboard with real API data', async ({ page }) => {
     // Wait for dashboard API call to complete
-    const dashboardResponse = await page.waitForResponse(
-      response => response.url().includes('/api/v1/dashboard/summary'),
-      { timeout: 10000 }
-    ).catch(() => null);
+    const dashboardResponse = await page
+      .waitForResponse((response) => response.url().includes('/api/v1/dashboard/summary'), {
+        timeout: 10000,
+      })
+      .catch(() => null);
 
     // If running in live mode, we expect real API calls
     if (process.env.VITE_USE_MOCK_DATA === 'false') {
@@ -42,9 +43,11 @@ test.describe('Dashboard - Live Data with 5,686 Items', () => {
     const heading = page.getByRole('heading', {
       name: /traceability dashboard|dashboard overview/i,
     });
-    await expect(heading).toBeVisible().catch(() => {
-      console.log('Dashboard heading might be nested or use different text');
-    });
+    await expect(heading)
+      .toBeVisible()
+      .catch(() => {
+        console.log('Dashboard heading might be nested or use different text');
+      });
   });
 
   test('should display SwiftRide project with real data', async ({ page }) => {
@@ -64,9 +67,11 @@ test.describe('Dashboard - Live Data with 5,686 Items', () => {
     // Look for item statistics
     // The real dashboard should show actual counts from database
     const statsContainer = page.locator('[data-testid="dashboard-stats"], [class*="stat"]').first();
-    await expect(statsContainer).toBeVisible({ timeout: 5000 }).catch(() => {
-      console.log('Stats container not found with default selectors');
-    });
+    await expect(statsContainer)
+      .toBeVisible({ timeout: 5000 })
+      .catch(() => {
+        console.log('Stats container not found with default selectors');
+      });
   });
 
   test('should respond to user interactions', async ({ page }) => {
@@ -100,7 +105,7 @@ test.describe('Dashboard - Performance with Large Dataset', () => {
 
     // Verify content is rendered
     const content = page.locator('body');
-    const hasContent = await content.textContent().then(text => text && text.length > 100);
+    const hasContent = await content.textContent().then((text) => text && text.length > 100);
     expect(hasContent).toBe(true);
   });
 
@@ -140,7 +145,7 @@ test.describe('Dashboard - Data Validation', () => {
     const apiCalls: string[] = [];
 
     // Intercept all API calls
-    page.on('response', response => {
+    page.on('response', (response) => {
       if (response.url().includes('/api/v1/')) {
         apiCalls.push(response.url());
       }
@@ -150,9 +155,7 @@ test.describe('Dashboard - Data Validation', () => {
     await page.waitForLoadState('networkidle');
 
     // In live mode, should have real API calls
-    const hasDashboardCall = apiCalls.some(url =>
-      url.includes('/api/v1/dashboard/summary')
-    );
+    const hasDashboardCall = apiCalls.some((url) => url.includes('/api/v1/dashboard/summary'));
 
     if (process.env.VITE_USE_MOCK_DATA === 'false') {
       expect(hasDashboardCall).toBe(true);
