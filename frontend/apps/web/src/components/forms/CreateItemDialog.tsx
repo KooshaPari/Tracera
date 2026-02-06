@@ -22,6 +22,7 @@ import type { CreateItemInput } from '@tracertm/types';
 import type { ViewType } from '@tracertm/types';
 
 import { createItem } from '@/api/items';
+import { toast } from '@/components/ui/toaster';
 import {
   buildErrorMetadata,
   extractValidationErrors,
@@ -29,13 +30,8 @@ import {
   isAuthError,
 } from '@/lib/api-error-handler';
 import { logger } from '@/lib/logger';
-import {
-  queueMutation,
-  removeMutationFromQueue,
-  updateMutationError,
-} from '@/lib/mutation-queue';
+import { queueMutation, removeMutationFromQueue, updateMutationError } from '@/lib/mutation-queue';
 import { withRetry } from '@/lib/retry';
-import { toast } from '@/components/ui/toaster';
 
 import { CreateDefectItemForm } from './CreateDefectItemForm';
 import { CreateEpicItemForm } from './CreateEpicItemForm';
@@ -107,19 +103,16 @@ export function CreateItemDialog({
         const retryingToastId = `create_item_retrying_${Date.now()}`;
 
         // Attempt to create item with retry logic
-        const result = await withRetry(
-          () => createItem(itemInput),
-          {
-            maxAttempts: 3,
-            baseDelayMs: 1000,
-            onRetry: (attempt, error) => {
-              toast.loading(`Retrying... (Attempt ${attempt}/3)`, {
-                id: retryingToastId,
-              });
-              logger.warn(`Retry attempt ${attempt} after error:`, error.message);
-            },
+        const result = await withRetry(() => createItem(itemInput), {
+          maxAttempts: 3,
+          baseDelayMs: 1000,
+          onRetry: (attempt, error) => {
+            toast.loading(`Retrying... (Attempt ${attempt}/3)`, {
+              id: retryingToastId,
+            });
+            logger.warn(`Retry attempt ${attempt} after error:`, error.message);
           },
-        );
+        });
 
         if (!result.success) {
           // Handle failed creation after all retries

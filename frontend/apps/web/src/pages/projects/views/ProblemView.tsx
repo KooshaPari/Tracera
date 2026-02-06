@@ -179,7 +179,7 @@ export const ProblemView = ({ projectId }: ProblemViewProps) => {
         <div className='flex items-center justify-center py-12'>
           <div className='border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent' />
         </div>
-      ) : filteredProblems.length === 0 ? (
+      ) : (filteredProblems.length === 0 ? (
         <div className='rounded-lg border border-dashed p-12 text-center'>
           <AlertTriangle className='text-muted-foreground mx-auto h-12 w-12' />
           <h3 className='mt-4 text-lg font-semibold'>No problems found</h3>
@@ -220,7 +220,7 @@ export const ProblemView = ({ projectId }: ProblemViewProps) => {
             </table>
           </div>
         </div>
-      )}
+      ))}
 
       {/* Create Modal */}
       {showCreateModal && (
@@ -281,11 +281,11 @@ function ProblemRow({ problem }: { problem: Problem }) {
       <td className='px-4 py-3'>
         {problem.rootCauseIdentified ? (
           <span className='text-green-600'>✓ Identified</span>
-        ) : problem.workaroundAvailable ? (
+        ) : (problem.workaroundAvailable ? (
           <span className='text-yellow-600'>Workaround</span>
         ) : (
           <span className='text-muted-foreground'>—</span>
-        )}
+        ))}
       </td>
       <td className='text-muted-foreground px-4 py-3 text-sm'>{createdDate}</td>
     </tr>

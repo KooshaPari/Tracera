@@ -8,7 +8,7 @@ import type { Item, Link } from '@tracertm/types';
 
 import { logger } from '@/lib/logger';
 
-import type { LayoutType } from './layouts/useDAGLayout';
+import type { LayoutType } from './layouts/useDagLayout';
 import type { GraphPerspective } from './types';
 
 import { FlowGraphViewInner } from './FlowGraphViewInner';

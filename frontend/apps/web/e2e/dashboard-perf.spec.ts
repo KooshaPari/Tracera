@@ -11,7 +11,7 @@ test.describe('Dashboard Performance @performance @dashboard', () => {
 
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lcpEntry = entries[entries.length - 1];
+        const lcpEntry = entries.at(-1);
         if (lcpEntry) {
           (window as any).__perfMetrics.lcpMs = lcpEntry.startTime;
           (window as any).__perfMetrics.lcpObserved = true;
@@ -33,8 +33,8 @@ test.describe('Dashboard Performance @performance @dashboard', () => {
     // Collect metrics after navigation
     const metrics = await page.evaluate(() => {
       const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      const memory = (performance as any).memory;
-      const lcpMs = (window as any).__perfMetrics?.lcpMs || 0;
+      const { memory } = performance as any;
+      const lcpMs = (window as any).__perfMetrics?.lcpMs ?? 0;
 
       return {
         loadTime: nav ? nav.loadEventEnd - nav.startTime : 0,
@@ -83,7 +83,7 @@ test.describe('Dashboard Performance @performance @dashboard', () => {
     await page.goto('/home', { waitUntil: 'networkidle' });
 
     const initialHeap = await page.evaluate(() => {
-      const memory = (performance as any).memory;
+      const { memory } = performance as any;
       return memory ? memory.usedJSHeapSize / (1024 * 1024) : 0;
     });
 
@@ -91,7 +91,7 @@ test.describe('Dashboard Performance @performance @dashboard', () => {
     await page.waitForTimeout(10_000);
 
     const finalHeap = await page.evaluate(() => {
-      const memory = (performance as any).memory;
+      const { memory } = performance as any;
       return memory ? memory.usedJSHeapSize / (1024 * 1024) : 0;
     });
 

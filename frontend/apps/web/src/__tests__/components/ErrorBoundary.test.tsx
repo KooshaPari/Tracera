@@ -235,7 +235,7 @@ describe('ErrorBoundary Component', () => {
 
       fireEvent.click(screen.getByText('Reload page'));
 
-      expect(mockReload).toHaveBeenCalledTimes(1);
+      expect(mockReload).toHaveBeenCalledOnce();
     });
 
     it('should handle undefined window gracefully', () => {
@@ -357,7 +357,7 @@ describe('ErrorBoundary Component', () => {
         </ErrorBoundary>,
       );
 
-      expect(onError).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledOnce();
     });
 
     it('should provide error to onError callback', () => {

@@ -571,7 +571,7 @@ function CrossPerspectiveSearchComponent({
             );
           })}
         </div>
-      ) : query ? (
+      ) : (query ? (
         <div className='text-muted-foreground p-8 text-center'>
           <Search className='mx-auto mb-2 h-8 w-8 opacity-50' />
           <p className='text-sm'>No items found matching "{query}"</p>
@@ -622,7 +622,7 @@ function CrossPerspectiveSearchComponent({
             </div>
           )}
         </div>
-      )}
+      ))}
 
       {/* Footer with keyboard hints */}
       {query && results.length > 0 && (

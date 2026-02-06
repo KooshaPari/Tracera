@@ -369,7 +369,7 @@ function GraphSearchComponent({
             </div>
           ))}
         </div>
-      ) : query ? (
+      ) : (query ? (
         <div className='text-muted-foreground p-8 text-center'>
           <Search className='mx-auto mb-2 h-8 w-8 opacity-50' />
           <p className='text-sm'>No items found matching &quot;{query}&quot;</p>
@@ -379,7 +379,7 @@ function GraphSearchComponent({
           <Search className='mx-auto mb-2 h-8 w-8 opacity-50' />
           <p className='text-sm'>Enter a search query to find items</p>
         </div>
-      )}
+      ))}
     </Card>
   );
 }

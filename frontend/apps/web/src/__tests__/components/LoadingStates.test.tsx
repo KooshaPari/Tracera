@@ -94,7 +94,7 @@ describe(ErrorState, () => {
     const retryButton = screen.getByRole('button', { name: /retry/i });
     await user.click(retryButton);
 
-    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(onRetry).toHaveBeenCalledOnce();
   });
 
   it('should display error icon', () => {

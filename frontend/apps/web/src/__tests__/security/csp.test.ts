@@ -240,7 +240,7 @@ describe('Content Security Policy Tests', () => {
       const createTrustedHTMLPolicy = () => {
         if (typeof globalThis.window !== 'undefined' && 'trustedTypes' in globalThis) {
           return (globalThis as any).trustedTypes.createPolicy('default', {
-            createHTML: (input: string) => input.replaceAll(/<script/gi, '&lt;script'),
+            createHTML: (input: string) => input.replaceAll('<script', '&lt;script'),
           });
         }
         return null;

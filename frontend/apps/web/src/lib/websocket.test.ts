@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { RealtimeClient } from './websocket';
 
 // Mock WebSocket
@@ -37,7 +38,7 @@ describe('RealtimeClient', () => {
 
       // Simulate connection open
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open'
+        (call: any[]) => call[0] === 'open',
       );
 
       if (openEvent) {
@@ -59,7 +60,7 @@ describe('RealtimeClient', () => {
 
       // Simulate connection open
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open'
+        (call: any[]) => call[0] === 'open',
       );
       if (openEvent) {
         openEvent[1]();
@@ -67,7 +68,7 @@ describe('RealtimeClient', () => {
 
       // Simulate successful auth response
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message'
+        (call: any[]) => call[0] === 'message',
       );
       if (messageEvent) {
         messageEvent[1]({
@@ -88,7 +89,7 @@ describe('RealtimeClient', () => {
       realtimeClient.connect('invalid-token', 'project-1');
 
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open'
+        (call: any[]) => call[0] === 'open',
       );
       if (openEvent) {
         openEvent[1]();
@@ -96,7 +97,7 @@ describe('RealtimeClient', () => {
 
       // Simulate failed auth response
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message'
+        (call: any[]) => call[0] === 'message',
       );
       if (messageEvent) {
         messageEvent[1]({
@@ -139,7 +140,7 @@ describe('RealtimeClient', () => {
       // Simulate successful auth
       mockWs.readyState = WebSocket.OPEN;
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message'
+        (call: any[]) => call[0] === 'message',
       );
 
       if (messageEvent) {
@@ -171,7 +172,7 @@ describe('RealtimeClient', () => {
 
       // Simulate auth success
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message'
+        (call: any[]) => call[0] === 'message',
       );
 
       if (messageEvent) {
@@ -200,7 +201,7 @@ describe('RealtimeClient', () => {
           expect(callback).toHaveBeenCalledWith(
             expect.objectContaining({
               event_type: 'item.created',
-            })
+            }),
           );
           done();
         }, 50);
@@ -214,7 +215,7 @@ describe('RealtimeClient', () => {
       realtimeClient.connect('test-token', 'project-1');
 
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message'
+        (call: any[]) => call[0] === 'message',
       );
 
       if (messageEvent) {
@@ -260,7 +261,7 @@ describe('RealtimeClient', () => {
       realtimeClient.connect('test-token', 'project-1');
 
       const closeEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'close'
+        (call: any[]) => call[0] === 'close',
       );
 
       if (closeEvent) {
@@ -289,7 +290,7 @@ describe('RealtimeClient', () => {
       realtimeClient.connect('test-token', 'project-1');
 
       const closeEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'close'
+        (call: any[]) => call[0] === 'close',
       );
 
       if (closeEvent) {
@@ -318,14 +319,14 @@ describe('RealtimeClient', () => {
       realtimeClient.connect('test-token', 'project-1');
 
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open'
+        (call: any[]) => call[0] === 'open',
       );
 
       if (openEvent) {
         openEvent[1]();
 
         const messageEvent = mockWs.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'message'
+          (call: any[]) => call[0] === 'message',
         );
 
         if (messageEvent) {
@@ -352,14 +353,14 @@ describe('RealtimeClient', () => {
       realtimeClient.connect('test-token', 'project-1');
 
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open'
+        (call: any[]) => call[0] === 'open',
       );
 
       if (openEvent) {
         openEvent[1]();
 
         const messageEvent = mockWs.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'message'
+          (call: any[]) => call[0] === 'message',
         );
 
         if (messageEvent) {

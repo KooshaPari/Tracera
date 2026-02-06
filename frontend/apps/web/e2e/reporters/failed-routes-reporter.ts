@@ -1,7 +1,7 @@
 import type { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 /**
  * Failed Routes Reporter
@@ -11,13 +11,13 @@ import * as path from 'path';
  */
 class FailedRoutesReporter implements Reporter {
   private failedRoutes: Set<string> = new Set();
-  private testResults: Array<{
+  private testResults: {
     title: string;
     url?: string;
     status: 'passed' | 'failed' | 'skipped' | 'timedout';
     error?: string;
     duration: number;
-  }> = [];
+  }[] = [];
   private totalDuration = 0;
   private startTime = Date.now();
 
@@ -73,7 +73,7 @@ class FailedRoutesReporter implements Reporter {
         skipped: this.testResults.filter((r) => r.status === 'skipped').length,
         timedout: this.testResults.filter((r) => r.status === 'timedout').length,
       },
-      failedRoutes: Array.from(this.failedRoutes).sort(),
+      failedRoutes: [...this.failedRoutes].toSorted(),
       details: this.testResults,
     };
 

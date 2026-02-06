@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
+
 import { AuthTokenProvider, useAuthToken } from './AuthTokenContext';
 
 describe('AuthTokenContext', () => {
@@ -14,7 +15,7 @@ describe('AuthTokenContext', () => {
     const { result } = renderHook(() => useAuthToken(), { wrapper });
 
     expect(result.current.getToken()).toBeNull();
-    expect(result.current.isTokenExpired()).toBe(true);
+    expect(result.current.isTokenExpired()).toBeTruthy();
   });
 
   it('should store token in sessionStorage', async () => {
@@ -64,7 +65,7 @@ describe('AuthTokenContext', () => {
     });
 
     expect(result.current.getTokenExpiresAt()).toBe(futureExpiry);
-    expect(result.current.isTokenExpired()).toBe(false);
+    expect(result.current.isTokenExpired()).toBeFalsy();
   });
 
   it('should detect expired tokens', async () => {
@@ -81,7 +82,7 @@ describe('AuthTokenContext', () => {
       result.current.setTokenExpiry(pastExpiry);
     });
 
-    expect(result.current.isTokenExpired()).toBe(true);
+    expect(result.current.isTokenExpired()).toBeTruthy();
   });
 
   it('should clear token and expiry', async () => {
@@ -94,7 +95,7 @@ describe('AuthTokenContext', () => {
 
     await act(async () => {
       result.current.setToken(testToken);
-      result.current.setTokenExpiry(Date.now() + 3600000);
+      result.current.setTokenExpiry(Date.now() + 3_600_000);
     });
 
     expect(result.current.getToken()).toBe(testToken);
@@ -162,8 +163,6 @@ describe('AuthTokenContext', () => {
   it('should throw error when used outside provider', () => {
     const { result } = renderHook(() => useAuthToken());
 
-    expect(result.error).toEqual(
-      Error('useAuthToken must be used within AuthTokenProvider')
-    );
+    expect(result.error).toEqual(Error('useAuthToken must be used within AuthTokenProvider'));
   });
 });

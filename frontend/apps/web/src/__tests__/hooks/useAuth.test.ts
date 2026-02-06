@@ -156,7 +156,7 @@ describe('useUser - selector behavior', () => {
   it('should return user from store', () => {
     const { result } = renderHook(() => useUser());
 
-    expect(result.current === null || typeof result.current === 'object').toBe(true);
+    expect(result.current === null || typeof result.current === 'object').toBeTruthy();
   });
 
   it('should have same value as useAuth().user', () => {
@@ -183,7 +183,7 @@ describe('useIsAuthenticated - selector behavior', () => {
   it('should return false initially', () => {
     const { result } = renderHook(() => useIsAuthenticated());
 
-    expect(result.current).toBe(false);
+    expect(result.current).toBeFalsy();
   });
 
   it('should match useAuth().isAuthenticated', () => {
@@ -198,7 +198,7 @@ describe('useIsAuthenticated - selector behavior', () => {
     const { result: statusResult } = renderHook(() => useIsAuthenticated());
 
     expect(authResult.current.user).toBeNull();
-    expect(statusResult.current).toBe(false);
+    expect(statusResult.current).toBeFalsy();
   });
 });
 
@@ -230,7 +230,7 @@ describe('useAuth - object structure and properties', () => {
 
     expect(result.current.user).toBeNull();
     expect(result.current.token).toBeNull();
-    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.isAuthenticated).toBeFalsy();
     expect(typeof result.current.isLoading).toBe('boolean');
   });
 
@@ -242,7 +242,7 @@ describe('useAuth - object structure and properties', () => {
     const secondRef = result.current;
 
     // References might not be identical if Zustand returns new proxy objects,
-    // but properties should match
+    // But properties should match
     expect(firstRef.user).toBe(secondRef.user);
     expect(firstRef.token).toBe(secondRef.token);
     expect(firstRef.isAuthenticated).toBe(secondRef.isAuthenticated);

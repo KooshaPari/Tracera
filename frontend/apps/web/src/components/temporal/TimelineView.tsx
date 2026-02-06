@@ -188,9 +188,9 @@ export const TimelineView = ({
                       variant={
                         version.status === 'published'
                           ? 'default'
-                          : version.status === 'draft'
+                          : (version.status === 'draft'
                             ? 'secondary'
-                            : 'outline'
+                            : 'outline')
                       }
                       className='text-xs'
                     >

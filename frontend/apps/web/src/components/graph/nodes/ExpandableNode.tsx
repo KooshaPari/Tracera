@@ -421,25 +421,25 @@ function PanelNodeView({ data, onCollapse, onMinimize, onViewFullPage, onEdit }:
               <div className='mb-2 flex items-center gap-2'>
                 {data.editType === 'instant' ? (
                   <Zap className='text-primary h-4 w-4' />
-                ) : data.editType === 'agent_required' ? (
+                ) : (data.editType === 'agent_required' ? (
                   <Bot className='text-primary h-4 w-4' />
                 ) : (
                   <Edit3 className='text-primary h-4 w-4' />
-                )}
+                ))}
                 <span className='text-sm font-medium'>
                   {data.editType === 'instant'
                     ? 'Instant edit available'
-                    : data.editType === 'agent_required'
+                    : (data.editType === 'agent_required'
                       ? 'Agent-assisted edit'
-                      : 'Manual edit'}
+                      : 'Manual edit')}
                 </span>
               </div>
               <p className='text-muted-foreground text-xs'>
                 {data.editType === 'instant'
                   ? 'Changes apply immediately via automation'
-                  : data.editType === 'agent_required'
+                  : (data.editType === 'agent_required'
                     ? 'An AI agent will help implement changes'
-                    : 'Edit manually in the full editor'}
+                    : 'Edit manually in the full editor')}
               </p>
             </div>
           )}
@@ -456,11 +456,11 @@ function PanelNodeView({ data, onCollapse, onMinimize, onViewFullPage, onEdit }:
           <Button variant='secondary' size='sm' onClick={onEdit}>
             {data.editType === 'instant' ? (
               <Zap className='h-4 w-4' />
-            ) : data.editType === 'agent_required' ? (
+            ) : (data.editType === 'agent_required' ? (
               <Bot className='h-4 w-4' />
             ) : (
               <Edit3 className='h-4 w-4' />
-            )}
+            ))}
           </Button>
         )}
         <Button variant='ghost' size='sm' className='h-9 w-9 p-0'>

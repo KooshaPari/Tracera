@@ -19,7 +19,7 @@ import {
   Zap,
 } from 'lucide-react';
 
-import type { LayoutType } from './layouts/useDAGLayout';
+import type { LayoutType } from './layouts/useDagLayout';
 import type { GraphPerspective } from './types';
 
 // View types: graph/diagram styles + perspectives

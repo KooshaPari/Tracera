@@ -468,8 +468,8 @@ export function randomAgent() {
  * Log Collection Interfaces
  */
 export interface BrowserLogs {
-  console: Array<{ level: string; message: string; timestamp: number }>;
-  errors: Array<{ message: string; stack?: string; timestamp: number }>;
+  console: { level: string; message: string; timestamp: number }[];
+  errors: { message: string; stack?: string; timestamp: number }[];
   warnings: string[];
 }
 

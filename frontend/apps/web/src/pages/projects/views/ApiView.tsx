@@ -212,7 +212,7 @@ export const ApiView = ({ projectId }: ApiViewProps) => {
           <Skeleton className='h-10 w-full rounded-lg' />
           <Skeleton className='h-10 w-full rounded-lg' />
         </div>
-      ) : projectItems.length > 0 ? (
+      ) : (projectItems.length > 0 ? (
         <div className='space-y-2'>
           <h2 className='text-lg font-semibold'>Project API items</h2>
           <div className='rounded-lg border'>
@@ -244,7 +244,7 @@ export const ApiView = ({ projectId }: ApiViewProps) => {
             })}
           </div>
         </div>
-      ) : null}
+      ) : null)}
 
       <div className='space-y-2'>
         <h2 className='text-lg font-semibold'>Reference</h2>

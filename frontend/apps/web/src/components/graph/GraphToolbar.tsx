@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from '@tracertm/ui/components/Tooltip';
 
-import type { LayoutType } from './layouts/useDAGLayout';
+import type { LayoutType } from './layouts/useDagLayout';
 import type { GraphPerspective } from './types';
 
 import { ExportControls } from './ExportControls';

@@ -43,7 +43,7 @@ export const Route = createFileRoute('/home')({
   component: DashboardComponent,
   loader: async () => {
     // Only fetch systemStatus here; projects are fetched by DashboardView's
-    // useProjects() hook (with staleTime caching) to avoid a double-fetch.
+    // UseProjects() hook (with staleTime caching) to avoid a double-fetch.
     try {
       const { fetchSystemStatus } = await import('@/api/system');
       const systemStatus = await fetchSystemStatus().catch(() => ({

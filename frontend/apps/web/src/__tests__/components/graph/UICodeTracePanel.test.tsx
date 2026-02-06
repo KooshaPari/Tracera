@@ -470,8 +470,7 @@ describe(UICodeTracePanel, () => {
         // Button should have text content or aria-label
         expect(
           button.textContent?.trim() ||
-            button.getAttribute('aria-label') ??
-            button.getAttribute('title'),
+            (button.getAttribute('aria-label') ?? button.getAttribute('title')),
         ).toBeTruthy();
       });
     });

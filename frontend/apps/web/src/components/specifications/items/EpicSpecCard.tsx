@@ -187,9 +187,9 @@ export function EpicSpecCard({
                       'text-[10px] font-medium',
                       daysRemaining < 0
                         ? 'text-red-500'
-                        : daysRemaining < 7
+                        : (daysRemaining < 7
                           ? 'text-orange-500'
-                          : 'text-muted-foreground',
+                          : 'text-muted-foreground'),
                     )}
                   >
                     {daysRemaining < 0

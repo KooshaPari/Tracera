@@ -477,7 +477,7 @@ export function ProjectsListView() {
         result instanceof Blob
           ? result
           : new Blob([JSON.stringify(result)], { type: 'application/json' });
-      const ext = exportFormat === 'full' ? 'json' : exportFormat === 'csv' ? 'csv' : 'json';
+      const ext = exportFormat === 'full' ? 'json' : (exportFormat === 'csv' ? 'csv' : 'json');
       const url = globalThis.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -821,9 +821,9 @@ export function ProjectsListView() {
                 <p className='text-muted-foreground mt-1 text-[10px] font-medium'>
                   {importFile
                     ? importFile.name
-                    : importMode === 'full'
+                    : (importMode === 'full'
                       ? 'Canonical JSON'
-                      : 'JSON or CSV'}
+                      : 'JSON or CSV')}
                 </p>
               </Label>
             </div>

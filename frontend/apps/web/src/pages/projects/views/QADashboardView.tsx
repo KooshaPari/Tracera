@@ -217,7 +217,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
             <CardContent>
               {trendLoading ? (
                 <Skeleton className='h-[200px] w-full' />
-              ) : passRateTrend?.trend.length === 0 ? (
+              ) : (passRateTrend?.trend.length === 0 ? (
                 <div className='text-muted-foreground py-12 text-center'>
                   <BarChart3 className='mx-auto mb-4 h-12 w-12 opacity-50' />
                   <p>No test run data available</p>
@@ -260,7 +260,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
                     </div>
                   </div>
                 </div>
-              )}
+              ))}
             </CardContent>
           </Card>
 
@@ -394,7 +394,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
               <CardContent>
                 {defectLoading ? (
                   <Skeleton className='h-[200px] w-full' />
-                ) : defectDensity?.topFailingTests.length === 0 ? (
+                ) : (defectDensity?.topFailingTests.length === 0 ? (
                   <div className='text-muted-foreground py-8 text-center'>
                     <CheckCircle2 className='mx-auto mb-2 h-8 w-8 text-green-500' />
                     <p>No failing tests</p>
@@ -422,7 +422,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
                       ))}
                     </TableBody>
                   </Table>
-                )}
+                ))}
               </CardContent>
             </Card>
 
@@ -490,7 +490,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
             <CardContent>
               {historyLoading ? (
                 <Skeleton className='h-[300px] w-full' />
-              ) : executionHistory?.runs.length === 0 ? (
+              ) : (executionHistory?.runs.length === 0 ? (
                 <div className='text-muted-foreground py-12 text-center'>
                   <Clock className='mx-auto mb-4 h-12 w-12 opacity-50' />
                   <p>No test runs in the selected period</p>
@@ -546,7 +546,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
                     ))}
                   </TableBody>
                 </Table>
-              )}
+              ))}
             </CardContent>
           </Card>
         </TabsContent>

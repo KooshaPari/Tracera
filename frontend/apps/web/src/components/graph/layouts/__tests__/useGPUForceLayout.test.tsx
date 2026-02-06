@@ -1,5 +1,5 @@
 /**
- * Unit Tests for useGPUForceLayout Hook
+ * Unit Tests for useGpuForceLayout Hook
  *
  * @vitest-environment jsdom
  */
@@ -9,7 +9,7 @@ import type { Edge, Node } from '@xyflow/react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { useGPUForceLayout } from '../useGPUForceLayout';
+import { useGpuForceLayout } from '../useGpuForceLayout';
 
 const createNodes = (count: number): Node[] =>
   Array.from({ length: count }, (_, i) => ({
@@ -26,10 +26,10 @@ const createEdges = (count: number): Edge[] =>
     target: `node-${i + 1}`,
   }));
 
-describe(useGPUForceLayout, () => {
+describe(useGpuForceLayout, () => {
   describe('basic functionality', () => {
     it('should initialize with empty nodes', () => {
-      const { result } = renderHook(() => useGPUForceLayout([], []));
+      const { result } = renderHook(() => useGpuForceLayout([], []));
 
       expect(result.current.nodes).toEqual([]);
       expect(result.current.isComputing).toBeFalsy();
@@ -41,7 +41,7 @@ describe(useGPUForceLayout, () => {
       const edges = createEdges(10);
 
       const { result } = renderHook(() =>
-        useGPUForceLayout(nodes, edges, {
+        useGpuForceLayout(nodes, edges, {
           animateTransitions: false,
         }),
       );
@@ -62,7 +62,7 @@ describe(useGPUForceLayout, () => {
       const edges = createEdges(5);
 
       const { result } = renderHook(() =>
-        useGPUForceLayout(nodes, edges, {
+        useGpuForceLayout(nodes, edges, {
           enabled: false,
         }),
       );
@@ -79,7 +79,7 @@ describe(useGPUForceLayout, () => {
       const edges = createEdges(100);
 
       const { result } = renderHook(() =>
-        useGPUForceLayout(nodes, edges, {
+        useGpuForceLayout(nodes, edges, {
           animateTransitions: false,
         }),
       );
@@ -100,7 +100,7 @@ describe(useGPUForceLayout, () => {
       const edges = createEdges(1500);
 
       const { result } = renderHook(() =>
-        useGPUForceLayout(nodes, edges, {
+        useGpuForceLayout(nodes, edges, {
           animateTransitions: false,
         }),
       );
@@ -122,7 +122,7 @@ describe(useGPUForceLayout, () => {
       const edges = createEdges(20);
 
       const { result } = renderHook(() =>
-        useGPUForceLayout(nodes, edges, {
+        useGpuForceLayout(nodes, edges, {
           animateTransitions: false,
           config: {
             attractionStrength: 0.2,
@@ -146,7 +146,7 @@ describe(useGPUForceLayout, () => {
       const edges = createEdges(10);
 
       const { result } = renderHook(() =>
-        useGPUForceLayout(nodes, edges, {
+        useGpuForceLayout(nodes, edges, {
           animateTransitions: true,
           animationDuration: 1000,
         }),
@@ -163,7 +163,7 @@ describe(useGPUForceLayout, () => {
       const nodes = createNodes(5);
       const edges = createEdges(5);
 
-      const { result } = renderHook(() => useGPUForceLayout([], [], { enabled: false }));
+      const { result } = renderHook(() => useGpuForceLayout([], [], { enabled: false }));
 
       const layoutedNodes = await result.current.calculateLayout(nodes, edges);
 
@@ -177,7 +177,7 @@ describe(useGPUForceLayout, () => {
       const nodes = createNodes(5);
       const edges = createEdges(5);
 
-      const { result } = renderHook(() => useGPUForceLayout([], [], { enabled: false }));
+      const { result } = renderHook(() => useGpuForceLayout([], [], { enabled: false }));
 
       const layoutedNodes = await result.current.calculateLayout(nodes, edges);
 
@@ -187,7 +187,7 @@ describe(useGPUForceLayout, () => {
 
   describe('error handling', () => {
     it('should handle empty nodes gracefully', async () => {
-      const { result } = renderHook(() => useGPUForceLayout([], [], { animateTransitions: false }));
+      const { result } = renderHook(() => useGpuForceLayout([], [], { animateTransitions: false }));
 
       expect(result.current.nodes).toEqual([]);
       expect(result.current.error).toBeNull();
@@ -204,7 +204,7 @@ describe(useGPUForceLayout, () => {
       ];
 
       const { result } = renderHook(() =>
-        useGPUForceLayout(nodes, [], { animateTransitions: false }),
+        useGpuForceLayout(nodes, [], { animateTransitions: false }),
       );
 
       await waitFor(() => {
@@ -220,7 +220,7 @@ describe(useGPUForceLayout, () => {
   describe('updates and re-renders', () => {
     it('should recalculate when nodes change', async () => {
       const { result, rerender } = renderHook(
-        ({ nodes, edges }) => useGPUForceLayout(nodes, edges, { animateTransitions: false }),
+        ({ nodes, edges }) => useGpuForceLayout(nodes, edges, { animateTransitions: false }),
         {
           initialProps: {
             edges: createEdges(5),
@@ -251,7 +251,7 @@ describe(useGPUForceLayout, () => {
       const edges = createEdges(5);
 
       const { result, rerender } = renderHook(
-        ({ nodes, edges }) => useGPUForceLayout(nodes, edges, { animateTransitions: false }),
+        ({ nodes, edges }) => useGpuForceLayout(nodes, edges, { animateTransitions: false }),
         {
           initialProps: { edges, nodes },
         },
@@ -277,7 +277,7 @@ describe(useGPUForceLayout, () => {
       const edges = createEdges(1500);
 
       const { result } = renderHook(() =>
-        useGPUForceLayout(nodes, edges, {
+        useGpuForceLayout(nodes, edges, {
           animateTransitions: false,
         }),
       );
@@ -298,7 +298,7 @@ describe(useGPUForceLayout, () => {
       const edges = createEdges(50);
 
       const { result } = renderHook(() =>
-        useGPUForceLayout(nodes, edges, {
+        useGpuForceLayout(nodes, edges, {
           animateTransitions: false,
         }),
       );

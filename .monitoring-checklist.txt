@@ -1,5 +1,5 @@
 # PHASE 5 EXECUTION MONITORING CHECKLIST
-# Updated: 2026-02-06 02:15 UTC
+# Updated: 2026-02-06 02:43 UTC (T+28 min)
 # Team Lead: claude-haiku
 
 ## ACTIVE MONITORING
@@ -111,3 +111,35 @@ When all teams report completion:
 - Last checkpoint: ~80 min (all done)
 
 STATUS: 🟢 LIVE MONITORING ACTIVE
+
+---
+
+## REAL-TIME UPDATES (T+28 min)
+
+### Wave 2 Phase 2 Status (Due at T+30)
+- Gap 5.3 (Task #6): ✅ IN_PROGRESS - Phase 2 (cleanup hooks, async helpers)
+- Gap 5.4 (Task #7): ✅ IN_PROGRESS - Phase 2 (Temporal + MinIO setup, CRITICAL PATH)
+- Gap 5.5 (Task #8): ✅ IN_PROGRESS - Phase 2 (fixtures, API handlers)
+
+### Wave 3 Phase 1 Status (Dispatched at T+20)
+- Task #20 (Gap 5.6): ✅ IN_PROGRESS - API endpoints re-enable
+- Task #21 (Gap 5.7): ✅ IN_PROGRESS - GPU compute shaders (CRITICAL 40 min)
+- Task #22 (Gap 5.8): ✅ IN_PROGRESS - Spatial indexing
+
+### Wave 1 Final Status
+- Task #13 (Gap 5.1): ✅ COMPLETED - WebGL visual regression tests
+- Task #14 (Gap 5.1): ✅ COMPLETED - Playwright visual regression spec
+- Task #15 (Gap 5.2): ✅ COMPLETED - OAuth event publisher
+- Task #16 (Gap 5.2): ✅ IN_PROGRESS - NATS JetStream consumer
+- Task #17 (Gap 5.2): ✅ IN_PROGRESS - OAuth handler to event publisher
+
+### Active Test Processes: 2
+- Multiple agents executing in parallel
+- No blocking detected
+- Critical path (Gap 5.4 → Gap 5.7) on schedule
+
+### Next Checkpoint 2 (T+30-45 min)
+Expected reports from Wave 2 Phase 2:
+- Gap 5.3: "8/8 tests passing" estimate by T+30
+- Gap 5.4: "Temporal + MinIO verified" estimate by T+30 ✓ CRITICAL
+- Gap 5.5: "Fixtures + API responding" estimate by T+30

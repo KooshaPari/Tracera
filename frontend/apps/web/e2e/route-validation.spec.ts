@@ -184,9 +184,9 @@ test.describe('Route Validation', () => {
      */
 
     // Check localStorage for auth token after initial login
-    const authToken = await page.evaluate(() => {
-      return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-    });
+    const authToken = await page.evaluate(
+      () => localStorage.getItem('auth_token') ?? sessionStorage.getItem('auth_token'),
+    );
 
     expect(authToken).toBeTruthy();
     const initialToken = authToken;
@@ -197,9 +197,9 @@ test.describe('Route Validation', () => {
     for (const route of ROUTES_TO_TEST) {
       await page.goto(`http://localhost:5173${route.path}`, { waitUntil: 'networkidle' });
 
-      const currentToken = await page.evaluate(() => {
-        return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-      });
+      const currentToken = await page.evaluate(
+        () => localStorage.getItem('auth_token') ?? sessionStorage.getItem('auth_token'),
+      );
 
       expect(currentToken).toBe(initialToken);
     }

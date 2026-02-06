@@ -395,9 +395,9 @@ export function SpecificationDashboard({
                               'text-lg font-bold px-3 py-1 rounded-full',
                               detail.score >= 80
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
-                                : detail.score >= 60
+                                : (detail.score >= 60
                                   ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200'
-                                  : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200',
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'),
                             )}
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}

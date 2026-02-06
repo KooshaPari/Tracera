@@ -128,55 +128,58 @@ const NoteAction = ({ note, onChange, onSave }: NoteActionProps) => {
   );
 };
 
-const NodeQuickActions = memo(
-  function NodeQuickActions({ nodeId, onAddLink, onAddTag, onEditNote }: NodeQuickActionsProps) {
-    const [linkTarget, setLinkTarget] = useState('');
-    const [tag, setTag] = useState('');
-    const [note, setNote] = useState('');
+const NodeQuickActions = memo(function NodeQuickActions({
+  nodeId,
+  onAddLink,
+  onAddTag,
+  onEditNote,
+}: NodeQuickActionsProps) {
+  const [linkTarget, setLinkTarget] = useState('');
+  const [tag, setTag] = useState('');
+  const [note, setNote] = useState('');
 
-    const handleAddLink = useCallback(() => {
-      onAddLink(nodeId, linkTarget);
-      setLinkTarget('');
-    }, [linkTarget, nodeId, onAddLink]);
+  const handleAddLink = useCallback(() => {
+    onAddLink(nodeId, linkTarget);
+    setLinkTarget('');
+  }, [linkTarget, nodeId, onAddLink]);
 
-    const handleAddTag = useCallback(() => {
-      onAddTag(nodeId, tag);
-      setTag('');
-    }, [nodeId, onAddTag, tag]);
+  const handleAddTag = useCallback(() => {
+    onAddTag(nodeId, tag);
+    setTag('');
+  }, [nodeId, onAddTag, tag]);
 
-    const handleSaveNote = useCallback(() => {
-      onEditNote(nodeId, note);
-      setNote('');
-    }, [nodeId, note, onEditNote]);
+  const handleSaveNote = useCallback(() => {
+    onEditNote(nodeId, note);
+    setNote('');
+  }, [nodeId, note, onEditNote]);
 
-    return (
-      <div className='flex gap-1' role='group' aria-label='Node quick actions'>
-        <ActionInput
-          buttonLabel='Add link to another node'
-          buttonTitle='Add link to another node'
-          icon={<Link2 className='h-3 w-3' aria-hidden='true' />}
-          inputId='link-target'
-          inputLabel='Link to node'
-          placeholder='Node ID'
-          value={linkTarget}
-          onChange={setLinkTarget}
-          onConfirm={handleAddLink}
-        />
-        <ActionInput
-          buttonLabel='Add tag to node'
-          buttonTitle='Add tag to node'
-          icon={<Tag className='h-3 w-3' aria-hidden='true' />}
-          inputId='tag'
-          inputLabel='Add tag'
-          placeholder='Tag name'
-          value={tag}
-          onChange={setTag}
-          onConfirm={handleAddTag}
-        />
-        <NoteAction note={note} onChange={setNote} onSave={handleSaveNote} />
-      </div>
-    );
-  },
-);
+  return (
+    <div className='flex gap-1' role='group' aria-label='Node quick actions'>
+      <ActionInput
+        buttonLabel='Add link to another node'
+        buttonTitle='Add link to another node'
+        icon={<Link2 className='h-3 w-3' aria-hidden='true' />}
+        inputId='link-target'
+        inputLabel='Link to node'
+        placeholder='Node ID'
+        value={linkTarget}
+        onChange={setLinkTarget}
+        onConfirm={handleAddLink}
+      />
+      <ActionInput
+        buttonLabel='Add tag to node'
+        buttonTitle='Add tag to node'
+        icon={<Tag className='h-3 w-3' aria-hidden='true' />}
+        inputId='tag'
+        inputLabel='Add tag'
+        placeholder='Tag name'
+        value={tag}
+        onChange={setTag}
+        onConfirm={handleAddTag}
+      />
+      <NoteAction note={note} onChange={setNote} onSave={handleSaveNote} />
+    </div>
+  );
+});
 
 export { NodeQuickActions };

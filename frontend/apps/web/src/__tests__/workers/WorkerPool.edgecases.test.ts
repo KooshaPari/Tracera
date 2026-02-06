@@ -11,7 +11,7 @@ import { TaskPriority, WorkerPool } from '../../workers/worker-pool';
 
 // Minimal mock Worker using addEventListener (matching real Worker API)
 class EventDrivenMockWorker {
-  private listeners: Record<string, Array<(event: any) => void>> = {};
+  private listeners: Record<string, ((event: any) => void)[]> = {};
 
   addEventListener(type: string, listener: (event: any) => void) {
     if (!this.listeners[type]) {
@@ -129,7 +129,7 @@ describe('WorkerPool Edge Cases', () => {
         minWorkers: 1,
         workerFactory: () => {
           const worker = new EventDrivenMockWorker();
-          worker.postMessage = function (this: EventDrivenMockWorker, _message: any) {
+          worker.postMessage = function postMessage(this: EventDrivenMockWorker, _message: any) {
             setTimeout(() => {
               this.emit('error', { message: 'Worker crashed' });
             }, 5);
@@ -165,7 +165,7 @@ describe('WorkerPool Edge Cases', () => {
         minWorkers: 1,
         workerFactory: () => {
           const worker = new EventDrivenMockWorker();
-          worker.postMessage = function (this: EventDrivenMockWorker, message: any) {
+          worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             // Send progress, then result
             setTimeout(() => {
               this.emit('message', {
@@ -174,7 +174,7 @@ describe('WorkerPool Edge Cases', () => {
             }, 2);
             setTimeout(() => {
               this.emit('message', {
-                data: { id: message.id, progress: 1.0, type: 'progress' },
+                data: { id: message.id, progress: 1, type: 'progress' },
               });
             }, 4);
             setTimeout(() => {
@@ -200,7 +200,7 @@ describe('WorkerPool Edge Cases', () => {
       );
 
       expect(result).toBe('done');
-      expect(progressUpdates).toEqual([0.5, 1.0]);
+      expect(progressUpdates).toEqual([0.5, 1]);
     });
 
     it('should ignore progress messages without numeric progress value', async () => {
@@ -209,10 +209,10 @@ describe('WorkerPool Edge Cases', () => {
         minWorkers: 1,
         workerFactory: () => {
           const worker = new EventDrivenMockWorker();
-          worker.postMessage = function (this: EventDrivenMockWorker, message: any) {
+          worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             setTimeout(() => {
               this.emit('message', {
-                data: { id: message.id, type: 'progress' }, // no progress field
+                data: { id: message.id, type: 'progress' }, // No progress field
               });
             }, 2);
             setTimeout(() => {
@@ -248,7 +248,7 @@ describe('WorkerPool Edge Cases', () => {
         minWorkers: 1,
         workerFactory: () => {
           const worker = new EventDrivenMockWorker();
-          worker.postMessage = function (this: EventDrivenMockWorker, message: any) {
+          worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             setTimeout(() => {
               this.emit('message', {
                 data: {
@@ -272,7 +272,7 @@ describe('WorkerPool Edge Cases', () => {
         minWorkers: 1,
         workerFactory: () => {
           const worker = new EventDrivenMockWorker();
-          worker.postMessage = function (this: EventDrivenMockWorker, message: any) {
+          worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             setTimeout(() => {
               this.emit('message', {
                 data: {
@@ -300,7 +300,7 @@ describe('WorkerPool Edge Cases', () => {
         minWorkers: 1,
         workerFactory: () => {
           const worker = new EventDrivenMockWorker();
-          worker.postMessage = function (this: EventDrivenMockWorker, message: any) {
+          worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             setTimeout(() => {
               this.emit('message', {
                 data: { data: message.data, id: message.id, type: 'result' },
@@ -354,7 +354,9 @@ describe('WorkerPool Edge Cases', () => {
       });
 
       // Execute several tasks to scale up workers
-      const tasks = Array.from({ length: 4 }, (_, i) => pool.executeTask('test', { index: i }));
+      const tasks = Array.from({ length: 4 }, async (_, i) =>
+        pool.executeTask('test', { index: i }),
+      );
 
       // Let tasks complete
       vi.advanceTimersByTime(20);

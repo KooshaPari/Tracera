@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useCallback, useState, useEffect } from 'react';
+
 import { logger } from '@/lib/logger';
 
 interface AuthTokenContextType {
@@ -40,7 +41,7 @@ export function AuthTokenProvider({ children }: { children: React.ReactNode }) {
       if (storedToken) {
         setTokenState(storedToken);
         if (storedExpiry) {
-          const expiryNum = parseInt(storedExpiry, 10);
+          const expiryNum = Number.parseInt(storedExpiry, 10);
           setExpiresAt(expiryNum);
 
           // Check if token is already expired
@@ -85,16 +86,14 @@ export function AuthTokenProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const getToken = useCallback(() => {
-    return token;
-  }, [token]);
+  const getToken = useCallback(() => token, [token]);
 
-  const getTokenExpiresAt = useCallback(() => {
-    return expiresAt;
-  }, [expiresAt]);
+  const getTokenExpiresAt = useCallback(() => expiresAt, [expiresAt]);
 
   const isTokenExpired = useCallback(() => {
-    if (!expiresAt) return true;
+    if (!expiresAt) {
+      return true;
+    }
     return Date.now() >= expiresAt;
   }, [expiresAt]);
 
@@ -124,15 +123,11 @@ export function AuthTokenProvider({ children }: { children: React.ReactNode }) {
     return null; // Wait for initialization
   }
 
-  return (
-    <AuthTokenContext.Provider value={value}>
-      {children}
-    </AuthTokenContext.Provider>
-  );
+  return <AuthTokenContext.Provider value={value}>{children}</AuthTokenContext.Provider>;
 }
 
 /**
- * useAuthToken - Hook to access authentication token context
+ * UseAuthToken - Hook to access authentication token context
  *
  * Usage:
  * ```

@@ -42,8 +42,7 @@ try {
 
   if (content !== patched) {
     writeFileSync(configPath, patched, 'utf8');
-  } else {
-  }
+  } else {}
 } catch {
   process.exit(0); // Don't fail build
 }

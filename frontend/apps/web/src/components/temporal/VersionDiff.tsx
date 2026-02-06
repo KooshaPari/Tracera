@@ -479,12 +479,12 @@ function ValueDisplay({ value }: { value: unknown }) {
   const s =
     typeof value === 'string'
       ? value
-      : typeof value === 'number' ||
+      : (typeof value === 'number' ||
           typeof value === 'boolean' ||
           typeof value === 'symbol' ||
           typeof value === 'bigint'
         ? String(value)
-        : '';
+        : '');
   return <span>{s}</span>;
 }
 

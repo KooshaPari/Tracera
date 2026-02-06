@@ -43,14 +43,14 @@ import { Separator } from '@tracertm/ui/components/Separator';
 import type { ClusteringAlgorithm } from '../../hooks/useClustering';
 import type { ClusterNode as _ClusterNodeType } from '../../lib/graphClustering';
 import type { ClusterNodeData } from './ClusterNode';
-import type { LayoutType } from './layouts/useDAGLayout';
+import type { LayoutType } from './layouts/useDagLayout';
 import type { RichNodeData } from './RichNodePill';
 import type { EnhancedNodeData } from './types';
 
 import { useClusterEdges, useClustering } from '../../hooks/useClustering';
 import { ClusterNode } from './ClusterNode';
 import { LayoutSelector } from './layouts/LayoutSelector';
-import { useDAGLayout } from './layouts/useDAGLayout';
+import { useDagLayout } from './layouts/useDagLayout';
 import { NodeDetailPanel } from './NodeDetailPanel';
 import { RichNodePill } from './RichNodePill';
 
@@ -188,7 +188,7 @@ export function ClusteredGraphView({
   }, [clusterEdges, visibleItems, links]);
 
   // Apply layout
-  const { nodes: laidoutNodes } = useDAGLayout(nodesForLayout, edgesForLayout, layout, {
+  const { nodes: laidoutNodes } = useDagLayout(nodesForLayout, edgesForLayout, layout, {
     marginX: 50,
     marginY: 50,
     nodeHeight: 120,

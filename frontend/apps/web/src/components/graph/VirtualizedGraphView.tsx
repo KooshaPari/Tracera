@@ -33,14 +33,14 @@ import { Card } from '@tracertm/ui/components/Card';
 import { Separator } from '@tracertm/ui/components/Separator';
 
 import type { NodePosition } from './hooks/useVirtualization';
-import type { LayoutType } from './layouts/useDAGLayout';
+import type { LayoutType } from './layouts/useDagLayout';
 import type { RichNodeData } from './RichNodePill';
 import type { EnhancedNodeData, GraphPerspective } from './types';
 
 import { useGraphWorker } from './hooks/useGraphWorker';
 import { useVirtualization } from './hooks/useVirtualization';
 import { LayoutSelector } from './layouts/LayoutSelector';
-import { useDAGLayout } from './layouts/useDAGLayout';
+import { useDagLayout } from './layouts/useDagLayout';
 import { NodeDetailPanel } from './NodeDetailPanel';
 import { QAEnhancedNode } from './nodes/QAEnhancedNode';
 import { RichNodePill } from './RichNodePill';
@@ -295,7 +295,7 @@ function VirtualizedGraphViewComponent({
   );
 
   // Use DAG layout
-  const { nodes: dagreLaidoutNodes } = useDAGLayout<RichNodeData>(
+  const { nodes: dagreLaidoutNodes } = useDagLayout<RichNodeData>(
     nodesForLayout,
     filteredLinks.map((link) => ({
       id: link.id,
@@ -346,9 +346,9 @@ function VirtualizedGraphViewComponent({
           type:
             lodLevel === `high`
               ? `richPill`
-              : lodLevel === `medium`
+              : (lodLevel === `medium`
                 ? `mediumPill`
-                : `simplifiedPill`,
+                : `simplifiedPill`),
         }),
       );
   }, [dagreLaidoutNodes, visibleNodeIds, enableVirtualization, lodLevel]);
@@ -361,7 +361,7 @@ function VirtualizedGraphViewComponent({
         return {
           animated: link.type === 'depends_on' || link.type === 'blocks',
           id: link.id,
-          label: link.type.replaceAll(/_/g, ' '),
+          label: link.type.replaceAll('_', ' '),
           labelBgPadding: [4, 2] as [number, number],
           labelBgStyle: { fill: 'rgba(26, 26, 46, 0.9)' },
           labelStyle: { fill: linkStyle.color, fontSize: 10 },

@@ -33,9 +33,7 @@ devServer.stdout.on('data', (data) => {
     serverReady = true;
     startupTime = Math.round(performance.now() - startTime);
 
-    if (startupTime < TARGETS.startup) {
-    } else {
-    }
+    if (startupTime < TARGETS.startup) {} else {}
 
     // Report and exit
     setTimeout(() => {

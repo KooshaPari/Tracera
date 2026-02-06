@@ -889,7 +889,7 @@ describe('API Endpoints - Comprehensive Tests', () => {
           type: 'application/json',
         });
         globalThis.fetch = vi.fn().mockResolvedValue({
-          blob: async () => Promise.resolve(mockBlob),
+          blob: async () => mockBlob,
           ok: true,
         }) as typeof fetch;
 
@@ -901,7 +901,7 @@ describe('API Endpoints - Comprehensive Tests', () => {
       it('should export project as CSV', async () => {
         const mockBlob = new Blob(['id,name'], { type: 'text/csv' });
         globalThis.fetch = vi.fn().mockResolvedValue({
-          blob: async () => Promise.resolve(mockBlob),
+          blob: async () => mockBlob,
           ok: true,
         }) as typeof fetch;
 
@@ -912,7 +912,7 @@ describe('API Endpoints - Comprehensive Tests', () => {
       it('should export project as markdown', async () => {
         const mockBlob = new Blob(['# Project'], { type: 'text/markdown' });
         globalThis.fetch = vi.fn().mockResolvedValue({
-          blob: async () => Promise.resolve(mockBlob),
+          blob: async () => mockBlob,
           ok: true,
         }) as typeof fetch;
 
@@ -967,7 +967,7 @@ describe('API Endpoints - Comprehensive Tests', () => {
       it('should call export', async () => {
         const mockBlob = new Blob(['test'], { type: 'application/json' });
         globalThis.fetch = vi.fn().mockResolvedValue({
-          blob: async () => Promise.resolve(mockBlob),
+          blob: async () => mockBlob,
           ok: true,
         }) as typeof fetch;
 

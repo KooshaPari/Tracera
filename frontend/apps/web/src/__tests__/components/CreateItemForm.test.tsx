@@ -47,7 +47,7 @@ describe(CreateItemForm, () => {
     const cancelButton = screen.getByText('Cancel');
     await globalThis.user.click(cancelButton);
 
-    expect(mockOnCancel).toHaveBeenCalledTimes(1);
+    expect(mockOnCancel).toHaveBeenCalledOnce();
   });
 
   it('should call onCancel when X button is clicked', async () => {

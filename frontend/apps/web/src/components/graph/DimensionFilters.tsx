@@ -406,7 +406,7 @@ function DimensionFilterEditor({ config, value, onChange, onClear }: DimensionFi
   }
 
   // Enum type
-  const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
+  const selectedValues = Array.isArray(value) ? value : (value ? [value] : []);
 
   return (
     <div className='space-y-3'>

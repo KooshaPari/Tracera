@@ -1120,7 +1120,7 @@ export function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = 
             <div className='flex min-h-[400px] items-center justify-center p-6'>
               {emptyStateNode}
             </div>
-          ) : filteredAndSortedItems.length <= 200 ? (
+          ) : (filteredAndSortedItems.length <= 200 ? (
             <div className='custom-scrollbar overflow-x-auto'>
               <Table role='table' ariaLabel='Items table' ariaDescribedBy='table-instructions'>
                 <TableHeader>
@@ -1272,7 +1272,7 @@ export function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = 
                 emptyState={emptyStateNode}
               />
             </>
-          )}
+          ))}
         </Card>
       </div>
 

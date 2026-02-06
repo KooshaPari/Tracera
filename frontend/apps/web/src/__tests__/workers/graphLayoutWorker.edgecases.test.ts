@@ -225,12 +225,12 @@ describe('Graph Layout Worker Edge Cases', () => {
       expect(results.length).toBe(4);
 
       // First batches should be partial
-      expect(results[0].isPartial).toBe(true);
+      expect(results[0].isPartial).toBeTruthy();
       expect(results[0].progress).toBeCloseTo(0.25);
 
       // Last batch should be complete
-      expect(results[3].isPartial).toBe(false);
-      expect(results[3].progress).toBeCloseTo(1.0);
+      expect(results[3].isPartial).toBeFalsy();
+      expect(results[3].progress).toBeCloseTo(1);
     });
   });
 
@@ -255,8 +255,8 @@ describe('Graph Layout Worker Edge Cases', () => {
       expect(result.minTime).toBeLessThanOrEqual(result.avgTime);
       expect(result.maxTime).toBeGreaterThanOrEqual(result.avgTime);
       expect(result.stdDev).toBeGreaterThanOrEqual(0);
-      // stdDev should be finite
-      expect(Number.isFinite(result.stdDev)).toBe(true);
+      // StdDev should be finite
+      expect(Number.isFinite(result.stdDev)).toBeTruthy();
     });
 
     it('should use default 5 iterations when not specified', async () => {

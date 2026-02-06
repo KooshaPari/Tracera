@@ -16,34 +16,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Mock TanStack Router
-const mockNavigate = vi.fn();
-vi.mock('@tanstack/react-router', async () => {
-  const actual = await vi.importActual('@tanstack/react-router');
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-    useRouter: () => ({
-      navigate: mockNavigate,
-    }),
-    useLocation: () => ({ pathname: '/' }),
-    useParams: () => ({}),
-    Link: ({
-      children,
-      to,
-      ...props
-    }: {
-      children: React.ReactNode;
-      to: string;
-      [key: string]: unknown;
-    }) => (
-      <a href={typeof to === 'string' ? to : to?.toString?.()} {...props}>
-        {children}
-      </a>
-    ),
-  };
-});
-
 import type {
   DependencyAnalysis,
   GraphData,

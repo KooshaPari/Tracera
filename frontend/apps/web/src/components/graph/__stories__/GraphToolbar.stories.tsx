@@ -8,7 +8,7 @@ import { useState } from 'react';
 
 import { logger } from '@/lib/logger';
 
-import type { LayoutType } from '../layouts/useDAGLayout';
+import type { LayoutType } from '../layouts/useDagLayout';
 import type { GraphPerspective } from '../types';
 
 import { GraphToolbar } from '../GraphToolbar';

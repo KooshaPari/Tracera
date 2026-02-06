@@ -231,8 +231,8 @@ describe(shuffle, () => {
   it('should contain all original elements', () => {
     const arr = [1, 2, 3, 4, 5];
     const result = shuffle(arr);
-    expect(result.toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0))).toEqual(
-      arr.toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    expect(result.toSorted((a, b) => (a < b ? -1 : (a > b ? 1 : 0)))).toEqual(
+      arr.toSorted((a, b) => (a < b ? -1 : (a > b ? 1 : 0))),
     );
   });
 
@@ -524,7 +524,7 @@ describe(debounce, () => {
     expect(fn).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(100);
-    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledOnce();
   });
 
   it('should reset timer on multiple calls', () => {
@@ -538,7 +538,7 @@ describe(debounce, () => {
     expect(fn).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(50);
-    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledOnce();
   });
 
   it('should pass arguments to function', () => {
@@ -565,7 +565,7 @@ describe(throttle, () => {
     const throttled = throttle(fn, 100);
 
     throttled();
-    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledOnce();
   });
 
   it('should ignore calls within throttle period', () => {
@@ -575,7 +575,7 @@ describe(throttle, () => {
     throttled();
     throttled();
     throttled();
-    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledOnce();
   });
 
   it('should allow calls after throttle period', () => {

@@ -9,8 +9,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 
-import { logger } from '@/lib/logger';
 import { useAuthToken } from '@/context/AuthTokenContext';
+import { logger } from '@/lib/logger';
 
 import { realtimeClient } from '../lib/websocket';
 
@@ -43,21 +43,24 @@ export function useRealtime(config: RealtimeConfig = {}) {
     }, 1000);
 
     // Set up token refresh interval (refresh every 50 minutes for 1-hour tokens)
-    const tokenRefreshInterval = setInterval(async () => {
-      if (isTokenExpired()) {
-        logger.warn('Token expired, triggering refresh');
-        if (onTokenRefreshNeeded) {
-          try {
-            await onTokenRefreshNeeded();
-          } catch (error) {
-            logger.error('Failed to refresh token', error);
+    const tokenRefreshInterval = setInterval(
+      async () => {
+        if (isTokenExpired()) {
+          logger.warn('Token expired, triggering refresh');
+          if (onTokenRefreshNeeded) {
+            try {
+              await onTokenRefreshNeeded();
+            } catch (error) {
+              logger.error('Failed to refresh token', error);
+              realtimeClient.disconnect();
+            }
+          } else {
             realtimeClient.disconnect();
           }
-        } else {
-          realtimeClient.disconnect();
         }
-      }
-    }, 50 * 60 * 1000); // 50 minutes
+      },
+      50 * 60 * 1000,
+    ); // 50 minutes
 
     tokenRefreshIntervalRef.current = tokenRefreshInterval;
 

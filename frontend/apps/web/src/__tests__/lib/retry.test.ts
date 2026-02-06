@@ -117,9 +117,7 @@ describe('Retry Logic', () => {
     });
 
     it('should not retry on validation error', async () => {
-      const fn = vi
-        .fn()
-        .mockRejectedValue(new ApiError(422, 'Validation Error'));
+      const fn = vi.fn().mockRejectedValue(new ApiError(422, 'Validation Error'));
 
       const result = await withRetry(fn, { maxAttempts: 3 });
 
@@ -131,9 +129,7 @@ describe('Retry Logic', () => {
     it('should stop after maxAttempts', { timeout: 10000 }, async () => {
       vi.useFakeTimers();
 
-      const fn = vi
-        .fn()
-        .mockRejectedValue(new ApiError(500, 'Server Error'));
+      const fn = vi.fn().mockRejectedValue(new ApiError(500, 'Server Error'));
 
       const promise = withRetry(fn, { maxAttempts: 3, baseDelayMs: 100 });
 
@@ -161,10 +157,7 @@ describe('Retry Logic', () => {
       await withRetry(fn, { maxAttempts: 3, onRetry });
 
       expect(onRetry).toHaveBeenCalledTimes(1);
-      expect(onRetry).toHaveBeenCalledWith(
-        2,
-        expect.any(ApiError),
-      );
+      expect(onRetry).toHaveBeenCalledWith(2, expect.any(ApiError));
     });
 
     it('should apply exponential backoff delays', async () => {

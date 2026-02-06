@@ -38,7 +38,7 @@ const resolveToolStatus = (toolCall: ToolCall): 'running' | 'ok' | 'error' | 'â€
 const resolveBadgeVariant = (
   status: 'running' | 'ok' | 'error' | 'â€”',
 ): 'secondary' | 'outline' | 'destructive' =>
-  status === 'error' ? 'destructive' : status === 'running' ? 'secondary' : 'outline';
+  status === 'error' ? 'destructive' : (status === 'running' ? 'secondary' : 'outline');
 
 const formatMessageTime = (isoString: string): string => {
   try {

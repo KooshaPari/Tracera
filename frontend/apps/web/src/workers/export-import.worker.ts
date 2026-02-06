@@ -273,7 +273,7 @@ const escapeCsvValue = (value: unknown, delimiter: string): string => {
   }
   const str = String(value);
   if (str.includes(delimiter) || str.includes('\n') || str.includes('"')) {
-    return `"${str.replaceAll(/"/g, '""')}"`;
+    return `"${str.replaceAll('"', '""')}"`;
   }
   return str;
 };

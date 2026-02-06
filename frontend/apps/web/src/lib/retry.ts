@@ -215,4 +215,10 @@ export function isServerError(error: unknown): boolean {
 }
 
 // Re-export from api-error-handler for convenience
-export { getErrorType, getUserFriendlyMessage, buildErrorMetadata, extractValidationErrors, formatValidationErrorMessage } from '@/lib/api-error-handler';
+export {
+  getErrorType,
+  getUserFriendlyMessage,
+  buildErrorMetadata,
+  extractValidationErrors,
+  formatValidationErrorMessage,
+} from '@/lib/api-error-handler';

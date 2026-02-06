@@ -104,7 +104,7 @@ vi.mock('@/hooks/useDashboardSummary', () => ({
 // ---------------------------------------------------------------------------
 
 function makeProjects(
-  ...items: Array<{ id: string; name: string; description?: string; status?: string }>
+  ...items: { id: string; name: string; description?: string; status?: string }[]
 ) {
   return items.map((p) => ({
     created_at: '2024-01-01',
@@ -125,10 +125,10 @@ function makeSummary(
 
   for (const stats of Object.values(perProject)) {
     totalItemCount += stats.totalCount;
-    for (const [s, c] of Object.entries(stats.statusCounts) as Array<[string, number]>) {
+    for (const [s, c] of Object.entries(stats.statusCounts)) {
       statusDistribution[s] = (statusDistribution[s] ?? 0) + c;
     }
-    for (const [t, c] of Object.entries(stats.typeCounts) as Array<[string, number]>) {
+    for (const [t, c] of Object.entries(stats.typeCounts)) {
       typeDistribution[t] = (typeDistribution[t] ?? 0) + c;
     }
   }
@@ -307,8 +307,8 @@ describe('DashboardView', () => {
       const links = screen.getAllByRole('link');
       const projectLinks = links.filter(
         (link) =>
-          link.getAttribute('href')?.startsWith('/projects/p1') ||
-          link.getAttribute('href')?.startsWith('/projects/p2') ||
+          link.getAttribute('href')?.startsWith('/projects/p1') ??
+          link.getAttribute('href')?.startsWith('/projects/p2') ??
           link.getAttribute('href')?.startsWith('/projects/p3'),
       );
       expect(projectLinks.length).toBeGreaterThanOrEqual(3);
@@ -334,7 +334,7 @@ describe('DashboardView', () => {
         },
         { timeout: 5000 },
       );
-    }, 15000);
+    }, 15_000);
 
     it('shows empty state when search matches no projects', async () => {
       setPopulatedState();
@@ -351,7 +351,7 @@ describe('DashboardView', () => {
         },
         { timeout: 5000 },
       );
-    }, 15000);
+    }, 15_000);
 
     it('provides a clear-search button in the empty state', async () => {
       setPopulatedState();
@@ -379,7 +379,7 @@ describe('DashboardView', () => {
         },
         { timeout: 5000 },
       );
-    }, 15000);
+    }, 15_000);
   });
 
   // -------------------------------------------------------------------------
@@ -440,7 +440,7 @@ describe('DashboardView', () => {
         },
         { timeout: 5000 },
       );
-    }, 15000);
+    }, 15_000);
 
     it('shows toast when pinning a project', async () => {
       const { toast } = await import('sonner');
@@ -457,7 +457,7 @@ describe('DashboardView', () => {
         },
         { timeout: 5000 },
       );
-    }, 15000);
+    }, 15_000);
   });
 
   // -------------------------------------------------------------------------

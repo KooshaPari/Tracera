@@ -48,7 +48,7 @@ const UI_PAGE_TYPES = new Set(['page', 'screen', 'view', 'modal', 'dialog']);
 const UI_WIREFRAME_TYPES = new Set(['wireframe', 'mockup', 'prototype']);
 
 // Interaction types (link types that represent user interactions)
-const INTERACTION_LINK_TYPES = ['navigates_to', 'opens', 'triggers', 'related_to'];
+const INTERACTION_LINK_TYPES = new Set(['navigates_to', 'opens', 'triggers', 'related_to']);
 
 // Page node data
 interface PageNodeData {
@@ -69,7 +69,7 @@ interface PageNodeData {
 // Page node component
 function PageNodeComponent({ data, selected }: NodeProps<Node<PageNodeData, 'page'>>) {
   const [isHovered, setIsHovered] = useState(false);
-  const hasPreview = !!data.screenshotUrl || !!data.thumbnailUrl;
+  const hasPreview = Boolean(data.screenshotUrl) || Boolean(data.thumbnailUrl);
 
   const DeviceIcon = {
     desktop: Monitor,
@@ -184,16 +184,18 @@ function PageInteractionFlowInner({
   const { fitView } = useReactFlow();
 
   // Filter to UI pages only
-  const uiPages = useMemo(() => {
-    return items.filter((item) => {
-      const type = (item.type || '').toLowerCase();
-      return (
-        UI_PAGE_TYPES.has(type) ||
-        UI_WIREFRAME_TYPES.has(type) ||
-        item.view?.toLowerCase().includes('ui')
-      );
-    });
-  }, [items]);
+  const uiPages = useMemo(
+    () =>
+      items.filter((item) => {
+        const type = (item.type || '').toLowerCase();
+        return (
+          UI_PAGE_TYPES.has(type) ||
+          UI_WIREFRAME_TYPES.has(type) ||
+          item.view?.toLowerCase().includes('ui')
+        );
+      }),
+    [items],
+  );
 
   // Build interaction links between pages
   const pageLinks = useMemo(() => {
@@ -202,7 +204,7 @@ function PageInteractionFlowInner({
       (link) =>
         pageIds.has(link.sourceId) &&
         pageIds.has(link.targetId) &&
-        INTERACTION_LINK_TYPES.includes(link.type),
+        INTERACTION_LINK_TYPES.has(link.type),
     );
   }, [uiPages, links]);
 
@@ -396,7 +398,7 @@ function PageInteractionFlowInner({
       .map((link) => ({
         animated: true,
         id: link.id,
-        label: link.type.replaceAll(/_/g, ' '),
+        label: link.type.replaceAll('_', ' '),
         labelBgPadding: [3, 2] as [number, number],
         labelBgStyle: { fill: 'rgba(26, 26, 46, 0.9)' },
         labelStyle: { fill: '#ec4899', fontSize: 9 },

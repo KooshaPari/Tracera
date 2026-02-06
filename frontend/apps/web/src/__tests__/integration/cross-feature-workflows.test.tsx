@@ -650,7 +650,7 @@ describe('Cross-Feature Workflow Integration', () => {
             onChange={(e) => {
               setWorkflowState({
                 ...workflowState,
-                sharedLink: (e.target.value || null) as string | null,
+                sharedLink: e.target.value || null,
               });
             }}
             placeholder='Share link'

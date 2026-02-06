@@ -41,7 +41,7 @@ export default defineConfig({
       ['html', { outputFile: './test-results/api-routes.html' }],
     ],
     setupFiles: ['./src/__tests__/setup.ts'],
-    testTimeout: 60000,
+    testTimeout: 60_000,
     ui: true,
   },
 });

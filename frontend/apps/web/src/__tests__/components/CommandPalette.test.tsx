@@ -21,12 +21,12 @@ import { CommandPalette } from '@/components/CommandPalette';
 const mockNavigate = vi.fn(async (options: { to: string; params?: Record<string, unknown> }) => {
   // Handle both old string format and new { to: '...' } format
   if (typeof options === 'string') {
-    return Promise.resolve();
+    return;
   }
   if (options && typeof options === 'object' && 'to' in options) {
-    return Promise.resolve();
+    return;
   }
-  return Promise.resolve();
+  return;
 });
 
 // Track current mock pathname for dynamic location mocking

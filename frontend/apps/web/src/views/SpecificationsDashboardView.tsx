@@ -129,9 +129,9 @@ export function SpecificationsDashboardView({ projectId }: SpecificationsDashboa
         category: 'Architecture Decisions',
         issues:
           adrMetrics.total > 0
-            ? adrMetrics.accepted < adrMetrics.total / 2
+            ? (adrMetrics.accepted < adrMetrics.total / 2
               ? ['Less than 50% ADRs accepted']
-              : []
+              : [])
             : ['No ADRs created yet'],
         score: Math.round(adrMetrics.averageCompliance),
       },
@@ -140,9 +140,9 @@ export function SpecificationsDashboardView({ projectId }: SpecificationsDashboa
         issues:
           contractMetrics.total > 0 && contractMetrics.verified < contractMetrics.active
             ? [`${contractMetrics.active - contractMetrics.verified} contracts unverified`]
-            : contractMetrics.total === 0
+            : (contractMetrics.total === 0
               ? ['No contracts defined']
-              : [],
+              : []),
         score:
           contractMetrics.total > 0
             ? Math.round((contractMetrics.verified / contractMetrics.active) * 100)
@@ -153,9 +153,9 @@ export function SpecificationsDashboardView({ projectId }: SpecificationsDashboa
         issues:
           featureMetrics.total > 0 && featureMetrics.passRate < 80
             ? ['Pass rate below 80%', 'Pending scenarios detected']
-            : featureMetrics.total === 0
+            : (featureMetrics.total === 0
               ? ['No features defined']
-              : [],
+              : []),
         score: Math.round(featureMetrics.passRate),
       },
     ];

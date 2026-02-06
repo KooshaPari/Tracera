@@ -251,7 +251,7 @@ function EnhancedGraphViewComponent({
     const cytoscapeEdges = filteredLinks.map((link) => ({
       data: {
         id: link.id,
-        label: link.type.replaceAll(/_/g, ' '),
+        label: link.type.replaceAll('_', ' '),
         source: link.sourceId,
         target: link.targetId,
         type: link.type,

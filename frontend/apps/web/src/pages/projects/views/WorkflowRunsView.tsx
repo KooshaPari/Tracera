@@ -61,7 +61,7 @@ export function WorkflowRunsView({ projectId }: WorkflowRunsViewProps) {
           <div className='flex justify-center py-6'>
             <LoadingSpinner size='sm' text='Loading schedules...' />
           </div>
-        ) : schedules.length === 0 ? (
+        ) : (schedules.length === 0 ? (
           <div className='text-sm text-gray-500'>No schedules configured for this project.</div>
         ) : (
           <div className='space-y-2'>
@@ -75,7 +75,7 @@ export function WorkflowRunsView({ projectId }: WorkflowRunsViewProps) {
               />
             ))}
           </div>
-        )}
+        ))}
       </div>
 
       <div className='rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800'>
@@ -97,7 +97,7 @@ export function WorkflowRunsView({ projectId }: WorkflowRunsViewProps) {
           <div className='flex justify-center py-6'>
             <LoadingSpinner size='sm' text='Loading runs...' />
           </div>
-        ) : runs.length === 0 ? (
+        ) : (runs.length === 0 ? (
           <div className='text-sm text-gray-500'>No workflow runs yet.</div>
         ) : (
           <div className='space-y-2'>
@@ -105,7 +105,7 @@ export function WorkflowRunsView({ projectId }: WorkflowRunsViewProps) {
               <RunRow key={run.id} run={run} />
             ))}
           </div>
-        )}
+        ))}
       </div>
     </div>
   );

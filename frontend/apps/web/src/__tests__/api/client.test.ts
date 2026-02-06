@@ -422,8 +422,8 @@ describe('API Client', () => {
       try {
         await safeApiCall(failingPromise);
         expect.fail('should have thrown');
-      } catch (e) {
-        expect((e as Error).message).toBe('Failed to fetch');
+      } catch (error) {
+        expect((error as Error).message).toBe('Failed to fetch');
       }
     });
 
@@ -434,8 +434,8 @@ describe('API Client', () => {
       try {
         await safeApiCall(failingPromise);
         expect.fail('should have thrown');
-      } catch (e) {
-        expect((e as Error).message).toBe('Request timeout');
+      } catch (error) {
+        expect((error as Error).message).toBe('Request timeout');
       }
     });
 
@@ -446,8 +446,8 @@ describe('API Client', () => {
       try {
         await safeApiCall(failingPromise);
         expect.fail('should have thrown');
-      } catch (e) {
-        expect(e).toBeDefined();
+      } catch (error) {
+        expect(error).toBeDefined();
       }
     });
 
@@ -464,9 +464,9 @@ describe('API Client', () => {
     });
 
     it('should handle undefined promise in safeApiCall', async () => {
-      await expect(safeApiCall(undefined)).rejects.toThrow(ApiError);
+      await expect(safeApiCall()).rejects.toThrow(ApiError);
       try {
-        await safeApiCall(undefined);
+        await safeApiCall();
       } catch (error) {
         expect(error).toBeInstanceOf(ApiError);
         const apiError = error as InstanceType<typeof ApiError>;
@@ -496,7 +496,7 @@ describe('API Client', () => {
       });
 
       const result = await handleApiResponse(mockPromise);
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
       expect(result).not.toBeUndefined();
     });
 
@@ -520,7 +520,7 @@ describe('API Client', () => {
       });
 
       const result = await handleApiResponse(mockPromise);
-      expect(Array.isArray(result)).toBe(true);
+      expect(Array.isArray(result)).toBeTruthy();
       expect((result as any).length).toBe(0);
     });
 
@@ -552,19 +552,19 @@ describe('API Client', () => {
     it('should properly extend Error class', () => {
       const error = new ApiError(400, 'Bad Request', { detail: 'Invalid input' });
 
-      expect(error instanceof Error).toBe(true);
-      expect(error instanceof ApiError).toBe(true);
+      expect(error instanceof Error).toBeTruthy();
+      expect(error instanceof ApiError).toBeTruthy();
       expect(Object.getPrototypeOf(Object.getPrototypeOf(error)).constructor.name).toBe('Error');
     });
 
     it('should have all required properties', () => {
       const error = new ApiError(404, 'Not Found', { resource: 'user' });
 
-      expect(error.hasOwnProperty('status')).toBe(true);
-      expect(error.hasOwnProperty('statusText')).toBe(true);
-      expect(error.hasOwnProperty('data')).toBe(true);
-      expect(error.hasOwnProperty('message')).toBe(true);
-      expect(error.hasOwnProperty('name')).toBe(true);
+      expect(error.hasOwnProperty('status')).toBeTruthy();
+      expect(error.hasOwnProperty('statusText')).toBeTruthy();
+      expect(error.hasOwnProperty('data')).toBeTruthy();
+      expect(error.hasOwnProperty('message')).toBeTruthy();
+      expect(error.hasOwnProperty('name')).toBeTruthy();
     });
 
     it('should be throwable', () => {
@@ -572,10 +572,10 @@ describe('API Client', () => {
       let caught = false;
       try {
         throw error;
-      } catch (e) {
-        caught = e instanceof ApiError;
+      } catch (error) {
+        caught = error instanceof ApiError;
       }
-      expect(caught).toBe(true);
+      expect(caught).toBeTruthy();
     });
 
     it('should be catchable as Error', () => {
@@ -583,10 +583,10 @@ describe('API Client', () => {
       let caught = false;
       try {
         throw error;
-      } catch (e) {
-        caught = e instanceof Error;
+      } catch (error) {
+        caught = error instanceof Error;
       }
-      expect(caught).toBe(true);
+      expect(caught).toBeTruthy();
     });
   });
 });

@@ -548,7 +548,7 @@ describe('CreateLinkForm Component', () => {
 
       fireEvent.click(screen.getByText('Cancel'));
 
-      expect(mockOnCancel).toHaveBeenCalledTimes(1);
+      expect(mockOnCancel).toHaveBeenCalledOnce();
     });
 
     it('should call onCancel when close button is clicked', () => {

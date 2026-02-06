@@ -51,9 +51,7 @@ export function getErrorType(error: unknown): ErrorType {
  * Extract validation error details from API response
  * Handles common API error response formats
  */
-export function extractValidationErrors(
-  error: unknown,
-): Record<string, string[]> | null {
+export function extractValidationErrors(error: unknown): Record<string, string[]> | null {
   if (!(error instanceof ApiError)) {
     return null;
   }
@@ -72,8 +70,7 @@ export function extractValidationErrors(
   // Format 2: { field: ["error1", "error2"] }
   // Check if object has string array values (looks like validation errors)
   const isValidationFormat = Object.entries(data).every(
-    ([, value]) =>
-      Array.isArray(value) && value.every((v) => typeof v === 'string'),
+    ([, value]) => Array.isArray(value) && value.every((v) => typeof v === 'string'),
   );
 
   if (isValidationFormat) {
@@ -124,10 +121,7 @@ export function buildErrorMetadata(error: unknown): ErrorMetadata {
   return {
     message: originalError.message,
     originalError,
-    retryable:
-      errorType === 'network' ||
-      errorType === 'timeout' ||
-      errorType === 'server',
+    retryable: errorType === 'network' || errorType === 'timeout' || errorType === 'server',
     statusCode,
     type: errorType,
     userMessage,

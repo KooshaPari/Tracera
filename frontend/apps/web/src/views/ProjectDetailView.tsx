@@ -69,8 +69,8 @@ interface Stats {
   byStatus: Record<string, number>;
   byType: Record<string, number>;
   completionRate: number;
-  radarData: Array<{ A: number; fullMark: number; subject: string }>;
-  typeData: Array<{ name: string; value: number }>;
+  radarData: { A: number; fullMark: number; subject: string }[];
+  typeData: { name: string; value: number }[];
 }
 
 interface ViewCard {

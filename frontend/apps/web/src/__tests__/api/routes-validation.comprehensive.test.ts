@@ -12,8 +12,8 @@
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
-const TEST_USER_TOKEN = process.env.TEST_USER_TOKEN || 'test-token-abc123';
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:4000';
+const TEST_USER_TOKEN = process.env.TEST_USER_TOKEN ?? 'test-token-abc123';
+const API_BASE_URL = process.env.API_BASE_URL ?? 'http://localhost:4000';
 const FRONTEND_ORIGIN = 'http://localhost:5173';
 
 interface ApiTestResult {
@@ -86,7 +86,7 @@ describe('API Routes Validation', () => {
           body: route.method === 'POST' ? JSON.stringify({}) : undefined,
         });
 
-        status = response.status;
+        ({ status } = response);
 
         // Collect CORS headers
         corsHeaders = {
@@ -124,7 +124,7 @@ describe('API Routes Validation', () => {
                 errors.push(`Response error: ${data.error}`);
               }
             }
-          } catch (parseError) {
+          } catch {
             if (status < 400) {
               warnings.push('Response body is not valid JSON');
             }

@@ -288,18 +288,18 @@ export function ItemSpecsOverview({
                   'p-2 rounded-full',
                   avgQualityScore >= 80
                     ? 'bg-green-500/10 text-green-600'
-                    : avgQualityScore >= 60
+                    : (avgQualityScore >= 60
                       ? 'bg-yellow-500/10 text-yellow-600'
-                      : 'bg-red-500/10 text-red-600',
+                      : 'bg-red-500/10 text-red-600'),
                 )}
               >
                 {avgQualityScore >= 80 ? (
                   <TrendingUp className='h-5 w-5' />
-                ) : avgQualityScore >= 60 ? (
+                ) : (avgQualityScore >= 60 ? (
                   <Target className='h-5 w-5' />
                 ) : (
                   <TrendingDown className='h-5 w-5' />
-                )}
+                ))}
               </div>
             </div>
             <Progress
@@ -321,9 +321,9 @@ export function ItemSpecsOverview({
                   'p-2 rounded-full',
                   testPassRate >= 90
                     ? 'bg-green-500/10 text-green-600'
-                    : testPassRate >= 70
+                    : (testPassRate >= 70
                       ? 'bg-yellow-500/10 text-yellow-600'
-                      : 'bg-red-500/10 text-red-600',
+                      : 'bg-red-500/10 text-red-600'),
                 )}
               >
                 <CheckCircle2 className='h-5 w-5' />
@@ -348,9 +348,9 @@ export function ItemSpecsOverview({
                   'p-2 rounded-full',
                   avgFlakiness <= 5
                     ? 'bg-green-500/10 text-green-600'
-                    : avgFlakiness <= 15
+                    : (avgFlakiness <= 15
                       ? 'bg-yellow-500/10 text-yellow-600'
-                      : 'bg-red-500/10 text-red-600',
+                      : 'bg-red-500/10 text-red-600'),
                 )}
               >
                 <RefreshCw className='h-5 w-5' />
@@ -359,9 +359,9 @@ export function ItemSpecsOverview({
             <p className='text-muted-foreground mt-2 text-xs'>
               {avgFlakiness <= 5
                 ? 'Stable tests'
-                : avgFlakiness <= 15
+                : (avgFlakiness <= 15
                   ? 'Some flaky tests'
-                  : 'High flakiness detected'}
+                  : 'High flakiness detected')}
             </p>
           </CardContent>
         </Card>
@@ -378,9 +378,9 @@ export function ItemSpecsOverview({
                   'p-2 rounded-full',
                   criticalDefects.length > 0
                     ? 'bg-red-500/10 text-red-600'
-                    : openDefects.length > 5
+                    : (openDefects.length > 5
                       ? 'bg-yellow-500/10 text-yellow-600'
-                      : 'bg-green-500/10 text-green-600',
+                      : 'bg-green-500/10 text-green-600'),
                 )}
               >
                 {criticalDefects.length > 0 ? (

@@ -59,7 +59,7 @@ interface OverviewTabProps {
 
 interface ProviderConnectSectionProps {
   mode: 'project' | 'account';
-  providers: Array<{ provider: IntegrationProvider }>;
+  providers: { provider: IntegrationProvider }[];
   onConnect: (provider: IntegrationProvider) => void;
 }
 
@@ -102,12 +102,12 @@ interface GitHubRepoListProps {
   onCreateMapping: (args: MappingCreateArgs) => Promise<void>;
   onRepoSearchChange: (value: string) => void;
   repoSearch: string;
-  repos: Array<{
+  repos: {
     id: string;
     fullName: string;
     description?: string;
     htmlUrl?: string;
-  }>;
+  }[];
 }
 
 interface RepoRowProps {
@@ -126,12 +126,12 @@ interface GitHubProjectListProps {
   onProjectOwnerOrgChange: (value: boolean) => void;
   projectOwner: string;
   projectOwnerIsOrg: boolean;
-  projects: Array<{
+  projects: {
     id: string;
     title: string;
     description?: string;
     url?: string;
-  }>;
+  }[];
 }
 
 interface GitHubProjectRowProps {

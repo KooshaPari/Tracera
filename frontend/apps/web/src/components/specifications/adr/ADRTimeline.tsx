@@ -242,9 +242,9 @@ export function ADRTimeline({ adrs, onADRClick, className }: ADRTimelineProps) {
                                 'text-xs font-bold px-2 py-0.5 rounded-full',
                                 adr.complianceScore >= 80
                                   ? 'bg-green-500/10 text-green-600'
-                                  : adr.complianceScore >= 60
+                                  : (adr.complianceScore >= 60
                                     ? 'bg-yellow-500/10 text-yellow-600'
-                                    : 'bg-red-500/10 text-red-600',
+                                    : 'bg-red-500/10 text-red-600'),
                               )}
                             >
                               {Math.round(adr.complianceScore)}%

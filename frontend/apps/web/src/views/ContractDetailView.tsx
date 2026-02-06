@@ -121,9 +121,9 @@ export function ContractDetailView() {
                       detail:
                         contract.verificationResult?.status === 'pass'
                           ? 'All conditions passed'
-                          : contract.verificationResult?.status === 'fail'
+                          : (contract.verificationResult?.status === 'fail'
                             ? 'Verification failed'
-                            : 'Verification run',
+                            : 'Verification run'),
                       label: 'Verified',
                     }
                   : null,

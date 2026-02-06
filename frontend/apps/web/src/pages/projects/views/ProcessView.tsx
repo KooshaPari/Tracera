@@ -178,7 +178,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
         <div className='flex items-center justify-center py-12'>
           <div className='border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent' />
         </div>
-      ) : filteredProcesses.length === 0 ? (
+      ) : (filteredProcesses.length === 0 ? (
         <div className='rounded-lg border border-dashed p-12 text-center'>
           <Workflow className='text-muted-foreground mx-auto h-12 w-12' />
           <h3 className='mt-4 text-lg font-semibold'>No processes found</h3>
@@ -202,7 +202,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
             <ProcessCard key={process.id} process={process} />
           ))}
         </div>
-      )}
+      ))}
 
       {/* Create Modal */}
       {showCreateModal && (

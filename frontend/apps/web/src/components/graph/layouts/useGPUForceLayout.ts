@@ -51,7 +51,7 @@ export interface GPUForceLayoutState {
 // HOOK IMPLEMENTATION
 // ============================================================================
 
-export function useGPUForceLayout<T extends Record<string, unknown>>(
+export function useGpuForceLayout<T extends Record<string, unknown>>(
   nodes: Node<T>[],
   edges: Edge[],
   options: UseGPUForceLayoutOptions = {},
@@ -377,4 +377,4 @@ export function useGPUForceLayout<T extends Record<string, unknown>>(
   };
 }
 
-export default useGPUForceLayout;
+export default useGpuForceLayout;

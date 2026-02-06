@@ -73,7 +73,7 @@ export function LostConnectionBanner() {
             <WifiOff className='h-5 w-5 shrink-0' aria-hidden />
           )}
           <span>
-            {isConnecting ? 'Connecting' : isReconnecting ? 'Reconnecting' : 'Disconnected'}
+            {isConnecting ? 'Connecting' : (isReconnecting ? 'Reconnecting' : 'Disconnected')}
           </span>
           {isWaiting && (
             <span className='animate-[connection-dots_1.2s_steps(4)_infinite]' aria-hidden>

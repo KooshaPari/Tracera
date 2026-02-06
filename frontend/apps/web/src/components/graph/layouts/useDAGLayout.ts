@@ -512,7 +512,7 @@ interface UseDAGLayoutOptions {
   centerY?: number;
 }
 
-export function useDAGLayout<T extends Record<string, unknown>>(
+export function useDagLayout<T extends Record<string, unknown>>(
   nodes: Node<T>[],
   edges: Edge[],
   layout: LayoutType,
@@ -744,4 +744,4 @@ export function useDAGLayout<T extends Record<string, unknown>>(
   };
 }
 
-export default useDAGLayout;
+export default useDagLayout;

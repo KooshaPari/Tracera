@@ -72,8 +72,7 @@ async function runBenchmark(nodeCount: number, avgDegree: number): Promise<Bench
     useCache: false,
   });
 
-  if (result.stats.modularity !== undefined) {
-  }
+  if (result.stats.modularity !== undefined) {}
 
   return {
     avgCommunitySize: result.stats.avgCommunitySize,

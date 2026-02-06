@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import type { Item, Link } from '@tracertm/types';
 
 import type { GraphViewMode } from './GraphViewConfig';
-import type { LayoutType } from './layouts/useDAGLayout';
+import type { LayoutType } from './layouts/useDagLayout';
 import type { GraphPerspective } from './types';
 
 import { GraphViewLoadingState } from './GraphViewLoadingState';

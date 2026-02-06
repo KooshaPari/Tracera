@@ -111,7 +111,7 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({ history = [], heig
   }, [history]);
 
   const trendColor =
-    trend === 'improving' ? '#22c55e' : trend === 'declining' ? '#ef4444' : '#eab308';
+    trend === 'improving' ? '#22c55e' : (trend === 'declining' ? '#ef4444' : '#eab308');
 
   return (
     <div className='w-full'>

@@ -139,9 +139,9 @@ export function RTreeGraphViewExample({ edges, nodes }: RTreeGraphViewExamplePro
                     className={`font-mono ${
                       stats.queryTimeMs < 1
                         ? 'text-green-600'
-                        : stats.queryTimeMs < 5
+                        : (stats.queryTimeMs < 5
                           ? 'text-yellow-600'
-                          : 'text-red-600'
+                          : 'text-red-600')
                     }`}
                   >
                     {stats.queryTimeMs.toFixed(3)}ms
@@ -177,7 +177,7 @@ export function RTreeGraphViewExample({ edges, nodes }: RTreeGraphViewExamplePro
                       <span className='text-green-600'>⚡</span>
                       <span className='font-semibold text-green-600'>Excellent</span>
                     </>
-                  ) : stats.queryTimeMs < 5 ? (
+                  ) : (stats.queryTimeMs < 5 ? (
                     <>
                       <span className='text-yellow-600'>⚠️</span>
                       <span className='font-semibold text-yellow-600'>Good</span>
@@ -187,7 +187,7 @@ export function RTreeGraphViewExample({ edges, nodes }: RTreeGraphViewExamplePro
                       <span className='text-red-600'>🐌</span>
                       <span className='font-semibold text-red-600'>Slow</span>
                     </>
-                  )}
+                  ))}
                 </div>
               </div>
 

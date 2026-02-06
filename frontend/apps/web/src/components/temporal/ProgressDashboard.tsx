@@ -303,7 +303,7 @@ function SprintRow({ sprint, onClickSprint }: SprintRowProps) {
               {sprint.name}
             </h4>
             <Badge
-              variant={isActive ? 'default' : isCompleted ? 'secondary' : 'outline'}
+              variant={isActive ? 'default' : (isCompleted ? 'secondary' : 'outline')}
               className='text-xs'
             >
               {sprint.status}
@@ -858,25 +858,25 @@ export function ProgressDashboard({
                   icon={
                     velocityMetrics.trend === 'improving' ? (
                       <TrendingUp className='h-5 w-5' />
-                    ) : velocityMetrics.trend === 'declining' ? (
+                    ) : (velocityMetrics.trend === 'declining' ? (
                       <TrendingDown className='h-5 w-5' />
                     ) : (
                       <Clock className='h-5 w-5' />
-                    )
+                    ))
                   }
                   color={
                     velocityMetrics.trend === 'improving'
                       ? 'success'
-                      : velocityMetrics.trend === 'declining'
+                      : (velocityMetrics.trend === 'declining'
                         ? 'destructive'
-                        : 'default'
+                        : 'default')
                   }
                   trend={
                     velocityMetrics.trend === 'improving'
                       ? 'up'
-                      : velocityMetrics.trend === 'declining'
+                      : (velocityMetrics.trend === 'declining'
                         ? 'down'
-                        : 'stable'
+                        : 'stable')
                   }
                   trendValue={`${Math.abs(velocityMetrics.trendPercentage)}%`}
                 />

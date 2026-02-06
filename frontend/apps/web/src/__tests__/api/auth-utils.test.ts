@@ -17,7 +17,7 @@ import {
   parseErrorData,
 } from '../../api/auth-utils';
 
-describe('normalizeToken', () => {
+describe(normalizeToken, () => {
   it('should return trimmed string for valid token', () => {
     expect(normalizeToken('  abc123  ')).toBe('abc123');
   });
@@ -35,11 +35,11 @@ describe('normalizeToken', () => {
   });
 
   it('should return undefined for undefined', () => {
-    expect(normalizeToken(undefined)).toBeUndefined();
+    expect(normalizeToken()).toBeUndefined();
   });
 
   it('should convert number to string', () => {
-    expect(normalizeToken(12345 as any)).toBe('12345');
+    expect(normalizeToken(12_345 as any)).toBe('12345');
   });
 
   it('should return undefined for boolean', () => {
@@ -55,7 +55,7 @@ describe('normalizeToken', () => {
   });
 });
 
-describe('parseErrorData', () => {
+describe(parseErrorData, () => {
   it('should extract message, code, and details from record object', () => {
     const data = {
       code: 'INVALID_TOKEN',
@@ -72,7 +72,7 @@ describe('parseErrorData', () => {
   it('should return empty message for non-object input', () => {
     expect(parseErrorData('string')).toEqual({ message: '' });
     expect(parseErrorData(null)).toEqual({ message: '' });
-    expect(parseErrorData(undefined)).toEqual({ message: '' });
+    expect(parseErrorData()).toEqual({ message: '' });
     expect(parseErrorData(42)).toEqual({ message: '' });
     expect(parseErrorData(true)).toEqual({ message: '' });
   });
@@ -105,31 +105,31 @@ describe('parseErrorData', () => {
   });
 });
 
-describe('isAuthError', () => {
+describe(isAuthError, () => {
   it('should return true for AuthError instances', () => {
     const error = new AuthError('test', 401);
-    expect(isAuthError(error)).toBe(true);
+    expect(isAuthError(error)).toBeTruthy();
   });
 
   it('should return false for plain Error', () => {
-    expect(isAuthError(new Error('test'))).toBe(false);
+    expect(isAuthError(new Error('test'))).toBeFalsy();
   });
 
   it('should return false for non-error objects', () => {
-    expect(isAuthError({ message: 'test', statusCode: 401 })).toBe(false);
+    expect(isAuthError({ message: 'test', statusCode: 401 })).toBeFalsy();
   });
 
   it('should return false for null and undefined', () => {
-    expect(isAuthError(null)).toBe(false);
-    expect(isAuthError(undefined)).toBe(false);
+    expect(isAuthError(null)).toBeFalsy();
+    expect(isAuthError()).toBeFalsy();
   });
 
   it('should return false for strings', () => {
-    expect(isAuthError('error')).toBe(false);
+    expect(isAuthError('error')).toBeFalsy();
   });
 });
 
-describe('getAuthErrorMessage', () => {
+describe(getAuthErrorMessage, () => {
   it('should return specific message for CSRF_TOKEN_MISSING', () => {
     const error = new AuthError('test', 403, 'CSRF_TOKEN_MISSING');
     expect(getAuthErrorMessage(error)).toBe(authConstants.authErrorMessages.CSRF_TOKEN_MISSING);
@@ -197,13 +197,13 @@ describe('getAuthErrorMessage', () => {
   });
 });
 
-describe('hasWindow', () => {
+describe(hasWindow, () => {
   it('should return true in jsdom environment', () => {
-    expect(hasWindow()).toBe(true);
+    expect(hasWindow()).toBeTruthy();
   });
 });
 
-describe('getStoredToken', () => {
+describe(getStoredToken, () => {
   beforeEach(() => {
     localStorage.clear();
   });

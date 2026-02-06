@@ -375,7 +375,7 @@ function FlowGraphViewInner({
       const edge: Edge = {
         animated: link.type === 'depends_on' || link.type === 'blocks',
         id: link.id,
-        label: link.type.replaceAll(/_/g, ' '),
+        label: link.type.replaceAll('_', ' '),
         labelBgPadding: [4, 2] as [number, number],
         labelBgStyle: { fill: 'rgba(26, 26, 46, 0.9)' },
         labelStyle: { fill: linkStyle.color, fontSize: 10 },

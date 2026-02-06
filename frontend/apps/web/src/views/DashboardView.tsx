@@ -91,7 +91,9 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
   );
 
   const projectItemCounts: Record<string, number> = useMemo(() => {
-    if (!summaryData?.perProject) return {};
+    if (!summaryData?.perProject) {
+      return {};
+    }
     const counts: Record<string, number> = {};
     for (const [id, stats] of Object.entries(summaryData.perProject)) {
       counts[id] = stats.totalCount;

@@ -358,9 +358,9 @@ export const SigmaGraphViewEnhanced = memo(function SigmaGraphViewEnhanced(
         labelRenderedSizeThreshold:
           autoPerformanceMode === 'performance'
             ? 1.5
-            : autoPerformanceMode === 'quality'
+            : (autoPerformanceMode === 'quality'
               ? 0.5
-              : 0.8,
+              : 0.8),
         maxCameraRatio: 20,
         minCameraRatio: 0.05,
         renderEdgeLabels: autoPerformanceMode === 'quality',

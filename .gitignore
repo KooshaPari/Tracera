@@ -23,6 +23,7 @@ build/
 .next/
 .vinxi/
 .turbo/
+.turbo/daemon
 coverage/
 
 # Test results

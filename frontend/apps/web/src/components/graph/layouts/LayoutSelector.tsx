@@ -28,9 +28,9 @@ import {
   TooltipTrigger,
 } from '@tracertm/ui/components/Tooltip';
 
-import type { LayoutType } from './useDAGLayout';
+import type { LayoutType } from './useDagLayout';
 
-import { LAYOUT_CONFIGS } from './useDAGLayout';
+import { LAYOUT_CONFIGS } from './useDagLayout';
 
 // Map icon names to components
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {

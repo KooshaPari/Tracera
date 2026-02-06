@@ -173,7 +173,7 @@ describe('Phase 2: Legend Filter O(1) Performance', () => {
 
   it('should have O(1) lookup performance with Set', () => {
     const largeTypeSet = new Set(Array.from({ length: 1000 }, (_, i) => `type-${i}`));
-    const largeTypeArray = new Set([...largeTypeSet]);
+    const largeTypeArray = new Set(largeTypeSet);
 
     // Benchmark Set lookup (should be O(1))
     const setStartTime = performance.now();
@@ -318,7 +318,7 @@ describe('Phase 4: Selected Node O(1) Lookup', () => {
 
   it('should have O(1) selection lookup performance', () => {
     const largeSelection = new Set(Array.from({ length: 10_000 }, (_, i) => `node-${i}`));
-    const largeSelectionArray = new Set([...largeSelection]);
+    const largeSelectionArray = new Set(largeSelection);
 
     // Benchmark Set lookup
     const setStartTime = performance.now();
@@ -370,8 +370,8 @@ describe('Phase 5: Edge Style Caching', () => {
       // Simulate expensive style computation
       computeCount++;
       const style = {
-        stroke: tier === 1 ? '#333' : tier === 2 ? '#666' : '#999',
-        strokeWidth: tier === 1 ? 2 : tier === 2 ? 1.5 : 1,
+        stroke: tier === 1 ? '#333' : (tier === 2 ? '#666' : '#999'),
+        strokeWidth: tier === 1 ? 2 : (tier === 2 ? 1.5 : 1),
       };
 
       styleCache.set(edgeId, style);

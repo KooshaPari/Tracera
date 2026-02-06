@@ -234,7 +234,7 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
                 </div>
               </CardContent>
             </Card>
-          ) : !testSpec ? (
+          ) : (!testSpec ? (
             <Card className='bg-card/50 border-none'>
               <CardContent className='pt-6'>
                 <p className='text-muted-foreground text-sm'>
@@ -399,7 +399,7 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
                 </Card>
               )}
             </>
-          )}
+          ))}
         </TabsContent>
 
         {/* Execution Tab */}
@@ -752,9 +752,9 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
                       'h-3',
                       flakinessScore > 30
                         ? '[&>*]:bg-red-500'
-                        : flakinessScore > 10
+                        : (flakinessScore > 10
                           ? '[&>*]:bg-yellow-500'
-                          : '[&>*]:bg-green-500',
+                          : '[&>*]:bg-green-500'),
                     )}
                   />
                   <p className='text-muted-foreground mt-2 text-xs'>

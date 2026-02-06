@@ -42,9 +42,13 @@ test.describe('Performance - Dashboard (/home)', () => {
 
     // Let the UI settle across a couple frames.
     await page.evaluate(
-      () =>
+      async () =>
         new Promise<void>((resolve) => {
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              resolve();
+            }),
+          );
         }),
     );
 

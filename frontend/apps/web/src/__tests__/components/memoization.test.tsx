@@ -51,7 +51,7 @@ describe('React Memoization Optimizations', () => {
         />,
       );
 
-      expect(renderSpy).toHaveBeenCalledTimes(1);
+      expect(renderSpy).toHaveBeenCalledOnce();
 
       // Re-render with same props - should skip re-render
       rerender(
@@ -69,7 +69,7 @@ describe('React Memoization Optimizations', () => {
       );
 
       // Still 1 because memo prevented re-render
-      expect(renderSpy).toHaveBeenCalledTimes(1);
+      expect(renderSpy).toHaveBeenCalledOnce();
 
       // Re-render with changed title - should re-render
       rerender(
@@ -151,7 +151,7 @@ describe('React Memoization Optimizations', () => {
         <TestTreeItem nodeId='1' expandedIds={expandedIds} onToggle={vi.fn()} />,
       );
 
-      expect(renderSpy).toHaveBeenCalledTimes(1);
+      expect(renderSpy).toHaveBeenCalledOnce();
 
       // Re-render with same Set content but different reference
       const newExpandedIds = new Set<string>(['1', '2']);
@@ -159,7 +159,7 @@ describe('React Memoization Optimizations', () => {
       rerender(<TestTreeItem nodeId='1' expandedIds={newExpandedIds} onToggle={vi.fn()} />);
 
       // Still 1 because custom comparison checks Set content, not reference
-      expect(renderSpy).toHaveBeenCalledTimes(1);
+      expect(renderSpy).toHaveBeenCalledOnce();
 
       // Re-render where item is not in expanded set - should re-render
       const changedExpandedIds = new Set<string>(['2', '3']);
@@ -249,7 +249,7 @@ describe('React Memoization Optimizations', () => {
         </table>,
       );
 
-      expect(renderSpy).toHaveBeenCalledTimes(1);
+      expect(renderSpy).toHaveBeenCalledOnce();
 
       // Same item data should not trigger re-render
       rerender(
@@ -271,7 +271,7 @@ describe('React Memoization Optimizations', () => {
         </table>,
       );
 
-      expect(renderSpy).toHaveBeenCalledTimes(1);
+      expect(renderSpy).toHaveBeenCalledOnce();
 
       // Different item should trigger re-render
       rerender(
@@ -383,13 +383,13 @@ describe('React Memoization Optimizations', () => {
       const items: TestItem[] = [{ id: '1', title: 'Test' }];
       const { rerender } = render(<TestComponent items={items} filter='test' />);
 
-      expect(computeSpy).toHaveBeenCalledTimes(1);
+      expect(computeSpy).toHaveBeenCalledOnce();
 
       // Same items and filter - should not recompute
       rerender(<TestComponent items={items} filter='test' />);
 
       // Still 1 because items reference is same and filter is same
-      expect(computeSpy).toHaveBeenCalledTimes(1);
+      expect(computeSpy).toHaveBeenCalledOnce();
 
       // Different filter - should recompute
       rerender(<TestComponent items={items} filter='other' />);

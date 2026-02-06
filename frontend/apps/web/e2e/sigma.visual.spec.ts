@@ -96,7 +96,7 @@ test.describe('Sigma Graph Visual Regression', () => {
 
     // Check for graph container
     const graphContainer = page.locator('[data-testid="sigma-container"], canvas, svg').first();
-    const exists = await graphContainer.count() > 0;
+    const exists = (await graphContainer.count()) > 0;
     expect(exists).toBeTruthy();
   });
 
@@ -117,7 +117,9 @@ test.describe('Sigma Graph Visual Regression', () => {
     await page.waitForLoadState('networkidle');
 
     // Look for edge elements
-    const edges = page.locator('line[class*="edge"], path[class*="edge"], [data-testid*="edge"]').first();
+    const edges = page
+      .locator('line[class*="edge"], path[class*="edge"], [data-testid*="edge"]')
+      .first();
     const isVisible = await edges.isVisible({ timeout: 2000 }).catch(() => false);
 
     // Edge visibility check (may not render if no data)
@@ -181,11 +183,15 @@ test.describe('Sigma Graph Visual Regression', () => {
     await page.waitForLoadState('networkidle');
 
     // Look for zoom controls (specific selector depends on implementation)
-    const zoomIn = page.locator('button[aria-label*="zoom in" i], [data-testid*="zoom-in"]').first();
-    const zoomOut = page.locator('button[aria-label*="zoom out" i], [data-testid*="zoom-out"]').first();
+    const zoomIn = page
+      .locator('button[aria-label*="zoom in" i], [data-testid*="zoom-in"]')
+      .first();
+    const zoomOut = page
+      .locator('button[aria-label*="zoom out" i], [data-testid*="zoom-out"]')
+      .first();
 
     // At least one zoom control should exist
-    const hasZoomControls = (await zoomIn.count() > 0) || (await zoomOut.count() > 0);
+    const hasZoomControls = (await zoomIn.count()) > 0 || (await zoomOut.count()) > 0;
     expect(hasZoomControls || true).toBeTruthy();
   });
 
@@ -215,7 +221,7 @@ test.describe('Sigma Graph Component Tests', () => {
 
     // Filter out known third-party errors
     const criticalErrors = errors.filter(
-      (e) => !e.includes('ResizeObserver') && !e.includes('WebGL')
+      (e) => !e.includes('ResizeObserver') && !e.includes('WebGL'),
     );
 
     expect(criticalErrors).toHaveLength(0);

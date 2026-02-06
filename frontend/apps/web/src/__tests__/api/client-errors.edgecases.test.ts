@@ -50,7 +50,7 @@ describe('ApiError class', () => {
   });
 });
 
-describe('safeApiCall', () => {
+describe(safeApiCall, () => {
   it('should return the resolved promise for valid input', async () => {
     const response = new Response(null, { status: 200 });
     const promise = Promise.resolve({ data: 'value', error: undefined, response });
@@ -71,7 +71,7 @@ describe('safeApiCall', () => {
 
   it('should throw ApiError with 500 status when promise is undefined', async () => {
     try {
-      await safeApiCall(undefined);
+      await safeApiCall();
       expect.fail('should have thrown');
     } catch (error) {
       expect(error).toBeInstanceOf(ApiError);
@@ -90,7 +90,7 @@ describe('safeApiCall', () => {
   });
 });
 
-describe('handleApiResponse', () => {
+describe(handleApiResponse, () => {
   it('should return data on successful response', async () => {
     const promise = Promise.resolve({
       data: { id: 1, name: 'Test' },
@@ -107,7 +107,7 @@ describe('handleApiResponse', () => {
   });
 
   it('should throw when promise is undefined', async () => {
-    await expect(handleApiResponse(undefined)).rejects.toThrow(ApiError);
+    await expect(handleApiResponse()).rejects.toThrow(ApiError);
   });
 
   it('should throw ApiError with statusText when error is present', async () => {
@@ -210,7 +210,7 @@ describe('handleApiResponse', () => {
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
-    // null is not undefined, so it should be returned
+    // Null is not undefined, so it should be returned
     const result = await handleApiResponse(promiseNull);
     expect(result).toBeNull();
   });
@@ -343,7 +343,7 @@ describe('handleApiResponse', () => {
 
     const result = await handleApiResponse(promise);
     expect(result).toEqual([]);
-    expect(Array.isArray(result)).toBe(true);
+    expect(Array.isArray(result)).toBeTruthy();
   });
 
   it('should handle response with low HTTP status code', async () => {
@@ -368,13 +368,13 @@ describe('ApiError serialization and properties', () => {
   it('should have correct error name', () => {
     const error = new ApiError(500, 'Server Error', { detail: 'Database connection failed' });
     expect(error.name).toBe('ApiError');
-    expect(error.toString().includes('ApiError')).toBe(true);
+    expect(error.toString().includes('ApiError')).toBeTruthy();
   });
 
   it('should preserve stack trace', () => {
     const error = new ApiError(400, 'Bad Request', null);
     expect(error.stack).toBeDefined();
-    expect(error.stack?.includes('ApiError')).toBe(true);
+    expect(error.stack?.includes('ApiError')).toBeTruthy();
   });
 
   it('should be throwable and catchable', () => {
@@ -382,24 +382,24 @@ describe('ApiError serialization and properties', () => {
     let caught = false;
     try {
       throw error;
-    } catch (e) {
-      caught = e instanceof ApiError;
+    } catch (error) {
+      caught = error instanceof ApiError;
     }
-    expect(caught).toBe(true);
+    expect(caught).toBeTruthy();
   });
 
   it('should support instanceof check for Error', () => {
     const error = new ApiError(500, 'Error');
-    expect(error instanceof Error).toBe(true);
-    expect(error instanceof ApiError).toBe(true);
+    expect(error instanceof Error).toBeTruthy();
+    expect(error instanceof ApiError).toBeTruthy();
   });
 
   it('should have message property accessible', () => {
     const error = new ApiError(404, 'Not Found', { id: 'missing-resource' });
     expect(error.message).toBeDefined();
     expect(typeof error.message).toBe('string');
-    expect(error.message.includes('404')).toBe(true);
-    expect(error.message.includes('Not Found')).toBe(true);
+    expect(error.message.includes('404')).toBeTruthy();
+    expect(error.message.includes('Not Found')).toBeTruthy();
   });
 
   it('should handle special characters in statusText', () => {
@@ -414,7 +414,7 @@ describe('ApiError serialization and properties', () => {
     const error1 = new ApiError(400, 'Error', stringData);
     expect(error1.data).toBe(stringData);
 
-    const numberData = 12345;
+    const numberData = 12_345;
     const error2 = new ApiError(400, 'Error', numberData);
     expect(error2.data).toBe(numberData);
 
@@ -449,8 +449,8 @@ describe('safeApiCall edge cases', () => {
     try {
       await safeApiCall(failingPromise);
       expect.fail('should have thrown');
-    } catch (e) {
-      expect((e as Error).message).toBe('Network timeout');
+    } catch (error) {
+      expect((error as Error).message).toBe('Network timeout');
     }
   });
 
@@ -469,7 +469,7 @@ describe('safeApiCall edge cases', () => {
 
   it('should handle very large response data', async () => {
     const largeData = {
-      items: Array.from({ length: 10000 }, (_, i) => ({
+      items: Array.from({ length: 10_000 }, (_, i) => ({
         id: i,
         name: `item-${i}`,
         data: `value-${i}`,
@@ -483,6 +483,6 @@ describe('safeApiCall edge cases', () => {
 
     const result = await safeApiCall(promise);
     expect(result.data).toEqual(largeData);
-    expect((result.data as any).items.length).toBe(10000);
+    expect((result.data as any).items.length).toBe(10_000);
   });
 });

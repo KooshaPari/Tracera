@@ -1,6 +1,5 @@
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 import { ApiError } from '@/api/client-errors';
 import * as itemsApi from '@/api/items';
@@ -32,12 +31,11 @@ describe('CreateItemDialog - Error Handling', () => {
   });
 
   it('should display error message on API failure', async () => {
-    const { toast } = await import('@/components/ui/toaster');
     const mockError = new ApiError(500, 'Internal Server Error');
     vi.mocked(itemsApi.createItem).mockRejectedValueOnce(mockError);
 
     const onOpenChange = vi.fn();
-    const { rerender } = render(
+    render(
       <CreateItemDialog
         defaultView='table'
         onOpenChange={onOpenChange}
@@ -101,11 +99,9 @@ describe('CreateItemDialog - Error Handling', () => {
   });
 
   it('should store failed mutations in localStorage', async () => {
-    const { queueMutation, getQueuedMutations } = await import(
-      '@/lib/mutation-queue'
-    );
+    const { queueMutation, getQueuedMutations } = await import('@/lib/mutation-queue');
 
-    const mutation = queueMutation({
+    queueMutation({
       createdAt: new Date().toISOString(),
       data: { name: 'Test Item' },
       failedAttempts: 1,
@@ -129,7 +125,7 @@ describe('CreateItemDialog - Error Handling', () => {
 
     const result = await withRetry(mockFn, { maxAttempts: 3, baseDelayMs: 10 });
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBeTruthy();
     expect(result.attempts).toBe(3);
     expect(mockFn).toHaveBeenCalledTimes(3);
   });
@@ -137,13 +133,11 @@ describe('CreateItemDialog - Error Handling', () => {
   it('should not retry on validation errors', async () => {
     const { withRetry } = await import('@/lib/retry');
 
-    const mockFn = vi
-      .fn()
-      .mockRejectedValueOnce(new ApiError(422, 'Validation Error'));
+    const mockFn = vi.fn().mockRejectedValueOnce(new ApiError(422, 'Validation Error'));
 
     const result = await withRetry(mockFn, { maxAttempts: 3 });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.attempts).toBe(1);
     expect(mockFn).toHaveBeenCalledTimes(1);
   });
@@ -153,9 +147,7 @@ describe('CreateItemDialog - Error Handling', () => {
 
     vi.useFakeTimers();
 
-    const mockFn = vi
-      .fn()
-      .mockRejectedValue(new ApiError(503, 'Service Unavailable'));
+    const mockFn = vi.fn().mockRejectedValue(new ApiError(503, 'Service Unavailable'));
 
     const promise = withRetry(mockFn, { maxAttempts: 3, baseDelayMs: 100 });
 
@@ -164,7 +156,7 @@ describe('CreateItemDialog - Error Handling', () => {
 
     const result = await promise;
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.attempts).toBe(3);
     expect(mockFn).toHaveBeenCalledTimes(3);
 

@@ -40,6 +40,17 @@ vi.mock('@tanstack/react-router', async () => {
   return {
     ...actual,
     createAPIFileRoute: () => () => ({ GET: vi.fn(), POST: vi.fn() }),
+    useNavigate: () => vi.fn(),
+    useRouter: () => ({
+      navigate: vi.fn(),
+    }),
+    useLocation: () => ({ pathname: '/' }),
+    useParams: () => ({}),
+    Link: ({ children, to, ...props }: any) => (
+      <a href={typeof to === 'string' ? to : to?.toString?.()} {...props}>
+        {children}
+      </a>
+    ),
   };
 });
 
@@ -47,7 +58,7 @@ vi.mock('@tanstack/react-router', async () => {
 vi.mock('elkjs', () => ({
   default: class MockELK {
     async layout() {
-      return Promise.resolve({ children: [], edges: [] });
+      return { children: [], edges: [] };
     }
   },
 }));
@@ -126,8 +137,8 @@ if (typeof globalThis.window !== 'undefined') {
 if (typeof navigator !== 'undefined') {
   Object.defineProperty(navigator, 'clipboard', {
     value: {
-      readText: vi.fn(async () => Promise.resolve('')),
-      writeText: vi.fn(async () => Promise.resolve()),
+      readText: vi.fn(async () => ''),
+      writeText: vi.fn(async () => {}),
     },
     writable: true,
   });
@@ -305,3 +316,27 @@ export const render = (ui: React.ReactElement, options?: Omit<RenderOptions, 'wr
 
 // Re-export everything from testing library
 export * from '@testing-library/react';
+
+// ============================================================================
+// MSW Server Setup
+// ============================================================================
+import { getServer } from './mocks/server';
+import { beforeAll, afterAll, afterEach } from 'vitest';
+
+// Start MSW server before all tests
+beforeAll(() => {
+  const server = getServer();
+  server.listen();
+});
+
+// Stop MSW server after all tests
+afterAll(() => {
+  const server = getServer();
+  server.close();
+});
+
+// Reset handlers after each test
+afterEach(() => {
+  const server = getServer();
+  server.resetHandlers();
+});
