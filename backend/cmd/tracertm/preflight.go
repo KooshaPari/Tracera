@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -195,7 +195,7 @@ func (c *EnvConfig) loadFromEnv() error {
 	c.AnthropicAPIKey = os.Getenv("ANTHROPIC_API_KEY")
 
 	if len(errs) > 0 {
-		return fmt.Errorf(strings.Join(errs, "\n"))
+		return errors.New(strings.Join(errs, "\n"))
 	}
 
 	return nil
@@ -229,7 +229,7 @@ func (c *EnvConfig) testConnectivity() error {
 	natsCancel()
 
 	if len(errs) > 0 {
-		return fmt.Errorf(strings.Join(errs, "\n"))
+		return errors.New(strings.Join(errs, "\n"))
 	}
 
 	return nil

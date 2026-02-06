@@ -92,13 +92,26 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Backend/CLI (we're only upgrading frontend)
-backend/
-!backend/.golangci.yml
-!backend/golangci-baseline.json
-!backend/golangci-phase1-summary.txt
-!backend/go.mod
-!backend/go.sum
+# Backend sources are tracked.
+# Local caches, binaries, and dev artifacts remain ignored.
+backend/.env
+backend/.env.local
+backend/.gocache/
+backend/.golangci-cache/
+backend/.minio-data/
+backend/.minio.pid
+backend/tmp/
+backend/logs/
+backend/build
+backend/package
+backend/coverage.out
+backend/tracertm-backend
+backend/.trace/
+
+# Repo governance: keep markdown documentation under top-level docs/.
+backend/**/*.md
+backend/artifacts/
+backend/docs/
 cli/
 
 # Local MinIO (Homebrew)

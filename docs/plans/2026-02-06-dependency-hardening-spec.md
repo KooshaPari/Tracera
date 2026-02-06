@@ -47,6 +47,7 @@ This table defines the minimum contract each dependency must satisfy when enable
 | NATS (JetStream) | When eventing provider is enabled | Can connect, JetStream context is usable, and required stream(s) exist with expected retention and storage policy. | Preflight and process start | Startup fails when required and unavailable; critical publishes fail on missing publish ack. |
 | Temporal server | When workflows are enabled | Can connect to namespace, and workflow start API is usable. | Preflight and process start | Startup fails when required and unavailable. |
 | Temporal worker (pollers) | When workflows are enabled | A small PingWorkflow can be started and completes within a short timeout on the configured task queue. | Dev stack gate and preflight | Startup fails in dev and CI if workflows enabled but no worker can execute tasks. |
+| Agent task queue backend | When agent task distribution is enabled | Can enqueue a task, claim a task, and transition it to a terminal state under the configured backend mode. | Preflight and process start | Startup fails when enabled but backend is misconfigured; task APIs fail loudly rather than dropping tasks or relying on in-memory-only state. |
 
 ## Configuration Modes (Explicit, No Silent Fallbacks)
 
@@ -59,6 +60,7 @@ Minimum required explicit modes:
 - Eventing mode: if eventing is `nats`, publishing for critical events uses JetStream publish acks and dedup where required.
 - Redis backend mode: selection is explicit (example: `REDIS_BACKEND=redis|valkey|keydb`), never inferred from missing config.
 - Neo4j plugins mode: APOC and GDS are disabled by default and may be enabled only by explicit mode plus allowlists.
+- Agent task backend mode: selection is explicit (example: `AGENT_TASK_BACKEND=coordinator|temporal|postgres-queue|jetstream`), never inferred from missing config.
 
 This spec does not mandate exact env var names. It requires strict defaults, explicit disabled modes, and no implicit fallback based on missing env vars.
 
@@ -94,6 +96,25 @@ Health endpoints must reflect correctness, not just "process alive".
 - NATS subscriptions define durable consumer semantics and explicit ack and redelivery policy.
 - Temporal workflow start implies the workflow can execute in the current environment; if not, it fails fast with an explicit error.
 
+## Reliability Guarantees (Agents and Task Distribution)
+
+This section defines the minimum reliability semantics when agent task distribution is enabled. It is intentionally strict because "agents" are the surface where silent degradation is most likely (in-memory queue, best-effort status transitions, polling loops).
+
+Required semantics by default:
+
+- Durability: a successfully enqueued task must survive process restart and must remain discoverable for execution.
+- Single-claim: a task is claimed by at most one worker at a time, across all API instances.
+- Leases and rescue: if a worker crashes mid-task, tasks are rescued and become claimable again after a lease timeout.
+- Retries and backoff: retry policy is explicit per task type; terminal failure states are durable; dead-letter behavior is explicit when retries exhaust.
+- Idempotency: duplicate execution must be treated as possible; handlers must have idempotency keys or safe repeated effects.
+- Observability: queue depth, claim latency, attempt counts, and rescue counts are emitted as metrics and surfaced in health output.
+
+Explicitly forbidden behaviors:
+
+- In-memory-only queue semantics in any enabled production mode.
+- Silent "task dropped" behavior on enqueue, claim, or completion.
+- Best-effort background loops that mask persistence failures via logging only.
+
 ## Capability Extensions (Program Abilities)
 
 All extensions below must follow the same governance as baseline hardening: explicit modes, strict defaults, and loud failures when required.
@@ -107,6 +128,9 @@ All extensions below must follow the same governance as baseline hardening: expl
 | NATS JetStream | Evaluate JetStream KV for small coordination state | Enabled by explicit mode | KV use replaces bespoke state only when it removes complexity and is observable. |
 | NATS JetStream | Evaluate JetStream Object Store for blob-style artifacts | Enabled by explicit mode | Object store is used only where it replaces another moving part and has clear retention limits. |
 | Redis | Redis-compatible server selection with compatibility harness | Always on | A harness enumerates required commands and passes against the chosen server. |
+| Agents | Durable task queue semantics with leases and rescue | Always on when agent task distribution enabled | Tasks survive restart; tasks are claimable by one worker; crashed tasks are rescued; retries and DLQ behavior are explicit. |
+| Agents | Backend convergence to a single durable queue mode | Enabled by explicit mode | Selected mode is explicit; misconfiguration fails loud; parity tests prove behavior matches the contract. |
+| Agents | Task routing and backpressure | Always on when agent task distribution enabled | Per-project limits exist; queue growth is observable; overload fails fast with explicit errors instead of uncontrolled memory growth. |
 | Postgres | Connection pooling strategy | Enabled by explicit mode | When enabled, app connects via pooler and p99 latency and error rates improve measurably. |
 | Postgres | In-database scheduling via `pg_cron` | Enabled by explicit mode | When enabled, preload requirements are enforced and job execution is observable. |
 | Neo4j | Constraints and indexes as required startup contract | Always on when Neo4j required | Startup fails if required constraints/indexes are missing. |
@@ -133,6 +157,8 @@ Dependency hardening is complete when all items below are true:
 - Neo4j schema setup failures are fatal when Neo4j is required.
 - Postgres perf tooling used by scripts and tests is active when those gates run.
 - No new linter suppressions are introduced to pass gates; targeted suppressions are removed via refactor.
+- When agent task distribution is enabled, tasks are durable and claim semantics are correct across restarts.
+- Agent task backend selection is explicit; selecting a mode that is misconfigured fails at startup with an aggregated error list.
 
 Capability extensions are complete when all enabled extension modes meet their acceptance definitions and are covered by tests or smoke checks where applicable.
 

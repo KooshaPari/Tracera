@@ -12,16 +12,20 @@
 - NATS eventing is standardized on JetStream acks for critical events, with clear dedup semantics where required.
 - NATS extensions are possible via explicit modes (JetStream KV and Object Store), with smoke coverage when enabled.
 - Redis usage is explicit: required by default; any disabling is explicit and visible; backend selection is explicit and covered by a compatibility harness.
+- Rate limiting uses either a justified custom algorithm with explicit invariants and tests, or an off-the-shelf limiter library behind a stable interface.
 - Neo4j schema setup is required when enabled (indexes/constraints), with guardrails for pathological traversals; APOC and GDS are disabled by default and tests do not assume them.
 - Postgres perf tooling used by gates is actually active when those gates run.
 - Postgres extensions are expanded only via explicit modes (pooling and `pg_cron`), with loud preload enforcement and smoke coverage when enabled.
 - CI gates match governance: required suites are gating, coverage floors are enforced, E2E projects run when required, and perf/load thresholds are not warning-only in required workflows.
 - Observability can be extended via an explicit OpenTelemetry Collector mode in dev.
 - Lint governance is respected: no new suppressions; existing targeted suppressions are removed via refactors.
+- Agent task distribution is durable and multi-instance safe when enabled; queue semantics are covered by parity tests.
+- Optional modernization work is planned and mode-gated: agent task distribution backend convergence, code parsing/indexing engine upgrade, and WebSocket transport mode evaluation.
 
 ## Related Work and Non Goals
 
 - Frontend performance work (including the `/home` freeze) is tracked separately in `docs/plans/2026-02-01-comprehensive-performance-optimization-plan.md`.
+- Custom code vs OSS inventory and candidate replacements are tracked in `docs/research/CUSTOM_CODE_VS_OSS_AUDIT_2026-02-06.md`.
 
 ## Change Surface (Expected Files)
 
@@ -46,6 +50,12 @@ High probability touchpoints:
 - `backend/internal/graph/neo4j_client.go`
 - `backend/internal/graph/neo4j_init.go`
 - `backend/internal/infrastructure/infrastructure.go`
+- `backend/internal/agents/*`
+- `backend/internal/ratelimit/*`
+- `backend/internal/codeindex/*`
+- `backend/internal/websocket/*`
+- `docs/plans/2026-02-06-codeindex-parser-engine-migration.md`
+- `docs/plans/2026-02-06-agent-task-queue-backend-convergence.md`
 - `scripts/sql/db-performance-audit.sql`
 - `backend/docker-compose.test.yml` and `backend/tests/e2e/docker-compose.yml` (Neo4j plugin policy alignment)
 - `.github/workflows/*.yml` (CI gate hardening)
@@ -100,6 +110,23 @@ High probability touchpoints:
 | 5 | P8-03 | Extend smoke validation to cover enabled extension modes (Search Attributes, KV/Object, PgBouncer, `pg_cron`, collector mode) when explicitly enabled. | P8-01, P2-08, P3-07, P3-08, P5-04, P5-05 |
 | 6 | P10-01 | OpenTelemetry Collector mode in dev stack (process-compose + config) with loud failures in that mode. | P1-02 |
 | 6 | P10-02 | Collector mode smoke validation (OTLP export proves end to end trace flow). | P10-01, P8-01 |
+| 7 | P4-07 | Rate limit engine decision: keep sliding window or migrate to an OSS limiter, define invariants and boundaries. | P4-01, P4-04 |
+| 7 | P4-08 | Implement chosen rate limiter behind a stable interface and update tests. | P4-07 |
+| 7 | P4-09 | Update Redis compatibility harness to cover rate limiting semantics and required command surface. | P4-05, P4-08 |
+| 7 | P9-01 | Agent task distribution backend decision and contract (custom vs Temporal), including mode names and failure behavior. |  |
+| 7 | P9-02 | Add an agent task queue backend interface and explicit backend selection (no implicit fallback). | P9-01, P1-01 |
+| 7 | P9-05 | Make the existing coordinator task queue durable and correct (load from DB on startup; persist assign and transitions; no in-memory-only behavior when enabled). | P9-02 |
+| 7 | P9-06 | Add strict preflight and health semantics for agent task distribution (enqueue, claim, rescue path). | P9-05, P1-03 |
+| 7 | P9-07 | Multi-instance contract for coordinator mode (leader election or explicit singleton enforcement with loud failure). | P9-05 |
+| 7 | P9-03 | Implement a Temporal-backed agent task queue mode with strict preflight and health semantics. | P9-02, P2-06 |
+| 7 | P9-04 | Parity tests, smoke coverage, and cutover readiness for Temporal agent task queue mode. | P9-03, P9-06, P8-01 |
+| 8 | P11-01 | Codeindex parser engine abstraction and explicit mode selection (regex vs tree-sitter vs SCIP). | P1-01 |
+| 8 | P11-02 | Evaluate tree-sitter vs SCIP and implement a prototype parser for one language. | P11-01 |
+| 8 | P11-03 | Implement the chosen parser for multiple languages and integrate into indexing pipeline. | P11-02 |
+| 8 | P11-04 | Add golden tests and a CI gate for parser correctness when the mode is enabled. | P11-03 |
+| 8 | P12-01 | WebSocket transport decision: keep embedded hub or add an explicit Centrifugo mode, with a semantics contract. |  |
+| 8 | P12-02 | If Centrifugo mode is selected, implement mode wiring (process-compose + adapter) with strict preflight and health semantics. | P12-01, P1-01 |
+| 8 | P12-03 | WebSocket transport parity and load tests for the selected mode, gating when enabled. | P12-02 |
 
 ## DAG (Dependencies as an Explicit List)
 
@@ -145,6 +172,21 @@ High probability touchpoints:
 - P8-03 depends on P8-01 and P2-08 and P3-07 and P3-08 and P5-04 and P5-05
 - P10-01 depends on P1-02
 - P10-02 depends on P10-01 and P8-01
+- P4-07 depends on P4-01 and P4-04
+- P4-08 depends on P4-07
+- P4-09 depends on P4-05 and P4-08
+- P9-02 depends on P9-01 and P1-01
+- P9-05 depends on P9-02
+- P9-06 depends on P9-05 and P1-03
+- P9-07 depends on P9-05
+- P9-03 depends on P9-02 and P2-06
+- P9-04 depends on P9-03 and P9-06 and P8-01
+- P11-01 depends on P1-01
+- P11-02 depends on P11-01
+- P11-03 depends on P11-02
+- P11-04 depends on P11-03
+- P12-02 depends on P12-01 and P1-01
+- P12-03 depends on P12-02
 
 ## Parallelization Plan (Subagent Packets)
 
@@ -170,6 +212,12 @@ Subagent packets are designed so each packet can be implemented independently wi
 | P | P3-06, P3-07, P3-08 | `backend/internal/nats/*`; optional shared health/metrics surfaces |
 | Q | P5-04, P5-05 | `config/process-compose.yaml`; `scripts/shell/postgres-if-not-running.sh` |
 | R | P10-01, P10-02 | `config/process-compose.yaml`; `config/otel-collector.yaml` (new); tracing env wiring |
+| S | P4-07, P4-08, P4-09 | `backend/internal/ratelimit/*`; `backend/internal/ratelimit/*_test.go`; Redis harness files |
+| T | P9-01, P9-02, P9-05, P9-07 | `backend/internal/agents/*`; config mode wiring in `backend/internal/config/*` |
+| U | P9-06, P9-03, P9-04 | `backend/internal/agents/*`; `backend/internal/preflight/preflight.go`; `backend/internal/temporal/*`; parity tests |
+| V | P11-01, P11-02 | `backend/internal/codeindex/*`; `backend/internal/codeindex/parsers/*` |
+| W | P11-03, P11-04 | `backend/internal/codeindex/*`; `backend/internal/codeindex/parsers/*`; golden tests |
+| X | P12-01, P12-02, P12-03 | `backend/internal/websocket/*`; `config/process-compose.yaml` if a new transport mode is introduced |
 
 ## Task Specs (Granular Implementation Notes)
 
@@ -1114,6 +1162,390 @@ Estimates:
 - Tool calls: 6 to 12
 - Wall clock: 10 to 20 minutes
 
+### Phase 7: Commodity Replacement (OSS Convergence)
+
+This phase is explicitly about extending program abilities by replacing bespoke commodity code with well known, well tested primitives, or by tightening custom implementations with explicit invariants and tests.
+
+#### P4-07: Rate Limit Engine Decision
+
+Files:
+
+- `backend/internal/ratelimit/*`
+- `docs/research/CUSTOM_CODE_VS_OSS_AUDIT_2026-02-06.md` (update with final decision if needed)
+
+Requirements:
+
+1. Decide whether sliding window semantics are required by product behavior, tests, or API contracts.
+2. If sliding window semantics are not required, select an OSS limiter library and define a stable interface boundary.
+3. If sliding window semantics are required, define explicit invariants and a test contract for the Lua based implementation.
+
+Acceptance:
+
+- The repo has a single declared rate limiting contract (algorithm choice, failure mode choice, and redis requiredness) that is testable and enforced.
+
+Estimates:
+
+- Tool calls: 10 to 20
+- Wall clock: 20 to 40 minutes
+
+#### P4-08: Implement Chosen Rate Limiter and Update Tests
+
+Files:
+
+- `backend/internal/ratelimit/*`
+- `backend/internal/ratelimit/*_test.go`
+
+Requirements:
+
+1. Rate limiting implementation is behind a stable interface.
+2. Failure behavior is explicit and mode-gated (no silent fail-open behavior unless explicitly configured).
+3. Tests cover correctness at boundaries (burst at window edges, concurrency, and retry semantics if applicable).
+
+Acceptance:
+
+- Rate limiting tests pass and protect against regressions into silent degradation.
+
+Estimates:
+
+- Tool calls: 12 to 24
+- Wall clock: 25 to 50 minutes
+
+#### P4-09: Redis Compatibility Harness Covers Rate Limiting
+
+Files:
+
+- The harness introduced by P4-05
+- Any new harness fixtures under `scripts/` or `backend/`
+
+Requirements:
+
+1. The harness includes all Redis commands required by rate limiting, including any Lua usage.
+2. The harness runs against the selected Redis compatible server(s) used in dev modes (Redis OSS and Valkey minimum).
+3. Failures are loud and actionable (command name, expected vs actual behavior).
+
+Acceptance:
+
+- A server swap in dev mode is blocked if it breaks rate limiting command compatibility.
+
+Estimates:
+
+- Tool calls: 8 to 16
+- Wall clock: 15 to 30 minutes
+
+#### P9-01: Agent Task Distribution Backend Decision and Contract
+
+Files:
+
+- `backend/internal/agents/*`
+- New doc: `docs/plans/2026-02-06-agent-task-queue-backend-convergence.md`
+
+Requirements:
+
+1. Decide the durable backend strategy for agent task distribution: fix the existing coordinator mode, add a Temporal-backed mode, or add a Postgres-queue-backed mode.
+2. Define an explicit backend selection mode with strict defaults and no implicit fallback.
+3. Define a parity contract for core behaviors: priority ordering, retries, timeouts, idempotency, leases and rescue, and offline detection.
+
+Acceptance:
+
+- A decision doc exists and names the target backend, the mode names, failure behavior, and a cutover plan.
+
+Estimates:
+
+- Tool calls: 10 to 20
+- Wall clock: 20 to 40 minutes
+
+#### P9-02: Backend Interface and Explicit Backend Selection
+
+Files:
+
+- `backend/internal/agents/*`
+- `backend/internal/config/*` (if needed for mode wiring)
+
+Requirements:
+
+1. Agent task backend is selected explicitly (example: `AGENT_TASK_BACKEND=coordinator|temporal|postgres-queue|jetstream`).
+2. Missing configuration in a selected backend fails loudly at startup and in preflight.
+3. No implicit fallback from Temporal to custom backend is allowed.
+
+Acceptance:
+
+- Switching the backend mode changes behavior only when explicitly requested, and failures are explicit when prerequisites are missing.
+
+Estimates:
+
+- Tool calls: 12 to 24
+- Wall clock: 25 to 50 minutes
+
+#### P9-05: Make Coordinator Task Queue Durable and Correct
+
+Files:
+
+- `backend/internal/agents/coordinator.go`
+- `backend/internal/agents/queue.go`
+- `backend/internal/handlers/agent_handler.go` (only if API behavior must change to match the contract)
+- `backend/schema.sql` (only if table changes are required)
+
+Requirements:
+
+1. Task queue state is not in-memory-only when agent task distribution is enabled.
+2. On startup, coordinator mode loads claimable tasks from the database and can resume after restart.
+3. All state transitions that matter are persisted: enqueue, claim, assign, completion, failure, cancellation.
+4. Persist failures are treated as hard errors for agent task distribution, not log-only warnings.
+
+Acceptance:
+
+- Creating a task, restarting the API, and then claiming the task still works without manual intervention.
+
+Estimates:
+
+- Tool calls: 16 to 32
+- Wall clock: 35 to 70 minutes
+
+#### P9-06: Strict Preflight and Health Semantics for Agent Tasks
+
+Files:
+
+- `backend/internal/preflight/preflight.go`
+- `src/tracertm/preflight.py` (only if Python also reports the agent health contract)
+- `src/tracertm/api/handlers/health.py` (only if Python health surface includes this contract)
+
+Requirements:
+
+1. When agent task distribution is enabled, preflight validates enqueue, claim, and transition using the selected backend mode.
+2. Failure output is aggregated and stable: `preflight failed: agent-task-backend; postgres` (example).
+3. Health differentiates mode disabled vs mode enabled-but-unhealthy.
+
+Acceptance:
+
+- Misconfigured agent task backend prevents startup with a clear aggregated error list.
+
+Estimates:
+
+- Tool calls: 10 to 20
+- Wall clock: 20 to 40 minutes
+
+#### P9-07: Multi-Instance Contract for Coordinator Mode
+
+Files:
+
+- `backend/internal/agents/coordinator.go`
+- `backend/internal/agents/queue.go`
+
+Requirements:
+
+1. If coordinator mode is allowed in multi-instance deployments, it must use leader election or atomic task claim semantics so tasks are not double-assigned.
+2. If coordinator mode is not allowed in multi-instance deployments, startup fails loudly when multiple instances attempt to run in that mode.
+3. The chosen behavior is documented in `docs/plans/2026-02-06-agent-task-queue-backend-convergence.md`.
+
+Acceptance:
+
+- The deployed behavior is deterministic and observable; there is no best-effort "it probably works" behavior.
+
+Estimates:
+
+- Tool calls: 12 to 24
+- Wall clock: 25 to 50 minutes
+
+#### P9-03: Temporal-Backed Agent Task Queue Mode
+
+Files:
+
+- `backend/internal/agents/*`
+- `backend/internal/temporal/*` (or a narrow new helper package under `backend/internal/agents/`)
+- `backend/internal/preflight/preflight.go` (only if agent task queue mode introduces new required Temporal checks)
+
+Requirements:
+
+1. Temporal mode must preserve the agent API contract or provide a compatibility adapter.
+2. Temporal mode must enforce strict preflight checks so "agent queue is enabled" implies tasks can be claimed and completed.
+3. Retry and timeout policy is explicit and testable, not emergent.
+
+Acceptance:
+
+- In Temporal mode, a task can be created, claimed, completed, retried on failure, and surfaced in a minimal stats endpoint.
+
+Estimates:
+
+- Tool calls: 20 to 40
+- Wall clock: 40 to 80 minutes
+
+#### P9-04: Parity Tests, Smoke Coverage, and Cutover Readiness
+
+Files:
+
+- `backend/internal/agents/*_test.go`
+- The smoke script introduced by P8-01
+- New checklist under `docs/checklists/` (optional)
+
+Requirements:
+
+1. Parity tests validate core behaviors for the selected backend mode.
+2. Smoke checks cover the backend mode when enabled.
+3. Cutover steps are documented and include explicit rollback instructions.
+
+Acceptance:
+
+- A mode flip can be validated by smoke and parity tests and is reversible without data loss or silent degradation.
+
+Estimates:
+
+- Tool calls: 16 to 32
+- Wall clock: 30 to 60 minutes
+
+### Phase 8: Optional Modernization Modes (Indexing and Transport)
+
+These tasks are lower priority than dependency hardening but are included to extend correctness and reduce long term maintenance.
+
+#### P11-01: Codeindex Parser Engine Abstraction and Explicit Mode Selection
+
+Files:
+
+- `backend/internal/codeindex/*`
+- `backend/internal/codeindex/parsers/*`
+- `docs/plans/2026-02-06-codeindex-parser-engine-migration.md`
+
+Requirements:
+
+1. Parser engine selection is explicit and mode-gated (regex vs tree-sitter vs SCIP).
+2. There is no silent fallback from a failing parser engine to another engine.
+3. The indexing pipeline reports which engine is active for each language.
+
+Acceptance:
+
+- Switching parser engine mode is explicit and observable, and failure cases are loud.
+
+Estimates:
+
+- Tool calls: 12 to 24
+- Wall clock: 25 to 50 minutes
+
+#### P11-02: Evaluate Tree-Sitter vs SCIP and Prototype One Language
+
+Files:
+
+- `backend/internal/codeindex/*`
+- New research note under `docs/research/` (optional)
+
+Requirements:
+
+1. Prototype a parser for a single language and measure entity extraction correctness against current tests.
+2. Decide on a single strategy and document why (correctness, performance, maintenance, ecosystem).
+
+Acceptance:
+
+- A single parsing strategy is selected and has a working prototype that can parse at least one representative repo fixture.
+
+Estimates:
+
+- Tool calls: 16 to 32
+- Wall clock: 30 to 60 minutes
+
+#### P11-03: Implement Chosen Parser for Multiple Languages and Integrate
+
+Files:
+
+- `backend/internal/codeindex/*`
+- `backend/internal/codeindex/parsers/*`
+
+Requirements:
+
+1. At least two languages are supported by the new engine with integration into the indexing pipeline.
+2. Output schema is stable and compatible with linking and reference resolution.
+
+Acceptance:
+
+- Indexing completes with the new engine enabled and produces comparable or improved entity graphs.
+
+Estimates:
+
+- Tool calls: 24 to 48
+- Wall clock: 60 to 120 minutes
+
+#### P11-04: Golden Tests and CI Gate When Mode Enabled
+
+Files:
+
+- `backend/internal/codeindex/*_test.go`
+- `.github/workflows/*.yml` (only if gating is added)
+
+Requirements:
+
+1. Golden tests pin critical parsing outputs for a small corpus.
+2. CI gate runs only when the mode is enabled, and failure output is actionable.
+
+Acceptance:
+
+- Parser correctness regressions are caught deterministically when the mode is enabled.
+
+Estimates:
+
+- Tool calls: 12 to 24
+- Wall clock: 25 to 50 minutes
+
+#### P12-01: WebSocket Transport Decision and Semantics Contract
+
+Files:
+
+- `backend/internal/websocket/*`
+- New doc under `docs/plans/` if needed for the decision
+
+Requirements:
+
+1. Decide whether the embedded WebSocket hub remains the default or a Centrifugo mode is introduced.
+2. Define a semantics contract for subscriptions, presence, ordering, and backpressure.
+
+Acceptance:
+
+- The transport decision is documented and includes explicit acceptance criteria and cutover steps.
+
+Estimates:
+
+- Tool calls: 10 to 20
+- Wall clock: 20 to 40 minutes
+
+#### P12-02: Implement Centrifugo Mode With Strict Preflight and Health (If Selected)
+
+Files:
+
+- `config/process-compose.yaml`
+- `backend/internal/websocket/*`
+- `backend/internal/preflight/preflight.go` and `src/tracertm/preflight.py` (only if the mode is required in those runtimes)
+
+Requirements:
+
+1. Mode is explicitly enabled and fails loudly when unreachable.
+2. Adapter preserves the app level contract for project and entity broadcasts.
+
+Acceptance:
+
+- In Centrifugo mode, basic publish and subscribe flows work end to end and are observable.
+
+Estimates:
+
+- Tool calls: 20 to 40
+- Wall clock: 40 to 80 minutes
+
+#### P12-03: Parity and Load Tests for Transport Mode
+
+Files:
+
+- `backend/internal/websocket/*_test.go`
+- Existing load test harnesses under `load-tests/` (if applicable)
+
+Requirements:
+
+1. Load and correctness tests cover message fanout, backpressure behavior, and reconnect semantics.
+2. Gate is enabled only when the mode is required, and failure output is actionable.
+
+Acceptance:
+
+- Transport regressions are caught before rollout for the mode in use.
+
+Estimates:
+
+- Tool calls: 16 to 32
+- Wall clock: 30 to 60 minutes
+
 ## Recommended PR Slices (Agent Executable)
 
 To reduce risk and maximize parallelism, land changes in small, reviewable slices:
@@ -1135,3 +1567,9 @@ To reduce risk and maximize parallelism, land changes in small, reviewable slice
 15. NATS capability extensions: observability, JetStream KV mode, JetStream Object Store mode (Packet P).
 16. Postgres capability extensions: PgBouncer mode and `pg_cron` mode (Packet Q).
 17. Observability extension: OpenTelemetry Collector mode and smoke validation (Packet R).
+18. Rate limiting contract and implementation, plus harness coverage (Packet S).
+19. Agent task queue backend contract and explicit backend selection wiring (Packet T).
+20. Agent task queue Temporal mode implementation and parity coverage (Packet U).
+21. Codeindex parser engine abstraction and prototype (Packet V).
+22. Codeindex parser integration and golden test gating (Packet W).
+23. WebSocket transport decision and optional mode implementation (Packet X).
