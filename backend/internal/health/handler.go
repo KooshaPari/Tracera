@@ -7,18 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"github.com/redis/go-redis/v9"
-	"go.temporal.io/client"
-)
-
-// Status represents the health status of a component
-type Status string
-
-const (
-	StatusHealthy   Status = "healthy"
-	StatusDegraded  Status = "degraded"
-	StatusUnhealthy Status = "unhealthy"
+	"go.temporal.io/sdk/client"
 )
 
 // ComponentCheck represents health status of a single component
@@ -53,18 +44,18 @@ func NewHandler(db *sql.DB, redis *redis.Client, temporal client.Client) *Handle
 }
 
 // Liveness returns a simple liveness check (always returns 200 if service is running)
-func (h *Handler) Liveness(c *gin.Context) {
+func (h *Handler) Liveness(c echo.Context) error {
 	response := HealthResponse{
 		Status:    StatusHealthy,
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Checks:    make(map[string]ComponentCheck),
 	}
 
-	c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
 
 // Readiness returns a comprehensive readiness check (200 only if all deps healthy)
-func (h *Handler) Readiness(c *gin.Context) {
+func (h *Handler) Readiness(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -82,8 +73,7 @@ func (h *Handler) Readiness(c *gin.Context) {
 	for _, check := range checks {
 		if check.Status == StatusUnhealthy {
 			response.Status = StatusUnhealthy
-			c.JSON(http.StatusServiceUnavailable, response)
-			return
+			return c.JSON(http.StatusServiceUnavailable, response)
 		}
 		if check.Status == StatusDegraded {
 			response.Status = StatusDegraded
@@ -97,7 +87,7 @@ func (h *Handler) Readiness(c *gin.Context) {
 		statusCode = http.StatusOK // Still return 200 for degraded
 	}
 
-	c.JSON(statusCode, response)
+	return c.JSON(statusCode, response)
 }
 
 // runAllChecks runs all health checks in parallel
@@ -211,7 +201,7 @@ func (h *Handler) checkTemporal(ctx context.Context) ComponentCheck {
 
 	// GetWorkflowHistory is a safe read-only operation to test connectivity
 	// If Temporal is down, this will timeout or error
-	_, err := h.temporal.CheckHealth(ctx)
+	_, err := h.temporal.CheckHealth(ctx, &client.CheckHealthRequest{})
 	if err != nil {
 		check.Status = StatusDegraded
 		msg := err.Error()
@@ -225,7 +215,7 @@ func (h *Handler) checkTemporal(ctx context.Context) ComponentCheck {
 }
 
 // RegisterRoutes registers health check routes on the provided router
-func RegisterRoutes(router *gin.Engine, db *sql.DB, redis *redis.Client, temporal client.Client) {
+func RegisterRoutes(router *echo.Echo, db *sql.DB, redis *redis.Client, temporal client.Client) {
 	handler := NewHandler(db, redis, temporal)
 
 	router.GET("/health", handler.Liveness)
