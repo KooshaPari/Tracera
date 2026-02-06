@@ -9,7 +9,7 @@
  * All data comes from hook-level mocks (no raw API mocks).
  */
 
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import type { DashboardSummary } from '@/hooks/useDashboardSummary';
 
@@ -123,10 +123,10 @@ function makeSummary(
 
   for (const stats of Object.values(perProject)) {
     totalItemCount += stats.totalCount;
-    for (const [s, c] of Object.entries(stats.statusCounts)) {
+    for (const [s, c] of Object.entries(stats.statusCounts) as Array<[string, number]>) {
       statusDistribution[s] = (statusDistribution[s] ?? 0) + c;
     }
-    for (const [t, c] of Object.entries(stats.typeCounts)) {
+    for (const [t, c] of Object.entries(stats.typeCounts) as Array<[string, number]>) {
       typeDistribution[t] = (typeDistribution[t] ?? 0) + c;
     }
   }
@@ -322,50 +322,62 @@ describe('DashboardView', () => {
       await renderDashboard();
 
       const searchInput = screen.getByPlaceholderText(/Search projects/i);
-      await act(async () => {
-        fireEvent.change(searchInput, { target: { value: 'Beta' } });
-      });
+      fireEvent.change(searchInput, { target: { value: 'Beta' } });
 
-      expect(screen.getByText('Beta Project')).toBeInTheDocument();
-      expect(screen.queryByText('Alpha Project')).not.toBeInTheDocument();
-      expect(screen.queryByText('Gamma Project')).not.toBeInTheDocument();
-    });
+      await waitFor(
+        () => {
+          expect(screen.getByText('Beta Project')).toBeInTheDocument();
+          expect(screen.queryByText('Alpha Project')).not.toBeInTheDocument();
+          expect(screen.queryByText('Gamma Project')).not.toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+    }, 15000);
 
     it('shows empty state when search matches no projects', async () => {
       setPopulatedState();
       await renderDashboard();
 
       const searchInput = screen.getByPlaceholderText(/Search projects/i);
-      await act(async () => {
-        fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
-      });
+      fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
 
-      expect(
-        screen.getByText(/No projects match your current search criteria/i),
-      ).toBeInTheDocument();
-    });
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText(/No projects match your current search criteria/i),
+          ).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+    }, 15000);
 
     it('provides a clear-search button in the empty state', async () => {
       setPopulatedState();
       await renderDashboard();
 
       const searchInput = screen.getByPlaceholderText(/Search projects/i);
-      await act(async () => {
-        fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
-      });
+      fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
+
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: /Clear search/i })).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
 
       const clearButton = screen.getByRole('button', { name: /Clear search/i });
-      expect(clearButton).toBeInTheDocument();
-
-      await act(async () => {
-        fireEvent.click(clearButton);
-      });
+      fireEvent.click(clearButton);
 
       // All projects should reappear
-      expect(screen.getByText('Alpha Project')).toBeInTheDocument();
-      expect(screen.getByText('Beta Project')).toBeInTheDocument();
-      expect(screen.getByText('Gamma Project')).toBeInTheDocument();
-    });
+      await waitFor(
+        () => {
+          expect(screen.getByText('Alpha Project')).toBeInTheDocument();
+          expect(screen.getByText('Beta Project')).toBeInTheDocument();
+          expect(screen.getByText('Gamma Project')).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+    }, 15000);
   });
 
   // -------------------------------------------------------------------------
@@ -416,14 +428,17 @@ describe('DashboardView', () => {
       expect(pinButtons[1]).toHaveAttribute('title', 'Pin project');
 
       // Click pin on the second project
-      await act(async () => {
-        fireEvent.click(pinButtons[1]);
-      });
+      fireEvent.click(pinButtons[1]);
 
       // Now second project should be pinned
-      pinButtons = screen.getAllByTitle(/pin project|unpin project/i);
-      expect(pinButtons[1]).toHaveAttribute('title', 'Unpin project');
-    });
+      await waitFor(
+        () => {
+          pinButtons = screen.getAllByTitle(/pin project|unpin project/i);
+          expect(pinButtons[1]).toHaveAttribute('title', 'Unpin project');
+        },
+        { timeout: 5000 },
+      );
+    }, 15000);
 
     it('shows toast when pinning a project', async () => {
       const { toast } = await import('sonner');
@@ -432,12 +447,15 @@ describe('DashboardView', () => {
 
       // Get the "Pin project" buttons (not the already-unpinned ones)
       const pinButtons = screen.getAllByTitle('Pin project');
-      await act(async () => {
-        fireEvent.click(pinButtons[0]);
-      });
+      fireEvent.click(pinButtons[0]);
 
-      expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('Pinned'));
-    });
+      await waitFor(
+        () => {
+          expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('Pinned'));
+        },
+        { timeout: 5000 },
+      );
+    }, 15000);
   });
 
   // -------------------------------------------------------------------------
