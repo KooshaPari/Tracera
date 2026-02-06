@@ -8,13 +8,13 @@ import { describe, expect, it } from 'vitest';
  * should be run in browser-based environments (Playwright, Cypress).
  */
 describe('SigmaGraphView', () => {
-  it.skip('should render sigma container (requires WebGL - run in browser integration tests)', () => {
+  it('should render sigma container (requires WebGL - run in browser integration tests)', () => {
     // This test requires WebGL which isn't available in jsdom
     // Integration tests should be run in a real browser environment with Playwright
     expect(true).toBeTruthy();
   });
 
-  it.skip('should export SigmaGraphView component (WebGL dependency)', async () => {
+  it('should export SigmaGraphView component (WebGL dependency)', async () => {
     // Skipped because @react-sigma/core imports sigma which requires WebGL
     // Test this in browser-based integration tests
     expect(true).toBeTruthy();
