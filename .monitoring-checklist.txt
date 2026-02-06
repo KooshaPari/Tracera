@@ -1,0 +1,113 @@
+# PHASE 5 EXECUTION MONITORING CHECKLIST
+# Updated: 2026-02-06 02:15 UTC
+# Team Lead: claude-haiku
+
+## ACTIVE MONITORING
+
+### Every 10 minutes:
+☐ Check TaskList for status updates
+☐ Watch for messages from any team
+☐ Verify no critical blockers
+
+### Every 20 minutes:
+☐ Verify all 5 agents still in_progress
+☐ Check for milestone completions
+☐ Monitor Task #6, #7, #8, #12, #19
+
+### Every 30 minutes:
+☐ Checkpoint 1 validation (see timeline below)
+☐ Check for partial results/commits
+☐ Prepare next wave if applicable
+
+---
+
+## CHECKPOINT TIMELINE (from execution start)
+
+### Checkpoint 1: +20-25 min
+Expected: Gap 5.3 Steps 1-2 done; Gap 5.4 & 5.5 initial phase done; Gap 5.1 & 5.2 initial phase done
+Action: Verify progress, catch blockers
+
+### Checkpoint 2: +40-45 min
+Expected: Gap 5.3 done (8 tests passing); Gap 5.1-5.2 done (all tests done)
+Action: Validate Wave 1 + Wave 2.1 complete
+
+### Checkpoint 3: +55-60 min
+Expected: Gap 5.4 & 5.5 done (1+6=7 tests); Gap 5.6-5.8 in progress
+Action: Validate Wave 2 complete; monitor Wave 3 progress
+
+### Checkpoint 4: +70 min
+Expected: Gap 5.6-5.8 complete (30+ tests); Phase 5 ready for Wave 4
+Action: Prepare validation phase
+
+### Checkpoint 5: +80 min
+Expected: All tests passing; ready for final commits
+Action: Coordinate final commits across all teams
+
+---
+
+## TASK MONITORING
+
+### Gap 5.3 (Task #6: integration-tests-architect)
+Status Check: ✅ IN_PROGRESS
+Blockers: NONE
+Checkpoint: Step 1-2 done → Step 3-4 → Step 5 (tests re-enabled)
+Expected: 8/8 tests passing in ~40 min
+
+### Gap 5.4 (Task #7: general-purpose)
+Status Check: ✅ IN_PROGRESS
+Blockers: NONE
+Checkpoint: activities.go → workflows.go → test setup → service
+Expected: 1/1 test passing in ~50 min
+
+### Gap 5.5 (Task #8: general-purpose)
+Status Check: ✅ IN_PROGRESS
+Blockers: NONE
+Checkpoint: test data → handlers → fixtures → tests → WCAG
+Expected: 6/6 tests passing in ~35 min
+
+### Gap 5.1-5.2 (Task #12: visual-regression-implementer)
+Status Check: ✅ IN_PROGRESS
+Blockers: NONE
+Checkpoint: #13 (4 tests) → #14 (13+ tests) → #15 (publisher) → Validate
+Expected: 18+ tests + publisher done in ~45 min
+
+### Gap 5.6-5.8 (Task #19: api-performance-implementer)
+Status Check: ✅ IN_PROGRESS
+Blockers: NONE (CRITICAL PATH: Gap 5.7 = 40 min)
+Checkpoint: Phase 1 → Phase 2 → Phase 3 → Validation
+Expected: 30+ tests + GPU shaders + spatial done in ~45 min
+
+---
+
+## BLOCKER ESCALATION PLAN
+
+If any team reports blocker:
+1. READ the message immediately
+2. CHECK master plan docs (/docs/reports/PHASE_5_*_IMPLEMENTATION_PLAN.md)
+3. CHECK code sketches (lines 423-651)
+4. CALL that team with direct answer or...
+5. ESCALATE to user with full context
+
+---
+
+## FINAL VALIDATION (Wave 4)
+
+When all teams report completion:
+1. ✅ Verify 80+ tests passing
+2. ✅ Verify 5x flake-free runs
+3. ✅ Verify coverage ≥85%
+4. ✅ Verify GPU performance targets
+5. ✅ Verify WCAG 2.1 AA (Gap 5.5)
+6. ✅ Create final commits
+7. ✅ Generate Phase 5 completion report
+
+---
+
+## NOTES
+
+- All 5 teams are INDEPENDENT (no cross-blocking)
+- Parallel execution critical for 60-70 min timeline
+- Expected completion: ~65-75 min from start (2026-02-06 03:20-03:30 UTC)
+- Last checkpoint: ~80 min (all done)
+
+STATUS: 🟢 LIVE MONITORING ACTIVE
