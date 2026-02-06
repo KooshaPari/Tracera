@@ -144,11 +144,11 @@ function QAEnhancedNodeComponent({
               >
                 {passRate >= PASS_RATE_EXCELLENT ? (
                   <CheckCircle2 className='h-3.5 w-3.5' />
-                ) : (passRate >= PASS_RATE_GOOD ? (
+                ) : passRate >= PASS_RATE_GOOD ? (
                   <Clock className='h-3.5 w-3.5' />
                 ) : (
                   <XCircle className='h-3.5 w-3.5' />
-                ))}
+                )}
                 {passRate}%
               </div>
             )}
@@ -482,11 +482,11 @@ function DemoTab({ data }: { data: QAEnhancedNodeData }) {
             <video src={previewUrl} controls className='h-full w-full' aria-label='Preview'>
               <track kind='captions' />
             </video>
-          ) : (isGif ? (
+          ) : isGif ? (
             <img src={previewUrl} alt={data.label} className='h-full w-full object-contain' />
           ) : (
             <img src={previewUrl} alt={data.label} className='h-full w-full object-contain' />
-          ))}
+          )}
         </div>
       </div>
     );
@@ -547,9 +547,9 @@ function TestsTab({ data }: { data: QAEnhancedNodeData }) {
             className={`h-full transition-all ${
               metrics.passRate >= PASS_RATE_EXCELLENT
                 ? 'bg-green-500'
-                : (metrics.passRate >= PASS_RATE_GOOD
+                : metrics.passRate >= PASS_RATE_GOOD
                   ? 'bg-yellow-500'
-                  : 'bg-red-500')
+                  : 'bg-red-500'
             }`}
             style={{ width: `${metrics.passRate}%` }}
           />

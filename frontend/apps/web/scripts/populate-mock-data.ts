@@ -35,7 +35,8 @@ async function main() {
         } catch {
           continue;
         }
-      } else {}
+      } else {
+      }
 
       createdProjects.push({ config, project });
     }
@@ -55,7 +56,8 @@ async function main() {
     const expectedTotal = getTotalItemCount();
     const stats = getProjectStats();
 
-    for (const stat of stats) {}
+    for (const stat of stats) {
+    }
   } catch {
     process.exit(1);
   }

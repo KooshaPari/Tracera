@@ -182,9 +182,9 @@ function GraphLayoutWorkerDemo() {
                 className={`font-mono text-2xl font-bold ${
                   mainThreadFPS > 50
                     ? 'text-green-500'
-                    : (mainThreadFPS > 30
+                    : mainThreadFPS > 30
                       ? 'text-yellow-500'
-                      : 'text-red-500')
+                      : 'text-red-500'
                 }`}
               >
                 {mainThreadFPS.toFixed(0)}
@@ -195,9 +195,9 @@ function GraphLayoutWorkerDemo() {
                 className={`h-full transition-all duration-100 ${
                   mainThreadFPS > 50
                     ? 'bg-green-500'
-                    : (mainThreadFPS > 30
+                    : mainThreadFPS > 30
                       ? 'bg-yellow-500'
-                      : 'bg-red-500')
+                      : 'bg-red-500'
                 }`}
                 style={{ width: `${(mainThreadFPS / 60) * 100}%` }}
               />

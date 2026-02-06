@@ -78,19 +78,17 @@ export function useQAEnhancedNodeData({ projectId, itemId }: UseQAEnhancedNodeDa
 
   // Transform artifacts
   const artifacts: QANodeArtifact[] | undefined =
-    artifactsData?.artifacts.map((a) =>
-      ({
-        id: a.id,
-          type: a.artifact_type as QANodeArtifact[`type`],
-          url:
-            a.url ||
-            `/api/v1/projects/${projectId}/executions/${a.execution_id}/artifacts/${a.id}/download`,
-        ...(a.thumbnail_url || a.thumbnail_path
-          ? { thumbnailUrl: a.thumbnail_url || a.thumbnail_path }
-          : {}),
-        capturedAt: a.captured_at,
-      }),
-    ) || undefined;
+    artifactsData?.artifacts.map((a) => ({
+      id: a.id,
+      type: a.artifact_type as QANodeArtifact[`type`],
+      url:
+        a.url ||
+        `/api/v1/projects/${projectId}/executions/${a.execution_id}/artifacts/${a.id}/download`,
+      ...(a.thumbnail_url || a.thumbnail_path
+        ? { thumbnailUrl: a.thumbnail_url || a.thumbnail_path }
+        : {}),
+      capturedAt: a.captured_at,
+    })) || undefined;
 
   // Build preview from latest artifact
   const preview: QANodePreview | undefined = (() => {

@@ -124,9 +124,9 @@ export const handlers = [
       name: body.name ?? baseProject.name,
       ...(body.description !== undefined
         ? { description: body.description }
-        : (baseProject.description !== undefined
+        : baseProject.description !== undefined
           ? { description: baseProject.description }
-          : {})),
+          : {}),
       createdAt: baseProject.createdAt,
       updatedAt: new Date().toISOString(),
     };
@@ -359,7 +359,12 @@ export const handlers = [
     const projectId = url.searchParams.get('project_id');
 
     const items = projectId ? filterItemsByProject(projectId) : mockItems;
-    const nodes = items.map((item) => (Object.assign({id:item.id,status:item.status,title:item.title,type:item.type}, item.metadata!==undefined&&{metadata:item.metadata})));
+    const nodes = items.map((item) =>
+      Object.assign(
+        { id: item.id, status: item.status, title: item.title, type: item.type },
+        item.metadata !== undefined && { metadata: item.metadata },
+      ),
+    );
 
     const edges = mockLinks.map((link) => ({
       id: link.id,

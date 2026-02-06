@@ -112,7 +112,7 @@ function ArtifactsTab({ artifacts }: { artifacts?: QANodeArtifact[] }) {
                 alt={artifact.type}
                 className='h-32 w-full object-cover'
               />
-            ) : (artifact.type === 'video' ? (
+            ) : artifact.type === 'video' ? (
               <div className='bg-muted flex h-32 w-full items-center justify-center'>
                 <Video className='text-muted-foreground h-8 w-8' />
               </div>
@@ -120,7 +120,7 @@ function ArtifactsTab({ artifacts }: { artifacts?: QANodeArtifact[] }) {
               <div className='bg-muted flex h-32 w-full items-center justify-center'>
                 <FileText className='text-muted-foreground h-8 w-8' />
               </div>
-            ))}
+            )}
             <div className='p-2'>
               <div className='flex items-center justify-between'>
                 <Badge variant='outline' className='text-xs'>
@@ -255,9 +255,9 @@ function MetricsTab({ metrics }: { metrics?: QANodeMetrics }) {
               className={`h-2 rounded-full ${
                 metrics.passRate >= 90
                   ? 'bg-green-500'
-                  : (metrics.passRate >= 70
+                  : metrics.passRate >= 70
                     ? 'bg-yellow-500'
-                    : 'bg-red-500')
+                    : 'bg-red-500'
               }`}
               style={{ width: `${metrics.passRate}%` }}
             />

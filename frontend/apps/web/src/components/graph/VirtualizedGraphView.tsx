@@ -346,9 +346,9 @@ function VirtualizedGraphViewComponent({
           type:
             lodLevel === `high`
               ? `richPill`
-              : (lodLevel === `medium`
+              : lodLevel === `medium`
                 ? `mediumPill`
-                : `simplifiedPill`),
+                : `simplifiedPill`,
         }),
       );
   }, [dagreLaidoutNodes, visibleNodeIds, enableVirtualization, lodLevel]);

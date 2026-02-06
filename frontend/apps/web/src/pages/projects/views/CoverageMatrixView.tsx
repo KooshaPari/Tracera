@@ -111,9 +111,9 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
               className={`h-4 rounded-full transition-all ${
                 matrix.coveragePercentage >= 80
                   ? 'bg-green-500'
-                  : (matrix.coveragePercentage >= 50
+                  : matrix.coveragePercentage >= 50
                     ? 'bg-yellow-500'
-                    : 'bg-red-500')
+                    : 'bg-red-500'
               }`}
               style={{ width: `${matrix.coveragePercentage}%` }}
             />
@@ -164,7 +164,7 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
         <div className='flex items-center justify-center py-12'>
           <div className='border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent' />
         </div>
-      ) : (filteredItems.length === 0 ? (
+      ) : filteredItems.length === 0 ? (
         <div className='rounded-lg border border-dashed p-12 text-center'>
           <Grid className='text-muted-foreground mx-auto h-12 w-12' />
           <h3 className='mt-4 text-lg font-semibold'>
@@ -200,7 +200,7 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
             </table>
           </div>
         </div>
-      ))}
+      )}
 
       {/* Coverage Gaps Summary */}
       {gaps && gaps.gaps.length > 0 && (
@@ -225,9 +225,9 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
                       className={`rounded px-1.5 py-0.5 ${
                         gap.priority === 'critical'
                           ? 'bg-red-100 text-red-700'
-                          : (gap.priority === 'high'
+                          : gap.priority === 'high'
                             ? 'bg-orange-100 text-orange-700'
-                            : 'bg-gray-100 text-gray-700')
+                            : 'bg-gray-100 text-gray-700'
                       }`}
                     >
                       {gap.priority}

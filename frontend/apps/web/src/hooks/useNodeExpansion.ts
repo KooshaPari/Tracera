@@ -235,7 +235,7 @@ export function useNodeExpansion(items: { id: string; parentId?: string }[]) {
           {
             const state = getExpansionState(currentNodeId);
             const nextState: NodeExpansionState =
-              state === 'collapsed' ? 'preview' : (state === 'preview' ? 'panel' : 'collapsed');
+              state === 'collapsed' ? 'preview' : state === 'preview' ? 'panel' : 'collapsed';
             setExpansionState(currentNodeId, nextState);
           }
           return currentNodeId;

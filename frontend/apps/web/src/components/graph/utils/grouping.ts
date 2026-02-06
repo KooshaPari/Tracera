@@ -430,8 +430,8 @@ export function calculateGroupSeparation(
   let crossGroupLinks = 0;
 
   for (const link of links) {
-    const source = group1ItemIds.has(link.sourceId) ? 1 : (group2ItemIds.has(link.sourceId) ? 2 : 0);
-    const target = group1ItemIds.has(link.targetId) ? 1 : (group2ItemIds.has(link.targetId) ? 2 : 0);
+    const source = group1ItemIds.has(link.sourceId) ? 1 : group2ItemIds.has(link.sourceId) ? 2 : 0;
+    const target = group1ItemIds.has(link.targetId) ? 1 : group2ItemIds.has(link.targetId) ? 2 : 0;
 
     // Cross-group link exists
     if ((source === 1 && target === 2) || (source === 2 && target === 1)) {

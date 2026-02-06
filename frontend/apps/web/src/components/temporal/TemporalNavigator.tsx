@@ -393,9 +393,9 @@ function ProgressView({ branches, versions }: ProgressViewProps) {
                 variant={
                   branch.status === 'active'
                     ? 'default'
-                    : (branch.status === 'merged'
+                    : branch.status === 'merged'
                       ? 'outline'
-                      : 'secondary')
+                      : 'secondary'
                 }
                 className='text-xs'
               >

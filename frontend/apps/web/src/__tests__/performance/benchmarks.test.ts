@@ -513,7 +513,7 @@ describe('Performance Benchmarks', () => {
       logger.info('\n⚡ Interaction Latency:');
       logger.info('─'.repeat(80));
       benchmarkResults.interactions.forEach(({ operation, mode, latency }) => {
-        const target = operation === 'Node Click' ? 50 : (operation === 'Node Hover' ? 30 : 16);
+        const target = operation === 'Node Click' ? 50 : operation === 'Node Hover' ? 30 : 16;
         const status = latency < target ? '✓' : '✗';
         logger.info(
           `  ${status} ${operation.padEnd(15)} (${mode.padEnd(9)}): ${latency.toFixed(2).padStart(6)} ms (target: <${target}ms)`,

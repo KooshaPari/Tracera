@@ -355,8 +355,8 @@ export function ADRGraph({ adrs, selectedAdrId, onAdrSelect, className }: ADRGra
                       width={100}
                       height={60}
                       fill={STATUS_COLORS[node.adr.status].split(' ')[0]}
-                      stroke={isSelected ? '#ef4444' : (isConnected ? '#3b82f6' : '#e2e8f0')}
-                      strokeWidth={isSelected ? 3 : (isConnected ? 2 : 1)}
+                      stroke={isSelected ? '#ef4444' : isConnected ? '#3b82f6' : '#e2e8f0'}
+                      strokeWidth={isSelected ? 3 : isConnected ? 2 : 1}
                       rx={8}
                       className='transition-all group-hover:shadow-lg'
                     />

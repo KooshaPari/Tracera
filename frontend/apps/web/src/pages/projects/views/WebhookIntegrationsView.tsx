@@ -428,7 +428,7 @@ export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewPr
                 <Skeleton key={i} className='h-16 w-full' />
               ))}
             </div>
-          ) : (filteredWebhooks.length === 0 ? (
+          ) : filteredWebhooks.length === 0 ? (
             <div className='py-12 text-center'>
               <Webhook className='text-muted-foreground/50 mx-auto mb-4 h-12 w-12' />
               <h3 className='text-lg font-semibold'>No webhooks found</h3>
@@ -569,7 +569,7 @@ export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewPr
                 ))}
               </TableBody>
             </Table>
-          ))}
+          )}
         </CardContent>
       </Card>
     </div>
