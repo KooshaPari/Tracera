@@ -75,8 +75,14 @@ declare module '*.module.css' {
   export default classes;
 }
 
-// Extend JSX namespace for custom elements if needed
+// Extend JSX namespace for React components
 declare namespace JSX {
+  interface Element extends React.ReactElement<unknown, unknown> {}
+  interface ElementClass extends React.Component<unknown> {
+    render(): React.ReactNode;
+  }
+  type ElementAttributesProperty = Record<string, unknown>;
+  type ElementChildrenAttribute = Record<string, unknown>;
   type IntrinsicElements = Record<string, unknown>;
 }
 
