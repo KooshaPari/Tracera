@@ -18747,7 +18747,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
         {
             "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/api/main.py",
             "severity": "error",
-            "message": "Type of \"list_projects_v2\" is partially unknown\n  Type of \"list_projects_v2\" is \"(owner: str, is_org: bool = True) -> CoroutineType[Any, Any, list[dict[Unknown, Unknown]]]\"",
+            "message": "Type of \"list_projects_graphql\" is partially unknown\n  Type of \"list_projects_graphql\" is \"(owner: str, is_org: bool = True) -> CoroutineType[Any, Any, list[dict[Unknown, Unknown]]]\"",
             "range": {
                 "start": {
                     "line": 9765,
@@ -70569,7 +70569,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Unnecessary isinstance call; \"ProjectNotSelectedError | ItemNotFoundError | DatabaseError | ValidationError\" is always an instance of \"LLMFriendlyError\"",
             "range": {
@@ -70585,7 +70585,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnnecessaryIsInstance"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Type of \"append\" is partially unknown\n  Type of \"append\" is \"(object: Unknown, /) -> None\"",
             "range": {
@@ -70601,7 +70601,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Type of \"append\" is partially unknown\n  Type of \"append\" is \"(object: Unknown, /) -> None\"",
             "range": {
@@ -70617,7 +70617,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Type of \"append\" is partially unknown\n  Type of \"append\" is \"(object: Unknown, /) -> None\"",
             "range": {
@@ -70633,7 +70633,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Type of \"append\" is partially unknown\n  Type of \"append\" is \"(object: Unknown, /) -> None\"",
             "range": {
@@ -70649,7 +70649,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Type of \"append\" is partially unknown\n  Type of \"append\" is \"(object: Unknown, /) -> None\"",
             "range": {
@@ -70665,7 +70665,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Type of \"check_name\" is unknown",
             "range": {
@@ -70681,7 +70681,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Type of \"passed\" is unknown",
             "range": {
@@ -70697,7 +70697,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Argument type is partially unknown\n  Argument corresponds to parameter \"iterable\" in function \"all\"\n  Argument type is \"Generator[Unknown, None, None]\"",
             "range": {
@@ -70713,7 +70713,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownArgumentType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase4.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/mcp/verify_phase_four.py",
             "severity": "error",
             "message": "Type of \"result\" is unknown",
             "range": {
@@ -88907,7 +88907,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
         {
             "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/github_project_service.py",
             "severity": "error",
-            "message": "Type of \"list_projects_v2\" is partially unknown\n  Type of \"list_projects_v2\" is \"(owner: str, is_org: bool = True) -> CoroutineType[Any, Any, list[dict[Unknown, Unknown]]]\"",
+            "message": "Type of \"list_projects_graphql\" is partially unknown\n  Type of \"list_projects_graphql\" is \"(owner: str, is_org: bool = True) -> CoroutineType[Any, Any, list[dict[Unknown, Unknown]]]\"",
             "range": {
                 "start": {
                     "line": 40,
@@ -88939,7 +88939,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
         {
             "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/github_project_service.py",
             "severity": "error",
-            "message": "Type of \"list_projects_v2\" is partially unknown\n  Type of \"list_projects_v2\" is \"(owner: str, is_org: bool = True) -> CoroutineType[Any, Any, list[dict[Unknown, Unknown]]]\"",
+            "message": "Type of \"list_projects_graphql\" is partially unknown\n  Type of \"list_projects_graphql\" is \"(owner: str, is_org: bool = True) -> CoroutineType[Any, Any, list[dict[Unknown, Unknown]]]\"",
             "range": {
                 "start": {
                     "line": 43,
@@ -110521,7 +110521,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnusedParameter"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "\"TEXTUAL_AVAILABLE\" is constant (because it is uppercase) and cannot be redefined",
             "range": {
@@ -110537,7 +110537,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportConstantRedefinition"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Class declaration \"EnhancedDashboardApp\" is obscured by a declaration of the same name",
             "range": {
@@ -110553,7 +110553,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportRedeclaration"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Expected type arguments for generic class \"App\"",
             "range": {
@@ -110569,7 +110569,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportMissingTypeArgument"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"BINDINGS\" is partially unknown\n  Type of \"BINDINGS\" is \"list[Unknown]\"",
             "range": {
@@ -110585,7 +110585,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Expected type arguments for generic class \"list\"",
             "range": {
@@ -110601,7 +110601,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportMissingTypeArgument"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"exit\" is partially unknown\n  Type of \"exit\" is \"(result: Unknown | None = None, return_code: int = 0, message: ConsoleRenderable | RichCast | str | None = None) -> None\"",
             "range": {
@@ -110617,7 +110617,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"view_tree\" is partially unknown\n  Type of \"view_tree\" is \"Tree[Unknown]\"",
             "range": {
@@ -110633,7 +110633,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"node\" is partially unknown\n  Type of \"node\" is \"TreeNode[Unknown]\"",
             "range": {
@@ -110649,7 +110649,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"root\" is partially unknown\n  Type of \"root\" is \"TreeNode[Unknown]\"",
             "range": {
@@ -110665,7 +110665,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"add\" is partially unknown\n  Type of \"add\" is \"(label: str | Text, data: Unknown | None = None, *, before: int | TreeNode[Unknown] | None = None, after: int | TreeNode[Unknown] | None = None, expand: bool = False, allow_expand: bool = True) -> TreeNode[Unknown]\"",
             "range": {
@@ -110681,7 +110681,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"_on_sync_status_change\" is partially unknown\n  Type of \"_on_sync_status_change\" is \"(state: Unknown) -> None\"",
             "range": {
@@ -110697,7 +110697,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Argument type is partially unknown\n  Argument corresponds to parameter \"callback\" in function \"on_sync_status_change\"\n  Argument type is \"(state: Unknown) -> None\"",
             "range": {
@@ -110713,7 +110713,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownArgumentType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"_on_conflict_detected\" is partially unknown\n  Type of \"_on_conflict_detected\" is \"(conflict: Unknown) -> None\"",
             "range": {
@@ -110729,7 +110729,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Argument type is partially unknown\n  Argument corresponds to parameter \"callback\" in function \"on_conflict_detected\"\n  Argument type is \"(conflict: Unknown) -> None\"",
             "range": {
@@ -110745,7 +110745,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownArgumentType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"refresh_stats\" is partially unknown\n  Type of \"refresh_stats\" is \"(project: Unknown) -> None\"",
             "range": {
@@ -110761,7 +110761,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"refresh_items\" is partially unknown\n  Type of \"refresh_items\" is \"(project: Unknown) -> None\"",
             "range": {
@@ -110777,7 +110777,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of parameter \"project\" is unknown",
             "range": {
@@ -110793,7 +110793,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type annotation is missing for parameter \"project\"",
             "range": {
@@ -110809,7 +110809,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportMissingParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Argument type is unknown\n  Argument corresponds to parameter \"project\" in function \"get_project_stats\"",
             "range": {
@@ -110825,7 +110825,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownArgumentType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"stats_table\" is partially unknown\n  Type of \"stats_table\" is \"DataTable[Unknown]\"",
             "range": {
@@ -110841,7 +110841,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"add_row\" is partially unknown\n  Type of \"add_row\" is \"(*cells: Unknown, height: int | None = 1, key: str | None = None, label: str | Text | None = None) -> RowKey\"",
             "range": {
@@ -110857,7 +110857,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"add_row\" is partially unknown\n  Type of \"add_row\" is \"(*cells: Unknown, height: int | None = 1, key: str | None = None, label: str | Text | None = None) -> RowKey\"",
             "range": {
@@ -110873,7 +110873,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"add_row\" is partially unknown\n  Type of \"add_row\" is \"(*cells: Unknown, height: int | None = 1, key: str | None = None, label: str | Text | None = None) -> RowKey\"",
             "range": {
@@ -110889,7 +110889,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of parameter \"project\" is unknown",
             "range": {
@@ -110905,7 +110905,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type annotation is missing for parameter \"project\"",
             "range": {
@@ -110921,7 +110921,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportMissingParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Argument type is unknown\n  Argument corresponds to parameter \"project\" in function \"list_items\"",
             "range": {
@@ -110937,7 +110937,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownArgumentType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"items_table\" is partially unknown\n  Type of \"items_table\" is \"DataTable[Unknown]\"",
             "range": {
@@ -110953,7 +110953,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"add_row\" is partially unknown\n  Type of \"add_row\" is \"(*cells: Unknown, height: int | None = 1, key: str | None = None, label: str | Text | None = None) -> RowKey\"",
             "range": {
@@ -110969,7 +110969,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of parameter \"event\" is partially unknown\n  Parameter type is \"NodeSelected[Unknown]\"",
             "range": {
@@ -110985,7 +110985,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Expected type arguments for generic class \"NodeSelected\"",
             "range": {
@@ -111001,7 +111001,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportMissingTypeArgument"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"node\" is partially unknown\n  Type of \"node\" is \"TreeNode[Unknown]\"",
             "range": {
@@ -111017,7 +111017,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"data\" is partially unknown\n  Type of \"data\" is \"Unknown | None\"",
             "range": {
@@ -111033,7 +111033,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"node\" is partially unknown\n  Type of \"node\" is \"TreeNode[Unknown]\"",
             "range": {
@@ -111049,7 +111049,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"data\" is unknown",
             "range": {
@@ -111065,7 +111065,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"refresh_items\" is partially unknown\n  Type of \"refresh_items\" is \"(project: Unknown) -> None\"",
             "range": {
@@ -111081,7 +111081,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"current_view\" is partially unknown\n  Type of \"current_view\" is \"Unknown | str\"",
             "range": {
@@ -111097,7 +111097,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"upper\" is partially unknown\n  Type of \"upper\" is \"Unknown | (() -> str)\"",
             "range": {
@@ -111113,7 +111113,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of parameter \"dashboard\" is unknown",
             "range": {
@@ -111129,7 +111129,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type annotation is missing for parameter \"dashboard\"",
             "range": {
@@ -111145,7 +111145,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportMissingParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"perform_search\" is unknown",
             "range": {
@@ -111161,7 +111161,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Function \"search\" is not accessed",
             "range": {
@@ -111177,7 +111177,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnusedFunction"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"db\" is unknown",
             "range": {
@@ -111193,7 +111193,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"session\" is unknown",
             "range": {
@@ -111209,7 +111209,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Cannot access attribute \"db\" for class \"EnhancedDashboardApp*\"\n  Attribute \"db\" is unknown",
             "range": {
@@ -111225,7 +111225,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportAttributeAccessIssue"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"session\" is unknown",
             "range": {
@@ -111241,7 +111241,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Argument type is unknown\n  Argument corresponds to parameter \"db_session\" in function \"__init__\"",
             "range": {
@@ -111257,7 +111257,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownArgumentType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"filters\" is partially unknown\n  Type of \"filters\" is \"dict[str, Unknown] | None\"",
             "range": {
@@ -111273,7 +111273,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"current_project_id\" is unknown",
             "range": {
@@ -111289,7 +111289,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Cannot access attribute \"current_project_id\" for class \"EnhancedDashboardApp*\"\n  Attribute \"current_project_id\" is unknown",
             "range": {
@@ -111305,7 +111305,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportAttributeAccessIssue"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"current_project_id\" is unknown",
             "range": {
@@ -111321,7 +111321,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Cannot access attribute \"current_project_id\" for class \"EnhancedDashboardApp*\"\n  Attribute \"current_project_id\" is unknown",
             "range": {
@@ -111337,7 +111337,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportAttributeAccessIssue"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Argument type is partially unknown\n  Argument corresponds to parameter \"filters\" in function \"search\"\n  Argument type is \"dict[str, Unknown] | None\"",
             "range": {
@@ -111353,7 +111353,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownArgumentType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"matched\" is partially unknown\n  Type of \"matched\" is \"list[Unknown]\"",
             "range": {
@@ -111369,7 +111369,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"item\" is unknown",
             "range": {
@@ -111385,7 +111385,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownVariableType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"items_data\" is unknown",
             "range": {
@@ -111401,7 +111401,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Cannot access attribute \"items_data\" for class \"EnhancedDashboardApp*\"\n  Attribute \"items_data\" is unknown",
             "range": {
@@ -111417,7 +111417,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportAttributeAccessIssue"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"get\" is unknown",
             "range": {
@@ -111433,7 +111433,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"lower\" is unknown",
             "range": {
@@ -111449,7 +111449,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"get\" is unknown",
             "range": {
@@ -111465,7 +111465,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"lower\" is unknown",
             "range": {
@@ -111481,7 +111481,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Argument type is partially unknown\n  Argument corresponds to parameter \"obj\" in function \"len\"\n  Argument type is \"list[Unknown]\"",
             "range": {
@@ -111497,7 +111497,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownArgumentType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "No overloads for \"push_screen\" match the provided arguments",
             "range": {
@@ -111513,7 +111513,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportCallIssue"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Argument of type \"ConflictPanel\" cannot be assigned to parameter \"screen\" of type \"Screen[ScreenResultType@push_screen] | str\" in function \"push_screen\"\n  Type \"ConflictPanel\" is not assignable to type \"Screen[ScreenResultType@push_screen] | str\"\n    \"ConflictPanel\" is not assignable to \"str\"\n    \"ConflictPanel\" is not assignable to \"Screen[ScreenResultType@push_screen]\"",
             "range": {
@@ -111529,7 +111529,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportArgumentType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of parameter \"state\" is unknown",
             "range": {
@@ -111545,7 +111545,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type annotation is missing for parameter \"state\"",
             "range": {
@@ -111561,7 +111561,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportMissingParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"status\" is unknown",
             "range": {
@@ -111577,7 +111577,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"synced_entities\" is unknown",
             "range": {
@@ -111593,7 +111593,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"status\" is unknown",
             "range": {
@@ -111609,7 +111609,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"last_error\" is unknown",
             "range": {
@@ -111625,7 +111625,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"status\" is unknown",
             "range": {
@@ -111641,7 +111641,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"conflicts_count\" is unknown",
             "range": {
@@ -111657,7 +111657,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of parameter \"conflict\" is unknown",
             "range": {
@@ -111673,7 +111673,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type annotation is missing for parameter \"conflict\"",
             "range": {
@@ -111689,7 +111689,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportMissingParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"entity_type\" is unknown",
             "range": {
@@ -111705,7 +111705,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of \"entity_id\" is unknown",
             "range": {
@@ -111721,7 +111721,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownMemberType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "\"item_id\" is not accessed",
             "range": {
@@ -111737,7 +111737,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnusedParameter"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Unnecessary \"# type: ignore\" comment",
             "range": {
@@ -111753,7 +111753,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnnecessaryTypeIgnoreComment"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of parameter \"args\" is unknown",
             "range": {
@@ -111769,7 +111769,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type annotation is missing for parameter \"args\"",
             "range": {
@@ -111785,7 +111785,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportMissingParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type of parameter \"kwargs\" is unknown",
             "range": {
@@ -111801,7 +111801,7 @@ Config contains unrecognized setting "reportIncompatibleImportOverrides".
             "rule": "reportUnknownParameterType"
         },
         {
-            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_v2.py",
+            "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard_compat.py",
             "severity": "error",
             "message": "Type annotation is missing for parameter \"kwargs\"",
             "range": {

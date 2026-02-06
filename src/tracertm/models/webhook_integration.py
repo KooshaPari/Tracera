@@ -170,7 +170,9 @@ class WebhookLog(Base):
     results_submitted: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Timestamp
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+    )
 
     __table_args__ = (
         Index("ix_webhook_logs_webhook_id", "webhook_id"),

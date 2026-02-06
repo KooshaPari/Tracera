@@ -29,8 +29,8 @@ class ConflictResolution:
 class AgentConflict:
     """Detected conflict between agents."""
 
-    agent1_id: str
-    agent2_id: str
+    primary_agent_id: str
+    secondary_agent_id: str
     conflict_type: str
     entity_id: str
     description: str
@@ -83,23 +83,26 @@ class AgentCoordinationService:
         conflicts = []
 
         # Check for agents working on same items
-        for i, agent1 in enumerate(agents):
-            for agent2 in agents[i + 1 :]:
+        for i, primary_agent in enumerate(agents):
+            for secondary_agent in agents[i + 1 :]:
                 # Check if both agents have recent activity on same entity
                 # This is a simplified check
-                if agent1.last_activity_at and agent2.last_activity_at:
+                if primary_agent.last_activity_at and secondary_agent.last_activity_at:
                     # If both updated within 1 minute, potential conflict
-                    time1 = datetime.fromisoformat(agent1.last_activity_at)
-                    time2 = datetime.fromisoformat(agent2.last_activity_at)
+                    primary_activity_time = datetime.fromisoformat(primary_agent.last_activity_at)
+                    secondary_activity_time = datetime.fromisoformat(secondary_agent.last_activity_at)
 
-                    if abs((time1 - time2).total_seconds()) < CONCURRENT_ACTIVITY_WINDOW_SECONDS:
+                    if (
+                        abs((primary_activity_time - secondary_activity_time).total_seconds())
+                        < CONCURRENT_ACTIVITY_WINDOW_SECONDS
+                    ):
                         conflicts.append(
                             AgentConflict(
-                                agent1_id=str(agent1.id),
-                                agent2_id=str(agent2.id),
+                                primary_agent_id=str(primary_agent.id),
+                                secondary_agent_id=str(secondary_agent.id),
                                 conflict_type="concurrent_activity",
                                 entity_id="unknown",
-                                description=f"Agents {agent1.name} and {agent2.name} have concurrent activity",
+                                description=f"Agents {primary_agent.name} and {secondary_agent.name} have concurrent activity",
                             )
                         )
 
@@ -112,29 +115,29 @@ class AgentCoordinationService:
         strategy: str = "last_write_wins",
     ) -> ConflictResolution:
         """Resolve a conflict between agents."""
-        agent1 = await self.agents.get_by_id(conflict.agent1_id)
-        agent2 = await self.agents.get_by_id(conflict.agent2_id)
+        primary_agent = await self.agents.get_by_id(conflict.primary_agent_id)
+        secondary_agent = await self.agents.get_by_id(conflict.secondary_agent_id)
 
-        if not agent1 or not agent2:
+        if not primary_agent or not secondary_agent:
             raise ValueError("One or both agents not found")
 
         # Apply resolution strategy
         if strategy == "last_write_wins":
             # Determine which agent wrote last
-            time1 = datetime.fromisoformat(agent1.last_activity_at or "1970-01-01T00:00:00")
-            time2 = datetime.fromisoformat(agent2.last_activity_at or "1970-01-01T00:00:00")
+            primary_activity_time = datetime.fromisoformat(primary_agent.last_activity_at or "1970-01-01T00:00:00")
+            secondary_activity_time = datetime.fromisoformat(secondary_agent.last_activity_at or "1970-01-01T00:00:00")
 
-            if time1 > time2:
-                winner_id = agent1.id
-                loser_id = agent2.id
+            if primary_activity_time > secondary_activity_time:
+                winner_id = primary_agent.id
+                loser_id = secondary_agent.id
             else:
-                winner_id = agent2.id
-                loser_id = agent1.id
+                winner_id = secondary_agent.id
+                loser_id = primary_agent.id
 
         elif strategy == "priority_based":
             # Use agent priority (could be based on type or metadata)
-            winner_id = agent1.id
-            loser_id = agent2.id
+            winner_id = primary_agent.id
+            loser_id = secondary_agent.id
 
         else:
             raise ValueError(f"Unknown resolution strategy: {strategy}")

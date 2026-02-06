@@ -113,7 +113,7 @@ async def create_item(
         count_result = await session.execute(
             select(func.count(Item.id)).filter(Item.project_id == project_id, Item.view == view)
         )
-        count = count_result.scalar()
+        count = count_result.scalar() or 0
         external_id = f"{view[:3].upper()}-{count + 1}"
 
         item = Item(
@@ -186,19 +186,28 @@ async def get_item(
 
 def _apply_item_updates(item: Item, opts: UpdateItemOptions) -> None:
     """Apply optional update fields to an Item. Mutates item in place."""
-    if opts.get("title") is not None:
-        item.title = opts["title"]
-    if opts.get("description") is not None:
-        item.description = opts["description"]
-    if opts.get("status") is not None:
-        item.status = opts["status"]
-    if opts.get("priority") is not None:
-        item.priority = opts["priority"]
-    if opts.get("owner") is not None:
-        item.owner = opts["owner"]
-    if opts.get("metadata") is not None:
-        current = item.item_metadata or {}
-        current.update(opts["metadata"])
+    for key, attr, transform in (
+        ("title", "title", lambda value: value),
+        ("description", "description", lambda value: value),
+        ("status", "status", lambda value: str(value)),
+    ):
+        value = opts.get(key)
+        if value is not None:
+            setattr(item, attr, transform(value))
+
+    priority = opts.get("priority")
+    if priority is not None:
+        try:
+            item.priority = int(priority)
+        except (ValueError, TypeError):
+            pass
+
+    # item.owner is read-only
+    metadata = opts.get("metadata")
+    if metadata is not None:
+        current = dict(item.item_metadata or {})
+        if metadata:
+            current.update(metadata)
         item.item_metadata = current
     item.updated_at = datetime.now(UTC)
 
@@ -227,7 +236,8 @@ async def update_item(
 
     with get_session() as session:
         item = (
-            session.query(Item)
+            session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
@@ -326,8 +336,9 @@ async def query_items(
             query = query.filter(Item.item_type == flt["item_type"])
         if flt.get("status"):
             query = query.filter(Item.status == flt["status"])
-        if flt.get("owner"):
-            query = query.filter(Item.owner == flt["owner"])
+        # Item.owner is a property returning None, cannot be used in filter
+        # if flt.get("owner"):
+        #     query = query.filter(Item.owner == flt["owner"])
 
         items = query.limit(limit).all()
 

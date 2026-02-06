@@ -50,7 +50,7 @@ component-new.tsx     service-final.py
 # Numbered
 Dashboard_2.tsx        service_2.py           handler_2.go
 
-# Phase (any casing/position: phase1, Phase2, phase_3, *_phase4_*)
+# Phase (any casing/position: phase1, Phase2, phase_3, *_phase_four_*)
 benchmark_phase2.tsx  components_phase3_tests.py  servicePhase2.go
 
 # Forbidden words (prefix/suffix/middle): new, improved, enhanced, updated, fixed,
@@ -214,7 +214,7 @@ A: Use git branches, not file names (`git checkout -b experiment/new-dashboard`)
 A: Then it's not "old" - both are canonical. Use distinct names: `DashboardV1.tsx` + `DashboardV2.tsx` → `DashboardLegacy.tsx` + `Dashboard.tsx`
 
 **Q: What about test files?**
-A: Same rule. Edit `test_dashboard.py` in place, don't create `test_dashboard_v2.py`
+A: Same rule. Edit `test_dashboard.py` in place, don't create `test_dashboard_compat.py`
 
 ---
 

@@ -2,6 +2,7 @@
 
 import asyncio
 import time
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
@@ -36,6 +37,51 @@ class GitHubRateLimitError(GitHubClientError):
     def __init__(self, reset_at: datetime, message: str = "Rate limit exceeded"):
         self.reset_at = reset_at
         super().__init__(message)
+
+
+@dataclass(frozen=True)
+class IssueListParams:
+    state: str = "open"
+    labels: list[str] | None = None
+    sort: str = "updated"
+    direction: str = "desc"
+    per_page: int = 30
+    page: int = 1
+
+
+@dataclass(frozen=True)
+class IssueUpdateParams:
+    title: str | None = None
+    body: str | None = None
+    state: str | None = None
+    labels: list[str] | None = None
+    assignees: list[str] | None = None
+    milestone: int | None = None
+
+
+@dataclass(frozen=True)
+class PullRequestListParams:
+    state: str = "open"
+    sort: str = "updated"
+    direction: str = "desc"
+    per_page: int = 30
+    page: int = 1
+
+
+@dataclass(frozen=True)
+class PullRequestUpdateParams:
+    title: str | None = None
+    body: str | None = None
+    state: str | None = None
+    base: str | None = None
+
+
+@dataclass(frozen=True)
+class RepoWebhookParams:
+    webhook_url: str
+    secret: str
+    events: list[str] | None = None
+    active: bool = True
 
 
 class GitHubAuthError(GitHubClientError):
@@ -389,20 +435,17 @@ class GitHubClient:
         self,
         owner: str,
         repo: str,
-        state: str = "open",
-        labels: list[str] | None = None,
-        sort: str = "updated",
-        direction: str = "desc",
-        per_page: int = 30,
-        page: int = 1,
+        params: IssueListParams | None = None,
     ) -> list[dict]:
         """List issues in a repository."""
+        params_obj = params or IssueListParams()
+        labels = params_obj.labels
         params: dict[str, Any] = {
-            "state": state,
-            "sort": sort,
-            "direction": direction,
-            "per_page": per_page,
-            "page": page,
+            "state": params_obj.state,
+            "sort": params_obj.sort,
+            "direction": params_obj.direction,
+            "per_page": params_obj.per_page,
+            "page": params_obj.page,
         }
         if labels:
             params["labels"] = ",".join(labels)
@@ -441,27 +484,23 @@ class GitHubClient:
         owner: str,
         repo: str,
         issue_number: int,
-        title: str | None = None,
-        body: str | None = None,
-        state: str | None = None,
-        labels: list[str] | None = None,
-        assignees: list[str] | None = None,
-        milestone: int | None = None,
+        params: IssueUpdateParams | None = None,
     ) -> dict[str, Any]:
         """Update an issue."""
+        params = params or IssueUpdateParams()
         data: dict[str, Any] = {}
-        if title is not None:
-            data["title"] = title
-        if body is not None:
-            data["body"] = body
-        if state is not None:
-            data["state"] = state
-        if labels is not None:
-            data["labels"] = labels
-        if assignees is not None:
-            data["assignees"] = assignees
-        if milestone is not None:
-            data["milestone"] = milestone
+        if params.title is not None:
+            data["title"] = params.title
+        if params.body is not None:
+            data["body"] = params.body
+        if params.state is not None:
+            data["state"] = params.state
+        if params.labels is not None:
+            data["labels"] = params.labels
+        if params.assignees is not None:
+            data["assignees"] = params.assignees
+        if params.milestone is not None:
+            data["milestone"] = params.milestone
 
         return await self._request("PATCH", f"/repos/{owner}/{repo}/issues/{issue_number}", json=data)
 
@@ -485,22 +524,19 @@ class GitHubClient:
         self,
         owner: str,
         repo: str,
-        state: str = "open",
-        sort: str = "updated",
-        direction: str = "desc",
-        per_page: int = 30,
-        page: int = 1,
+        params: PullRequestListParams | None = None,
     ) -> list[dict]:
         """List pull requests in a repository."""
+        params = params or PullRequestListParams()
         return await self._request(
             "GET",
             f"/repos/{owner}/{repo}/pulls",
             params={
-                "state": state,
-                "sort": sort,
-                "direction": direction,
-                "per_page": per_page,
-                "page": page,
+                "state": params.state,
+                "sort": params.sort,
+                "direction": params.direction,
+                "per_page": params.per_page,
+                "page": params.page,
             },
         )
 
@@ -513,21 +549,19 @@ class GitHubClient:
         owner: str,
         repo: str,
         pull_number: int,
-        title: str | None = None,
-        body: str | None = None,
-        state: str | None = None,
-        base: str | None = None,
+        params: PullRequestUpdateParams | None = None,
     ) -> dict[str, Any]:
         """Update a pull request."""
+        params = params or PullRequestUpdateParams()
         data: dict[str, Any] = {}
-        if title is not None:
-            data["title"] = title
-        if body is not None:
-            data["body"] = body
-        if state is not None:
-            data["state"] = state
-        if base is not None:
-            data["base"] = base
+        if params.title is not None:
+            data["title"] = params.title
+        if params.body is not None:
+            data["body"] = params.body
+        if params.state is not None:
+            data["state"] = params.state
+        if params.base is not None:
+            data["base"] = params.base
 
         return await self._request("PATCH", f"/repos/{owner}/{repo}/pulls/{pull_number}", json=data)
 
@@ -541,10 +575,7 @@ class GitHubClient:
         self,
         owner: str,
         repo: str,
-        webhook_url: str,
-        secret: str,
-        events: list[str] | None = None,
-        active: bool = True,
+        params: RepoWebhookParams,
     ) -> dict[str, Any]:
         """Create a repository webhook."""
         return await self._request(
@@ -552,12 +583,12 @@ class GitHubClient:
             f"/repos/{owner}/{repo}/hooks",
             json={
                 "name": "web",
-                "active": active,
-                "events": events or ["push", "pull_request", "issues"],
+                "active": params.active,
+                "events": params.events or ["push", "pull_request", "issues"],
                 "config": {
-                    "url": webhook_url,
+                    "url": params.webhook_url,
                     "content_type": "json",
-                    "secret": secret,
+                    "secret": params.secret,
                     "insecure_ssl": "0",
                 },
             },
@@ -602,7 +633,7 @@ class GitHubClient:
         response.raise_for_status()
         return response.json()
 
-    async def list_projects_v2(self, owner: str, is_org: bool = True) -> list[dict]:
+    async def list_projects_graphql(self, owner: str, is_org: bool = True) -> list[dict]:
         """List Projects v2 for an owner."""
         query = """
         query($owner: String!, $first: Int!) {

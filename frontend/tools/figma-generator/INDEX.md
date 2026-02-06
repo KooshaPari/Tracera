@@ -104,6 +104,7 @@ bun run figma:upload            # story.to.design
 **File:** [figma-api-client.ts](./figma-api-client.ts)
 
 **Key Features:**
+
 - File data retrieval
 - Component extraction
 - Image export
@@ -113,6 +114,7 @@ bun run figma:upload            # story.to.design
 - Rate limiting
 
 **Documentation:**
+
 - [README.md - Figma API Client](./README.md#figma-plugin-usage)
 - [EXAMPLES.md - API Usage](./EXAMPLES.md#example-3-design-token-extraction)
 
@@ -121,12 +123,14 @@ bun run figma:upload            # story.to.design
 **File:** [code-to-design.ts](./code-to-design.ts)
 
 **Key Features:**
+
 - TypeScript AST parsing
 - Component structure extraction
 - Tailwind class parsing
 - Figma property mapping
 
 **Documentation:**
+
 - [README.md - Tailwind Mapping](./README.md#tailwind--figma-mapping)
 - [EXAMPLES.md - Component Examples](./EXAMPLES.md#example-1-button-component)
 
@@ -135,11 +139,13 @@ bun run figma:upload            # story.to.design
 **File:** [generate-figma.ts](./generate-figma.ts)
 
 **Key Features:**
+
 - Figma plugin generation
 - story.to.design output
 - Storybook story generation
 
 **Documentation:**
+
 - [README.md - Generate Plugin](./README.md#generate-figma-plugin)
 - [EXAMPLES.md - Plugin Export](./EXAMPLES.md#example-6-component-library)
 
@@ -148,12 +154,14 @@ bun run figma:upload            # story.to.design
 **File:** [sync-designs.ts](./sync-designs.ts)
 
 **Key Features:**
+
 - Bidirectional sync
 - Conflict detection
 - Metadata management
 - Token export
 
 **Documentation:**
+
 - [README.md - Sync Designs](./README.md#sync-with-figma)
 - [EXAMPLES.md - Sync Workflow](./EXAMPLES.md#example-4-sync-workflow)
 
@@ -192,6 +200,7 @@ bun run figma:upload            # story.to.design
 ### Types
 
 See [types.ts](./types.ts) for complete type definitions:
+
 - Figma API types
 - Component definition types
 - Design token types
@@ -202,6 +211,7 @@ See [types.ts](./types.ts) for complete type definitions:
 ### Configuration
 
 See [config.ts](./config.ts) for:
+
 - Environment variables
 - Default design tokens
 - Component paths
@@ -228,10 +238,12 @@ See [config.ts](./config.ts) for:
 See [.env.figma.example](../.env.figma.example)
 
 **Required:**
+
 - `FIGMA_ACCESS_TOKEN`
 - `FIGMA_FILE_KEY`
 
 **Optional:**
+
 - `STORY_TO_DESIGN_URL`
 - `FIGMA_OUTPUT_DIR`
 - `FIGMA_OUTPUT_FORMAT`
@@ -269,15 +281,18 @@ tools/figma-generator/
 ## External Resources
 
 ### Figma Resources
+
 - [Figma API Documentation](https://www.figma.com/developers/api)
 - [Get Access Token](https://www.figma.com/developers/api#authentication)
 - [Figma Plugin API](https://www.figma.com/plugin-docs/)
 
 ### story.to.design
+
 - [story.to.design Website](https://story.to.design)
 - [Storybook Addon Designs](https://storybook.js.org/addons/@storybook/addon-designs)
 
 ### Related Tools
+
 - [figma-api npm package](https://www.npmjs.com/package/figma-api)
 - [TypeScript AST Viewer](https://ts-ast-viewer.com/)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
@@ -285,6 +300,7 @@ tools/figma-generator/
 ## Version History
 
 ### v1.0.0 - November 30, 2025
+
 - Initial release
 - Complete Figma API integration
 - Bidirectional sync
@@ -296,6 +312,7 @@ tools/figma-generator/
 ## Support
 
 For issues or questions:
+
 1. Check this index for relevant documentation
 2. Review [README.md](./README.md) troubleshooting section
 3. Examine [EXAMPLES.md](./EXAMPLES.md) for usage patterns

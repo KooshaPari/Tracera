@@ -139,7 +139,9 @@ class CacheService:
         """Get TTL for cache type."""
         config = CACHE_CONFIG.get(cache_type, {"ttl": 300})
         ttl = config.get("ttl", 300)
-        return int(ttl) if ttl is not None else 300
+        if isinstance(ttl, (int, float, str)):
+            return int(ttl)
+        return 300
 
     async def get(self, key: str) -> Any | None:
         """
@@ -226,7 +228,9 @@ class CacheService:
 
     async def clear_prefix(self, prefix: str) -> int:
         """
-        Clear all cache entries with given prefix. Raises RedisUnavailableError on connection failure (required service).
+        Clear all cache entries with given prefix.
+
+        Raises RedisUnavailableError on connection failure (required service).
         """
         try:
             pattern = f"tracertm:{prefix}:*"
@@ -243,7 +247,9 @@ class CacheService:
 
     async def invalidate_project(self, project_id: str) -> int:
         """
-        Invalidate all cache entries for a project. Raises RedisUnavailableError on connection failure (required service).
+        Invalidate all cache entries for a project.
+
+        Raises RedisUnavailableError on connection failure (required service).
         """
         total_deleted = 0
 

@@ -345,7 +345,9 @@ class IntegrationSyncLog(Base):
     sync_metadata: Mapped[dict] = mapped_column(JSONType, default=dict, nullable=False)
 
     # Timestamp
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
 
     # Relationships
     sync_queue_item: Mapped[Optional["IntegrationSyncQueue"]] = relationship(
@@ -385,7 +387,9 @@ class IntegrationConflict(Base):
     resolution_strategy_used: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     # Timestamps
-    detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
+    detected_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships

@@ -225,6 +225,8 @@ async def show_links(
 
         # Get the item
         item = session.query(Item).filter(Item.id == resolved_id).first()
+        if not item:
+            raise ToolError(f"Item not found: {item_id}")
 
         # Outgoing links (this item is source)
         outgoing_query = (

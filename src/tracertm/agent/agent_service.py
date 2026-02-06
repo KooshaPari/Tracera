@@ -89,9 +89,7 @@ class AgentService:
 
         return path, created
 
-    async def _publish_user_message_if_any(
-        self, session_id: str, project_id: Any, messages: list[dict]
-    ) -> None:
+    async def _publish_user_message_if_any(self, session_id: str, project_id: Any, messages: list[dict]) -> None:
         """Publish chat message event for the last user message."""
         if not (session_id and self._event_publisher and messages):
             return
@@ -113,9 +111,7 @@ class AgentService:
         except Exception as e:
             logger.debug("Failed to publish chat message event: %s", e)
 
-    async def _publish_chat_error(
-        self, session_id: str, project_id: Any, exc: BaseException
-    ) -> None:
+    async def _publish_chat_error(self, session_id: str, project_id: Any, exc: BaseException) -> None:
         """Publish chat error event; log and swallow publish errors."""
         if not (session_id and self._event_publisher):
             return

@@ -129,7 +129,9 @@ class CoverageActivity(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
     activity_metadata: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+    )
 
     __table_args__ = (
         Index("ix_coverage_activities_coverage_id", "coverage_id"),

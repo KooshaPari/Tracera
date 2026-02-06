@@ -354,7 +354,7 @@ AttributeError: module does not have attribute 'BulkOperationService'
 
 **Simple CLI Test**: ✅ PASSED
 ```bash
-python -m pytest tests/phase5/test_cli_simple.py -v
+python -m pytest tests/phase_five/test_cli_simple.py -v
 # 1 passed in 1.71s
 ```
 
@@ -758,7 +758,7 @@ tests/unit/cli/
   ├── test_cli_utilities_comprehensive.py  (Utilities)
   └── test_cli_errors_comprehensive.py     (Error handling)
 
-tests/phase5/
+tests/phase_five/
   ├── test_cli_simple.py                   (Simple validation)
   ├── test_cli_item_comprehensive.py       (Item tests)
   └── test_cli_link_comprehensive.py       (Link tests)

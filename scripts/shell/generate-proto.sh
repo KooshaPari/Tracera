@@ -19,11 +19,11 @@ fi
 # Generate Go code
 echo "📦 Generating Go code..."
 mkdir -p backend/pkg/proto
-protoc --go_out=backend/pkg/proto \
+protoc -Iproto --go_out=backend/pkg/proto \
   --go_opt=paths=source_relative \
   --go-grpc_out=backend/pkg/proto \
   --go-grpc_opt=paths=source_relative \
-  proto/tracertm/v1/tracertm.proto
+  tracertm/v1/tracertm.proto
 
 if [ $? -eq 0 ]; then
     echo "✅ Go code generated successfully"
@@ -34,7 +34,7 @@ fi
 
 # Generate Python code
 echo "🐍 Generating Python code..."
-mkdir -p src/tracertm/proto
+mkdir -p src/tracertm/proto/tracertm/v1
 GRPC_TOOLS_PROTO_PATH="$(python - <<'PY'
 import os
 import grpc_tools
@@ -45,7 +45,7 @@ PY
 env -u PROTOC_INCLUDE python -m grpc_tools.protoc -Iproto -I"$GRPC_TOOLS_PROTO_PATH" \
   --python_out=src/tracertm/proto \
   --grpc_python_out=src/tracertm/proto \
-  proto/tracertm/v1/tracertm.proto
+  tracertm/v1/tracertm.proto
 
 if [ $? -eq 0 ]; then
     echo "✅ Python code generated successfully"
@@ -56,7 +56,15 @@ fi
 
 # Create __init__.py if it doesn't exist
 if [ ! -f src/tracertm/proto/__init__.py ]; then
-    echo '"""Generated protobuf and gRPC code for TraceRTM services."""' > src/tracertm/proto/__init__.py
+    cat > src/tracertm/proto/__init__.py << 'EOF'
+"""Generated protobuf and gRPC code for TraceRTM services."""
+
+try:
+    from .tracertm.v1.tracertm_pb2 import *
+    from .tracertm.v1.tracertm_pb2_grpc import *
+except ImportError:
+    pass
+EOF
     echo "✅ Created __init__.py"
 fi
 
@@ -64,7 +72,7 @@ echo ""
 echo "✨ Code generation complete!"
 echo ""
 echo "Generated files:"
-echo "  - backend/pkg/proto/tracertm.pb.go"
-echo "  - backend/pkg/proto/tracertm_grpc.pb.go"
-echo "  - src/tracertm/proto/tracertm_pb2.py"
-echo "  - src/tracertm/proto/tracertm_pb2_grpc.py"
+echo "  - backend/pkg/proto/tracertm/v1/tracertm.pb.go"
+echo "  - backend/pkg/proto/tracertm/v1/tracertm_grpc.pb.go"
+echo "  - src/tracertm/proto/tracertm/v1/tracertm_pb2.py"
+echo "  - src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py"

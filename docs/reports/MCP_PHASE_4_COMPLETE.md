@@ -201,7 +201,7 @@ Comprehensive test coverage:
 - Metrics endpoint
 
 ### Verification Script ✅
-**File**: `src/tracertm/mcp/verify_phase4.py` (200 lines)
+**File**: `src/tracertm/mcp/verify_phase_four.py` (200 lines)
 
 Automated verification:
 - File creation
@@ -341,7 +341,7 @@ sum(rate(mcp_tool_calls_total[5m])) by (tool_name) * 100
 
 ### Testing (2 files, ~460 lines)
 10. `src/tracertm/mcp/test_monitoring.py` (260 lines)
-11. `src/tracertm/mcp/verify_phase4.py` (200 lines)
+11. `src/tracertm/mcp/verify_phase_four.py` (200 lines)
 
 ### Updated Files (3 files)
 12. `src/tracertm/mcp/core.py` (monitoring integration)
@@ -410,7 +410,7 @@ All objectives met:
 
 ### Testing
 - **Test Suite**: `src/tracertm/mcp/test_monitoring.py`
-- **Verification**: `src/tracertm/mcp/verify_phase4.py`
+- **Verification**: `src/tracertm/mcp/verify_phase_four.py`
 
 ### Code
 - **Telemetry**: `src/tracertm/mcp/telemetry.py`

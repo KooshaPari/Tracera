@@ -115,7 +115,7 @@ class ExternalIntegrationService:
         }
 
         self.sync_history.append(sync_record)
-        integration.last_sync = str(sync_record.get("timestamp", "now"))  # type: ignore[assignment]
+        integration.last_sync = str(sync_record.get("timestamp", "now"))
 
         return sync_record
 
@@ -167,7 +167,7 @@ class ExternalIntegrationService:
         enabled = len([i for i in self.integrations.values() if i.enabled])
         disabled = total - enabled
 
-        by_type = {}
+        by_type: dict[str, int] = {}
         for integration in self.integrations.values():
             int_type = integration.integration_type.value
             by_type[int_type] = by_type.get(int_type, 0) + 1

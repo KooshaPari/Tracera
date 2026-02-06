@@ -42,7 +42,7 @@ class DatabaseSettings(BaseSettings):
 class TraceSettings(BaseSettings):
     """Main TraceRTM settings with pydantic-settings integration."""
 
-    model_config = SettingsConfigDict(  # type: ignore[typeddict-unknown-key]
+    model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         env_prefix="TRACERTM_",
@@ -105,14 +105,18 @@ class TraceSettings(BaseSettings):
         return Path(".env")
 
 
+_settings_instance: TraceSettings | None = None
+
+
 def get_settings() -> TraceSettings:
     """Get or create settings instance (singleton pattern)."""
-    if not hasattr(get_settings, "_instance"):
-        get_settings._instance = TraceSettings()  # type: ignore
-    return get_settings._instance  # type: ignore
+    global _settings_instance
+    if _settings_instance is None:
+        _settings_instance = TraceSettings()
+    return _settings_instance
 
 
 def reset_settings() -> None:
     """Reset settings instance (useful for testing)."""
-    if hasattr(get_settings, "_instance"):
-        delattr(get_settings, "_instance")
+    global _settings_instance
+    _settings_instance = None

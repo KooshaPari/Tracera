@@ -6,13 +6,13 @@ Quick navigation for all Phase 8 documentation and resources.
 
 ## 📚 Documentation
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| [PHASE_8_COMPLETE.md](./PHASE_8_COMPLETE.md) | Implementation summary and status | Developers/PMs |
-| [PHASE_8_QUICK_REFERENCE.md](./PHASE_8_QUICK_REFERENCE.md) | Quick command reference | Developers |
-| [TESTING_GUIDE.md](./TESTING_GUIDE.md) | Complete testing guide | QA/Developers |
-| [PERFORMANCE_REPORT.md](./PERFORMANCE_REPORT.md) | Report template (to be filled) | Stakeholders |
-| [PHASE_8_INDEX.md](./PHASE_8_INDEX.md) | This file | Everyone |
+| Document                                                   | Purpose                           | Audience       |
+| ---------------------------------------------------------- | --------------------------------- | -------------- |
+| [PHASE_8_COMPLETE.md](./PHASE_8_COMPLETE.md)               | Implementation summary and status | Developers/PMs |
+| [PHASE_8_QUICK_REFERENCE.md](./PHASE_8_QUICK_REFERENCE.md) | Quick command reference           | Developers     |
+| [TESTING_GUIDE.md](./TESTING_GUIDE.md)                     | Complete testing guide            | QA/Developers  |
+| [PERFORMANCE_REPORT.md](./PERFORMANCE_REPORT.md)           | Report template (to be filled)    | Stakeholders   |
+| [PHASE_8_INDEX.md](./PHASE_8_INDEX.md)                     | This file                         | Everyone       |
 
 ---
 
@@ -51,7 +51,7 @@ frontend/apps/docs/
 ├── Configuration
 │   ├── lighthouserc.json             # ⚙️ Lighthouse CI config
 │   ├── playwright.config.ts          # ⚙️ Playwright config
-│   └── next.config.mjs               # ⚙️ Next.js config (optimized)
+│   └── next.config.ts               # ⚙️ Next.js config (optimized)
 │
 ├── Tests
 │   └── e2e/
@@ -72,24 +72,28 @@ frontend/apps/docs/
 ## 🧪 Test Suites
 
 ### 1. Performance Audit
+
 - **Command**: `bun run test:performance`
 - **Tests**: Build time, bundle size
 - **Output**: Console report
 - **Targets**: <60s build, <200KB gzipped
 
 ### 2. Lighthouse CI
+
 - **Command**: `bun run lighthouse`
 - **Tests**: Performance, accessibility, SEO
 - **Output**: `.lighthouseci/` directory
 - **Targets**: >95 performance score
 
 ### 3. E2E Tests
+
 - **Command**: `bun run test:e2e`
 - **Tests**: 22 comprehensive tests
 - **Output**: `playwright-report/` directory
 - **Targets**: All tests passing
 
 ### 4. Bundle Analysis
+
 - **Command**: `bun run audit:bundle`
 - **Tests**: Visual bundle analysis
 - **Output**: Interactive treemap
@@ -99,25 +103,26 @@ frontend/apps/docs/
 
 ## 📊 Success Criteria
 
-| Metric | Target | Status | Test Command |
-|--------|--------|--------|--------------|
-| Build Time | <60s | ⏳ | `test:performance` |
-| Bundle Size | <200KB gzipped | ⏳ | `test:performance` |
-| Lighthouse Performance | >95 | ⏳ | `lighthouse` |
-| Lighthouse Accessibility | >95 | ⏳ | `lighthouse` |
-| FCP | <1.5s | ⏳ | `lighthouse` |
-| LCP | <2.5s | ⏳ | `lighthouse` |
-| TTI | <2.5s | ⏳ | `lighthouse` |
-| TBT | <200ms | ⏳ | `lighthouse` |
-| CLS | <0.1 | ⏳ | `lighthouse` |
-| Search Response | <100ms | ⏳ | `test:e2e` |
-| E2E Tests | All Pass | ⏳ | `test:e2e` |
+| Metric                   | Target         | Status | Test Command       |
+| ------------------------ | -------------- | ------ | ------------------ |
+| Build Time               | <60s           | ⏳     | `test:performance` |
+| Bundle Size              | <200KB gzipped | ⏳     | `test:performance` |
+| Lighthouse Performance   | >95            | ⏳     | `lighthouse`       |
+| Lighthouse Accessibility | >95            | ⏳     | `lighthouse`       |
+| FCP                      | <1.5s          | ⏳     | `lighthouse`       |
+| LCP                      | <2.5s          | ⏳     | `lighthouse`       |
+| TTI                      | <2.5s          | ⏳     | `lighthouse`       |
+| TBT                      | <200ms         | ⏳     | `lighthouse`       |
+| CLS                      | <0.1           | ⏳     | `lighthouse`       |
+| Search Response          | <100ms         | ⏳     | `test:e2e`         |
+| E2E Tests                | All Pass       | ⏳     | `test:e2e`         |
 
 ---
 
 ## 🔧 Common Commands
 
 ### Testing
+
 ```bash
 # Run all tests
 bun run test:all
@@ -142,6 +147,7 @@ bun run audit:bundle
 ```
 
 ### Development
+
 ```bash
 # Start dev server
 bun run dev
@@ -160,6 +166,7 @@ bun run lint
 ```
 
 ### Reports
+
 ```bash
 # View Playwright report
 bunx playwright show-report
@@ -175,6 +182,7 @@ open .lighthouseci/*/lhr.html
 ### E2E Tests (22 total)
 
 #### Navigation (7 tests)
+
 - ✅ Homepage loads
 - ✅ Navigation to docs
 - ✅ Sidebar navigation
@@ -184,29 +192,35 @@ open .lighthouseci/*/lhr.html
 - ✅ Mobile navigation
 
 #### Search (3 tests)
+
 - ✅ Keyboard shortcut (Cmd/Ctrl+K)
 - ✅ Search results (<100ms)
 - ✅ Navigate to result
 
 #### OpenAPI (3 tests)
+
 - ✅ API reference renders
 - ✅ Expand/collapse operations
 - ✅ Request/response schemas
 
 #### Dark Mode (2 tests)
+
 - ✅ Toggle works
 - ✅ Preference persists
 
 #### Performance (3 tests)
+
 - ✅ Page load <3s
 - ✅ No layout shifts (CLS <0.1)
 - ✅ Time to interactive <2.5s
 
 #### Accessibility (2 tests)
+
 - ✅ No a11y violations
 - ✅ Keyboard navigation
 
 #### Mobile (2 tests)
+
 - ✅ Mobile layout
 - ✅ Mobile menu
 
@@ -217,26 +231,31 @@ open .lighthouseci/*/lhr.html
 ### Common Issues
 
 **Port 3001 in use**
+
 ```bash
 lsof -ti:3001 | xargs kill -9
 ```
 
 **Playwright not installed**
+
 ```bash
 bunx playwright install --with-deps
 ```
 
 **Backend not running**
+
 ```bash
 # Start from project root
 make dev
 ```
 
 **Tests timing out**
+
 - Increase timeout in `playwright.config.ts`
 - Check system resources
 
 **Build failing**
+
 - Clear cache: `rm -rf .next`
 - Reinstall: `rm -rf node_modules && bun install`
 
@@ -245,6 +264,7 @@ make dev
 ## 📦 Dependencies
 
 ### Production
+
 - `fumadocs-ui` - UI components
 - `fumadocs-core` - Core functionality
 - `fumadocs-openapi` - OpenAPI rendering
@@ -252,6 +272,7 @@ make dev
 - `react` - UI library
 
 ### Development
+
 - `@playwright/test` - E2E testing
 - `@lhci/cli` - Lighthouse CI
 - `@next/bundle-analyzer` - Bundle analysis
@@ -264,6 +285,7 @@ make dev
 ### Automated Testing
 
 Tests run on:
+
 - ✅ Push to `main` or `develop`
 - ✅ Pull requests
 - ✅ Manual workflow dispatch
@@ -271,6 +293,7 @@ Tests run on:
 ### Artifacts
 
 Generated artifacts:
+
 - 📊 Playwright HTML report
 - 📈 Lighthouse JSON reports
 - 📦 Bundle analysis data
@@ -278,6 +301,7 @@ Generated artifacts:
 ### PR Comments
 
 Automatic comments include:
+
 - Test summary
 - Artifact links
 - Performance highlights
@@ -287,23 +311,27 @@ Automatic comments include:
 ## 📈 Performance Optimizations
 
 ### Bundle
+
 - ✅ Tree shaking
 - ✅ Code splitting
 - ✅ Package optimization
 - ✅ SWC minification
 
 ### Caching
+
 - ✅ Static assets (1 year)
 - ✅ HTML (1 hour + SWR)
 - ✅ ETag generation
 
 ### Code Splitting
+
 - ✅ React chunk
 - ✅ Fumadocs chunk
 - ✅ Icons chunk
 - ✅ Vendor chunk
 
 ### Images
+
 - ✅ AVIF/WebP
 - ✅ Responsive sizing
 - ✅ Lazy loading
@@ -313,6 +341,7 @@ Automatic comments include:
 ## 🎓 Learning Resources
 
 ### Official Documentation
+
 - [Lighthouse Docs](https://developer.chrome.com/docs/lighthouse)
 - [Playwright Docs](https://playwright.dev)
 - [Next.js Performance](https://nextjs.org/docs/app/building-your-application/optimizing)
@@ -320,6 +349,7 @@ Automatic comments include:
 - [Web Vitals](https://web.dev/vitals/)
 
 ### Internal Guides
+
 - [TESTING_GUIDE.md](./TESTING_GUIDE.md) - Complete testing guide
 - [PHASE_8_QUICK_REFERENCE.md](./PHASE_8_QUICK_REFERENCE.md) - Commands
 - [PERFORMANCE_REPORT.md](./PERFORMANCE_REPORT.md) - Report template
@@ -329,24 +359,28 @@ Automatic comments include:
 ## ✅ Checklist
 
 ### Before Testing
+
 - [ ] Backend running (for API docs)
 - [ ] Dependencies installed
 - [ ] Playwright browsers installed
 - [ ] Port 3001 available
 
 ### Running Tests
+
 - [ ] Performance audit executed
 - [ ] Lighthouse CI executed
 - [ ] E2E tests executed
 - [ ] Bundle analysis reviewed
 
 ### After Testing
+
 - [ ] All metrics meet targets
 - [ ] Performance report filled out
 - [ ] Screenshots captured
 - [ ] Issues documented
 
 ### Production Ready
+
 - [ ] All tests passing
 - [ ] Performance optimized
 - [ ] Documentation complete

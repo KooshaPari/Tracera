@@ -41,9 +41,7 @@ class EncryptionService:
 
         # Validate key size (must be 256 bits = 32 bytes)
         if len(self._key) != AES256_KEY_BYTES:
-            raise ValueError(
-                f"Master key must be 256 bits ({AES256_KEY_BYTES} bytes), got {len(self._key)} bytes"
-            )
+            raise ValueError(f"Master key must be 256 bits ({AES256_KEY_BYTES} bytes), got {len(self._key)} bytes")
 
         self._cipher = AESGCM(self._key)
 

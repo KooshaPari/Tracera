@@ -145,15 +145,9 @@ class TestMyService:
         project = await project_repo.create(name="Test Project")
 
         item_repo = ItemRepository(db_session)
-        await item_repo.create(
-            project_id=str(project.id), title="Item 1", view="FEATURE", item_type="feature"
-        )
-        await item_repo.create(
-            project_id=str(project.id), title="Item 2", view="FEATURE", item_type="bug"
-        )
-        await item_repo.create(
-            project_id=str(project.id), title="Item 3", view="FEATURE", item_type="feature"
-        )
+        await item_repo.create(project_id=str(project.id), title="Item 1", view="FEATURE", item_type="feature")
+        await item_repo.create(project_id=str(project.id), title="Item 2", view="FEATURE", item_type="bug")
+        await item_repo.create(project_id=str(project.id), title="Item 3", view="FEATURE", item_type="feature")
 
         # Action: List items
         items = await item_repo.list_all(project_id=str(project.id))
@@ -171,15 +165,9 @@ class TestMyService:
         project = await project_repo.create(name="Test Project")
 
         item_repo = ItemRepository(db_session)
-        await item_repo.create(
-            project_id=str(project.id), title="Feature 1", view="FEATURE", item_type="feature"
-        )
-        await item_repo.create(
-            project_id=str(project.id), title="Bug 1", view="FEATURE", item_type="bug"
-        )
-        await item_repo.create(
-            project_id=str(project.id), title="Feature 2", view="FEATURE", item_type="feature"
-        )
+        await item_repo.create(project_id=str(project.id), title="Feature 1", view="FEATURE", item_type="feature")
+        await item_repo.create(project_id=str(project.id), title="Bug 1", view="FEATURE", item_type="bug")
+        await item_repo.create(project_id=str(project.id), title="Feature 2", view="FEATURE", item_type="feature")
 
         # Action: List all and filter by type in test
         items = await item_repo.list_all(project_id=str(project.id))

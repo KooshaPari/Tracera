@@ -2,12 +2,22 @@ package agents
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+)
+
+// Distributed operation status constants
+const (
+	statusInProgress = "in_progress"
+	statusReady      = "ready"
+	statusWorking    = "working"
+	statusResolved   = "resolved"
 )
 
 // DistributedOperation represents a coordinated operation across multiple agents
@@ -16,7 +26,7 @@ type DistributedOperation struct {
 	ProjectID      string                 `json:"project_id" gorm:"index:idx_operation_project"`
 	Type           string                 `json:"type"`   // batch_update, coordinated_analysis, multi_agent_task
 	Status         string                 `json:"status"` // pending, in_progress, completed, failed
-	ParticipantIDs []string               `json:"participant_ids" gorm:"type:jsonb"`
+	ParticipantIDs []string               `json:"participant_i_ds" gorm:"type:jsonb"`
 	CoordinatorID  string                 `json:"coordinator_id"`
 	TargetItems    []string               `json:"target_items" gorm:"type:jsonb"`
 	OperationData  map[string]interface{} `json:"operation_data" gorm:"type:jsonb"`
@@ -52,7 +62,12 @@ type DistributedCoordinator struct {
 }
 
 // NewDistributedCoordinator creates a new distributed coordinator
-func NewDistributedCoordinator(db *gorm.DB, lockManager *LockManager, conflictDetector *ConflictDetector, teamManager *TeamManager) *DistributedCoordinator {
+func NewDistributedCoordinator(
+	db *gorm.DB,
+	lockManager *LockManager,
+	conflictDetector *ConflictDetector,
+	teamManager *TeamManager,
+) *DistributedCoordinator {
 	return &DistributedCoordinator{
 		db:               db,
 		lockManager:      lockManager,
@@ -63,14 +78,14 @@ func NewDistributedCoordinator(db *gorm.DB, lockManager *LockManager, conflictDe
 }
 
 // CreateDistributedOperation creates a new distributed operation
-func (dc *DistributedCoordinator) CreateDistributedOperation(ctx context.Context, op *DistributedOperation) error {
+func (dc *DistributedCoordinator) CreateDistributedOperation(_ context.Context, op *DistributedOperation) error {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
 	if op.ID == "" {
 		op.ID = uuid.New().String()
 	}
-	op.Status = "pending"
+	op.Status = string(TaskStatusPending)
 	op.CreatedAt = time.Now()
 	op.UpdatedAt = time.Now()
 
@@ -83,7 +98,11 @@ func (dc *DistributedCoordinator) CreateDistributedOperation(ctx context.Context
 }
 
 // AssignOperationToAgents assigns parts of an operation to multiple agents
-func (dc *DistributedCoordinator) AssignOperationToAgents(ctx context.Context, operationID string, agentAssignments map[string][]string) error {
+func (dc *DistributedCoordinator) AssignOperationToAgents(
+	_ context.Context,
+	operationID string,
+	agentAssignments map[string][]string,
+) error {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
@@ -92,8 +111,8 @@ func (dc *DistributedCoordinator) AssignOperationToAgents(ctx context.Context, o
 		return fmt.Errorf("operation not found: %w", err)
 	}
 
-	if op.Status != "pending" {
-		return fmt.Errorf("operation is not in pending status")
+	if op.Status != string(TaskStatusPending) {
+		return errors.New("operation is not in pending status")
 	}
 
 	// Create participant records
@@ -102,7 +121,7 @@ func (dc *DistributedCoordinator) AssignOperationToAgents(ctx context.Context, o
 			ID:            uuid.New().String(),
 			OperationID:   operationID,
 			AgentID:       agentID,
-			Status:        "ready",
+			Status:        statusReady,
 			AssignedItems: items,
 			Result:        make(map[string]interface{}),
 			CreatedAt:     time.Now(),
@@ -116,7 +135,7 @@ func (dc *DistributedCoordinator) AssignOperationToAgents(ctx context.Context, o
 
 	// Update operation status
 	now := time.Now()
-	op.Status = "in_progress"
+	op.Status = statusInProgress
 	op.StartedAt = &now
 	op.UpdatedAt = now
 
@@ -129,21 +148,25 @@ func (dc *DistributedCoordinator) AssignOperationToAgents(ctx context.Context, o
 }
 
 // StartParticipation marks an agent as starting work on their part of the operation
-func (dc *DistributedCoordinator) StartParticipation(ctx context.Context, operationID, agentID string) error {
+func (dc *DistributedCoordinator) StartParticipation(_ context.Context, operationID, agentID string) error {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
 	var participant OperationParticipant
-	if err := dc.db.Where("operation_id = ? AND agent_id = ?", operationID, agentID).First(&participant).Error; err != nil {
+	if err := dc.db.Where(
+		"operation_id = ? AND agent_id = ?",
+		operationID,
+		agentID,
+	).First(&participant).Error; err != nil {
 		return fmt.Errorf("participant not found: %w", err)
 	}
 
-	if participant.Status != "ready" {
-		return fmt.Errorf("participant is not in ready status")
+	if participant.Status != statusReady {
+		return errors.New("participant is not in ready status")
 	}
 
 	now := time.Now()
-	participant.Status = "working"
+	participant.Status = statusWorking
 	participant.StartedAt = &now
 	participant.UpdatedAt = now
 
@@ -155,17 +178,26 @@ func (dc *DistributedCoordinator) StartParticipation(ctx context.Context, operat
 }
 
 // CompleteParticipation marks an agent's part of the operation as complete
-func (dc *DistributedCoordinator) CompleteParticipation(ctx context.Context, operationID, agentID string, result map[string]interface{}) error {
+func (dc *DistributedCoordinator) CompleteParticipation(
+	ctx context.Context,
+	operationID,
+	agentID string,
+	result map[string]interface{},
+) error {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
 	var participant OperationParticipant
-	if err := dc.db.Where("operation_id = ? AND agent_id = ?", operationID, agentID).First(&participant).Error; err != nil {
+	if err := dc.db.Where(
+		"operation_id = ? AND agent_id = ?",
+		operationID,
+		agentID,
+	).First(&participant).Error; err != nil {
 		return fmt.Errorf("participant not found: %w", err)
 	}
 
 	now := time.Now()
-	participant.Status = "completed"
+	participant.Status = string(TaskStatusCompleted)
 	participant.Result = result
 	participant.CompletedAt = &now
 	participant.UpdatedAt = now
@@ -179,17 +211,26 @@ func (dc *DistributedCoordinator) CompleteParticipation(ctx context.Context, ope
 }
 
 // FailParticipation marks an agent's part of the operation as failed
-func (dc *DistributedCoordinator) FailParticipation(ctx context.Context, operationID, agentID string, errorMsg string) error {
+func (dc *DistributedCoordinator) FailParticipation(
+	ctx context.Context,
+	operationID,
+	agentID string,
+	errorMsg string,
+) error {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
 	var participant OperationParticipant
-	if err := dc.db.Where("operation_id = ? AND agent_id = ?", operationID, agentID).First(&participant).Error; err != nil {
+	if err := dc.db.Where(
+		"operation_id = ? AND agent_id = ?",
+		operationID,
+		agentID,
+	).First(&participant).Error; err != nil {
 		return fmt.Errorf("participant not found: %w", err)
 	}
 
 	now := time.Now()
-	participant.Status = "failed"
+	participant.Status = string(TaskStatusFailed)
 	participant.Error = errorMsg
 	participant.CompletedAt = &now
 	participant.UpdatedAt = now
@@ -203,7 +244,7 @@ func (dc *DistributedCoordinator) FailParticipation(ctx context.Context, operati
 }
 
 // checkOperationCompletion checks if an operation is complete
-func (dc *DistributedCoordinator) checkOperationCompletion(ctx context.Context, operationID string) error {
+func (dc *DistributedCoordinator) checkOperationCompletion(_ context.Context, operationID string) error {
 	var participants []OperationParticipant
 	if err := dc.db.Where("operation_id = ?", operationID).Find(&participants).Error; err != nil {
 		return fmt.Errorf("failed to get participants: %w", err)
@@ -213,10 +254,10 @@ func (dc *DistributedCoordinator) checkOperationCompletion(ctx context.Context, 
 	anyFailed := false
 
 	for _, p := range participants {
-		if p.Status != "completed" && p.Status != "failed" {
+		if p.Status != string(TaskStatusCompleted) && p.Status != string(TaskStatusFailed) {
 			allCompleted = false
 		}
-		if p.Status == "failed" {
+		if p.Status == string(TaskStatusFailed) {
 			anyFailed = true
 		}
 	}
@@ -233,9 +274,9 @@ func (dc *DistributedCoordinator) checkOperationCompletion(ctx context.Context, 
 
 	now := time.Now()
 	if anyFailed {
-		op.Status = "failed"
+		op.Status = string(TaskStatusFailed)
 	} else {
-		op.Status = "completed"
+		op.Status = string(TaskStatusCompleted)
 	}
 	op.CompletedAt = &now
 	op.UpdatedAt = now
@@ -249,7 +290,10 @@ func (dc *DistributedCoordinator) checkOperationCompletion(ctx context.Context, 
 }
 
 // GetOperationStatus returns the status of a distributed operation
-func (dc *DistributedCoordinator) GetOperationStatus(ctx context.Context, operationID string) (*DistributedOperation, []OperationParticipant, error) {
+func (dc *DistributedCoordinator) GetOperationStatus(
+	_ context.Context,
+	operationID string,
+) (*DistributedOperation, []OperationParticipant, error) {
 	dc.mu.RLock()
 	defer dc.mu.RUnlock()
 
@@ -267,16 +311,52 @@ func (dc *DistributedCoordinator) GetOperationStatus(ctx context.Context, operat
 }
 
 // CoordinatedUpdate performs a coordinated update across multiple items with conflict detection
-func (dc *DistributedCoordinator) CoordinatedUpdate(ctx context.Context, projectID string, updates map[string]map[string]interface{}, coordinatorAgentID string) (*DistributedOperation, error) {
+func (dc *DistributedCoordinator) CoordinatedUpdate(
+	ctx context.Context,
+	projectID string,
+	updates map[string]map[string]interface{},
+	coordinatorAgentID string,
+) (*DistributedOperation, error) {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
-	// Create operation
+	itemIDs := buildItemIDs(updates)
+
+	op, err := dc.createOperation(projectID, coordinatorAgentID, updates, itemIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	locks, err := dc.acquireLocks(ctx, itemIDs, coordinatorAgentID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := dc.ensureNoConflicts(ctx, updates, coordinatorAgentID, locks); err != nil {
+		return nil, err
+	}
+
+	if err := dc.startOperation(op, locks, coordinatorAgentID); err != nil {
+		return nil, err
+	}
+
+	return op, nil
+}
+
+func buildItemIDs(updates map[string]map[string]interface{}) []string {
 	itemIDs := make([]string, 0, len(updates))
 	for itemID := range updates {
 		itemIDs = append(itemIDs, itemID)
 	}
+	return itemIDs
+}
 
+func (dc *DistributedCoordinator) createOperation(
+	projectID string,
+	coordinatorAgentID string,
+	updates map[string]map[string]interface{},
+	itemIDs []string,
+) (*DistributedOperation, error) {
 	op := &DistributedOperation{
 		ID:             uuid.New().String(),
 		ProjectID:      projectID,
@@ -296,111 +376,168 @@ func (dc *DistributedCoordinator) CoordinatedUpdate(ctx context.Context, project
 		return nil, fmt.Errorf("failed to create operation: %w", err)
 	}
 
-	// Acquire locks on all items
+	return op, nil
+}
+
+func (dc *DistributedCoordinator) acquireLocks(
+	ctx context.Context,
+	itemIDs []string,
+	coordinatorAgentID string,
+) ([]*AgentLock, error) {
 	locks := make([]*AgentLock, 0, len(itemIDs))
 	for _, itemID := range itemIDs {
 		lock, err := dc.lockManager.AcquireLock(ctx, itemID, "item", coordinatorAgentID, LockTypePessimistic)
 		if err != nil {
-			// Release acquired locks on failure
-			for _, l := range locks {
-				dc.lockManager.ReleaseLock(ctx, l.ID, coordinatorAgentID)
-			}
+			dc.releaseLocks(ctx, locks, coordinatorAgentID)
 			return nil, fmt.Errorf("failed to acquire lock for item %s: %w", itemID, err)
 		}
 		locks = append(locks, lock)
 	}
 
-	// Detect conflicts
+	return locks, nil
+}
+
+func (dc *DistributedCoordinator) ensureNoConflicts(
+	ctx context.Context,
+	updates map[string]map[string]interface{},
+	coordinatorAgentID string,
+	locks []*AgentLock,
+) error {
 	for itemID := range updates {
 		conflict, err := dc.conflictDetector.DetectConflict(ctx, itemID, coordinatorAgentID, 1)
 		if err != nil {
-			// Release locks on error
-			for _, l := range locks {
-				dc.lockManager.ReleaseLock(ctx, l.ID, coordinatorAgentID)
-			}
-			return nil, fmt.Errorf("conflict detection failed for item %s: %w", itemID, err)
+			dc.releaseLocks(ctx, locks, coordinatorAgentID)
+			return fmt.Errorf("conflict detection failed for item %s: %w", itemID, err)
 		}
 
 		if conflict != nil {
-			// Release locks and return conflict
-			for _, l := range locks {
-				dc.lockManager.ReleaseLock(ctx, l.ID, coordinatorAgentID)
-			}
-			return nil, fmt.Errorf("conflict detected for item %s: %v", itemID, conflict)
+			dc.releaseLocks(ctx, locks, coordinatorAgentID)
+			return fmt.Errorf("conflict detected for item %s: %v", itemID, conflict)
 		}
 	}
 
+	return nil
+}
+
+func (dc *DistributedCoordinator) startOperation(
+	op *DistributedOperation,
+	locks []*AgentLock,
+	coordinatorAgentID string,
+) error {
 	now := time.Now()
-	op.Status = "in_progress"
+	op.Status = statusInProgress
 	op.StartedAt = &now
 	op.UpdatedAt = now
 
 	if err := dc.db.Save(op).Error; err != nil {
-		// Release locks on error
-		for _, l := range locks {
-			dc.lockManager.ReleaseLock(ctx, l.ID, coordinatorAgentID)
-		}
-		return nil, fmt.Errorf("failed to update operation: %w", err)
+		dc.releaseLocks(context.Background(), locks, coordinatorAgentID)
+		return fmt.Errorf("failed to update operation: %w", err)
 	}
 
 	dc.operations[op.ID] = op
+	op.OperationData["lock_ids"] = lockIDsFromLocks(locks)
 
-	// Store locks in operation data for later release
-	lockIDs := make([]string, len(locks))
-	for i, l := range locks {
-		lockIDs[i] = l.ID
+	return nil
+}
+
+func (dc *DistributedCoordinator) releaseLocks(ctx context.Context, locks []*AgentLock, coordinatorAgentID string) {
+	for _, lock := range locks {
+		if err := dc.lockManager.ReleaseLock(ctx, lock.ID, coordinatorAgentID); err != nil {
+			log.Printf("failed to release lock %s: %v", lock.ID, err)
+		}
 	}
-	op.OperationData["lock_ids"] = lockIDs
+}
 
-	return op, nil
+func lockIDsFromLocks(locks []*AgentLock) []string {
+	lockIDs := make([]string, len(locks))
+	for i, lock := range locks {
+		lockIDs[i] = lock.ID
+	}
+	return lockIDs
 }
 
 // finalizeOperation is the internal implementation for completing or cancelling operations
-func (dc *DistributedCoordinator) finalizeOperation(ctx context.Context, operationID string, agentID string, finalStatus string, actionName string) error {
+func (dc *DistributedCoordinator) finalizeOperation(
+	ctx context.Context,
+	operationID string,
+	agentID string,
+	finalStatus string,
+	actionName string,
+) error {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
-	var op DistributedOperation
-	if err := dc.db.First(&op, "id = ?", operationID).Error; err != nil {
-		return fmt.Errorf("operation not found: %w", err)
+	operation, err := dc.fetchOperation(operationID)
+	if err != nil {
+		return err
 	}
-
-	if op.CoordinatorID != agentID {
+	if operation.CoordinatorID != agentID {
 		return fmt.Errorf("only coordinator can %s the operation", actionName)
 	}
 
-	// Release all locks
-	if lockIDsRaw, exists := op.OperationData["lock_ids"]; exists {
-		if lockIDs, ok := lockIDsRaw.([]interface{}); ok {
-			for _, lockIDRaw := range lockIDs {
-				if lockID, ok := lockIDRaw.(string); ok {
-					dc.lockManager.ReleaseLock(ctx, lockID, agentID)
-				}
-			}
-		}
-	}
-
-	// Update operation status
-	now := time.Now()
-	op.Status = finalStatus
-	op.CompletedAt = &now
-	op.UpdatedAt = now
-
-	if err := dc.db.Save(&op).Error; err != nil {
-		return fmt.Errorf("failed to update operation: %w", err)
+	dc.releaseOperationLocks(ctx, operation, agentID)
+	if err := dc.updateOperationStatus(operation, finalStatus); err != nil {
+		return err
 	}
 
 	delete(dc.operations, operationID)
 	return nil
 }
 
+func (dc *DistributedCoordinator) fetchOperation(operationID string) (*DistributedOperation, error) {
+	var op DistributedOperation
+	if err := dc.db.First(&op, "id = ?", operationID).Error; err != nil {
+		return nil, fmt.Errorf("operation not found: %w", err)
+	}
+	return &op, nil
+}
+
+func (dc *DistributedCoordinator) releaseOperationLocks(ctx context.Context, op *DistributedOperation, agentID string) {
+	lockIDsRaw, exists := op.OperationData["lock_ids"]
+	if !exists {
+		return
+	}
+	lockIDs, ok := lockIDsRaw.([]interface{})
+	if !ok {
+		return
+	}
+	for _, lockIDRaw := range lockIDs {
+		lockID, ok := lockIDRaw.(string)
+		if !ok {
+			continue
+		}
+		if err := dc.lockManager.ReleaseLock(ctx, lockID, agentID); err != nil {
+			log.Printf("failed to release lock %s: %v", lockID, err)
+		}
+	}
+}
+
+func (dc *DistributedCoordinator) updateOperationStatus(op *DistributedOperation, finalStatus string) error {
+	now := time.Now()
+	op.Status = finalStatus
+	op.CompletedAt = &now
+	op.UpdatedAt = now
+	if err := dc.db.Save(op).Error; err != nil {
+		return fmt.Errorf("failed to update operation: %w", err)
+	}
+	return nil
+}
+
 // CompleteCoordinatedUpdate completes a coordinated update and releases locks
-func (dc *DistributedCoordinator) CompleteCoordinatedUpdate(ctx context.Context, operationID string, coordinatorAgentID string) error {
-	return dc.finalizeOperation(ctx, operationID, coordinatorAgentID, "completed", "complete")
+func (dc *DistributedCoordinator) CompleteCoordinatedUpdate(
+	ctx context.Context,
+	operationID string,
+	coordinatorAgentID string,
+) error {
+	return dc.finalizeOperation(ctx, operationID, coordinatorAgentID, string(TaskStatusCompleted), "complete")
 }
 
 // GetAgentOperations returns all operations an agent is participating in
-func (dc *DistributedCoordinator) GetAgentOperations(ctx context.Context, agentID string, status string) ([]DistributedOperation, error) {
+func (dc *DistributedCoordinator) GetAgentOperations(
+	_ context.Context,
+	agentID string,
+	status string,
+) ([]DistributedOperation, error) {
 	dc.mu.RLock()
 	defer dc.mu.RUnlock()
 
@@ -419,12 +556,19 @@ func (dc *DistributedCoordinator) GetAgentOperations(ctx context.Context, agentI
 }
 
 // CancelOperation cancels a distributed operation and releases all locks
-func (dc *DistributedCoordinator) CancelOperation(ctx context.Context, operationID string, cancellerAgentID string) error {
+func (dc *DistributedCoordinator) CancelOperation(
+	ctx context.Context,
+	operationID string,
+	cancellerAgentID string,
+) error {
 	return dc.finalizeOperation(ctx, operationID, cancellerAgentID, "cancelled", "cancel")
 }
 
 // GetDistributedOperation retrieves a distributed operation by ID
-func (dc *DistributedCoordinator) GetDistributedOperation(ctx context.Context, operationID string) (*DistributedOperation, error) {
+func (dc *DistributedCoordinator) GetDistributedOperation(
+	_ context.Context,
+	operationID string,
+) (*DistributedOperation, error) {
 	dc.mu.RLock()
 	defer dc.mu.RUnlock()
 
@@ -437,7 +581,11 @@ func (dc *DistributedCoordinator) GetDistributedOperation(ctx context.Context, o
 }
 
 // ListOperations lists all distributed operations with optional filtering
-func (dc *DistributedCoordinator) ListOperations(ctx context.Context, projectID string, statusFilter string) ([]DistributedOperation, error) {
+func (dc *DistributedCoordinator) ListOperations(
+	_ context.Context,
+	projectID string,
+	statusFilter string,
+) ([]DistributedOperation, error) {
 	dc.mu.RLock()
 	defer dc.mu.RUnlock()
 
@@ -456,7 +604,7 @@ func (dc *DistributedCoordinator) ListOperations(ctx context.Context, projectID 
 }
 
 // CompleteOperation marks a distributed operation as completed
-func (dc *DistributedCoordinator) CompleteOperation(ctx context.Context, operationID string) error {
+func (dc *DistributedCoordinator) CompleteOperation(_ context.Context, operationID string) error {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
@@ -466,7 +614,7 @@ func (dc *DistributedCoordinator) CompleteOperation(ctx context.Context, operati
 	}
 
 	now := time.Now()
-	op.Status = "completed"
+	op.Status = string(TaskStatusCompleted)
 	op.CompletedAt = &now
 	op.UpdatedAt = now
 
@@ -479,7 +627,7 @@ func (dc *DistributedCoordinator) CompleteOperation(ctx context.Context, operati
 }
 
 // UpdateOperationStatus updates the status of a distributed operation
-func (dc *DistributedCoordinator) UpdateOperationStatus(ctx context.Context, operationID string, status string) error {
+func (dc *DistributedCoordinator) UpdateOperationStatus(_ context.Context, operationID string, status string) error {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
@@ -500,12 +648,20 @@ func (dc *DistributedCoordinator) UpdateOperationStatus(ctx context.Context, ope
 }
 
 // GetParticipantStatus returns the status of a participant in a distributed operation
-func (dc *DistributedCoordinator) GetParticipantStatus(ctx context.Context, operationID string, agentID string) (*OperationParticipant, error) {
+func (dc *DistributedCoordinator) GetParticipantStatus(
+	_ context.Context,
+	operationID string,
+	agentID string,
+) (*OperationParticipant, error) {
 	dc.mu.RLock()
 	defer dc.mu.RUnlock()
 
 	var participant OperationParticipant
-	if err := dc.db.Where("operation_id = ? AND agent_id = ?", operationID, agentID).First(&participant).Error; err != nil {
+	if err := dc.db.Where(
+		"operation_id = ? AND agent_id = ?",
+		operationID,
+		agentID,
+	).First(&participant).Error; err != nil {
 		return nil, fmt.Errorf("participant not found: %w", err)
 	}
 
@@ -513,17 +669,26 @@ func (dc *DistributedCoordinator) GetParticipantStatus(ctx context.Context, oper
 }
 
 // SubmitParticipantResult submits a result from a participant in a distributed operation
-func (dc *DistributedCoordinator) SubmitParticipantResult(ctx context.Context, operationID string, agentID string, result map[string]interface{}) error {
+func (dc *DistributedCoordinator) SubmitParticipantResult(
+	ctx context.Context,
+	operationID string,
+	agentID string,
+	result map[string]interface{},
+) error {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
 	var participant OperationParticipant
-	if err := dc.db.Where("operation_id = ? AND agent_id = ?", operationID, agentID).First(&participant).Error; err != nil {
+	if err := dc.db.Where(
+		"operation_id = ? AND agent_id = ?",
+		operationID,
+		agentID,
+	).First(&participant).Error; err != nil {
 		return fmt.Errorf("participant not found: %w", err)
 	}
 
 	now := time.Now()
-	participant.Status = "completed"
+	participant.Status = string(TaskStatusCompleted)
 	participant.Result = result
 	participant.CompletedAt = &now
 	participant.UpdatedAt = now
@@ -536,7 +701,10 @@ func (dc *DistributedCoordinator) SubmitParticipantResult(ctx context.Context, o
 }
 
 // GetOperationResults returns aggregated results from a distributed operation
-func (dc *DistributedCoordinator) GetOperationResults(ctx context.Context, operationID string) (map[string]interface{}, error) {
+func (dc *DistributedCoordinator) GetOperationResults(
+	_ context.Context,
+	operationID string,
+) (map[string]interface{}, error) {
 	dc.mu.RLock()
 	defer dc.mu.RUnlock()
 
@@ -556,7 +724,10 @@ func (dc *DistributedCoordinator) GetOperationResults(ctx context.Context, opera
 	results["completed_at"] = op.CompletedAt
 	results["participants"] = make(map[string]interface{})
 
-	participantsMap := results["participants"].(map[string]interface{})
+	participantsMap, ok := results["participants"].(map[string]interface{})
+	if !ok {
+		return nil, errors.New("participants map is not initialized")
+	}
 	for _, p := range participants {
 		participantsMap[p.AgentID] = map[string]interface{}{
 			"status": p.Status,

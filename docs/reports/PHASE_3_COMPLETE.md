@@ -296,7 +296,7 @@ Net: +7,224 lines (includes extracted modules and test improvements)
 ### Violations Found and Fixed
 
 **Before Phase 3**:
-- `src/tracertm/tui/apps/dashboard_v2.py` (versioned file)
+- `src/tracertm/tui/apps/dashboard_compat.py` (versioned file)
 - `src/tracertm/mcp/db_benchmark.py` (was benchmark_phase3.py)
 - `src/tracertm/mcp/benchmarks/token_benchmark.py` (was phase2_benchmark.py)
 

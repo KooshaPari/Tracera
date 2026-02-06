@@ -42,7 +42,9 @@ interface AssetMetrics {
  * Format bytes to human-readable size
  */
 function formatBytes(bytes: number): string {
-  if (bytes === 0) {return '0 Bytes';}
+  if (bytes === 0) {
+    return '0 Bytes';
+  }
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -123,12 +125,17 @@ async function analyzeImages(publicDir: string): Promise<AssetMetrics['images']>
 /**
  * Analyze SVGs
  */
-async function analyzeSVGs(publicDir: string, componentsDir: string): Promise<AssetMetrics['svgs']> {
+async function analyzeSVGs(
+  publicDir: string,
+  componentsDir: string,
+): Promise<AssetMetrics['svgs']> {
   const svgFiles = await findFiles(publicDir, ['.svg']);
 
   // Check for sprite system
   const spriteFile = join(componentsDir, 'icon-sprite.tsx');
-  const hasSpriteSystem = await stat(spriteFile).then(() => true).catch(() => false);
+  const hasSpriteSystem = await stat(spriteFile)
+    .then(() => true)
+    .catch(() => false);
 
   let spriteCount = 0;
   if (hasSpriteSystem) {
@@ -208,9 +215,6 @@ async function analyzeBundle(nextDir: string): Promise<AssetMetrics['bundle']> {
  * Main benchmark function
  */
 async function benchmark(): Promise<void> {
-  
-  
-
   const publicDir = join(process.cwd(), 'public');
   const nextDir = join(process.cwd(), '.next');
   const componentsDir = join(process.cwd(), 'components');
@@ -230,76 +234,56 @@ async function benchmark(): Promise<void> {
     metrics.bundle.total;
 
   // Print results
-  
-  
+  console.log(`Total asset size: ${formatBytes(metrics.totalAssetSize)}`);
+  console.log(
+    `Bundle size: ${formatBytes(metrics.bundle.total)} (JS ${formatBytes(metrics.bundle.js)}, CSS ${formatBytes(metrics.bundle.css)})`,
+  );
+  console.log(`Images: ${metrics.images.count} files (${formatBytes(metrics.images.totalSize)})`);
+
   for (const [format, data] of Object.entries(metrics.images.byFormat)) {
-    
+    console.log(`  ${format.toUpperCase()}: ${data.count} files (${formatBytes(data.size)})`);
   }
 
-  
-  
   if (metrics.svgs.spriteCount > 0) {
-    
+    console.log(`SVGs: ${metrics.svgs.count} files (sprite count: ${metrics.svgs.spriteCount})`);
   } else {
-    
+    console.log(`SVGs: ${metrics.svgs.count} files (no sprite detected)`);
   }
 
-  
   if (metrics.fonts.count > 0) {
-    
     for (const [type, data] of Object.entries(metrics.fonts.byType)) {
-      
+      console.log(`Fonts (${type}): ${data.count} files (${formatBytes(data.size)})`);
     }
   } else {
-    
+    console.log('Fonts: none detected (likely using next/font)');
   }
-
-  
-  
-  
-  
-
-  
-  
-  
 
   // Calculate optimization score
   const hasModernImageFormats = metrics.images.byFormat['webp'] || metrics.images.byFormat['avif'];
   const hasSpriteSystem = metrics.svgs.spriteCount > 0;
   const usesNextFonts = metrics.fonts.count === 0; // If no fonts in public, using Next.js fonts
 
-  
-  
-  
-  
-  
-
-  
-
   // Recommendations
-  
 
   if (!hasModernImageFormats && metrics.images.count > 0) {
-    
+    console.log('Recommendation: Add WebP/AVIF variants to improve image performance.');
   }
 
   if (!hasSpriteSystem && metrics.svgs.count > 5) {
-    
+    console.log('Recommendation: Consider using an SVG sprite to reduce requests.');
   }
 
   if (!usesNextFonts && metrics.fonts.totalSize > 100_000) {
-    
+    console.log('Recommendation: Consider using next/font to optimize font loading.');
   }
 
   if (metrics.bundle.total > 500_000) {
-    
+    console.log('Recommendation: Reduce bundle size with code-splitting or lazy loading.');
   }
-
-  
 }
 
 // Run benchmark
 benchmark().catch((error) => {
-  
+  console.error('Benchmark failed:', error);
   process.exit(1);
 });

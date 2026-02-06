@@ -9,9 +9,7 @@
 import dynamic from 'next/dynamic';
 
 // Loading skeleton component
-const LoadingSkeleton = () => (
-  <div className="animate-pulse bg-muted rounded-md h-20 w-full" />
-);
+const LoadingSkeleton = () => <div className='animate-pulse bg-muted rounded-md h-20 w-full' />;
 
 // Dynamically import heavy components
 export const TabsLazy = dynamic(
@@ -19,23 +17,20 @@ export const TabsLazy = dynamic(
   {
     loading: () => <LoadingSkeleton />,
     ssr: true,
-  }
+  },
 );
 
-export const TabLazy = dynamic(
-  () => import('fumadocs-ui/components/tabs').then((mod) => mod.Tab),
-  {
-    loading: () => <LoadingSkeleton />,
-    ssr: true,
-  }
-);
+export const TabLazy = dynamic(() => import('fumadocs-ui/components/tabs').then((mod) => mod.Tab), {
+  loading: () => <LoadingSkeleton />,
+  ssr: true,
+});
 
 export const AccordionsLazy = dynamic(
   () => import('fumadocs-ui/components/accordion').then((mod) => mod.Accordions),
   {
     loading: () => <LoadingSkeleton />,
     ssr: true,
-  }
+  },
 );
 
 export const AccordionLazy = dynamic(
@@ -43,15 +38,15 @@ export const AccordionLazy = dynamic(
   {
     loading: () => <LoadingSkeleton />,
     ssr: true,
-  }
+  },
 );
 
 export const ImageZoomLazy = dynamic(
   () => import('fumadocs-ui/components/image-zoom').then((mod) => mod.ImageZoom),
   {
-    loading: () => <div className="animate-pulse bg-muted rounded-md aspect-video w-full" />,
+    loading: () => <div className='animate-pulse bg-muted rounded-md aspect-video w-full' />,
     ssr: false, // Image zoom doesn't need SSR
-  }
+  },
 );
 
 export const FilesLazy = dynamic(
@@ -59,7 +54,7 @@ export const FilesLazy = dynamic(
   {
     loading: () => <LoadingSkeleton />,
     ssr: true,
-  }
+  },
 );
 
 export const FolderLazy = dynamic(
@@ -67,7 +62,7 @@ export const FolderLazy = dynamic(
   {
     loading: () => <LoadingSkeleton />,
     ssr: true,
-  }
+  },
 );
 
 export const FileLazy = dynamic(
@@ -75,7 +70,7 @@ export const FileLazy = dynamic(
   {
     loading: () => <LoadingSkeleton />,
     ssr: true,
-  }
+  },
 );
 
 export const StepsLazy = dynamic(
@@ -83,7 +78,7 @@ export const StepsLazy = dynamic(
   {
     loading: () => <LoadingSkeleton />,
     ssr: true,
-  }
+  },
 );
 
 export const StepLazy = dynamic(
@@ -91,5 +86,5 @@ export const StepLazy = dynamic(
   {
     loading: () => <LoadingSkeleton />,
     ssr: true,
-  }
+  },
 );

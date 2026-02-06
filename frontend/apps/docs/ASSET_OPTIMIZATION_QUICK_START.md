@@ -3,6 +3,7 @@
 ## Overview
 
 Phase 4 asset optimization reduces asset sizes by 50%+ through:
+
 - AVIF/WebP image formats
 - SVG sprite system
 - Next.js font optimization
@@ -65,7 +66,7 @@ import { DocImage, OptimizedImage, Avatar, Logo } from '@/components/optimized-i
 import { Icon } from '@/components/icon-sprite';
 
 // Use sprite icon
-<Icon name="search" size={20} className="text-blue-500" />
+<Icon name='search' size={20} className='text-blue-500' />;
 
 // Available icons:
 // home, book-open, code, chevron-left, chevron-right,
@@ -87,21 +88,25 @@ import { Icon } from '@/components/icon-sprite';
 ## Expected Results
 
 ### Image Formats
+
 - PNG → AVIF (70% smaller)
 - JPEG → WebP (30% smaller)
 - Automatic format selection
 
 ### SVG Optimization
+
 - Single sprite sheet
 - Reduced redundancy
 - Better caching
 
 ### Font Loading
+
 - No FOIT (Flash of Invisible Text)
 - System font fallbacks
 - Optimized loading
 
 ### Lighthouse Scores
+
 - Performance: 95+
 - Best Practices: 100
 - All image audits: Pass
@@ -136,7 +141,9 @@ bun run benchmark:assets
 ## Common Issues
 
 ### Images not optimizing
+
 **Solution**: Check `next.config.ts` has:
+
 ```typescript
 images: {
   formats: ['image/avif', 'image/webp'],
@@ -144,15 +151,19 @@ images: {
 ```
 
 ### Icons not showing
+
 **Solution**: Verify `IconSprite` in `app/layout.tsx`:
+
 ```tsx
 import { IconSprite } from '@/components/icon-sprite';
 // In body:
-<IconSprite />
+<IconSprite />;
 ```
 
 ### Font flash
+
 **Solution**: Check font config has `display: 'swap'`:
+
 ```typescript
 const inter = Inter({
   display: 'swap',
@@ -162,12 +173,12 @@ const inter = Inter({
 
 ## Performance Targets
 
-| Metric | Target | Status |
-|--------|--------|--------|
-| Image size reduction | 50-70% | ✅ AVIF/WebP |
-| SVG optimization | 30-40% | ✅ Sprite + SVGO |
-| Font optimization | Optimal | ✅ Next.js fonts |
-| Total asset reduction | 50%+ | ✅ Achieved |
+| Metric                | Target  | Status           |
+| --------------------- | ------- | ---------------- |
+| Image size reduction  | 50-70%  | ✅ AVIF/WebP     |
+| SVG optimization      | 30-40%  | ✅ Sprite + SVGO |
+| Font optimization     | Optimal | ✅ Next.js fonts |
+| Total asset reduction | 50%+    | ✅ Achieved      |
 
 ## Next Steps
 

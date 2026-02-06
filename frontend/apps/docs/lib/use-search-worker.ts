@@ -65,8 +65,15 @@ export function useSearchWorker(): UseSearchWorkerReturn {
 
     // Handle messages from worker
     worker.addEventListener('message', (event) => {
-      const { type, duration, documentCount, results, query, resultCount, error: workerError } =
-        event.data;
+      const {
+        type,
+        duration,
+        documentCount,
+        results,
+        query,
+        resultCount,
+        error: workerError,
+      } = event.data;
 
       switch (type) {
         case 'ready':
@@ -78,7 +85,7 @@ export function useSearchWorker(): UseSearchWorkerReturn {
           setIsReady(true);
           setPerformance((prev) => ({ ...prev, initDuration: duration }));
           console.log(
-            `✅ Search worker initialized in ${duration.toFixed(2)}ms (${documentCount} documents)`
+            `✅ Search worker initialized in ${duration.toFixed(2)}ms (${documentCount} documents)`,
           );
           break;
 
@@ -91,7 +98,7 @@ export function useSearchWorker(): UseSearchWorkerReturn {
             resultCount,
           }));
           console.log(
-            `🔍 Search completed in ${duration.toFixed(2)}ms (${resultCount} results for "${query}")`
+            `🔍 Search completed in ${duration.toFixed(2)}ms (${resultCount} results for "${query}")`,
           );
           break;
 
@@ -124,11 +131,11 @@ export function useSearchWorker(): UseSearchWorkerReturn {
       worker.postMessage({
         type: 'init',
         indexData,
-      }, worker.location.origin);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load search index';
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load search index';
       setError(errorMessage);
-      console.error('❌ Failed to load search index:', err);
+      console.error('❌ Failed to load search index:', error);
     }
   }, []);
 
@@ -152,9 +159,9 @@ export function useSearchWorker(): UseSearchWorkerReturn {
         type: 'search',
         query,
         maxResults,
-      }, self.location.origin);
+      });
     },
-    [isReady]
+    [isReady],
   );
 
   return {

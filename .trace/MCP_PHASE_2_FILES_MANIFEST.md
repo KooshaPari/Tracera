@@ -58,12 +58,12 @@
 **Purpose**: Token-optimized item operations
 
 **Tools**:
-- `create_item_v2()` - Create with lean response (88% reduction)
-- `get_item_v2()` - Get with minimal fields (88% reduction)
-- `query_items_v2()` - Query with optimization (84% reduction)
-- `update_item_v2()` - Update with lean response
-- `delete_item_v2()` - Delete with minimal confirmation
-- `summarize_view_v2()` - Summary without samples
+- `create_item_optimized()` - Create with lean response (88% reduction)
+- `get_item_optimized()` - Get with minimal fields (88% reduction)
+- `query_items_optimized()` - Query with optimization (84% reduction)
+- `update_item_optimized()` - Update with lean response
+- `delete_item_optimized()` - Delete with minimal confirmation
+- `summarize_view_optimized()` - Summary without samples
 
 **Features**:
 - Lean responses by default

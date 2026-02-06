@@ -99,7 +99,7 @@ Run checks before committing:
 # Backend
 ruff check .              # Linting
 ruff format .             # Formatting
-mypy src/                 # Type checking
+ty check src/ --error-on-warning  # Type checking
 pytest                    # Tests
 
 # Frontend
@@ -286,8 +286,8 @@ export function ItemsView() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Items</h1>
+    <div className='container mx-auto p-6'>
+      <h1 className='text-2xl font-bold mb-4'>Items</h1>
       <ItemsList items={items} />
     </div>
   );
@@ -328,10 +328,7 @@ export function ItemCard({ item, onDelete }: ItemCardProps) {
         <p>{item.description}</p>
       </CardContent>
       <CardFooter>
-        <Button
-          variant="destructive"
-          onClick={() => onDelete?.(item.id)}
-        >
+        <Button variant='destructive' onClick={() => onDelete?.(item.id)}>
           Delete
         </Button>
       </CardFooter>
@@ -428,10 +425,7 @@ Use VSCode debugger with `launch.json`:
       "type": "python",
       "request": "launch",
       "module": "uvicorn",
-      "args": [
-        "src.tracertm.api.main:app",
-        "--reload"
-      ],
+      "args": ["src.tracertm.api.main:app", "--reload"],
       "jinja": true,
       "justMyCode": false
     }
@@ -467,9 +461,9 @@ Use React DevTools Profiler:
 ```tsx
 import { Profiler } from 'react';
 
-<Profiler id="ItemsList" onRender={onRenderCallback}>
+<Profiler id='ItemsList' onRender={onRenderCallback}>
   <ItemsList items={items} />
-</Profiler>
+</Profiler>;
 ```
 
 ## Best Practices

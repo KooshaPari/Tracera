@@ -387,8 +387,8 @@ export class TestHelpers {
 
       return {
         domContentLoaded: navEntry?.domContentLoadedEventEnd || 0,
-        firstContentfulPaint: paintEntries
-          .find((e) => e.name === 'first-contentful-paint')?.startTime,
+        firstContentfulPaint: paintEntries.find((e) => e.name === 'first-contentful-paint')
+          ?.startTime,
         firstPaint: paintEntries.find((e) => e.name === 'first-paint')?.startTime,
         loadTime: navEntry?.loadEventEnd || 0,
       };

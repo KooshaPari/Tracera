@@ -27,6 +27,7 @@ Reduce Next.js bundle from ~800KB → <200KB (75% reduction)
 ## ⚠️ What's Blocked
 
 **Build fails** with module resolution errors:
+
 - Cannot find '@/source'
 - Cannot find '@/components/mdx-components'
 - Cannot find '@/components/icon-sprite'
@@ -41,7 +42,7 @@ ls -la components/icon-sprite.tsx || echo "❌ Missing icon-sprite"
 ls -la source.ts && echo "✅ source.ts exists"
 
 # 2. Remove duplicate configs
-rm -f next.config.analyze.ts next.config.mjs
+rm -f next.config.analyze.ts
 
 # 3. Clean build
 rm -rf .next
@@ -55,13 +56,13 @@ ANALYZE=true bun run build
 
 ## 📊 Expected Results
 
-| Chunk | Current | Target |
-|-------|---------|--------|
-| Total (gzipped) | ~250KB | <200KB |
-| React | ~120KB | <50KB |
-| Fumadocs | ~150KB | <100KB |
-| Lucide Icons | ~80KB | <40KB |
-| Vendor | ~100KB | <80KB |
+| Chunk           | Current | Target |
+| --------------- | ------- | ------ |
+| Total (gzipped) | ~250KB  | <200KB |
+| React           | ~120KB  | <50KB  |
+| Fumadocs        | ~150KB  | <100KB |
+| Lucide Icons    | ~80KB   | <40KB  |
+| Vendor          | ~100KB  | <80KB  |
 
 ## 📁 Key Files
 

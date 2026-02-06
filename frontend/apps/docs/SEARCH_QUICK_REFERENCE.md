@@ -65,7 +65,7 @@ function App() {
       <InstantSearch
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        placeholder="Search docs..."
+        placeholder='Search docs...'
         maxResults={20}
       />
     </>
@@ -82,15 +82,12 @@ Edit `lib/search-config.ts`:
 ```ts
 export const searchConfig = {
   weights: {
-    title: 10,       // Most important
-    description: 5,  // Very relevant
-    heading: 3,      // Moderately important
-    content: 1,      // Baseline
+    title: 10, // Most important
+    description: 5, // Very relevant
+    heading: 3, // Moderately important
+    content: 1, // Baseline
   },
-  priorityPages: [
-    '/docs',
-    '/docs/getting-started',
-  ],
+  priorityPages: ['/docs', '/docs/getting-started'],
   minQueryLength: 2,
   maxResults: 50,
 };
@@ -102,9 +99,9 @@ Edit `scripts/build-search-index.ts`:
 
 ```ts
 const fuseOptions = {
-  threshold: 0.35,        // Lower = stricter matching
-  distance: 80,           // Max char distance for fuzzy
-  ignoreLocation: false,  // Prefer matches at start
+  threshold: 0.35, // Lower = stricter matching
+  distance: 80, // Max char distance for fuzzy
+  ignoreLocation: false, // Prefer matches at start
   keys: [
     { name: 'title', weight: 10 },
     { name: 'description', weight: 5 },
@@ -118,11 +115,13 @@ const fuseOptions = {
 ### If searches are too slow (>100ms)
 
 1. **Reduce content length**
+
    ```ts
    content: content.slice(0, 500), // Reduce from 1000
    ```
 
 2. **Remove search keys**
+
    ```ts
    keys: [
      { name: 'title', weight: 10 },
@@ -131,6 +130,7 @@ const fuseOptions = {
    ```
 
 3. **Decrease distance**
+
    ```ts
    distance: 50, // Reduce from 80
    ```
@@ -143,11 +143,13 @@ const fuseOptions = {
 ### If index is too large (>200KB)
 
 1. **Reduce content per page**
+
    ```ts
    content: content.slice(0, 500),
    ```
 
 2. **Limit headings**
+
    ```ts
    headings: headings.slice(0, 5),
    ```
@@ -160,11 +162,13 @@ const fuseOptions = {
 ### If relevance is poor
 
 1. **Increase threshold**
+
    ```ts
    threshold: 0.4, // More lenient fuzzy matching
    ```
 
 2. **Adjust weights**
+
    ```ts
    weights: {
      title: 20,      // Even more important
@@ -180,25 +184,25 @@ const fuseOptions = {
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Cmd+K` / `Ctrl+K` | Open search |
-| `↑` / `↓` | Navigate results |
-| `Enter` | Go to selected result |
-| `Esc` | Close search |
+| Key                | Action                |
+| ------------------ | --------------------- |
+| `Cmd+K` / `Ctrl+K` | Open search           |
+| `↑` / `↓`          | Navigate results      |
+| `Enter`            | Go to selected result |
+| `Esc`              | Close search          |
 
 ## File Reference
 
-| File | Purpose |
-|------|---------|
-| `scripts/build-search-index.ts` | Build search index at compile time |
-| `scripts/benchmark-search.ts` | Performance benchmarking |
-| `lib/search.worker.ts` | Web worker for background search |
-| `lib/use-search-worker.ts` | React hook for search |
-| `lib/search-config.ts` | Search configuration |
-| `components/instant-search.tsx` | Search UI component |
-| `public/search-index.json` | Generated search index |
-| `e2e/search-performance.spec.ts` | E2E tests |
+| File                             | Purpose                            |
+| -------------------------------- | ---------------------------------- |
+| `scripts/build-search-index.ts`  | Build search index at compile time |
+| `scripts/benchmark-search.ts`    | Performance benchmarking           |
+| `lib/search.worker.ts`           | Web worker for background search   |
+| `lib/use-search-worker.ts`       | React hook for search              |
+| `lib/search-config.ts`           | Search configuration               |
+| `components/instant-search.tsx`  | Search UI component                |
+| `public/search-index.json`       | Generated search index             |
+| `e2e/search-performance.spec.ts` | E2E tests                          |
 
 ## Benchmarks
 
@@ -216,10 +220,10 @@ Under 100ms: 100%
 
 ```ts
 const queries = [
-  'api',                              // Short
-  'getting started',                   // Medium
-  'authentication and authorization',  // Long
-  'proj',                             // Partial
+  'api', // Short
+  'getting started', // Medium
+  'authentication and authorization', // Long
+  'proj', // Partial
 ];
 ```
 

@@ -41,14 +41,14 @@ bun run audit:bundle
 
 ## Success Criteria
 
-| Metric | Target | Test Command |
-|--------|--------|--------------|
-| Bundle Size (gzipped) | <200KB | `bun run test:performance` |
-| First Contentful Paint | <1.5s | `bun run lighthouse` |
-| Time to Interactive | <2.5s | `bun run lighthouse` |
-| Search Response | <100ms | `bun run test:e2e` |
-| Lighthouse Score | >95 | `bun run lighthouse` |
-| Build Time | <60s | `bun run test:performance` |
+| Metric                 | Target | Test Command               |
+| ---------------------- | ------ | -------------------------- |
+| Bundle Size (gzipped)  | <200KB | `bun run test:performance` |
+| First Contentful Paint | <1.5s  | `bun run lighthouse`       |
+| Time to Interactive    | <2.5s  | `bun run lighthouse`       |
+| Search Response        | <100ms | `bun run test:e2e`         |
+| Lighthouse Score       | >95    | `bun run lighthouse`       |
+| Build Time             | <60s   | `bun run test:performance` |
 
 ---
 
@@ -56,20 +56,20 @@ bun run audit:bundle
 
 ### Test Configuration
 
-| File | Purpose |
-|------|---------|
-| `lighthouserc.json` | Lighthouse CI configuration |
-| `playwright.config.ts` | E2E test configuration |
-| `e2e/docs.spec.ts` | E2E test suite |
-| `scripts/performance-audit.ts` | Performance audit script |
+| File                           | Purpose                     |
+| ------------------------------ | --------------------------- |
+| `lighthouserc.json`            | Lighthouse CI configuration |
+| `playwright.config.ts`         | E2E test configuration      |
+| `e2e/docs.spec.ts`             | E2E test suite              |
+| `scripts/performance-audit.ts` | Performance audit script    |
 
 ### Documentation
 
-| File | Purpose |
-|------|---------|
-| `TESTING_GUIDE.md` | Complete testing guide |
-| `PERFORMANCE_REPORT.md` | Performance report template |
-| `PHASE_8_QUICK_REFERENCE.md` | This file |
+| File                         | Purpose                     |
+| ---------------------------- | --------------------------- |
+| `TESTING_GUIDE.md`           | Complete testing guide      |
+| `PERFORMANCE_REPORT.md`      | Performance report template |
+| `PHASE_8_QUICK_REFERENCE.md` | This file                   |
 
 ---
 
@@ -99,11 +99,13 @@ bunx playwright show-report
 ### 1. Performance Audit (`test:performance`)
 
 **What it tests**:
+
 - Build time
 - Bundle sizes (JS, CSS, images)
 - Chunk analysis
 
 **Output**:
+
 ```
 📈 Performance Metrics
 ⏱️  Build Time: 45.23s ✅
@@ -115,6 +117,7 @@ bunx playwright show-report
 ### 2. Lighthouse CI (`lighthouse`)
 
 **What it tests**:
+
 - Performance score
 - Accessibility score
 - Best Practices score
@@ -122,12 +125,14 @@ bunx playwright show-report
 - Core Web Vitals (FCP, LCP, TTI, TBT, CLS)
 
 **Output**:
+
 - `.lighthouseci/` directory with reports
 - Console summary of scores
 
 ### 3. E2E Tests (`test:e2e`)
 
 **Test Categories**:
+
 - ✅ Navigation (homepage, docs, sidebar)
 - ✅ Search functionality (keyboard shortcuts, results)
 - ✅ OpenAPI documentation (rendering, expansion)
@@ -137,6 +142,7 @@ bunx playwright show-report
 - ✅ Mobile responsiveness (layout, menu)
 
 **Output**:
+
 - `playwright-report/` directory with HTML report
 - `playwright-results.json` with test results
 
@@ -157,6 +163,7 @@ bun run lighthouse
 ### Issue: E2E tests timeout
 
 Edit `playwright.config.ts`:
+
 ```typescript
 timeout: 60000, // Increase to 60 seconds
 ```
@@ -184,11 +191,13 @@ Check `source.config.ts` for proper search configuration.
 ### Reduce Bundle Size
 
 1. **Lazy load components**:
+
    ```typescript
    const HeavyComponent = lazy(() => import('./HeavyComponent'));
    ```
 
 2. **Use dynamic imports**:
+
    ```typescript
    const module = await import('./module');
    ```
@@ -224,6 +233,7 @@ Check `source.config.ts` for proper search configuration.
 ## CI/CD Integration
 
 Tests run automatically on:
+
 - Push to `main` or `develop`
 - Pull requests to `main` or `develop`
 - Manual workflow dispatch
@@ -231,6 +241,7 @@ Tests run automatically on:
 **Workflow**: `.github/workflows/docs-performance.yml`
 
 **Artifacts**:
+
 - Playwright report
 - Lighthouse results
 - Bundle analysis

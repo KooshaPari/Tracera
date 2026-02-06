@@ -4,12 +4,8 @@
 
 set -e
 NODE_EXPORTER_PORT="${NODE_EXPORTER_PORT:-9100}"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-if command -v lsof >/dev/null 2>&1; then
-  if lsof -Pi :"$NODE_EXPORTER_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "node_exporter already listening on port $NODE_EXPORTER_PORT; holding process for process-compose."
-    exec sh -c 'while true; do sleep 3600; done'
-  fi
-fi
+bash "$ROOT/scripts/shell/guard-port.sh" "node_exporter" "$NODE_EXPORTER_PORT" "node_exporter"
 
 exec node_exporter --no-collector.thermal

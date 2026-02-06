@@ -612,6 +612,7 @@ class FFmpegPipeline:
         Raises:
             FFmpegError: If command fails or times out.
         """
+        proc: asyncio.subprocess.Process | None = None
         try:
             proc = await asyncio.create_subprocess_exec(
                 "ffmpeg",
@@ -623,14 +624,11 @@ class FFmpegPipeline:
                 stderr=subprocess.PIPE,
             )
 
-            _, stderr = await asyncio.wait_for(
-                proc.communicate(), timeout=DEFAULT_RUN_TIMEOUT
-            )
+            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=DEFAULT_RUN_TIMEOUT)
 
             if proc.returncode != 0:
                 raise FFmpegError(f"FFmpeg failed: {stderr.decode()}")
         except TimeoutError:
-            proc.kill()
-            raise FFmpegError(
-                f"FFmpeg timed out after {DEFAULT_RUN_TIMEOUT} seconds"
-            ) from None
+            if proc is not None:
+                proc.kill()
+            raise FFmpegError(f"FFmpeg timed out after {DEFAULT_RUN_TIMEOUT} seconds") from None

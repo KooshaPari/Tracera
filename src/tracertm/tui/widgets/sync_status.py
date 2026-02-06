@@ -5,12 +5,14 @@ Displays real-time sync status, pending changes, and conflict notifications.
 """
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 # Time thresholds for relative time formatting
 _SECONDS_PER_MINUTE = 60
 _SECONDS_PER_HOUR = 3600
 _SECONDS_PER_DAY = 86400
+
+T = TypeVar("T")
 
 try:
     from textual.app import ComposeResult
@@ -18,23 +20,40 @@ try:
     from textual.reactive import reactive as textual_reactive
     from textual.widgets import Static as TextualStatic
 
-    TEXTUAL_AVAILABLE = True
+    textual_available = True
     Static = TextualStatic
     Horizontal = TextualHorizontal
     reactive = textual_reactive
 except ImportError:
-    TEXTUAL_AVAILABLE = False
-    Static = object  # type: ignore
-    Horizontal = object  # type: ignore
+    textual_available = False
 
-    def reactive(*args: Any, **kwargs: Any) -> Any:
-        def decorator(func: Any) -> Any:
-            return func
+    class Static:
+        is_mounted: bool = False
 
-        return decorator
+        def query_one(self, selector: str, expect_type: type[Any]) -> Any:  # noqa: ANN401
+            raise RuntimeError("Textual not available")
+
+        def update(self, content: str) -> None:
+            return None
+
+        def add_class(self, *classes: str) -> None:
+            return None
+
+        def remove_class(self, *classes: str) -> None:
+            return None
+
+    class Horizontal:
+        def __init__(self, *children: Any, **kwargs: Any) -> None:
+            return None
+
+    class reactive(Generic[T]):
+        def __init__(self, default: T) -> None:
+            self.default = default
 
 
-if TEXTUAL_AVAILABLE:
+TEXTUAL_AVAILABLE = textual_available
+
+if textual_available:
 
     class SyncStatusWidget(Static):
         """
@@ -93,37 +112,37 @@ if TEXTUAL_AVAILABLE:
         def compose(self) -> ComposeResult:
             """Compose the widget."""
             # Static/Horizontal are object when Textual is not installed; suppress for ty/pyright
-            yield Horizontal(  # type: ignore
-                Static(id="connection-status", classes="status-line"),  # type: ignore
-                Static(id="sync-info", classes="status-line"),  # type: ignore
-                Static(id="conflict-info", classes="status-line"),  # type: ignore
+            yield Horizontal(
+                Static(id="connection-status", classes="status-line"),
+                Static(id="sync-info", classes="status-line"),
+                Static(id="conflict-info", classes="status-line"),
             )
 
         def on_mount(self) -> None:
             """Called when widget is mounted."""
             self.update_display()
 
-        def watch_is_online(self, new_value: bool) -> None:
+        def watch_is_online(self, _new_value: bool) -> None:
             """React to online status changes."""
             self.update_display()
 
-        def watch_is_syncing(self, new_value: bool) -> None:
+        def watch_is_syncing(self, _new_value: bool) -> None:
             """React to syncing status changes."""
             self.update_display()
 
-        def watch_pending_changes(self, new_value: int) -> None:
+        def watch_pending_changes(self, _new_value: int) -> None:
             """React to pending changes count changes."""
             self.update_display()
 
-        def watch_last_sync(self, new_value: datetime | None) -> None:
+        def watch_last_sync(self, _new_value: datetime | None) -> None:
             """React to last sync timestamp changes."""
             self.update_display()
 
-        def watch_conflicts_count(self, new_value: int) -> None:
+        def watch_conflicts_count(self, _new_value: int) -> None:
             """React to conflicts count changes."""
             self.update_display()
 
-        def watch_last_error(self, new_value: str | None) -> None:
+        def watch_last_error(self, _new_value: str | None) -> None:
             """React to error changes."""
             self.update_display()
 

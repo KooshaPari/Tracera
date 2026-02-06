@@ -1,13 +1,31 @@
+// Package embeddings provides embedding and reranking services.
 package embeddings
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+const (
+	defaultIndexerBatchSize     = 50
+	defaultIndexerWorkerCount   = 3
+	defaultIndexerPollInterval  = 30 * time.Second
+	defaultIndexerRetryAttempts = 3
+	defaultIndexerRetryDelay    = 5 * time.Second
+	defaultIndexerMaxQueueSize  = 1000
+	indexerLoadTimeout          = 30 * time.Second
+	indexerEmbedTimeout         = 30 * time.Second
+	indexerUpdateTimeout        = 10 * time.Second
+	indexerQueueTimeout         = 5 * time.Second
+	vectorFloatBits             = 32
 )
 
 // IndexerConfig holds configuration for the embedding indexer
@@ -60,31 +78,31 @@ type Indexer struct {
 // NewIndexer creates a new embedding indexer
 func NewIndexer(config *IndexerConfig) (*Indexer, error) {
 	if config.Provider == nil {
-		return nil, fmt.Errorf("embedding provider is required")
+		return nil, errors.New("embedding provider is required")
 	}
 
 	if config.Pool == nil {
-		return nil, fmt.Errorf("database pool is required")
+		return nil, errors.New("database pool is required")
 	}
 
 	// Set defaults
 	if config.BatchSize == 0 {
-		config.BatchSize = 50
+		config.BatchSize = defaultIndexerBatchSize
 	}
 	if config.WorkerCount == 0 {
-		config.WorkerCount = 3
+		config.WorkerCount = defaultIndexerWorkerCount
 	}
 	if config.PollInterval == 0 {
-		config.PollInterval = 30 * time.Second
+		config.PollInterval = defaultIndexerPollInterval
 	}
 	if config.RetryAttempts == 0 {
-		config.RetryAttempts = 3
+		config.RetryAttempts = defaultIndexerRetryAttempts
 	}
 	if config.RetryDelay == 0 {
-		config.RetryDelay = 5 * time.Second
+		config.RetryDelay = defaultIndexerRetryDelay
 	}
 	if config.MaxQueueSize == 0 {
-		config.MaxQueueSize = 1000
+		config.MaxQueueSize = defaultIndexerMaxQueueSize
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -104,7 +122,7 @@ func (idx *Indexer) Start() error {
 	defer idx.runningMu.Unlock()
 
 	if idx.running {
-		return fmt.Errorf("indexer is already running")
+		return errors.New("indexer is already running")
 	}
 
 	idx.running = true
@@ -132,7 +150,7 @@ func (idx *Indexer) Stop() error {
 	defer idx.runningMu.Unlock()
 
 	if !idx.running {
-		return fmt.Errorf("indexer is not running")
+		return errors.New("indexer is not running")
 	}
 
 	if idx.config.EnableLogging {
@@ -221,7 +239,7 @@ func (idx *Indexer) pollForNewItems() {
 
 // loadPendingItems loads items that need embedding from the database
 func (idx *Indexer) loadPendingItems() error {
-	ctx, cancel := context.WithTimeout(idx.ctx, 30*time.Second)
+	ctx, cancel := context.WithTimeout(idx.ctx, indexerLoadTimeout)
 	defer cancel()
 
 	query := `
@@ -289,7 +307,7 @@ func (idx *Indexer) processItem(item *IndexItem) error {
 	}
 
 	// Generate embedding
-	ctx, cancel := context.WithTimeout(idx.ctx, 30*time.Second)
+	ctx, cancel := context.WithTimeout(idx.ctx, indexerEmbedTimeout)
 	defer cancel()
 
 	resp, err := idx.config.Provider.Embed(ctx, &EmbeddingRequest{
@@ -301,7 +319,7 @@ func (idx *Indexer) processItem(item *IndexItem) error {
 	}
 
 	if len(resp.Embeddings) == 0 {
-		return fmt.Errorf("no embeddings returned")
+		return errors.New("no embeddings returned")
 	}
 
 	embedding := resp.Embeddings[0]
@@ -328,7 +346,7 @@ func (idx *Indexer) processItem(item *IndexItem) error {
 
 // updateItemEmbedding updates the embedding for an item in the database
 func (idx *Indexer) updateItemEmbedding(itemID string, embedding EmbeddingVector) error {
-	ctx, cancel := context.WithTimeout(idx.ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(idx.ctx, indexerUpdateTimeout)
 	defer cancel()
 
 	// Convert embedding to pgvector format
@@ -354,8 +372,8 @@ func (idx *Indexer) IndexItem(item *IndexItem) error {
 	select {
 	case idx.queue <- item:
 		return nil
-	case <-time.After(5 * time.Second):
-		return fmt.Errorf("queue is full, timeout waiting to enqueue item")
+	case <-time.After(indexerQueueTimeout):
+		return errors.New("queue is full, timeout waiting to enqueue item")
 	}
 }
 
@@ -388,15 +406,16 @@ func vectorToString(vec EmbeddingVector) string {
 		return "[]"
 	}
 
-	result := "["
+	var builder strings.Builder
+	builder.WriteByte('[')
 	for i, val := range vec {
 		if i > 0 {
-			result += ","
+			builder.WriteByte(',')
 		}
-		result += fmt.Sprintf("%f", val)
+		builder.WriteString(strconv.FormatFloat(float64(val), 'f', -1, vectorFloatBits))
 	}
-	result += "]"
-	return result
+	builder.WriteByte(']')
+	return builder.String()
 }
 
 // ReindexAll triggers a full reindex of all items (use with caution)

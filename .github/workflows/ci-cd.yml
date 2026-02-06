@@ -64,16 +64,17 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 black isort mypy
+        pip install ruff ty
     
-    - name: Lint with flake8
-      run: flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
-    
-    - name: Format check with black
-      run: black --check src/ tests/
-    
-    - name: Import sort check
-      run: isort --check-only src/ tests/
+    - name: Ruff format check
+      run: ruff format --check .
+
+    - name: Ruff lint
+      # Use grouped output format for file-based processing (easier for agents to fix)
+      run: ruff check . --output-format=grouped
+
+    - name: Type check (ty)
+      run: ty check src/ --error-on-warning
 
   build:
     needs: [test, lint]
@@ -104,4 +105,3 @@ jobs:
       run: |
         echo "Deploying to production..."
         # Add deployment commands here
-

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/schemas/integration.py
+# hypothesis_version: 6.151.4
+
+['active', 'bidirectional', 'completed', 'expired', 'external_to_tracertm', 'external_wins', 'failed', 'from_attributes', 'github', 'github_app', 'github_projects', 'ignored', 'invalid', 'item_created', 'item_deleted', 'item_updated', 'last_write_wins', 'linear', 'linked', 'manual', 'oauth_token', 'paused', 'pending', 'processing', 'pull', 'push', 'resolved', 'retried', 'revoked', 'status_changed', 'sync_error', 'tracertm_to_external', 'tracertm_wins', 'unlinked']

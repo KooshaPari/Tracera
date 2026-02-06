@@ -30,7 +30,7 @@ def instrument_app(app: "FastAPI") -> None:
         app: FastAPI application instance
     """
     try:
-        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor  # type: ignore[import-untyped]
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
         FastAPIInstrumentor.instrument_app(app)
         logger.info("✅ FastAPI instrumentation enabled")
@@ -53,7 +53,7 @@ def instrument_database(engine: "AsyncEngine") -> None:
         engine: SQLAlchemy async engine instance
     """
     try:
-        from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor  # type: ignore[import-untyped]
+        from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
         # Instrument the engine
         SQLAlchemyInstrumentor().instrument(
@@ -81,7 +81,7 @@ def instrument_http_client() -> None:
     - Request duration
     """
     try:
-        from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor  # type: ignore[import-untyped]
+        from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 
         HTTPXClientInstrumentor().instrument()
         logger.info("✅ HTTPX client instrumentation enabled")
@@ -89,7 +89,7 @@ def instrument_http_client() -> None:
         logger.debug("HTTPX instrumentation not available")
 
     try:
-        from opentelemetry.instrumentation.requests import RequestsInstrumentor  # type: ignore[import-untyped]
+        from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
         RequestsInstrumentor().instrument()
         logger.info("✅ Requests client instrumentation enabled")
@@ -106,7 +106,7 @@ def instrument_redis() -> None:
     - Command duration
     """
     try:
-        from opentelemetry.instrumentation.redis import RedisInstrumentor  # type: ignore[import-untyped]
+        from opentelemetry.instrumentation.redis import RedisInstrumentor
 
         RedisInstrumentor().instrument()
         logger.info("✅ Redis instrumentation enabled")

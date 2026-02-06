@@ -5,11 +5,13 @@ Get the TraceRTM documentation site deployed in minutes.
 ## Prerequisites (5 minutes)
 
 1. **Install Bun** (if not already installed):
+
    ```bash
    curl -fsSL https://bun.sh/install | bash
    ```
 
 2. **Install Vercel CLI**:
+
    ```bash
    bun install --global vercel@latest
    ```
@@ -38,6 +40,7 @@ cat .vercel/project.json
 ```
 
 You'll see:
+
 ```json
 {
   "orgId": "team_xxxxx",
@@ -53,15 +56,16 @@ Go to your GitHub repository:
 
 Add these secrets:
 
-| Secret Name | Value | Where to Get |
-|-------------|-------|--------------|
-| `VERCEL_TOKEN` | your_token | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
-| `VERCEL_ORG_ID` | team_xxxxx | From `.vercel/project.json` |
-| `VERCEL_DOCS_PROJECT_ID` | prj_xxxxx | From `.vercel/project.json` |
+| Secret Name              | Value      | Where to Get                                                   |
+| ------------------------ | ---------- | -------------------------------------------------------------- |
+| `VERCEL_TOKEN`           | your_token | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID`          | team_xxxxx | From `.vercel/project.json`                                    |
+| `VERCEL_DOCS_PROJECT_ID` | prj_xxxxx  | From `.vercel/project.json`                                    |
 
 ### 4. Configure Environment (Optional)
 
 Create `.env.local`:
+
 ```bash
 cp .env.example .env.local
 ```
@@ -219,6 +223,7 @@ ls -la public/api/openapi.json
 ## What Happens in Each Deployment?
 
 ### Preview Deployment
+
 1. Generates OpenAPI spec from backend
 2. Builds documentation site
 3. Deploys to unique preview URL
@@ -226,6 +231,7 @@ ls -la public/api/openapi.json
 5. Validates deployment
 
 ### Production Deployment
+
 1. Generates fresh OpenAPI spec
 2. Builds documentation site
 3. Deploys to production domain
@@ -241,15 +247,15 @@ ls -la public/api/openapi.json
 
 ## Quick Reference
 
-| Need | Command |
-|------|---------|
-| Start dev server | `bun run dev` |
-| Deploy preview | `bun run deploy:preview` |
-| Deploy production | `bun run deploy:prod` |
-| Sync OpenAPI | `bun run openapi:sync` |
+| Need                | Command                               |
+| ------------------- | ------------------------------------- |
+| Start dev server    | `bun run dev`                         |
+| Deploy preview      | `bun run deploy:preview`              |
+| Deploy production   | `bun run deploy:prod`                 |
+| Sync OpenAPI        | `bun run openapi:sync`                |
 | Validate deployment | `bash scripts/validate-deployment.sh` |
-| Test build | `bun run build` |
-| Type check | `bun run typecheck` |
+| Test build          | `bun run build`                       |
+| Type check          | `bun run typecheck`                   |
 
 ## Support
 

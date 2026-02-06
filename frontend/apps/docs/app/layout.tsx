@@ -3,12 +3,13 @@
 /* eslint-disable import/no-unassigned-import -- side-effect import for global styles */
 /* eslint-disable react/jsx-filename-extension -- Next.js uses .tsx for layouts */
 /* eslint-disable react/only-export-components -- Next.js requires export const metadata */
-/* eslint-disable react-perf/jsx-no-new-object-as-prop -- rootProviderSearch is defined above */
 import './global.css';
-import { IconSprite } from '@/components/icon-sprite';
+import type { JSX, ReactNode } from 'react';
+
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { Inter } from 'next/font/google';
-import type { ReactNode } from 'react';
+
+import { IconSprite } from '@/components/icon-sprite';
 
 const inter = Inter({
   adjustFontFallback: true,
@@ -19,24 +20,16 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
-const rootProviderSearch = {
-  enabled: true,
-  hotKey: [
-    { ctrl: true, key: 'k' },
-    { key: 'k', meta: true },
-  ],
-};
-
 export default function Layout({ children }: { children: ReactNode }): JSX.Element {
   return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
-      <body className="flex min-h-screen flex-col">
-        <IconSprite />
-        <RootProvider search={rootProviderSearch}>
+    <RootProvider>
+      <html lang='en' className={inter.className} suppressHydrationWarning>
+        <body className='flex min-h-screen flex-col'>
+          <IconSprite />
           {children}
-        </RootProvider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </RootProvider>
   );
 }
 
@@ -52,9 +45,12 @@ export const metadata = {
     icon: '/icon-192x192.png',
   },
   manifest: '/manifest.json',
-  themeColor: '#000000',
   title: {
     default: 'TracerTM Documentation',
     template: '%s | TracerTM',
   },
+};
+
+export const viewport = {
+  themeColor: '#000000',
 };

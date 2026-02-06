@@ -17,7 +17,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 from .common import _call_tool, _maybe_select_project, _wrap, item_tools
 
@@ -55,7 +55,8 @@ async def _item_manage_impl(  # noqa: C901
 
     async def _create() -> Any:
         return await _call_tool(
-            item_tools, "create_item",
+            item_tools,
+            "create_item",
             title=payload.get("title"),
             view=payload.get("view"),
             item_type=payload.get("item_type"),
@@ -70,14 +71,16 @@ async def _item_manage_impl(  # noqa: C901
 
     async def _get() -> Any:
         return await _call_tool(
-            item_tools, "get_item",
+            item_tools,
+            "get_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
 
     async def _update() -> Any:
         return await _call_tool(
-            item_tools, "update_item",
+            item_tools,
+            "update_item",
             item_id=payload.get("item_id"),
             title=payload.get("title"),
             description=payload.get("description"),
@@ -90,14 +93,16 @@ async def _item_manage_impl(  # noqa: C901
 
     async def _delete() -> Any:
         return await _call_tool(
-            item_tools, "delete_item",
+            item_tools,
+            "delete_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
 
     async def _query() -> Any:
         return await _call_tool(
-            item_tools, "query_items",
+            item_tools,
+            "query_items",
             view=payload.get("view"),
             item_type=payload.get("item_type"),
             status=payload.get("status"),
@@ -108,14 +113,16 @@ async def _item_manage_impl(  # noqa: C901
 
     async def _summarize_view() -> Any:
         return await _call_tool(
-            item_tools, "summarize_view",
+            item_tools,
+            "summarize_view",
             view=payload.get("view"),
             ctx=ctx,
         )
 
     async def _bulk_update() -> Any:
         return await _call_tool(
-            item_tools, "bulk_update_items",
+            item_tools,
+            "bulk_update_items",
             view=payload.get("view"),
             status=payload.get("status"),
             new_status=payload.get("new_status"),

@@ -72,7 +72,7 @@ src/tracertm/
 │   │   └── storage_adapter.py          # ⭐ Storage adapter (reactive)
 │   ├── apps/
 │   │   ├── dashboard.py                # Legacy dashboard
-│   │   └── dashboard_v2.py             # ⭐ Enhanced dashboard
+│   │   └── dashboard_compat.py             # ⭐ Enhanced dashboard
 │   └── widgets/
 │       ├── sync_status.py              # ⭐ Sync status widget
 │       ├── conflict_panel.py           # ⭐ Conflict panel widget
@@ -424,7 +424,7 @@ Default: `~/.tracertm/`
 
 ```python
 from pathlib import Path
-from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
+from tracertm.tui.apps.dashboard_compat import EnhancedDashboardApp
 
 app = EnhancedDashboardApp(base_dir=Path("/custom/path"))
 app.run()

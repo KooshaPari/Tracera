@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Product card component for grid view. Shows image, name, price, rating, and add to cart button. Handles image loading and errors.
-

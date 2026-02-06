@@ -194,10 +194,7 @@ class VisualizationService:
             row = f"{i:3d} "
             for _j, target_id in enumerate(item_ids):
                 # Check if there's a link from source to target
-                has_link = any(
-                    link.get("source") == source_id and link.get("target") == target_id
-                    for link in links
-                )
+                has_link = any(link.get("source") == source_id and link.get("target") == target_id for link in links)
                 row += "  X " if has_link else "    "
             lines.append(row)
 
@@ -222,9 +219,9 @@ class VisualizationService:
         Returns:
             Item summary as string
         """
-        title = item.get("title", item.get("id", "Unknown"))
+        title: str = str(item.get("title", item.get("id", "Unknown")))
         if len(title) > max_title_length:
-            title = title[:max_title_length - 3] + "..."
+            title = title[: max_title_length - 3] + "..."
 
         lines = []
         lines.append(f"  {title}")

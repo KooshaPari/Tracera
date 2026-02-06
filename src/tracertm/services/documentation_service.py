@@ -104,7 +104,7 @@ class DocumentationService:
 
     def generate_openapi_spec(self) -> dict[str, Any]:
         """Generate OpenAPI specification."""
-        paths = {}
+        paths: dict[str, Any] = {}
 
         for endpoint in self.endpoints.values():
             path = endpoint["path"]

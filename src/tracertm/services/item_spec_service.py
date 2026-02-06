@@ -926,20 +926,14 @@ class TestSpecFlakinessDector:
                 if recent_failures[i].get("status") != recent_failures[i + 1].get("status")
             )
             transition_rate = transitions / len(recent_failures)
-            base_score = (
-                base_score * FLAKINESS_BASE_WEIGHT
-                + transition_rate * FLAKINESS_TRANSITION_WEIGHT
-            )
+            base_score = base_score * FLAKINESS_BASE_WEIGHT + transition_rate * FLAKINESS_TRANSITION_WEIGHT
 
         # Environment factor: same error in different environments suggests flakiness
         error_messages = [f.get("error") for f in recent_failures if f.get("error")]
         if error_messages:
             unique_errors = len(set(error_messages))
             error_variance = unique_errors / max(1, len(error_messages))
-            base_score = (
-                base_score * FLAKINESS_ERROR_BASE_WEIGHT
-                + error_variance * FLAKINESS_ERROR_VARIANCE_WEIGHT
-            )
+            base_score = base_score * FLAKINESS_ERROR_BASE_WEIGHT + error_variance * FLAKINESS_ERROR_VARIANCE_WEIGHT
 
         return min(1.0, base_score)
 

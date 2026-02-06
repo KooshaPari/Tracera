@@ -15,6 +15,7 @@ Phases 6-7 implemented a complete deployment pipeline for the TraceRTM documenta
 **File**: `frontend/apps/docs/vercel.json`
 
 Features implemented:
+
 - Build command configuration using Bun
 - Framework detection (Next.js)
 - Environment variable setup
@@ -27,6 +28,7 @@ Features implemented:
 **File**: `frontend/apps/docs/.vercelignore`
 
 Optimizations:
+
 - Excludes development files
 - Excludes test files
 - Reduces deployment size
@@ -39,6 +41,7 @@ Optimizations:
 Pipeline includes:
 
 #### Job 1: Generate OpenAPI Specification
+
 - Sets up Go environment
 - Installs swag tool
 - Generates OpenAPI spec from backend
@@ -46,6 +49,7 @@ Pipeline includes:
 - Uploads spec as artifact
 
 #### Job 2: Build Documentation
+
 - Sets up Bun environment
 - Downloads OpenAPI spec
 - Installs dependencies
@@ -54,18 +58,21 @@ Pipeline includes:
 - Uploads build artifacts
 
 #### Job 3: Deploy Preview (PRs)
+
 - Pulls Vercel environment config
 - Builds project artifacts
 - Deploys to Vercel preview
 - Comments PR with preview URL
 
 #### Job 4: Deploy Production (Main)
+
 - Pulls production environment config
 - Builds for production
 - Deploys to Vercel production
 - Creates deployment summary
 
 #### Job 5: Validate Deployment
+
 - Waits for propagation
 - Checks site accessibility
 - Verifies OpenAPI spec availability
@@ -74,9 +81,11 @@ Pipeline includes:
 ### 3. Deployment Scripts ✅
 
 #### Main Deployment Script
+
 **File**: `frontend/apps/docs/scripts/deploy.sh`
 
 Features:
+
 - Interactive deployment with colored output
 - Environment validation (preview/production)
 - Requirement checking (bun, vercel CLI, Go)
@@ -88,6 +97,7 @@ Features:
 - Deployment summary
 
 Usage:
+
 ```bash
 ./deploy.sh [preview|production]
 ```
@@ -95,11 +105,13 @@ Usage:
 #### Quick Deploy Scripts
 
 **File**: `frontend/apps/docs/scripts/preview-deploy.sh`
+
 ```bash
 ./preview-deploy.sh  # Quick preview deployment
 ```
 
 **File**: `frontend/apps/docs/scripts/prod-deploy.sh`
+
 ```bash
 ./prod-deploy.sh     # Quick production deployment
 ```
@@ -109,12 +121,14 @@ Usage:
 **File**: `frontend/apps/docs/scripts/sync-openapi.sh`
 
 Features:
+
 - Generates OpenAPI spec from backend
 - Validates generated spec
 - Copies to docs public directory
 - Provides detailed status output
 
 Usage:
+
 ```bash
 ./sync-openapi.sh
 ```
@@ -124,6 +138,7 @@ Usage:
 **File**: `frontend/apps/docs/scripts/validate-deployment.sh`
 
 Checks:
+
 - Homepage accessibility
 - Documentation pages
 - API reference
@@ -134,6 +149,7 @@ Checks:
 - Security headers
 
 Usage:
+
 ```bash
 ./validate-deployment.sh [url]
 ```
@@ -141,10 +157,12 @@ Usage:
 ### 4. Environment Configuration ✅
 
 **Files**:
+
 - `.env.example` - Local development template
 - `.env.production.example` - Production template
 
 Variables:
+
 - `NEXT_PUBLIC_API_URL` - API endpoint
 - `NEXT_PUBLIC_DOCS_URL` - Documentation site URL
 - `NEXT_TELEMETRY_DISABLED` - Disable Next.js telemetry
@@ -152,9 +170,11 @@ Variables:
 ### 5. Documentation ✅
 
 #### Deployment Guide
+
 **File**: `frontend/apps/docs/DEPLOYMENT.md`
 
 Comprehensive guide covering:
+
 - Prerequisites and setup
 - Environment configuration
 - Deployment methods (automated & manual)
@@ -165,9 +185,11 @@ Comprehensive guide covering:
 - Rollback procedures
 
 #### GitHub Actions Setup
+
 **File**: `frontend/apps/docs/GITHUB_ACTIONS_SETUP.md`
 
 Step-by-step guide for:
+
 - Creating Vercel token
 - Getting organization ID
 - Getting project ID
@@ -176,9 +198,11 @@ Step-by-step guide for:
 - Troubleshooting
 
 #### Deployment Checklist
+
 **File**: `frontend/apps/docs/DEPLOYMENT_CHECKLIST.md`
 
 Complete checklist for:
+
 - Pre-deployment testing
 - GitHub setup
 - Vercel configuration
@@ -191,6 +215,7 @@ Complete checklist for:
 ### 6. Package.json Scripts ✅
 
 Added deployment scripts:
+
 ```json
 {
   "scripts": {
@@ -207,6 +232,7 @@ Added deployment scripts:
 **File**: `frontend/apps/docs/README.md`
 
 Added sections:
+
 - Current deployment status
 - Quick deploy commands
 - Environment variable setup
@@ -222,6 +248,7 @@ Added sections:
    - Add `docs.tracertm.com`
 
 2. **Configure DNS**:
+
    ```
    Type: A or CNAME
    Name: docs
@@ -275,16 +302,19 @@ Added sections:
 ### Automated Tests
 
 1. **Build Validation**:
+
    ```bash
    bun run build
    ```
 
 2. **Type Checking**:
+
    ```bash
    bun run typecheck
    ```
 
 3. **E2E Tests**:
+
    ```bash
    bun run test:e2e
    ```
@@ -367,13 +397,13 @@ frontend/apps/docs/
 
 Set these in GitHub repository settings:
 
-| Secret | Description | Required |
-|--------|-------------|----------|
-| `VERCEL_TOKEN` | Vercel API token | ✅ Yes |
-| `VERCEL_ORG_ID` | Vercel organization ID | ✅ Yes |
-| `VERCEL_DOCS_PROJECT_ID` | Vercel project ID | ✅ Yes |
-| `NEXT_PUBLIC_API_URL` | API endpoint URL | ⚠️ Optional |
-| `NEXT_PUBLIC_DOCS_URL` | Docs site URL | ⚠️ Optional |
+| Secret                   | Description            | Required    |
+| ------------------------ | ---------------------- | ----------- |
+| `VERCEL_TOKEN`           | Vercel API token       | ✅ Yes      |
+| `VERCEL_ORG_ID`          | Vercel organization ID | ✅ Yes      |
+| `VERCEL_DOCS_PROJECT_ID` | Vercel project ID      | ✅ Yes      |
+| `NEXT_PUBLIC_API_URL`    | API endpoint URL       | ⚠️ Optional |
+| `NEXT_PUBLIC_DOCS_URL`   | Docs site URL          | ⚠️ Optional |
 
 ## Next Steps
 
@@ -382,6 +412,7 @@ Set these in GitHub repository settings:
    - Configure all required secrets
 
 2. **Link Vercel Project**:
+
    ```bash
    cd frontend/apps/docs
    vercel link

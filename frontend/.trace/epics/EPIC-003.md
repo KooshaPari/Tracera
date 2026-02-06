@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Product browsing, search, and filtering interface. Includes product listing, detail pages, search functionality, and filter sidebar.
-

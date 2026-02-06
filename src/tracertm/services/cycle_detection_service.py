@@ -197,7 +197,7 @@ class CycleDetectionService:
         graph: dict[str, set[str]] = {}
 
         # Fetch links from repository and build graph
-        links = await self.links.get_by_project(project_id)  # type: ignore[union-attr]
+        links = await self.links.get_by_project(project_id)
         for link in links:
             if link.link_type in link_types:
                 src = str(link.source_item_id)
@@ -270,9 +270,7 @@ class CycleDetectionService:
 
         return cycles
 
-    def detect_missing_dependencies(
-        self, project_id: str | uuid.UUID, link_type: str = "depends_on"
-    ) -> dict[str, Any]:
+    def detect_missing_dependencies(self, project_id: str | uuid.UUID, link_type: str = "depends_on") -> dict[str, Any]:
         """
         Detect missing dependencies (items that reference non-existent items) (Story 4.6, FR22).
 
@@ -287,7 +285,7 @@ class CycleDetectionService:
         session = cast(Session, self.session)
         # Get all links of the specified type
         links = (
-            session  # type: ignore[union-attr]
+            session
             .query(Link)
             .filter(
                 Link.project_id == pid,
@@ -299,7 +297,7 @@ class CycleDetectionService:
         # Get all item IDs in the project
         item_ids = {
             item.id
-            for item in session  # type: ignore[union-attr]
+            for item in session
             .query(Item.id)
             .filter(
                 Item.project_id == pid,
@@ -349,7 +347,7 @@ class CycleDetectionService:
         session = cast(Session, self.session)
         # Get all items
         items = (
-            session  # type: ignore[union-attr]
+            session
             .query(Item)
             .filter(
                 Item.project_id == pid,
@@ -359,7 +357,7 @@ class CycleDetectionService:
         )
 
         # Get all linked item IDs
-        query = session.query(Link).filter(Link.project_id == pid)  # type: ignore[union-attr]
+        query = session.query(Link).filter(Link.project_id == pid)
         if link_type:
             query = query.filter(Link.link_type == link_type)
 
@@ -436,7 +434,7 @@ class CycleDetectionService:
 
             visited.add(current_id)
             # Get item details
-            item = sess.query(Item).filter(Item.id == current_id, Item.project_id == pid).first()  # type: ignore[union-attr]
+            item = sess.query(Item).filter(Item.id == current_id, Item.project_id == pid).first()
 
             if item and depth > 0:  # Skip root item
                 affected_items.append({
@@ -458,7 +456,7 @@ class CycleDetectionService:
                 )
 
         # Get root item
-        root_item = sess.query(Item).filter(Item.id == iid, Item.project_id == pid).first()  # type: ignore[union-attr]
+        root_item = sess.query(Item).filter(Item.id == iid, Item.project_id == pid).first()
 
         # Group by depth and view
         affected_by_depth: dict[int, int] = {}

@@ -52,10 +52,7 @@ Edit `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/tools/storybook-
 
 ```typescript
 export const defaultConfig: GeneratorConfig = {
-  componentsDir: [
-    'packages/ui/src/components',
-    'apps/web/src/components',
-  ],
+  componentsDir: ['packages/ui/src/components', 'apps/web/src/components'],
   storiesDir: 'apps/storybook/src/stories',
   includePatterns: [/\.tsx$/],
   excludePatterns: [/\.test\.tsx$/, /\.stories\.tsx$/],
@@ -67,7 +64,7 @@ export const defaultConfig: GeneratorConfig = {
   generateVariants: true,
   generateShowcase: true,
   overwriteExisting: false,
-}
+};
 ```
 
 ## Design Metadata
@@ -77,18 +74,18 @@ Create `.trace/.meta/designs.yaml` to link components to Figma designs:
 ```yaml
 components:
   Button:
-    figmaUrl: "https://www.figma.com/file/xxx/Design-System?node-id=123"
-    componentId: "comp-button-001"
-    storyId: "story-button-001"
+    figmaUrl: 'https://www.figma.com/file/xxx/Design-System?node-id=123'
+    componentId: 'comp-button-001'
+    storyId: 'story-button-001'
     variants:
       - default
       - destructive
       - outline
 
   Input:
-    figmaUrl: "https://www.figma.com/file/xxx/Design-System?node-id=456"
-    componentId: "comp-input-001"
-    storyId: "story-input-001"
+    figmaUrl: 'https://www.figma.com/file/xxx/Design-System?node-id=456'
+    componentId: 'comp-input-001'
+    storyId: 'story-input-001'
 ```
 
 The generator will create an example file on first run if it doesn't exist.

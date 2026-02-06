@@ -15,7 +15,7 @@ Achieved 100% test coverage for the final three repositories that were at 96-98%
 
 ### 1. Test Run Repository (test_run_repository.py)
 
-**File Modified**: `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/repositories/test_test_run_repository.py`
+**File Modified**: `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/repositories/test_run_repository.py`
 
 **Coverage Gaps Addressed**:
 - Line 162: Branch condition for `value is not None` in `update()` method
@@ -76,7 +76,7 @@ All new tests follow the existing patterns:
 
 ## Files Modified
 
-1. `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/repositories/test_test_run_repository.py`
+1. `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/repositories/test_run_repository.py`
 2. `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/repositories/test_specification_repository.py`
 3. `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/repositories/test_blockchain_repository.py`
 
@@ -86,7 +86,7 @@ To verify 100% coverage:
 
 ```bash
 # Test individual repositories
-coverage run -m pytest tests/unit/repositories/test_test_run_repository.py
+coverage run -m pytest tests/unit/repositories/test_run_repository.py
 coverage report --include="src/tracertm/repositories/test_run_repository.py"
 
 coverage run -m pytest tests/unit/repositories/test_specification_repository.py

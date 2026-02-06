@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+
 import { collectBrowserLogs } from './fixtures/test-helpers';
 
 test.describe('WebSocket CORS Validation', () => {
@@ -55,9 +56,7 @@ test.describe('WebSocket CORS Validation', () => {
     // Verify CORS headers were present
     const corsHeaders = logs.network.find((n) => n.url?.includes('/ws'));
     if (corsHeaders) {
-      expect(corsHeaders.headers['access-control-allow-origin']).toMatch(
-        /http:\/\/localhost:\d+/,
-      );
+      expect(corsHeaders.headers['access-control-allow-origin']).toMatch(/http:\/\/localhost:\d+/);
       expect(corsHeaders.headers['access-control-allow-credentials']).toBe('true');
     }
 
@@ -143,7 +142,10 @@ test.describe('WebSocket CORS Validation', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
 
-    expect(corsHeadersFound, 'WebSocket upgrade request should include proper headers').toBeTruthy();
+    expect(
+      corsHeadersFound,
+      'WebSocket upgrade request should include proper headers',
+    ).toBeTruthy();
     console.log('WebSocket Request Headers:', headers);
   });
 
@@ -166,7 +168,9 @@ test.describe('WebSocket CORS Validation', () => {
       /secret[:\s]*[a-z0-9]+/i,
     ];
 
-    const sensitiveFound = logs.some((log) => sensitivePatterns.some((pattern) => pattern.test(log)));
+    const sensitiveFound = logs.some((log) =>
+      sensitivePatterns.some((pattern) => pattern.test(log)),
+    );
 
     expect(sensitiveFound, 'WebSocket logs should not contain sensitive data').toBeFalsy();
     console.log('Verified: No sensitive data in WebSocket logs');

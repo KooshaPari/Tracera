@@ -1,4 +1,5 @@
 import type { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
+
 import * as fs from 'fs';
 import * as path from 'path';
 

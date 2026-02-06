@@ -11,12 +11,15 @@ Tests the FastMCP 3.0 HTTP/SSE transport implementation including:
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from collections.abc import AsyncGenerator
 from typing import Any
 
 import pytest
+import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from mcp.server.streamable_http import DEFAULT_NEGOTIATED_VERSION, MCP_SESSION_ID_HEADER
 
 from tracertm.mcp.http_transport import (
     DEFAULT_MCP_PATH,
@@ -24,21 +27,37 @@ from tracertm.mcp.http_transport import (
     create_standalone_http_app,
     get_transport_type,
     mount_mcp_to_fastapi,
+    run_http_server,
 )
+
+JSON_HEADERS = {"Accept": "application/json"}
+
+
+async def open_mcp_session(client: AsyncClient) -> str:
+    """Open a Streamable HTTP session and return session ID."""
+    response = await client.post(
+        "/api/v1/mcp",
+        headers=JSON_HEADERS,
+        json={
+            "jsonrpc": "2.0",
+            "id": "init",
+            "method": "initialize",
+            "params": {
+                "protocolVersion": DEFAULT_NEGOTIATED_VERSION,
+                "capabilities": {},
+                "clientInfo": {"name": "test-client", "version": "0.0.0"},
+            },
+        },
+    )
+    assert response.status_code == 200
+    session_id = response.headers.get(MCP_SESSION_ID_HEADER)
+    assert session_id
+    return session_id
+
 
 # =============================================================================
 # Fixtures
 # =============================================================================
-
-
-@pytest.fixture
-def standalone_app():
-    """Create a standalone MCP HTTP app."""
-    return create_standalone_http_app(
-        path=DEFAULT_MCP_PATH,
-        transport="streamable-http",
-        enable_cors=True,
-    )
 
 
 @pytest.fixture
@@ -49,22 +68,21 @@ def fastapi_app():
     return app
 
 
-@pytest.fixture
-async def standalone_client(standalone_app):
-    """Create an async HTTP client for standalone app."""
-    async with AsyncClient(
-        transport=ASGITransport(app=standalone_app), base_url="http://test"
-    ) as client:
-        yield client
-
-
-@pytest.fixture
+@pytest_asyncio.fixture
 async def fastapi_client(fastapi_app):
     """Create an async HTTP client for FastAPI app."""
-    async with AsyncClient(
-        transport=ASGITransport(app=fastapi_app), base_url="http://test"
-    ) as client:
-        yield client
+    lifespan = fastapi_app.router.lifespan_context(fastapi_app)
+    await lifespan.__aenter__()
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=fastapi_app),
+            base_url="http://test",
+            follow_redirects=True,
+        ) as client:
+            yield client
+    finally:
+        with contextlib.suppress(Exception):
+            await lifespan.__aexit__(None, None, None)
 
 
 # =============================================================================
@@ -75,62 +93,20 @@ async def fastapi_client(fastapi_app):
 class TestStandaloneHTTPServer:
     """Test standalone MCP HTTP server."""
 
-    async def test_app_creation(self, standalone_app):
-        """Test that standalone app is created successfully."""
-        assert standalone_app is not None
-        assert hasattr(standalone_app, "routes")
+    def test_app_creation_disallowed(self):
+        """Standalone HTTP app creation is disallowed."""
+        with pytest.raises(RuntimeError, match="Standalone MCP is not allowed"):
+            create_standalone_http_app(
+                path=DEFAULT_MCP_PATH,
+                transport="streamable-http",
+                enable_cors=True,
+            )
 
-    async def test_tools_list_jsonrpc(self, standalone_client):
-        """Test tools/list via JSON-RPC 2.0."""
-        response = await standalone_client.post(
-            DEFAULT_MCP_PATH,
-            json={
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "id": 1,
-            },
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-
-        # Verify JSON-RPC 2.0 format
-        assert data["jsonrpc"] == "2.0"
-        assert "result" in data or "error" in data
-        assert data["id"] == 1
-
-        # If successful, verify tools are returned
-        if "result" in data:
-            assert "tools" in data["result"]
-            assert isinstance(data["result"]["tools"], list)
-
-    async def test_invalid_method(self, standalone_client):
-        """Test error handling for invalid method."""
-        response = await standalone_client.post(
-            DEFAULT_MCP_PATH,
-            json={
-                "jsonrpc": "2.0",
-                "method": "invalid/method",
-                "id": 2,
-            },
-        )
-
-        assert response.status_code == 200  # JSON-RPC returns 200 with error
-        data = response.json()
-
-        assert data["jsonrpc"] == "2.0"
-        assert "error" in data
-        assert data["id"] == 2
-
-    async def test_malformed_request(self, standalone_client):
-        """Test error handling for malformed request."""
-        response = await standalone_client.post(
-            DEFAULT_MCP_PATH,
-            json={"not": "valid"},
-        )
-
-        # May return 4xx or 200 with error depending on FastMCP version
-        assert response.status_code in (200, 400, 422)
+    @pytest.mark.asyncio
+    async def test_run_http_server_disallowed(self):
+        """Standalone HTTP server run is disallowed."""
+        with pytest.raises(RuntimeError, match="Standalone MCP is not allowed"):
+            await run_http_server()
 
 
 # =============================================================================
@@ -138,13 +114,16 @@ class TestStandaloneHTTPServer:
 # =============================================================================
 
 
+@pytest.mark.asyncio
 class TestFastAPIIntegration:
     """Test MCP mounted to FastAPI app."""
 
     async def test_mounted_path(self, fastapi_client):
         """Test that MCP is mounted at correct path."""
+        session_id = await open_mcp_session(fastapi_client)
         response = await fastapi_client.post(
             "/api/v1/mcp",
+            headers={**JSON_HEADERS, MCP_SESSION_ID_HEADER: session_id},
             json={
                 "jsonrpc": "2.0",
                 "method": "tools/list",
@@ -174,11 +153,9 @@ class TestFastAPIIntegration:
         )
         mount_mcp_to_fastapi(test_app, path="/mcp")
 
-        async with AsyncClient(
-            transport=ASGITransport(app=test_app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://test") as client:
             response = await client.options("/mcp")
-            assert response.status_code in (200, 204, 405)  # CORS or not supported
+            assert response.status_code in (200, 204, 307, 405)  # CORS or redirect
 
 
 # =============================================================================
@@ -186,6 +163,7 @@ class TestFastAPIIntegration:
 # =============================================================================
 
 
+@pytest.mark.asyncio
 class TestSSEProgressStreaming:
     """Test SSE progress streaming functionality."""
 
@@ -220,13 +198,16 @@ class TestSSEProgressStreaming:
                 await asyncio.sleep(0.1)  # Slow to ensure cancellation
 
         events = []
-        try:
+
+        async def consume_stream() -> None:
             async for event in create_progress_stream("task-456", slow_generator()):
                 events.append(event)
-                if len(events) >= 3:  # Cancel after a few events
-                    raise asyncio.CancelledError
-        except asyncio.CancelledError:
-            pass
+
+        task = asyncio.create_task(consume_stream())
+        await asyncio.sleep(0.35)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
 
         # Should have start, some progress, and cancellation
         assert events[0]["event"] == "stream_start"
@@ -258,10 +239,10 @@ class TestTransportSelection:
     """Test transport type selection logic."""
 
     def test_default_transport(self, monkeypatch):
-        """Test default transport is stdio."""
+        """Test default transport is http."""
         monkeypatch.delenv("TRACERTM_MCP_TRANSPORT", raising=False)
         transport = get_transport_type()
-        assert transport == "stdio"
+        assert transport == "http"
 
     def test_env_transport_http(self, monkeypatch):
         """Test HTTP transport from environment."""
@@ -282,10 +263,10 @@ class TestTransportSelection:
         assert transport == "sse"
 
     def test_invalid_transport_fallback(self, monkeypatch):
-        """Test fallback to stdio for invalid transport."""
+        """Test fallback to http for invalid transport."""
         monkeypatch.setenv("TRACERTM_MCP_TRANSPORT", "invalid")
         transport = get_transport_type()
-        assert transport == "stdio"
+        assert transport == "http"
 
     def test_case_insensitive_transport(self, monkeypatch):
         """Test transport is case-insensitive."""
@@ -299,15 +280,18 @@ class TestTransportSelection:
 # =============================================================================
 
 
+@pytest.mark.asyncio
 class TestConcurrentRequests:
     """Test handling of concurrent requests."""
 
-    async def test_concurrent_tool_calls(self, standalone_client):
+    async def test_concurrent_tool_calls(self, fastapi_client):
         """Test multiple concurrent tool calls."""
+        session_id = await open_mcp_session(fastapi_client)
         # Create multiple requests
         tasks = [
-            standalone_client.post(
-                DEFAULT_MCP_PATH,
+            fastapi_client.post(
+                "/api/v1/mcp",
+                headers={**JSON_HEADERS, MCP_SESSION_ID_HEADER: session_id},
                 json={
                     "jsonrpc": "2.0",
                     "method": "tools/list",
@@ -326,11 +310,13 @@ class TestConcurrentRequests:
             data = response.json()
             assert data["id"] == i
 
-    async def test_request_isolation(self, standalone_client):
+    async def test_request_isolation(self, fastapi_client):
         """Test that concurrent requests are isolated."""
+        session_id = await open_mcp_session(fastapi_client)
         # Send requests with different IDs simultaneously
-        task1 = standalone_client.post(
-            DEFAULT_MCP_PATH,
+        task1 = fastapi_client.post(
+            "/api/v1/mcp",
+            headers={**JSON_HEADERS, MCP_SESSION_ID_HEADER: session_id},
             json={
                 "jsonrpc": "2.0",
                 "method": "tools/list",
@@ -338,8 +324,9 @@ class TestConcurrentRequests:
             },
         )
 
-        task2 = standalone_client.post(
-            DEFAULT_MCP_PATH,
+        task2 = fastapi_client.post(
+            "/api/v1/mcp",
+            headers={**JSON_HEADERS, MCP_SESSION_ID_HEADER: session_id},
             json={
                 "jsonrpc": "2.0",
                 "method": "tools/list",
@@ -362,20 +349,23 @@ class TestConcurrentRequests:
 # =============================================================================
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
 class TestPerformance:
     """Test performance characteristics of HTTP transport."""
 
-    async def test_throughput(self, standalone_client):
+    async def test_throughput(self, fastapi_client):
         """Test request throughput."""
         import time
 
+        session_id = await open_mcp_session(fastapi_client)
         start = time.time()
         num_requests = 100
 
         tasks = [
-            standalone_client.post(
-                DEFAULT_MCP_PATH,
+            fastapi_client.post(
+                "/api/v1/mcp",
+                headers={**JSON_HEADERS, MCP_SESSION_ID_HEADER: session_id},
                 json={
                     "jsonrpc": "2.0",
                     "method": "tools/list",
@@ -394,16 +384,18 @@ class TestPerformance:
         # Reasonable throughput threshold (adjust based on requirements)
         assert throughput > 10  # At least 10 req/s
 
-    async def test_response_time(self, standalone_client):
+    async def test_response_time(self, fastapi_client):
         """Test average response time."""
         import time
 
+        session_id = await open_mcp_session(fastapi_client)
         times = []
 
         for i in range(20):
             start = time.time()
-            await standalone_client.post(
-                DEFAULT_MCP_PATH,
+            await fastapi_client.post(
+                "/api/v1/mcp",
+                headers={**JSON_HEADERS, MCP_SESSION_ID_HEADER: session_id},
                 json={
                     "jsonrpc": "2.0",
                     "method": "tools/list",

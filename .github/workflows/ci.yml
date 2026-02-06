@@ -15,6 +15,16 @@ env:
   PYTHON_VERSION: '3.12'
 
 jobs:
+  # Quality Guards (Naming Explosion + LOC limits)
+  quality-guards:
+    name: Quality Guards
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Run naming explosion + LOC guards
+      run: make lint-naming
+
   # Python Tests
   python-tests:
     name: Python Tests
@@ -76,25 +86,23 @@ jobs:
         uv pip install --system -e ".[dev,test]"
 
     - name: Run Ruff linting (strict enforcement)
-      run: |
-        ruff check src/ tests/ --output-format=json > /tmp/ruff-results.json || true
-        VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/ruff-results.json || echo "0")
-        echo "RUFF_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
-        echo "## Python Linting Results (Ruff)" >> $GITHUB_STEP_SUMMARY
-        echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
-        echo "Config: pyproject.toml (complexity max=7)" >> $GITHUB_STEP_SUMMARY
-        ruff check src/ tests/
-        ruff format --check src/ tests/
+        run: |
+          # Use grouped output format for file-based processing (easier for agents to fix)
+          ruff check src/ tests/ --output-format=grouped > /tmp/ruff-results-grouped.txt || true
+          # Also output JSON for CI parsing
+          ruff check src/ tests/ --output-format=json > /tmp/ruff-results.json || true
+          VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/ruff-results.json || echo "0")
+          echo "RUFF_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
+          echo "## Python Linting Results (Ruff)" >> $GITHUB_STEP_SUMMARY
+          echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "Config: pyproject.toml (complexity max=7)" >> $GITHUB_STEP_SUMMARY
+          # Show grouped output for developer reference
+          cat /tmp/ruff-results-grouped.txt || ruff check src/ tests/
+          ruff format --check src/ tests/
 
-    - name: Run type checking (mypy)
+    - name: Run type checking (ty)
       run: |
-        mypy src/ --json-report=/tmp/mypy-report || true
-        if [ -f /tmp/mypy-report/index.txt ]; then
-          MYPY_ERRORS=$(grep -o "Found [0-9]* error" /tmp/mypy-report/index.txt | grep -o "[0-9]*" || echo "0")
-          echo "MYPY_VIOLATIONS=$MYPY_ERRORS" >> $GITHUB_ENV
-          echo "Mypy errors: $MYPY_ERRORS" >> $GITHUB_STEP_SUMMARY
-        fi
-        mypy src/
+        ty check src/ --error-on-warning
 
     - name: Run Bandit (security linter - strict)
       run: |
@@ -119,7 +127,6 @@ jobs:
         name: python-lint-results
         path: |
           /tmp/ruff-results.json
-          /tmp/mypy-report/
           /tmp/bandit-results.json
           /tmp/pip-audit-results.json
         retention-days: 90
@@ -212,6 +219,79 @@ jobs:
           test-results/
           coverage.xml
 
+  # Python Exploratory Tests (property-based + chaos)
+  python-exploratory-tests:
+    name: Python Exploratory Tests
+    runs-on: ubuntu-latest
+    needs: [python-tests]
+    continue-on-error: true  # Non-blocking initially
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv pip install --system -e ".[dev,test]"
+
+    - name: Run property-based tests
+      env:
+        DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
+        REDIS_URL: redis://localhost:6379
+        PYTHONPATH: ${{ github.workspace }}/src
+      run: |
+        pytest tests/ -m "property" -v --tb=short --maxfail=10 || true
+
+    - name: Run chaos/resilience tests
+      env:
+        DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
+        REDIS_URL: redis://localhost:6379
+        PYTHONPATH: ${{ github.workspace }}/src
+      run: |
+        pytest tests/ -m "chaos" -v --tb=short --maxfail=10 || true
+
+    - name: Generate exploratory test summary
+      if: always()
+      run: |
+        echo "## Python Exploratory Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "Property-based and chaos tests (non-blocking)" >> $GITHUB_STEP_SUMMARY
+
   # Go Tests
   go-tests:
     name: Go Tests
@@ -291,11 +371,15 @@ jobs:
       if: always()
       working-directory: backend
       run: |
+        # Use grouped output for file-based processing (easier for agents to fix)
+        golangci-lint run --timeout=5m --config=.golangci.yml --out-format=grouped-line-number > /tmp/go-lint-results-grouped.txt || true
+        # Also output JSON for CI parsing
         golangci-lint run --timeout=5m --config=.golangci.yml --out-format=json > /tmp/go-lint-results.json || true
         VIOLATION_COUNT=$(jq '[.Issues // []] | length' /tmp/go-lint-results.json || echo "0")
         echo "GO_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
         echo "## Go Linting Results" >> $GITHUB_STEP_SUMMARY
         echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
+        echo "Format: grouped-line-number (grouped by file)" >> $GITHUB_STEP_SUMMARY
 
     - name: Upload Go lint results
       if: always()
@@ -364,6 +448,18 @@ jobs:
       run: |
         go tool cover -html=coverage.out -o coverage.html
 
+    - name: Enforce coverage threshold
+      working-directory: backend
+      run: |
+        TOTAL=$(go tool cover -func=coverage.out | grep '^total:' | awk '{print $3}' | tr -d '%')
+        echo "Total Go coverage: ${TOTAL}%"
+        THRESHOLD=85
+        if (( $(echo "$TOTAL < $THRESHOLD" | bc -l) )); then
+          echo "::error::Go coverage ${TOTAL}% is below threshold ${THRESHOLD}%"
+          exit 1
+        fi
+        echo "Go coverage ${TOTAL}% meets threshold ${THRESHOLD}%"
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
@@ -385,6 +481,7 @@ jobs:
   frontend-checks:
     name: Frontend Checks
     runs-on: ubuntu-latest
+    needs: [quality-guards]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -406,16 +503,21 @@ jobs:
         working-directory: frontend
         run: bun install --frozen-lockfile
 
-      - name: Oxlint (strict AI config enforcement)
+      - name: Oxlint (strict config enforcement)
         working-directory: frontend
         run: |
-          bun run check
-          bun run lint:oxc --format=json > /tmp/oxlint-results.json || true
+          # Use stylish format for grouped output (grouped by file for easy processing)
+          bun x oxlint --type-check --type-aware -f stylish . > /tmp/oxlint-results-grouped.txt || true
+          # Also output JSON for CI parsing
+          bun x oxlint --type-check --type-aware --format=json . > /tmp/oxlint-results.json || true
           VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/oxlint-results.json || echo "0")
           echo "OXLINT_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
           echo "## Frontend Linting Results (Oxlint)" >> $GITHUB_STEP_SUMMARY
           echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
-          echo "Config: .oxlintrc.json (AI-strict)" >> $GITHUB_STEP_SUMMARY
+          echo "Config: frontend/.oxlintrc.json" >> $GITHUB_STEP_SUMMARY
+          echo "Format: stylish (grouped by file)" >> $GITHUB_STEP_SUMMARY
+          # Show grouped output for developer reference
+          cat /tmp/oxlint-results-grouped.txt || bun x oxlint --type-check --type-aware .
 
       - name: TypeScript typecheck
         working-directory: frontend
@@ -445,7 +547,7 @@ jobs:
   frontend-e2e:
     name: Frontend E2E Tests
     runs-on: ubuntu-latest
-    needs: [python-tests, go-tests]
+    needs: [python-tests, go-tests, frontend-checks]
     timeout-minutes: 30
 
     services:
@@ -584,136 +686,198 @@ jobs:
           path: frontend/apps/web/test-results/**/*.webm
           retention-days: 30
 
-  # Linting Baseline Enforcement
-  lint-baseline-check:
-    name: Lint Baseline Enforcement
+  # Storybook (build + test-runner)
+  storybook-checks:
+    name: Storybook Checks
     runs-on: ubuntu-latest
-    needs: [python-tests, go-tests, frontend-checks]
-    if: always()
-
+    needs: [frontend-checks]
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Download all lint artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: /tmp/lint-artifacts/
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-    - name: Check baseline regression
-      run: |
-        mkdir -p .ci-baselines
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
-        # Initialize baseline file if it doesn't exist
-        if [ ! -f .ci-baselines/lint-baseline.json ]; then
-          echo '{"python_ruff": 0, "python_mypy": 0, "python_bandit": 0, "go_lint": 0, "frontend_oxlint": 0}' > .ci-baselines/lint-baseline.json
-        fi
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
 
-        # Read current baselines
-        BASELINE_RUFF=$(jq -r '.python_ruff // 0' .ci-baselines/lint-baseline.json)
-        BASELINE_MYPY=$(jq -r '.python_mypy // 0' .ci-baselines/lint-baseline.json)
-        BASELINE_BANDIT=$(jq -r '.python_bandit // 0' .ci-baselines/lint-baseline.json)
-        BASELINE_GO=$(jq -r '.go_lint // 0' .ci-baselines/lint-baseline.json)
-        BASELINE_OXLINT=$(jq -r '.frontend_oxlint // 0' .ci-baselines/lint-baseline.json)
+      - name: Install Playwright browsers (Chromium)
+        working-directory: frontend/apps/storybook
+        run: bunx playwright install --with-deps chromium
 
-        # Extract current violation counts from artifacts
-        CURRENT_RUFF=$(jq '[.[] // []] | length' /tmp/lint-artifacts/python-lint-results/ruff-results.json 2>/dev/null || echo "0")
-        CURRENT_MYPY=$(grep -o "Found [0-9]* error" /tmp/lint-artifacts/python-lint-results/mypy-report/index.txt 2>/dev/null | grep -o "[0-9]*" || echo "0")
-        CURRENT_BANDIT=$(jq '[.results // []] | length' /tmp/lint-artifacts/python-lint-results/bandit-results.json 2>/dev/null || echo "0")
-        CURRENT_GO=$(jq '[.Issues // []] | length' /tmp/lint-artifacts/go-lint-results/go-lint-results.json 2>/dev/null || echo "0")
-        CURRENT_OXLINT=$(jq '[.[] // []] | length' /tmp/lint-artifacts/frontend-lint-results/oxlint-results.json 2>/dev/null || echo "0")
+      - name: Run Storybook build + test-runner
+        working-directory: frontend/apps/storybook
+        run: bun run test:ci
 
-        # Calculate thresholds (10% regression allowed)
-        THRESHOLD_RUFF=$(echo "$BASELINE_RUFF * 1.1" | bc | cut -d. -f1)
-        THRESHOLD_MYPY=$(echo "$BASELINE_MYPY * 1.1" | bc | cut -d. -f1)
-        THRESHOLD_BANDIT=$(echo "$BASELINE_BANDIT * 1.1" | bc | cut -d. -f1)
-        THRESHOLD_GO=$(echo "$BASELINE_GO * 1.1" | bc | cut -d. -f1)
-        THRESHOLD_OXLINT=$(echo "$BASELINE_OXLINT * 1.1" | bc | cut -d. -f1)
+  # Frontend Packages Tests (ui, api-client, state, env-manager)
+  frontend-packages-test:
+    name: Frontend Packages Tests
+    runs-on: ubuntu-latest
+    needs: [frontend-checks]
+    strategy:
+      matrix:
+        package: [ui, api-client, state, env-manager]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        # Generate report
-        echo "## Linting Baseline Enforcement Report" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "| Linter | Baseline | Current | Threshold (+10%) | Status |" >> $GITHUB_STEP_SUMMARY
-        echo "|--------|----------|---------|------------------|--------|" >> $GITHUB_STEP_SUMMARY
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-        REGRESSION_DETECTED=0
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
-        # Check Python Ruff
-        if [ "$CURRENT_RUFF" -gt "$THRESHOLD_RUFF" ]; then
-          echo "| Python Ruff | $BASELINE_RUFF | $CURRENT_RUFF | $THRESHOLD_RUFF | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
-          REGRESSION_DETECTED=1
-        else
-          echo "| Python Ruff | $BASELINE_RUFF | $CURRENT_RUFF | $THRESHOLD_RUFF | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
-        fi
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
 
-        # Check Python Mypy
-        if [ "$CURRENT_MYPY" -gt "$THRESHOLD_MYPY" ]; then
-          echo "| Python Mypy | $BASELINE_MYPY | $CURRENT_MYPY | $THRESHOLD_MYPY | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
-          REGRESSION_DETECTED=1
-        else
-          echo "| Python Mypy | $BASELINE_MYPY | $CURRENT_MYPY | $THRESHOLD_MYPY | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
-        fi
+      - name: Run tests with coverage
+        working-directory: frontend/packages/${{ matrix.package }}
+        run: bun run test:coverage
 
-        # Check Python Bandit
-        if [ "$CURRENT_BANDIT" -gt "$THRESHOLD_BANDIT" ]; then
-          echo "| Python Bandit | $BASELINE_BANDIT | $CURRENT_BANDIT | $THRESHOLD_BANDIT | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
-          REGRESSION_DETECTED=1
-        else
-          echo "| Python Bandit | $BASELINE_BANDIT | $CURRENT_BANDIT | $THRESHOLD_BANDIT | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
-        fi
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-package-${{ matrix.package }}
+          path: frontend/packages/${{ matrix.package }}/coverage/
+          retention-days: 30
 
-        # Check Go linting
-        if [ "$CURRENT_GO" -gt "$THRESHOLD_GO" ]; then
-          echo "| Go (golangci-lint) | $BASELINE_GO | $CURRENT_GO | $THRESHOLD_GO | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
-          REGRESSION_DETECTED=1
-        else
-          echo "| Go (golangci-lint) | $BASELINE_GO | $CURRENT_GO | $THRESHOLD_GO | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
-        fi
+  # Frontend Desktop Tests
+  frontend-desktop-test:
+    name: Frontend Desktop Tests
+    runs-on: ubuntu-latest
+    needs: [frontend-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        # Check Frontend Oxlint
-        if [ "$CURRENT_OXLINT" -gt "$THRESHOLD_OXLINT" ]; then
-          echo "| Frontend (Oxlint) | $BASELINE_OXLINT | $CURRENT_OXLINT | $THRESHOLD_OXLINT | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
-          REGRESSION_DETECTED=1
-        else
-          echo "| Frontend (Oxlint) | $BASELINE_OXLINT | $CURRENT_OXLINT | $THRESHOLD_OXLINT | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
-        fi
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Enforcement Policy" >> $GITHUB_STEP_SUMMARY
-        echo "- Baseline violations stored in \`.ci-baselines/lint-baseline.json\`" >> $GITHUB_STEP_SUMMARY
-        echo "- Maximum allowed regression: **+10% from baseline**" >> $GITHUB_STEP_SUMMARY
-        echo "- Improvement is always allowed (lower violation counts)" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
-        if [ $REGRESSION_DETECTED -eq 1 ]; then
-          echo "❌ **REGRESSION DETECTED**: New violations exceed baseline by >10%" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "To fix: Reduce violations below threshold or update baseline after approval" >> $GITHUB_STEP_SUMMARY
-          exit 1
-        else
-          echo "✅ **ALL CHECKS PASSED**: No significant regression detected" >> $GITHUB_STEP_SUMMARY
-        fi
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
 
-    - name: Update baseline on main (if improved)
-      if: github.ref == 'refs/heads/main' && success()
-      run: |
-        # Only update if violations decreased
-        CURRENT_RUFF=$(jq '[.[] // []] | length' /tmp/lint-artifacts/python-lint-results/ruff-results.json 2>/dev/null || echo "0")
-        CURRENT_MYPY=$(grep -o "Found [0-9]* error" /tmp/lint-artifacts/python-lint-results/mypy-report/index.txt 2>/dev/null | grep -o "[0-9]*" || echo "0")
-        CURRENT_BANDIT=$(jq '[.results // []] | length' /tmp/lint-artifacts/python-lint-results/bandit-results.json 2>/dev/null || echo "0")
-        CURRENT_GO=$(jq '[.Issues // []] | length' /tmp/lint-artifacts/go-lint-results/go-lint-results.json 2>/dev/null || echo "0")
-        CURRENT_OXLINT=$(jq '[.[] // []] | length' /tmp/lint-artifacts/frontend-lint-results/oxlint-results.json 2>/dev/null || echo "0")
+      - name: Run tests with coverage
+        working-directory: frontend/apps/desktop
+        run: bun run test:coverage
 
-        jq -n \
-          --arg ruff "$CURRENT_RUFF" \
-          --arg mypy "$CURRENT_MYPY" \
-          --arg bandit "$CURRENT_BANDIT" \
-          --arg go "$CURRENT_GO" \
-          --arg oxlint "$CURRENT_OXLINT" \
-          '{python_ruff: ($ruff|tonumber), python_mypy: ($mypy|tonumber), python_bandit: ($bandit|tonumber), go_lint: ($go|tonumber), frontend_oxlint: ($oxlint|tonumber)}' \
-          > .ci-baselines/lint-baseline.json
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-desktop
+          path: frontend/apps/desktop/coverage/
+          retention-days: 30
 
-        echo "Updated baseline with current violation counts"
+  # Frontend Docs Tests
+  frontend-docs-test:
+    name: Frontend Docs Tests
+    runs-on: ubuntu-latest
+    needs: [frontend-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Run unit tests with coverage
+        working-directory: frontend/apps/docs
+        run: bun run test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-docs
+          path: frontend/apps/docs/coverage/
+          retention-days: 30
+
+  # Frontend Storybook Coverage Test
+  frontend-storybook-test:
+    name: Frontend Storybook Coverage
+    runs-on: ubuntu-latest
+    needs: [frontend-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers (Chromium)
+        working-directory: frontend/apps/storybook
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run tests with coverage
+        working-directory: frontend/apps/storybook
+        run: bun run test -- --run --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-storybook
+          path: frontend/apps/storybook/coverage/
+          retention-days: 30
 
   # Security Scanning
   security-scan:

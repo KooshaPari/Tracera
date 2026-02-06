@@ -598,7 +598,7 @@ class TestSpecRepository(BaseSpecRepository):
         # Determine trend
         if n >= _PERFORMANCE_TREND_MIN_SAMPLES:
             recent = durations[:_PERFORMANCE_RECENT_SAMPLES]
-            older = durations[_PERFORMANCE_RECENT_SAMPLES:_PERFORMANCE_RECENT_SAMPLES + _PERFORMANCE_OLDER_SAMPLES]
+            older = durations[_PERFORMANCE_RECENT_SAMPLES : _PERFORMANCE_RECENT_SAMPLES + _PERFORMANCE_OLDER_SAMPLES]
             recent_avg = sum(recent) / len(recent)
             older_avg = sum(older) / len(older)
 

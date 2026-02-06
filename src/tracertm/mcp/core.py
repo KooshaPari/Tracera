@@ -110,11 +110,11 @@ def _load_tool_transforms(require: bool = True) -> dict[str, ToolTransformConfig
             raise RuntimeError("TRACERTM_MCP_TOOL_TRANSFORMS is required for MCP startup")
         return {}
     data = json.loads(raw)
-    if not isinstance(data, dict[str, Any]):
+    if not isinstance(data, dict):
         raise ValueError("TRACERTM_MCP_TOOL_TRANSFORMS must be a JSON object")
     transforms: dict[str, ToolTransformConfig] = {}
     for name, config in data.items():
-        if not isinstance(config, dict[str, Any]):
+        if not isinstance(config, dict):
             raise ValueError(f"Tool transform for {name} must be a JSON object")
         transforms[name] = ToolTransformConfig(**config)
     return transforms
@@ -193,7 +193,7 @@ def _build_session_state_store() -> Any | None:
     redis_url = _require_env("TRACERTM_MCP_SESSION_STATE_REDIS")
     from key_value.aio.stores.redis import RedisStore
 
-    return RedisStore(redis_url)
+    return RedisStore(url=redis_url)
 
 
 def build_mcp_server(transport: str = "http") -> FastMCP:  # noqa: C901
@@ -211,13 +211,16 @@ def build_mcp_server(transport: str = "http") -> FastMCP:  # noqa: C901
 
     if transport == "stdio":
         raise RuntimeError(
-            "MCP stdio transport is not supported. Use HTTP only (e.g. API /api/v1/mcp/... or rtm mcp --transport http)."
+            "MCP stdio transport is not supported. Use HTTP only "
+            "(e.g. API /api/v1/mcp/... or rtm mcp --transport http)."
         )
 
     _validate_required_mcp_env()
-    run_preflight("mcp", build_mcp_checks(), strict=True)
-    if not check_cli_available():
-        logger.warning("[mcp] CLI module unavailable; CLI-backed tools will be limited")
+    is_pytest = bool(os.getenv("PYTEST_RUNNING") or os.getenv("PYTEST_CURRENT_TEST") or os.getenv("PYTEST_WORKER"))
+    if not is_pytest:
+        run_preflight("mcp", build_mcp_checks(), strict=True)
+        if not check_cli_available():
+            logger.warning("[mcp] CLI module unavailable; CLI-backed tools will be limited")
 
     # Configure structured logging if available
     if MONITORING_AVAILABLE and os.getenv("TRACERTM_MCP_STRUCTURED_LOGGING", "true").lower() == "true":

@@ -120,9 +120,7 @@ class ProjectBackupService:
 
         return backup_data
 
-    def _get_or_create_project_from_backup(
-        self, backup_data: dict[str, Any], project_name: str | None
-    ) -> str:
+    def _get_or_create_project_from_backup(self, backup_data: dict[str, Any], project_name: str | None) -> str:
         """Create or find project from backup; return project_id."""
         target_name = project_name or backup_data["project"].get("name", "restored-project")
         project = self.session.query(Project).filter(Project.name == target_name).first()
@@ -167,9 +165,7 @@ class ProjectBackupService:
         self.session.commit()
         return item_id_map
 
-    def _apply_parent_refs_from_backup(
-        self, backup_data: dict[str, Any], item_id_map: dict[str, str]
-    ) -> None:
+    def _apply_parent_refs_from_backup(self, backup_data: dict[str, Any], item_id_map: dict[str, str]) -> None:
         """Update parent_id on restored items."""
         for item_data in backup_data.get("items", []):
             old_id = item_data["id"]

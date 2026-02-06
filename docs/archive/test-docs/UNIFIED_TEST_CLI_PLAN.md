@@ -439,7 +439,7 @@ src/tracertm/cli/commands/test/
 ├── visualize.py              # Rich-based visualization
 └── metadata.py               # Test metadata schema and parsing
 
-tests/unit/cli/test_test_command.py  # Tests for test command itself
+tests/unit/cli/test_cli_test_command.py  # Tests for test command itself
 ```
 
 ---

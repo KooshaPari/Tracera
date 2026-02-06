@@ -70,8 +70,7 @@ function loadSearchIndex() {
     const indexData = JSON.parse(readFileSync(indexPath, 'utf8'));
     return indexData;
   } catch (error) {
-    
-    
+    console.error('Failed to load search index:', error);
     process.exit(1);
   }
 }
@@ -82,7 +81,7 @@ function loadSearchIndex() {
 function benchmarkSearch(
   fuse: Fuse<SearchDocument>,
   query: string,
-  maxResults = 20
+  maxResults = 20,
 ): BenchmarkResult {
   const startTime = performance.now();
   const results = fuse.search(query, { limit: maxResults });
@@ -93,23 +92,25 @@ function benchmarkSearch(
       ? results.reduce((sum, r) => sum + (r.score || 0), 0) / results.length
       : undefined;
 
-  return {
-    avgMatchScore,
+  const result: BenchmarkResult = {
     duration,
     query,
     resultCount: results.length,
   };
+
+  if (avgMatchScore !== undefined) {
+    result.avgMatchScore = avgMatchScore;
+  }
+
+  return result;
 }
 
 /**
  * Run full benchmark suite
  */
 function runBenchmarks() {
-  
-
   // Load index
   const indexData = loadSearchIndex();
-  
 
   // Create Fuse instance
   const fuseIndex = Fuse.parseIndex<SearchDocument>(indexData.index);
@@ -118,20 +119,23 @@ function runBenchmarks() {
   // Run benchmarks
   const results: BenchmarkResult[] = [];
 
-  
-
   for (const query of TEST_QUERIES) {
     const result = benchmarkSearch(fuse, query);
     results.push(result);
 
     const status = result.duration < 100 ? '✅' : '⚠️';
-    const durationColor = result.duration < 100 ? '\x1B[32m' : '\u001b[33m';
+    const durationMs = result.duration.toFixed(1);
+    const scoreLabel =
+      result.avgMatchScore !== undefined
+        ? `avg score ${(1 - result.avgMatchScore).toFixed(3)}`
+        : 'no score';
 
-    
+    console.log(
+      `${status} "${query}" — ${durationMs}ms, ${result.resultCount} results, ${scoreLabel}`,
+    );
   }
 
   // Calculate statistics
-  
 
   const durations = results.map((r) => r.duration);
   const avgDuration = durations.reduce((sum, d) => sum + d, 0) / durations.length;
@@ -141,43 +145,32 @@ function runBenchmarks() {
   const under100ms = results.filter((r) => r.duration < 100).length;
   const successRate = (under100ms / results.length) * 100;
 
-  
-  
-  
-  
-  
-
   // Result counts
   const avgResults = results.reduce((sum, r) => sum + r.resultCount, 0) / results.length;
   const totalResults = results.reduce((sum, r) => sum + r.resultCount, 0);
-
-  
-  
 
   // Match quality
   const avgScores = results
     .filter((r) => r.avgMatchScore !== undefined)
     .map((r) => r.avgMatchScore!);
-  const avgMatchQuality = avgScores.reduce((sum, s) => sum + s, 0) / avgScores.length;
-
-  
+  const avgMatchQuality =
+    avgScores.length > 0 ? avgScores.reduce((sum, s) => sum + s, 0) / avgScores.length : 0;
 
   // Pass/fail
-  
+  console.log(
+    `Average duration: ${avgDuration.toFixed(1)}ms (min ${minDuration.toFixed(1)}ms, max ${maxDuration.toFixed(1)}ms, p95 ${p95Duration.toFixed(1)}ms)`,
+  );
+  console.log(`Success rate (<100ms): ${successRate.toFixed(1)}%`);
+  console.log(`Average results: ${avgResults.toFixed(1)} (total ${totalResults})`);
+  if (avgScores.length > 0) {
+    console.log(`Average match quality: ${(1 - avgMatchQuality).toFixed(3)}`);
+  }
 
   if (successRate === 100 && avgDuration < 100) {
-    
-    
     process.exit(0);
   } else if (successRate >= 95) {
-    
-    
-    
     process.exit(0);
   } else {
-    
-    
-    
     process.exit(1);
   }
 }

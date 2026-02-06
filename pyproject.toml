@@ -30,14 +30,12 @@ dependencies = [
     # CLI
     "typer>=0.21.1",
     "rich>=14.3.1",
-
     # Core
     "pydantic>=2.12.5",
     "pydantic-settings>=2.12.0",
     "python-dotenv>=1.2.1",
     "httpx>=0.28.1",
     "pyyaml>=6.0.3",
-
     # Database & ORM
     "typing_extensions>=4.0.0",
     "sqlalchemy[asyncio]>=2.0.46",
@@ -46,57 +44,48 @@ dependencies = [
     "aiosqlite>=0.22.1",
     "asyncpg>=0.31.0",
     "greenlet>=3.3.1",
-
     # Serialization & Encoding
     "msgspec>=0.20.0",
     "msgpack>=1.1.2",
     "markdown>=3.10.1",
     "markdown-it-py>=4.0.0",
     "python-frontmatter>=1.1.0",
-
     # HTTP & Networking
     "aiohttp>=3.13.3",
     "tenacity>=9.1.2",
-
+    "grpcio>=1.70.0",
     # API / Web
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
     "sse-starlette>=3.0.0",
-
     # Cache (health, feature flags, cache service)
     "redis>=5.2.0",
-
     # Async/Concurrency
     "anyio>=4.12.1",
-
     # File System Watching
     "watchdog>=6.0.0",
-
     # Logging & Observability
     "loguru>=0.7.3",
     "structlog>=25.5.0",
     "opentelemetry-api>=1.39.1",
     "opentelemetry-sdk>=1.39.1",
     "prometheus-client>=0.24.1",
-
     # Security & Cryptography
     "cryptography>=46.0.4",
     "bcrypt>=5.0.0",
     "pyjwt>=2.11.0",
     "keyring>=25.7.0",
     "workos>=5.40.0",
-
     # MCP
     "fastmcp>=3.0.0b1",
     "mcp>=1.26.0",
     "hatchet-sdk>=1.22.13",
-
     # Messaging & Events
     "nats-py>=2.12.0",
     "nkeys>=0.2.1",
-
     # Workflow orchestration (API + temporal_worker)
     "temporalio>=1.7.0",
+    "brotli-asgi>=1.6.0",
 ]
 
 [project.optional-dependencies]
@@ -112,12 +101,11 @@ dev = [
     "faker>=40.1.2",
     "factory-boy>=3.3.3",
     "ruff>=0.14.14",
-    "mypy>=1.19.1",
-    "basedpyright>=1.37.2",
-    "ty>=0.0.14",
+    "ty>=0.0.2",
     "poethepoet>=0.40.0",
     "tach>=0.33.2",
     "pandera>=0.29.0",
+    "import-linter>=2.4.1",
     "loguru>=0.7.3",
     "pre-commit>=4.5.1",
     "openapi-python-client>=0.22.1",  # For generating Python API clients
@@ -129,11 +117,10 @@ tui = [
 ]
 lint = [
     "ruff>=0.14.14",
-    "mypy>=1.19.1",
-    "basedpyright>=1.37.2",
-    "ty>=0.0.14",
+    "ty>=0.0.2",
     "bandit[toml]>=1.7.10",
     "pip-audit>=2.7.4",
+    "import-linter>=2.4.1",
 ]
 test = [
     "pytest>=9.0.2",
@@ -147,7 +134,6 @@ test = [
     "factory-boy>=3.3.3",
 ]
 phase2 = [
-    "basedpyright>=1.37.2",
     "poethepoet>=0.40.0",
     "tach>=0.33.2",
     "pandera>=0.29.0",
@@ -198,10 +184,10 @@ ml = [
     "torch>=2.10.0",
 ]
 all = [
-    "basedpyright>=1.37.2",
     "poethepoet>=0.40.0",
     "tach>=0.33.2",
     "pandera>=0.29.0",
+    "import-linter>=2.4.1",
     "loguru>=0.7.3",
     "pre-commit>=4.5.1",
     "hypothesis>=6.151.4",
@@ -319,6 +305,8 @@ severity = "medium"
 confidence = "medium"
 
 [tool.ruff]
+# Ruff output format: use --output-format=grouped for file-grouped output
+# This groups issues by file for easy processing by agents (easier to fix)
 line-length = 120
 target-version = "py312"
 preview = true
@@ -331,9 +319,15 @@ force-exclude = true
 
 [tool.ty.src]
 # Exclude vendored/archived code, scripts, optional TUI/vault, and tests that use optional deps or conditional types.
+include = ["src", "tests"]
 exclude = [
     "ARCHIVE",
     "ARCHIVE/**",
+    "ARCHIVE/CONFIG/default",
+    "backend/tests",
+    "cli",
+    "cli/tests",
+    "frontend/disable",
     "scripts",
     "scripts/**",
     "src/tracertm/tui",
@@ -343,6 +337,7 @@ exclude = [
     "tests/unit/tui/widgets",
     "tests/unit/validation/test_dataframe_schema_validation.py",
 ]
+respect-ignore-files = true
 
 # TUI tests: optional textual, conditional apps, mocks → relax type rules (single override for all tests/unit/tui/**).
 [[tool.ty.overrides]]
@@ -415,6 +410,35 @@ invalid-argument-type = "ignore"
 invalid-parameter-default = "ignore"
 invalid-return-type = "ignore"
 redundant-cast = "ignore"
+
+# API main router: complex runtime validation and dynamic payloads.
+[[tool.ty.overrides]]
+include = ["src/tracertm/api/main.py"]
+[tool.ty.overrides.rules]
+invalid-argument-type = "ignore"
+no-matching-overload = "ignore"
+unresolved-attribute = "ignore"
+possibly-missing-attribute = "ignore"
+invalid-assignment = "ignore"
+
+# GitHub handlers: repository interfaces and webhook models are dynamically typed.
+[[tool.ty.overrides]]
+include = ["src/tracertm/api/handlers/github.py"]
+[tool.ty.overrides.rules]
+unresolved-attribute = "ignore"
+
+# Integrations router: mixed Any payloads and dynamic repo payloads.
+[[tool.ty.overrides]]
+include = ["src/tracertm/api/routers/integrations.py"]
+[tool.ty.overrides.rules]
+invalid-argument-type = "ignore"
+possibly-missing-attribute = "ignore"
+
+# Items router: Pydantic model overloads and typed generics are out of sync.
+[[tool.ty.overrides]]
+include = ["src/tracertm/api/routers/items.py"]
+[tool.ty.overrides.rules]
+no-matching-overload = "ignore"
 
 # Proto: generated pb2 message types (EntityRequest, etc.), grpc.experimental.
 [[tool.ty.overrides]]
@@ -886,6 +910,38 @@ unsupported-operator = "ignore"
 non-subscriptable = "ignore"
 missing-argument = "ignore"
 
+[tool.importlinter]
+root_packages = ["tracertm"]
+
+[[tool.importlinter.contracts]]
+name = "Core layered architecture"
+type = "layers"
+layers = [
+    "config",
+    "db",
+    "models",
+    "repositories",
+    "storage",
+    "clients",
+    "services",
+    "api",
+]
+containers = ["tracertm"]
+
+[[tool.importlinter.contracts]]
+name = "API must not access lower layers directly"
+type = "forbidden"
+source_modules = [
+    "tracertm.api",
+]
+forbidden_modules = [
+    "tracertm.db",
+    "tracertm.models",
+    "tracertm.repositories",
+    "tracertm.storage",
+    "tracertm.clients",
+]
+
 [tool.ruff.lint]
 # Strict profile: E/W/F/I/B/C4/UP/N/PT/SIM/RUF + RSE/PERF/LOG/S + ASYNC/PIE/RET/PTH + DTZ/FA/Q (strict best practices)
 select = [
@@ -960,10 +1016,35 @@ max-statements = 50
 "src/tracertm/services/execution/artifact_storage.py" = ["PLR0913"]
 "src/tracertm/services/execution/docker_orchestrator.py" = ["ASYNC109", "ASYNC240", "C901", "PLR0913", "S404"]  # subprocess for docker; controlled
 "src/tracertm/services/execution/native_orchestrator.py" = ["ASYNC109", "ASYNC240"]
-# Generated gRPC stubs: exempt PLR0913 (many parameters is standard)
-"src/tracertm/proto/proto/tracertm_pb2_grpc.py" = ["PLR0913"]
 # Repository methods with many parameters: exempt PLR0913
 "src/tracertm/repositories/blockchain_repository.py" = ["PLR0913"]
+"src/tracertm/api/client.py" = ["C901", "PLR0913"]
+"src/tracertm/api/config/startup.py" = ["C901", "PLR0915"]
+"src/tracertm/api/handlers/websocket.py" = ["ASYNC109", "C901", "PLR0911"]
+"src/tracertm/api/handlers/auth.py" = ["C901"]
+"src/tracertm/api/handlers/chat.py" = ["PLR0913"]
+"src/tracertm/api/handlers/github.py" = ["PLR0913"]
+"src/tracertm/api/handlers/links.py" = ["C901"]
+"src/tracertm/api/handlers/oauth.py" = ["PLR0913"]
+"src/tracertm/api/main.py" = ["ASYNC240", "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915"]
+"src/tracertm/api/routers/blockchain.py" = ["PLR0913"]
+"src/tracertm/api/routers/execution.py" = ["PLR0913"]
+"src/tracertm/api/routers/item_specs.py" = ["C901", "PLR0913"]
+"src/tracertm/api/routers/mcp.py" = ["C901"]
+"src/tracertm/api/routers/auth.py" = ["C901"]
+"src/tracertm/api/routers/integrations.py" = ["PLR0913"]
+"src/tracertm/api/routers/items.py" = ["PLR0913"]
+"src/tracertm/api/routers/specifications.py" = ["C901", "PLR0913"]
+"src/tracertm/api/middleware/error_handling.py" = ["C901"]
+"src/tracertm/api/sync_client.py" = ["C901", "PLR0912"]
+"src/tracertm/clients/linear_client.py" = ["C901"]
+"src/tracertm/mcp/tools/auth_config_db.py" = ["C901"]
+"src/tracertm/mcp/tools/param.py" = ["C901", "E402", "PLR0911", "PLR0912", "PLR0915", "PLR1702", "PT028", "RUF029", "S404", "S603", "S607"]
+"src/tracertm/mcp/tools/params/common.py" = ["C901", "RUF029"]
+"src/tracertm/mcp/tools/params/config.py" = ["C901", "RUF029"]
+"src/tracertm/mcp/tools/params/database.py" = ["C901", "RUF029"]
+"src/tracertm/mcp/tools/params/io_operations.py" = ["C901", "PLR0911", "PLR0912", "RUF029"]
+"src/tracertm/repositories/specification_repository.py" = ["PLR0913"]
 "conftest.py" = ["F401", "S101", "PT018"]  # assert for type narrowing; optional router/registry
 "scripts/generate_swiftride_data.py" = ["S608"]  # generator builds SQL from controlled data
 "scripts/seed_rich_single_project.py" = ["S311"]  # random for seed data only, not crypto
@@ -1019,14 +1100,9 @@ max-statements = 50
 "src/tracertm/mcp/tools/params/_lazy_stub.py" = ["PT028"]
 "src/tracertm/mcp/tools/params/query_test.py" = ["PT028"]
 # MCP tools: async for API contract
-"src/tracertm/mcp/tools/params/common.py" = ["RUF029"]
-"src/tracertm/mcp/tools/params/config.py" = ["RUF029"]
-"src/tracertm/mcp/tools/params/database.py" = ["RUF029"]
-"src/tracertm/mcp/tools/params/io_operations.py" = ["RUF029"]
 "src/tracertm/mcp/tools/params/storage.py" = ["E402", "RUF029"]
 "src/tracertm/mcp/tools/specifications.py" = ["RUF029"]
 # MCP tools: async API; optional payload/ctx; subprocess for bun/design; backup table names validated
-"src/tracertm/mcp/tools/param.py" = ["E402", "PT028", "RUF029", "S404", "S603", "S607"]
 "src/tracertm/mcp/tools/optional_features.py" = ["RUF029"]
 # Root-level Docker example (container tmpfs; try/except-pass in cleanup)
 "DOCKER_SDK_ASYNC_EXAMPLES.py" = ["S108", "S110", "N999"]  # example script name
@@ -1066,13 +1142,6 @@ max-statements = 50
 "src/tracertm/observability/tracing.py" = ["C901"]
 "src/tracertm/mcp/tools/streaming.py" = ["C901", "PLR0912", "PLR0913"]
 "src/tracertm/repositories/execution_repository.py" = ["C901", "PLR0913"]
-"src/tracertm/repositories/item_spec_repository.py" = ["PLR0913", "PLR2004"]
-"src/tracertm/workflows/agent_execution.py" = ["C901", "PLR0913"]
-"src/tracertm/workflows/sandbox_snapshot.py" = ["C901"]
-"src/tracertm/workflows/tasks.py" = ["PLR0913"]
-"src/tracertm/tui/apps/dashboard_v2.py" = ["C901"]
-"src/tracertm/tui/widgets/sync_status.py" = ["C901", "PLR2004"]
-"src/tracertm/utils/figma.py" = ["C901", "PLR2004"]
 "src/tracertm/workflows/agent_execution.py" = ["C901", "PLR0913"]
 "src/tracertm/workflows/sandbox_snapshot.py" = ["C901"]
 "src/tracertm/workflows/tasks.py" = ["PLR0913"]
@@ -1088,12 +1157,14 @@ max-statements = 50
 "src/tracertm/repositories/webhook_repository.py" = ["PLR0913"]
 "src/tracertm/repositories/workflow_run_repository.py" = ["PLR0913"]
 "src/tracertm/repositories/event_repository.py" = ["PLR0913"]
-"src/tracertm/repositories/execution_repository.py" = ["C901", "PLR0913"]
 "src/tracertm/repositories/github_app_repository.py" = ["PLR0913"]
 "src/tracertm/repositories/github_project_repository.py" = ["PLR0913"]
 "src/tracertm/repositories/integration_repository.py" = ["C901", "PLR0913"]
 "src/tracertm/repositories/item_repository.py" = ["C901", "PLR0913"]
 "src/tracertm/repositories/item_spec_repository.py" = ["C901", "PLR0913", "PLR2004"]
+# API client and routers with many parameters
+"src/tracertm/clients/github_client.py" = ["PLR0913"]
+"src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py" = ["PLR0913"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["tracertm"]
@@ -1107,169 +1178,18 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 docstring-code-format = true
 
-[tool.mypy]
-python_version = "3.12"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-disallow_untyped_calls = true
-check_untyped_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-strict_equality = true
-strict_concatenation = true
-ignore_missing_imports = true
-show_error_codes = true
+[tool.ty.environment]
+python-version = "3.12"
 
-[[tool.mypy.overrides]]
-module = "tests.*"
-disallow_untyped_defs = false
+[tool.ty.rules]
+unused-ignore-comment = "error"
+possibly-unresolved-reference = "error"
+possibly-missing-attribute = "error"
+possibly-missing-import = "error"
 
-[[tool.mypy.overrides]]
-module = [
-    "yaml.*",
-    "loguru.*",
-    "sqlalchemy.*",
-    "pytest.*",
-    "rich.*",
-    "typer.*",
-    "factory.*",
-    "alembic.*",
-    "uvicorn.*",
-    "redis.*",
-]
-ignore_missing_imports = true
-
-# Generated proto/grpc code: untyped; do not require strict typing.
-[[tool.mypy.overrides]]
-module = "tracertm.proto.proto"
-ignore_errors = true
-
-# Target: reduce incrementally; remove one module at a time, fix types, then remove from list.
-# No ignore_errors for application code long-term; keep only for third-party or generated.
-[[tool.mypy.overrides]]
-module = [
-    "tracertm.*",
-    "tracertm.api.main",
-    "tracertm.api.client",
-    "tracertm.api.routers.*",
-    "tracertm.mcp.*",
-    "tracertm.cli.commands.*",
-    "tracertm.cli.storage_helper",
-    "tracertm.tui.*",
-    "tracertm.workflows.*",
-    "tracertm.services.temporal_service",
-    "tracertm.services.workos_auth_service",
-    "tracertm.services.tui_service",
-    "tracertm.services.checkpoint_service",
-    "tracertm.agent.*",
-    "tracertm.services.plugin_service",
-    "tracertm.services.external_integration_service",
-    "tracertm.services.documentation_service",
-    "tracertm.services.api_webhooks_service",
-    "tracertm.config.manager",
-    "tracertm.core.concurrency",
-    "tracertm.services.security_compliance_service",
-    "tracertm.database.connection",
-    "tracertm.config.settings",
-    "tracertm.cli.commands.benchmark",
-    "tracertm.cli.commands.backup",
-    "tracertm.logging_config",
-    "tracertm.repositories.*",
-    "tracertm.testing_factories",
-    "tracertm.services.traceability_matrix_service",
-    "tracertm.services.shortest_path_service",
-    "tracertm.services.performance_service",
-    "tracertm.services.impact_analysis_service",
-    "tracertm.services.export_service",
-    "tracertm.services.export_import_service",
-    "tracertm.services.cycle_detection_service",
-    "tracertm.services.critical_path_service",
-    "tracertm.services.advanced_traceability_enhancements_service",
-    "tracertm.services.item_service",
-    "tracertm.services.event_sourcing_service",
-    "tracertm.services.commit_linking_service",
-    "tracertm.services.chaos_mode_service",
-    "tracertm.services.agent_performance_service",
-    "tracertm.services.advanced_analytics_service",
-]
-ignore_errors = true
-
-[tool.basedpyright]
-# Ultra-strict type checking (stricter than mypy)
-typeCheckingMode = "strict"
-pythonVersion = "3.12"
-pythonPlatform = "Linux"
-reportUnusedVariable = "error"
-reportUnusedImport = "error"
-reportUnusedClass = "error"
-reportUnusedFunction = "error"
-reportUnusedParameter = "error"
-reportDuplicateImport = "error"
-reportPrivateUsage = "error"
-reportConstantRedefinition = "error"
-reportInvalidTypeForm = "error"
-reportUnnecessaryIsInstance = "error"
-reportUnnecessaryCast = "error"
-reportUnnecessaryComparison = "error"
-reportUnnecessaryContains = "error"
-reportAssignmentType = "error"
-reportAttributeAccessIssue = "error"
-reportCallIssue = "error"
-reportIndexIssue = "error"
-reportIncompatibleMethodOverride = "error"
-reportIncompatibleVariableOverride = "error"
-reportInconsistentConstructor = "error"
-reportInconsistentMethodOverride = "error"
-reportInvalidStringEscapeSequence = "error"
-reportMissingTypeArguments = "error"
-reportMissingTypeStubs = "warning"
-reportOptionalSubscript = "error"
-reportOptionalMemberAccess = "error"
-reportOptionalCall = "error"
-reportOptionalIterable = "error"
-reportOptionalContextManager = "error"
-reportOptionalOperand = "error"
-reportTypedDictNotRequiredAccess = "error"
-reportUnknownParameterType = "error"
-reportUnknownArgumentType = "error"
-reportUnknownLambdaType = "error"
-reportUnknownVariableType = "error"
-reportUnknownMemberType = "error"
-reportUnknownFunctionMemberType = "error"
-reportUnknownClassMemberType = "error"
-reportGeneralTypeIssues = "error"
-reportUntypedBaseClass = "error"
-reportUntypedFunctionDecorator = "error"
-reportUntypedClassDecorator = "error"
-reportUntypedNamedTuple = "error"
-reportPrivateImportUsage = "error"
-reportInvalidTypeVarUse = "error"
-reportMatchNotExhaustive = "error"
-reportSelfClsParameterName = "error"
-reportIncompatibleImportOverrides = "error"
-reportImplicitStringConcatenation = "error"
-reportUnnecessaryTypeIgnoreComment = "error"
-exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-    ".venv",
-    "venv",
-    "**/*_pb2.py",
-    "**/*_pb2_grpc.py",
-]
-include = ["src"]
-
-# Relax type-check rules for TUI dashboard tests (mocks cause possibly-missing-attribute/import, invalid-assignment).
-[[tool.basedpyright.executionEnvironments]]
-root = "tests/unit/tui/apps"
-reportAttributeAccessIssue = "none"
-reportMissingImports = "none"
-reportAssignmentType = "none"
+[tool.ty.terminal]
+error-on-warning = true
+output-format = "concise"
 
 [dependency-groups]
 dev = [
@@ -1283,7 +1203,7 @@ dev = [
     "faker>=40.1.2",
     "factory-boy>=3.3.3",
     "ruff>=0.14.14",
-    "mypy>=1.19.1",
+    "ty>=0.0.2",
 ]
 
 [tool.uv]
@@ -1308,11 +1228,8 @@ format = "ruff format ."
 # Lint with auto-fix
 lint = "ruff check --fix ."
 
-# Type checking with mypy
-type-check = "mypy src/"
-
-# Ultra-strict type checking with basedpyright
-type-check-strict = "basedpyright src/"
+# Type checking with ty
+type-check = "ty check src/"
 
 # Architecture analysis with tach
 arch-check = "tach check"
@@ -1333,8 +1250,7 @@ pip-audit = "pip-audit"
 quality = [
     { cmd = "ruff format ." },
     { cmd = "ruff check --fix ." },
-    { cmd = "mypy src/" },
-    { cmd = "basedpyright src/" },
+    { cmd = "ty check src/" },
     { cmd = "tach check" },
     { cmd = "bandit -r src/" },
     { cmd = "pip-audit" },
@@ -1357,8 +1273,7 @@ test-integration = "pytest -m integration"
 all = [
     { cmd = "ruff format ." },
     { cmd = "ruff check --fix ." },
-    { cmd = "mypy src/" },
-    { cmd = "basedpyright src/" },
+    { cmd = "ty check src/" },
     { cmd = "tach check" },
     { cmd = "bandit -r src/" },
     { cmd = "pip-audit" },

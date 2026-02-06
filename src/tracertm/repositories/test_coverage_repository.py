@@ -109,9 +109,17 @@ class TestCoverageRepository:
         query = select(TestCoverage).where(TestCoverage.project_id == project_id)
 
         if coverage_type:
-            query = query.where(TestCoverage.coverage_type == coverage_type)
+            try:
+                coverage_enum = CoverageType(coverage_type)
+            except ValueError:
+                return [], 0
+            query = query.where(TestCoverage.coverage_type == coverage_enum)
         if status:
-            query = query.where(TestCoverage.status == status)
+            try:
+                status_enum = CoverageStatus(status)
+            except ValueError:
+                return [], 0
+            query = query.where(TestCoverage.status == status_enum)
         if test_case_id:
             query = query.where(TestCoverage.test_case_id == test_case_id)
         if requirement_id:

@@ -26,8 +26,8 @@ from tracertm.mcp.tools.response_optimizer import (
 from tracertm.models.item import Item
 
 
-class CreateItemOptionsV2(TypedDict, total=False):
-    """Optional fields for create_item_v2."""
+class CreateItemOptionsOptimized(TypedDict, total=False):
+    """Optional fields for create_item_optimized."""
 
     description: str | None
     status: str
@@ -37,8 +37,8 @@ class CreateItemOptionsV2(TypedDict, total=False):
     metadata: dict[str, Any] | None
 
 
-class UpdateItemOptionsV2(TypedDict, total=False):
-    """Optional fields for update_item_v2."""
+class UpdateItemOptionsOptimized(TypedDict, total=False):
+    """Optional fields for update_item_optimized."""
 
     title: str | None
     description: str | None
@@ -48,8 +48,8 @@ class UpdateItemOptionsV2(TypedDict, total=False):
     metadata: dict[str, Any] | None
 
 
-class QueryItemsFiltersV2(TypedDict, total=False):
-    """Filters for query_items_v2."""
+class QueryItemsFiltersOptimized(TypedDict, total=False):
+    """Filters for query_items_optimized."""
 
     view: str | None
     item_type: str | None
@@ -57,31 +57,40 @@ class QueryItemsFiltersV2(TypedDict, total=False):
     owner: str | None
 
 
-def _apply_item_updates_v2(item: Item, opts: UpdateItemOptionsV2) -> None:
+def _apply_item_updates_optimized(item: Item, opts: UpdateItemOptionsOptimized) -> None:
     """Apply optional update fields to an Item. Mutates item in place."""
-    if opts.get("title") is not None:
-        item.title = opts["title"]
-    if opts.get("description") is not None:
-        item.description = opts["description"]
-    if opts.get("status") is not None:
-        item.status = opts["status"]
-    if opts.get("priority") is not None:
-        item.priority = opts["priority"]
-    if opts.get("owner") is not None:
-        item.owner = opts["owner"]
-    if opts.get("metadata") is not None:
-        current = item.item_metadata or {}
-        current.update(opts["metadata"])
+    for key, attr, transform in (
+        ("title", "title", lambda value: value),
+        ("description", "description", lambda value: value),
+        ("status", "status", lambda value: str(value)),
+    ):
+        value = opts.get(key)
+        if value is not None:
+            setattr(item, attr, transform(value))
+
+    priority = opts.get("priority")
+    if priority is not None:
+        try:
+            item.priority = int(priority)
+        except (ValueError, TypeError):
+            pass
+
+    # item.owner is read-only
+    metadata = opts.get("metadata")
+    if metadata is not None:
+        current = dict(item.item_metadata or {})
+        if metadata:
+            current.update(metadata)
         item.item_metadata = current
     item.updated_at = datetime.now(UTC)
 
 
 @mcp.tool(description="Create item (optimized)")
-async def create_item_v2(
+async def create_item_optimized(
     title: str,
     view: str,
     item_type: str,
-    options: CreateItemOptionsV2 | None = None,
+    options: CreateItemOptionsOptimized | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Create a new item (optimized, lean response).
@@ -107,7 +116,7 @@ async def create_item_v2(
                 category="validation",
                 suggestions=[
                     "Provide title, view, and item_type parameters",
-                    "Example: create_item_v2(title='New Feature', view='FEATURE', item_type='epic')",
+                    "Example: create_item_optimized(title='New Feature', view='FEATURE', item_type='epic')",
                 ],
                 ctx=ctx,
             )
@@ -158,7 +167,7 @@ async def create_item_v2(
 
 
 @mcp.tool(description="Get item (optimized)")
-async def get_item_v2(
+async def get_item_optimized(
     item_id: str,
     include_metadata: bool = False,
     ctx: Any | None = None,
@@ -230,8 +239,8 @@ async def get_item_v2(
 
 
 @mcp.tool(description="Query items (optimized)")
-async def query_items_v2(
-    filters: QueryItemsFiltersV2 | None = None,
+async def query_items_optimized(
+    filters: QueryItemsFiltersOptimized | None = None,
     limit: int = 50,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
@@ -263,8 +272,9 @@ async def query_items_v2(
                 query = query.filter(Item.item_type == flt["item_type"])
             if flt.get("status"):
                 query = query.filter(Item.status == flt["status"])
-            if flt.get("owner"):
-                query = query.filter(Item.owner == flt["owner"])
+            # Item.owner is a property returning None, cannot be used in filter
+            # if flt.get("owner"):
+            #     query = query.filter(Item.owner == flt["owner"])
 
             total = query.count()
             items = query.limit(limit).all()
@@ -283,9 +293,9 @@ async def query_items_v2(
 
 
 @mcp.tool(description="Update item (optimized)")
-async def update_item_v2(
+async def update_item_optimized(
     item_id: str,
-    options: UpdateItemOptionsV2 | None = None,
+    options: UpdateItemOptionsOptimized | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Update an existing item (optimized, lean response).
@@ -312,7 +322,8 @@ async def update_item_v2(
 
         with get_session() as session:
             item = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id == project_id,
                     Item.deleted_at.is_(None),
@@ -328,7 +339,7 @@ async def update_item_v2(
                     ctx=ctx,
                 )
 
-            _apply_item_updates_v2(item, opts)
+            _apply_item_updates_optimized(item, opts)
             session.commit()
 
             return optimize_item_response(item, include_metadata=False)
@@ -340,7 +351,7 @@ async def update_item_v2(
 
 
 @mcp.tool(description="Delete item (optimized)")
-async def delete_item_v2(
+async def delete_item_optimized(
     item_id: str,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
@@ -399,7 +410,7 @@ async def delete_item_v2(
 
 
 @mcp.tool(description="Summarize view (optimized)")
-async def summarize_view_v2(
+async def summarize_view_optimized(
     view: str,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
@@ -438,7 +449,7 @@ async def summarize_view_v2(
                 .all()
             )
 
-            counts = dict(status_counts)
+            counts: dict[str, int] = dict(status_counts)
             total = sum(counts.values())
 
             return {
@@ -454,10 +465,10 @@ async def summarize_view_v2(
 
 
 __all__ = [
-    "create_item_v2",
-    "delete_item_v2",
-    "get_item_v2",
-    "query_items_v2",
-    "summarize_view_v2",
-    "update_item_v2",
+    "create_item_optimized",
+    "delete_item_optimized",
+    "get_item_optimized",
+    "query_items_optimized",
+    "summarize_view_optimized",
+    "update_item_optimized",
 ]

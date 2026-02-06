@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Settings page with tabbed navigation (Account, Notifications, Privacy, Billing). Each tab has relevant form fields.
-

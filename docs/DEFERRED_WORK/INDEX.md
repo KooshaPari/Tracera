@@ -27,7 +27,7 @@ During the comprehensive governance audit, 11 items were identified that do not 
 | 4 | CODE | Sync Engine - Conflict File Creation | `src/tracertm/storage/sync_engine.py:813` | 🟡 TODO | HIGH | 2h |
 | 5 | CODE | Export YAML Feature | `src/tracertm/services/export_service.py:161` | 🟡 STUB | MEDIUM | 4h |
 | 6 | CODE | Relationship Queries | `src/tracertm/services/item_service.py:522` | 🟡 STUB | MEDIUM | 4h |
-| 7 | UI | Search Dialogs - Dashboard V2 | `src/tracertm/tui/apps/dashboard_v2.py:349` | 🟡 TODO | MEDIUM | 3h |
+| 7 | UI | Search Dialogs - Dashboard V2 | `src/tracertm/tui/apps/dashboard_compat.py:349` | 🟡 TODO | MEDIUM | 3h |
 | 8 | UI | Search Dialogs - Dashboard | `src/tracertm/tui/apps/dashboard.py:243` | 🟡 TODO | MEDIUM | 3h |
 | 9 | UI | Filter Implementation - Browser | `src/tracertm/tui/apps/browser.py:192` | 🟡 TODO | MEDIUM | 3h |
 | 10 | CLI | Design Figma Integration | `src/tracertm/cli/commands/design.py` (4 TODOs) | 🟡 STUBS | LOW | 8h |
@@ -190,7 +190,7 @@ def get_related_items(self, item_id: str) -> List[Item]:
 
 ### 7️⃣ SEARCH DIALOG - DASHBOARD V2 (MEDIUM PRIORITY)
 
-**File:** `src/tracertm/tui/apps/dashboard_v2.py:349`
+**File:** `src/tracertm/tui/apps/dashboard_compat.py:349`
 **Type:** UI / FEATURE
 **Status:** 🟡 TODO - Search dialog not implemented
 **Impact:** MEDIUM - UX incomplete

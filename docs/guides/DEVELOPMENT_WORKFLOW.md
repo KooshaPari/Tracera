@@ -796,7 +796,7 @@ cd docs && mkdocs serve
 
 ### Essential Commands
 
-**Code quality:** Python uses Ruff (lint/format), mypy and basedpyright (typecheck). Go uses golangci-lint (backend). Frontend uses Biome (lint/format) and TypeScript (typecheck). Pre-commit runs all of these; install with `pre-commit install`.
+**Code quality:** Python uses Ruff (lint/format) + ty (typecheck). Go uses golangci-lint (backend). Frontend uses oxlint (lint/typecheck) + oxfmt (format). Pre-commit runs all of these; install with `pre-commit install`.
 
 | Task | Command |
 |------|---------|

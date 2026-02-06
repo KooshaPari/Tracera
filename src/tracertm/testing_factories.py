@@ -17,6 +17,7 @@ from tracertm.models import Item, Link, Project
 @dataclass
 class ItemFactoryConfig:
     """Configuration for creating test items."""
+
     title: str = "Test Item"
     view: str = "FEATURE"
     item_type: str = "feature"

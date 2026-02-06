@@ -41,7 +41,7 @@ except ImportError:
 if TEXTUAL_AVAILABLE:
     from tracertm.tui.apps.browser import BrowserApp  # type: ignore[possibly-missing-import]
     from tracertm.tui.apps.dashboard import DashboardApp  # type: ignore[possibly-missing-import]
-    from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp  # type: ignore[possibly-missing-import]
+    from tracertm.tui.apps.dashboard_compat import EnhancedDashboardApp  # type: ignore[possibly-missing-import]
     from tracertm.tui.apps.graph import GraphApp  # type: ignore[possibly-missing-import]
     from tracertm.tui.widgets.conflict_panel import ConflictPanel  # type: ignore[possibly-missing-import]
     from tracertm.tui.widgets.item_list import ItemListWidget  # type: ignore[possibly-missing-import]

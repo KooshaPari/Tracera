@@ -8,240 +8,233 @@
  * - HTML: Styled report format
  */
 
-import type {
-	DiffExportOptions,
-	DiffExportResult,
-	DiffItem,
-	VersionDiff,
-} from "@repo/types";
+import type { DiffExportOptions, DiffExportResult, DiffItem, VersionDiff } from '@tracertm/types';
 
 /**
  * Export a version diff in the specified format
  */
 export async function exportDiff(
-	diff: VersionDiff,
-	options: DiffExportOptions,
+  diff: VersionDiff,
+  options: DiffExportOptions,
 ): Promise<DiffExportResult> {
-	const timestamp = new Date().toISOString().split("T")[0];
-	const baseFilename = `diff-v${diff.versionANumber}-v${diff.versionBNumber}-${timestamp}`;
+  const timestamp = new Date().toISOString().split('T')[0];
+  const baseFilename = `diff-v${diff.versionANumber}-v${diff.versionBNumber}-${timestamp}`;
 
-	switch (options.format) {
-		case "json":
-			return exportAsJSON(diff, baseFilename, options);
-		case "csv":
-			return exportAsCSV(diff, baseFilename, options);
-		case "markdown":
-			return exportAsMarkdown(diff, baseFilename, options);
-		case "html":
-			return exportAsHTML(diff, baseFilename, options);
-		default:
-			throw new Error(`Unsupported export format: ${options.format}`);
-	}
+  switch (options.format) {
+    case 'json':
+      return exportAsJSON(diff, baseFilename, options);
+    case 'csv':
+      return exportAsCSV(diff, baseFilename, options);
+    case 'markdown':
+      return exportAsMarkdown(diff, baseFilename, options);
+    case 'html':
+      return exportAsHTML(diff, baseFilename, options);
+    default:
+      throw new Error(`Unsupported export format: ${options.format}`);
+  }
 }
 
 /**
  * Export as JSON
  */
 function exportAsJSON(
-	diff: VersionDiff,
-	baseFilename: string,
-	options: DiffExportOptions,
+  diff: VersionDiff,
+  baseFilename: string,
+  options: DiffExportOptions,
 ): DiffExportResult {
-	const exportData = {
-		metadata: {
-			exportedAt: new Date().toISOString(),
-			versionA: diff.versionA,
-			versionB: diff.versionB,
-			versionANumber: diff.versionANumber,
-			versionBNumber: diff.versionBNumber,
-		},
-		statistics: diff.stats,
-		added: diff.added.map((item) => serializeItem(item, options)),
-		removed: diff.removed.map((item) => serializeItem(item, options)),
-		modified: diff.modified.map((item) => serializeItem(item, options)),
-	};
+  const exportData = {
+    metadata: {
+      exportedAt: new Date().toISOString(),
+      versionA: diff.versionA,
+      versionB: diff.versionB,
+      versionANumber: diff.versionANumber,
+      versionBNumber: diff.versionBNumber,
+    },
+    statistics: diff.stats,
+    added: diff.added.map((item) => serializeItem(item, options)),
+    removed: diff.removed.map((item) => serializeItem(item, options)),
+    modified: diff.modified.map((item) => serializeItem(item, options)),
+  };
 
-	const content = JSON.stringify(exportData, null, 2);
+  const content = JSON.stringify(exportData, null, 2);
 
-	return {
-		filename: `${baseFilename}.json`,
-		mimeType: "application/json",
-		content,
-	};
+  return {
+    filename: `${baseFilename}.json`,
+    mimeType: 'application/json',
+    content,
+  };
 }
 
 /**
  * Export as CSV
  */
 function exportAsCSV(
-	diff: VersionDiff,
-	baseFilename: string,
-	options: DiffExportOptions,
+  diff: VersionDiff,
+  baseFilename: string,
+  options: DiffExportOptions,
 ): DiffExportResult {
-	const rows: string[] = [];
+  const rows: string[] = [];
 
-	// Header
-	rows.push("Item ID,Title,Type,Change Type,Significance,Field Count");
+  // Header
+  rows.push('Item ID,Title,Type,Change Type,Significance,Field Count');
 
-	// Added items
-	diff.added.forEach((item) => {
-		rows.push(
-			escapeCSVField(item.itemId),
-			escapeCSVField(item.title),
-			escapeCSVField(item.type),
-			"added",
-			item.significance,
-			"0",
-		);
-	});
+  // Added items
+  diff.added.forEach((item) => {
+    rows.push(
+      escapeCSVField(item.itemId),
+      escapeCSVField(item.title),
+      escapeCSVField(item.type),
+      'added',
+      item.significance,
+      '0',
+    );
+  });
 
-	// Removed items
-	diff.removed.forEach((item) => {
-		rows.push(
-			escapeCSVField(item.itemId),
-			escapeCSVField(item.title),
-			escapeCSVField(item.type),
-			"removed",
-			item.significance,
-			"0",
-		);
-	});
+  // Removed items
+  diff.removed.forEach((item) => {
+    rows.push(
+      escapeCSVField(item.itemId),
+      escapeCSVField(item.title),
+      escapeCSVField(item.type),
+      'removed',
+      item.significance,
+      '0',
+    );
+  });
 
-	// Modified items
-	diff.modified.forEach((item) => {
-		rows.push(
-			escapeCSVField(item.itemId),
-			escapeCSVField(item.title),
-			escapeCSVField(item.type),
-			"modified",
-			item.significance,
-			String(item.fieldChanges?.length || 0),
-		);
+  // Modified items
+  diff.modified.forEach((item) => {
+    rows.push(
+      escapeCSVField(item.itemId),
+      escapeCSVField(item.title),
+      escapeCSVField(item.type),
+      'modified',
+      item.significance,
+      String(item.fieldChanges?.length || 0),
+    );
 
-		// Add field changes if requested
-		if (options.includeFieldChanges && item.fieldChanges) {
-			item.fieldChanges.forEach((change) => {
-				rows.push(
-					`"${item.itemId}",,${escapeCSVField(change.field)},${change.changeType}`,
-					`Old Value,${escapeCSVField(formatValue(change.oldValue))}`,
-					`New Value,${escapeCSVField(formatValue(change.newValue))}`,
-				);
-			});
-		}
-	});
+    // Add field changes if requested
+    if (options.includeFieldChanges && item.fieldChanges) {
+      item.fieldChanges.forEach((change) => {
+        rows.push(
+          `"${item.itemId}",,${escapeCSVField(change.field)},${change.changeType}`,
+          `Old Value,${escapeCSVField(formatValue(change.oldValue))}`,
+          `New Value,${escapeCSVField(formatValue(change.newValue))}`,
+        );
+      });
+    }
+  });
 
-	const content = rows.join("\n");
+  const content = rows.join('\n');
 
-	return {
-		filename: `${baseFilename}.csv`,
-		mimeType: "text/csv",
-		content,
-	};
+  return {
+    filename: `${baseFilename}.csv`,
+    mimeType: 'text/csv',
+    content,
+  };
 }
 
 /**
  * Export as Markdown
  */
 function exportAsMarkdown(
-	diff: VersionDiff,
-	baseFilename: string,
-	options: DiffExportOptions,
+  diff: VersionDiff,
+  baseFilename: string,
+  options: DiffExportOptions,
 ): DiffExportResult {
-	const lines: string[] = [];
+  const lines: string[] = [];
 
-	// Header
-	lines.push("# Version Diff Report");
-	lines.push("");
-	lines.push(
-		`**Version ${diff.versionANumber}** → **Version ${diff.versionBNumber}**`,
-	);
-	lines.push("");
-	lines.push(`Generated: ${new Date().toLocaleString()}`);
-	lines.push("");
+  // Header
+  lines.push('# Version Diff Report');
+  lines.push('');
+  lines.push(`**Version ${diff.versionANumber}** → **Version ${diff.versionBNumber}**`);
+  lines.push('');
+  lines.push(`Generated: ${new Date().toLocaleString()}`);
+  lines.push('');
 
-	// Statistics
-	lines.push("## Statistics");
-	lines.push("");
-	lines.push("| Metric | Count |");
-	lines.push("|--------|-------|");
-	lines.push(`| Added | ${diff.stats.addedCount} |`);
-	lines.push(`| Removed | ${diff.stats.removedCount} |`);
-	lines.push(`| Modified | ${diff.stats.modifiedCount} |`);
-	lines.push(`| Unchanged | ${diff.stats.unchangedCount} |`);
-	lines.push(`| Total Changes | ${diff.stats.totalChanges} |`);
-	lines.push("");
+  // Statistics
+  lines.push('## Statistics');
+  lines.push('');
+  lines.push('| Metric | Count |');
+  lines.push('|--------|-------|');
+  lines.push(`| Added | ${diff.stats.addedCount} |`);
+  lines.push(`| Removed | ${diff.stats.removedCount} |`);
+  lines.push(`| Modified | ${diff.stats.modifiedCount} |`);
+  lines.push(`| Unchanged | ${diff.stats.unchangedCount} |`);
+  lines.push(`| Total Changes | ${diff.stats.totalChanges} |`);
+  lines.push('');
 
-	// Added items
-	if (diff.added.length > 0) {
-		lines.push("## Added Items");
-		lines.push("");
-		diff.added.forEach((item) => {
-			lines.push(`### ${item.title}`);
-			lines.push("");
-			lines.push(`- **ID**: ${item.itemId}`);
-			lines.push(`- **Type**: ${item.type}`);
-			lines.push(`- **Significance**: ${item.significance}`);
-			lines.push("");
-		});
-	}
+  // Added items
+  if (diff.added.length > 0) {
+    lines.push('## Added Items');
+    lines.push('');
+    diff.added.forEach((item) => {
+      lines.push(`### ${item.title}`);
+      lines.push('');
+      lines.push(`- **ID**: ${item.itemId}`);
+      lines.push(`- **Type**: ${item.type}`);
+      lines.push(`- **Significance**: ${item.significance}`);
+      lines.push('');
+    });
+  }
 
-	// Removed items
-	if (diff.removed.length > 0) {
-		lines.push("## Removed Items");
-		lines.push("");
-		diff.removed.forEach((item) => {
-			lines.push(`### ${item.title}`);
-			lines.push("");
-			lines.push(`- **ID**: ${item.itemId}`);
-			lines.push(`- **Type**: ${item.type}`);
-			lines.push(`- **Significance**: ${item.significance}`);
-			lines.push("");
-		});
-	}
+  // Removed items
+  if (diff.removed.length > 0) {
+    lines.push('## Removed Items');
+    lines.push('');
+    diff.removed.forEach((item) => {
+      lines.push(`### ${item.title}`);
+      lines.push('');
+      lines.push(`- **ID**: ${item.itemId}`);
+      lines.push(`- **Type**: ${item.type}`);
+      lines.push(`- **Significance**: ${item.significance}`);
+      lines.push('');
+    });
+  }
 
-	// Modified items
-	if (diff.modified.length > 0) {
-		lines.push("## Modified Items");
-		lines.push("");
-		diff.modified.forEach((item) => {
-			lines.push(`### ${item.title}`);
-			lines.push("");
-			lines.push(`- **ID**: ${item.itemId}`);
-			lines.push(`- **Type**: ${item.type}`);
-			lines.push(`- **Significance**: ${item.significance}`);
+  // Modified items
+  if (diff.modified.length > 0) {
+    lines.push('## Modified Items');
+    lines.push('');
+    diff.modified.forEach((item) => {
+      lines.push(`### ${item.title}`);
+      lines.push('');
+      lines.push(`- **ID**: ${item.itemId}`);
+      lines.push(`- **Type**: ${item.type}`);
+      lines.push(`- **Significance**: ${item.significance}`);
 
-			if (options.includeFieldChanges && item.fieldChanges) {
-				lines.push("");
-				lines.push("#### Field Changes");
-				lines.push("");
-				item.fieldChanges.forEach((change) => {
-					lines.push(`**${change.field}** (${change.changeType})`);
-					lines.push(`- Old: \`${formatValue(change.oldValue)}\``);
-					lines.push(`- New: \`${formatValue(change.newValue)}\``);
-					lines.push("");
-				});
-			}
-		});
-	}
+      if (options.includeFieldChanges && item.fieldChanges) {
+        lines.push('');
+        lines.push('#### Field Changes');
+        lines.push('');
+        item.fieldChanges.forEach((change) => {
+          lines.push(`**${change.field}** (${change.changeType})`);
+          lines.push(`- Old: \`${formatValue(change.oldValue)}\``);
+          lines.push(`- New: \`${formatValue(change.newValue)}\``);
+          lines.push('');
+        });
+      }
+    });
+  }
 
-	const content = lines.join("\n");
+  const content = lines.join('\n');
 
-	return {
-		filename: `${baseFilename}.md`,
-		mimeType: "text/markdown",
-		content,
-	};
+  return {
+    filename: `${baseFilename}.md`,
+    mimeType: 'text/markdown',
+    content,
+  };
 }
 
 /**
  * Export as HTML
  */
 function exportAsHTML(
-	diff: VersionDiff,
-	baseFilename: string,
-	options: DiffExportOptions,
+  diff: VersionDiff,
+  baseFilename: string,
+  options: DiffExportOptions,
 ): DiffExportResult {
-	const html = `
+  const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -383,8 +376,8 @@ function exportAsHTML(
     </div>
 
     ${
-			diff.added.length > 0
-				? `
+      diff.added.length > 0
+        ? `
       <h2>Added Items (${diff.added.length})</h2>
       <table>
         <thead>
@@ -397,8 +390,8 @@ function exportAsHTML(
         </thead>
         <tbody>
           ${diff.added
-						.map(
-							(item) => `
+            .map(
+              (item) => `
             <tr>
               <td>${escapeHtml(item.title)}</td>
               <td><code>${item.itemId}</code></td>
@@ -406,17 +399,17 @@ function exportAsHTML(
               <td><span class="significance sig-${item.significance}">${item.significance}</span></td>
             </tr>
           `,
-						)
-						.join("")}
+            )
+            .join('')}
         </tbody>
       </table>
     `
-				: ""
-		}
+        : ''
+    }
 
     ${
-			diff.removed.length > 0
-				? `
+      diff.removed.length > 0
+        ? `
       <h2>Removed Items (${diff.removed.length})</h2>
       <table>
         <thead>
@@ -429,8 +422,8 @@ function exportAsHTML(
         </thead>
         <tbody>
           ${diff.removed
-						.map(
-							(item) => `
+            .map(
+              (item) => `
             <tr>
               <td>${escapeHtml(item.title)}</td>
               <td><code>${item.itemId}</code></td>
@@ -438,21 +431,21 @@ function exportAsHTML(
               <td><span class="significance sig-${item.significance}">${item.significance}</span></td>
             </tr>
           `,
-						)
-						.join("")}
+            )
+            .join('')}
         </tbody>
       </table>
     `
-				: ""
-		}
+        : ''
+    }
 
     ${
-			diff.modified.length > 0
-				? `
+      diff.modified.length > 0
+        ? `
       <h2>Modified Items (${diff.modified.length})</h2>
       ${diff.modified
-				.map(
-					(item) => `
+        .map(
+          (item) => `
         <div style="margin-bottom: 30px; border: 1px solid #ecf0f1; padding: 20px; border-radius: 4px;">
           <h3>${escapeHtml(item.title)}</h3>
           <p>
@@ -461,12 +454,12 @@ function exportAsHTML(
             <strong>Significance:</strong> <span class="significance sig-${item.significance}">${item.significance}</span>
           </p>
           ${
-						options.includeFieldChanges && item.fieldChanges
-							? `
+            options.includeFieldChanges && item.fieldChanges
+              ? `
             <h4>Field Changes</h4>
             ${item.fieldChanges
-							.map(
-								(change) => `
+              .map(
+                (change) => `
               <div class="field-change">
                 <strong>${change.field}</strong>
                 <div class="field-old" style="margin-top: 5px;">
@@ -479,18 +472,18 @@ function exportAsHTML(
                 </div>
               </div>
             `,
-							)
-							.join("")}
+              )
+              .join('')}
           `
-							: ""
-					}
+              : ''
+          }
         </div>
       `,
-				)
-				.join("")}
+        )
+        .join('')}
     `
-				: ""
-		}
+        : ''
+    }
 
     <div class="footer">
       <p>This diff report was automatically generated by TraceRTM.</p>
@@ -500,60 +493,60 @@ function exportAsHTML(
 </html>
   `.trim();
 
-	return {
-		filename: `${baseFilename}.html`,
-		mimeType: "text/html",
-		content: html,
-	};
+  return {
+    filename: `${baseFilename}.html`,
+    mimeType: 'text/html',
+    content: html,
+  };
 }
 
 // Helper functions
 function serializeItem(item: DiffItem, options: DiffExportOptions): unknown {
-	const serialized: Record<string, unknown> = {
-		itemId: item.itemId,
-		title: item.title,
-		type: item.type,
-		changeType: item.changeType,
-		significance: item.significance,
-	};
+  const serialized: Record<string, unknown> = {
+    itemId: item.itemId,
+    title: item.title,
+    type: item.type,
+    changeType: item.changeType,
+    significance: item.significance,
+  };
 
-	if (options.includeFieldChanges && item.fieldChanges) {
-		serialized.fieldChanges = item.fieldChanges.map((change) => ({
-			field: change.field,
-			changeType: change.changeType,
-			oldValue: change.oldValue,
-			newValue: change.newValue,
-		}));
-	}
+  if (options.includeFieldChanges && item.fieldChanges) {
+    serialized.fieldChanges = item.fieldChanges.map((change) => ({
+      field: change.field,
+      changeType: change.changeType,
+      oldValue: change.oldValue,
+      newValue: change.newValue,
+    }));
+  }
 
-	return serialized;
+  return serialized;
 }
 
 function formatValue(value: unknown): string {
-	if (value === null || value === undefined) {
-		return "null";
-	}
-	if (typeof value === "object") {
-		return JSON.stringify(value, null, 2);
-	}
-	if (typeof value === "boolean") {
-		return value ? "true" : "false";
-	}
-	return String(value);
+  if (value === null || value === undefined) {
+    return 'null';
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value, null, 2);
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
+  }
+  return String(value);
 }
 
 function escapeCSVField(value: unknown): string {
-	const str = formatValue(value);
-	if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-		return `"${str.replace(/"/g, '""')}"`;
-	}
-	return str;
+  const str = formatValue(value);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
 }
 
 function escapeHtml(text: string): string {
-	const div = document.createElement("div");
-	div.textContent = text;
-	return div.innerHTML;
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 export type { DiffExportResult };

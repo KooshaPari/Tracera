@@ -351,9 +351,7 @@ class TestMultiClientAccess:
     @pytest.mark.asyncio
     async def test_concurrent_requests(self, mcp_http_app, auth_headers):
         """Test handling concurrent HTTP requests."""
-        async with httpx.AsyncClient(
-            transport=ASGITransport(app=mcp_http_app), base_url="http://test"
-        ) as client:
+        async with httpx.AsyncClient(transport=ASGITransport(app=mcp_http_app), base_url="http://test") as client:
             # Create multiple concurrent requests
             tasks = []
             for i in range(5):
@@ -425,9 +423,7 @@ class TestHTTPPerformance:
         """Test average response time."""
         import time
 
-        async with httpx.AsyncClient(
-            transport=ASGITransport(app=mcp_http_app), base_url="http://test"
-        ) as client:
+        async with httpx.AsyncClient(transport=ASGITransport(app=mcp_http_app), base_url="http://test") as client:
             start = time.time()
 
             response = await client.post(

@@ -2,183 +2,184 @@
  * Tests for uiStore
  */
 
-import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
-import { useUIStore } from "../../stores/uiStore";
+import { act, renderHook } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-describe("uiStore", () => {
-	beforeEach(() => {
-		localStorage.clear();
-	});
+import { useUIStore } from '../../stores/uiStore';
 
-	describe("sidebar", () => {
-		it("should toggle sidebar", () => {
-			const { result } = renderHook(() => useUIStore());
-			const initialState = result.current.sidebarOpen;
+describe('uiStore', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
 
-			act(() => {
-				result.current.toggleSidebar();
-			});
+  describe('sidebar', () => {
+    it('should toggle sidebar', () => {
+      const { result } = renderHook(() => useUIStore());
+      const initialState = result.current.sidebarOpen;
 
-			expect(result.current.sidebarOpen).toBe(!initialState);
-		});
+      act(() => {
+        result.current.toggleSidebar();
+      });
 
-		it("should set sidebar width", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.sidebarOpen).toBe(!initialState);
+    });
 
-			act(() => {
-				result.current.setSidebarWidth(300);
-			});
+    it('should set sidebar width', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.sidebarWidth).toBe(300);
-		});
-	});
+      act(() => {
+        result.current.setSidebarWidth(300);
+      });
 
-	describe("theme", () => {
-		it("should toggle dark mode", () => {
-			const { result } = renderHook(() => useUIStore());
-			const initial = result.current.isDarkMode;
+      expect(result.current.sidebarWidth).toBe(300);
+    });
+  });
 
-			act(() => {
-				result.current.toggleDarkMode();
-			});
+  describe('theme', () => {
+    it('should toggle dark mode', () => {
+      const { result } = renderHook(() => useUIStore());
+      const initial = result.current.isDarkMode;
 
-			expect(result.current.isDarkMode).toBe(!initial);
-		});
-	});
+      act(() => {
+        result.current.toggleDarkMode();
+      });
 
-	describe("view and selection", () => {
-		it("should set current view", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.isDarkMode).toBe(!initial);
+    });
+  });
 
-			act(() => {
-				result.current.setCurrentView("TEST");
-			});
+  describe('view and selection', () => {
+    it('should set current view', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.currentView).toBe("TEST");
-		});
+      act(() => {
+        result.current.setCurrentView('TEST');
+      });
 
-		it("should select item", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.currentView).toBe('TEST');
+    });
 
-			act(() => {
-				result.current.selectItem("item-1");
-			});
+    it('should select item', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.selectedItemId).toBe("item-1");
-		});
+      act(() => {
+        result.current.selectItem('item-1');
+      });
 
-		it("should toggle item selection", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.selectedItemId).toBe('item-1');
+    });
 
-			act(() => {
-				result.current.toggleItemSelection("item-1");
-			});
+    it('should toggle item selection', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.selectedItemIds).toContain("item-1");
+      act(() => {
+        result.current.toggleItemSelection('item-1');
+      });
 
-			act(() => {
-				result.current.toggleItemSelection("item-1");
-			});
+      expect(result.current.selectedItemIds).toContain('item-1');
 
-			expect(result.current.selectedItemIds).not.toContain("item-1");
-		});
+      act(() => {
+        result.current.toggleItemSelection('item-1');
+      });
 
-		it("should clear selection", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.selectedItemIds).not.toContain('item-1');
+    });
 
-			act(() => {
-				result.current.selectItem("item-1");
-				result.current.toggleItemSelection("item-2");
-				result.current.clearSelection();
-			});
+    it('should clear selection', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.selectedItemId).toBeNull();
-			expect(result.current.selectedItemIds).toEqual([]);
-		});
-	});
+      act(() => {
+        result.current.selectItem('item-1');
+        result.current.toggleItemSelection('item-2');
+        result.current.clearSelection();
+      });
 
-	describe("command palette", () => {
-		it("should toggle command palette", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.selectedItemId).toBeNull();
+      expect(result.current.selectedItemIds).toEqual([]);
+    });
+  });
 
-			act(() => {
-				result.current.toggleCommandPalette();
-			});
+  describe('command palette', () => {
+    it('should toggle command palette', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.commandPaletteOpen).toBe(true);
+      act(() => {
+        result.current.toggleCommandPalette();
+      });
 
-			act(() => {
-				result.current.toggleCommandPalette();
-			});
+      expect(result.current.commandPaletteOpen).toBeTruthy();
 
-			expect(result.current.commandPaletteOpen).toBe(false);
-		});
-	});
+      act(() => {
+        result.current.toggleCommandPalette();
+      });
 
-	describe("search", () => {
-		it("should set search query", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.commandPaletteOpen).toBeFalsy();
+    });
+  });
 
-			act(() => {
-				result.current.setSearchQuery("test query");
-			});
+  describe('search', () => {
+    it('should set search query', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.searchQuery).toBe("test query");
-		});
+      act(() => {
+        result.current.setSearchQuery('test query');
+      });
 
-		it("should toggle search", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.searchQuery).toBe('test query');
+    });
 
-			act(() => {
-				result.current.toggleSearch();
-			});
+    it('should toggle search', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.searchOpen).toBe(true);
-		});
-	});
+      act(() => {
+        result.current.toggleSearch();
+      });
 
-	describe("filters", () => {
-		it("should set status filter", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.searchOpen).toBeTruthy();
+    });
+  });
 
-			act(() => {
-				result.current.setStatusFilter(["open", "in_progress"]);
-			});
+  describe('filters', () => {
+    it('should set status filter', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.statusFilter).toEqual(["open", "in_progress"]);
-		});
+      act(() => {
+        result.current.setStatusFilter(['open', 'in_progress']);
+      });
 
-		it("should set priority filter", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.statusFilter).toEqual(['open', 'in_progress']);
+    });
 
-			act(() => {
-				result.current.setPriorityFilter(["high", "critical"]);
-			});
+    it('should set priority filter', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.priorityFilter).toEqual(["high", "critical"]);
-		});
-	});
+      act(() => {
+        result.current.setPriorityFilter(['high', 'critical']);
+      });
 
-	describe("layout", () => {
-		it("should set layout mode", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.priorityFilter).toEqual(['high', 'critical']);
+    });
+  });
 
-			act(() => {
-				result.current.setLayoutMode("kanban");
-			});
+  describe('layout', () => {
+    it('should set layout mode', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.layoutMode).toBe("kanban");
-		});
+      act(() => {
+        result.current.setLayoutMode('kanban');
+      });
 
-		it("should set grid columns", () => {
-			const { result } = renderHook(() => useUIStore());
+      expect(result.current.layoutMode).toBe('kanban');
+    });
 
-			act(() => {
-				result.current.setGridColumns(4);
-			});
+    it('should set grid columns', () => {
+      const { result } = renderHook(() => useUIStore());
 
-			expect(result.current.gridColumns).toBe(4);
-		});
-	});
+      act(() => {
+        result.current.setGridColumns(4);
+      });
+
+      expect(result.current.gridColumns).toBe(4);
+    });
+  });
 });

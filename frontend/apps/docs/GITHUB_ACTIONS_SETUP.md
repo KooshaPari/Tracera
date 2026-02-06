@@ -5,6 +5,7 @@ This guide walks through setting up the CI/CD pipeline for automatic documentati
 ## Overview
 
 The documentation site uses GitHub Actions to:
+
 1. Generate OpenAPI specification from the backend
 2. Build the documentation site
 3. Deploy to Vercel (preview for PRs, production for main)
@@ -25,6 +26,7 @@ Create a Vercel authentication token:
 7. Copy the token (shown only once)
 
 Add to GitHub:
+
 1. Go to your repository → Settings → Secrets and variables → Actions
 2. Click "New repository secret"
 3. Name: `VERCEL_TOKEN`
@@ -48,6 +50,7 @@ cat .vercel/project.json
 ```
 
 Example output:
+
 ```json
 {
   "orgId": "team_xxx123yyy456zzz",
@@ -56,6 +59,7 @@ Example output:
 ```
 
 Add to GitHub:
+
 1. Repository → Settings → Secrets and variables → Actions
 2. Click "New repository secret"
 3. Name: `VERCEL_ORG_ID`
@@ -67,6 +71,7 @@ Add to GitHub:
 From the same `project.json` file:
 
 Add to GitHub:
+
 1. Repository → Settings → Secrets and variables → Actions
 2. Click "New repository secret"
 3. Name: `VERCEL_DOCS_PROJECT_ID`
@@ -78,6 +83,7 @@ Add to GitHub:
 If your API is at a different URL:
 
 Add to GitHub:
+
 1. Repository → Settings → Secrets and variables → Actions
 2. Click "New repository secret"
 3. Name: `NEXT_PUBLIC_API_URL`
@@ -89,6 +95,7 @@ Add to GitHub:
 If your docs site is at a different URL:
 
 Add to GitHub:
+
 1. Repository → Settings → Secrets and variables → Actions
 2. Click "New repository secret"
 3. Name: `NEXT_PUBLIC_DOCS_URL`
@@ -97,13 +104,13 @@ Add to GitHub:
 
 ## Summary of Required Secrets
 
-| Secret Name | Description | Required |
-|-------------|-------------|----------|
-| `VERCEL_TOKEN` | Vercel authentication token | ✅ Yes |
-| `VERCEL_ORG_ID` | Vercel organization/team ID | ✅ Yes |
-| `VERCEL_DOCS_PROJECT_ID` | Vercel project ID for docs | ✅ Yes |
-| `NEXT_PUBLIC_API_URL` | API endpoint URL | ⚠️ Optional |
-| `NEXT_PUBLIC_DOCS_URL` | Docs site URL | ⚠️ Optional |
+| Secret Name              | Description                 | Required    |
+| ------------------------ | --------------------------- | ----------- |
+| `VERCEL_TOKEN`           | Vercel authentication token | ✅ Yes      |
+| `VERCEL_ORG_ID`          | Vercel organization/team ID | ✅ Yes      |
+| `VERCEL_DOCS_PROJECT_ID` | Vercel project ID for docs  | ✅ Yes      |
+| `NEXT_PUBLIC_API_URL`    | API endpoint URL            | ⚠️ Optional |
+| `NEXT_PUBLIC_DOCS_URL`   | Docs site URL               | ⚠️ Optional |
 
 ## Verifying Setup
 
@@ -149,11 +156,13 @@ You can also manually trigger the workflow:
 **File**: `.github/workflows/docs-deploy.yml`
 
 **Triggers**:
+
 - Push to `main` → Production deployment
 - Pull request → Preview deployment
 - Manual trigger → Choose environment
 
 **Jobs**:
+
 1. `generate-openapi` - Generate OpenAPI spec from backend
 2. `build-docs` - Build the documentation site
 3. `deploy-preview` - Deploy preview for PRs
@@ -165,10 +174,12 @@ You can also manually trigger the workflow:
 **File**: `.github/workflows/openapi-docs.yml`
 
 **Triggers**:
+
 - Changes to backend Go files
 - Manual trigger
 
 **Jobs**:
+
 1. Generate and validate OpenAPI spec
 2. Deploy spec to docs site
 3. Generate client SDKs (optional)
@@ -180,6 +191,7 @@ You can also manually trigger the workflow:
 **Symptoms**: Deployment fails with authentication error
 
 **Solution**:
+
 1. Create a new Vercel token
 2. Update `VERCEL_TOKEN` secret in GitHub
 3. Re-run the workflow
@@ -189,6 +201,7 @@ You can also manually trigger the workflow:
 **Symptoms**: "Project not found" error
 
 **Solution**:
+
 1. Verify IDs in `.vercel/project.json`
 2. Update secrets in GitHub
 3. Ensure token has access to the organization
@@ -198,6 +211,7 @@ You can also manually trigger the workflow:
 **Symptoms**: No workflow runs on push/PR
 
 **Solution**:
+
 1. Check workflow file syntax (YAML)
 2. Verify path filters match changed files
 3. Check if workflows are enabled in repository settings
@@ -207,6 +221,7 @@ You can also manually trigger the workflow:
 **Symptoms**: Build step fails
 
 **Solution**:
+
 1. Check build logs in Actions tab
 2. Test build locally: `bun run build`
 3. Verify dependencies are correct
@@ -217,6 +232,7 @@ You can also manually trigger the workflow:
 **Symptoms**: Deploy step fails
 
 **Solution**:
+
 1. Verify all secrets are set correctly
 2. Check Vercel status page
 3. Try manual deployment to isolate issue
@@ -236,6 +252,7 @@ You can also manually trigger the workflow:
 ### Preview Deployments
 
 Every PR gets a unique preview URL:
+
 - Automatically deployed on PR creation
 - Updated on each push to PR branch
 - URL posted in PR comments
@@ -244,6 +261,7 @@ Every PR gets a unique preview URL:
 ### Production Deployments
 
 Automatic deployment to production:
+
 - Triggered on push to `main` branch
 - Includes validation checks
 - Deployment summary in Actions tab
@@ -252,6 +270,7 @@ Automatic deployment to production:
 ### Manual Deployments
 
 Trigger deployments manually:
+
 1. Go to Actions tab
 2. Select "Deploy Documentation Site"
 3. Click "Run workflow"
@@ -263,6 +282,7 @@ Trigger deployments manually:
 ### GitHub Actions
 
 Monitor workflow runs:
+
 1. Go to repository → Actions tab
 2. View workflow runs and logs
 3. Set up notifications for failures
@@ -270,6 +290,7 @@ Monitor workflow runs:
 ### Vercel Dashboard
 
 Monitor deployments:
+
 1. Go to [vercel.com](https://vercel.com)
 2. Select your project
 3. View deployment history

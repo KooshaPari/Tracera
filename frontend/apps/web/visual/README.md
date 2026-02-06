@@ -5,6 +5,7 @@ Comprehensive visual regression testing suite for TraceRTM frontend using Playwr
 ## Overview
 
 This test suite ensures visual consistency across:
+
 - **Components**: Buttons, inputs, cards, badges, forms
 - **Themes**: Light and dark mode consistency
 - **Responsive**: Mobile, tablet, and desktop layouts
@@ -26,26 +27,31 @@ visual/
 ## Running Tests
 
 ### All Visual Tests
+
 ```bash
 bun run test:visual
 ```
 
 ### Update Baselines
+
 ```bash
 bun run test:visual:update
 ```
 
 ### Specific Test File
+
 ```bash
 bun run test:visual -- components.spec.ts
 ```
 
 ### UI Mode (Interactive)
+
 ```bash
 bun run test:visual:ui
 ```
 
 ### Specific Browser/Viewport
+
 ```bash
 bun run test:visual -- --project=chromium-desktop
 bun run test:visual -- --project=mobile-iphone
@@ -93,6 +99,7 @@ Tests visual consistency of individual UI components:
 - **Empty States**: No data placeholders
 
 **Key Tests:**
+
 - ✅ All button variants render correctly
 - ✅ Hover states are visually distinct
 - ✅ Disabled states have reduced opacity
@@ -114,6 +121,7 @@ Tests complete page layouts and user journeys:
 - **Command Palette**: Open state with search and results
 
 **Key Tests:**
+
 - ✅ Dashboard displays stats and activity correctly
 - ✅ Project cards show all metadata
 - ✅ Items table renders with proper formatting
@@ -133,6 +141,7 @@ Tests light/dark mode consistency:
 - **Accessibility**: Focus states visible in both themes
 
 **Key Tests:**
+
 - ✅ Light theme uses correct color palette
 - ✅ Dark theme uses correct color palette
 - ✅ Theme toggle transitions smoothly
@@ -150,6 +159,7 @@ Tests layouts across different viewport sizes:
 - **Breakpoint Transitions**: Smooth layout changes at breakpoints
 
 **Viewports Tested:**
+
 - Mobile Small: 375×667 (iPhone SE)
 - Mobile Large: 428×926 (iPhone 12)
 - Tablet: 768×1024 (iPad)
@@ -157,6 +167,7 @@ Tests layouts across different viewport sizes:
 - Desktop Large: 1920×1080
 
 **Key Tests:**
+
 - ✅ Mobile shows single-column layout
 - ✅ Tablet shows 2-column grid
 - ✅ Desktop shows sidebar navigation
@@ -167,11 +178,11 @@ Tests layouts across different viewport sizes:
 
 Default thresholds for different test types:
 
-| Test Type | Max Diff Pixels | Threshold % |
-|-----------|----------------|-------------|
-| Components | 100 | 20% |
-| Themes | 150 | 25% |
-| Layouts | 200 | 30% |
+| Test Type  | Max Diff Pixels | Threshold % |
+| ---------- | --------------- | ----------- |
+| Components | 100             | 20%         |
+| Themes     | 150             | 25%         |
+| Layouts    | 200             | 30%         |
 
 These can be adjusted per-test using:
 
@@ -179,7 +190,7 @@ These can be adjusted per-test using:
 await expect(page).toHaveScreenshot('test.png', {
   maxDiffPixels: 50,
   threshold: 0.1,
-})
+});
 ```
 
 ## Writing New Visual Tests
@@ -187,11 +198,11 @@ await expect(page).toHaveScreenshot('test.png', {
 ### Basic Component Test
 
 ```typescript
-import { test, expect } from '@playwright/test'
-import { setupVisualTest } from './helpers/visual-test-helpers'
+import { test, expect } from '@playwright/test';
+import { setupVisualTest } from './helpers/visual-test-helpers';
 
 test('my component visual test', async ({ page }) => {
-  await setupVisualTest(page)
+  await setupVisualTest(page);
 
   await page.evaluate(() => {
     document.getElementById('root')!.innerHTML = `
@@ -200,100 +211,105 @@ test('my component visual test', async ({ page }) => {
           My Button
         </button>
       </div>
-    `
-  })
+    `;
+  });
 
-  await expect(page.locator('#root')).toHaveScreenshot('my-component.png')
-})
+  await expect(page.locator('#root')).toHaveScreenshot('my-component.png');
+});
 ```
 
 ### Theme Test
 
 ```typescript
-import { test, expect } from '@playwright/test'
-import { setupVisualTest, setTheme, testAllThemes } from './helpers/visual-test-helpers'
+import { test, expect } from '@playwright/test';
+import { setupVisualTest, setTheme, testAllThemes } from './helpers/visual-test-helpers';
 
 test('component in both themes', async ({ page }) => {
-  await setupVisualTest(page)
+  await setupVisualTest(page);
 
   await testAllThemes(page, async (theme) => {
     await page.evaluate(() => {
-      document.getElementById('root')!.innerHTML = `<div class="bg-background p-8">Content</div>`
-    })
+      document.getElementById('root')!.innerHTML = `<div class="bg-background p-8">Content</div>`;
+    });
 
-    await expect(page).toHaveScreenshot(`component-${theme}.png`)
-  })
-})
+    await expect(page).toHaveScreenshot(`component-${theme}.png`);
+  });
+});
 ```
 
 ### Responsive Test
 
 ```typescript
-import { test, expect, devices } from '@playwright/test'
-import { setupVisualTest } from './helpers/visual-test-helpers'
+import { test, expect, devices } from '@playwright/test';
+import { setupVisualTest } from './helpers/visual-test-helpers';
 
-test.use({ ...devices['iPhone 12'] })
+test.use({ ...devices['iPhone 12'] });
 
 test('mobile responsive layout', async ({ page }) => {
-  await setupVisualTest(page)
+  await setupVisualTest(page);
 
   await page.evaluate(() => {
     document.getElementById('root')!.innerHTML = `
       <div class="p-4">Mobile layout</div>
-    `
-  })
+    `;
+  });
 
-  await expect(page).toHaveScreenshot('mobile.png', { fullPage: true })
-})
+  await expect(page).toHaveScreenshot('mobile.png', { fullPage: true });
+});
 ```
 
 ## Best Practices
 
 ### 1. Disable Animations
+
 Always disable animations for consistent screenshots:
 
 ```typescript
-import { disableAnimations } from './helpers/visual-test-helpers'
+import { disableAnimations } from './helpers/visual-test-helpers';
 
-await disableAnimations(page)
+await disableAnimations(page);
 ```
 
 ### 2. Wait for Fonts
+
 Ensure fonts are loaded before screenshots:
 
 ```typescript
-import { waitForFonts } from './helpers/visual-test-helpers'
+import { waitForFonts } from './helpers/visual-test-helpers';
 
-await waitForFonts(page)
+await waitForFonts(page);
 ```
 
 ### 3. Hide Flakey Elements
+
 Hide time-based or dynamic content:
 
 ```typescript
-import { hideFlakeyElements } from './helpers/visual-test-helpers'
+import { hideFlakeyElements } from './helpers/visual-test-helpers';
 
-await hideFlakeyElements(page, ['.timestamp', '.live-indicator'])
+await hideFlakeyElements(page, ['.timestamp', '.live-indicator']);
 ```
 
 ### 4. Mock Time
+
 For consistent timestamp displays:
 
 ```typescript
-import { mockTime } from './helpers/visual-test-helpers'
+import { mockTime } from './helpers/visual-test-helpers';
 
-await mockTime(page, new Date('2025-01-01T12:00:00Z'))
+await mockTime(page, new Date('2025-01-01T12:00:00Z'));
 ```
 
 ### 5. Use Stable Selectors
+
 Use semantic selectors for better test maintenance:
 
 ```typescript
 // ✅ Good
-await expect(page.locator('[data-testid="primary-button"]')).toHaveScreenshot()
+await expect(page.locator('[data-testid="primary-button"]')).toHaveScreenshot();
 
 // ❌ Avoid
-await expect(page.locator('.css-xyz123')).toHaveScreenshot()
+await expect(page.locator('.css-xyz123')).toHaveScreenshot();
 ```
 
 ## Troubleshooting
@@ -312,13 +328,13 @@ If legitimate design changes cause failures:
 
 Common causes and solutions:
 
-| Issue | Solution |
-|-------|----------|
-| Animations | Use `disableAnimations()` |
-| Fonts not loaded | Use `waitForFonts()` |
-| Timestamps | Use `mockTime()` |
-| Hover states | Use explicit `hover()` before screenshot |
-| Layout shifts | Use `waitForStableElement()` |
+| Issue            | Solution                                 |
+| ---------------- | ---------------------------------------- |
+| Animations       | Use `disableAnimations()`                |
+| Fonts not loaded | Use `waitForFonts()`                     |
+| Timestamps       | Use `mockTime()`                         |
+| Hover states     | Use explicit `hover()` before screenshot |
+| Layout shifts    | Use `waitForStableElement()`             |
 
 ### CI/CD Failures
 
@@ -351,7 +367,7 @@ export default defineConfig({
     { name: 'mobile-iphone', use: { ...devices['iPhone 12'] } },
     // ... more projects
   ],
-})
+});
 ```
 
 ## Coverage Goals
@@ -373,6 +389,7 @@ Target coverage for visual regression:
 ## Support
 
 For questions or issues with visual testing:
+
 1. Check the troubleshooting section above
 2. Review Playwright's visual testing docs
 3. Check existing test examples in this directory

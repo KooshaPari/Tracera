@@ -28,6 +28,7 @@ cat tsconfig.json | grep -A 10 "paths"
 ```
 
 **Expected paths in tsconfig.json**:
+
 ```json
 {
   "compilerOptions": {
@@ -39,6 +40,7 @@ cat tsconfig.json | grep -A 10 "paths"
 ```
 
 **Fix if missing files**:
+
 ```bash
 # If icon-sprite.tsx is missing, create a placeholder:
 cat > components/icon-sprite.tsx << 'EOF'
@@ -63,7 +65,6 @@ ls -la next.config.*
 
 # Remove others:
 rm -f next.config.analyze.ts
-rm -f next.config.mjs
 rm -f next.config.js
 ```
 
@@ -78,6 +79,7 @@ Remove deprecated `swcMinify` option (it's now default in Next.js 15):
 ```
 
 **Updated next.config.ts**:
+
 ```typescript
 import type { NextConfig } from 'next';
 import { createMDX } from 'fumadocs-mdx/next';
@@ -93,12 +95,7 @@ const nextConfig: NextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
 
   experimental: {
-    optimizePackageImports: [
-      'fumadocs-ui',
-      'fumadocs-core',
-      'fumadocs-openapi',
-      'lucide-react',
-    ],
+    optimizePackageImports: ['fumadocs-ui', 'fumadocs-core', 'fumadocs-openapi', 'lucide-react'],
   },
 
   productionBrowserSourceMaps: false,
@@ -173,6 +170,7 @@ ANALYZE=true bun run build
 ```
 
 **Expected Output**:
+
 ```
 ✓ Compiled successfully
 ✓ Linting and checking validity of types
@@ -274,14 +272,14 @@ bun run build 2>&1 | grep -i error && echo "❌ Errors found" || echo "✅ No er
 
 ## 🎯 Target Metrics
 
-| Metric | Target | How to Check |
-|--------|--------|--------------|
+| Metric                 | Target | How to Check                                                         |
+| ---------------------- | ------ | -------------------------------------------------------------------- |
 | Total bundle (gzipped) | <200KB | `find .next/static/chunks -name "*.js" -exec gzip -c {} \; \| wc -c` |
-| Main chunk | <100KB | Check bundle analyzer |
-| React chunk | <50KB | Check bundle analyzer |
-| Fumadocs chunk | <100KB | Check bundle analyzer |
-| Vendor chunk | <80KB | Check bundle analyzer |
-| Lighthouse Performance | >90 | `bun run lighthouse` |
+| Main chunk             | <100KB | Check bundle analyzer                                                |
+| React chunk            | <50KB  | Check bundle analyzer                                                |
+| Fumadocs chunk         | <100KB | Check bundle analyzer                                                |
+| Vendor chunk           | <80KB  | Check bundle analyzer                                                |
+| Lighthouse Performance | >90    | `bun run lighthouse`                                                 |
 
 ## 🚫 Common Issues & Fixes
 
@@ -289,6 +287,7 @@ bun run build 2>&1 | grep -i error && echo "❌ Errors found" || echo "✅ No er
 
 **Cause**: Next.js hasn't generated .source yet
 **Fix**:
+
 ```bash
 # .source is generated during Next.js build
 # Make sure source.config.ts exists
@@ -304,6 +303,7 @@ ls -la source.config.ts
 
 **Cause**: Bundle analyzer might be enabled
 **Fix**:
+
 ```bash
 # Build without analyzer
 unset ANALYZE
@@ -314,6 +314,7 @@ bun run build
 
 **Cause**: Missing or incorrect global Next.js
 **Fix**:
+
 ```bash
 # Use local Next.js
 ./node_modules/.bin/next build
@@ -379,12 +380,14 @@ After Phase 1 completes:
 If blocked:
 
 1. **Check build logs**:
+
    ```bash
    bun run build 2>&1 | tee build-error.log
    cat build-error.log | grep -A 5 "Error"
    ```
 
 2. **Verify environment**:
+
    ```bash
    node --version  # Should be 20+
    bun --version   # Should be 1.2+
@@ -392,6 +395,7 @@ If blocked:
    ```
 
 3. **Check for conflicts**:
+
    ```bash
    # Multiple Next.js versions?
    find . -name "next" -type f

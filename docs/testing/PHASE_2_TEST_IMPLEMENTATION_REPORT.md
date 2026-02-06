@@ -125,9 +125,9 @@ Successfully implemented comprehensive test coverage for all 16 zero-coverage mo
 
 ### 4. TUI Dashboard v2 Tests (493 lines, 9 test classes, 20 tests)
 
-**File**: `/tests/unit/tui/apps/test_dashboard_v2.py`
+**File**: `/tests/unit/tui/apps/test_dashboard_compat.py`
 
-**Coverage Target**: `src/tracertm/tui/apps/dashboard_v2.py` (190 statements)
+**Coverage Target**: `src/tracertm/tui/apps/dashboard_compat.py` (190 statements)
 
 **Test Classes**:
 - `TestDashboardAppInitialization` - App initialization
@@ -343,7 +343,7 @@ Successfully implemented comprehensive test coverage for all 16 zero-coverage mo
 | **api/main.py** | 59 | 16 | 386 | ✅ |
 | **cli/storage_helper.py** | 206 | 33 | 534 | ✅ |
 | **tui/adapters/storage_adapter.py** | 138 | 28 | 532 | ✅ |
-| **tui/apps/dashboard_v2.py** | 190 | 20 | 493 | ✅ |
+| **tui/apps/dashboard_compat.py** | 190 | 20 | 493 | ✅ |
 | **tui/widgets/conflict_panel.py** | 101 | 20 | 304 | ✅ |
 | **tui/widgets/sync_status.py** | 127 | 35 | 410 | ✅ |
 | **tui/widgets/graph_view.py** | 85 | 6 | 202* | ✅ |
@@ -377,7 +377,7 @@ tests/
 │   │   ├── adapters/
 │   │   │   └── test_storage_adapter.py     (TUI adapter)
 │   │   ├── apps/
-│   │   │   └── test_dashboard_v2.py        (Dashboard app)
+│   │   │   └── test_dashboard_compat.py        (Dashboard app)
 │   │   └── widgets/
 │   │       ├── test_conflict_panel.py      (Conflict widget)
 │   │       ├── test_sync_status.py         (Sync widget)
@@ -449,7 +449,7 @@ Based on comprehensive test coverage:
 | api/main.py | 0% | 85%+ | +85% |
 | cli/storage_helper.py | 0% | 90%+ | +90% |
 | tui/adapters/storage_adapter.py | 0% | 90%+ | +90% |
-| tui/apps/dashboard_v2.py | 0% | 80%+ | +80% |
+| tui/apps/dashboard_compat.py | 0% | 80%+ | +80% |
 | tui/widgets/conflict_panel.py | 0% | 85%+ | +85% |
 | tui/widgets/sync_status.py | 0% | 90%+ | +90% |
 | tui/widgets/graph_view.py | 0% | 80%+ | +80% |

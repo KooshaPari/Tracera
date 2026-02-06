@@ -1032,9 +1032,7 @@ class TestExportImportService:
     # ========== Import Tests ==========
 
     @pytest.mark.asyncio
-    async def test_import_from_json(
-        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
-    ):
+    async def test_import_from_json(self, test_project: Project, sync_db_session: Session, db_session: AsyncSession):
         """
         Given: Valid JSON import data
         When: Import from JSON
@@ -1118,9 +1116,7 @@ class TestExportImportService:
         assert "Missing 'items'" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_import_from_csv(
-        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
-    ):
+    async def test_import_from_csv(self, test_project: Project, sync_db_session: Session, db_session: AsyncSession):
         """
         Given: Valid CSV import data
         When: Import from CSV

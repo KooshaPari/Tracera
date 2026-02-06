@@ -8,7 +8,7 @@ import pandera as pa  # type: ignore[possibly-unknown-member]
 from pandera.typing import DataFrame, Series  # type: ignore[possibly-missing-import]
 
 
-class RequirementSchema(pa.DataFrameModel):  # type: ignore[misc]
+class RequirementSchema(pa.DataFrameModel):
     """Schema for requirement data."""
 
     id: Series[int] = pa.Field(gt=0, description="Unique requirement ID")
@@ -29,7 +29,7 @@ class RequirementSchema(pa.DataFrameModel):  # type: ignore[misc]
         coerce = True
 
 
-class TraceabilityLinkSchema(pa.DataFrameModel):  # type: ignore[misc]
+class TraceabilityLinkSchema(pa.DataFrameModel):
     """Schema for traceability links."""
 
     id: Series[int] = pa.Field(gt=0, description="Unique link ID")
@@ -48,7 +48,7 @@ class TraceabilityLinkSchema(pa.DataFrameModel):  # type: ignore[misc]
         coerce = True
 
 
-class ProjectMetricsSchema(pa.DataFrameModel):  # type: ignore[misc]
+class ProjectMetricsSchema(pa.DataFrameModel):
     """Schema for project metrics."""
 
     project_id: Series[int] = pa.Field(gt=0, description="Project ID")

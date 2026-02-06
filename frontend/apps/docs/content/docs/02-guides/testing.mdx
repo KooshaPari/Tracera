@@ -140,7 +140,7 @@ test('renders item title', () => {
   const item = {
     id: '1',
     title: 'Test Item',
-    description: 'Test Description'
+    description: 'Test Description',
   };
 
   render(<ItemCard item={item} />);
@@ -178,9 +178,7 @@ function createWrapper() {
   });
 
   return ({ children }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }
 

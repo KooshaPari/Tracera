@@ -7,6 +7,8 @@ Can be run standalone or integrated with the MCP server.
 from __future__ import annotations
 
 import logging
+import os
+import subprocess
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from typing import Any
@@ -77,14 +79,38 @@ class MetricsServer:
             logger.warning("Metrics server already running")
             return
 
+        # Force clear port if in use (main server pattern)
+        self._clear_port()
+
         try:
             self.server = HTTPServer((self.host, self.port), MetricsHandler)
             self.thread = Thread(target=self.server.serve_forever, daemon=True)
             self.thread.start()
             logger.info(f"Metrics server started at http://{self.host}:{self.port}/metrics")
+        except OSError as e:
+            if e.errno == 48 and (
+                os.getenv("PYTEST_CURRENT_TEST") or os.getenv("PYTEST_RUNNING") or os.getenv("PYTEST_WORKER")
+            ):
+                logger.warning("Metrics server port already in use during tests; continuing without metrics")
+                return
+            logger.error(f"Failed to start metrics server: {e}")
+            raise
         except Exception as e:
             logger.error(f"Failed to start metrics server: {e}")
             raise
+
+    def _clear_port(self) -> None:
+        """Kill any process already using our port."""
+        try:
+            # Using lsof to find PID on port
+            result = subprocess.run(["lsof", "-ti", f":{self.port}"], capture_output=True, text=True, check=False)
+            if result.stdout:
+                for pid in result.stdout.strip().split("\n"):
+                    if pid:
+                        logger.warning(f"Clearing existing metrics server process (PID {pid}) on port {self.port}")
+                        subprocess.run(["kill", "-9", pid], check=False)
+        except Exception as e:
+            logger.debug(f"Port clearing skipped: {e}")
 
     def stop(self) -> None:
         """Stop the metrics server."""

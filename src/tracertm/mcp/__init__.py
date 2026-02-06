@@ -1,14 +1,29 @@
 """
 TraceRTM MCP Server - FastMCP 3.0.0b1 based MCP server for AI-native CLI.
 
-This module provides:
-- Tools: Actions the AI can perform (CRUD, analysis, verification)
-- Resources: Data the AI can access (projects, graphs, reports)
-- Prompts: Reusable prompt templates (ADR creation, analysis)
-- Monitoring: OpenTelemetry tracing, Prometheus metrics, structured logging
+This package intentionally avoids importing heavy MCP exports at module import
+time to prevent blocking API startup. Accessing exported symbols will load
+them lazily on demand.
 """
 
 from __future__ import annotations
 
-from tracertm.mcp._exports import *
-from tracertm.mcp._exports import __all__
+from importlib import import_module
+from typing import Any
+
+
+def _exports_module():
+    return import_module("tracertm.mcp._exports")
+
+
+def __getattr__(name: str) -> Any:
+    exports = _exports_module()
+    return getattr(exports, name)
+
+
+def __dir__() -> list[str]:
+    exports = _exports_module()
+    return sorted(set(globals().keys()) | set(getattr(exports, "__all__", [])))
+
+
+__all__ = []

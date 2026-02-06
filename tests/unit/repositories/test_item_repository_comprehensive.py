@@ -163,7 +163,9 @@ async def test_list_by_view_excludes_deleted_by_default(db_session: AsyncSession
     item_repo = ItemRepository(db_session)
 
     item1 = await item_repo.create(project_id=str(project.id), title="Active Item", view="FEATURE", item_type="feature")
-    item2 = await item_repo.create(project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature")
+    item2 = await item_repo.create(
+        project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature"
+    )
     await db_session.commit()
 
     # Delete item2
@@ -187,7 +189,9 @@ async def test_list_by_view_includes_deleted_when_requested(db_session: AsyncSes
     item_repo = ItemRepository(db_session)
 
     item1 = await item_repo.create(project_id=str(project.id), title="Active Item", view="FEATURE", item_type="feature")
-    item2 = await item_repo.create(project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature")
+    item2 = await item_repo.create(
+        project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature"
+    )
     await db_session.commit()
 
     # Delete item2
@@ -454,7 +458,9 @@ async def test_restore_soft_deleted_item(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    item = await item_repo.create(project_id=str(project.id), title="To Be Restored", view="FEATURE", item_type="feature")
+    item = await item_repo.create(
+        project_id=str(project.id), title="To Be Restored", view="FEATURE", item_type="feature"
+    )
     await db_session.commit()
 
     # Soft delete
@@ -525,9 +531,15 @@ async def test_get_by_project_with_status_filter(db_session: AsyncSession):
     item_repo = ItemRepository(db_session)
 
     # Create items with different statuses
-    await item_repo.create(project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo")
-    await item_repo.create(project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done")
-    await item_repo.create(project_id=str(project.id), title="Another Todo", view="STORY", item_type="story", status="todo")
+    await item_repo.create(
+        project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo"
+    )
+    await item_repo.create(
+        project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done"
+    )
+    await item_repo.create(
+        project_id=str(project.id), title="Another Todo", view="STORY", item_type="story", status="todo"
+    )
     await db_session.commit()
 
     # Get only todo items
@@ -587,8 +599,12 @@ async def test_get_by_project_without_status_filter(db_session: AsyncSession):
     item_repo = ItemRepository(db_session)
 
     # Create items with different statuses
-    await item_repo.create(project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo")
-    await item_repo.create(project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done")
+    await item_repo.create(
+        project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo"
+    )
+    await item_repo.create(
+        project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done"
+    )
     await db_session.commit()
 
     # Get all items
@@ -622,7 +638,11 @@ async def test_get_by_view_with_status_filter(db_session: AsyncSession):
         project_id=str(project.id), title="Done Feature", view="FEATURE", item_type="feature", status="done"
     )
     await item_repo.create(
-        project_id=str(project.id), title="In Progress Feature", view="FEATURE", item_type="feature", status="in_progress"
+        project_id=str(project.id),
+        title="In Progress Feature",
+        view="FEATURE",
+        item_type="feature",
+        status="in_progress",
     )
     await db_session.commit()
 
@@ -703,10 +723,20 @@ async def test_query_with_multiple_filters(db_session: AsyncSession):
 
     # Create items
     await item_repo.create(
-        project_id=str(project.id), title="High Todo", view="FEATURE", item_type="feature", priority="high", status="todo"
+        project_id=str(project.id),
+        title="High Todo",
+        view="FEATURE",
+        item_type="feature",
+        priority="high",
+        status="todo",
     )
     await item_repo.create(
-        project_id=str(project.id), title="High Done", view="FEATURE", item_type="feature", priority="high", status="done"
+        project_id=str(project.id),
+        title="High Done",
+        view="FEATURE",
+        item_type="feature",
+        priority="high",
+        status="done",
     )
     await item_repo.create(
         project_id=str(project.id), title="Low Todo", view="FEATURE", item_type="feature", priority="low", status="todo"

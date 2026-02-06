@@ -119,7 +119,9 @@ class GoBackendClient:
         """
         return await self._request("GET", f"/api/v1/items/{item_id}")
 
-    async def create_link(self, source_id: str, target_id: str, link_type: str, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
+    async def create_link(
+        self, source_id: str, target_id: str, link_type: str, metadata: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Create a link between two items.
 
         Args:

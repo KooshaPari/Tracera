@@ -16,11 +16,13 @@ This guide covers the deployment process for the TraceRTM documentation site usi
 ### Required Tools
 
 1. **Bun** (package manager)
+
    ```bash
    curl -fsSL https://bun.sh/install | bash
    ```
 
 2. **Vercel CLI** (for manual deployments)
+
    ```bash
    bun install --global vercel@latest
    ```
@@ -42,11 +44,13 @@ Set up these secrets in your GitHub repository (Settings → Secrets and variabl
 ### Getting Vercel Credentials
 
 1. **Install Vercel CLI**:
+
    ```bash
    bun install --global vercel@latest
    ```
 
 2. **Login and link project**:
+
    ```bash
    cd frontend/apps/docs
    vercel login
@@ -54,6 +58,7 @@ Set up these secrets in your GitHub repository (Settings → Secrets and variabl
    ```
 
 3. **Get credentials**:
+
    ```bash
    # This will display your org and project IDs
    cat .vercel/project.json
@@ -69,18 +74,21 @@ Set up these secrets in your GitHub repository (Settings → Secrets and variabl
 ### Local Development
 
 1. **Install dependencies**:
+
    ```bash
    cd frontend
    bun install
    ```
 
 2. **Sync OpenAPI spec** (optional):
+
    ```bash
    cd frontend/apps/docs
    bun run openapi:sync
    ```
 
 3. **Start development server**:
+
    ```bash
    bun run dev
    ```
@@ -103,11 +111,13 @@ NEXT_PUBLIC_DOCS_URL=http://localhost:3001
 The documentation site automatically deploys when changes are pushed:
 
 **Preview Deployments** (Pull Requests):
+
 - Trigger: Any PR with changes to `frontend/apps/docs/**` or `docs/**`
 - Environment: Preview
 - URL: Unique preview URL (posted in PR comments)
 
 **Production Deployments** (Main Branch):
+
 - Trigger: Push to `main` branch
 - Environment: Production
 - URL: https://docs.tracertm.com
@@ -117,12 +127,14 @@ The documentation site automatically deploys when changes are pushed:
 #### Quick Deploy Scripts
 
 **Deploy preview**:
+
 ```bash
 cd frontend/apps/docs
 bun run deploy:preview
 ```
 
 **Deploy to production**:
+
 ```bash
 cd frontend/apps/docs
 bun run deploy:prod
@@ -131,12 +143,14 @@ bun run deploy:prod
 #### Full Deploy Script
 
 For more control:
+
 ```bash
 cd frontend/apps/docs
 bash scripts/deploy.sh [preview|production]
 ```
 
 The script will:
+
 1. Check requirements (bun, vercel CLI, Go)
 2. Generate OpenAPI specification from backend
 3. Install dependencies
@@ -147,12 +161,14 @@ The script will:
 #### Vercel CLI Direct
 
 **Preview deployment**:
+
 ```bash
 cd frontend/apps/docs
 vercel
 ```
 
 **Production deployment**:
+
 ```bash
 cd frontend/apps/docs
 vercel --prod
@@ -200,6 +216,7 @@ The GitHub Actions workflow (`.github/workflows/docs-deploy.yml`) includes:
 Add these DNS records to your domain provider:
 
 **For root domain**:
+
 ```
 Type: A
 Name: docs
@@ -207,6 +224,7 @@ Value: 76.76.21.21
 ```
 
 **For www**:
+
 ```
 Type: CNAME
 Name: www.docs
@@ -214,6 +232,7 @@ Value: cname.vercel-dns.com
 ```
 
 **Alternative (CNAME for docs subdomain)**:
+
 ```
 Type: CNAME
 Name: docs
@@ -283,6 +302,7 @@ bash scripts/validate-deployment.sh
 ### Vercel Analytics
 
 Enable in Vercel dashboard:
+
 1. Go to project Settings → Analytics
 2. Enable Web Analytics
 3. View real-time and historical data
@@ -301,6 +321,7 @@ bun run test:performance
 ### Error Monitoring
 
 Check Vercel deployment logs:
+
 1. Go to Vercel dashboard → Deployments
 2. Select deployment
 3. View build and runtime logs
@@ -312,6 +333,7 @@ Check Vercel deployment logs:
 **Issue**: Build fails during `bun run build`
 
 **Solutions**:
+
 1. Check build logs in GitHub Actions or Vercel
 2. Verify all dependencies are installed
 3. Check for TypeScript errors: `bun run typecheck`
@@ -329,6 +351,7 @@ bun run build
 **Issue**: OpenAPI spec not generated
 
 **Solutions**:
+
 1. Verify Go is installed: `go version`
 2. Install swag: `go install github.com/swaggo/swag/cmd/swag@latest`
 3. Check backend directory exists
@@ -339,6 +362,7 @@ bun run build
 **Issue**: Deployment to Vercel fails
 
 **Solutions**:
+
 1. Verify Vercel token is valid
 2. Check project is linked: `vercel ls`
 3. Ensure all secrets are set in GitHub
@@ -360,6 +384,7 @@ vercel --prod --confirm
 **Issue**: Custom domain not working
 
 **Solutions**:
+
 1. Verify DNS records are correct
 2. Wait for DNS propagation (up to 48 hours)
 3. Check domain configuration in Vercel dashboard
@@ -371,6 +396,7 @@ vercel --prod --confirm
 **Issue**: Site loads slowly
 
 **Solutions**:
+
 1. Run bundle analyzer: `ANALYZE=true bun run build`
 2. Check Vercel Analytics for bottlenecks
 3. Optimize images and assets

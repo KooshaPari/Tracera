@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+
 import { collectBrowserLogs, collectNetworkLogs } from './fixtures/test-helpers';
 
 /**
@@ -136,10 +137,7 @@ test.describe('Route Validation', () => {
           !e.message.includes('WARNING'),
       );
 
-      expect(
-        consoleErrors,
-        `No errors during navigation to ${route.path}`,
-      ).toHaveLength(0);
+      expect(consoleErrors, `No errors during navigation to ${route.path}`).toHaveLength(0);
 
       /**
        * Verify page loaded completely
@@ -174,10 +172,7 @@ test.describe('Route Validation', () => {
         !e.message.includes('WARNING'),
     );
 
-    expect(
-      consoleErrors,
-      'Invalid route should not cause critical console errors',
-    ).toHaveLength(0);
+    expect(consoleErrors, 'Invalid route should not cause critical console errors').toHaveLength(0);
 
     console.log('✅ Invalid route handled gracefully');
   });

@@ -26,8 +26,6 @@ const metrics: BuildMetrics = {
   totalSize: 0,
 };
 
-
-
 // Step 1: Build the site
 
 const startTime = Date.now();
@@ -39,26 +37,24 @@ try {
   });
 
   metrics.buildTime = Date.now() - startTime;
-  
 } catch (error) {
-  
   process.exit(1);
 }
 
 // Step 2: Analyze build output
 
-
 const buildDir = join(process.cwd(), '.next');
 const staticDir = join(buildDir, 'static');
 
 if (!existsSync(buildDir)) {
-  
   process.exit(1);
 }
 
 // Count static files
 function countFiles(dir: string, ext?: string): number {
-  if (!existsSync(dir)) {return 0;}
+  if (!existsSync(dir)) {
+    return 0;
+  }
 
   let count = 0;
   const files = readdirSync(dir, { withFileTypes: true });
@@ -82,29 +78,15 @@ metrics.totalPages = countFiles(join(buildDir, 'server/app'), '.html');
 
 // Step 3: Report results
 
-
-
-
-
-
-
-
 // Step 4: Performance targets
-
-
 
 const buildTimeTarget = 60; // 60 seconds
 const buildTimePassed = metrics.buildTime < buildTimeTarget * 1000;
 
-
 const minPages = 10;
 const pagesPassed = metrics.totalPages >= minPages;
 
-
-
-
 // Step 5: Check for common issues
-
 
 const serverDir = join(buildDir, 'server');
 if (!existsSync(serverDir)) {
@@ -114,27 +96,19 @@ if (!existsSync(serverDir)) {
 const appDir = join(serverDir, 'app');
 if (existsSync(appDir)) {
   const files = readdirSync(appDir);
-  
+  console.log(`App directory contains ${files.length} entries.`);
 } else {
   metrics.errors.push('App directory not found');
 }
 
 if (metrics.errors.length > 0) {
-  
-  metrics.errors.forEach(error => {});
+  metrics.errors.forEach((error) => {
+    console.error('Static export error:', error);
+  });
   process.exit(1);
 }
 
-
-
 // Step 6: Next steps
-
-
-
-
-
-
-
 
 const allPassed = buildTimePassed && pagesPassed && metrics.errors.length === 0;
 process.exit(allPassed ? 0 : 1);

@@ -198,7 +198,7 @@
 2. `tests/unit/repositories/test_blockchain_repository.py` - +48 tests
 3. `tests/unit/repositories/test_item_spec_repository.py` - +83 tests
 4. `tests/unit/repositories/test_execution_repository.py` - +10 tests
-5. `tests/unit/repositories/test_test_run_repository.py` - +4 tests
+5. `tests/unit/repositories/test_run_repository.py` - +4 tests
 6. `tests/unit/repositories/test_integration_repository.py` - +90 tests
 
 ### Repository Bug Fixes (5 files)

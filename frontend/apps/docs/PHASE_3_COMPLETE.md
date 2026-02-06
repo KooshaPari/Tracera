@@ -16,16 +16,19 @@ Successfully implemented **instant search** with performance exceeding all targe
 **File**: `scripts/build-search-index.ts`
 
 **Features**:
+
 - Scans all MDX files in `content/docs/`
 - Extracts titles, descriptions, headings (first 1000 chars content, first 10 headings)
 - Generates optimized Fuse.js index
 - Outputs to `public/search-index.json` (37KB)
 
 **Performance**:
+
 - Build time: ~100ms for 20 documents
 - Index size: 37KB (gzipped: ~10KB)
 
 **Usage**:
+
 ```bash
 bun run search:index
 ```
@@ -35,12 +38,14 @@ bun run search:index
 **File**: `lib/search.worker.ts`
 
 **Features**:
+
 - Runs search in background thread (non-blocking UI)
 - Preloads search index on initialization
 - Returns results via postMessage
 - Includes performance metrics
 
 **Benefits**:
+
 - Zero UI blocking
 - Smooth 60 FPS experience
 - Efficient memory usage
@@ -50,16 +55,18 @@ bun run search:index
 **File**: `lib/use-search-worker.ts`
 
 **Features**:
+
 - React hook for worker lifecycle management
 - Automatic index loading
 - Performance tracking
 - Error handling
 
 **Usage**:
+
 ```tsx
 const { search, results, isReady, performance } = useSearchWorker();
 
-search("query", 20); // Search with max 20 results
+search('query', 20); // Search with max 20 results
 console.log(performance.searchDuration); // 5.49ms average
 ```
 
@@ -68,6 +75,7 @@ console.log(performance.searchDuration); // 5.49ms average
 **File**: `components/instant-search.tsx`
 
 **Features**:
+
 - Virtual scrolling (@tanstack/react-virtual)
 - Keyboard navigation (↑↓, Enter, Escape)
 - Match highlighting (mark elements)
@@ -75,6 +83,7 @@ console.log(performance.searchDuration); // 5.49ms average
 - Accessible (ARIA labels, roles)
 
 **Performance**:
+
 - Renders 1000+ results smoothly
 - <16ms per frame (60 FPS)
 - Virtual scrolling only renders visible items
@@ -84,12 +93,14 @@ console.log(performance.searchDuration); // 5.49ms average
 **File**: `scripts/benchmark-search.ts`
 
 **Tests**:
+
 - 15 test queries (short, medium, long, partial, no results)
 - Performance metrics (avg, min, max, p95)
 - Result counts and match quality
 - Success rate tracking
 
 **Latest Results**:
+
 ```
 Average: 5.49ms ✅
 Min: 0.92ms
@@ -99,6 +110,7 @@ Under 100ms: 15/15 (100.0%)
 ```
 
 **Usage**:
+
 ```bash
 bun run search:benchmark
 ```
@@ -108,6 +120,7 @@ bun run search:benchmark
 **File**: `e2e/search-performance.spec.ts`
 
 **Coverage**:
+
 - Search index loading
 - Cmd+K hotkey
 - Search functionality
@@ -118,29 +131,32 @@ bun run search:benchmark
 - Web worker initialization
 
 **Usage**:
+
 ```bash
 bun run test:e2e search-performance
 ```
 
 ## Performance Metrics
 
-| Metric | Target | Achieved | Improvement |
-|--------|--------|----------|-------------|
-| Average response | <100ms | **5.49ms** | **94.5% faster** |
-| P95 response | <100ms | **17.89ms** | **82.1% faster** |
-| Max response | <100ms | **17.89ms** | **82.1% faster** |
-| Success rate | 100% | **100%** | ✅ |
-| Index size | <200KB | **37KB** | **82% smaller** |
+| Metric           | Target | Achieved    | Improvement      |
+| ---------------- | ------ | ----------- | ---------------- |
+| Average response | <100ms | **5.49ms**  | **94.5% faster** |
+| P95 response     | <100ms | **17.89ms** | **82.1% faster** |
+| Max response     | <100ms | **17.89ms** | **82.1% faster** |
+| Success rate     | 100%   | **100%**    | ✅               |
+| Index size       | <200KB | **37KB**    | **82% smaller**  |
 
 ## Optimization Techniques
 
 ### 1. Index Size Reduction
+
 - Limited content to 1000 chars per page
 - Limited headings to first 10
 - Removed full content from search keys
 - Result: 37KB (down from 135KB)
 
 ### 2. Search Speed Optimization
+
 - Removed `content` field from search (80% of data)
 - Only search: title, description, headings
 - Optimized Fuse.js settings:
@@ -150,12 +166,14 @@ bun run test:e2e search-performance
   - `findAllMatches: false` (stop at first match)
 
 ### 3. UI Performance
+
 - Web worker for non-blocking search
 - Virtual scrolling for large result sets
 - Debounced input (prevents unnecessary searches)
 - Memoized components
 
 ### 4. Build Process
+
 - Precompiled index at build time
 - No runtime indexing overhead
 - Cached in public directory
@@ -225,11 +243,7 @@ function DocsLayout() {
   return (
     <>
       {/* Your layout */}
-      <InstantSearch
-        isOpen={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        maxResults={20}
-      />
+      <InstantSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} maxResults={20} />
     </>
   );
 }
@@ -261,8 +275,8 @@ All searches completed in <100ms (avg: 5.49ms)
 
 ```json
 {
-  "fuse.js": "^7.1.0",           // Fast fuzzy search
-  "@tanstack/react-virtual": "^3.13.18"  // Virtual scrolling
+  "fuse.js": "^7.1.0", // Fast fuzzy search
+  "@tanstack/react-virtual": "^3.13.18" // Virtual scrolling
 }
 ```
 
@@ -273,10 +287,10 @@ All searches completed in <100ms (avg: 5.49ms)
 ```ts
 export const searchConfig = {
   weights: {
-    title: 10,       // Most important
-    description: 5,  // Very relevant
-    heading: 3,      // Moderately important
-    content: 1,      // Baseline (excluded for performance)
+    title: 10, // Most important
+    description: 5, // Very relevant
+    heading: 3, // Moderately important
+    content: 1, // Baseline (excluded for performance)
   },
   priorityPages: [
     '/docs',
@@ -306,11 +320,11 @@ All criteria exceeded:
 
 ## Performance Comparison
 
-| Implementation | Average | P95 | Index Size |
-|----------------|---------|-----|------------|
-| Phase 3 (Optimized) | **5.49ms** | **17.89ms** | **37KB** |
-| Target | <100ms | <100ms | <200KB |
-| Improvement | **94.5%** | **82.1%** | **82%** |
+| Implementation      | Average    | P95         | Index Size |
+| ------------------- | ---------- | ----------- | ---------- |
+| Phase 3 (Optimized) | **5.49ms** | **17.89ms** | **37KB**   |
+| Target              | <100ms     | <100ms      | <200KB     |
+| Improvement         | **94.5%**  | **82.1%**   | **82%**    |
 
 ## Future Enhancements
 

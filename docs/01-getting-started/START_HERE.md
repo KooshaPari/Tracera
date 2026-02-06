@@ -293,7 +293,7 @@ Comprehensive research was conducted on:
 ### NLP & Analysis
 - **Transformers (BERT)**: NLP for requirements
 - **Ruff**: Fast linting
-- **mypy**: Type checking
+- **ty**: Type checking
 
 ---
 

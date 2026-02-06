@@ -5,126 +5,85 @@
  * to prevent entire page crashes when a graph rendering error occurs.
  */
 
-import { lazy, Suspense } from "react";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { Loader2 } from "lucide-react";
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
 
-// Lazy load heavy graph components for better code splitting
-const GraphViewContainer = lazy(() =>
-	import("./GraphViewContainer").then((m) => ({
-		default: m.GraphViewContainer,
-	})),
-);
-const FlowGraphView = lazy(() =>
-	import("./FlowGraphView").then((m) => ({ default: m.FlowGraphView })),
-);
-const EnhancedGraphView = lazy(() =>
-	import("./EnhancedGraphView").then((m) => ({
-		default: m.EnhancedGraphView,
-	})),
-);
-const VirtualizedGraphView = lazy(() =>
-	import("./VirtualizedGraphView").then((m) => ({
-		default: m.VirtualizedGraphView,
-	})),
-);
-const UnifiedGraphView = lazy(() =>
-	import("./UnifiedGraphView").then((m) => ({
-		default: m.UnifiedGraphView,
-	})),
-);
+import { EnhancedGraphView } from './EnhancedGraphView';
+import { FlowGraphView } from './FlowGraphView';
+import { GraphViewContainer } from './GraphViewContainer';
+import { UnifiedGraphView } from './UnifiedGraphView';
+import { VirtualizedGraphView } from './VirtualizedGraphView';
 
 // Loading fallback for graph components
 const GraphLoadingFallback = () => (
-		<div className="flex items-center justify-center h-full min-h-[400px] bg-muted/5">
-			<div className="flex flex-col items-center gap-4 text-muted-foreground">
-				<Loader2 className="h-8 w-8 animate-spin" />
-				<p className="text-sm">Loading graph...</p>
-		</div>
-	</div>
+  <div className='bg-muted/5 flex h-full min-h-[400px] items-center justify-center'>
+    <div className='text-muted-foreground'>
+      <LoadingSpinner text='Loading graph...' />
+    </div>
+  </div>
 );
 
 // Error fallback for graph components
 const GraphErrorFallback = (error: Error, reset: () => void) => (
-		<div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed border-destructive/50 rounded-lg bg-destructive/5 p-8">
-			<div className="max-w-md text-center space-y-4">
-				<h3 className="text-lg font-semibold text-destructive">
-					Graph Rendering Error
-				</h3>
-				<p className="text-sm text-muted-foreground">
-					{error.message || "Unable to render graph visualization"}
-				</p>
-				<button
-					onClick={reset}
-					className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-				>
-					Retry
-				</button>
-			</div>
-		</div>
+  <div className='border-destructive/50 bg-destructive/5 flex h-full min-h-[400px] items-center justify-center rounded-lg border-2 border-dashed p-8'>
+    <div className='max-w-md space-y-4 text-center'>
+      <h3 className='text-destructive text-lg font-semibold'>Graph Rendering Error</h3>
+      <p className='text-muted-foreground text-sm'>
+        {error.message || 'Unable to render graph visualization'}
+      </p>
+      <button
+        onClick={reset}
+        className='bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 transition-colors'
+      >
+        Retry
+      </button>
+    </div>
+  </div>
 );
 
 /**
  * Safe wrapper for GraphViewContainer with error boundary and lazy loading
  */
-export const SafeGraphViewContainer = (
-	props: React.ComponentProps<typeof GraphViewContainer>,
-) => (
-	<ErrorBoundary name="GraphViewContainer" fallback={GraphErrorFallback}>
-		<Suspense fallback={<GraphLoadingFallback />}>
-			<GraphViewContainer {...props} />
-		</Suspense>
-	</ErrorBoundary>
+export const SafeGraphViewContainer = (props: React.ComponentProps<typeof GraphViewContainer>) => (
+  <ErrorBoundary name='GraphViewContainer' fallback={GraphErrorFallback}>
+    <GraphViewContainer {...props} />
+  </ErrorBoundary>
 );
 
 /**
  * Safe wrapper for FlowGraphView with error boundary and lazy loading
  */
-export const SafeFlowGraphView = (
-	props: React.ComponentProps<typeof FlowGraphView>,
-) => (
-	<ErrorBoundary name="FlowGraphView" fallback={GraphErrorFallback}>
-		<Suspense fallback={<GraphLoadingFallback />}>
-			<FlowGraphView {...props} />
-		</Suspense>
-	</ErrorBoundary>
+export const SafeFlowGraphView = (props: React.ComponentProps<typeof FlowGraphView>) => (
+  <ErrorBoundary name='FlowGraphView' fallback={GraphErrorFallback}>
+    <FlowGraphView {...props} />
+  </ErrorBoundary>
 );
 
 /**
  * Safe wrapper for EnhancedGraphView with error boundary and lazy loading
  */
-export const SafeEnhancedGraphView = (
-	props: React.ComponentProps<typeof EnhancedGraphView>,
-) => (
-	<ErrorBoundary name="EnhancedGraphView" fallback={GraphErrorFallback}>
-		<Suspense fallback={<GraphLoadingFallback />}>
-			<EnhancedGraphView {...props} />
-		</Suspense>
-	</ErrorBoundary>
+export const SafeEnhancedGraphView = (props: React.ComponentProps<typeof EnhancedGraphView>) => (
+  <ErrorBoundary name='EnhancedGraphView' fallback={GraphErrorFallback}>
+    <EnhancedGraphView {...props} />
+  </ErrorBoundary>
 );
 
 /**
  * Safe wrapper for VirtualizedGraphView with error boundary and lazy loading
  */
 export const SafeVirtualizedGraphView = (
-	props: React.ComponentProps<typeof VirtualizedGraphView>,
+  props: React.ComponentProps<typeof VirtualizedGraphView>,
 ) => (
-	<ErrorBoundary name="VirtualizedGraphView" fallback={GraphErrorFallback}>
-		<Suspense fallback={<GraphLoadingFallback />}>
-			<VirtualizedGraphView {...props} />
-		</Suspense>
-	</ErrorBoundary>
+  <ErrorBoundary name='VirtualizedGraphView' fallback={GraphErrorFallback}>
+    <VirtualizedGraphView {...props} />
+  </ErrorBoundary>
 );
 
 /**
  * Safe wrapper for UnifiedGraphView with error boundary and lazy loading
  */
-export const SafeUnifiedGraphView = (
-	props: React.ComponentProps<typeof UnifiedGraphView>,
-) => (
-	<ErrorBoundary name="UnifiedGraphView" fallback={GraphErrorFallback}>
-		<Suspense fallback={<GraphLoadingFallback />}>
-			<UnifiedGraphView {...props} />
-		</Suspense>
-	</ErrorBoundary>
+export const SafeUnifiedGraphView = (props: React.ComponentProps<typeof UnifiedGraphView>) => (
+  <ErrorBoundary name='UnifiedGraphView' fallback={GraphErrorFallback}>
+    <UnifiedGraphView {...props} />
+  </ErrorBoundary>
 );

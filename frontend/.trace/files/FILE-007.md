@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Custom hook for API calls with error handling, loading states, and retry logic. Supports GET, POST, PUT, DELETE methods.
-

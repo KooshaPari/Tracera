@@ -27,7 +27,10 @@ _event_bus: EventBus | None = None
 
 
 def get_cache_service() -> CacheService:
-    """Get singleton CacheService for dependency injection. Redis is required; fail clearly if unavailable (CLAUDE.md)."""
+    """Get singleton CacheService for dependency injection.
+
+    Redis is required; fail clearly if unavailable (CLAUDE.md).
+    """
     global _cache_service
     if _cache_service is None:
         config_manager = ConfigManager()

@@ -17,7 +17,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 from .common import _call_tool, _maybe_select_project, _wrap, graph_tools
 
@@ -45,7 +45,8 @@ async def graph_analyze(
         return _wrap(result, ctx, kind)
     if kind == "shortest_path":
         result = await _call_tool(
-            graph_tools, "shortest_path",
+            graph_tools,
+            "shortest_path",
             source_id=payload.get("source_id"),
             target_id=payload.get("target_id"),
             ctx=ctx,

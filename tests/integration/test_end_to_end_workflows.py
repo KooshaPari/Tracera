@@ -213,7 +213,7 @@ class TestProjectSetupManagementExport:
 
         # Add member
         _meta = project.project_metadata
-        members = (_meta.get("members") if isinstance(_meta, dict) else None)
+        members = _meta.get("members") if isinstance(_meta, dict) else None
         new_members = (members if isinstance(members, list) else []) + [{"name": "Charlie", "role": "viewer"}]
         project.project_metadata = {"members": new_members}
         sync_db_session.commit()

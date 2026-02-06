@@ -40,6 +40,7 @@ apps/docs/
 ## Adding Content
 
 1. Create MDX file in `content/docs/`:
+
 ```mdx
 ---
 title: My Page
@@ -52,6 +53,7 @@ Content here...
 ```
 
 2. Update `content/docs/meta.json`:
+
 ```json
 {
   "title": "Documentation",
@@ -64,6 +66,7 @@ Content here...
 ## Current Implementation
 
 **Working:**
+
 - ✅ Dev server on port 3001
 - ✅ Build completes successfully
 - ✅ Landing page renders
@@ -73,12 +76,14 @@ Content here...
 - ✅ Turbo integration
 
 **Todo (Phase 3):**
+
 - Full MDX collection API
 - Content migration from archive
 - Navigation structure
 - Search functionality
 
 **Todo (Phase 4):**
+
 - OpenAPI documentation
 - Build optimizations
 - Deployment config
@@ -86,6 +91,7 @@ Content here...
 ## Troubleshooting
 
 **Dev server won't start:**
+
 ```bash
 cd frontend
 bun install
@@ -94,6 +100,7 @@ bun run dev
 ```
 
 **Build fails:**
+
 ```bash
 # Check TypeScript
 bun run typecheck
@@ -104,6 +111,7 @@ bun run build
 ```
 
 **Port 3001 in use:**
+
 ```bash
 # Change port in package.json
 "dev": "next dev --port 3002"

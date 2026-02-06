@@ -9,10 +9,14 @@ auto = true
 registry = "https://registry.npmjs.org/"
 
 # Cache configuration
-cache = "disable"  # Use "disable" or "force" or "default"
+# NOTE: Bun treats a string `cache = "..."` as a filesystem path for the on-disk cache.
+# Using `cache = "disable"` accidentally creates a `frontend/disable/` cache directory that
+# gets picked up by tooling (typecheck, bundlers, linters) and can break module resolution.
+# If you need to turn caching off, set `cache = false`.
+cache = true
 
 # Lockfile
-frozen = false  # Set to true in CI to ensure lockfile isn't modified
+frozen = false # Set to true in CI to ensure lockfile isn't modified
 
 # Install options
 production = false

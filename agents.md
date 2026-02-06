@@ -74,6 +74,8 @@ docs/
 
 **Subagent swarm (async orchestration):** If you have subagent/swarm capabilities, call task agents **async** so you are reawoken as each completes; spawn more agents or do more work then. Run a swarm: break down and isolate tasks well; **max 50 concurrent task agents at a time** (not 5). Work in between (plan, monitor); when idle you are reawoken on each completion to re-eval, spawn more, or consolidate.
 
+**Codex CLI idle/poll behavior:** When wrapping up a task, end with a long wait + poll loop to simulate idle. Poll at a predictable 30s interval, and structure it so user interruption stops only the sleep/wait (not child agents), allowing the user to steer without interrupting subagents.
+
 **Phased WBS and plans with DAGs:** When generating plans, roadmaps, or implementation breakdowns, use a **phased Work Breakdown Structure (WBS)** and model **dependencies as a DAG** (directed acyclic graph). Structure work into ordered phases (e.g. Phase 1: Discovery/Scope, Phase 2: Design, Phase 3: Build, Phase 4: Test/Validate, Phase 5: Deploy/Handoff). Tasks must have explicit predecessors with no cycles; list dependencies so execution order is unambiguous. Prefer a phased WBS plus a dependency list or table: **Phase | Task ID | Description | Depends On**. Planner agents must use phased WBS and DAG-style dependencies in plans and PRDs so implementers and PMs can schedule and parallelize correctly.
 
 **Agent-led environment; no user-handoff tasks:** Assume **agent-driven, agent-led** execution. User and external humans do not perform plan steps—only prompts and basic elicitation. **Never** put in plans: "Schedule external security audit", "Stakeholder Presentation", "Team Kickoff: Assign owners", "Human checkpoint", "Get approval from X", or any task that requires a human to do work. Agents produce deliverables (e.g. presentation doc, owner manifest); agents own decomposition, execution, and handoffs. **Timescales:** Use **aggressive** estimates in agent terms only (tool calls, parallel subagents, wall clock in minutes). Forbidden: "2 days", "schedule X", "assign owners". Use: "N tool calls", "~M min wall clock". See CLAUDE.md for the full timescale mapping.
@@ -85,6 +87,7 @@ docs/
 - **VERIFY** file location before creating documentation
 - **MOVE** misplaced files to correct subdirectories if found
 - **REFERENCE** this structure when users ask about documentation organization
+- **DO NOT** ask for permission or priority order; decide on your own, run needed commands, and proceed with the most critical path.
 
 **Native services over Docker; local OSS/free only:** Prefer **native** service runs (e.g. `make install-native`, process-compose) over Docker for dev. Use Docker only when native is not feasible. **Strictly prefer local, OSS, and free**—do not recommend paid online services when local or free alternatives exist; prefer self-hosted, open-source, or free-tier options.
 
@@ -102,3 +105,29 @@ docs/
 - We want opinionated rules that enforce opinionated styling to a strict degree.
 - This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
 - Rather than disables or ignores, fix code properly.
+
+## Lint Violation Governance
+
+**Before filing bugs or writing code for lint violations:**
+
+1. **Verify true violations**: Check if flagged issues are truly unused, unimplemented, or can be refactored without losing functionality
+2. **Never use ignorers**: Never add `//nolint:lintname`, `//lint-ignore`, or skip linter configurations to silence violations
+3. **Fix properly**: Address root causes—extract functions, constants, reduce complexity, not suppression
+4. **Test coverage preserved**: Ensure all fixes maintain existing test coverage; do not disable tests to pass linters
+
+**Violation handling priorities:**
+
+| Category | Action |
+|----------|--------|
+| `revive` (unused params in mocks) | Rename to `_paramName` if intentionally unused |
+| `goconst` (repeated strings) | Extract to named constants |
+| `mnd` (magic numbers) | Extract to named constants with units |
+| `gocognit` (complexity) | Extract helper functions, reduce nesting |
+| `funlen` (long functions) | Split into focused helper functions |
+| `gochecknoglobals` | Validate necessity; convert to singletons if needed |
+| `gosec` (security) | Fix immediately; no exceptions |
+
+**Subagent delegation for lint fixes:**
+- Group 1-3 related files per subagent by violation type
+- Production code takes priority over test code for complexity/security
+- Test code refactoring (funlen) can be delegated more aggressively

@@ -42,7 +42,7 @@ class GraphValidationService:
 
         rules_result = await self.session.execute(select(NodeKindRule).where(NodeKindRule.project_id == project_id))
         rules = list(rules_result.scalars().all())
-        rule_map = {r.node_kind_id: r.rule_metadata for r in rules}
+        rule_map: dict[Any, dict[str, Any]] = {r.node_kind_id: (r.rule_metadata or {}) for r in rules}
 
         errors: list[dict[str, Any]] = []
         warnings: list[dict[str, Any]] = []

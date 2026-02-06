@@ -114,9 +114,7 @@ class SessionSandboxStoreDB(SessionSandboxStore):
         self._store[session_id] = meta
         return (row.sandbox_root, meta)
 
-    async def _persist_created(
-        self, db_session: Any, session_id: str, path: str, config: SandboxConfig | None
-    ) -> None:
+    async def _persist_created(self, db_session: Any, session_id: str, path: str, config: SandboxConfig | None) -> None:
         """Insert AgentSession row when sandbox was just created."""
         import uuid
 

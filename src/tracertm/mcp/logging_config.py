@@ -95,15 +95,15 @@ def censor_sensitive_data(logger: logging.Logger, method_name: str, event_dict: 
             key_lower = key.lower()
             if any(sensitive in key_lower for sensitive in sensitive_keys):
                 censored[key] = "[REDACTED]"
-            elif isinstance(value, dict[str, Any]):
+            elif isinstance(value, dict):
                 censored[key] = _censor_dict(value)
-            elif isinstance(value, list[Any]):
-                censored[key] = [_censor_dict(item) if isinstance(item, dict[str, Any]) else item for item in value]
+            elif isinstance(value, list):
+                censored[key] = [_censor_dict(item) if isinstance(item, dict) else item for item in value]
             else:
                 censored[key] = value
         return censored
 
-    return _censor_dict(dict(event_dict))  # type: ignore[arg-type]
+    return _censor_dict(dict(event_dict))
 
 
 def configure_structured_logging(

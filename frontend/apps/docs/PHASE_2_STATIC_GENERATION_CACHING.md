@@ -9,6 +9,7 @@ Phase 2 implements static site generation (SSG) and aggressive caching strategie
 ### 1. Static Site Generation (SSG)
 
 #### Configuration
+
 - ✅ `generateStaticParams()` implemented in all dynamic routes:
   - `/app/docs/[[...slug]]/page.tsx`
   - `/app/api-reference/[[...slug]]/page.tsx`
@@ -17,12 +18,14 @@ Phase 2 implements static site generation (SSG) and aggressive caching strategie
 - ✅ API reference pages statically generated
 
 #### Files Modified
+
 - `app/docs/[[...slug]]/page.tsx` - Already has `generateStaticParams()`
 - `app/api-reference/[[...slug]]/page.tsx` - Already has `generateStaticParams()`
 
 ### 2. Caching Headers
 
 #### HTTP Cache-Control Headers
+
 Configured in `next.config.ts`:
 
 ```typescript
@@ -67,6 +70,7 @@ async headers() {
 ```
 
 #### Cache Strategy
+
 - **Static Assets** (`/_next/static/*`):
   - Cache for 1 year (31536000 seconds)
   - Immutable flag prevents revalidation
@@ -83,6 +87,7 @@ async headers() {
   - Allows instant page loads while revalidating in background
 
 #### Additional Cache Configuration
+
 ```typescript
 generateEtags: true,      // ETag support for cache validation
 compress: true,           // gzip/brotli compression
@@ -92,11 +97,13 @@ poweredByHeader: false,   // Security: remove X-Powered-By header
 ### 3. Service Worker (PWA)
 
 #### Installation
+
 ```bash
 bun add -d @ducanh2912/next-pwa
 ```
 
 #### Configuration
+
 Added to `next.config.ts`:
 
 ```typescript
@@ -131,6 +138,7 @@ const pwaConfig = withPWA({
 ```
 
 #### Features
+
 - ✅ Offline support
 - ✅ Network-first caching strategy
 - ✅ Background sync
@@ -139,6 +147,7 @@ const pwaConfig = withPWA({
 - ✅ Automatic cache cleanup (200 entries max, 1 day expiration)
 
 #### PWA Manifest
+
 Created `/public/manifest.json`:
 
 ```json
@@ -155,6 +164,7 @@ Created `/public/manifest.json`:
 ```
 
 #### Metadata Integration
+
 Updated `app/layout.tsx`:
 
 ```typescript
@@ -176,7 +186,9 @@ export const metadata = {
 ### 4. Testing and Analysis Scripts
 
 #### Static Export Testing
+
 Created `scripts/test-static-export.ts`:
+
 - Tests static site generation
 - Measures build time
 - Counts generated pages
@@ -184,18 +196,22 @@ Created `scripts/test-static-export.ts`:
 - Validates build success
 
 **Usage:**
+
 ```bash
 bun run test:static
 ```
 
 #### Cache Analysis
+
 Created `scripts/analyze-cache.ts`:
+
 - Analyzes content-hashed assets
 - Checks service worker configuration
 - Validates chunk sizes
 - Provides caching recommendations
 
 **Usage:**
+
 ```bash
 bun run analyze:cache
 ```
@@ -203,9 +219,11 @@ bun run analyze:cache
 ### 5. Performance Benchmarking
 
 #### Lighthouse Configuration
+
 Enhanced `lighthouserc.json` with strict performance targets:
 
 **Target Metrics:**
+
 - First Contentful Paint (FCP): < 1.5s ✅
 - Largest Contentful Paint (LCP): < 2.5s ✅
 - Time to Interactive (TTI): < 2.5s ✅
@@ -214,12 +232,14 @@ Enhanced `lighthouserc.json` with strict performance targets:
 - Cumulative Layout Shift (CLS): < 0.1 ✅
 
 **Performance Scores:**
+
 - Performance: ≥ 95%
 - Accessibility: ≥ 95%
 - Best Practices: ≥ 90%
 - SEO: ≥ 90%
 
 #### NPM Scripts
+
 Added to `package.json`:
 
 ```json
@@ -252,11 +272,13 @@ images: {
 To enable full static export (no server required):
 
 1. Uncomment in `next.config.ts`:
+
 ```typescript
 output: 'export',
 ```
 
 2. Build static files:
+
 ```bash
 bun run build:static
 ```
@@ -264,6 +286,7 @@ bun run build:static
 3. Deploy the `out/` directory to any static hosting service
 
 **Note:** Static export disables:
+
 - Server-side API routes
 - Incremental Static Regeneration (ISR)
 - Image optimization (images will be unoptimized)
@@ -271,6 +294,7 @@ bun run build:static
 ## Performance Targets
 
 ### Current Targets (Lighthouse)
+
 - ✅ FCP < 1.5s
 - ✅ LCP < 2.5s
 - ✅ TTI < 2.5s
@@ -280,17 +304,20 @@ bun run build:static
 - ✅ Performance Score ≥ 95%
 
 ### Bundle Size Targets
+
 - ✅ JavaScript (main bundle): < 200 KB
 - ✅ CSS (main bundle): < 50 KB
 - ✅ Total initial load: < 500 KB
 
 ### Cache Hit Ratio Targets
+
 - ✅ Static assets: > 80% content-hashed
 - ✅ Service worker cache: > 90% hit rate (after initial load)
 
 ## Testing Workflow
 
 ### 1. Build and Test
+
 ```bash
 # Build the site
 bun run build
@@ -303,6 +330,7 @@ bun run analyze:cache
 ```
 
 ### 2. Performance Testing
+
 ```bash
 # Run Lighthouse audit
 bun run lighthouse
@@ -315,6 +343,7 @@ bun run test:performance
 ```
 
 ### 3. Bundle Analysis
+
 ```bash
 # Analyze bundle size
 bun run audit:bundle
@@ -339,6 +368,7 @@ bun run audit:bundle
 ## Next Steps (Phase 3)
 
 Phase 3 will focus on:
+
 1. Edge deployment optimization
 2. CDN configuration
 3. Advanced service worker strategies
@@ -349,27 +379,32 @@ Phase 3 will focus on:
 ## Files Modified
 
 ### Configuration
+
 - `next.config.ts` - Added PWA, caching headers, image optimization
 - `app/layout.tsx` - Added PWA metadata
 - `package.json` - Added new scripts
 - `public/manifest.json` - Created PWA manifest
 
 ### Scripts
+
 - `scripts/test-static-export.ts` - Static generation testing
 - `scripts/analyze-cache.ts` - Cache analysis
 
 ### Documentation
+
 - `PHASE_2_STATIC_GENERATION_CACHING.md` - This file
 
 ## Performance Benefits
 
 ### Before Phase 2
+
 - No cache headers
 - No service worker
 - No offline support
 - Manual cache management
 
 ### After Phase 2
+
 - ✅ Aggressive caching (1 year for static assets)
 - ✅ Service worker with offline support
 - ✅ Automatic cache invalidation via content hashing
@@ -378,6 +413,7 @@ Phase 3 will focus on:
 - ✅ Optimized image delivery
 
 ### Expected Improvements
+
 - **Repeat Visit Performance**: 60-80% faster (cached assets)
 - **Time to Interactive**: 40-60% faster (pre-rendered pages)
 - **Bundle Size**: 20-30% smaller (code splitting)
@@ -387,7 +423,9 @@ Phase 3 will focus on:
 ## Monitoring
 
 ### Cache Performance
+
 Monitor in production:
+
 1. Cache hit rates (CDN analytics)
 2. Service worker cache effectiveness
 3. Time to First Byte (TTFB)
@@ -395,6 +433,7 @@ Monitor in production:
 5. First Input Delay (FID)
 
 ### Tools
+
 - Chrome DevTools → Network → Size column (shows "disk cache" / "memory cache")
 - Lighthouse → Performance audit
 - WebPageTest → Repeat View performance
@@ -403,17 +442,20 @@ Monitor in production:
 ## Troubleshooting
 
 ### Service Worker Not Generated
+
 - Ensure `NODE_ENV=production` when building
 - Check `public/sw.js` exists after build
 - Verify PWA config in `next.config.ts`
 
 ### Cache Not Working
+
 - Check browser DevTools → Network → Headers
 - Verify `Cache-Control` headers in response
 - Clear browser cache and test again
 - Check if CDN is overriding headers
 
 ### Static Generation Failed
+
 - Check build logs for errors
 - Verify `generateStaticParams()` returns valid paths
 - Ensure all data is available at build time

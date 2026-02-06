@@ -69,10 +69,10 @@
 ## 🚀 Quick Start
 
 ```python
-from tracertm.mcp.tools.items_optimized import query_items_v2
+from tracertm.mcp.tools.items_optimized import query_items_optimized
 
 # 84% fewer tokens
-items = await query_items_v2(view="FEATURE", limit=50)
+items = await query_items_optimized(view="FEATURE", limit=50)
 ```
 
 ---

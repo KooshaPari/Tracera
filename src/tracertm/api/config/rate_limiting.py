@@ -137,11 +137,7 @@ def check_rate_limit(
     _rate_limit_counts[rate_key] += 1
 
     return not (
-        allowed is False
-        or (
-            resolved_limit is not None
-            and _rate_limit_counts[rate_key] > (resolved_limit or 0)
-        )
+        allowed is False or (resolved_limit is not None and _rate_limit_counts[rate_key] > (resolved_limit or 0))
     )
 
 

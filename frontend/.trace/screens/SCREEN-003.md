@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Profile page with editable form fields, avatar upload, password change section, and account settings. Tabbed interface.
-

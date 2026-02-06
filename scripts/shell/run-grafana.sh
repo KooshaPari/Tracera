@@ -32,6 +32,11 @@ if [ -z "$GRAFANA_HOME" ] || [ ! -d "${GRAFANA_HOME}" ]; then
   exit 1
 fi
 
+export GF_PATHS_PROVISIONING="${GF_PATHS_PROVISIONING:-$ROOT/deploy/monitoring/grafana/provisioning}"
+export GF_PATHS_DATA="${GF_PATHS_DATA:-$ROOT/.grafana/data}"
+export GF_PATHS_LOGS="${GF_PATHS_LOGS:-$ROOT/.grafana/logs}"
+export GF_PATHS_PLUGINS="${GF_PATHS_PLUGINS:-$ROOT/.grafana/plugins}"
+
 GRAFANA_CONFIG="${GRAFANA_CONFIG:-$ROOT/deploy/monitoring/grafana.ini}"
 
 if [ ! -f "$GRAFANA_CONFIG" ]; then

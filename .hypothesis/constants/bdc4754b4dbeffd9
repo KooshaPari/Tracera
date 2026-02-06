@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/repositories/integration_repository.py
+# hypothesis_version: 6.151.4
+
+[100, 3600, 'Cancelled by user', 'active', 'bidirectional', 'completed', 'consecutive_failures', 'critical', 'encrypted_token', 'failed', 'high', 'ignored', 'invalid', 'last_sync_at', 'last_sync_direction', 'last_validated_at', 'low', 'manual', 'normal', 'pending', 'processing', 'provider_metadata', 'provider_user_id', 'refresh_token', 'resolved', 'retried', 'revoked', 'rotated_at', 'scopes', 'status', 'sync_error', 'sync_error_message', 'token_expires_at', 'updated_at', 'validation_error']

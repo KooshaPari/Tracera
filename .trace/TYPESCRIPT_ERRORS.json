@@ -383,7 +383,7 @@
         "Add type annotations"
       ]
     },
-    "phase4": {
+    "phase_four": {
       "name": "API Contract Fixes",
       "duration": "15 min",
       "tasks": [
@@ -393,7 +393,7 @@
         "Update status comparisons"
       ]
     },
-    "phase5": {
+    "phase_five": {
       "name": "Code Cleanup",
       "duration": "15 min",
       "tasks": [

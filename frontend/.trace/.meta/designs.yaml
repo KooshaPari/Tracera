@@ -3,9 +3,9 @@
 
 components:
   Button:
-    figmaUrl: "https://www.figma.com/file/xxx/Design-System?node-id=123"
-    componentId: "comp-button-001"
-    storyId: "story-button-001"
+    figmaUrl: 'https://www.figma.com/file/xxx/Design-System?node-id=123'
+    componentId: 'comp-button-001'
+    storyId: 'story-button-001'
     variants:
       - default
       - destructive
@@ -15,13 +15,13 @@ components:
       - link
 
   Input:
-    figmaUrl: "https://www.figma.com/file/xxx/Design-System?node-id=456"
-    componentId: "comp-input-001"
-    storyId: "story-input-001"
+    figmaUrl: 'https://www.figma.com/file/xxx/Design-System?node-id=456'
+    componentId: 'comp-input-001'
+    storyId: 'story-input-001'
 
   Card:
-    figmaUrl: "https://www.figma.com/file/xxx/Design-System?node-id=789"
-    componentId: "comp-card-001"
-    storyId: "story-card-001"
+    figmaUrl: 'https://www.figma.com/file/xxx/Design-System?node-id=789'
+    componentId: 'comp-card-001'
+    storyId: 'story-card-001'
 
   # Add more components here

@@ -71,7 +71,7 @@ Successfully created comprehensive test suites for the TracerTM TUI module, sign
 
 ### 2. App Tests (1 file)
 
-#### `/tests/unit/tui/apps/test_dashboard_v2_comprehensive.py`
+#### `/tests/unit/tui/apps/test_dashboard_compat_comprehensive.py`
 - **Lines:** 614
 - **Tests:** 53
 - **Coverage Areas:**
@@ -130,7 +130,7 @@ All test files successfully compile:
 ✅ test_view_switcher.py: OK
 ✅ test_graph_view.py: OK
 ✅ test_state_display.py: OK
-✅ test_dashboard_v2_comprehensive.py: OK
+✅ test_dashboard_compat_comprehensive.py: OK
 ```
 
 ### Execution Status
@@ -171,7 +171,7 @@ Note: ItemListWidget tests require mocking pattern (already present in test_all_
 4. ✅ StateDisplayWidget - 536 lines, 52 tests
 
 ### Apps Tested
-1. ✅ EnhancedDashboardApp (dashboard_v2) - 614 lines, 53 tests
+1. ✅ EnhancedDashboardApp (dashboard_compat) - 614 lines, 53 tests
 
 ### Test Categories
 

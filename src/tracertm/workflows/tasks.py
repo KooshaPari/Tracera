@@ -20,6 +20,7 @@ from tracertm.services.integration_sync_processor import IntegrationSyncProcesso
 @dataclass
 class WorkflowUpdateConfig:
     """Configuration for updating workflow run status."""
+
     status: str
     result: dict | None = None
     error_message: str | None = None
@@ -91,10 +92,14 @@ async def graph_snapshot_task(
                 "version": snapshot.version,
                 "hash": snapshot.snapshot_hash,
             }
-            await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True))
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True)
+            )
             return result
         except Exception as exc:
-            await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True))
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True)
+            )
             raise
 
 
@@ -104,24 +109,32 @@ async def graph_validation_task(project_id: str, graph_id: str, workflow_run_id:
         try:
             service = GraphValidationService(session)
             result = await service.validate_graph(project_id=project_id, graph_id=graph_id)
-            await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True))
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True)
+            )
             return result
         except Exception as exc:
-            await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True))
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True)
+            )
             raise
 
 
 async def graph_export_task(project_id: str, workflow_run_id: str | None = None) -> dict[str, Any]:
     async with await _get_async_session() as session:
-        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("running", started=True))
+        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True))
         try:
             service = ExportService(session)
             export = await service.export_to_json(project_id)
             result = {"format": "graph_json", "content": export}
-            await _update_workflow_run(session, workflow_run_id, "completed", result=result, completed=True)
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig(status="completed", result=result, completed=True)
+            )  # noqa: E501
             return result
         except Exception as exc:
-            await _update_workflow_run(session, workflow_run_id, "failed", error_message=str(exc), completed=True)
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig(status="failed", error_message=str(exc), completed=True)
+            )  # noqa: E501
             raise
 
 
@@ -133,7 +146,7 @@ async def graph_diff_task(
     workflow_run_id: str | None = None,
 ) -> dict[str, Any]:
     async with await _get_async_session() as session:
-        await _update_workflow_run(session, workflow_run_id, "running", started=True)
+        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True))
         try:
             service = GraphSnapshotService(session)
             result = await service.diff_snapshots(
@@ -142,24 +155,32 @@ async def graph_diff_task(
                 from_version=from_version,
                 to_version=to_version,
             )
-            await _update_workflow_run(session, workflow_run_id, "completed", result=result, completed=True)
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig(status="completed", result=result, completed=True)
+            )  # noqa: E501
             return result
         except Exception as exc:
-            await _update_workflow_run(session, workflow_run_id, "failed", error_message=str(exc), completed=True)
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig(status="failed", error_message=str(exc), completed=True)
+            )  # noqa: E501
             raise
 
 
 async def integration_sync_task(limit: int = 50, workflow_run_id: str | None = None) -> dict[str, Any]:
     async with await _get_async_session() as session:
-        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("running", started=True))
+        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True))
         try:
             processor = IntegrationSyncProcessor(session)
             result = await processor.process_pending(limit=limit)
             await session.commit()
-            await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True))
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig(status="completed", result=result, completed=True)
+            )
             return result
         except Exception as exc:
-            await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True))
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig(status="failed", error_message=str(exc), completed=True)
+            )
             raise
 
 
@@ -170,8 +191,12 @@ async def integration_retry_task(limit: int = 50, workflow_run_id: str | None = 
             processor = IntegrationSyncProcessor(session)
             result = await processor.process_retryable(limit=limit)
             await session.commit()
-            await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True))
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True)
+            )
             return result
         except Exception as exc:
-            await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True))
+            await _update_workflow_run(
+                session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True)
+            )
             raise

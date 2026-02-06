@@ -16,13 +16,13 @@
    - Impact analysis, shortest path, cache, webhooks services
    - Service instantiation, error handling, integration
 
-2. **test_edge_cases_phase4.py** (59 tests)
+2. **test_edge_cases_phase_four.py** (59 tests)
    - Boundary conditions (0, negative, very large values)
    - Error scenarios (None, empty, invalid)
    - Concurrency patterns, performance, type conversions
    - Input validation, security patterns, special characters
 
-3. **test_phase5_advanced_coverage.py** (44 tests)
+3. **test_phase_five_advanced_coverage.py** (44 tests)
    - API endpoint validation (13 tests)
    - Service method coverage (10 tests)
    - Workflow integration (6 tests)
@@ -152,8 +152,8 @@ Priority areas:
 ### Test Files
 ```
 tests/unit/services/test_critical_services.py     (37 tests)
-tests/unit/test_edge_cases_phase4.py             (59 tests)
-tests/unit/test_phase5_advanced_coverage.py      (44 tests)
+tests/unit/test_edge_cases_phase_four.py             (59 tests)
+tests/unit/test_phase_five_advanced_coverage.py      (44 tests)
 ```
 
 ### Documentation

@@ -15,22 +15,290 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTestNATS(t *testing.T) *NATSClient {
+const (
+	natsTestTimeout      = 2 * time.Second
+	natsTestDrainTimeout = 10 * time.Second
+	natsTestNanoTimeout  = 1 * time.Nanosecond
+	natsTestWaitDelay    = 10 * time.Millisecond
+	natsTestShortDelay   = 100 * time.Millisecond
+	natsTestMediumDelay  = 200 * time.Millisecond
+	natsTestLongDelay    = 500 * time.Millisecond
+)
+
+type publishCase struct {
+	name      string
+	eventID   string
+	eventData map[string]any
+	target    string // empty for Publish, "project" or "entity"
+	targetID  string
+	wantErr   bool
+}
+
+func publishCases() []publishCase {
+	return []publishCase{
+		{
+			name:      "publish simple event",
+			eventID:   "test-event-1",
+			eventData: map[string]any{"key": "value"},
+			target:    "",
+			wantErr:   false,
+		},
+		{
+			name:      "publish to project",
+			eventID:   "test-event-2",
+			eventData: map[string]any{"project": "test"},
+			target:    "project",
+			targetID:  "project-123",
+			wantErr:   false,
+		},
+		{
+			name:      "publish to entity",
+			eventID:   "test-event-3",
+			eventData: map[string]any{"entity": "test"},
+			target:    "entity",
+			targetID:  "entity-456",
+			wantErr:   false,
+		},
+		{
+			name:      "publish with nil event data",
+			eventID:   "test-event-4",
+			eventData: nil,
+			target:    "",
+			wantErr:   false,
+		},
+	}
+}
+
+func withEventBus(t *testing.T, fn func(*EventBus)) {
+	t.Helper()
+	bus, err := NewEventBus(DefaultConfig())
+	if err != nil {
+		t.Skipf("NATS server not available: %v", err)
+	}
+	defer func() {
+		if err := bus.Close(); err != nil {
+			t.Logf("error closing bus: %v", err)
+		}
+	}()
+
+	fn(bus)
+}
+
+func runPublishCase(t *testing.T, bus *EventBus, tt publishCase) {
+	t.Helper()
+	event := &events.Event{
+		ID:        tt.eventID,
+		EventType: "test.event",
+		CreatedAt: time.Now(),
+		Data:      tt.eventData,
+	}
+
+	var err error
+	switch tt.target {
+	case "project":
+		err = bus.PublishToProject(tt.targetID, event)
+	case "entity":
+		err = bus.PublishToEntity(tt.targetID, event)
+	default:
+		err = bus.Publish(event)
+	}
+
+	if tt.wantErr {
+		assert.Error(t, err)
+	} else {
+		assert.NoError(t, err)
+	}
+}
+
+func waitForEventOrTimeout(t *testing.T, ch <-chan *events.Event, timeout time.Duration) *events.Event {
+	t.Helper()
+	select {
+	case evt := <-ch:
+		return evt
+	case <-time.After(timeout):
+		t.Fatal("timeout waiting for event")
+		return nil
+	}
+}
+
+func testSubscribeReceiveEvent(t *testing.T, bus *EventBus) {
+	received := make(chan *events.Event, 1)
+
+	err := bus.Subscribe(func(evt *events.Event) {
+		received <- evt
+	})
+	require.NoError(t, err)
+
+	time.Sleep(natsTestShortDelay)
+
+	testEvent := &events.Event{
+		ID:        "subscribe-test-1",
+		EventType: "test.subscribe",
+		CreatedAt: time.Now(),
+		Data:      map[string]any{"test": "subscribe"},
+	}
+	err = bus.Publish(testEvent)
+	require.NoError(t, err)
+
+	evt := waitForEventOrTimeout(t, received, natsTestTimeout)
+	assert.Equal(t, testEvent.ID, evt.ID)
+	assert.Equal(t, testEvent.EventType, evt.EventType)
+}
+
+func testSubscribeProjectEvents(t *testing.T, bus *EventBus) {
+	projectID := "test-project-123"
+	received := make(chan *events.Event, 1)
+
+	err := bus.SubscribeToProject(projectID, func(evt *events.Event) {
+		received <- evt
+	})
+	require.NoError(t, err)
+
+	time.Sleep(natsTestShortDelay)
+
+	testEvent := &events.Event{
+		ID:        "project-event-1",
+		EventType: "test.project",
+		CreatedAt: time.Now(),
+	}
+	err = bus.PublishToProject(projectID, testEvent)
+	require.NoError(t, err)
+
+	evt := waitForEventOrTimeout(t, received, natsTestTimeout)
+	assert.Equal(t, testEvent.ID, evt.ID)
+}
+
+func testSubscribeEntityEvents(t *testing.T, bus *EventBus) {
+	entityID := "test-entity-456"
+	received := make(chan *events.Event, 1)
+
+	err := bus.SubscribeToEntity(entityID, func(evt *events.Event) {
+		received <- evt
+	})
+	require.NoError(t, err)
+
+	time.Sleep(natsTestShortDelay)
+
+	testEvent := &events.Event{
+		ID:        "entity-event-1",
+		EventType: "test.entity",
+		CreatedAt: time.Now(),
+	}
+	err = bus.PublishToEntity(entityID, testEvent)
+	require.NoError(t, err)
+
+	evt := waitForEventOrTimeout(t, received, natsTestTimeout)
+	assert.Equal(t, testEvent.ID, evt.ID)
+}
+
+func testSubscribeEventType(t *testing.T, bus *EventBus) {
+	eventType := events.EventType("test.specific.type")
+	received := make(chan *events.Event, 1)
+
+	err := bus.SubscribeToEventType(eventType, func(evt *events.Event) {
+		received <- evt
+	})
+	require.NoError(t, err)
+
+	time.Sleep(natsTestShortDelay)
+
+	testEvent := &events.Event{
+		ID:        "type-event-1",
+		EventType: eventType,
+		CreatedAt: time.Now(),
+	}
+	err = bus.Publish(testEvent)
+	require.NoError(t, err)
+
+	evt := waitForEventOrTimeout(t, received, natsTestTimeout)
+	assert.Equal(t, testEvent.ID, evt.ID)
+}
+
+func testDuplicateSubscription(t *testing.T, bus *EventBus) {
+	err := bus.Subscribe(func(_ *events.Event) {})
+	require.NoError(t, err)
+
+	err = bus.Subscribe(func(_ *events.Event) {})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "already subscribed")
+}
+
+func testConcurrentPublishes(t *testing.T, bus *EventBus) {
+	var wg sync.WaitGroup
+	numGoroutines := 50
+
+	for i := 0; i < numGoroutines; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			event := &events.Event{
+				ID:        fmt.Sprintf("concurrent-%d", id),
+				EventType: "test.concurrent",
+				CreatedAt: time.Now(),
+			}
+			publishErr := bus.Publish(event)
+			assert.NoError(t, publishErr)
+		}(i)
+	}
+
+	wg.Wait()
+}
+
+func testConcurrentSubscribesAndPublishes(t *testing.T, bus *EventBus) {
+	var wg sync.WaitGroup
+	var counter int32
+
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			err := bus.SubscribeToEventType(events.EventType(fmt.Sprintf("concurrent.sub.%d", id)), func(_ *events.Event) {
+				atomic.AddInt32(&counter, 1)
+			})
+			if err != nil {
+				t.Logf("Subscribe error: %v", err)
+			}
+		}(i)
+	}
+
+	time.Sleep(natsTestMediumDelay)
+
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			event := &events.Event{
+				ID:        fmt.Sprintf("pubsub-%d", id),
+				EventType: events.EventType(fmt.Sprintf("concurrent.sub.%d", id)),
+				CreatedAt: time.Now(),
+			}
+			_ = bus.Publish(event)
+		}(i)
+	}
+
+	wg.Wait()
+	time.Sleep(natsTestLongDelay)
+
+	finalCount := atomic.LoadInt32(&counter)
+	t.Logf("Received %d events", finalCount)
+}
+
+func setupTestNATS(t *testing.T) *Client {
 	url := os.Getenv("NATS_URL")
 	if url == "" {
 		url = natslib.DefaultURL
 	}
 
-	client, err := NewNATSClient(url, "")
+	client, err := NewClient(url, "")
 	if err != nil {
 		t.Skipf("NATS not available: %v", err)
 	}
 	return client
 }
 
-func TestNewNATSClient(t *testing.T) {
+func TestNewClient(t *testing.T) {
 	t.Run("successful connection without creds", func(t *testing.T) {
-		client, err := NewNATSClient(natslib.DefaultURL, "")
+		client, err := NewClient(natslib.DefaultURL, "")
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
@@ -46,20 +314,20 @@ func TestNewNATSClient(t *testing.T) {
 	})
 
 	t.Run("invalid URL", func(t *testing.T) {
-		client, err := NewNATSClient("invalid://url", "")
+		client, err := NewClient("invalid://url", "")
 		assert.Error(t, err)
 		assert.Nil(t, client)
 	})
 
 	t.Run("unreachable server", func(t *testing.T) {
-		client, err := NewNATSClient("nats://192.0.2.1:4222", "")
+		client, err := NewClient("nats://192.0.2.1:4222", "")
 		assert.Error(t, err)
 		assert.Nil(t, client)
 		assert.Contains(t, err.Error(), "failed to connect to NATS")
 	})
 
 	t.Run("with invalid creds path", func(t *testing.T) {
-		client, err := NewNATSClient(natslib.DefaultURL, "/invalid/path/creds.txt")
+		client, err := NewClient(natslib.DefaultURL, "/invalid/path/creds.txt")
 		if err == nil && client != nil {
 			_ = client.Close()
 			t.Skip("NATS accepted invalid creds path")
@@ -106,7 +374,7 @@ func TestNATSClientHealthCheck(t *testing.T) {
 	})
 
 	t.Run("nil connection", func(t *testing.T) {
-		client := &NATSClient{conn: nil}
+		client := &Client{conn: nil}
 		err := client.HealthCheck(context.Background())
 		assert.Error(t, err)
 	})
@@ -121,7 +389,7 @@ func TestNATSClientClose(t *testing.T) {
 	})
 
 	t.Run("close nil connection", func(t *testing.T) {
-		client := &NATSClient{conn: nil}
+		client := &Client{conn: nil}
 		err := client.Close()
 		assert.NoError(t, err)
 	})
@@ -142,7 +410,7 @@ func TestDefaultConfig(t *testing.T) {
 	assert.Equal(t, "tracertm-cluster", config.ClusterID)
 	assert.Equal(t, "tracertm-backend", config.ClientID)
 	assert.Equal(t, 10, config.MaxReconnects)
-	assert.Equal(t, 2*time.Second, config.ReconnectWait)
+	assert.Equal(t, natsTestTimeout, config.ReconnectWait)
 	assert.Equal(t, "TRACERTM_EVENTS", config.StreamName)
 	assert.Len(t, config.StreamSubjects, 3)
 	assert.Contains(t, config.StreamSubjects, "tracertm.events.>")
@@ -150,7 +418,7 @@ func TestDefaultConfig(t *testing.T) {
 	assert.Contains(t, config.StreamSubjects, "tracertm.entities.>")
 }
 
-func TestNewNATSEventBus(t *testing.T) {
+func TestNewEventBus(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping NATS integration test in short mode")
 	}
@@ -158,7 +426,7 @@ func TestNewNATSEventBus(t *testing.T) {
 	config := DefaultConfig()
 
 	t.Run("successful initialization", func(t *testing.T) {
-		bus, err := NewNATSEventBus(config)
+		bus, err := NewEventBus(config)
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
@@ -178,7 +446,7 @@ func TestNewNATSEventBus(t *testing.T) {
 		invalidConfig := *config
 		invalidConfig.URL = "invalid://url"
 
-		bus, err := NewNATSEventBus(&invalidConfig)
+		bus, err := NewEventBus(&invalidConfig)
 		assert.Error(t, err)
 		assert.Nil(t, bus)
 	})
@@ -187,7 +455,7 @@ func TestNewNATSEventBus(t *testing.T) {
 		invalidConfig := *config
 		invalidConfig.URL = "nats://192.0.2.1:4222"
 
-		bus, err := NewNATSEventBus(&invalidConfig)
+		bus, err := NewEventBus(&invalidConfig)
 		assert.Error(t, err)
 		assert.Nil(t, bus)
 	})
@@ -198,82 +466,13 @@ func TestNATSEventBusPublish(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewNATSEventBus(DefaultConfig())
-	if err != nil {
-		t.Skipf("NATS server not available: %v", err)
-	}
-	defer func() {
-		if err := bus.Close(); err != nil {
-			t.Logf("error closing bus: %v", err)
+	withEventBus(t, func(bus *EventBus) {
+		for _, tt := range publishCases() {
+			t.Run(tt.name, func(t *testing.T) {
+				runPublishCase(t, bus, tt)
+			})
 		}
-	}()
-
-	tests := []struct {
-		name      string
-		eventID   string
-		eventData map[string]any
-		target    string // empty for Publish, "project" or "entity"
-		targetID  string
-		wantErr   bool
-	}{
-		{
-			name:      "publish simple event",
-			eventID:   "test-event-1",
-			eventData: map[string]any{"key": "value"},
-			target:    "",
-			wantErr:   false,
-		},
-		{
-			name:      "publish to project",
-			eventID:   "test-event-2",
-			eventData: map[string]any{"project": "test"},
-			target:    "project",
-			targetID:  "project-123",
-			wantErr:   false,
-		},
-		{
-			name:      "publish to entity",
-			eventID:   "test-event-3",
-			eventData: map[string]any{"entity": "test"},
-			target:    "entity",
-			targetID:  "entity-456",
-			wantErr:   false,
-		},
-		{
-			name:      "publish with nil event data",
-			eventID:   "test-event-4",
-			eventData: nil,
-			target:    "",
-			wantErr:   false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			event := &events.Event{
-				ID:        tt.eventID,
-				EventType: "test.event",
-				CreatedAt: time.Now(),
-				Data:      tt.eventData,
-			}
-
-			var err error
-			switch tt.target {
-			case "project":
-				err = bus.PublishToProject(tt.targetID, event)
-			case "entity":
-				err = bus.PublishToEntity(tt.targetID, event)
-			default:
-				err = bus.Publish(event)
-			}
-
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
+	})
 }
 
 func TestNATSEventBusSubscribe(t *testing.T) {
@@ -281,135 +480,22 @@ func TestNATSEventBusSubscribe(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewNATSEventBus(DefaultConfig())
-	if err != nil {
-		t.Skipf("NATS server not available: %v", err)
-	}
-	defer func() {
-		if err := bus.Close(); err != nil {
-			t.Logf("error closing bus: %v", err)
-		}
-	}()
-
-	t.Run("subscribe and receive event", func(t *testing.T) {
-		received := make(chan *events.Event, 1)
-
-		err := bus.Subscribe(func(e *events.Event) {
-			received <- e
+	withEventBus(t, func(bus *EventBus) {
+		t.Run("subscribe and receive event", func(t *testing.T) {
+			testSubscribeReceiveEvent(t, bus)
 		})
-		require.NoError(t, err)
-
-		// Give subscription time to register
-		time.Sleep(100 * time.Millisecond)
-
-		// Publish event
-		testEvent := &events.Event{
-			ID:        "subscribe-test-1",
-			EventType: "test.subscribe",
-			CreatedAt: time.Now(),
-			Data:      map[string]any{"test": "subscribe"},
-		}
-		err = bus.Publish(testEvent)
-		require.NoError(t, err)
-
-		// Wait for event
-		select {
-		case evt := <-received:
-			assert.Equal(t, testEvent.ID, evt.ID)
-			assert.Equal(t, testEvent.EventType, evt.EventType)
-		case <-time.After(2 * time.Second):
-			t.Fatal("timeout waiting for event")
-		}
-	})
-
-	t.Run("subscribe to project events", func(t *testing.T) {
-		projectID := "test-project-123"
-		received := make(chan *events.Event, 1)
-
-		err := bus.SubscribeToProject(projectID, func(e *events.Event) {
-			received <- e
+		t.Run("subscribe to project events", func(t *testing.T) {
+			testSubscribeProjectEvents(t, bus)
 		})
-		require.NoError(t, err)
-
-		time.Sleep(100 * time.Millisecond)
-
-		testEvent := &events.Event{
-			ID:        "project-event-1",
-			EventType: "test.project",
-			CreatedAt: time.Now(),
-		}
-		err = bus.PublishToProject(projectID, testEvent)
-		require.NoError(t, err)
-
-		select {
-		case evt := <-received:
-			assert.Equal(t, testEvent.ID, evt.ID)
-		case <-time.After(2 * time.Second):
-			t.Fatal("timeout waiting for project event")
-		}
-	})
-
-	t.Run("subscribe to entity events", func(t *testing.T) {
-		entityID := "test-entity-456"
-		received := make(chan *events.Event, 1)
-
-		err := bus.SubscribeToEntity(entityID, func(e *events.Event) {
-			received <- e
+		t.Run("subscribe to entity events", func(t *testing.T) {
+			testSubscribeEntityEvents(t, bus)
 		})
-		require.NoError(t, err)
-
-		time.Sleep(100 * time.Millisecond)
-
-		testEvent := &events.Event{
-			ID:        "entity-event-1",
-			EventType: "test.entity",
-			CreatedAt: time.Now(),
-		}
-		err = bus.PublishToEntity(entityID, testEvent)
-		require.NoError(t, err)
-
-		select {
-		case evt := <-received:
-			assert.Equal(t, testEvent.ID, evt.ID)
-		case <-time.After(2 * time.Second):
-			t.Fatal("timeout waiting for entity event")
-		}
-	})
-
-	t.Run("subscribe to event type", func(t *testing.T) {
-		eventType := events.EventType("test.specific.type")
-		received := make(chan *events.Event, 1)
-
-		err := bus.SubscribeToEventType(eventType, func(e *events.Event) {
-			received <- e
+		t.Run("subscribe to event type", func(t *testing.T) {
+			testSubscribeEventType(t, bus)
 		})
-		require.NoError(t, err)
-
-		time.Sleep(100 * time.Millisecond)
-
-		testEvent := &events.Event{
-			ID:        "type-event-1",
-			EventType: eventType,
-			CreatedAt: time.Now(),
-		}
-		err = bus.Publish(testEvent)
-		require.NoError(t, err)
-
-		select {
-		case evt := <-received:
-			assert.Equal(t, testEvent.ID, evt.ID)
-		case <-time.After(2 * time.Second):
-			t.Fatal("timeout waiting for typed event")
-		}
-	})
-
-	t.Run("duplicate subscription fails", func(t *testing.T) {
-		err := bus.Subscribe(func(e *events.Event) {})
-		require.NoError(t, err)
-
-		err = bus.Subscribe(func(e *events.Event) {})
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "already subscribed")
+		t.Run("duplicate subscription fails", func(t *testing.T) {
+			testDuplicateSubscription(t, bus)
+		})
 	})
 }
 
@@ -418,7 +504,7 @@ func TestNATSEventBusUnsubscribe(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewNATSEventBus(DefaultConfig())
+	bus, err := NewEventBus(DefaultConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -431,10 +517,10 @@ func TestNATSEventBusUnsubscribe(t *testing.T) {
 	t.Run("unsubscribe active subscription", func(t *testing.T) {
 		projectID := "unsub-project-1"
 
-		err := bus.SubscribeToProject(projectID, func(e *events.Event) {})
+		err := bus.SubscribeToProject(projectID, func(_ *events.Event) {})
 		require.NoError(t, err)
 
-		subID := fmt.Sprintf("project-%s", projectID)
+		subID := "project-" + projectID
 		err = bus.Unsubscribe(subID)
 		assert.NoError(t, err)
 
@@ -454,10 +540,10 @@ func TestNATSEventBusUnsubscribe(t *testing.T) {
 	t.Run("double unsubscribe", func(t *testing.T) {
 		projectID := "unsub-project-2"
 
-		err := bus.SubscribeToProject(projectID, func(e *events.Event) {})
+		err := bus.SubscribeToProject(projectID, func(_ *events.Event) {})
 		require.NoError(t, err)
 
-		subID := fmt.Sprintf("project-%s", projectID)
+		subID := "project-" + projectID
 		err = bus.Unsubscribe(subID)
 		assert.NoError(t, err)
 
@@ -471,7 +557,7 @@ func TestNATSEventBusPublishBatch(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewNATSEventBus(DefaultConfig())
+	bus, err := NewEventBus(DefaultConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -508,7 +594,7 @@ func TestNATSEventBusQueueSubscribe(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewNATSEventBus(DefaultConfig())
+	bus, err := NewEventBus(DefaultConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -523,17 +609,17 @@ func TestNATSEventBusQueueSubscribe(t *testing.T) {
 		subject := "tracertm.events.queue.test"
 		queue := "test-queue"
 
-		err := bus.QueueSubscribe(subject, queue, func(e *events.Event) {
+		err := bus.QueueSubscribe(subject, queue, func(_ *events.Event) {
 			atomic.AddInt32(&count1, 1)
 		})
 		require.NoError(t, err)
 
-		err = bus.QueueSubscribe(subject, queue+"2", func(e *events.Event) {
+		err = bus.QueueSubscribe(subject, queue+"2", func(_ *events.Event) {
 			atomic.AddInt32(&count2, 1)
 		})
 		require.NoError(t, err)
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(natsTestShortDelay)
 
 		// Publish multiple events
 		for i := range 10 {
@@ -545,7 +631,7 @@ func TestNATSEventBusQueueSubscribe(t *testing.T) {
 			_ = bus.publishToSubject(subject, event)
 		}
 
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(natsTestLongDelay)
 
 		// Both subscribers should have received some events
 		total := atomic.LoadInt32(&count1) + atomic.LoadInt32(&count2)
@@ -556,10 +642,10 @@ func TestNATSEventBusQueueSubscribe(t *testing.T) {
 		subject := "tracertm.events.dup.test"
 		queue := "dup-queue"
 
-		err := bus.QueueSubscribe(subject, queue, func(e *events.Event) {})
+		err := bus.QueueSubscribe(subject, queue, func(_ *events.Event) {})
 		require.NoError(t, err)
 
-		err = bus.QueueSubscribe(subject, queue, func(e *events.Event) {})
+		err = bus.QueueSubscribe(subject, queue, func(_ *events.Event) {})
 		assert.Error(t, err)
 	})
 }
@@ -569,7 +655,7 @@ func TestNATSEventBusGetStats(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewNATSEventBus(DefaultConfig())
+	bus, err := NewEventBus(DefaultConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -598,16 +684,16 @@ func TestNATSEventBusDrainAndClose(t *testing.T) {
 	}
 
 	t.Run("graceful drain and close", func(t *testing.T) {
-		bus, err := NewNATSEventBus(DefaultConfig())
+		bus, err := NewEventBus(DefaultConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
 
 		// Add a subscription
-		err = bus.Subscribe(func(e *events.Event) {})
+		err = bus.Subscribe(func(_ *events.Event) {})
 		require.NoError(t, err)
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), natsTestDrainTimeout)
 		defer cancel()
 
 		err = bus.DrainAndClose(ctx)
@@ -616,14 +702,14 @@ func TestNATSEventBusDrainAndClose(t *testing.T) {
 	})
 
 	t.Run("drain with context timeout", func(t *testing.T) {
-		bus, err := NewNATSEventBus(DefaultConfig())
+		bus, err := NewEventBus(DefaultConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
+		ctx, cancel := context.WithTimeout(context.Background(), natsTestNanoTimeout)
 		defer cancel()
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(natsTestWaitDelay)
 
 		err = bus.DrainAndClose(ctx)
 		// Should still complete even if context times out
@@ -636,7 +722,7 @@ func TestNATSEventBusStreamOperations(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewNATSEventBus(DefaultConfig())
+	bus, err := NewEventBus(DefaultConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -667,77 +753,13 @@ func TestConcurrentNATSOperations(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewNATSEventBus(DefaultConfig())
-	if err != nil {
-		t.Skipf("NATS server not available: %v", err)
-	}
-	defer func() {
-		if err := bus.Close(); err != nil {
-			t.Logf("error closing bus: %v", err)
-		}
-	}()
-
-	t.Run("concurrent publishes", func(t *testing.T) {
-		var wg sync.WaitGroup
-		numGoroutines := 50
-
-		for i := range numGoroutines {
-			wg.Add(1)
-			go func(id int) {
-				defer wg.Done()
-				event := &events.Event{
-					ID:        fmt.Sprintf("concurrent-%d", id),
-					EventType: "test.concurrent",
-					CreatedAt: time.Now(),
-				}
-				_ = bus.Publish(event)
-				assert.NoError(t, err)
-			}(i)
-		}
-
-		wg.Wait()
-	})
-
-	t.Run("concurrent subscribes and publishes", func(t *testing.T) {
-		var wg sync.WaitGroup
-		var counter int32
-
-		// Start subscribers
-		for i := range 5 {
-			wg.Add(1)
-			go func(id int) {
-				defer wg.Done()
-				err := bus.SubscribeToEventType(events.EventType(fmt.Sprintf("concurrent.sub.%d", id)), func(e *events.Event) {
-					atomic.AddInt32(&counter, 1)
-				})
-				if err != nil {
-					t.Logf("Subscribe error: %v", err)
-				}
-			}(i)
-		}
-
-		time.Sleep(200 * time.Millisecond)
-
-		// Start publishers
-		for i := range 5 {
-			wg.Add(1)
-			go func(id int) {
-				defer wg.Done()
-				event := &events.Event{
-					ID:        fmt.Sprintf("pubsub-%d", id),
-					EventType: events.EventType(fmt.Sprintf("concurrent.sub.%d", id)),
-					CreatedAt: time.Now(),
-				}
-				_ = bus.Publish(event)
-			}(i)
-		}
-
-		wg.Wait()
-		time.Sleep(500 * time.Millisecond)
-
-		// Should have received some events
-		finalCount := atomic.LoadInt32(&counter)
-		t.Logf("Received %d events", finalCount)
+	withEventBus(t, func(bus *EventBus) {
+		t.Run("concurrent publishes", func(t *testing.T) {
+			testConcurrentPublishes(t, bus)
+		})
+		t.Run("concurrent subscribes and publishes", func(t *testing.T) {
+			testConcurrentSubscribesAndPublishes(t, bus)
+		})
 	})
 }
 
@@ -747,7 +769,7 @@ func TestNATSErrorScenarios(t *testing.T) {
 	}
 
 	t.Run("publish to closed bus", func(t *testing.T) {
-		bus, err := NewNATSEventBus(DefaultConfig())
+		bus, err := NewEventBus(DefaultConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
@@ -764,13 +786,13 @@ func TestNATSErrorScenarios(t *testing.T) {
 	})
 
 	t.Run("subscribe to closed bus", func(t *testing.T) {
-		bus, err := NewNATSEventBus(DefaultConfig())
+		bus, err := NewEventBus(DefaultConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
 		_ = bus.Close()
 
-		err = bus.Subscribe(func(e *events.Event) {})
+		err = bus.Subscribe(func(_ *events.Event) {})
 		assert.Error(t, err)
 	})
 }
@@ -780,7 +802,7 @@ func TestNATSMessageMarshaling(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewNATSEventBus(DefaultConfig())
+	bus, err := NewEventBus(DefaultConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -793,12 +815,12 @@ func TestNATSMessageMarshaling(t *testing.T) {
 	t.Run("complex data structures", func(t *testing.T) {
 		received := make(chan *events.Event, 1)
 
-		err := bus.Subscribe(func(e *events.Event) {
-			received <- e
+		err := bus.Subscribe(func(evt *events.Event) {
+			received <- evt
 		})
 		require.NoError(t, err)
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(natsTestShortDelay)
 
 		complexData := map[string]any{
 			"string":  "value",
@@ -824,7 +846,7 @@ func TestNATSMessageMarshaling(t *testing.T) {
 		case evt := <-received:
 			assert.Equal(t, testEvent.ID, evt.ID)
 			assert.NotNil(t, evt.Data)
-		case <-time.After(2 * time.Second):
+		case <-time.After(natsTestTimeout):
 			t.Fatal("timeout waiting for complex event")
 		}
 	})
@@ -836,7 +858,7 @@ func TestNATSReconnectHandlers(t *testing.T) {
 	}
 
 	t.Run("handlers are registered", func(t *testing.T) {
-		bus, err := NewNATSEventBus(DefaultConfig())
+		bus, err := NewEventBus(DefaultConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
@@ -854,7 +876,7 @@ func TestNATSReconnectHandlers(t *testing.T) {
 
 func TestNATSClientEdgeCases(t *testing.T) {
 	t.Run("empty URL", func(t *testing.T) {
-		client, err := NewNATSClient("", "")
+		client, err := NewClient("", "")
 		if client != nil {
 			defer func() {
 				if err := client.Close(); err != nil {
@@ -870,7 +892,7 @@ func TestNATSClientEdgeCases(t *testing.T) {
 
 	t.Run("multiple sequential connections", func(t *testing.T) {
 		for range 5 {
-			client, err := NewNATSClient(natslib.DefaultURL, "")
+			client, err := NewClient(natslib.DefaultURL, "")
 			if err != nil {
 				t.Skipf("NATS not available: %v", err)
 			}

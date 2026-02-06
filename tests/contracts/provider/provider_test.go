@@ -1,3 +1,4 @@
+// Package provider runs Pact provider contract tests against the Go backend.
 package provider
 
 import (

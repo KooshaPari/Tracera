@@ -1,21 +1,22 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/route-guards";
+import { createFileRoute, redirect } from '@tanstack/react-router';
+
+import { requireAuth } from '@/lib/route-guards';
 
 function ADRsPage() {
-	return null;
+  return null;
 }
 
-export const Route = createFileRoute("/projects/$projectId/adrs")({
-	beforeLoad: ({ params }) => {
-		// Check auth first
-		requireAuth();
+export const Route = createFileRoute('/projects/$projectId/adrs')({
+  beforeLoad: ({ params }) => {
+    // Check auth first
+    requireAuth();
 
-		// Then redirect
-		throw redirect({
-			params,
-			search: { tab: "adrs" },
-			to: "/projects/$projectId/specifications",
-		});
-	},
-	component: ADRsPage,
+    // Then redirect
+    throw redirect({
+      params,
+      search: { tab: 'adrs' },
+      to: '/projects/$projectId/specifications',
+    });
+  },
+  component: ADRsPage,
 });

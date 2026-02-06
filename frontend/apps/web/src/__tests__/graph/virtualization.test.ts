@@ -1,338 +1,322 @@
-import { describe, expect, it } from "vitest";
-import type {
-	NodePosition,
-	ViewportBounds,
-} from "../../components/graph/hooks/useVirtualization";
+import { describe, expect, it } from 'vitest';
 
-describe("Virtual Rendering Utilities", () => {
-	describe("Viewport culling", () => {
-		it("should identify nodes within viewport bounds", () => {
-			const node: NodePosition = {
-				height: 120,
-				id: "node-1",
-				width: 200,
-				x: 100,
-				y: 100,
-			};
+import type { NodePosition, ViewportBounds } from '../../components/graph/hooks/useVirtualization';
 
-			const viewport: ViewportBounds = {
-				maxX: 500,
-				maxY: 500,
-				minX: 0,
-				minY: 0,
-			};
+describe('Virtual Rendering Utilities', () => {
+  describe('Viewport culling', () => {
+    it('should identify nodes within viewport bounds', () => {
+      const node: NodePosition = {
+        height: 120,
+        id: 'node-1',
+        width: 200,
+        x: 100,
+        y: 100,
+      };
 
-			const isVisible =
-				node.x + node.width > viewport.minX &&
-				node.x < viewport.maxX &&
-				node.y + node.height > viewport.minY &&
-				node.y < viewport.maxY;
+      const viewport: ViewportBounds = {
+        maxX: 500,
+        maxY: 500,
+        minX: 0,
+        minY: 0,
+      };
 
-			expect(isVisible).toBe(true);
-		});
+      const isVisible =
+        node.x + node.width > viewport.minX &&
+        node.x < viewport.maxX &&
+        node.y + node.height > viewport.minY &&
+        node.y < viewport.maxY;
 
-		it("should cull nodes outside viewport bounds", () => {
-			const node: NodePosition = {
-				height: 120,
-				id: "node-1",
-				width: 200,
-				x: 1000,
-				y: 1000,
-			};
+      expect(isVisible).toBeTruthy();
+    });
 
-			const viewport: ViewportBounds = {
-				maxX: 500,
-				maxY: 500,
-				minX: 0,
-				minY: 0,
-			};
+    it('should cull nodes outside viewport bounds', () => {
+      const node: NodePosition = {
+        height: 120,
+        id: 'node-1',
+        width: 200,
+        x: 1000,
+        y: 1000,
+      };
 
-			const isVisible =
-				node.x + node.width > viewport.minX &&
-				node.x < viewport.maxX &&
-				node.y + node.height > viewport.minY &&
-				node.y < viewport.maxY;
+      const viewport: ViewportBounds = {
+        maxX: 500,
+        maxY: 500,
+        minX: 0,
+        minY: 0,
+      };
 
-			expect(isVisible).toBe(false);
-		});
+      const isVisible =
+        node.x + node.width > viewport.minX &&
+        node.x < viewport.maxX &&
+        node.y + node.height > viewport.minY &&
+        node.y < viewport.maxY;
 
-		it("should handle nodes at viewport edges", () => {
-			const nodeLeft: NodePosition = {
-				height: 120,
-				id: "node-left",
-				width: 200,
-				x: -50,
-				y: 100,
-			};
+      expect(isVisible).toBeFalsy();
+    });
 
-			const viewport: ViewportBounds = {
-				maxX: 500,
-				maxY: 500,
-				minX: 0,
-				minY: 0,
-			};
+    it('should handle nodes at viewport edges', () => {
+      const nodeLeft: NodePosition = {
+        height: 120,
+        id: 'node-left',
+        width: 200,
+        x: -50,
+        y: 100,
+      };
 
-			const isVisibleLeft =
-				nodeLeft.x + nodeLeft.width > viewport.minX &&
-				nodeLeft.x < viewport.maxX &&
-				nodeLeft.y + nodeLeft.height > viewport.minY &&
-				nodeLeft.y < viewport.maxY;
+      const viewport: ViewportBounds = {
+        maxX: 500,
+        maxY: 500,
+        minX: 0,
+        minY: 0,
+      };
 
-			expect(isVisibleLeft).toBe(true); // Partially visible
-		});
+      const isVisibleLeft =
+        nodeLeft.x + nodeLeft.width > viewport.minX &&
+        nodeLeft.x < viewport.maxX &&
+        nodeLeft.y + nodeLeft.height > viewport.minY &&
+        nodeLeft.y < viewport.maxY;
 
-		it("should calculate viewport bounds with padding", () => {
-			const viewport = { height: 600, width: 1000, x: 100, y: 100, zoom: 1 };
-			const padding = 200;
+      expect(isVisibleLeft).toBeTruthy(); // Partially visible
+    });
 
-			const bounds: ViewportBounds = {
-				maxX: viewport.x + viewport.width / viewport.zoom + padding,
-				maxY: viewport.y + viewport.height / viewport.zoom + padding,
-				minX: viewport.x - padding,
-				minY: viewport.y - padding,
-			};
+    it('should calculate viewport bounds with padding', () => {
+      const viewport = { height: 600, width: 1000, x: 100, y: 100, zoom: 1 };
+      const padding = 200;
 
-			expect(bounds.minX).toBe(-100);
-			expect(bounds.maxX).toBe(1300);
-			expect(bounds.minY).toBe(-100);
-			expect(bounds.maxY).toBe(900);
-		});
+      const bounds: ViewportBounds = {
+        maxX: viewport.x + viewport.width / viewport.zoom + padding,
+        maxY: viewport.y + viewport.height / viewport.zoom + padding,
+        minX: viewport.x - padding,
+        minY: viewport.y - padding,
+      };
 
-		it("should account for zoom level in viewport calculation", () => {
-			const viewport = { height: 600, width: 1000, x: 0, y: 0, zoom: 0.5 };
-			const padding = 0;
+      expect(bounds.minX).toBe(-100);
+      expect(bounds.maxX).toBe(1300);
+      expect(bounds.minY).toBe(-100);
+      expect(bounds.maxY).toBe(900);
+    });
 
-			const bounds: ViewportBounds = {
-				maxX: viewport.x + viewport.width / viewport.zoom + padding,
-				maxY: viewport.y + viewport.height / viewport.zoom + padding,
-				minX: viewport.x - padding,
-				minY: viewport.y - padding,
-			};
+    it('should account for zoom level in viewport calculation', () => {
+      const viewport = { height: 600, width: 1000, x: 0, y: 0, zoom: 0.5 };
+      const padding = 0;
 
-			expect(bounds.maxX).toBe(2000); // 1000 / 0.5
-			expect(bounds.maxY).toBe(1200); // 600 / 0.5
-		});
-	});
+      const bounds: ViewportBounds = {
+        maxX: viewport.x + viewport.width / viewport.zoom + padding,
+        maxY: viewport.y + viewport.height / viewport.zoom + padding,
+        minX: viewport.x - padding,
+        minY: viewport.y - padding,
+      };
 
-	describe("Level of Detail (LOD)", () => {
-		it("should return high LOD above zoom threshold", () => {
-			const zoom = 0.9;
-			const threshold = 0.8;
-			const lodLevel =
-				zoom >= threshold ? "high" : (zoom >= threshold / 2 ? "medium" : "low");
-			expect(lodLevel).toBe("high");
-		});
+      expect(bounds.maxX).toBe(2000); // 1000 / 0.5
+      expect(bounds.maxY).toBe(1200); // 600 / 0.5
+    });
+  });
 
-		it("should return medium LOD between thresholds", () => {
-			const zoom = 0.6;
-			const highThreshold = 0.8;
-			const mediumThreshold = 0.5;
-			const lodLevel =
-				zoom >= highThreshold
-					? "high"
-					: (zoom >= mediumThreshold
-						? "medium"
-						: "low");
-			expect(lodLevel).toBe("medium");
-		});
+  describe('Level of Detail (LOD)', () => {
+    it('should return high LOD above zoom threshold', () => {
+      const zoom = 0.9;
+      const threshold = 0.8;
+      const lodLevel = zoom >= threshold ? 'high' : zoom >= threshold / 2 ? 'medium' : 'low';
+      expect(lodLevel).toBe('high');
+    });
 
-		it("should return low LOD below zoom threshold", () => {
-			const zoom = 0.3;
-			const highThreshold = 0.8;
-			const mediumThreshold = 0.5;
-			const lodLevel =
-				zoom >= highThreshold
-					? "high"
-					: (zoom >= mediumThreshold
-						? "medium"
-						: "low");
-			expect(lodLevel).toBe("low");
-		});
-	});
+    it('should return medium LOD between thresholds', () => {
+      const zoom = 0.6;
+      const highThreshold = 0.8;
+      const mediumThreshold = 0.5;
+      const lodLevel = zoom >= highThreshold ? 'high' : zoom >= mediumThreshold ? 'medium' : 'low';
+      expect(lodLevel).toBe('medium');
+    });
 
-	describe("Node clustering", () => {
-		it("should group nodes within distance threshold", () => {
-			const nodes: NodePosition[] = [
-				{ height: 100, id: "n1", width: 100, x: 0, y: 0 },
-				{ height: 100, id: "n2", width: 100, x: 50, y: 50 }, // Close to n1
-				{ height: 100, id: "n3", width: 100, x: 500, y: 500 }, // Far from others
-			];
+    it('should return low LOD below zoom threshold', () => {
+      const zoom = 0.3;
+      const highThreshold = 0.8;
+      const mediumThreshold = 0.5;
+      const lodLevel = zoom >= highThreshold ? 'high' : zoom >= mediumThreshold ? 'medium' : 'low';
+      expect(lodLevel).toBe('low');
+    });
+  });
 
-			const clusterDistance = 200;
-			const clusters = new Map<string, string[]>();
-			const visited = new Set<string>();
+  describe('Node clustering', () => {
+    it('should group nodes within distance threshold', () => {
+      const nodes: NodePosition[] = [
+        { height: 100, id: 'n1', width: 100, x: 0, y: 0 },
+        { height: 100, id: 'n2', width: 100, x: 50, y: 50 }, // Close to n1
+        { height: 100, id: 'n3', width: 100, x: 500, y: 500 }, // Far from others
+      ];
 
-			function clusterFromNode(startId: string): string[] {
-				if (visited.has(startId)) {
-					return [];
-				}
+      const clusterDistance = 200;
+      const clusters = new Map<string, string[]>();
+      const visited = new Set<string>();
 
-				const cluster: string[] = [startId];
-				visited.add(startId);
-				const queue = [startId];
+      function clusterFromNode(startId: string): string[] {
+        if (visited.has(startId)) {
+          return [];
+        }
 
-				const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+        const cluster: string[] = [startId];
+        visited.add(startId);
+        const queue = [startId];
 
-				while (queue.length > 0) {
-					const currentId = queue.shift()!;
-					const current = nodeMap.get(currentId)!;
+        const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
-					for (const other of nodes) {
-						if (visited.has(other.id)) {
-							continue;
-						}
+        while (queue.length > 0) {
+          const currentId = queue.shift()!;
+          const current = nodeMap.get(currentId)!;
 
-						const dx = other.x - current.x;
-						const dy = other.y - current.y;
-						const distance = Math.sqrt(dx * dx + dy * dy);
+          for (const other of nodes) {
+            if (visited.has(other.id)) {
+              continue;
+            }
 
-						if (distance < clusterDistance) {
-							cluster.push(other.id);
-							visited.add(other.id);
-							queue.push(other.id);
-						}
-					}
-				}
+            const dx = other.x - current.x;
+            const dy = other.y - current.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
 
-				return cluster;
-			}
+            if (distance < clusterDistance) {
+              cluster.push(other.id);
+              visited.add(other.id);
+              queue.push(other.id);
+            }
+          }
+        }
 
-			for (const node of nodes) {
-				if (!visited.has(node.id)) {
-					const cluster = clusterFromNode(node.id);
-					clusters.set(`cluster-${cluster[0]}`, cluster);
-				}
-			}
+        return cluster;
+      }
 
-			expect(clusters.size).toBe(2); // N1+n2 group, n3 alone
-		});
-	});
+      for (const node of nodes) {
+        if (!visited.has(node.id)) {
+          const cluster = clusterFromNode(node.id);
+          clusters.set(`cluster-${cluster[0]}`, cluster);
+        }
+      }
 
-	describe("Culling metrics", () => {
-		it("should calculate culling ratio", () => {
-			const totalNodes = 1000;
-			const visibleNodes = 150;
-			const culledNodes = totalNodes - visibleNodes;
-			const cullingRatio = culledNodes / totalNodes;
+      expect(clusters.size).toBe(2); // N1+n2 group, n3 alone
+    });
+  });
 
-			expect(cullingRatio).toBeCloseTo(0.85); // 850 culled / 1000 total
-		});
+  describe('Culling metrics', () => {
+    it('should calculate culling ratio', () => {
+      const totalNodes = 1000;
+      const visibleNodes = 150;
+      const culledNodes = totalNodes - visibleNodes;
+      const cullingRatio = culledNodes / totalNodes;
 
-		it("should track render performance", () => {
-			const renderStart = performance.now();
-			// Simulate work
-			for (let i = 0; i < 1000; i++) {
-				Math.sqrt(i);
-			}
-			const renderTime = performance.now() - renderStart;
+      expect(cullingRatio).toBeCloseTo(0.85); // 850 culled / 1000 total
+    });
 
-			expect(renderTime).toBeGreaterThan(0);
-			expect(typeof renderTime).toBe("number");
-		});
-	});
+    it('should track render performance', () => {
+      const renderStart = performance.now();
+      // Simulate work
+      for (let i = 0; i < 1000; i++) {
+        Math.sqrt(i);
+      }
+      const renderTime = performance.now() - renderStart;
 
-	describe("Progressive loading", () => {
-		it("should load items in batches", () => {
-			const items = Array.from({ length: 500 }, (_, i) => ({
-				id: `item-${i}`,
-			}));
-			const batchSize = 50;
-			const loadedItems = new Set<string>();
+      expect(renderTime).toBeGreaterThan(0);
+      expect(typeof renderTime).toBe('number');
+    });
+  });
 
-			// Simulate batch loading
-			const batches = Math.ceil(items.length / batchSize);
-			for (let i = 0; i < batches; i++) {
-				const start = i * batchSize;
-				const end = Math.min(start + batchSize, items.length);
-				for (let j = start; j < end; j++) {
-					loadedItems.add(items[j].id);
-				}
-			}
+  describe('Progressive loading', () => {
+    it('should load items in batches', () => {
+      const items = Array.from({ length: 500 }, (_, i) => ({
+        id: `item-${i}`,
+      }));
+      const batchSize = 50;
+      const loadedItems = new Set<string>();
 
-			expect(loadedItems.size).toBe(items.length);
-		});
+      // Simulate batch loading
+      const batches = Math.ceil(items.length / batchSize);
+      for (let i = 0; i < batches; i++) {
+        const start = i * batchSize;
+        const end = Math.min(start + batchSize, items.length);
+        for (let j = start; j < end; j++) {
+          loadedItems.add(items[j].id);
+        }
+      }
 
-		it("should calculate loading progress", () => {
-			const totalItems = 200;
-			const loadedItems = 50;
-			const progress = (loadedItems / totalItems) * 100;
+      expect(loadedItems.size).toBe(items.length);
+    });
 
-			expect(progress).toBe(25);
-		});
-	});
+    it('should calculate loading progress', () => {
+      const totalItems = 200;
+      const loadedItems = 50;
+      const progress = (loadedItems / totalItems) * 100;
 
-	describe("Intersection Observer visibility", () => {
-		it("should track visible node IDs", () => {
-			const visibleIds = new Set(["node-1", "node-2", "node-5"]);
+      expect(progress).toBe(25);
+    });
+  });
 
-			const isVisible = (nodeId: string) => visibleIds.has(nodeId);
+  describe('Intersection Observer visibility', () => {
+    it('should track visible node IDs', () => {
+      const visibleIds = new Set(['node-1', 'node-2', 'node-5']);
 
-			expect(isVisible("node-1")).toBe(true);
-			expect(isVisible("node-3")).toBe(false);
-			expect(isVisible("node-5")).toBe(true);
-		});
-	});
+      const isVisible = (nodeId: string) => visibleIds.has(nodeId);
 
-	describe("Large graph handling", () => {
-		it("should handle 10000 nodes efficiently", () => {
-			const nodes: NodePosition[] = Array.from({ length: 10_000 }, (_, i) => ({
-				height: 120,
-				id: `node-${i}`,
-				width: 200,
-				x: Math.random() * 50_000,
-				y: Math.random() * 50_000,
-			}));
+      expect(isVisible('node-1')).toBeTruthy();
+      expect(isVisible('node-3')).toBeFalsy();
+      expect(isVisible('node-5')).toBeTruthy();
+    });
+  });
 
-			const viewport: ViewportBounds = {
-				maxX: 2000,
-				maxY: 1500,
-				minX: 0,
-				minY: 0,
-			};
+  describe('Large graph handling', () => {
+    it('should handle 10000 nodes efficiently', () => {
+      const nodes: NodePosition[] = Array.from({ length: 10_000 }, (_, i) => ({
+        height: 120,
+        id: `node-${i}`,
+        width: 200,
+        x: Math.random() * 50_000,
+        y: Math.random() * 50_000,
+      }));
 
-			const startTime = performance.now();
+      const viewport: ViewportBounds = {
+        maxX: 2000,
+        maxY: 1500,
+        minX: 0,
+        minY: 0,
+      };
 
-			const visible = nodes.filter(
-				(node) =>
-					node.x + node.width > viewport.minX &&
-					node.x < viewport.maxX &&
-					node.y + node.height > viewport.minY &&
-					node.y < viewport.maxY,
-			);
+      const startTime = performance.now();
 
-			const endTime = performance.now();
-			const duration = endTime - startTime;
+      const visible = nodes.filter(
+        (node) =>
+          node.x + node.width > viewport.minX &&
+          node.x < viewport.maxX &&
+          node.y + node.height > viewport.minY &&
+          node.y < viewport.maxY,
+      );
 
-			// Should complete culling in reasonable time (< 100ms)
-			expect(duration).toBeLessThan(100);
-			expect(visible.length).toBeGreaterThan(0);
-			expect(visible.length).toBeLessThan(nodes.length);
-		});
+      const endTime = performance.now();
+      const duration = endTime - startTime;
 
-		it("should reduce render load with virtualization", () => {
-			const totalNodes = 5000;
-			const viewport = { height: 600, width: 1000, x: 0, y: 0, zoom: 1 };
-			const padding = 300;
+      // Should complete culling in reasonable time (< 100ms)
+      expect(duration).toBeLessThan(100);
+      expect(visible.length).toBeGreaterThan(0);
+      expect(visible.length).toBeLessThan(nodes.length);
+    });
 
-			const bounds: ViewportBounds = {
-				maxX: viewport.x + viewport.width / viewport.zoom + padding,
-				maxY: viewport.y + viewport.height / viewport.zoom + padding,
-				minX: viewport.x - padding,
-				minY: viewport.y - padding,
-			};
+    it('should reduce render load with virtualization', () => {
+      const totalNodes = 5000;
+      const viewport = { height: 600, width: 1000, x: 0, y: 0, zoom: 1 };
+      const padding = 300;
 
-			// Rough estimate of visible nodes
-			const boundsArea =
-				(bounds.maxX - bounds.minX) * (bounds.maxY - bounds.minY);
-			const totalArea = 50_000 * 50_000;
-			const estimatedVisibleNodes = Math.floor(
-				(boundsArea / totalArea) * totalNodes,
-			);
+      const bounds: ViewportBounds = {
+        maxX: viewport.x + viewport.width / viewport.zoom + padding,
+        maxY: viewport.y + viewport.height / viewport.zoom + padding,
+        minX: viewport.x - padding,
+        minY: viewport.y - padding,
+      };
 
-			const reductionRatio = (totalNodes - estimatedVisibleNodes) / totalNodes;
+      // Rough estimate of visible nodes
+      const boundsArea = (bounds.maxX - bounds.minX) * (bounds.maxY - bounds.minY);
+      const totalArea = 50_000 * 50_000;
+      const estimatedVisibleNodes = Math.floor((boundsArea / totalArea) * totalNodes);
 
-			expect(reductionRatio).toBeGreaterThan(0.7); // At least 70% reduction
-			expect(estimatedVisibleNodes).toBeLessThan(totalNodes);
-		});
-	});
+      const reductionRatio = (totalNodes - estimatedVisibleNodes) / totalNodes;
+
+      expect(reductionRatio).toBeGreaterThan(0.7); // At least 70% reduction
+      expect(estimatedVisibleNodes).toBeLessThan(totalNodes);
+    });
+  });
 });

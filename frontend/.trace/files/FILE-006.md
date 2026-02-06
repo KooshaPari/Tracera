@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Custom React hook for authentication state. Returns user, loading, login, logout functions. Handles token refresh automatically.
-

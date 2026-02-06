@@ -12,9 +12,9 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 import grpc
-from grpc import aio  # type: ignore[possibly-missing-import]
+from grpc import aio
 
-from tracertm.proto import tracertm_pb2, tracertm_pb2_grpc  # type: ignore[attr-defined]
+from tracertm.proto import tracertm_pb2, tracertm_pb2_grpc
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +32,7 @@ class GoBackendClient:
     Example:
         >>> async with GoBackendClient() as client:
         ...     response = await client.analyze_impact(
-        ...         item_id="item-123",
-        ...         project_id="proj-456",
-        ...         direction="upstream",
-        ...         max_depth=3
+        ...         item_id="item-123", project_id="proj-456", direction="upstream", max_depth=3
         ...     )
         ...     print(f"Found {response.total_count} impacted items")
     """
@@ -148,9 +145,9 @@ class GoBackendClient:
             except grpc.RpcError as e:
                 last_error = e
                 code_fn = getattr(e, "code", lambda: None)
-                details_fn = getattr(e, "details", lambda: b"")
+                details_fn = getattr(e, "details", lambda: "")
                 code = code_fn() if callable(code_fn) else None
-                details = details_fn() if callable(details_fn) else b""
+                details = details_fn() if callable(details_fn) else ""
 
                 # Check if error is retryable
                 if code in (
@@ -213,7 +210,7 @@ class GoBackendClient:
         if not self._stub:
             raise RuntimeError("Not connected to gRPC server. Call connect() first.")
 
-        request = tracertm_pb2.ImpactRequest(
+        request = tracertm_pb2.AnalyzeImpactRequest(
             item_id=item_id,
             project_id=project_id,
             direction=direction,
@@ -275,7 +272,7 @@ class GoBackendClient:
         if not self._stub:
             raise RuntimeError("Not connected to gRPC server. Call connect() first.")
 
-        request = tracertm_pb2.CycleRequest(
+        request = tracertm_pb2.FindCyclesRequest(
             project_id=project_id,
             link_types=link_types or [],
             max_cycle_length=max_cycle_length,
@@ -333,7 +330,7 @@ class GoBackendClient:
         if not self._stub:
             raise RuntimeError("Not connected to gRPC server. Call connect() first.")
 
-        request = tracertm_pb2.PathRequest(
+        request = tracertm_pb2.CalculatePathRequest(
             project_id=project_id,
             source_item_id=source_item_id,
             target_item_id=target_item_id,

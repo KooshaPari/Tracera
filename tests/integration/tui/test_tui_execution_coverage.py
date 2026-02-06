@@ -2,7 +2,7 @@
 Comprehensive execution tests for TUI module - targeting 100% code coverage.
 
 Tests actual code execution paths for:
-- All 4 TUI apps (graph, browser, dashboard, dashboard_v2)
+- All 4 TUI apps (graph, browser, dashboard, dashboard_compat)
 - All 6 TUI widgets (graph_view, conflict_panel, view_switcher, item_list, state_display, sync_status)
 - Storage adapter
 
@@ -34,7 +34,7 @@ if TEXTUAL_AVAILABLE:
     from tracertm.tui.adapters.storage_adapter import StorageAdapter
     from tracertm.tui.apps.browser import BrowserApp  # type: ignore[possibly-missing-import]
     from tracertm.tui.apps.dashboard import DashboardApp  # type: ignore[possibly-missing-import]
-    from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp  # type: ignore[possibly-missing-import]
+    from tracertm.tui.apps.dashboard_compat import EnhancedDashboardApp  # type: ignore[possibly-missing-import]
     from tracertm.tui.apps.graph import GraphApp  # type: ignore[possibly-missing-import]
     from tracertm.tui.widgets.conflict_panel import ConflictPanel  # type: ignore[possibly-missing-import]
     from tracertm.tui.widgets.graph_view import GraphViewWidget
@@ -863,15 +863,15 @@ class TestDashboardApp:
 
 
 # ============================================================================
-# EnhancedDashboardApp Tests (dashboard_v2.py - 447 lines)
+# EnhancedDashboardApp Tests (dashboard_compat.py - 447 lines)
 # ============================================================================
 
 
 class TestEnhancedDashboardApp:
     """Test EnhancedDashboardApp execution paths."""
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_initialization(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp.__init__ execution."""
         app: Any = cast(Any, EnhancedDashboardApp(base_dir=Path("/tmp/test")))
@@ -880,8 +880,8 @@ class TestEnhancedDashboardApp:
         assert app.current_view == "epic"
         assert app._is_syncing is False
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_compose(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp.compose execution."""
         app: Any = cast(Any, EnhancedDashboardApp())
@@ -896,8 +896,8 @@ class TestEnhancedDashboardApp:
 
         asyncio.run(run_test())
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_setup_view_tree(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp.setup_view_tree execution."""
         app: Any = cast(Any, EnhancedDashboardApp())
@@ -912,8 +912,8 @@ class TestEnhancedDashboardApp:
         # Should add 4 views (epic, story, test, task)
         assert mock_tree.root.add.call_count == 4
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_setup_storage_callbacks(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp.setup_storage_callbacks execution."""
         mock_adapter = Mock(spec=StorageAdapter)
@@ -926,8 +926,8 @@ class TestEnhancedDashboardApp:
         mock_adapter.on_conflict_detected.assert_called_once()
         mock_adapter.on_item_change.assert_called_once()
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_update_sync_status(self, mock_cm, mock_adapter_class, mock_storage_adapter):
         """Test EnhancedDashboardApp.update_sync_status execution."""
         mock_adapter_class.return_value = mock_storage_adapter
@@ -943,8 +943,8 @@ class TestEnhancedDashboardApp:
         mock_storage_adapter.get_sync_status.assert_called_once()
         mock_widget.set_online.assert_called_once()
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_refresh_stats(self, mock_cm, mock_adapter_class, mock_storage_adapter, sample_project):
         """Test EnhancedDashboardApp.refresh_stats execution."""
         mock_adapter_class.return_value = mock_storage_adapter
@@ -967,8 +967,8 @@ class TestEnhancedDashboardApp:
         mock_table.clear.assert_called_once()
         mock_summary.update.assert_called_once()
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_refresh_items(self, mock_cm, mock_adapter_class, mock_storage_adapter, sample_project):
         """Test EnhancedDashboardApp.refresh_items execution."""
         mock_adapter_class.return_value = mock_storage_adapter
@@ -985,8 +985,8 @@ class TestEnhancedDashboardApp:
         mock_storage_adapter.list_items.assert_called_once()
         mock_table.clear.assert_called_once()
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_action_switch_view(self, mock_cm, mock_adapter_class, mock_storage_adapter):
         """Test EnhancedDashboardApp.action_switch_view execution."""
         mock_adapter_class.return_value = mock_storage_adapter
@@ -1004,8 +1004,8 @@ class TestEnhancedDashboardApp:
         assert app.current_view == "story"
         app.refresh_data.assert_called_once()
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_action_refresh(self, mock_cm, mock_adapter_class, mock_storage_adapter):
         """Test EnhancedDashboardApp.action_refresh execution."""
         mock_adapter_class.return_value = mock_storage_adapter
@@ -1020,8 +1020,8 @@ class TestEnhancedDashboardApp:
         app.notify.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     async def test_enhanced_dashboard_action_sync_success(self, mock_cm, mock_adapter_class, mock_storage_adapter):
         """Test EnhancedDashboardApp.action_sync success path."""
         mock_adapter_class.return_value = mock_storage_adapter
@@ -1037,8 +1037,8 @@ class TestEnhancedDashboardApp:
         assert app.notify.call_count >= 2  # Starting and complete
 
     @pytest.mark.asyncio
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     async def test_enhanced_dashboard_action_sync_already_syncing(
         self, mock_cm, mock_adapter_class, mock_storage_adapter
     ):
@@ -1055,8 +1055,8 @@ class TestEnhancedDashboardApp:
         assert "already in progress" in str(app.notify.call_args).lower()
 
     @pytest.mark.asyncio
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     async def test_enhanced_dashboard_action_sync_failure(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp.action_sync failure path."""
         mock_adapter = Mock(spec=StorageAdapter)
@@ -1073,8 +1073,8 @@ class TestEnhancedDashboardApp:
         # Should notify about failure
         assert any("failed" in str(call).lower() for call in app.notify.call_args_list)
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_action_show_conflicts_none(self, mock_cm, mock_adapter_class, mock_storage_adapter):
         """Test EnhancedDashboardApp.action_show_conflicts with no conflicts."""
         mock_adapter_class.return_value = mock_storage_adapter
@@ -1088,8 +1088,8 @@ class TestEnhancedDashboardApp:
         app.notify.assert_called_once()
         assert "no unresolved" in str(app.notify.call_args).lower()
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_action_show_conflicts_exists(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp.action_show_conflicts with conflicts."""
         mock_adapter = Mock(spec=StorageAdapter)
@@ -1105,8 +1105,8 @@ class TestEnhancedDashboardApp:
 
         app.push_screen.assert_called_once()
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_action_help(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp.action_help execution."""
         app: Any = cast(Any, EnhancedDashboardApp())
@@ -1116,8 +1116,8 @@ class TestEnhancedDashboardApp:
 
         app.notify.assert_called_once()
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_on_sync_status_change(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp._on_sync_status_change callback."""
         app: Any = cast(Any, EnhancedDashboardApp())
@@ -1134,8 +1134,8 @@ class TestEnhancedDashboardApp:
         # Should call update
         assert app.call_from_thread.call_count >= 1
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_on_conflict_detected(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp._on_conflict_detected callback."""
         app: Any = cast(Any, EnhancedDashboardApp())
@@ -1150,8 +1150,8 @@ class TestEnhancedDashboardApp:
         # Should call notify
         assert app.call_from_thread.call_count >= 1
 
-    @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
-    @patch("tracertm.tui.apps.dashboard_v2.ConfigManager")
+    @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
+    @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     def test_enhanced_dashboard_on_item_change(self, mock_cm, mock_adapter_class):
         """Test EnhancedDashboardApp._on_item_change callback."""
         app: Any = cast(Any, EnhancedDashboardApp())

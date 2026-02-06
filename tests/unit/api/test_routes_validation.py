@@ -47,9 +47,7 @@ ROUTES_TO_TEST = [
 class TestRouteValidation:
     """Validate all API routes respond correctly and log errors/warnings."""
 
-    @pytest.mark.parametrize(
-        "route", ROUTES_TO_TEST, ids=lambda r: f"{r['method']} {r['path']}"
-    )
+    @pytest.mark.parametrize("route", ROUTES_TO_TEST, ids=lambda r: f"{r['method']} {r['path']}")
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
     def test_route_responds(self, mock_db, mock_auth, route):
@@ -89,24 +87,18 @@ class TestRouteValidation:
             elif route["method"] == "OPTIONS":
                 response = client.options(route["path"], headers=headers)
             else:
-                response = client.request(
-                    route["method"], route["path"], headers=headers
-                )
+                response = client.request(route["method"], route["path"], headers=headers)
 
             # Main assertion - status code must be less than 500 (no server errors)
-            assert (
-                response.status_code < 500
-            ), f"{route['method']} {route['path']} returned {response.status_code}: {response.text[:200]}"
-            assert response.status_code > 0, (
-                f"{route['method']} {route['path']} did not respond"
+            assert response.status_code < 500, (
+                f"{route['method']} {route['path']} returned {response.status_code}: {response.text[:200]}"
             )
+            assert response.status_code > 0, f"{route['method']} {route['path']} did not respond"
 
             print(f"✅ {route['method']} {route['path']}: {response.status_code}")
 
         except Exception as e:
-            pytest.fail(
-                f"Exception for {route['method']} {route['path']}: {str(e)}"
-            )
+            pytest.fail(f"Exception for {route['method']} {route['path']}: {str(e)}")
 
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
@@ -139,17 +131,11 @@ class TestRouteValidation:
 
         # Assertions - CORS headers should be present for WebSocket
         # Note: If endpoint doesn't support CORS, we still verify response is not 500+
-        assert response.status_code < 500, (
-            f"WebSocket CORS preflight returned {response.status_code}"
-        )
+        assert response.status_code < 500, f"WebSocket CORS preflight returned {response.status_code}"
 
         if cors_origin:
-            assert (
-                cors_credentials == "true"
-            ), "CORS credentials should allow true"
-            assert "GET" in cors_methods or "*" in cors_methods, (
-                "CORS methods should include GET or *"
-            )
+            assert cors_credentials == "true", "CORS credentials should allow true"
+            assert "GET" in cors_methods or "*" in cors_methods, "CORS methods should include GET or *"
 
         print("✅ WebSocket CORS headers validation complete")
 
@@ -187,30 +173,24 @@ class TestRouteValidation:
                         headers=headers,
                     )
                 else:
-                    response = client.request(
-                        route["method"], route["path"], headers=headers
-                    )
+                    response = client.request(route["method"], route["path"], headers=headers)
 
                 # Success = responded without 5xx error
                 is_success = response.status_code < 500
-                results.append(
-                    {
-                        "route": route["path"],
-                        "method": route["method"],
-                        "status": response.status_code,
-                        "success": is_success,
-                    }
-                )
+                results.append({
+                    "route": route["path"],
+                    "method": route["method"],
+                    "status": response.status_code,
+                    "success": is_success,
+                })
             except Exception as e:
-                results.append(
-                    {
-                        "route": route["path"],
-                        "method": route["method"],
-                        "status": 0,
-                        "error": str(e),
-                        "success": False,
-                    }
-                )
+                results.append({
+                    "route": route["path"],
+                    "method": route["method"],
+                    "status": 0,
+                    "error": str(e),
+                    "success": False,
+                })
 
         # Calculate summary statistics
         successful = sum(1 for r in results if r["success"])
@@ -229,9 +209,7 @@ class TestRouteValidation:
 
         # Assert all successful (no 5xx errors)
         failed_routes = [r for r in results if not r["success"]]
-        assert (
-            not failed_routes
-        ), f"Routes returned 5xx errors: {json.dumps(failed_routes, indent=2)}"
+        assert not failed_routes, f"Routes returned 5xx errors: {json.dumps(failed_routes, indent=2)}"
 
     def test_health_endpoint_response_structure(self):
         """Test health endpoint returns expected response structure."""
@@ -242,9 +220,7 @@ class TestRouteValidation:
 
         # Verify expected fields
         assert "status" in data, "Health response must include 'status' field"
-        assert data["status"] in ["healthy", "ok"], (
-            "Status must be 'healthy' or 'ok'"
-        )
+        assert data["status"] in ["healthy", "ok"], "Status must be 'healthy' or 'ok'"
 
         print(f"✅ Health endpoint structure validated: {data}")
 
@@ -270,13 +246,9 @@ class TestRouteValidation:
 
                 # Should return 4xx error or success (depends on mock)
                 # Main thing is it doesn't crash with 500
-                assert response.status_code < 500, (
-                    f"{route} returned 500+ without auth: {response.status_code}"
-                )
+                assert response.status_code < 500, f"{route} returned 500+ without auth: {response.status_code}"
 
-                print(
-                    f"✅ {route} properly handles missing auth: {response.status_code}"
-                )
+                print(f"✅ {route} properly handles missing auth: {response.status_code}")
             except Exception as e:
                 # Exception is OK if it's about missing auth
                 if "Missing authorization" not in str(e):
@@ -301,14 +273,10 @@ class TestRouteValidation:
 
         for route in test_routes:
             response = client.get(route, headers=headers)
-            assert response.status_code < 500, (
-                f"{route} returned server error: {response.status_code}"
-            )
+            assert response.status_code < 500, f"{route} returned server error: {response.status_code}"
 
             # If 2xx or 3xx, should have content-type header
             if response.status_code < 400:
-                assert (
-                    "content-type" in response.headers
-                ), f"{route} response missing content-type"
+                assert "content-type" in response.headers, f"{route} response missing content-type"
 
             print(f"✅ {route} response format valid")

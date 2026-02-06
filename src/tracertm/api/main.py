@@ -1,9 +1,12 @@
 """FastAPI application for TraceRTM."""
+# ruff: noqa: S101
 
 import asyncio
 import inspect
 import logging
 import os
+import signal
+import uuid
 import warnings
 
 # Suppress websockets legacy ws_handler deprecation (uvicorn/starlette integration).
@@ -17,7 +20,7 @@ from collections import defaultdict
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any, cast
 
 
 def _path_exists_str(path_str: str) -> bool:
@@ -30,20 +33,11 @@ def _path_name_str(path_str: str) -> str:
     return Path(path_str).name
 
 
-if TYPE_CHECKING:
-    pass
-
 # Disable optional Pydantic plugins that are not part of this repo (ex: logfire).
 if os.getenv("PYDANTIC_DISABLE_PLUGINS") is None:
     os.environ["PYDANTIC_DISABLE_PLUGINS"] = "logfire-plugin"
 
 from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket
-
-# ClientDisconnected: uvicorn raises when sending on closed WebSocket (wrapped as WebSocketDisconnect by Starlette)
-try:
-    from uvicorn.protocols.utils import ClientDisconnected  # noqa: F401
-except ImportError:
-    ClientDisconnected = type("ClientDisconnected", (Exception,), {})
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
@@ -53,6 +47,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # Load .env file if it exists
 try:
     from dotenv import load_dotenv
+
     # Try to find .env file relative to project root
     env_path = Path(__file__).parent.parent.parent.parent / ".env"
     if env_path.exists():
@@ -73,6 +68,17 @@ from datetime import UTC
 # Imported extracted modules to reduce C901 complexity
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.config.startup import startup_initialization
+from tracertm.api.handlers.auth import (
+    AuthCallbackPayload,
+    auth_callback_endpoint,
+    auth_logout_endpoint,
+    auth_me_endpoint,
+    device_code_endpoint,
+    device_complete_endpoint,
+    device_token_endpoint,
+    login_endpoint,
+    signup_endpoint,
+)
 from tracertm.api.handlers.websocket import websocket_endpoint as _websocket_endpoint_impl
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.models.integration import IntegrationCredential
@@ -176,8 +182,7 @@ class WorkflowTriggerPayload(BaseModel):
     input: dict[str, Any]
 
 
-class AuthCallbackPayload(BaseModel):
-    code: str
+# AuthCallbackPayload imported from tracertm.api.handlers.auth
 
 
 def verify_token(token: str, *_: Any, **__: Any) -> dict[str, Any]:
@@ -316,6 +321,7 @@ def get_client_ip(*args: Any, **kwargs: Any) -> str:
 def is_whitelisted(*args: Any, **kwargs: Any) -> bool:
     return False
 
+
 # ---------------------------------------------------------------------------
 
 
@@ -414,8 +420,18 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 # _startup_event_impl function now replaced by startup_initialization from tracertm.api.config.startup
 
+
 async def _shutdown_event_impl(app: FastAPI) -> None:
     """Close connections on shutdown."""
+    # Stop gRPC server
+    if hasattr(app.state, "grpc_server") and app.state.grpc_server:
+        try:
+            from tracertm.grpc.server import stop_grpc_server
+
+            await stop_grpc_server(app.state.grpc_server)
+        except Exception as e:
+            logger.error("Error stopping gRPC server: %s", e)
+
     # Close Go Backend Client
     if hasattr(app.state, "go_client") and app.state.go_client:
         try:
@@ -441,6 +457,27 @@ app = FastAPI(
     lifespan=_lifespan,
 )
 
+
+def _install_signal_logging() -> None:
+    """Log shutdown signals so supervisor-initiated stops are explicit."""
+
+    def _wrap_handler(sig: int, handler: object) -> object:
+        if callable(handler):
+
+            def _wrapped(signum, frame):
+                logger.warning("Received shutdown signal: %s", signal.Signals(signum).name)
+                return handler(signum, frame)
+
+            return _wrapped
+        return handler
+
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        prev = signal.getsignal(sig)
+        signal.signal(sig, _wrap_handler(sig, prev))
+
+
+_install_signal_logging()
+
 # Initialize APM instrumentation
 try:
     from tracertm.observability import init_tracing, instrument_all, instrument_app
@@ -454,7 +491,7 @@ try:
             service_name="tracertm-python-backend",
             service_version="1.0.0",
             environment=os.getenv("TRACING_ENVIRONMENT", "development"),
-            otlp_endpoint=os.getenv("OTLP_ENDPOINT", "localhost:4317"),
+            otlp_endpoint=os.getenv("OTLP_ENDPOINT", "127.0.0.1:4317"),
         )
 
         # Instrument FastAPI
@@ -467,8 +504,14 @@ try:
     else:
         logger.info("ℹ️  APM instrumentation disabled (set TRACING_ENABLED=true to enable)")
 except ImportError as e:
+    if tracing_enabled:
+        logger.error(f"APM instrumentation required but not available: {e}")
+        raise
     logger.warning(f"APM instrumentation not available: {e}")
 except Exception as e:
+    if tracing_enabled:
+        logger.error(f"Failed to initialize APM instrumentation (required): {e}")
+        raise
     logger.error(f"Failed to initialize APM instrumentation: {e}")
 
 
@@ -583,7 +626,7 @@ CORS_ORIGINS = os.getenv(
         "http://localhost:4000,http://127.0.0.1:4000,"
         "http://localhost:5173,http://127.0.0.1:5173,"
         "http://localhost:3000,http://127.0.0.1:3000"
-    )
+    ),
 ).split(",")
 
 app.add_middleware(
@@ -596,12 +639,24 @@ app.add_middleware(
 
 # Include specification routers
 from tracertm.api.middleware import AuthenticationMiddleware, CacheHeadersMiddleware
-from tracertm.api.routers import adrs, auth, blockchain, contracts, execution, features, mcp, notifications, quality
+from tracertm.api.routers import (
+    adrs,
+    auth,
+    blockchain,
+    contracts,
+    execution,
+    features,
+    mcp,
+    notifications,
+    oauth,
+    quality,
+)
 
 # Try to import Brotli compression (optional dependency)
 BrotliMiddleware = None
 try:
-    from brotli_asgi import BrotliMiddleware  # type: ignore[import-untyped,import-not-found]
+    from brotli_asgi import BrotliMiddleware  # type: ignore[import-untyped,import-not-found,no-redef]
+
     brotli_available = True
 except ImportError:
     brotli_available = False
@@ -639,24 +694,27 @@ app.include_router(agent.router, prefix="/api/v1")
 # MCP router (Model Context Protocol over HTTP)
 app.include_router(mcp.router, prefix="/api/v1")
 
+# OAuth and integration management
+app.include_router(oauth.router)
+
 # 3. Authentication middleware (must be innermost to run first on request)
 app.add_middleware(AuthenticationMiddleware)
 
 
 from tracertm.api.deps import get_cache_service, get_db
 from tracertm.api.handlers.items import (
+    ItemListParams,
     build_list_response,
     build_query_conditions,
     execute_item_query,
-    ItemListParams,
     resolve_view_matches,
     try_get_from_cache,
 )
 from tracertm.api.handlers.links import (
+    LinkQueryParams,
     build_links_response,
     detect_link_columns,
     execute_links_query,
-    LinkQueryParams,
     parse_exclude_types,
     try_get_links_from_cache,
 )
@@ -709,17 +767,17 @@ async def api_health_check(
         # Preflight: require key Python tables (Alembic migrations applied)
         result = await db.execute(
             text(
-
-                    "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
-                    "WHERE table_schema = 'public' AND table_name = 'test_cases')"
-
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
+                "WHERE table_schema = 'public' AND table_name = 'test_cases')"
             )
         )
         tables_ok = result.scalar() is True
         if not tables_ok:
             components["migrations"] = {
                 "status": "unhealthy",
-                "error": "Python tables missing; run: ./scripts/run_python_migrations.sh or uv run alembic upgrade head",
+                "error": (
+                    "Python tables missing; run: ./scripts/run_python_migrations.sh or uv run alembic upgrade head"
+                ),
             }
             status = "unhealthy"
         else:
@@ -803,6 +861,7 @@ async def api_health_check(
 async def get_csrf_token() -> dict[str, Any]:
     """Get CSRF token for client-side requests."""
     import secrets
+
     token = secrets.token_urlsafe(32)
     return {
         "token": token,
@@ -846,11 +905,7 @@ async def cache_clear(
 @app.get("/api/v1/mcp/config")
 async def mcp_config() -> dict[str, Any]:
     """Return MCP configuration for frontend clients."""
-    base_url = (
-        os.getenv("TRACERTM_MCP_BASE_URL")
-        or os.getenv("MCP_BASE_URL")
-        or os.getenv("FASTMCP_SERVER_BASE_URL")
-    )
+    base_url = os.getenv("TRACERTM_MCP_BASE_URL") or os.getenv("MCP_BASE_URL") or os.getenv("FASTMCP_SERVER_BASE_URL")
     auth_mode = (os.getenv("TRACERTM_MCP_AUTH_MODE") or "oauth").lower().strip()
     return {
         "mcp_base_url": base_url,
@@ -862,11 +917,7 @@ async def mcp_config() -> dict[str, Any]:
 @app.post("/api/v1/auth/callback")
 async def auth_callback(payload: AuthCallbackPayload):
     """Exchange authorization code for user data and tokens (B2B flow)."""
-    try:
-        return workos_auth_service.authenticate_with_code(payload.code)
-    except Exception as exc:
-        logger.error(f"Auth callback failed: {exc}")
-        raise HTTPException(status_code=400, detail=str(exc))
+    return await auth_callback_endpoint(payload)
 
 
 # WebSocket endpoint for real-time updates
@@ -1097,39 +1148,45 @@ async def list_links_grouped(
     if not resolved_id:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    item_row = (
-        await db.execute(select(Item).where(Item.id == resolved_id))
-    ).scalar_one_or_none()
+    item_row = (await db.execute(select(Item).where(Item.id == resolved_id))).scalar_one_or_none()
 
     view_upper = view.upper() if view else None
 
     outgoing = (
-        await db.execute(
-            select(Link)
-            .join(Item, Link.target_item_id == Item.id)
-            .where(
-                Link.project_id == project_id,
-                Link.source_item_id == resolved_id,
-                Item.deleted_at.is_(None),
-                *([Item.view == view_upper] if view_upper else []),
+        (
+            await db.execute(
+                select(Link)
+                .join(Item, Link.target_item_id == Item.id)
+                .where(
+                    Link.project_id == project_id,
+                    Link.source_item_id == resolved_id,
+                    Item.deleted_at.is_(None),
+                    *([Item.view == view_upper] if view_upper else []),
+                )
             )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     incoming = (
-        await db.execute(
-            select(Link)
-            .join(Item, Link.source_item_id == Item.id)
-            .where(
-                Link.project_id == project_id,
-                Link.target_item_id == resolved_id,
-                Item.deleted_at.is_(None),
-                *([Item.view == view_upper] if view_upper else []),
+        (
+            await db.execute(
+                select(Link)
+                .join(Item, Link.source_item_id == Item.id)
+                .where(
+                    Link.project_id == project_id,
+                    Link.target_item_id == resolved_id,
+                    Item.deleted_at.is_(None),
+                    *([Item.view == view_upper] if view_upper else []),
+                )
             )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
-    async def _item_brief(item_id_value: str) -> dict[str, Any]:
+    async def _item_brief(item_id_value: str | uuid.UUID) -> dict[str, Any]:
         row = await db.execute(select(Item).where(Item.id == item_id_value))
         found = row.scalar_one_or_none()
         return {
@@ -1291,9 +1348,7 @@ async def get_traceability_gaps(
     ensure_project_access(project_id, claims)
 
     service = traceability_service.TraceabilityService(db)
-    gaps = await _maybe_await(
-        service.find_gaps(project_id=project_id, source_view=from_view, target_view=to_view)
-    )
+    gaps = await _maybe_await(service.find_gaps(project_id=project_id, source_view=from_view, target_view=to_view))
 
     return {
         "project_id": project_id,
@@ -1355,9 +1410,7 @@ async def get_reverse_impact(
     ensure_project_access(project_id, claims)
 
     service = impact_analysis_service.ImpactAnalysisService(db)
-    result = await _maybe_await(
-        service.analyze_reverse_impact(item_id=item_id, max_depth=max_depth)
-    )
+    result = await _maybe_await(service.analyze_reverse_impact(item_id=item_id, max_depth=max_depth))
 
     return {
         "root_item_id": item_id,
@@ -1649,11 +1702,7 @@ async def bulk_update_items_endpoint(
             "preview": True,
         }
 
-    update_query = (
-        update(Item)
-        .where(*conditions)
-        .values(status=payload.new_status, updated_at=func.now())
-    )
+    update_query = update(Item).where(*conditions).values(status=payload.new_status, updated_at=func.now())
     await db.execute(update_query)
     await db.commit()
     await cache.invalidate_project(payload.project_id)
@@ -1694,22 +1743,26 @@ async def summarize_items_endpoint(
     ).all()
 
     samples = (
-        await db.execute(
-            select(Item)
-            .where(
-                Item.project_id == project_id,
-                Item.view == view_upper,
-                Item.deleted_at.is_(None),
+        (
+            await db.execute(
+                select(Item)
+                .where(
+                    Item.project_id == project_id,
+                    Item.view == view_upper,
+                    Item.deleted_at.is_(None),
+                )
+                .order_by(Item.updated_at.desc())
+                .limit(5)
             )
-            .order_by(Item.updated_at.desc())
-            .limit(5)
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     return {
         "project_id": project_id,
         "view": view_upper,
-        "status_counts": dict(status_counts),
+        "status_counts": {s: c for s, c in status_counts},
         "total": sum(count for _, count in status_counts),
         "samples": [
             {
@@ -1742,170 +1795,20 @@ async def refresh_access_token_endpoint(payload: dict[str, Any]):
     }
 
 
-@app.get("/api/v1/auth/me")
-async def auth_me_endpoint(
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
-    """Return current authenticated user context with account info."""
-    from tracertm.repositories.account_repository import AccountRepository
-
-    user = None
-    user_id = claims.get("sub") if isinstance(claims, dict) else None
-    account_id = claims.get("account_id") if isinstance(claims, dict) else None
-
-    if user_id:
-        try:
-            user = workos_auth_service.get_user(user_id)
-        except Exception:
-            user = None
-
-    # System admin: set role and cache so ensure_* can bypass without email in JWT
-    if user and isinstance(user, dict):
-        user_email = user.get("email") or user.get("email_address")
-        if _is_system_admin_email(user_email):
-            user = dict[str, Any](user)
-            user["role"] = "admin"
-            _admin_user_ids.add(user_id)
-
-    # Get user's accounts
-    accounts = []
-    account = None
-    if user_id:
-        account_repo = AccountRepository(db)
-        accounts_list = await account_repo.list_by_user(user_id)
-        accounts = [
-            {
-                "id": acc.id,
-                "name": acc.name,
-                "slug": acc.slug,
-                "account_type": acc.account_type,
-            }
-            for acc in accounts_list
-        ]
-
-        # Get current account if specified in claims or use first account
-        account_id_from_claims = account_id or claims.get("account_id")
-        if account_id_from_claims:
-            account_obj = await account_repo.get_by_id(account_id_from_claims)
-            if account_obj:
-                account = {
-                    "id": account_obj.id,
-                    "name": account_obj.name,
-                    "slug": account_obj.slug,
-                    "account_type": account_obj.account_type,
-                }
-        elif accounts_list:
-            # Use first account as default
-            first_account = accounts_list[0]
-            account = {
-                "id": first_account.id,
-                "name": first_account.name,
-                "slug": first_account.slug,
-                "account_type": first_account.account_type,
-            }
-
-    return {
-        "claims": claims,
-        "user": user,
-        "account": account,
-        "accounts": accounts,
-    }
+# auth_me_endpoint is imported from tracertm.api.handlers.auth
+app.get("/api/v1/auth/me")(auth_me_endpoint)
 
 
-@app.post("/api/v1/auth/logout")
-async def auth_logout_endpoint(
-    claims: dict[str, Any] = Depends(auth_guard),
-):
-    """Return logout metadata including WorkOS logout URL if sid is present."""
-    session_id = claims.get("sid")
-    logout_url = None
-    if session_id:
-        try:
-            logout_url = workos_auth_service.get_logout_url(session_id)
-        except Exception as exc:
-            logger.warning(f"Failed to generate logout URL: {exc}")
-
-    return {
-        "status": "ok",
-        "logout_url": logout_url,
-    }
+# auth_logout_endpoint is imported from tracertm.api.handlers.auth
+app.post("/api/v1/auth/logout")(auth_logout_endpoint)
 
 
-@app.post("/api/v1/auth/signup")
-async def signup_endpoint(
-    data: dict[str, Any],
-    db: AsyncSession = Depends(get_db),
-):
-    """Create a new user account and initial account."""
-    import hashlib
-    import re
-
-    from tracertm.repositories.account_repository import AccountRepository
-    from tracertm.schemas.auth import SignupRequest
-
-    try:
-        signup_data = SignupRequest(**data)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    # Generate slug from account name if not provided
-    account_slug = signup_data.account_slug
-    if not account_slug:
-        account_slug = re.sub(r"[^a-z0-9-]", "", signup_data.account_name.lower().replace(" ", "-"))
-        if not account_slug:
-            account_slug = "account-" + hashlib.md5(signup_data.account_name.encode(), usedforsecurity=False).hexdigest()[:8]
-
-    # Check if slug exists
-    account_repo = AccountRepository(db)
-    existing = await account_repo.get_by_slug(account_slug)
-    if existing:
-        raise HTTPException(status_code=400, detail=f"Account slug '{account_slug}' already exists")
-
-    # Create account
-    account = await account_repo.create(
-        name=signup_data.account_name,
-        slug=account_slug,
-        account_type="personal",
-    )
-
-    # For now, we'll use WorkOS for user creation
-    # In a full implementation, you'd create a user record here
-    # For now, return account info - user will authenticate via WorkOS
-
-    await db.commit()
-
-    return {
-        "account": {
-            "id": account.id,
-            "name": account.name,
-            "slug": account.slug,
-            "account_type": account.account_type,
-        },
-        "message": "Account created. Please sign in with WorkOS.",
-    }
+# signup_endpoint is imported from tracertm.api.handlers.auth
+app.post("/api/v1/auth/signup")(signup_endpoint)
 
 
-@app.post("/api/v1/auth/login")
-async def login_endpoint(
-    data: dict[str, Any],
-    db: AsyncSession = Depends(get_db),
-):
-    """Login endpoint - currently delegates to WorkOS AuthKit."""
-    from tracertm.schemas.auth import LoginRequest
-
-    try:
-        LoginRequest(**data)  # validate request body
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    # For now, login is handled by WorkOS AuthKit on the frontend
-    # This endpoint can be used for custom auth in the future
-    # Return instructions to use WorkOS
-    return {
-        "message": "Please use WorkOS AuthKit for authentication",
-        "workos_enabled": bool(os.environ.get("WORKOS_CLIENT_ID")),
-    }
+# login_endpoint is imported from tracertm.api.handlers.auth
+app.post("/api/v1/auth/login")(login_endpoint)
 
 
 # Device Authorization Flow (RFC 8628)
@@ -1913,174 +1816,17 @@ async def login_endpoint(
 _device_code_store: dict[str, dict] = {}
 
 
-@app.post("/api/v1/auth/device/code")
-async def device_code_endpoint(
-    data: dict[str, Any],
-):
-    """Start device authorization flow. Returns device code and verification URL.
-
-    The user navigates to the verification URL and enters the user code.
-    The device then polls /api/v1/auth/device/token to complete authentication.
-    """
-    import secrets
-
-    try:
-        from tracertm.schemas.auth import DeviceCodeRequest, DeviceCodeResponse
-        request_data = DeviceCodeRequest(**data)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    client_id = request_data.client_id or os.getenv("WORKOS_CLIENT_ID")
-    if not client_id:
-        raise HTTPException(status_code=400, detail="WORKOS_CLIENT_ID is required")
-
-    # Generate device code (high entropy for security)
-    device_code = secrets.token_urlsafe(32)
-    user_code = secrets.token_urlsafe(8).upper()  # 8 char uppercase code
-
-    # Build verification URL - use WorkOS AuthKit or fallback
-    authkit_domain = os.getenv("WORKOS_AUTHKIT_DOMAIN")
-    if authkit_domain:
-        verification_uri = f"{authkit_domain.rstrip('/')}/device"
-        verification_uri_complete = f"{verification_uri}?user_code={user_code}"
-    else:
-        # Fallback to API server for testing
-        base_url = os.getenv("APP_URL", "http://localhost:8000")
-        verification_uri = f"{base_url}/device"
-        verification_uri_complete = f"{verification_uri}?user_code={user_code}"
-
-    # Store device code with metadata
-    import time
-    _device_code_store[device_code] = {
-        "user_code": user_code,
-        "client_id": client_id,
-        "created_at": time.time(),
-        "expires_in": 900,  # 15 minutes default
-        "interval": 5,  # polling interval in seconds
-        "completed": False,
-        "tokens": None,
-    }
-
-    return DeviceCodeResponse(
-        device_code=device_code,
-        user_code=user_code,
-        verification_uri=verification_uri,
-        verification_uri_complete=verification_uri_complete,
-        expires_in=900,
-        interval=5,
-    )
+# device_code_endpoint is imported from tracertm.api.handlers.auth
+app.post("/api/v1/auth/device/code")(device_code_endpoint)
 
 
-@app.post("/api/v1/auth/device/token")
-async def device_token_endpoint(
-    data: dict[str, Any],
-):
-    """Poll for device authorization completion.
-
-    The device should poll this endpoint with the device_code until
-    authentication is complete or the code expires.
-    Returns access_token on success, or 400 with 'authorization_pending'
-    while waiting, or 'expired_token' if the code has expired.
-    """
-    import time
-
-    try:
-        from tracertm.schemas.auth import DeviceTokenRequest, DeviceTokenResponse
-        request_data = DeviceTokenRequest(**data)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    device_code = request_data.device_code
-
-    # Check if device code exists and is valid
-    code_data = _device_code_store.get(device_code)
-    if not code_data:
-        raise HTTPException(status_code=400, detail="invalid_grant")
-
-    # Check expiration
-    elapsed = time.time() - code_data["created_at"]
-    if elapsed > code_data["expires_in"]:
-        del _device_code_store[device_code]
-        raise HTTPException(status_code=400, detail="expired_token")
-
-    # Check if authorization is complete
-    if code_data["completed"] and code_data["tokens"]:
-        # Clean up after returning tokens
-        del _device_code_store[device_code]
-        tokens = code_data["tokens"]
-        return DeviceTokenResponse(
-            access_token=tokens.get("access_token", ""),
-            token_type=tokens.get("token_type", "bearer"),
-            expires_in=tokens.get("expires_in"),
-            refresh_token=tokens.get("refresh_token"),
-            user=tokens.get("user"),
-        )
-
-    # Still waiting for user authorization
-    raise HTTPException(
-        status_code=400,
-        detail="authorization_pending",
-        headers={"Retry-After": str(code_data["interval"])},
-    )
+# device_token_endpoint is imported from tracertm.api.handlers.auth
+app.post("/api/v1/auth/device/token")(device_token_endpoint)
 
 
 # Internal endpoint for the browser to complete device authorization
-@app.post("/api/v1/auth/device/complete")
-async def device_complete_endpoint(
-    data: dict[str, Any],
-):
-    """Complete device authorization from browser.
-
-    This endpoint is called by the browser after the user enters the code.
-    """
-    user_code = data.get("user_code")
-    if not user_code:
-        raise HTTPException(status_code=400, detail="user_code required")
-
-    # Find the pending device code for this user_code
-    found_code = None
-    for code, code_data in _device_code_store.items():
-        if code_data.get("user_code") == user_code and not code_data["completed"]:
-            found_code = code
-            break
-
-    if not found_code:
-        raise HTTPException(status_code=400, detail="Invalid or expired user code")
-
-    # Exchange the authorization code for tokens using WorkOS
-    auth_code = data.get("code")
-    if not auth_code:
-        raise HTTPException(status_code=400, detail="authorization code required")
-
-    # Call WorkOS to exchange code for tokens
-    api_key = os.getenv("WORKOS_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="Server configuration error")
-
-    try:
-        result = workos_auth_service.authenticate_with_code(auth_code)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Authentication failed: {e!s}")
-
-    # Store the tokens and mark as complete
-    _device_code_store[found_code]["completed"] = True
-    _device_code_store[found_code]["tokens"] = result
-
-    # Get user info if available
-    user_info = None
-    if result.get("user"):
-        user_info = result["user"]
-    elif result.get("access_token"):
-        try:
-            claims = workos_auth_service.verify_access_token(result["access_token"])
-            user_info = {"sub": claims.get("sub"), "email": claims.get("email")}
-        except Exception:
-            pass
-
-    return {
-        "status": "authorized",
-        "user": user_info,
-    }
+# device_complete_endpoint is imported from tracertm.api.handlers.auth
+app.post("/api/v1/auth/device/complete")(device_complete_endpoint)
 
 
 @app.get("/api/v1/accounts")
@@ -2100,9 +1846,7 @@ async def list_accounts_endpoint(
     accounts = await account_repo.list_by_user(user_id)
 
     return {
-        "accounts": [
-            AccountResponse.model_validate(acc) for acc in accounts
-        ],
+        "accounts": [AccountResponse.model_validate(acc) for acc in accounts],
         "total": len(accounts),
     }
 
@@ -2531,7 +2275,7 @@ async def bootstrap_workflow_schedules(
     retry_limit = int(os.getenv("TEMPORAL_SCHEDULE_INTEGRATION_RETRY_LIMIT", "50"))
     created_by = claims.get("sub") if claims else None
 
-    schedules = [
+    schedules: list[dict[str, Any]] = [
         {
             "schedule_id": f"project-{project_id}-graph-snapshot",
             "workflow_name": "GraphSnapshotWorkflow",
@@ -2553,12 +2297,10 @@ async def bootstrap_workflow_schedules(
     for schedule in schedules:
         existing = await repo.get_by_schedule_id(schedule["schedule_id"])
         if existing:
-            skipped.append(
-                {
-                    "schedule_id": schedule["schedule_id"],
-                    "reason": "already tracked",
-                }
-            )
+            skipped.append({
+                "schedule_id": schedule["schedule_id"],
+                "reason": "already tracked",
+            })
             continue
         try:
             await service.create_schedule(
@@ -2583,19 +2325,15 @@ async def bootstrap_workflow_schedules(
                 created_by_user_id=created_by,
                 description=schedule.get("description"),
             )
-            created.append(
-                {
-                    "schedule_id": schedule["schedule_id"],
-                    "workflow_name": schedule["workflow_name"],
-                }
-            )
+            created.append({
+                "schedule_id": schedule["schedule_id"],
+                "workflow_name": schedule["workflow_name"],
+            })
         except Exception as exc:
-            errors.append(
-                {
-                    "schedule_id": schedule["schedule_id"],
-                    "message": str(exc),
-                }
-            )
+            errors.append({
+                "schedule_id": schedule["schedule_id"],
+                "message": str(exc),
+            })
 
     if created:
         await db.commit()
@@ -2724,11 +2462,13 @@ async def list_projects(
             {
                 "id": str(project.id),
                 "name": project.name,
-                "description": (
-                    project.metadata.get("description") if isinstance(project.metadata, dict) else None
-                ) if hasattr(project, "metadata") and project.metadata else None,
+                "description": (project.metadata.get("description") if isinstance(project.metadata, dict) else None)
+                if hasattr(project, "metadata") and project.metadata
+                else None,
                 "metadata": project.metadata if hasattr(project, "metadata") else {},
-                "created_at": project.created_at.isoformat() if hasattr(project, "created_at") and project.created_at else None,
+                "created_at": project.created_at.isoformat()
+                if hasattr(project, "created_at") and project.created_at
+                else None,
             }
             for project in projects[skip : skip + limit]
         ],
@@ -2789,6 +2529,7 @@ async def get_project(
 
 class CreateProjectRequest(BaseModel):
     """Request model for create project endpoint."""
+
     name: str
     description: str | None = None
     metadata: dict[str, Any] | None = None
@@ -2837,6 +2578,7 @@ async def create_project(
 
 class UpdateProjectRequest(BaseModel):
     """Request model for update project endpoint."""
+
     name: str | None = None
     description: str | None = None
     metadata: dict[str, Any] | None = None
@@ -2928,12 +2670,16 @@ async def export_project(
 
     if format == "full":
         from tracertm.services.export_service import ExportService
-        service = ExportService(db)
-        json_str = await service.export_to_json(project_id)
+
+        export_service = ExportService(db)
+        json_str = await export_service.export_to_json(project_id)
         import json
+
         return json.loads(json_str)
     from tracertm.services.export_import_service import ExportImportService
+
     service = ExportImportService(db)
+    result: dict[str, Any]
     if format == "json":
         result = await service.export_to_json(project_id)
     elif format == "csv":
@@ -2952,6 +2698,7 @@ async def export_project(
 
 class ImportRequest(BaseModel):
     """Request model for import endpoint."""
+
     format: str
     data: str
 
@@ -3162,9 +2909,7 @@ async def start_execution(
     if not execution or execution.project_id != project_id:
         raise HTTPException(status_code=404, detail="Execution not found")
     if execution.status != "pending":
-        raise HTTPException(
-            status_code=400, detail=f"Execution already {execution.status}"
-        )
+        raise HTTPException(status_code=400, detail=f"Execution already {execution.status}")
     ok = await service.start(execution_id)
     await db.commit()
     return {"started": ok, "execution_id": execution_id}
@@ -3331,12 +3076,11 @@ async def codex_review_image(
     if not artifact_id:
         raise HTTPException(status_code=400, detail="artifact_id required")
 
-    interaction = await codex_service.review_image(
-        artifact_id, prompt, project_id, execution_id=execution_id
-    )
+    interaction = await codex_service.review_image(artifact_id, prompt, project_id, execution_id=execution_id)
     await db.commit()
 
     from tracertm.schemas.execution import CodexAgentTaskResponse
+
     return CodexAgentTaskResponse(
         id=interaction.id,
         execution_id=interaction.execution_id,
@@ -3388,6 +3132,7 @@ async def codex_review_video(
     await db.commit()
 
     from tracertm.schemas.execution import CodexAgentTaskResponse
+
     return CodexAgentTaskResponse(
         id=interaction.id,
         execution_id=interaction.execution_id,
@@ -3427,9 +3172,7 @@ async def list_codex_interactions(
     from tracertm.models.codex_agent import CodexAgentInteraction
     from tracertm.schemas.execution import CodexAgentTaskListResponse, CodexAgentTaskResponse
 
-    q = select(CodexAgentInteraction).where(
-        CodexAgentInteraction.project_id == project_id
-    )
+    q = select(CodexAgentInteraction).where(CodexAgentInteraction.project_id == project_id)
     if status:
         q = q.where(CodexAgentInteraction.status == status)
     if task_type:
@@ -3538,6 +3281,7 @@ async def sync_project(
 # Advanced Search endpoint
 class AdvancedSearchRequest(BaseModel):
     """Request model for advanced search endpoint."""
+
     query: str | None = None
     filters: dict[str, Any] | None = None
 
@@ -3581,7 +3325,7 @@ async def get_graph_neighbors(
 
     repo = LinkRepository(db)
 
-    neighbors = []
+    neighbors: list[dict[str, Any]] = []
     if direction in ("out", "both"):
         out_links = await repo.get_by_source(item_id, graph_id=graph_id)
         neighbors.extend(
@@ -3944,7 +3688,9 @@ async def get_problem(
         "workaround_effectiveness": problem.workaround_effectiveness,
         "permanent_fix_available": problem.permanent_fix_available,
         "permanent_fix_description": problem.permanent_fix_description,
-        "permanent_fix_implemented_at": problem.permanent_fix_implemented_at.isoformat() if problem.permanent_fix_implemented_at else None,
+        "permanent_fix_implemented_at": problem.permanent_fix_implemented_at.isoformat()
+        if problem.permanent_fix_implemented_at
+        else None,
         "permanent_fix_change_id": problem.permanent_fix_change_id,
         "known_error_id": problem.known_error_id,
         "knowledge_article_id": problem.knowledge_article_id,
@@ -3954,7 +3700,9 @@ async def get_problem(
         "closed_by": problem.closed_by,
         "closed_at": problem.closed_at.isoformat() if problem.closed_at else None,
         "closure_notes": problem.closure_notes,
-        "target_resolution_date": problem.target_resolution_date.isoformat() if problem.target_resolution_date else None,
+        "target_resolution_date": problem.target_resolution_date.isoformat()
+        if problem.target_resolution_date
+        else None,
         "metadata": problem.problem_metadata,
         "version": problem.version,
         "created_at": problem.created_at.isoformat() if problem.created_at else None,
@@ -4592,6 +4340,7 @@ async def get_process_stats(
 
 # Process Execution endpoints
 
+
 @app.post("/api/v1/processes/{process_id}/executions")
 async def create_process_execution(
     request: Request,
@@ -4660,7 +4409,7 @@ async def list_process_executions(
 
 
 @app.get("/api/v1/executions/{execution_id}")
-async def get_execution(
+async def get_execution_by_id_endpoint(
     request: Request,
     execution_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
@@ -4696,7 +4445,7 @@ async def get_execution(
 
 
 @app.post("/api/v1/executions/{execution_id}/start")
-async def start_execution(
+async def start_execution_endpoint(
     request: Request,
     execution_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
@@ -4743,7 +4492,7 @@ async def advance_execution(
 
 
 @app.post("/api/v1/executions/{execution_id}/complete")
-async def complete_execution(
+async def complete_execution_endpoint(
     request: Request,
     execution_id: str,
     completion_data: ProcessExecutionComplete,
@@ -4978,8 +4727,7 @@ async def update_test_case(
     # Convert test steps to dicts
     if "test_steps" in updates and updates["test_steps"] is not None:
         updates["test_steps"] = [
-            step.model_dump() if hasattr(step, "model_dump") else step
-            for step in updates["test_steps"]
+            step.model_dump() if hasattr(step, "model_dump") else step for step in updates["test_steps"]
         ]
 
     if "metadata" in updates:
@@ -5273,6 +5021,7 @@ async def get_test_suite(
     suite = await repo.get_by_id(suite_id)
     if not suite:
         raise HTTPException(status_code=404, detail="Test suite not found")
+    assert suite is not None
 
     ensure_project_access(suite.project_id, claims)
 
@@ -5365,6 +5114,7 @@ async def update_test_suite(
     suite = await repo.get_by_id(suite_id)
     if not suite:
         raise HTTPException(status_code=404, detail="Test suite not found")
+    assert suite is not None
 
     ensure_project_access(suite.project_id, claims)
 
@@ -5374,6 +5124,8 @@ async def update_test_suite(
         updates["suite_metadata"] = updates.pop("metadata")
 
     updated = await repo.update(suite_id, updated_by=claims.get("sub"), **updates)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Test suite not found")
     await db.commit()
 
     return {"id": updated.id, "version": updated.version}
@@ -5396,6 +5148,7 @@ async def transition_test_suite_status(
     suite = await repo.get_by_id(suite_id)
     if not suite:
         raise HTTPException(status_code=404, detail="Test suite not found")
+    assert suite is not None
 
     ensure_project_access(suite.project_id, claims)
 
@@ -5431,6 +5184,7 @@ async def add_test_case_to_suite(
     suite = await repo.get_by_id(suite_id)
     if not suite:
         raise HTTPException(status_code=404, detail="Test suite not found")
+    assert suite is not None
 
     ensure_project_access(suite.project_id, claims)
 
@@ -5465,6 +5219,7 @@ async def remove_test_case_from_suite(
     suite = await repo.get_by_id(suite_id)
     if not suite:
         raise HTTPException(status_code=404, detail="Test suite not found")
+    assert suite is not None
 
     ensure_project_access(suite.project_id, claims)
 
@@ -5493,6 +5248,7 @@ async def get_suite_test_cases(
     suite = await repo.get_by_id(suite_id)
     if not suite:
         raise HTTPException(status_code=404, detail="Test suite not found")
+    assert suite is not None
 
     ensure_project_access(suite.project_id, claims)
 
@@ -5531,6 +5287,7 @@ async def get_test_suite_activities(
     suite = await repo.get_by_id(suite_id)
     if not suite:
         raise HTTPException(status_code=404, detail="Test suite not found")
+    assert suite is not None
 
     ensure_project_access(suite.project_id, claims)
 
@@ -5571,6 +5328,7 @@ async def delete_test_suite(
     suite = await repo.get_by_id(suite_id)
     if not suite:
         raise HTTPException(status_code=404, detail="Test suite not found")
+    assert suite is not None
 
     ensure_project_access(suite.project_id, claims)
 
@@ -5692,6 +5450,7 @@ async def get_test_run(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -5789,6 +5548,7 @@ async def update_test_run(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -5820,6 +5580,7 @@ async def start_test_run(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -5854,6 +5615,7 @@ async def complete_test_run(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -5892,6 +5654,7 @@ async def cancel_test_run(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -5926,6 +5689,7 @@ async def submit_test_result(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -5974,6 +5738,7 @@ async def submit_bulk_test_results(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -6004,6 +5769,7 @@ async def get_test_run_results(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -6057,6 +5823,7 @@ async def get_test_run_activities(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -6097,6 +5864,7 @@ async def delete_test_run(
     run = await repo.get_by_id(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
+    assert run is not None
 
     ensure_project_access(run.project_id, claims)
 
@@ -6270,6 +6038,7 @@ async def get_test_coverage(
     coverage = await repo.get_by_id(coverage_id)
     if not coverage:
         raise HTTPException(status_code=404, detail="Coverage mapping not found")
+    assert coverage is not None
 
     ensure_project_access(coverage.project_id, claims)
 
@@ -6278,7 +6047,9 @@ async def get_test_coverage(
         "project_id": coverage.project_id,
         "test_case_id": coverage.test_case_id,
         "requirement_id": coverage.requirement_id,
-        "coverage_type": coverage.coverage_type.value if hasattr(coverage.coverage_type, "value") else coverage.coverage_type,
+        "coverage_type": coverage.coverage_type.value
+        if hasattr(coverage.coverage_type, "value")
+        else coverage.coverage_type,
         "status": coverage.status.value if hasattr(coverage.status, "value") else coverage.status,
         "coverage_percentage": coverage.coverage_percentage,
         "rationale": coverage.rationale,
@@ -6316,10 +6087,11 @@ async def update_test_coverage(
     coverage = await repo.get_by_id(coverage_id)
     if not coverage:
         raise HTTPException(status_code=404, detail="Coverage mapping not found")
+    assert coverage is not None
 
     ensure_project_access(coverage.project_id, claims)
 
-    updates = {}
+    updates: dict[str, Any] = {}
     if coverage_type is not None:
         updates["coverage_type"] = coverage_type
     if status is not None:
@@ -6357,6 +6129,7 @@ async def delete_test_coverage(
     coverage = await repo.get_by_id(coverage_id)
     if not coverage:
         raise HTTPException(status_code=404, detail="Coverage mapping not found")
+    assert coverage is not None
 
     ensure_project_access(coverage.project_id, claims)
 
@@ -6383,6 +6156,7 @@ async def verify_test_coverage(
     coverage = await repo.get_by_id(coverage_id)
     if not coverage:
         raise HTTPException(status_code=404, detail="Coverage mapping not found")
+    assert coverage is not None
 
     ensure_project_access(coverage.project_id, claims)
 
@@ -6401,7 +6175,7 @@ async def verify_test_coverage(
 
 
 @app.get("/api/v1/coverage/matrix")
-async def get_traceability_matrix(
+async def get_coverage_matrix_endpoint(
     request: Request,
     project_id: str,
     requirement_view: str | None = None,
@@ -6518,6 +6292,7 @@ async def get_coverage_activities(
     coverage = await repo.get_by_id(coverage_id)
     if not coverage:
         raise HTTPException(status_code=404, detail="Coverage mapping not found")
+    assert coverage is not None
 
     ensure_project_access(coverage.project_id, claims)
 
@@ -6611,6 +6386,7 @@ async def list_webhooks(
 
 class WebhookCreateRequest(BaseModel):
     """Request schema for creating a webhook."""
+
     project_id: str
     name: str
     description: str | None = None
@@ -6699,6 +6475,7 @@ async def get_webhook(
     webhook = await repo.get_by_id(webhook_id)
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
+    assert webhook is not None
 
     ensure_project_access(webhook.project_id, claims)
 
@@ -6736,6 +6513,7 @@ async def get_webhook(
 
 class WebhookUpdateRequest(BaseModel):
     """Request schema for updating a webhook."""
+
     name: str | None = None
     description: str | None = None
     enabled_events: list[str] | None = None
@@ -6767,6 +6545,7 @@ async def update_webhook(
     webhook = await repo.get_by_id(webhook_id)
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
+    assert webhook is not None
 
     ensure_project_access(webhook.project_id, claims)
 
@@ -6799,6 +6578,7 @@ async def update_webhook(
 
 class WebhookStatusRequest(BaseModel):
     """Request schema for updating webhook status."""
+
     status: str
 
 
@@ -6819,6 +6599,7 @@ async def set_webhook_status(
     webhook = await repo.get_by_id(webhook_id)
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
+    assert webhook is not None
 
     ensure_project_access(webhook.project_id, claims)
 
@@ -6851,6 +6632,7 @@ async def regenerate_webhook_secret(
     webhook = await repo.get_by_id(webhook_id)
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
+    assert webhook is not None
 
     ensure_project_access(webhook.project_id, claims)
 
@@ -6880,6 +6662,7 @@ async def delete_webhook(
     webhook = await repo.get_by_id(webhook_id)
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
+    assert webhook is not None
 
     ensure_project_access(webhook.project_id, claims)
 
@@ -6909,6 +6692,7 @@ async def get_webhook_logs(
     webhook = await repo.get_by_id(webhook_id)
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
+    assert webhook is not None
 
     ensure_project_access(webhook.project_id, claims)
 
@@ -7080,7 +6864,8 @@ async def get_qa_metrics_summary(
             "manual_count": test_case_stats.get("manual_count", 0),
             "automation_percentage": (
                 round(test_case_stats.get("automated_count", 0) / test_case_stats.get("total", 1) * 100, 1)
-                if test_case_stats.get("total", 0) > 0 else 0
+                if test_case_stats.get("total", 0) > 0
+                else 0
             ),
         },
         "test_suites": {
@@ -7202,9 +6987,7 @@ async def get_coverage_metrics(
     for view in coverage_by_view:
         total = coverage_by_view[view]["total"]
         covered = coverage_by_view[view]["covered"]
-        coverage_by_view[view]["percentage"] = (
-            round(covered / total * 100, 1) if total > 0 else 0
-        )
+        coverage_by_view[view]["percentage"] = round(covered / total * 100, 1) if total > 0 else 0.0
 
     return {
         "project_id": project_id,
@@ -7216,10 +6999,7 @@ async def get_coverage_metrics(
         "by_view": coverage_by_view,
         "by_type": stats.get("by_type", {}),
         "gaps_count": gaps.get("uncovered_count", 0),
-        "high_priority_gaps": len([
-            g for g in gaps.get("gaps", [])
-            if g.get("priority") in ["high", "critical"]
-        ]),
+        "high_priority_gaps": len([g for g in gaps.get("gaps", []) if g.get("priority") in ["high", "critical"]]),
     }
 
 
@@ -7243,12 +7023,7 @@ async def get_defect_density(
         select(
             TestResult.test_case_id,
             func.count().label("total_executions"),
-            func.sum(
-                func.case(
-                    (TestResult.status == "failed", 1),
-                    else_=0
-                )
-            ).label("failure_count"),
+            func.sum(func.case((TestResult.status == "failed", 1), else_=0)).label("failure_count"),
         )
         .join(TestRun, TestRun.id == TestResult.run_id)
         .where(TestRun.project_id == project_id)
@@ -7281,10 +7056,7 @@ async def get_defect_density(
 
     return {
         "project_id": project_id,
-        "overall_defect_density": (
-            round(total_failures / total_executions * 100, 2)
-            if total_executions > 0 else 0
-        ),
+        "overall_defect_density": (round(total_failures / total_executions * 100, 2) if total_executions > 0 else 0),
         "total_executions": total_executions,
         "total_failures": total_failures,
         "test_cases_with_failures": len(test_cases_with_failures),
@@ -7362,11 +7134,7 @@ async def get_flaky_tests(
             "test_case_id": tc_id,
             "inconsistent_days": count,
         }
-        for tc_id, count in sorted(
-            inconsistent_days.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
+        for tc_id, count in sorted(inconsistent_days.items(), key=lambda x: x[1], reverse=True)
     ][:20]
 
     return {
@@ -7521,153 +7289,15 @@ async def oauth_callback(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle OAuth callback and store credentials."""
-    import httpx
+    from tracertm.api.handlers.oauth import oauth_callback as oauth_callback_handler
 
-    from tracertm.repositories.integration_repository import IntegrationCredentialRepository
-    from tracertm.services.encryption_service import EncryptionService
-
-    enforce_rate_limit(request, claims)
-
-    code = data.get("code")
-    state = data.get("state")
-    redirect_uri = data.get("redirect_uri")
-
-    if not code or not state:
-        raise HTTPException(status_code=400, detail="Missing code or state")
-
-    # Parse state (supports legacy format project:provider:state)
-    try:
-        parts = state.split(":")
-        if len(parts) >= STATE_PARTS_EXTENDED:
-            credential_scope = parts[0]
-            project_id = parts[1] or None
-            provider = parts[2]
-        else:
-            credential_scope = "project"
-            project_id = parts[0]
-            provider = parts[1]
-    except (IndexError, ValueError):
-        raise HTTPException(status_code=400, detail="Invalid state format")
-
-    if project_id:
-        ensure_project_access(project_id, claims)
-
-    # Exchange code for token
-    async with httpx.AsyncClient() as client:
-        if provider == "github":
-            token_url = "https://github.com/login/oauth/access_token"
-            response = await client.post(
-                token_url,
-                headers={"Accept": "application/json"},
-                data={
-                    "client_id": os.environ.get("GITHUB_CLIENT_ID", ""),
-                    "client_secret": os.environ.get("GITHUB_CLIENT_SECRET", ""),
-                    "code": code,
-                    "redirect_uri": redirect_uri,
-                },
-            )
-        elif provider == "linear":
-            token_url = "https://api.linear.app/oauth/token"
-            response = await client.post(
-                token_url,
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
-                data={
-                    "client_id": os.environ.get("LINEAR_CLIENT_ID", ""),
-                    "client_secret": os.environ.get("LINEAR_CLIENT_SECRET", ""),
-                    "code": code,
-                    "redirect_uri": redirect_uri,
-                    "grant_type": "authorization_code",
-                },
-            )
-        else:
-            raise HTTPException(status_code=400, detail=f"OAuth not supported for {provider}")
-
-        if response.status_code != HTTP_OK:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Failed to exchange code: {response.text}"
-            )
-
-        token_data = response.json()
-
-    access_token = token_data.get("access_token")
-    if not access_token:
-        raise HTTPException(status_code=400, detail="No access token received")
-
-    # Get user info
-    user_info = {}
-    if provider == "github":
-        from tracertm.clients.github_client import GitHubClient
-        gh_client = GitHubClient(access_token)
-        try:
-            user_info = await gh_client.get_authenticated_user()
-        finally:
-            await gh_client.close()
-    elif provider == "linear":
-        from tracertm.clients.linear_client import LinearClient
-        linear_client = LinearClient(access_token)
-        try:
-            user_info = await linear_client.get_viewer()
-        finally:
-            await linear_client.close()
-
-    # Store encrypted credential
-    encryption_key = os.environ.get("ENCRYPTION_KEY", "")
-    if not encryption_key:
-        raise HTTPException(status_code=500, detail="Encryption key not configured")
-
-    encryption_service = EncryptionService(encryption_key)
-    repo = IntegrationCredentialRepository(db, encryption_service)
-
-    # Check for existing credential
-    sub = claims.get("sub")
-    if credential_scope == "user":
-        if not isinstance(sub, str):
-            raise HTTPException(status_code=401, detail="User ID not found")
-        existing = await repo.get_global_by_user_and_provider(sub, provider)
-    else:
-        if not isinstance(project_id, str) or not isinstance(provider, str):
-            raise HTTPException(status_code=400, detail="Project and provider required")
-        existing = await repo.get_by_project_and_provider(project_id, provider)
-    if existing:
-        # Update existing
-        await repo.update(
-            existing.id,
-            token=access_token,
-            refresh_token=token_data.get("refresh_token"),
-            expires_at=None,  # GitHub tokens don't expire
-            scopes=token_data.get("scope", "").split(",") if provider == "linear" else token_data.get("scope", "").split(" "),
-            provider_user_id=str(user_info.get("id", "")),
-            provider_metadata={"user": user_info},
-        )
-        credential_id = existing.id
-    else:
-        # Create new
-        created_by = claims.get("sub")
-        credential = await repo.create(
-            project_id=project_id if credential_scope != "user" else None,
-            provider=provider,
-            credential_type="oauth",
-            token=access_token,
-            refresh_token=token_data.get("refresh_token"),
-            scopes=token_data.get("scope", "").split(",") if provider == "linear" else token_data.get("scope", "").split(" "),
-            provider_user_id=str(user_info.get("id", "")),
-            provider_metadata={"user": user_info},
-            created_by_user_id=created_by if isinstance(created_by, str) else None,
-        )
-        credential_id = credential.id
-
-    return {
-        "success": True,
-        "credential_id": credential_id,
-        "provider": provider,
-        "user": {
-            "id": user_info.get("id"),
-            "login": user_info.get("login") or user_info.get("email"),
-            "name": user_info.get("name"),
-            "avatar_url": user_info.get("avatar_url") or user_info.get("avatarUrl"),
-        },
-    }
+    return await oauth_callback_handler(
+        request=request,
+        data=data,
+        claims=claims,
+        db=db,
+        ensure_project_access_fn=ensure_project_access,
+    )
 
 
 @app.get("/api/v1/integrations/credentials")
@@ -7757,8 +7387,10 @@ async def validate_credential(
     error = None
 
     try:
+        client: Any = None
         if credential.provider == "github":
             from tracertm.clients.github_client import GitHubClient
+
             client = GitHubClient(token)
             try:
                 user_info = await client.get_authenticated_user()
@@ -7767,6 +7399,7 @@ async def validate_credential(
                 await client.close()
         elif credential.provider == "linear":
             from tracertm.clients.linear_client import LinearClient
+
             client = LinearClient(token)
             try:
                 user_info = await client.get_viewer()
@@ -7839,9 +7472,7 @@ async def list_mappings(
     ensure_project_access(project_id, claims)
 
     repo = IntegrationMappingRepository(db)
-    mappings, _total = await repo.list_by_project(
-        project_id, external_system=provider
-    )
+    mappings, _total = await repo.list_by_project(project_id, external_system=provider)
 
     return {
         "mappings": [
@@ -7850,12 +7481,8 @@ async def list_mappings(
                 "credential_id": m.integration_credential_id,
                 "provider": m.external_system,
                 "direction": m.direction,
-                "local_item_id": m.project_id
-                if m.tracertm_item_type == "project_root"
-                else m.tracertm_item_id,
-                "local_item_type": "project"
-                if m.tracertm_item_type == "project_root"
-                else m.tracertm_item_type,
+                "local_item_id": m.project_id if m.tracertm_item_type == "project_root" else m.tracertm_item_id,
+                "local_item_type": "project" if m.tracertm_item_type == "project_root" else m.tracertm_item_type,
                 "external_id": m.external_id,
                 "external_type": m.external_system,
                 "external_url": m.external_url,
@@ -7890,6 +7517,9 @@ async def create_mapping(
     enforce_rate_limit(request, claims)
 
     credential_id = data.get("credential_id")
+    if not credential_id:
+        raise HTTPException(status_code=400, detail="credential_id required")
+    assert isinstance(credential_id, str)
     local_item_id = data.get("local_item_id")
     local_item_type = data.get("local_item_type")
     project_id = data.get("project_id")
@@ -7954,12 +7584,12 @@ async def create_mapping(
     # Create mapping
     repo = IntegrationMappingRepository(db)
     mapping = await repo.create(
-        project_id=project_id,
-        credential_id=credential_id,
-        tracertm_item_id=tracertm_item_id,
-        tracertm_item_type=tracertm_item_type,
-        external_system=external_type,
-        external_id=external_id,
+        project_id=str(project_id),
+        credential_id=str(credential_id),
+        tracertm_item_id=str(tracertm_item_id),
+        tracertm_item_type=str(tracertm_item_type),
+        external_system=str(external_type),
+        external_id=str(external_id) if external_id is not None else "",
         external_url=data.get("external_url") or "",
         direction=direction,
         auto_sync=data.get("sync_enabled", True),
@@ -8035,6 +7665,9 @@ async def update_mapping(
     await repo.update(mapping_id, **updates)
     updated = await repo.get_by_id(mapping_id)
 
+    if not updated:
+        raise HTTPException(status_code=404, detail="Updated mapping not found")
+
     return {
         "id": updated.id,
         "direction": updated.direction,
@@ -8083,7 +7716,7 @@ async def delete_mapping(
 
 
 @app.get("/api/v1/integrations/sync/status")
-async def get_sync_status(
+async def get_integration_sync_status(
     request: Request,
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
@@ -8109,9 +7742,7 @@ async def get_sync_status(
     encryption_key = os.environ.get("ENCRYPTION_KEY", "")
     encryption_service = EncryptionService(encryption_key) if encryption_key else None
     cred_repo = IntegrationCredentialRepository(db, encryption_service)
-    credentials = await cred_repo.get_by_project(
-        project_id, include_global_user_id=claims.get("sub")
-    )
+    credentials = await cred_repo.get_by_project(project_id, include_global_user_id=claims.get("sub"))
 
     # Get queue stats
     queue_result = await db.execute(
@@ -8189,6 +7820,9 @@ async def trigger_sync(
 
     mapping_id = data.get("mapping_id")
     credential_id = data.get("credential_id")
+    if not credential_id:
+        raise HTTPException(status_code=400, detail="credential_id required")
+    assert isinstance(credential_id, str)
     direction = data.get("direction", "pull")
 
     if not mapping_id:
@@ -8247,9 +7881,7 @@ async def get_sync_queue(
     ensure_project_access(project_id, claims)
 
     queue_repo = IntegrationSyncQueueRepository(db)
-    items, _total = await queue_repo.list_by_project(
-        project_id, status=status, limit=limit
-    )
+    items, _total = await queue_repo.list_by_project(project_id, status=status, limit=limit)
 
     priority_map = {"low": 0, "normal": 1, "high": 2, "critical": 3}
     mapping_lookup = {}
@@ -8259,18 +7891,14 @@ async def get_sync_queue(
         from tracertm.models.integration import IntegrationMapping
 
         mapping_ids = list({item.mapping_id for item in items})
-        result = await db.execute(
-            select(IntegrationMapping).where(IntegrationMapping.id.in_(mapping_ids))
-        )
+        result = await db.execute(select(IntegrationMapping).where(IntegrationMapping.id.in_(mapping_ids)))
         mapping_lookup = {m.id: m for m in result.scalars().all()}
 
     return {
         "items": [
             {
                 "id": item.id,
-                "provider": mapping_lookup.get(item.mapping_id).external_system
-                if mapping_lookup.get(item.mapping_id)
-                else "unknown",
+                "provider": getattr(mapping_lookup.get(item.mapping_id), "external_system", "unknown"),
                 "event_type": item.event_type,
                 "direction": item.direction,
                 "status": item.status,
@@ -8325,9 +7953,7 @@ async def list_conflicts(
             {
                 "id": c.id,
                 "mapping_id": c.mapping_id,
-                "provider": mappings.get(c.mapping_id).external_system
-                if mappings.get(c.mapping_id)
-                else "unknown",
+                "provider": getattr(mappings.get(c.mapping_id), "external_system", "unknown"),
                 "conflict_type": "field_mismatch",
                 "field_name": c.field,
                 "local_value": c.tracertm_value,
@@ -8390,8 +8016,10 @@ async def resolve_conflict(
     if resolution == "skip":
         await conflict_repo.ignore(conflict_id)
     else:
-        resolved_value = merged_value if resolution == "merge" else (
-            conflict.tracertm_value if resolution == "local" else conflict.external_value
+        resolved_value = (
+            merged_value
+            if resolution == "merge"
+            else (conflict.tracertm_value if resolution == "local" else conflict.external_value)
         )
         await conflict_repo.resolve(
             conflict_id,
@@ -8644,7 +8272,7 @@ async def list_github_issues(
     db: AsyncSession = Depends(get_db),
 ):
     """List GitHub issues for a repository."""
-    from tracertm.clients.github_client import GitHubClient
+    from tracertm.clients.github_client import GitHubClient, IssueListParams
     from tracertm.repositories.integration_repository import IntegrationCredentialRepository
     from tracertm.services.encryption_service import EncryptionService
 
@@ -8670,9 +8298,7 @@ async def list_github_issues(
         issues = await client.list_issues(
             owner=owner,
             repo=repo,
-            state=state,
-            per_page=per_page,
-            page=page,
+            params=IssueListParams(state=state, per_page=per_page, page=page),
         )
     finally:
         await client.close()
@@ -8705,6 +8331,7 @@ async def list_github_issues(
 
 # ==================== GITHUB APP INSTALLATION ====================
 
+
 @app.get("/api/v1/integrations/github/app/install-url")
 async def get_github_app_install_url(
     account_id: str,
@@ -8731,6 +8358,7 @@ async def get_github_app_install_url(
 
     # Generate state token with account_id
     import secrets
+
     state = secrets.token_urlsafe(32)
     state_data = f"{account_id}:{state}"
 
@@ -8743,82 +8371,14 @@ async def get_github_app_install_url(
 
 
 @app.post("/api/v1/integrations/github/app/webhook")
-async def github_app_webhook(
+async def github_app_webhook_endpoint(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """Handle GitHub App webhook events."""
-    from tracertm.config.github_app import get_github_app_config
-    from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
+    from tracertm.api.handlers.webhooks import github_app_webhook
 
-    config = get_github_app_config()
-
-    # Verify webhook signature
-    signature = request.headers.get("X-Hub-Signature-256", "")
-    body = await request.body()
-
-    if not config.verify_webhook_signature(body, signature):
-        raise HTTPException(status_code=401, detail="Invalid webhook signature")
-
-    event_type = request.headers.get("X-GitHub-Event", "")
-    payload = await request.json()
-
-    installation_repo = GitHubAppInstallationRepository(db)
-
-    if event_type == "installation":
-        action = payload.get("action")
-        installation_data = payload.get("installation", {})
-        installation_id = installation_data.get("id")
-
-        if action == "created":
-            # Extract account_id from installation metadata or setup action (state during installation)
-            _account_id = payload.get("account_id")
-            # For now, we'll need to handle this differently - account_id should be in installation metadata
-            # or we need to store it during the installation flow
-
-            # Get account from installation account login
-            account_login = installation_data.get("account", {}).get("login", "")
-            target_type = installation_data.get("target_type", "Organization")
-            target_id = installation_data.get("account", {}).get("id")
-
-            # For now, create installation without account_id - will need to link later
-            # In production, account_id should be passed via state parameter during installation
-            # For MVP, we'll allow creating without account_id and link via API
-
-            installation = await installation_repo.create(
-                account_id="",  # Will be set via separate endpoint
-                installation_id=installation_id,
-                account_login=account_login,
-                target_type=target_type,
-                target_id=target_id,
-                permissions=installation_data.get("permissions", {}),
-                repository_selection=installation_data.get("repository_selection", "all"),
-            )
-
-            await db.commit()
-
-            return {"status": "created", "installation_id": installation.id}
-
-        if action == "deleted":
-            existing = await installation_repo.get_by_github_installation_id(installation_id)
-            if existing:
-                await installation_repo.delete(existing.id)
-                await db.commit()
-
-            return {"status": "deleted"}
-
-        if action in ["suspend", "unsuspend"]:
-            existing = await installation_repo.get_by_github_installation_id(installation_id)
-            if existing:
-                await installation_repo.update(
-                    existing.id,
-                    suspended_at=(action == "suspend"),
-                )
-                await db.commit()
-
-            return {"status": action}
-
-    return {"status": "ok"}
+    return await github_app_webhook(request, db)
 
 
 @app.get("/api/v1/integrations/github/app/installations")
@@ -8997,7 +8557,7 @@ async def list_github_projects(
         else:
             raise HTTPException(status_code=400, detail="Either installation_id or credential_id is required")
 
-        projects = await client.list_projects_v2(owner=owner, is_org=is_org)
+        projects = await client.list_projects_graphql(owner=owner, is_org=is_org)
     finally:
         if client:
             await client.close()
@@ -9043,10 +8603,19 @@ async def auto_link_github_projects(
     if not all([project_id, github_repo_owner, github_repo_name, github_repo_id, installation_id]):
         raise HTTPException(status_code=400, detail="Missing required fields")
 
-    ensure_project_access(project_id, claims)
+    # Type casting for mypy
+    from typing import cast
+
+    p_id = cast(str, project_id)
+    i_id = cast(str, installation_id)
+    repo_owner = cast(str, github_repo_owner)
+    repo_name = cast(str, github_repo_name)
+    repo_id = cast(int, github_repo_id)
+
+    ensure_project_access(p_id, claims)
 
     installation_repo = GitHubAppInstallationRepository(db)
-    installation = await installation_repo.get_by_id(installation_id)
+    installation = await installation_repo.get_by_id(i_id)
 
     if not installation:
         raise HTTPException(status_code=404, detail="Installation not found")
@@ -9065,10 +8634,10 @@ async def auto_link_github_projects(
     try:
         service = GitHubProjectService(db)
         linked_projects = await service.auto_link_projects_for_repo(
-            project_id=project_id,
-            github_repo_owner=github_repo_owner,
-            github_repo_name=github_repo_name,
-            github_repo_id=github_repo_id,
+            project_id=p_id,
+            github_repo_owner=repo_owner,
+            github_repo_name=repo_name,
+            github_repo_id=repo_id,
             client=client,
         )
     finally:
@@ -9325,6 +8894,7 @@ async def receive_github_webhook(
     import hashlib
     import hmac
 
+    from tracertm.models.webhook_integration import WebhookStatus
     from tracertm.repositories.integration_repository import IntegrationSyncQueueRepository
     from tracertm.repositories.webhook_repository import WebhookRepository
 
@@ -9334,19 +8904,15 @@ async def receive_github_webhook(
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
 
-    if not webhook.is_active:
+    if webhook.status != WebhookStatus.ACTIVE:
         raise HTTPException(status_code=400, detail="Webhook is inactive")
 
     # Verify signature
     body = await request.body()
     signature_header = request.headers.get("X-Hub-Signature-256", "")
 
-    if webhook.secret:
-        expected_signature = "sha256=" + hmac.new(
-            webhook.secret.encode(),
-            body,
-            hashlib.sha256
-        ).hexdigest()
+    if webhook.webhook_secret:
+        expected_signature = "sha256=" + hmac.new(webhook.webhook_secret.encode(), body, hashlib.sha256).hexdigest()
 
         if not hmac.compare_digest(signature_header, expected_signature):
             raise HTTPException(status_code=401, detail="Invalid signature")
@@ -9356,10 +8922,16 @@ async def receive_github_webhook(
     payload = await request.json()
 
     # Queue for processing
+    # Note: Using enqueue with mapping_id=None might fail if model requires it.
+    # For now, we use create_log and assume sync queue handles it via other means or fix mapping later.
+    credential_id = getattr(webhook, "credential_id", None)
+    if not credential_id:
+        raise HTTPException(status_code=400, detail="Webhook missing credential_id")
+
     queue_repo = IntegrationSyncQueueRepository(db)
-    await queue_repo.create(
-        credential_id=webhook.credential_id if hasattr(webhook, "credential_id") else None,
-        provider="github",
+    await queue_repo.enqueue(
+        credential_id=str(credential_id),
+        mapping_id=str(getattr(webhook, "mapping_id", None) or webhook_id),
         event_type=f"webhook:{event_type}",
         direction="pull",
         payload={
@@ -9371,11 +8943,12 @@ async def receive_github_webhook(
     )
 
     # Log delivery
-    await webhook_repo.log_delivery(
+    await webhook_repo.create_log(
         webhook_id=webhook_id,
         event_type=event_type,
-        payload=payload,
-        status="queued",
+        payload_size_bytes=len(body),
+        success=True,
+        status_code=200,
     )
 
     return {"received": True, "event": event_type}
@@ -9391,6 +8964,7 @@ async def receive_linear_webhook(
     import hashlib
     import hmac
 
+    from tracertm.models.webhook_integration import WebhookStatus
     from tracertm.repositories.integration_repository import IntegrationSyncQueueRepository
     from tracertm.repositories.webhook_repository import WebhookRepository
 
@@ -9400,19 +8974,15 @@ async def receive_linear_webhook(
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
 
-    if not webhook.is_active:
+    if webhook.status != WebhookStatus.ACTIVE:
         raise HTTPException(status_code=400, detail="Webhook is inactive")
 
     # Verify signature
     body = await request.body()
     signature_header = request.headers.get("Linear-Signature", "")
 
-    if webhook.secret:
-        expected_signature = hmac.new(
-            webhook.secret.encode(),
-            body,
-            hashlib.sha256
-        ).hexdigest()
+    if webhook.webhook_secret:
+        expected_signature = hmac.new(webhook.webhook_secret.encode(), body, hashlib.sha256).hexdigest()
 
         if not hmac.compare_digest(signature_header, expected_signature):
             raise HTTPException(status_code=401, detail="Invalid signature")
@@ -9422,11 +8992,14 @@ async def receive_linear_webhook(
     event_type = payload.get("type", "unknown")
     action = payload.get("action", "")
 
-    # Queue for processing
+    credential_id = getattr(webhook, "credential_id", None)
+    if not credential_id:
+        raise HTTPException(status_code=400, detail="Webhook missing credential_id")
+
     queue_repo = IntegrationSyncQueueRepository(db)
-    await queue_repo.create(
-        credential_id=webhook.credential_id if hasattr(webhook, "credential_id") else None,
-        provider="linear",
+    await queue_repo.enqueue(
+        credential_id=str(credential_id),
+        mapping_id=str(getattr(webhook, "mapping_id", None) or webhook_id),
         event_type=f"webhook:{event_type}:{action}",
         direction="pull",
         payload={
@@ -9438,11 +9011,12 @@ async def receive_linear_webhook(
     )
 
     # Log delivery
-    await webhook_repo.log_delivery(
+    await webhook_repo.create_log(
         webhook_id=webhook_id,
         event_type=f"{event_type}:{action}",
-        payload=payload,
-        status="queued",
+        payload_size_bytes=len(body),
+        success=True,
+        status_code=200,
     )
 
     return {"received": True, "event": event_type, "action": action}
@@ -9459,306 +9033,19 @@ async def get_integration_stats(
     db: AsyncSession = Depends(get_db),
 ):
     """Get integration statistics for a project."""
-    from sqlalchemy import func, select
+    from tracertm.api.handlers.integrations import get_integration_stats_handler
 
-    from tracertm.models.integration import (
-        IntegrationConflict,
-        IntegrationMapping,
-        IntegrationSyncLog,
-        IntegrationSyncQueue,
-    )
-    from tracertm.repositories.integration_repository import (
-        IntegrationCredentialRepository,
-    )
-    from tracertm.services.encryption_service import EncryptionService
-
-    enforce_rate_limit(request, claims)
-    ensure_project_access(project_id, claims)
-
-    encryption_key = os.environ.get("ENCRYPTION_KEY", "")
-    encryption_service = EncryptionService(encryption_key) if encryption_key else None
-    cred_repo = IntegrationCredentialRepository(db, encryption_service)
-
-    credentials = await cred_repo.get_by_project(
-        project_id, include_global_user_id=claims.get("sub")
-    )
-
-    # Provider stats
-    providers = [
-        {
-            "provider": c.provider,
-            "status": c.status,
-            "credential_type": c.credential_type,
-        }
-        for c in credentials
-    ]
-
-    # Mapping stats
-    mapping_result = await db.execute(
-        select(
-            IntegrationMapping.external_system,
-            IntegrationMapping.status,
-            func.count().label("count"),
-        )
-        .where(IntegrationMapping.project_id == project_id)
-        .group_by(IntegrationMapping.external_system, IntegrationMapping.status)
-    )
-
-    mapping_stats = {"total": 0, "active": 0, "by_provider": {}}
-    for row in mapping_result.all():
-        cnt: Any = row[2]
-        status_val: Any = row[1]
-        ext: Any = row[0]
-        mapping_stats["total"] += int(cnt)
-        if str(status_val) == "active":
-            mapping_stats["active"] += int(cnt)
-        if str(ext) not in mapping_stats["by_provider"]:
-            mapping_stats["by_provider"][str(ext)] = 0
-        mapping_stats["by_provider"][str(ext)] += int(cnt)
-
-    # Sync stats
-    queue_pending = await db.scalar(
-        select(func.count())
-        .select_from(IntegrationSyncQueue)
-        .join(IntegrationMapping)
-        .where(
-            IntegrationMapping.project_id == project_id,
-            IntegrationSyncQueue.status == "pending",
-        )
-    )
-
-    from datetime import UTC, datetime, timedelta
-    week_ago = datetime.now(UTC) - timedelta(days=7)
-
-    sync_logs_result = await db.execute(
-        select(
-            IntegrationSyncLog.success,
-            func.count().label("count"),
-        )
-        .join(IntegrationMapping)
-        .where(
-            IntegrationMapping.project_id == project_id,
-            IntegrationSyncLog.created_at >= week_ago,
-        )
-        .group_by(IntegrationSyncLog.success)
-    )
-
-    sync_counts = {"total": 0, "success": 0}
-    for row in sync_logs_result.all():
-        cnt: Any = row[1]
-        success_val: Any = row[0]
-        sync_counts["total"] += int(cnt)
-        if bool(success_val):
-            sync_counts["success"] += int(cnt)
-
-    success_rate = (
-        round(sync_counts["success"] / sync_counts["total"] * 100, 1)
-        if sync_counts["total"] > 0 else 0
-    )
-
-    # Conflict stats
-    conflict_result = await db.execute(
-        select(
-            IntegrationConflict.resolution_status,
-            func.count().label("count"),
-        )
-        .join(IntegrationMapping)
-        .where(IntegrationMapping.project_id == project_id)
-        .group_by(IntegrationConflict.resolution_status)
-    )
-
-    conflict_stats = {"pending": 0, "resolved": 0}
-    for row in conflict_result.all():
-        cnt: Any = row[1]
-        status_val: Any = row[0]
-        if str(status_val) == "pending":
-            conflict_stats["pending"] = int(cnt)
-        elif str(status_val) == "resolved":
-            conflict_stats["resolved"] = int(cnt)
-
-    return {
-        "project_id": project_id,
-        "providers": providers,
-        "mappings": mapping_stats,
-        "sync": {
-            "queue_pending": queue_pending or 0,
-            "recent_syncs": sync_counts["total"],
-            "success_rate": success_rate,
-        },
-        "conflicts": conflict_stats,
-    }
+    return await get_integration_stats_handler(request, project_id, claims, db)
 
 
 # ==================== AI CHAT ====================
 
+from tracertm.api.handlers.chat import simple_chat as _simple_chat_impl
+from tracertm.api.handlers.chat import stream_chat as _stream_chat_impl
 
-from fastapi.responses import StreamingResponse
-
-from tracertm.schemas.chat import ChatRequest
-
-
-@app.post("/api/v1/chat/stream")
-async def stream_chat(
-    request: Request,
-    request_body: ChatRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
-    """Stream AI chat completion using Server-Sent Events.
-
-    This endpoint streams responses from AI providers (Claude, Codex, Gemini)
-    using SSE format for real-time message delivery. Supports tool use for
-    filesystem operations, CLI commands, and TraceRTM API operations.
-    When session_id is provided, tools run in a per-session sandbox (persisted with chat).
-    """
-    from tracertm.agent import get_agent_service
-    from tracertm.services.ai_service import AIServiceError, get_ai_service
-    from tracertm.services.ai_tools import set_allowed_paths
-
-    enforce_rate_limit(request, claims)
-
-    messages = [
-        {"role": msg.role.value, "content": msg.content}
-        for msg in request_body.messages
-    ]
-
-    # Per-session sandbox: use AgentService when session_id is set
-    use_agent_sandbox = bool(request_body.session_id and request_body.session_id.strip())
-
-    def _agent_service() -> Any:
-        """Use app-scoped agent service (DB + NATS) when available, else global singleton."""
-        if request and hasattr(request.app.state, "agent_service"):
-            return request.app.state.agent_service
-        return get_agent_service()
-
-    async def generate() -> AsyncGenerator[str, None]:
-        """Generate SSE stream with tool use support."""
-        try:
-            if use_agent_sandbox:
-                from tracertm.agent.agent_service import StreamChatOptions
-                from tracertm.agent.types import SandboxConfig
-                sandbox_config = None
-                if request_body.context and request_body.context.project_id:
-                    sandbox_config = SandboxConfig(project_id=request_body.context.project_id)
-                agent_service = _agent_service()
-                opts = StreamChatOptions(
-                    provider=request_body.provider.value,
-                    model=request_body.model,
-                    system_prompt=request_body.system_prompt,
-                    max_tokens=request_body.max_tokens,
-                    enable_tools=True,
-                )
-                async for chunk in agent_service.stream_chat_with_sandbox(
-                    messages=messages,
-                    session_id=request_body.session_id,
-                    options=opts,
-                    db_session=db,
-                    sandbox_config=sandbox_config,
-                ):
-                    yield chunk
-            else:
-                ai_service = get_ai_service()
-                working_directory = None
-                if request_body.context and request_body.context.project_id:
-                    working_directory = str(Path.cwd())
-                if working_directory:
-                    set_allowed_paths([working_directory])
-                async for chunk in ai_service.stream_chat(
-                    messages=messages,
-                    provider=request_body.provider.value,
-                    model=request_body.model,
-                    system_prompt=request_body.system_prompt,
-                    max_tokens=request_body.max_tokens,
-                    enable_tools=True,
-                    working_directory=working_directory,
-                    db_session=db,
-                ):
-                    yield chunk
-
-        except AIServiceError as e:
-            import json
-            error_data = json.dumps({"type": "error", "data": {"error": str(e)}})
-            yield f"data: {error_data}\n\n"
-        except Exception as e:
-            import json
-            logger.error(f"Chat streaming error: {e}", exc_info=True)
-            error_data = json.dumps({"type": "error", "data": {"error": "An unexpected error occurred"}})
-            yield f"data: {error_data}\n\n"
-
-    return StreamingResponse(
-        generate(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",  # Disable nginx buffering
-        },
-    )
-
-
-@app.post("/api/v1/chat")
-async def simple_chat(
-    request: Request,
-    request_body: ChatRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
-    """Non-streaming chat completion (for testing/simple use cases)."""
-    from tracertm.agent import get_agent_service
-    from tracertm.services.ai_service import AIServiceError, get_ai_service
-
-    enforce_rate_limit(request, claims)
-
-    messages = [
-        {"role": msg.role.value, "content": msg.content}
-        for msg in request_body.messages
-    ]
-    use_agent_sandbox = bool(request_body.session_id and request_body.session_id.strip())
-
-    try:
-        if use_agent_sandbox:
-            from tracertm.agent.agent_service import StreamChatOptions
-            from tracertm.agent.types import SandboxConfig
-            sandbox_config = None
-            if request_body.context and request_body.context.project_id:
-                sandbox_config = SandboxConfig(project_id=request_body.context.project_id)
-            agent_service = getattr(request.app.state, "agent_service", None) if request else None
-            if agent_service is None:
-                agent_service = get_agent_service()
-            opts = StreamChatOptions(
-                provider=request_body.provider.value,
-                model=request_body.model,
-                system_prompt=request_body.system_prompt,
-                max_tokens=request_body.max_tokens,
-            )
-            response = await agent_service.simple_chat_with_sandbox(
-                messages=messages,
-                session_id=request_body.session_id,
-                options=opts,
-                db_session=db,
-                sandbox_config=sandbox_config,
-            )
-        else:
-            ai_service = get_ai_service()
-            response = await ai_service.simple_chat(
-                messages=messages,
-                provider=request_body.provider.value,
-                model=request_body.model,
-                system_prompt=request_body.system_prompt,
-                max_tokens=request_body.max_tokens,
-            )
-
-        return {
-            "content": response,
-            "model": request_body.model,
-            "provider": request_body.provider.value,
-        }
-
-    except AIServiceError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except Exception as e:
-        logger.error(f"Chat error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+# Register chat endpoints
+app.post("/api/v1/chat/stream")(_stream_chat_impl)
+app.post("/api/v1/chat")(_simple_chat_impl)
 
 
 if __name__ == "__main__":

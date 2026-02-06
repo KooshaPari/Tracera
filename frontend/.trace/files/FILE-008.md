@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Context provider for authentication. Manages user state, tokens, and provides auth methods to children. Handles token refresh.
-

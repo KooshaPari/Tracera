@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AgentRunConfig:
     """Configuration for agent execution."""
+
     max_turns: int = 50
     checkpoint_interval: int = 5
     model: str = "claude-sonnet-4-20250514"

@@ -7,62 +7,60 @@
  * Usage: bun run populate-mock-data.ts
  */
 
-import { createProject, fetchProjects, getApiUrl } from "./lib/api";
-import { populateProject } from "./lib/populator";
-import { PROJECTS, getProjectStats, getTotalItemCount } from "./lib/projects";
-import type { Project, ProjectConfig } from "./lib/types";
+import type { Project, ProjectConfig } from './lib/types';
+
+import { createProject, fetchProjects, getApiUrl } from './lib/api';
+import { populateProject } from './lib/populator';
+import { PROJECTS, getProjectStats, getTotalItemCount } from './lib/projects';
 
 async function main() {
-	try {
-		// Fetch existing projects
-		const existingProjects = await fetchProjects();
+  try {
+    // Fetch existing projects
+    const existingProjects = await fetchProjects();
 
-		const createdProjects: {
-			config: ProjectConfig;
-			project: Project;
-		}[] = [];
+    const createdProjects: {
+      config: ProjectConfig;
+      project: Project;
+    }[] = [];
 
-		// Create or find each project
-		for (const config of PROJECTS) {
-			let project = existingProjects.find(
-				(p) => p.name.toLowerCase() === config.name.toLowerCase(),
-			);
+    // Create or find each project
+    for (const config of PROJECTS) {
+      let project = existingProjects.find(
+        (p) => p.name.toLowerCase() === config.name.toLowerCase(),
+      );
 
-			if (!project) {
-				try {
-					project = await createProject(config.name, config.description);
-				} catch (error) {
-					continue;
-				}
-			} else {
-			}
+      if (!project) {
+        try {
+          project = await createProject(config.name, config.description);
+        } catch {
+          continue;
+        }
+      } else {
+      }
 
-			createdProjects.push({ config, project });
-		}
+      createdProjects.push({ config, project });
+    }
 
-		// Populate each project with data
+    // Populate each project with data
 
-		let totalItems = 0;
-		let totalLinks = 0;
+    let totalItems = 0;
+    let totalLinks = 0;
 
-		for (const { config, project } of createdProjects) {
-			const { itemCount, linkCount } = await populateProject(
-				project.id,
-				config,
-			);
-			totalItems += itemCount;
-			totalLinks += linkCount;
-		}
+    for (const { config, project } of createdProjects) {
+      const { itemCount, linkCount } = await populateProject(project.id, config);
+      totalItems += itemCount;
+      totalLinks += linkCount;
+    }
 
-		// Display final report
-		const expectedTotal = getTotalItemCount();
-		const stats = getProjectStats();
+    // Display final report
+    const expectedTotal = getTotalItemCount();
+    const stats = getProjectStats();
 
-		for (const stat of stats) {
-		}
-	} catch (error) {
-		process.exit(1);
-	}
+    for (const stat of stats) {
+    }
+  } catch {
+    process.exit(1);
+  }
 }
 
 main();

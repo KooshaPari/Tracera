@@ -1,35 +1,7 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { useIsAuthenticated } from "@/hooks/useAuth";
-import { LandingPage } from "@/views";
+import { createFileRoute } from '@tanstack/react-router';
 
-const hasStoredTokenOrIsE2E = (): boolean => {
-	if (typeof globalThis.window === "undefined") {
-		return false;
-	}
+import { LandingPage } from '@/views/LandingPage';
 
-	if (localStorage?.getItem("auth_token") ||
-		localStorage?.getItem("authToken") ||
-		localStorage?.getItem("tracertm-auth-store")) {
-		return true;
-	}
-
-	if ((globalThis as { __E2E__?: boolean }).__E2E__ || navigator?.webdriver) {
-		return true;
-	}
-
-	return false;
-};
-
-const IndexComponent = () => {
-	const isAuthenticated = useIsAuthenticated();
-
-	if (isAuthenticated || hasStoredTokenOrIsE2E()) {
-		return <Navigate to="/home" />;
-	}
-
-	return <LandingPage />;
-};
-
-export const Route = createFileRoute("/")({
-	component: IndexComponent,
+export const Route = createFileRoute('/index')({
+  component: LandingPage,
 });

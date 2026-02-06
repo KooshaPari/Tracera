@@ -281,12 +281,12 @@ Source: `src/tracertm/mcp/tools/graph.py`
 
 Source: `src/tracertm/mcp/tools/items_optimized.py`
 
-- `create_item_v2(...)`
-- `get_item_v2(...)`
-- `query_items_v2(...)`
-- `update_item_v2(...)`
-- `delete_item_v2(...)`
-- `summarize_view_v2(...)`
+- `create_item_optimized(...)`
+- `get_item_optimized(...)`
+- `query_items_optimized(...)`
+- `update_item_optimized(...)`
+- `delete_item_optimized(...)`
+- `summarize_view_optimized(...)`
 
 ### 7.2 Phase 3 (cache + pooling)
 

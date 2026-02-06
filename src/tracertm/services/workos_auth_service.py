@@ -14,7 +14,8 @@ from jwt import PyJWKClient
 try:
     from workos import WorkOSClient
 except Exception:  # pragma: no cover - optional for environments without WorkOS
-    WorkOSClient = None  # type: ignore[assignment]
+    WorkOSClient = Any
+    WorkOSClient = None
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +149,7 @@ def verify_access_token(token: str) -> dict[str, Any]:
     token_audience = decoded.get("aud")
     if settings.audience and token_audience:
         # Audience can be a string or list
-        if isinstance(token_audience, list[Any]):
+        if isinstance(token_audience, list):
             if settings.audience not in token_audience:
                 from jwt.exceptions import InvalidAudienceError
 
@@ -192,7 +193,7 @@ def authenticate_with_code(code: str) -> dict[str, Any]:
         return result.model_dump()
     if hasattr(result, "dict"):
         return result.dict()
-    if isinstance(result, dict[str, Any]):
+    if isinstance(result, dict):
         return result
     return result.__dict__
 
@@ -214,7 +215,7 @@ def authenticate_with_refresh_token(refresh_token: str) -> dict[str, Any]:
         return result.model_dump()
     if hasattr(result, "dict"):
         return result.dict()
-    if isinstance(result, dict[str, Any]):
+    if isinstance(result, dict):
         return result
     return result.__dict__
 
@@ -250,6 +251,6 @@ def get_user(user_id: str) -> dict[str, Any]:
         return user.model_dump()
     if hasattr(user, "dict"):
         return user.dict()
-    if isinstance(user, dict[str, Any]):
+    if isinstance(user, dict):
         return user
     return user.__dict__

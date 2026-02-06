@@ -36,7 +36,7 @@ TraceRTM is an agent-native, multi-view requirements traceability system built o
 - **Validation**: Pydantic v2 (data validation, serialization, agent-friendly schemas)
 - **CLI**: Typer (type-safe commands) + Rich (beautiful terminal output)
 - **Testing**: pytest + pytest-asyncio + pytest-cov (80%+ coverage target)
-- **Linting**: ruff (fast linter/formatter) + mypy (type checking)
+- **Linting**: ruff (fast linter/formatter) + ty (type checking)
 
 **Key Architectural Decisions:**
 
@@ -183,7 +183,7 @@ tracertm (database)
 **Python 3.12+**
 - **Why**: Modern features (match/case, type hints, async), rich ecosystem, agent-friendly
 - **Key Features Used**:
-  - Type hints throughout for IDE support and mypy validation
+  - Type hints throughout for IDE support and ty validation
   - Async/await for concurrent agent operations
   - Match/case for clean command routing
   - Dataclasses and Pydantic for data models
@@ -252,13 +252,13 @@ tracertm (database)
   - 80%+ coverage target (NFR-M1)
 - **Version Constraints**: `pytest>=8.0`, `pytest-asyncio>=0.23`, `pytest-cov>=4.0`
 
-**ruff + mypy**
-- **Why**: Ruff is 10-100x faster than pylint/flake8; mypy for type safety
+**ruff + ty**
+- **Why**: Ruff is 10-100x faster than pylint/flake8; ty for type safety
 - **Usage**:
   - Ruff for linting and formatting (replaces black, isort, flake8)
   - Mypy for static type checking
   - Pre-commit hooks for automatic checks
-- **Version Constraints**: `ruff>=0.1`, `mypy>=1.8`
+- **Version Constraints**: `ruff>=0.1`, `ty>=0.0.2`
 
 **Alembic**
 - **Why**: Database migration management, version control for schema
@@ -1574,7 +1574,7 @@ pytest
 
 # Run linting
 ruff check .
-mypy tracertm
+ty check src/ --error-on-warning
 
 # Run CLI
 python -m tracertm --help

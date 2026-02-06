@@ -26,7 +26,7 @@ from tracertm.mcp.workflow_executor import run_workflow_with_sub_agent
 
 
 @mcp.tool(task=TaskConfig(mode="forbidden"))
-async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
+async def init_project(ctx: Context, progress: Progress | None = None) -> str:
     """
     Initialize a new BMM project by determining level, type, and creating workflow path.
     Uses elicitation for interactive user input.
@@ -34,6 +34,9 @@ async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
     status = load_workflow_status()
     if status and "project" in status:
         return "OK: Project already initialized"
+
+    if progress is None:
+        progress = Progress()
 
     current_progress = 0
     await progress.set_total(100)
@@ -43,12 +46,10 @@ async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
         message="What's your project called?",
         response_type=None,
     )
-    data = name_result.data if isinstance(name_result.data, dict[str, Any]) else {}
-    project_name = (
-        data.get("value", "MyProject")
-        if isinstance(name_result, AcceptedElicitation)
-        else "MyProject"
+    data = (
+        name_result.data if isinstance(name_result, AcceptedElicitation) and isinstance(name_result.data, dict) else {}
     )
+    project_name = data.get("value", "MyProject") if isinstance(name_result, AcceptedElicitation) else "MyProject"
 
     increment = 25 - current_progress
     if increment > 0:
@@ -57,8 +58,7 @@ async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
     await progress.set_message("Project name set")
 
     track_result = await ctx.elicit(
-        message="Select track:",
-        response_type=["quick-flow", "method", "enterprise"],
+        message=f"Select track: {['quick-flow', 'method', 'enterprise']}",
     )
     track = track_result.data if isinstance(track_result, AcceptedElicitation) else "method"
 
@@ -69,8 +69,7 @@ async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
     await progress.set_message("Track selected")
 
     field_result = await ctx.elicit(
-        message="Project type:",
-        response_type=["greenfield", "brownfield"],
+        message=f"Project type: {['greenfield', 'brownfield']}",
     )
     field_type = field_result.data if isinstance(field_result, AcceptedElicitation) else "greenfield"
 
@@ -94,7 +93,7 @@ async def run_workflow(  # noqa: C901, PLR0912, PLR0915
     ctx: Context,
     workflow_id: str,
     auto: bool = False,
-    progress: Progress = Progress(),
+    progress: Progress | None = None,
 ) -> str:
     """
     Execute a BMM workflow by ID.
@@ -118,8 +117,7 @@ async def run_workflow(  # noqa: C901, PLR0912, PLR0915
 
     if not auto:
         confirm_result = await ctx.elicit(
-            message=f"Run {workflow_name} workflow?\nAgent: {workflow['agent']}\nNote: {workflow.get('note', 'N/A')}",
-            response_type=["yes", "no", "skip"],
+            message=f"Run {workflow_name} workflow?\nAgent: {workflow['agent']}\nNote: {workflow.get('note', 'N/A')}\nOptions: {['yes', 'no', 'skip']}",
         )
         confirm = confirm_result.data if isinstance(confirm_result, AcceptedElicitation) else "no"
         if confirm == "no":
@@ -133,6 +131,9 @@ async def run_workflow(  # noqa: C901, PLR0912, PLR0915
                         break
                 save_workflow_status(status)
             return f"SKIPPED: {workflow_id}"
+
+    if progress is None:
+        progress = Progress()
 
     current_progress = 0
     await progress.set_total(100)
@@ -235,7 +236,7 @@ async def run_phase(  # noqa: C901
     phase: int,
     parallel: bool = False,
     auto: bool = False,
-    progress: Progress = Progress(),
+    progress: Progress | None = None,
 ) -> str:
     """
     Execute all workflows in a phase.
@@ -256,6 +257,9 @@ async def run_phase(  # noqa: C901
         return f"No workflows found for phase {phase}"
 
     phase_names = ["Discovery", "Planning", "Solutioning", "Implementation"]
+    if progress is None:
+        progress = Progress()
+
     current_progress = 0
     await progress.set_total(len(workflows))
     await progress.set_message(f"Starting Phase {phase}: {phase_names[phase]}")
@@ -273,7 +277,7 @@ async def run_phase(  # noqa: C901
         async def run_agent_workflows(agent: str, agent_workflows: list[dict[str, Any]]):
             agent_results = []
             for wf in agent_workflows:
-                result = await run_workflow(ctx, wf["id"], auto=auto, progress=progress)  # type: ignore[call-non-callable]
+                result = await run_workflow(ctx, wf["id"], auto=auto, progress=progress)
                 agent_results.append(result)
             return agent_results
 
@@ -289,7 +293,7 @@ async def run_phase(  # noqa: C901
                 await progress.increment(increment)
                 current_progress = i
             await progress.set_message(f"Running {wf_name}...")
-            result = await run_workflow(ctx, wf["id"], auto=auto, progress=progress)  # type: ignore[call-non-callable]
+            result = await run_workflow(ctx, wf["id"], auto=auto, progress=progress)
             results.append(result)
 
     increment = len(workflows) - current_progress

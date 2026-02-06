@@ -99,7 +99,7 @@ def mount_mcp_to_fastapi(
 
     # Create the MCP HTTP app
     mcp_app = mcp.http_app(
-        path="",  # Empty path since we're mounting at a specific location
+        path="/",  # Root path inside mounted sub-app
         transport=transport,
         json_response=True,
         stateless_http=False,
@@ -107,6 +107,12 @@ def mount_mcp_to_fastapi(
 
     # Mount the MCP app to FastAPI
     app.mount(path, mcp_app)
+
+    # Expose the mounted MCP app for callers that want to drive its lifespan.
+    app.state.mcp_app = mcp_app
+
+    # Ensure parent app uses MCP lifespan (FastMCP expects this).
+    app.router.lifespan_context = mcp_app.lifespan
 
     logger.info(f"MCP mounted successfully at {path}")
 

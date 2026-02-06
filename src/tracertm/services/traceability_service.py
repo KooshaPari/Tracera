@@ -106,7 +106,9 @@ class TraceabilityService:
         coverage = len(linked_source_ids) / len(source_items) * 100 if source_items else 0
 
         # Find gaps (source items without links)
-        gaps = [{"id": str(item.id), "title": item.title} for item in source_items if str(item.id) not in linked_source_ids]
+        gaps = [
+            {"id": str(item.id), "title": item.title} for item in source_items if str(item.id) not in linked_source_ids
+        ]
 
         return TraceabilityMatrix(
             source_view=source_view,

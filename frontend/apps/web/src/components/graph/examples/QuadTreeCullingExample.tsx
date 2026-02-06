@@ -9,77 +9,77 @@
  * - Only processes ~100-500 visible nodes instead of all 100k
  */
 
-import { useMemo } from "react";
-import { useReactFlow } from "@xyflow/react";
-import { useQuadTreeCulling } from "@/hooks/useQuadTreeCulling";
-import { determineLODLevel } from "@/components/graph/utils/lod";
-import { getNodeType } from "@/components/graph/nodeRegistry";
-import type { Node } from "@xyflow/react";
-import type { RichNodeData } from "@/components/graph/types";
-import { logger } from "@/lib/logger";
+import type { Node } from '@xyflow/react';
+
+import { useReactFlow } from '@xyflow/react';
+import { useMemo } from 'react';
+
+import type { RichNodeData } from '@/components/graph/RichNodePill';
+
+import { getNodeType } from '@/components/graph/nodeRegistry';
+import { determineLODLevel } from '@/components/graph/utils/lod';
+import { useQuadTreeCulling } from '@/hooks/useQuadTreeCulling';
+import { logger } from '@/lib/logger';
 
 interface QuadTreeCullingExampleProps {
-	items: {
-		id: string;
-		title: string;
-		type: string;
-		status?: string;
-		position?: { x: number; y: number };
-	}[];
-	selectedNodeId?: string | null;
+  items: {
+    id: string;
+    title: string;
+    type: string;
+    status?: string;
+    position?: { x: number; y: number };
+  }[];
+  selectedNodeId?: string | null;
 }
 
 /**
  * Example component showing quad-tree culling integration
  */
-export function QuadTreeCullingExample({
-	items,
-	selectedNodeId,
-}: QuadTreeCullingExampleProps) {
-	const { getViewport } = useReactFlow();
-	const viewport = getViewport();
+export function QuadTreeCullingExample({ items, selectedNodeId }: QuadTreeCullingExampleProps) {
+  const { getViewport } = useReactFlow();
+  const viewport = getViewport();
 
-	// Convert items to nodes with positions
-	const allNodes = useMemo(
-		() =>
-			items.map((item) => ({
-				data: {
-					id: item.id,
-					label: item.title,
-					status: item.status,
-					type: item.type,
-				},
-				height: 120,
-				id: item.id,
-				position: item.position ?? { x: 0, y: 0 },
-				width: 200,
-			})),
-		[items],
-	);
+  // Convert items to nodes with positions
+  const allNodes = useMemo(
+    () =>
+      items.map((item) => ({
+        data: {
+          id: item.id,
+          label: item.title,
+          status: item.status,
+          type: item.type,
+        },
+        height: 120,
+        id: item.id,
+        position: item.position ?? { x: 0, y: 0 },
+        width: 200,
+      })),
+    [items],
+  );
 
-	// ============================================
-	// QUAD-TREE CULLING: Replace O(n) with O(log n)
-	// ============================================
+  // ============================================
+  // QUAD-TREE CULLING: Replace O(n) with O(log n)
+  // ============================================
 
-	const { visibleNodes, stats } = useQuadTreeCulling({
-		bufferZone: 200,
-		enabled: allNodes.length > 1000,
-		nodes: allNodes,
-		viewport, // Only enable for large graphs
-	});
+  const { visibleNodes, stats } = useQuadTreeCulling({
+    bufferZone: 200,
+    enabled: allNodes.length > 1000,
+    nodes: allNodes,
+    viewport, // Only enable for large graphs
+  });
 
-	logger.info("[QuadTree Stats]", {
-		culled: stats.culledNodes,
-		queryTime: `${stats.queryTimeMs.toFixed(3)}ms`,
-		ratio: `${stats.cullingRatio.toFixed(1)}%`,
-		total: stats.totalNodes,
-		visible: stats.visibleNodes,
-	});
+  logger.info('[QuadTree Stats]', {
+    culled: stats.culledNodes,
+    queryTime: `${stats.queryTimeMs.toFixed(3)}ms`,
+    ratio: `${stats.cullingRatio.toFixed(1)}%`,
+    total: stats.totalNodes,
+    visible: stats.visibleNodes,
+  });
 
-	// ============================================
-	// OLD APPROACH (O(n) - processes ALL nodes)
-	// ============================================
-	/*
+  // ============================================
+  // OLD APPROACH (O(n) - processes ALL nodes)
+  // ============================================
+  /*
 	Const nodesForLayout = useMemo(() => {
 		const totalCount = items.length;
 		const lodLevel = determineLODLevel(viewport.zoom, { nodeCount: totalCount });
@@ -110,105 +110,100 @@ export function QuadTreeCullingExample({
 	}, [items, viewport, selectedNodeId]);
 	*/
 
-	// ============================================
-	// NEW APPROACH (O(log n) - processes only visible nodes)
-	// ============================================
+  // ============================================
+  // NEW APPROACH (O(log n) - processes only visible nodes)
+  // ============================================
 
-	const nodesForLayout = useMemo(() => {
-		// Use quad-tree culled nodes instead of all nodes
-		const nodesToProcess = visibleNodes;
-		const totalCount = allNodes.length;
-		const lodLevel = determineLODLevel(viewport.zoom, {
-			nodeCount: totalCount,
-		});
+  const nodesForLayout = useMemo(() => {
+    // Use quad-tree culled nodes instead of all nodes
+    const nodesToProcess = visibleNodes;
+    const totalCount = allNodes.length;
+    const lodLevel = determineLODLevel(viewport.zoom, {
+      nodeCount: totalCount,
+    });
 
-		// ✅ O(visible) where visible << total
-		// Only processes ~100-500 nodes instead of 100k
-		return nodesToProcess.map((node) => {
-			// Optional: Calculate distance only for visible nodes
-			// This is much cheaper since we only have ~500 nodes
-			const viewportCenter = {
-				x:
-					-viewport.x / viewport.zoom + window.innerWidth / (2 * viewport.zoom),
-				y:
-					-viewport.y / viewport.zoom +
-					window.innerHeight / (2 * viewport.zoom),
-			};
+    // ✅ O(visible) where visible << total
+    // Only processes ~100-500 nodes instead of 100k
+    return nodesToProcess.map((node) => {
+      // Optional: Calculate distance only for visible nodes
+      // This is much cheaper since we only have ~500 nodes
+      const viewportCenter = {
+        x: -viewport.x / viewport.zoom + window.innerWidth / (2 * viewport.zoom),
+        y: -viewport.y / viewport.zoom + window.innerHeight / (2 * viewport.zoom),
+      };
 
-			const distance = Math.sqrt(
-				Math.pow(node.x - viewportCenter.x, 2) +
-					Math.pow(node.y - viewportCenter.y, 2),
-			);
+      const distance = Math.sqrt(
+        Math.pow(node.x - viewportCenter.x, 2) + Math.pow(node.y - viewportCenter.y, 2),
+      );
 
-			const lodNodeType = getNodeType(node.data.type, {
-				distance,
-				isFocused: false,
-				isSelected: selectedNodeId === node.id,
-				totalNodeCount: totalCount,
-				zoom: viewport.zoom,
-			});
+      const lodNodeType = getNodeType(node.data.type, {
+        distance,
+        isFocused: false,
+        isSelected: selectedNodeId === node.id,
+        totalNodeCount: totalCount,
+        zoom: viewport.zoom,
+      });
 
-			return {
-				data: {
-					...node.data,
-					lodLevel,
-				},
-				id: node.id,
-				position: { x: node.x, y: node.y },
-				type: lodNodeType,
-			} as Node<RichNodeData>;
-		});
-	}, [visibleNodes, allNodes.length, viewport, selectedNodeId]);
+      return {
+        data: {
+          ...node.data,
+          lodLevel,
+        },
+        id: node.id,
+        position: { x: node.x, y: node.y },
+        type: lodNodeType,
+      } as Node<RichNodeData>;
+    });
+  }, [visibleNodes, allNodes.length, viewport, selectedNodeId]);
 
-	// For demonstration purposes - showing the optimized processing
-	undefined;
+  // For demonstration purposes - showing the optimized processing
+  undefined;
 
-	// Performance comparison
-	const performanceGain = useMemo(() => {
-		if (stats.totalNodes === 0) {
-			return 0;
-		}
-		// Assume O(n) takes ~0.01ms per node
-		const oldTime = stats.totalNodes * 0.01;
-		const newTime = stats.queryTimeMs + stats.visibleNodes * 0.01;
-		return oldTime / newTime;
-	}, [stats]);
+  // Performance comparison
+  const performanceGain = useMemo(() => {
+    if (stats.totalNodes === 0) {
+      return 0;
+    }
+    // Assume O(n) takes ~0.01ms per node
+    const oldTime = stats.totalNodes * 0.01;
+    const newTime = stats.queryTimeMs + stats.visibleNodes * 0.01;
+    return oldTime / newTime;
+  }, [stats]);
 
-	return (
-		<div className="p-4 bg-gray-100 rounded-lg">
-			<h3 className="font-bold mb-2">Quad-tree Culling Stats</h3>
-			<div className="grid grid-cols-2 gap-2 text-sm">
-				<div>
-					<span className="font-semibold">Total Nodes:</span> {stats.totalNodes}
-				</div>
-				<div>
-					<span className="font-semibold">Visible:</span> {stats.visibleNodes}
-				</div>
-				<div>
-					<span className="font-semibold">Culled:</span> {stats.culledNodes} (
-					{stats.cullingRatio.toFixed(1)}%)
-				</div>
-				<div>
-					<span className="font-semibold">Query Time:</span>{" "}
-					{stats.queryTimeMs.toFixed(3)}ms
-				</div>
-				<div>
-					<span className="font-semibold">Tree Depth:</span> {stats.indexDepth}
-				</div>
-				<div className="col-span-2">
-					<span className="font-semibold">Performance Gain:</span>{" "}
-					{performanceGain.toFixed(1)}x faster
-				</div>
-			</div>
+  return (
+    <div className='rounded-lg bg-gray-100 p-4'>
+      <h3 className='mb-2 font-bold'>Quad-tree Culling Stats</h3>
+      <div className='grid grid-cols-2 gap-2 text-sm'>
+        <div>
+          <span className='font-semibold'>Total Nodes:</span> {stats.totalNodes}
+        </div>
+        <div>
+          <span className='font-semibold'>Visible:</span> {stats.visibleNodes}
+        </div>
+        <div>
+          <span className='font-semibold'>Culled:</span> {stats.culledNodes} (
+          {stats.cullingRatio.toFixed(1)}%)
+        </div>
+        <div>
+          <span className='font-semibold'>Query Time:</span> {stats.queryTimeMs.toFixed(3)}ms
+        </div>
+        <div>
+          <span className='font-semibold'>Tree Depth:</span> {stats.indexDepth}
+        </div>
+        <div className='col-span-2'>
+          <span className='font-semibold'>Performance Gain:</span> {performanceGain.toFixed(1)}x
+          faster
+        </div>
+      </div>
 
-			<div className="mt-4 p-2 bg-green-100 rounded">
-				<p className="text-xs text-green-800">
-					✅ Processing {stats.visibleNodes} nodes instead of {stats.totalNodes}{" "}
-					({((stats.visibleNodes / stats.totalNodes) * 100).toFixed(1)}%)
-				</p>
-			</div>
-		</div>
-	);
+      <div className='mt-4 rounded bg-green-100 p-2'>
+        <p className='text-xs text-green-800'>
+          ✅ Processing {stats.visibleNodes} nodes instead of {stats.totalNodes} (
+          {((stats.visibleNodes / stats.totalNodes) * 100).toFixed(1)}%)
+        </p>
+      </div>
+    </div>
+  );
 }
 
 /**

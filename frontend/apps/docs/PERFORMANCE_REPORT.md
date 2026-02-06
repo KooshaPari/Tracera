@@ -12,14 +12,14 @@ This report validates that the Fumadocs documentation site meets all performance
 
 ### Success Criteria Status
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Bundle Size (gzipped) | <200KB | [TBD] | ⏳ |
-| First Contentful Paint | <1.5s | [TBD] | ⏳ |
-| Time to Interactive | <2.5s | [TBD] | ⏳ |
-| Search Response Time | <100ms | [TBD] | ⏳ |
-| Lighthouse Performance | >95 | [TBD] | ⏳ |
-| Build Time | <60s | [TBD] | ⏳ |
+| Metric                 | Target | Actual | Status |
+| ---------------------- | ------ | ------ | ------ |
+| Bundle Size (gzipped)  | <200KB | [TBD]  | ⏳     |
+| First Contentful Paint | <1.5s  | [TBD]  | ⏳     |
+| Time to Interactive    | <2.5s  | [TBD]  | ⏳     |
+| Search Response Time   | <100ms | [TBD]  | ⏳     |
+| Lighthouse Performance | >95    | [TBD]  | ⏳     |
+| Build Time             | <60s   | [TBD]  | ⏳     |
 
 ---
 
@@ -33,6 +33,7 @@ bun run test:performance
 ```
 
 **Results**:
+
 - Total build time: [TBD]s
 - Incremental build time: [TBD]s
 - Target: <60s
@@ -41,6 +42,7 @@ bun run test:performance
 ### Bundle Size Analysis
 
 **Total Bundle Size**:
+
 - Uncompressed: [TBD] KB
 - Gzipped: [TBD] KB
 - Target: <200KB gzipped
@@ -55,6 +57,7 @@ bun run test:performance
 | Other | [TBD] KB | [TBD]% |
 
 **Largest Chunks**:
+
 1. [TBD]
 2. [TBD]
 3. [TBD]
@@ -71,6 +74,7 @@ bun run lighthouse
 ```
 
 **Core Web Vitals**:
+
 - **FCP** (First Contentful Paint): [TBD]ms (Target: <1500ms)
 - **LCP** (Largest Contentful Paint): [TBD]ms (Target: <2500ms)
 - **TTI** (Time to Interactive): [TBD]ms (Target: <2500ms)
@@ -109,15 +113,15 @@ bun run test:e2e
 
 **Test Suite Results**:
 
-| Suite | Tests | Passed | Failed | Duration |
-|-------|-------|--------|--------|----------|
-| Navigation | [TBD] | [TBD] | [TBD] | [TBD]ms |
-| Search Functionality | [TBD] | [TBD] | [TBD] | [TBD]ms |
-| OpenAPI Documentation | [TBD] | [TBD] | [TBD] | [TBD]ms |
-| Dark Mode | [TBD] | [TBD] | [TBD] | [TBD]ms |
-| Performance | [TBD] | [TBD] | [TBD] | [TBD]ms |
-| Accessibility | [TBD] | [TBD] | [TBD] | [TBD]ms |
-| Mobile Responsiveness | [TBD] | [TBD] | [TBD] | [TBD]ms |
+| Suite                 | Tests | Passed | Failed | Duration |
+| --------------------- | ----- | ------ | ------ | -------- |
+| Navigation            | [TBD] | [TBD]  | [TBD]  | [TBD]ms  |
+| Search Functionality  | [TBD] | [TBD]  | [TBD]  | [TBD]ms  |
+| OpenAPI Documentation | [TBD] | [TBD]  | [TBD]  | [TBD]ms  |
+| Dark Mode             | [TBD] | [TBD]  | [TBD]  | [TBD]ms  |
+| Performance           | [TBD] | [TBD]  | [TBD]  | [TBD]ms  |
+| Accessibility         | [TBD] | [TBD]  | [TBD]  | [TBD]ms  |
+| Mobile Responsiveness | [TBD] | [TBD]  | [TBD]  | [TBD]ms  |
 
 **Total**: [TBD] tests, [TBD] passed, [TBD] failed
 
@@ -142,6 +146,7 @@ bun run test:e2e
 ### Search Response Times
 
 **Test Methodology**:
+
 - Measure time from input to results display
 - Test with various query lengths
 - Test with different result set sizes
@@ -162,18 +167,18 @@ bun run test:e2e
 ### Desktop Browsers
 
 | Browser | Version | Status | Notes |
-|---------|---------|--------|-------|
-| Chrome | Latest | ⏳ | |
-| Firefox | Latest | ⏳ | |
-| Safari | Latest | ⏳ | |
-| Edge | Latest | ⏳ | |
+| ------- | ------- | ------ | ----- |
+| Chrome  | Latest  | ⏳     |       |
+| Firefox | Latest  | ⏳     |       |
+| Safari  | Latest  | ⏳     |       |
+| Edge    | Latest  | ⏳     |       |
 
 ### Mobile Browsers
 
-| Browser | Device | Status | Notes |
-|---------|--------|--------|-------|
-| Mobile Chrome | Pixel 5 | ⏳ | |
-| Mobile Safari | iPhone 12 | ⏳ | |
+| Browser       | Device    | Status | Notes |
+| ------------- | --------- | ------ | ----- |
+| Mobile Chrome | Pixel 5   | ⏳     |       |
+| Mobile Safari | iPhone 12 | ⏳     |       |
 
 ---
 
@@ -181,20 +186,20 @@ bun run test:e2e
 
 ### Previous Setup (Before Fumadocs)
 
-| Metric | Value |
-|--------|-------|
-| Bundle Size | N/A (No previous docs) |
-| FCP | N/A |
-| TTI | N/A |
-| Lighthouse Score | N/A |
+| Metric           | Value                  |
+| ---------------- | ---------------------- |
+| Bundle Size      | N/A (No previous docs) |
+| FCP              | N/A                    |
+| TTI              | N/A                    |
+| Lighthouse Score | N/A                    |
 
 ### Current Setup (With Fumadocs)
 
-| Metric | Value | Improvement |
-|--------|-------|-------------|
-| Bundle Size | [TBD] KB | N/A (Baseline) |
-| FCP | [TBD]ms | N/A (Baseline) |
-| TTI | [TBD]ms | N/A (Baseline) |
+| Metric           | Value     | Improvement    |
+| ---------------- | --------- | -------------- |
+| Bundle Size      | [TBD] KB  | N/A (Baseline) |
+| FCP              | [TBD]ms   | N/A (Baseline) |
+| TTI              | [TBD]ms   | N/A (Baseline) |
 | Lighthouse Score | [TBD]/100 | N/A (Baseline) |
 
 ---
@@ -218,15 +223,19 @@ bun run test:e2e
 ## 8. Screenshots
 
 ### Homepage
+
 ![Homepage](./screenshots/homepage.png)
 
 ### Docs Page
+
 ![Docs](./screenshots/docs-page.png)
 
 ### API Reference
+
 ![API Reference](./screenshots/api-reference.png)
 
 ### Lighthouse Report
+
 ![Lighthouse](./screenshots/lighthouse-report.png)
 
 ---
@@ -274,6 +283,7 @@ bun run test:e2e:ui
 - [ ] All E2E tests passing
 
 **Next Steps**:
+
 1. Execute all test suites
 2. Fill in actual metrics
 3. Address any failures

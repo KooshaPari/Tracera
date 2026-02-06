@@ -6,15 +6,15 @@
  * - Cleaning up test data
  * - Generating reports
  */
-import type { FullConfig } from "@playwright/test";
+import type { FullConfig } from '@playwright/test';
 
 async function globalTeardown(config: FullConfig) {
-	console.log("🧹 Global teardown starting...");
+  console.log('🧹 Global teardown starting...');
 
-	// Example: Stop mock server
-	// await stopMockServer();
+  // Example: Stop mock server
+  // Await stopMockServer();
 
-	console.log("✅ Global teardown complete");
+  console.log('✅ Global teardown complete');
 }
 
 export default globalTeardown;

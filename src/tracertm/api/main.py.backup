@@ -4,8 +4,6 @@ import asyncio
 import inspect
 import logging
 import os
-import re
-import sys
 import warnings
 
 # Suppress websockets legacy ws_handler deprecation (uvicorn/starlette integration).
@@ -21,14 +19,25 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+
+def _path_exists_str(path_str: str) -> bool:
+    """Sync helper for Path(path).exists() (run via asyncio.to_thread)."""
+    return Path(path_str).exists()
+
+
+def _path_name_str(path_str: str) -> str:
+    """Sync helper for Path(path).name (run via asyncio.to_thread)."""
+    return Path(path_str).name
+
+
 if TYPE_CHECKING:
-    from tracertm.preflight import PreflightCheck
+    pass
 
 # Disable optional Pydantic plugins that are not part of this repo (ex: logfire).
 if os.getenv("PYDANTIC_DISABLE_PLUGINS") is None:
     os.environ["PYDANTIC_DISABLE_PLUGINS"] = "logfire-plugin"
 
-from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket
 
 # ClientDisconnected: uvicorn raises when sending on closed WebSocket (wrapped as WebSocketDisconnect by Starlette)
 try:
@@ -39,12 +48,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from sqlalchemy import func, or_, select, update
-from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Load .env file if it exists
 try:
     from dotenv import load_dotenv
+
     # Try to find .env file relative to project root
     env_path = Path(__file__).parent.parent.parent.parent / ".env"
     if env_path.exists():
@@ -62,32 +71,42 @@ except ImportError:
 
 from datetime import UTC
 
-from tracertm.repositories import item_repository
-from tracertm.repositories import link_repository
-from tracertm.repositories import project_repository
-from tracertm.services import cycle_detection_service
-from tracertm.services import impact_analysis_service
-from tracertm.services import performance_service
-from tracertm.services import shortest_path_service
-from tracertm.services import traceability_matrix_service
-from tracertm.services import traceability_service
+# Imported extracted modules to reduce C901 complexity
+from tracertm.api.config.rate_limiting import enforce_rate_limit
+from tracertm.api.config.startup import startup_initialization
+from tracertm.api.handlers.auth import (
+    AuthCallbackPayload,
+    auth_callback_endpoint,
+    auth_logout_endpoint,
+    auth_me_endpoint,
+    device_code_endpoint,
+    device_complete_endpoint,
+    device_token_endpoint,
+    login_endpoint,
+    signup_endpoint,
+)
+from tracertm.api.handlers.websocket import websocket_endpoint as _websocket_endpoint_impl
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.models.integration import IntegrationCredential
 from tracertm.models.item import Item
 from tracertm.models.link import Link
+from tracertm.repositories import item_repository, link_repository, project_repository
 from tracertm.schemas.execution import (
     ExecutionComplete,
     ExecutionCreate,
     ExecutionEnvironmentConfigUpdate,
 )
-from tracertm.services import workos_auth_service
+from tracertm.services import (
+    cycle_detection_service,
+    impact_analysis_service,
+    performance_service,
+    shortest_path_service,
+    traceability_matrix_service,
+    traceability_service,
+    workos_auth_service,
+)
 from tracertm.services.cache_service import RedisUnavailableError
 from tracertm.services.temporal_service import TemporalService
-
-# Imported extracted modules to reduce C901 complexity
-from tracertm.api.config.rate_limiting import enforce_rate_limit
-from tracertm.api.config.startup import startup_initialization
-from tracertm.api.handlers.websocket import websocket_endpoint as _websocket_endpoint_impl
 
 logger = logging.getLogger(__name__)
 
@@ -309,6 +328,7 @@ def get_client_ip(*args: Any, **kwargs: Any) -> str:
 def is_whitelisted(*args: Any, **kwargs: Any) -> bool:
     return False
 
+
 # ---------------------------------------------------------------------------
 
 
@@ -405,266 +425,7 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await _shutdown_event_impl(app)
 
 
-async def _startup_event_impl(app: FastAPI) -> None:
-    """Initialize NATS connection, event bus, and Go backend client on startup."""
-    from tracertm.preflight import build_api_checks, run_preflight
-
-    # Preflight: all services are required. Run checks for everything except the two we poll with retries.
-    required_poll = ("go-backend", "temporal-host")
-    optional_poll: tuple[str, ...] = ()
-    all_checks = build_api_checks()
-    excluded = set(required_poll + optional_poll)
-    checked_now = [c.name for c in all_checks if c.name not in excluded and c.url and c.url.strip()]
-    run_preflight(
-        "python-api",
-        all_checks,
-        strict=True,
-        exclude_names=required_poll + optional_poll,
-    )
-    if checked_now:
-        logger.info(
-            "[python-api] All required checks passed: %s (all of concern). Now polling with retries: %s",
-            ", ".join(checked_now),
-            ", ".join(required_poll),
-        )
-    # Wait & poll required services in parallel; retry indefinitely with progressive backoff (cap 30s).
-    await _poll_services(
-        "python-api",
-        required_names=required_poll,
-        optional_names=optional_poll,
-        interval_initial=2.0,
-        interval_max=30.0,
-    )
-
-    # Ensure problems/processes tables exist (same DB as get_db; idempotent)
-    try:
-        from tracertm.database.ensure_problems_processes import (
-            ensure_problems_processes_tables,
-        )
-
-        await ensure_problems_processes_tables()
-    except Exception as e:
-        logger.warning("ensure_problems_processes_tables: %s", e)
-
-    # Initialize Go Backend Client
-    try:
-        from tracertm.clients.go_client import GoBackendClient
-
-        go_backend_url = os.getenv("GO_BACKEND_URL", "http://localhost:8080")
-        service_token = os.getenv("SERVICE_TOKEN", "")
-
-        go_client = GoBackendClient(go_backend_url, service_token)
-        app.state.go_client = go_client
-        logger.info(f"Go Backend Client initialized at {go_backend_url}")
-    except Exception as e:
-        # Required dependency: fail clearly (CLAUDE.md).
-        raise RuntimeError(f"Go backend unavailable: {e}") from e
-
-    # NATS bridge: on by default (no optionality); set NATS_BRIDGE_ENABLED=false to disable.
-    nats_enabled = os.getenv("NATS_BRIDGE_ENABLED", "true").lower() == "true"
-    if not nats_enabled:
-        return
-
-    try:
-        from tracertm.infrastructure import EventBus, NATSClient
-
-        # Initialize NATS client
-        nats_url = os.getenv("NATS_URL", "nats://localhost:4222")
-        nats_creds = os.getenv("NATS_CREDS_PATH")
-
-        nats_client = NATSClient(url=nats_url, creds_path=nats_creds)
-        await nats_client.connect()
-
-        # Initialize event bus
-        event_bus = EventBus(nats_client)
-
-        # Store in app state for access in routers
-        app.state.nats_client = nats_client
-        app.state.event_bus = event_bus
-
-        # Agent service: DB + Redis cache + NATS (agent.session.created)
-        from tracertm.agent import AgentService
-        from tracertm.agent.session_store import SessionSandboxStoreDB
-        from tracertm.api.deps import get_cache_service
-        try:
-            cache_service = get_cache_service()
-            session_store = SessionSandboxStoreDB(cache_service=cache_service)
-        except Exception:
-            session_store = SessionSandboxStoreDB()
-        app.state.agent_service = AgentService(
-            session_store=session_store,
-            event_bus=event_bus,
-        )
-
-        # Get cache service for invalidation
-        from tracertm.api.deps import get_cache_service
-        cache_service = get_cache_service()
-
-        # Subscribe to Go-originated events
-        async def handle_item_created(event: dict[str, Any]) -> None:
-            """Handle item.created events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-            entity_type = event.get("entity_type")
-
-            logger.info(f"Received item.created event: {entity_id} (type: {entity_type}, project: {project_id})")
-
-            # Invalidate relevant caches for this project
-            if project_id:
-                try:
-                    # Invalidate project-wide caches that depend on items
-                    await cache_service.clear_prefix(f"items:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.invalidate("project", project_id=project_id)
-
-                    logger.debug(f"Invalidated caches for project {project_id} after item creation")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-            # Trigger workflows if needed (e.g., for requirements)
-            if entity_type == "requirement":
-                logger.info(f"Requirement created: {entity_id}, ready for AI analysis workflow")
-                # Future: Queue for AI analysis, traceability checks, etc.
-
-        async def handle_item_updated(event: dict[str, Any]) -> None:
-            """Handle item.updated events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-            entity_type = event.get("entity_type")
-
-            logger.info(f"Received item.updated event: {entity_id} (type: {entity_type}, project: {project_id})")
-
-            # Invalidate relevant caches
-            if project_id:
-                try:
-                    await cache_service.clear_prefix(f"items:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.clear_prefix(f"impact:{project_id}")
-                    await cache_service.invalidate("project", project_id=project_id)
-
-                    logger.debug(f"Invalidated caches for project {project_id} after item update")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_item_deleted(event: dict[str, Any]) -> None:
-            """Handle item.deleted events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-
-            logger.info(f"Received item.deleted event: {entity_id} (project: {project_id})")
-
-            # Invalidate relevant caches
-            if project_id:
-                try:
-                    await cache_service.clear_prefix(f"items:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.clear_prefix(f"links:{project_id}")
-                    await cache_service.invalidate("project", project_id=project_id)
-
-                    logger.debug(f"Invalidated caches for project {project_id} after item deletion")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_link_created(event: dict[str, Any]) -> None:
-            """Handle link.created events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-
-            logger.info(f"Received link.created event: {entity_id} (project: {project_id})")
-
-            # Invalidate relevant caches - links affect graph and traceability
-            if project_id:
-                try:
-                    await cache_service.clear_prefix(f"links:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.clear_prefix(f"ancestors:{project_id}")
-                    await cache_service.clear_prefix(f"descendants:{project_id}")
-                    await cache_service.clear_prefix(f"impact:{project_id}")
-
-                    logger.debug(f"Invalidated caches for project {project_id} after link creation")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_link_deleted(event: dict[str, Any]) -> None:
-            """Handle link.deleted events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-
-            logger.info(f"Received link.deleted event: {entity_id} (project: {project_id})")
-
-            # Invalidate relevant caches
-            if project_id:
-                try:
-                    await cache_service.clear_prefix(f"links:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.clear_prefix(f"ancestors:{project_id}")
-                    await cache_service.clear_prefix(f"descendants:{project_id}")
-                    await cache_service.clear_prefix(f"impact:{project_id}")
-
-                    logger.debug(f"Invalidated caches for project {project_id} after link deletion")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_project_updated(event: dict[str, Any]) -> None:
-            """Handle project.updated events from NATS."""
-            project_id = event.get("project_id")
-
-            logger.info("Received project.updated event: %s", project_id)
-
-            # Invalidate project-level caches
-            if project_id:
-                try:
-                    await cache_service.invalidate_project(project_id)
-                    await cache_service.clear_prefix("projects")  # Invalidate project list
-
-                    logger.debug(f"Invalidated all caches for project {project_id} after project update")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_project_deleted(event: dict[str, Any]) -> None:
-            """Handle project.deleted events from NATS."""
-            project_id = event.get("project_id")
-
-            logger.info(f"Received project.deleted event: {project_id}")
-
-            # Invalidate all project-related caches
-            if project_id:
-                try:
-                    await cache_service.invalidate_project(project_id)
-                    await cache_service.clear_prefix("projects")  # Invalidate project list
-
-                    logger.debug(f"Invalidated all caches for deleted project {project_id}")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        # Subscribe to events from Go backend
-        await event_bus.subscribe(EventBus.EVENT_ITEM_CREATED, handle_item_created)
-        await event_bus.subscribe(EventBus.EVENT_ITEM_UPDATED, handle_item_updated)
-        await event_bus.subscribe(EventBus.EVENT_ITEM_DELETED, handle_item_deleted)
-        await event_bus.subscribe(EventBus.EVENT_LINK_CREATED, handle_link_created)
-        await event_bus.subscribe(EventBus.EVENT_LINK_DELETED, handle_link_deleted)
-        await event_bus.subscribe(EventBus.EVENT_PROJECT_UPDATED, handle_project_updated)
-        await event_bus.subscribe(EventBus.EVENT_PROJECT_DELETED, handle_project_deleted)
-
-        logger.info(f"NATS bridge initialized successfully at {nats_url}")
-
-    except Exception as e:
-        # Required dependency: fail clearly (CLAUDE.md).
-        raise RuntimeError(f"NATS unavailable: {e}") from e
+# _startup_event_impl function now replaced by startup_initialization from tracertm.api.config.startup
 
 
 async def _shutdown_event_impl(app: FastAPI) -> None:
@@ -826,81 +587,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 # NATS Event Bus integration
-def _backoff_delay(attempt: int, initial: float, cap: float, multiplier: float = 1.5) -> float:
-    """Progressive backoff: initial, then initial*multiplier, ... capped at cap."""
-    delay = initial * (multiplier ** (attempt - 1))
-    return min(delay, cap)
-
-
-async def _poll_one_service(
-    service_name: str,
-    check: PreflightCheck,
-    is_required: bool,
-    interval_initial: float,
-    interval_max: float,
-) -> tuple[str, bool]:
-    """Poll one preflight check indefinitely with progressive backoff (cap interval_max). Returns (check.name, ok)."""
-    from tracertm.preflight import run_single_check
-
-    # Initial wait so dependent services can start
-    await asyncio.sleep(interval_initial)
-    attempt = 0
-    while True:
-        attempt += 1
-        result = await asyncio.to_thread(run_single_check, check)
-        if result.ok:
-            logger.info("[%s] %s ok (after attempt %d)", service_name, check.name, attempt)
-            return (check.name, True)
-        delay = _backoff_delay(attempt, interval_initial, interval_max)
-        logger.info(
-            "[%s] %s failed (attempt %d), retrying in %.1fs",
-            service_name,
-            check.name,
-            attempt,
-            delay,
-        )
-        await asyncio.sleep(delay)
-
-
-async def _poll_services(
-    service_name: str,
-    required_names: tuple[str, ...],
-    optional_names: tuple[str, ...],
-    interval_initial: float = 2.0,
-    interval_max: float = 30.0,
-) -> None:
-    """Poll required services in parallel with indefinite retries and progressive backoff (cap interval_max)."""
-    from tracertm.preflight import build_api_checks
-
-    checks = build_api_checks()
-    to_poll_required = [
-        c for c in checks
-        if c.name in required_names and c.url and c.url.strip()
-    ]
-    missing_required = [
-        n for n in required_names
-        if not any(c.name == n and c.url and c.url.strip() for c in checks)
-    ]
-    if missing_required:
-        raise RuntimeError(f"Preflight failed for: {', '.join(missing_required)} (missing url)")
-
-    # Required: poll all in parallel with indefinite retry and progressive backoff
-    if to_poll_required:
-        names = ", ".join(c.name for c in to_poll_required)
-        sys.stderr.write(
-            f"[{service_name}] Polling required (indefinite retry, backoff cap {interval_max}s): {names}...\n"
-        )
-        sys.stderr.flush()
-        results = await asyncio.gather(
-            *[
-                _poll_one_service(service_name, c, True, interval_initial, interval_max)
-                for c in to_poll_required
-            ]
-        )
-        required_failures = [name for name, ok in results if not ok]
-        if required_failures:
-            raise RuntimeError(f"Preflight failed for: {'; '.join(required_failures)}")
-
+# Helper functions (_backoff_delay, _poll_one_service, _poll_services) now in tracertm.api.config.startup
 
 # Add CORS middleware (gateway + frontend only; no wildcards)
 # External clients must use the gateway; allow gateway (4000) + frontend origins
@@ -910,7 +597,7 @@ CORS_ORIGINS = os.getenv(
         "http://localhost:4000,http://127.0.0.1:4000,"
         "http://localhost:5173,http://127.0.0.1:5173,"
         "http://localhost:3000,http://127.0.0.1:3000"
-    )
+    ),
 ).split(",")
 
 app.add_middleware(
@@ -923,11 +610,13 @@ app.add_middleware(
 
 # Include specification routers
 from tracertm.api.middleware import AuthenticationMiddleware, CacheHeadersMiddleware
-from tracertm.api.routers import adrs, auth, blockchain, contracts, execution, features, mcp, notifications, quality
+from tracertm.api.routers import adrs, auth, blockchain, contracts, execution, features, mcp, notifications, oauth, quality
 
 # Try to import Brotli compression (optional dependency)
+BrotliMiddleware = None
 try:
     from brotli_asgi import BrotliMiddleware  # type: ignore[import-untyped,import-not-found]
+
     brotli_available = True
 except ImportError:
     brotli_available = False
@@ -935,7 +624,7 @@ except ImportError:
 
 # Add performance middlewares (order matters - outermost first)
 # 1. Brotli compression for smaller JSON responses (20-30% savings)
-if brotli_available:
+if brotli_available and BrotliMiddleware is not None:
     app.add_middleware(
         BrotliMiddleware,
         quality=4,  # Balance between speed and compression (1-11)
@@ -965,12 +654,16 @@ app.include_router(agent.router, prefix="/api/v1")
 # MCP router (Model Context Protocol over HTTP)
 app.include_router(mcp.router, prefix="/api/v1")
 
+# OAuth and integration management
+app.include_router(oauth.router)
+
 # 3. Authentication middleware (must be innermost to run first on request)
 app.add_middleware(AuthenticationMiddleware)
 
 
 from tracertm.api.deps import get_cache_service, get_db
 from tracertm.api.handlers.items import (
+    ItemListParams,
     build_list_response,
     build_query_conditions,
     execute_item_query,
@@ -978,13 +671,11 @@ from tracertm.api.handlers.items import (
     try_get_from_cache,
 )
 from tracertm.api.handlers.links import (
+    LinkQueryParams,
     build_links_response,
     detect_link_columns,
+    execute_links_query,
     parse_exclude_types,
-    query_links_by_project,
-    query_links_by_source,
-    query_links_by_source_and_target,
-    query_links_by_target,
     try_get_links_from_cache,
 )
 from tracertm.services.cache_service import CacheService
@@ -1036,10 +727,8 @@ async def api_health_check(
         # Preflight: require key Python tables (Alembic migrations applied)
         result = await db.execute(
             text(
-
-                    "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
-                    "WHERE table_schema = 'public' AND table_name = 'test_cases')"
-
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
+                "WHERE table_schema = 'public' AND table_name = 'test_cases')"
             )
         )
         tables_ok = result.scalar() is True
@@ -1130,6 +819,7 @@ async def api_health_check(
 async def get_csrf_token() -> dict[str, Any]:
     """Get CSRF token for client-side requests."""
     import secrets
+
     token = secrets.token_urlsafe(32)
     return {
         "token": token,
@@ -1173,11 +863,7 @@ async def cache_clear(
 @app.get("/api/v1/mcp/config")
 async def mcp_config() -> dict[str, Any]:
     """Return MCP configuration for frontend clients."""
-    base_url = (
-        os.getenv("TRACERTM_MCP_BASE_URL")
-        or os.getenv("MCP_BASE_URL")
-        or os.getenv("FASTMCP_SERVER_BASE_URL")
-    )
+    base_url = os.getenv("TRACERTM_MCP_BASE_URL") or os.getenv("MCP_BASE_URL") or os.getenv("FASTMCP_SERVER_BASE_URL")
     auth_mode = (os.getenv("TRACERTM_MCP_AUTH_MODE") or "oauth").lower().strip()
     return {
         "mcp_base_url": base_url,
@@ -1189,135 +875,14 @@ async def mcp_config() -> dict[str, Any]:
 @app.post("/api/v1/auth/callback")
 async def auth_callback(payload: AuthCallbackPayload):
     """Exchange authorization code for user data and tokens (B2B flow)."""
-    try:
-        return workos_auth_service.authenticate_with_code(payload.code)
-    except Exception as exc:
-        logger.error(f"Auth callback failed: {exc}")
-        raise HTTPException(status_code=400, detail=str(exc))
+    return await auth_callback_endpoint(payload)
 
 
 # WebSocket endpoint for real-time updates
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time updates.
-
-    Supports two auth flows:
-    1. Token in query (?token=) or Authorization header (browser WS cannot set headers).
-    2. Accept first, then validate token from first message { "type": "auth", "token": "..." }.
-    """
-    ws_closed = False
-
-    async def _close_once(code: int | None = None, reason: str = ""):
-        nonlocal ws_closed
-        if ws_closed:
-            return
-        ws_closed = True
-        try:
-            if code is not None:
-                await websocket.close(code=code, reason=reason)
-            else:
-                await websocket.close()
-        except Exception:
-            pass
-
-    # Try token from query or header first (for clients that send it on handshake)
-    token: str | None = None
-    if "token" in websocket.query_params:
-        token = websocket.query_params["token"]
-    elif "authorization" in {k.lower(): v for k, v in websocket.headers.items()}:
-        auth_header = websocket.headers.get("Authorization") or websocket.headers.get("authorization")
-        if auth_header and auth_header.lower().startswith("bearer "):
-            token = auth_header.split(None, 1)[1].strip()
-
-    # Accept connection so we can receive the first message (browser WS cannot set custom headers)
-    await websocket.accept()
-
-    # If no token yet, expect auth in first message (frontend sends { type: "auth", token: "..." })
-    if not token:
-        try:
-            msg = await asyncio.wait_for(websocket.receive_json(), timeout=10.0)
-            if isinstance(msg, dict) and msg.get("type") == "auth":
-                token = (msg.get("token") or "").strip()
-            if not token:
-                await websocket.send_json({"type": "auth_failed", "message": "Missing auth message"})
-                await _close_once(1008, "Authentication required")
-                return
-        except TimeoutError:
-            logger.info("WebSocket auth timeout (no auth message) from %s", websocket.client)
-            await _close_once(1008, "Authentication timeout")
-            return
-        except WebSocketDisconnect as e:
-            # Normal closure (1000/1001) = client closed tab or navigated away before sending auth
-            code = getattr(e, "code", None)
-            if code in (1000, 1001):
-                logger.info("WebSocket client disconnected before auth from %s (code=%s)", websocket.client, code)
-            else:
-                logger.warning("WebSocket disconnected before auth from %s: %s", websocket.client, e)
-            return
-        except Exception as e:
-            logger.warning("WebSocket failed to receive auth message from %s: %s", websocket.client, e)
-            await _close_once(1008, "Invalid auth")
-            return
-
-    # Verify token
-    if not token or not isinstance(token, str):
-        await websocket.send_json({"type": "auth_failed", "message": "No token provided"})
-        await _close_once(1008, "Authentication required")
-        return
-    try:
-        claims = verify_token(token)
-        logger.info("WebSocket authenticated: user=%s from %s", claims.get("sub"), websocket.client)
-    except Exception as exc:
-        logger.warning(
-            "WebSocket rejected: invalid token from %s: %s",
-            websocket.client,
-            exc,
-        )
-        try:
-            await websocket.send_json({"type": "auth_failed", "message": str(exc)})
-        except WebSocketDisconnect:
-            pass
-        await _close_once(1008, f"Invalid token: {exc!s}")
-        return
-
-    # Tell client auth succeeded (frontend expects auth_success)
-    try:
-        await websocket.send_json({"type": "auth_success"})
-    except WebSocketDisconnect:
-        logger.info("WebSocket client disconnected before auth_success from %s", websocket.client)
-        return
-
-    try:
-        # Keep connection alive and handle messages
-        while True:
-            try:
-                data = await websocket.receive_json()
-                # Handle ping/pong for keepalive
-                if data.get("type") == "ping":
-                    await websocket.send_json({"type": "pong"})
-                elif data.get("type") == "subscribe":
-                    channel = data.get("channel", "*")
-                    await websocket.send_json({"type": "subscribed", "channel": channel})
-                elif data.get("type") == "unsubscribe":
-                    channel = data.get("channel", "*")
-                    await websocket.send_json({"type": "unsubscribed", "channel": channel})
-                else:
-                    await websocket.send_json({"type": "echo", "data": data})
-            except WebSocketDisconnect:
-                break
-            except Exception as e:
-                logger.error("WebSocket error: %s", e)
-                await websocket.send_json({"type": "error", "message": str(e)})
-    except WebSocketDisconnect:
-        logger.info("WebSocket client disconnected")
-    except Exception as e:
-        logger.error("WebSocket connection error: %s", e)
-    finally:
-        if not ws_closed:
-            try:
-                await websocket.close()
-            except Exception:
-                pass
+    """WebSocket endpoint for real-time updates - wrapper for extracted implementation."""
+    await _websocket_endpoint_impl(websocket, verify_token)
 
 
 # Items endpoints
@@ -1373,9 +938,15 @@ async def _list_items_impl(
         ensure_project_access(project_id, claims)
 
     # Try to get from cache (only for simple queries without view resolution)
-    cache_key, cached = await try_get_from_cache(
-        cache, project_id, view, status, parent_id, skip, limit
+    params = ItemListParams(
+        project_id=project_id,
+        view=view,
+        status=status,
+        parent_id=parent_id,
+        skip=skip,
+        limit=limit,
     )
+    cache_key, cached = await try_get_from_cache(cache, params)
     if cached is not None:
         return cached
 
@@ -1383,10 +954,10 @@ async def _list_items_impl(
     matches = await resolve_view_matches(view, project_id, db)
 
     # Build query conditions
-    conditions = build_query_conditions(project_id, status, parent_id, matches)
+    conditions = build_query_conditions(params, matches)
 
     # Execute query
-    total_count, items = await execute_item_query(db, conditions, skip, limit)
+    total_count, items = await execute_item_query(db, conditions, params)
 
     # Build response
     result = build_list_response(items, total_count, project_id, limit)
@@ -1467,249 +1038,32 @@ async def list_links(
         if project_id:
             ensure_project_access(project_id, claims)
 
-        # ✅ NEW: Parse exclude_types from comma-separated string
-        exclude_types_list = []
-        if exclude_types:
-            exclude_types_list = [t.strip() for t in exclude_types.split(",") if t.strip()]
+        # Parse exclude_types from comma-separated string
+        exclude_types_list = parse_exclude_types(exclude_types)
 
-        # Try to get from cache (when project_id is specified)
-        cache_key = None
-        if project_id:
-            cache_key = cache._generate_key(
-                "links",
-                project_id=project_id,
-                source_id=source_id or "",
-                target_id=target_id or "",
-                skip=skip,
-                limit=limit,
-                exclude_types=exclude_types or "",  # ✅ NEW: Include in cache key
-            )
-            cached = await cache.get(cache_key)
-            if cached is not None:
-                return cached
+        # Try to get from cache
+        params = LinkQueryParams(
+            project_id=project_id,
+            source_id=source_id,
+            target_id=target_id,
+            exclude_types=exclude_types_list,
+            skip=skip,
+            limit=limit,
+        )
+        cache_key, cached = await try_get_links_from_cache(cache, params)
+        if cached is not None:
+            return cached
 
-        # Use raw SQL to query links. Support both column naming conventions:
-        # - source_item_id/target_item_id/link_type (Alembic 000)
-        # - source_id/target_id/type or source_id/target_id/link_type (Go / 045 or mixed schema)
-        from sqlalchemy import text
+        # Detect actual column names from the database
+        columns = await detect_link_columns(db)
 
-        # Detect actual column names from the database (supports mixed schemas)
-        src_col = "source_id"
-        tgt_col = "target_id"
-        typ_col = "type"
-        meta_col = "metadata"  # Go-style default; many DBs have "metadata" not "link_metadata"
-        try:
-            # Find schema where links table lives (current_schema() may not match)
-            schema_row = await db.execute(
-                text(
+        # Query links based on filter criteria
+        total_count, links_result = await execute_links_query(db, params, columns)
 
-                        "SELECT table_schema FROM information_schema.tables "
-                        "WHERE table_name = 'links' ORDER BY table_schema LIMIT 1"
+        # Build response
+        result = build_links_response(links_result, total_count, project_id)
 
-                ),
-            )
-            schema_name = (schema_row.scalar() or "public")
-            cols_result = await db.execute(
-                text(
-
-                        "SELECT column_name FROM information_schema.columns "
-                        "WHERE table_schema = :schema AND table_name = 'links'"
-
-                ),
-                {"schema": schema_name},
-            )
-            cols = {row[0] for row in cols_result}
-            if not cols:
-                # Table not found in info_schema; use Go-style names
-                src_col, tgt_col, typ_col, meta_col = "source_id", "target_id", "link_type", "metadata"
-            else:
-                if "source_item_id" in cols and "source_id" not in cols:
-                    src_col = "source_item_id"
-                elif "source_id" in cols:
-                    src_col = "source_id"
-                if "target_item_id" in cols and "target_id" not in cols:
-                    tgt_col = "target_item_id"
-                elif "target_id" in cols:
-                    tgt_col = "target_id"
-                if "link_type" in cols and "type" not in cols:
-                    typ_col = "link_type"
-                elif "type" in cols:
-                    typ_col = "type"
-                if "metadata" in cols and "link_metadata" not in cols:
-                    meta_col = "metadata"
-                elif "link_metadata" in cols:
-                    meta_col = "link_metadata"
-                else:
-                    meta_col = "metadata"  # fallback if neither column present
-        except Exception:
-            src_col, tgt_col, typ_col = "source_id", "target_id", "link_type"
-            meta_col = "metadata"
-
-        if project_id:
-            # Get links for a project by joining with items
-            count_sql = f"""
-                SELECT COUNT(DISTINCT l.id)
-                FROM links l
-                INNER JOIN items i1 ON l.{src_col} = i1.id
-                INNER JOIN items i2 ON l.{tgt_col} = i2.id
-                WHERE (i1.project_id = :project_id OR i2.project_id = :project_id)
-                  AND i1.deleted_at IS NULL
-                  AND i2.deleted_at IS NULL
-            """
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                count_sql += f" AND l.{typ_col} NOT IN ({placeholders})"
-
-            count_params = {"project_id": project_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    count_params[f"exclude_type_{i}"] = t
-
-            count_result = await db.execute(text(count_sql), count_params)
-            total_count = count_result.scalar() or 0
-
-            base_sql = f"""
-                SELECT DISTINCT l.id, l.{src_col}, l.{tgt_col}, l.{typ_col}, l.created_at, l.{meta_col}
-                FROM links l
-                INNER JOIN items i1 ON l.{src_col} = i1.id
-                INNER JOIN items i2 ON l.{tgt_col} = i2.id
-                WHERE (i1.project_id = :project_id OR i2.project_id = :project_id)
-                  AND i1.deleted_at IS NULL
-                  AND i2.deleted_at IS NULL
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                base_sql += f" AND l.{typ_col} NOT IN ({placeholders})"
-
-            base_sql += " ORDER BY l.created_at DESC"
-
-            params = {"project_id": project_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    params[f"exclude_type_{i}"] = t
-
-            if limit is not None and limit > 0:
-                base_sql += " LIMIT :limit OFFSET :skip"
-                params.update({"limit": limit, "skip": skip})
-            links_result = await db.execute(text(base_sql), params)
-        elif source_id and target_id:
-            count_sql = f"""
-                SELECT COUNT(*) FROM links
-                WHERE {src_col} = :source_id AND {tgt_col} = :target_id
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                count_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            count_params = {"source_id": source_id, "target_id": target_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    count_params[f"exclude_type_{i}"] = t
-
-            count_result = await db.execute(text(count_sql), count_params)
-            total_count = count_result.scalar() or 0
-
-            base_sql = f"""
-                SELECT id, {src_col}, {tgt_col}, {typ_col}, created_at, {meta_col}
-                FROM links
-                WHERE {src_col} = :source_id AND {tgt_col} = :target_id
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                base_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            base_sql += " ORDER BY created_at DESC"
-
-            params = {"source_id": source_id, "target_id": target_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    params[f"exclude_type_{i}"] = t
-
-            if limit is not None and limit > 0:
-                base_sql += " LIMIT :limit OFFSET :skip"
-                params.update({"limit": limit, "skip": skip})
-            links_result = await db.execute(text(base_sql), params)
-        elif source_id:
-            count_sql = f"SELECT COUNT(*) FROM links WHERE {src_col} = :source_id"  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                count_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            count_params = {"source_id": source_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    count_params[f"exclude_type_{i}"] = t
-
-            count_result = await db.execute(text(count_sql), count_params)
-            total_count = count_result.scalar() or 0
-
-            base_sql = f"""
-                SELECT id, {src_col}, {tgt_col}, {typ_col}, created_at, {meta_col}
-                FROM links
-                WHERE {src_col} = :source_id
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                base_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            base_sql += " ORDER BY created_at DESC"
-
-            params = {"source_id": source_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    params[f"exclude_type_{i}"] = t
-
-            if limit is not None and limit > 0:
-                base_sql += " LIMIT :limit OFFSET :skip"
-                params.update({"limit": limit, "skip": skip})
-            links_result = await db.execute(text(base_sql), params)
-        elif target_id:
-            count_sql = f"SELECT COUNT(*) FROM links WHERE {tgt_col} = :target_id"  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                count_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            count_params = {"target_id": target_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    count_params[f"exclude_type_{i}"] = t
-
-            count_result = await db.execute(text(count_sql), count_params)
-            total_count = count_result.scalar() or 0
-
-            base_sql = f"""
-                SELECT id, {src_col}, {tgt_col}, {typ_col}, created_at, {meta_col}
-                FROM links
-                WHERE {tgt_col} = :target_id
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                base_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            base_sql += " ORDER BY created_at DESC"
-
-            params = {"target_id": target_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    params[f"exclude_type_{i}"] = t
-
-            if limit is not None and limit > 0:
-                base_sql += " LIMIT :limit OFFSET :skip"
-                params.update({"limit": limit, "skip": skip})
-            links_result = await db.execute(text(base_sql), params)
-        else:
-            total_count = 0
-            links_result = None
-
-        links_list = []
-        if links_result:
-            links_list.extend(_link_row_to_dict(row, project_id) for row in links_result)
-
-        result = {
-            "total": total_count,
-            "links": links_list,
-        }
-
+        # Cache the result
         if cache_key:
             await cache.set(cache_key, result, cache_type="links")
 
@@ -1752,37 +1106,43 @@ async def list_links_grouped(
     if not resolved_id:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    item_row = (
-        await db.execute(select(Item).where(Item.id == resolved_id))
-    ).scalar_one_or_none()
+    item_row = (await db.execute(select(Item).where(Item.id == resolved_id))).scalar_one_or_none()
 
     view_upper = view.upper() if view else None
 
     outgoing = (
-        await db.execute(
-            select(Link)
-            .join(Item, Link.target_item_id == Item.id)
-            .where(
-                Link.project_id == project_id,
-                Link.source_item_id == resolved_id,
-                Item.deleted_at.is_(None),
-                *([Item.view == view_upper] if view_upper else []),
+        (
+            await db.execute(
+                select(Link)
+                .join(Item, Link.target_item_id == Item.id)
+                .where(
+                    Link.project_id == project_id,
+                    Link.source_item_id == resolved_id,
+                    Item.deleted_at.is_(None),
+                    *([Item.view == view_upper] if view_upper else []),
+                )
             )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     incoming = (
-        await db.execute(
-            select(Link)
-            .join(Item, Link.source_item_id == Item.id)
-            .where(
-                Link.project_id == project_id,
-                Link.target_item_id == resolved_id,
-                Item.deleted_at.is_(None),
-                *([Item.view == view_upper] if view_upper else []),
+        (
+            await db.execute(
+                select(Link)
+                .join(Item, Link.source_item_id == Item.id)
+                .where(
+                    Link.project_id == project_id,
+                    Link.target_item_id == resolved_id,
+                    Item.deleted_at.is_(None),
+                    *([Item.view == view_upper] if view_upper else []),
+                )
             )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     async def _item_brief(item_id_value: str) -> dict[str, Any]:
         row = await db.execute(select(Item).where(Item.id == item_id_value))
@@ -1946,9 +1306,7 @@ async def get_traceability_gaps(
     ensure_project_access(project_id, claims)
 
     service = traceability_service.TraceabilityService(db)
-    gaps = await _maybe_await(
-        service.find_gaps(project_id=project_id, source_view=from_view, target_view=to_view)
-    )
+    gaps = await _maybe_await(service.find_gaps(project_id=project_id, source_view=from_view, target_view=to_view))
 
     return {
         "project_id": project_id,
@@ -2010,9 +1368,7 @@ async def get_reverse_impact(
     ensure_project_access(project_id, claims)
 
     service = impact_analysis_service.ImpactAnalysisService(db)
-    result = await _maybe_await(
-        service.analyze_reverse_impact(item_id=item_id, max_depth=max_depth)
-    )
+    result = await _maybe_await(service.analyze_reverse_impact(item_id=item_id, max_depth=max_depth))
 
     return {
         "root_item_id": item_id,
@@ -2304,11 +1660,7 @@ async def bulk_update_items_endpoint(
             "preview": True,
         }
 
-    update_query = (
-        update(Item)
-        .where(*conditions)
-        .values(status=payload.new_status, updated_at=func.now())
-    )
+    update_query = update(Item).where(*conditions).values(status=payload.new_status, updated_at=func.now())
     await db.execute(update_query)
     await db.commit()
     await cache.invalidate_project(payload.project_id)
@@ -2349,17 +1701,21 @@ async def summarize_items_endpoint(
     ).all()
 
     samples = (
-        await db.execute(
-            select(Item)
-            .where(
-                Item.project_id == project_id,
-                Item.view == view_upper,
-                Item.deleted_at.is_(None),
+        (
+            await db.execute(
+                select(Item)
+                .where(
+                    Item.project_id == project_id,
+                    Item.view == view_upper,
+                    Item.deleted_at.is_(None),
+                )
+                .order_by(Item.updated_at.desc())
+                .limit(5)
             )
-            .order_by(Item.updated_at.desc())
-            .limit(5)
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     return {
         "project_id": project_id,
@@ -2387,7 +1743,7 @@ async def refresh_access_token_endpoint(payload: dict[str, Any]):
         raise HTTPException(status_code=400, detail="Missing refresh_token")
 
     result = verify_refresh_token(refresh_token)
-    if not isinstance(result, dict[str, Any]):
+    if not isinstance(result, dict):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     return {
         "access_token": result.get("access_token"),
@@ -2406,8 +1762,8 @@ async def auth_me_endpoint(
     from tracertm.repositories.account_repository import AccountRepository
 
     user = None
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
-    account_id = claims.get("account_id") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
+    account_id = claims.get("account_id") if isinstance(claims, dict) else None
 
     if user_id:
         try:
@@ -2416,7 +1772,7 @@ async def auth_me_endpoint(
             user = None
 
     # System admin: set role and cache so ensure_* can bypass without email in JWT
-    if user and isinstance(user, dict[str, Any]):
+    if user and isinstance(user, dict):
         user_email = user.get("email") or user.get("email_address")
         if _is_system_admin_email(user_email):
             user = dict[str, Any](user)
@@ -2509,7 +1865,9 @@ async def signup_endpoint(
     if not account_slug:
         account_slug = re.sub(r"[^a-z0-9-]", "", signup_data.account_name.lower().replace(" ", "-"))
         if not account_slug:
-            account_slug = "account-" + hashlib.md5(signup_data.account_name.encode(), usedforsecurity=False).hexdigest()[:8]
+            account_slug = (
+                "account-" + hashlib.md5(signup_data.account_name.encode(), usedforsecurity=False).hexdigest()[:8]
+            )
 
     # Check if slug exists
     account_repo = AccountRepository(db)
@@ -2581,6 +1939,7 @@ async def device_code_endpoint(
 
     try:
         from tracertm.schemas.auth import DeviceCodeRequest, DeviceCodeResponse
+
         request_data = DeviceCodeRequest(**data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -2606,6 +1965,7 @@ async def device_code_endpoint(
 
     # Store device code with metadata
     import time
+
     _device_code_store[device_code] = {
         "user_code": user_code,
         "client_id": client_id,
@@ -2641,6 +2001,7 @@ async def device_token_endpoint(
 
     try:
         from tracertm.schemas.auth import DeviceTokenRequest, DeviceTokenResponse
+
         request_data = DeviceTokenRequest(**data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -2747,7 +2108,7 @@ async def list_accounts_endpoint(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.schemas.account import AccountResponse
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -2755,9 +2116,7 @@ async def list_accounts_endpoint(
     accounts = await account_repo.list_by_user(user_id)
 
     return {
-        "accounts": [
-            AccountResponse.model_validate(acc) for acc in accounts
-        ],
+        "accounts": [AccountResponse.model_validate(acc) for acc in accounts],
         "total": len(accounts),
     }
 
@@ -2776,7 +2135,7 @@ async def create_account_endpoint(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.schemas.account import AccountCreate, AccountResponse
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -2823,7 +2182,7 @@ async def switch_account_endpoint(
     """Switch active account context."""
     from tracertm.repositories.account_repository import AccountRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -3208,12 +2567,10 @@ async def bootstrap_workflow_schedules(
     for schedule in schedules:
         existing = await repo.get_by_schedule_id(schedule["schedule_id"])
         if existing:
-            skipped.append(
-                {
-                    "schedule_id": schedule["schedule_id"],
-                    "reason": "already tracked",
-                }
-            )
+            skipped.append({
+                "schedule_id": schedule["schedule_id"],
+                "reason": "already tracked",
+            })
             continue
         try:
             await service.create_schedule(
@@ -3238,19 +2595,15 @@ async def bootstrap_workflow_schedules(
                 created_by_user_id=created_by,
                 description=schedule.get("description"),
             )
-            created.append(
-                {
-                    "schedule_id": schedule["schedule_id"],
-                    "workflow_name": schedule["workflow_name"],
-                }
-            )
+            created.append({
+                "schedule_id": schedule["schedule_id"],
+                "workflow_name": schedule["workflow_name"],
+            })
         except Exception as exc:
-            errors.append(
-                {
-                    "schedule_id": schedule["schedule_id"],
-                    "message": str(exc),
-                }
-            )
+            errors.append({
+                "schedule_id": schedule["schedule_id"],
+                "message": str(exc),
+            })
 
     if created:
         await db.commit()
@@ -3357,7 +2710,7 @@ async def list_projects(
     """List all projects (cached for 10 minutes)."""
     from tracertm.repositories.project_repository import ProjectRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if user_id:
         await _ensure_default_account_for_user(db, user_id)
 
@@ -3379,11 +2732,13 @@ async def list_projects(
             {
                 "id": str(project.id),
                 "name": project.name,
-                "description": (
-                    project.metadata.get("description") if isinstance(project.metadata, dict[str, Any]) else None
-                ) if hasattr(project, "metadata") and project.metadata else None,
+                "description": (project.metadata.get("description") if isinstance(project.metadata, dict) else None)
+                if hasattr(project, "metadata") and project.metadata
+                else None,
                 "metadata": project.metadata if hasattr(project, "metadata") else {},
-                "created_at": project.created_at.isoformat() if hasattr(project, "created_at") and project.created_at else None,
+                "created_at": project.created_at.isoformat()
+                if hasattr(project, "created_at") and project.created_at
+                else None,
             }
             for project in projects[skip : skip + limit]
         ],
@@ -3424,7 +2779,7 @@ async def get_project(
     # Get metadata from project_metadata or metadata alias
     project_metadata = getattr(project, "project_metadata", None) or getattr(project, "metadata", None) or {}
     description = getattr(project, "description", None)
-    if not description and isinstance(project_metadata, dict[str, Any]):
+    if not description and isinstance(project_metadata, dict):
         description = project_metadata.get("description")
 
     result = {
@@ -3444,6 +2799,7 @@ async def get_project(
 
 class CreateProjectRequest(BaseModel):
     """Request model for create project endpoint."""
+
     name: str
     description: str | None = None
     metadata: dict[str, Any] | None = None
@@ -3460,7 +2816,7 @@ async def create_project(
     ensure_write_permission(claims, action="create_project")
     from tracertm.repositories.project_repository import ProjectRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     account_id = None
     if user_id:
         account_id = await _ensure_default_account_for_user(db, user_id)
@@ -3492,6 +2848,7 @@ async def create_project(
 
 class UpdateProjectRequest(BaseModel):
     """Request model for update project endpoint."""
+
     name: str | None = None
     description: str | None = None
     metadata: dict[str, Any] | None = None
@@ -3583,11 +2940,14 @@ async def export_project(
 
     if format == "full":
         from tracertm.services.export_service import ExportService
+
         service = ExportService(db)
         json_str = await service.export_to_json(project_id)
         import json
+
         return json.loads(json_str)
     from tracertm.services.export_import_service import ExportImportService
+
     service = ExportImportService(db)
     if format == "json":
         result = await service.export_to_json(project_id)
@@ -3607,6 +2967,7 @@ async def export_project(
 
 class ImportRequest(BaseModel):
     """Request model for import endpoint."""
+
     format: str
     data: str
 
@@ -3654,7 +3015,7 @@ async def import_full_project(
 
     service = ImportService(db)
     try:
-        json_str = json.dumps(body) if isinstance(body, dict[str, Any]) else body
+        json_str = json.dumps(body) if isinstance(body, dict) else body
     except TypeError:
         raise HTTPException(status_code=400, detail="Request body must be JSON object (canonical format)")
     result = await service.import_from_json(json_str)
@@ -3817,9 +3178,7 @@ async def start_execution(
     if not execution or execution.project_id != project_id:
         raise HTTPException(status_code=404, detail="Execution not found")
     if execution.status != "pending":
-        raise HTTPException(
-            status_code=400, detail=f"Execution already {execution.status}"
-        )
+        raise HTTPException(status_code=400, detail=f"Execution already {execution.status}")
     ok = await service.start(execution_id)
     await db.commit()
     return {"started": ok, "execution_id": execution_id}
@@ -3951,14 +3310,15 @@ async def download_artifact(
     if not artifact_obj:
         raise HTTPException(status_code=404, detail="Artifact not found")
 
-    file_path = Path(artifact_obj.file_path)
-    if not file_path.exists():
+    path_str = artifact_obj.file_path
+    if not await asyncio.to_thread(_path_exists_str, path_str):
         raise HTTPException(status_code=404, detail="Artifact file not found")
 
+    filename = await asyncio.to_thread(_path_name_str, path_str)
     return FileResponse(
-        str(file_path),
+        path_str,
         media_type=artifact_obj.mime_type or "application/octet-stream",
-        filename=file_path.name,
+        filename=filename,
     )
 
 
@@ -3985,12 +3345,11 @@ async def codex_review_image(
     if not artifact_id:
         raise HTTPException(status_code=400, detail="artifact_id required")
 
-    interaction = await codex_service.review_image(
-        artifact_id, prompt, project_id, execution_id=execution_id
-    )
+    interaction = await codex_service.review_image(artifact_id, prompt, project_id, execution_id=execution_id)
     await db.commit()
 
     from tracertm.schemas.execution import CodexAgentTaskResponse
+
     return CodexAgentTaskResponse(
         id=interaction.id,
         execution_id=interaction.execution_id,
@@ -4042,6 +3401,7 @@ async def codex_review_video(
     await db.commit()
 
     from tracertm.schemas.execution import CodexAgentTaskResponse
+
     return CodexAgentTaskResponse(
         id=interaction.id,
         execution_id=interaction.execution_id,
@@ -4081,9 +3441,7 @@ async def list_codex_interactions(
     from tracertm.models.codex_agent import CodexAgentInteraction
     from tracertm.schemas.execution import CodexAgentTaskListResponse, CodexAgentTaskResponse
 
-    q = select(CodexAgentInteraction).where(
-        CodexAgentInteraction.project_id == project_id
-    )
+    q = select(CodexAgentInteraction).where(CodexAgentInteraction.project_id == project_id)
     if status:
         q = q.where(CodexAgentInteraction.status == status)
     if task_type:
@@ -4192,6 +3550,7 @@ async def sync_project(
 # Advanced Search endpoint
 class AdvancedSearchRequest(BaseModel):
     """Request model for advanced search endpoint."""
+
     query: str | None = None
     filters: dict[str, Any] | None = None
 
@@ -4598,7 +3957,9 @@ async def get_problem(
         "workaround_effectiveness": problem.workaround_effectiveness,
         "permanent_fix_available": problem.permanent_fix_available,
         "permanent_fix_description": problem.permanent_fix_description,
-        "permanent_fix_implemented_at": problem.permanent_fix_implemented_at.isoformat() if problem.permanent_fix_implemented_at else None,
+        "permanent_fix_implemented_at": problem.permanent_fix_implemented_at.isoformat()
+        if problem.permanent_fix_implemented_at
+        else None,
         "permanent_fix_change_id": problem.permanent_fix_change_id,
         "known_error_id": problem.known_error_id,
         "knowledge_article_id": problem.knowledge_article_id,
@@ -4608,7 +3969,9 @@ async def get_problem(
         "closed_by": problem.closed_by,
         "closed_at": problem.closed_at.isoformat() if problem.closed_at else None,
         "closure_notes": problem.closure_notes,
-        "target_resolution_date": problem.target_resolution_date.isoformat() if problem.target_resolution_date else None,
+        "target_resolution_date": problem.target_resolution_date.isoformat()
+        if problem.target_resolution_date
+        else None,
         "metadata": problem.problem_metadata,
         "version": problem.version,
         "created_at": problem.created_at.isoformat() if problem.created_at else None,
@@ -5246,6 +4609,7 @@ async def get_process_stats(
 
 # Process Execution endpoints
 
+
 @app.post("/api/v1/processes/{process_id}/executions")
 async def create_process_execution(
     request: Request,
@@ -5632,8 +4996,7 @@ async def update_test_case(
     # Convert test steps to dicts
     if "test_steps" in updates and updates["test_steps"] is not None:
         updates["test_steps"] = [
-            step.model_dump() if hasattr(step, "model_dump") else step
-            for step in updates["test_steps"]
+            step.model_dump() if hasattr(step, "model_dump") else step for step in updates["test_steps"]
         ]
 
     if "metadata" in updates:
@@ -6932,7 +6295,9 @@ async def get_test_coverage(
         "project_id": coverage.project_id,
         "test_case_id": coverage.test_case_id,
         "requirement_id": coverage.requirement_id,
-        "coverage_type": coverage.coverage_type.value if hasattr(coverage.coverage_type, "value") else coverage.coverage_type,
+        "coverage_type": coverage.coverage_type.value
+        if hasattr(coverage.coverage_type, "value")
+        else coverage.coverage_type,
         "status": coverage.status.value if hasattr(coverage.status, "value") else coverage.status,
         "coverage_percentage": coverage.coverage_percentage,
         "rationale": coverage.rationale,
@@ -7265,6 +6630,7 @@ async def list_webhooks(
 
 class WebhookCreateRequest(BaseModel):
     """Request schema for creating a webhook."""
+
     project_id: str
     name: str
     description: str | None = None
@@ -7390,6 +6756,7 @@ async def get_webhook(
 
 class WebhookUpdateRequest(BaseModel):
     """Request schema for updating a webhook."""
+
     name: str | None = None
     description: str | None = None
     enabled_events: list[str] | None = None
@@ -7453,6 +6820,7 @@ async def update_webhook(
 
 class WebhookStatusRequest(BaseModel):
     """Request schema for updating webhook status."""
+
     status: str
 
 
@@ -7734,7 +7102,8 @@ async def get_qa_metrics_summary(
             "manual_count": test_case_stats.get("manual_count", 0),
             "automation_percentage": (
                 round(test_case_stats.get("automated_count", 0) / test_case_stats.get("total", 1) * 100, 1)
-                if test_case_stats.get("total", 0) > 0 else 0
+                if test_case_stats.get("total", 0) > 0
+                else 0
             ),
         },
         "test_suites": {
@@ -7856,9 +7225,7 @@ async def get_coverage_metrics(
     for view in coverage_by_view:
         total = coverage_by_view[view]["total"]
         covered = coverage_by_view[view]["covered"]
-        coverage_by_view[view]["percentage"] = (
-            round(covered / total * 100, 1) if total > 0 else 0
-        )
+        coverage_by_view[view]["percentage"] = round(covered / total * 100, 1) if total > 0 else 0
 
     return {
         "project_id": project_id,
@@ -7870,10 +7237,7 @@ async def get_coverage_metrics(
         "by_view": coverage_by_view,
         "by_type": stats.get("by_type", {}),
         "gaps_count": gaps.get("uncovered_count", 0),
-        "high_priority_gaps": len([
-            g for g in gaps.get("gaps", [])
-            if g.get("priority") in ["high", "critical"]
-        ]),
+        "high_priority_gaps": len([g for g in gaps.get("gaps", []) if g.get("priority") in ["high", "critical"]]),
     }
 
 
@@ -7897,12 +7261,7 @@ async def get_defect_density(
         select(
             TestResult.test_case_id,
             func.count().label("total_executions"),
-            func.sum(
-                func.case(
-                    (TestResult.status == "failed", 1),
-                    else_=0
-                )
-            ).label("failure_count"),
+            func.sum(func.case((TestResult.status == "failed", 1), else_=0)).label("failure_count"),
         )
         .join(TestRun, TestRun.id == TestResult.run_id)
         .where(TestRun.project_id == project_id)
@@ -7935,10 +7294,7 @@ async def get_defect_density(
 
     return {
         "project_id": project_id,
-        "overall_defect_density": (
-            round(total_failures / total_executions * 100, 2)
-            if total_executions > 0 else 0
-        ),
+        "overall_defect_density": (round(total_failures / total_executions * 100, 2) if total_executions > 0 else 0),
         "total_executions": total_executions,
         "total_failures": total_failures,
         "test_cases_with_failures": len(test_cases_with_failures),
@@ -8016,11 +7372,7 @@ async def get_flaky_tests(
             "test_case_id": tc_id,
             "inconsistent_days": count,
         }
-        for tc_id, count in sorted(
-            inconsistent_days.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
+        for tc_id, count in sorted(inconsistent_days.items(), key=lambda x: x[1], reverse=True)
     ][:20]
 
     return {
@@ -8175,153 +7527,15 @@ async def oauth_callback(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle OAuth callback and store credentials."""
-    import httpx
+    from tracertm.api.handlers.oauth import oauth_callback as oauth_callback_handler
 
-    from tracertm.repositories.integration_repository import IntegrationCredentialRepository
-    from tracertm.services.encryption_service import EncryptionService
-
-    enforce_rate_limit(request, claims)
-
-    code = data.get("code")
-    state = data.get("state")
-    redirect_uri = data.get("redirect_uri")
-
-    if not code or not state:
-        raise HTTPException(status_code=400, detail="Missing code or state")
-
-    # Parse state (supports legacy format project:provider:state)
-    try:
-        parts = state.split(":")
-        if len(parts) >= STATE_PARTS_EXTENDED:
-            credential_scope = parts[0]
-            project_id = parts[1] or None
-            provider = parts[2]
-        else:
-            credential_scope = "project"
-            project_id = parts[0]
-            provider = parts[1]
-    except (IndexError, ValueError):
-        raise HTTPException(status_code=400, detail="Invalid state format")
-
-    if project_id:
-        ensure_project_access(project_id, claims)
-
-    # Exchange code for token
-    async with httpx.AsyncClient() as client:
-        if provider == "github":
-            token_url = "https://github.com/login/oauth/access_token"
-            response = await client.post(
-                token_url,
-                headers={"Accept": "application/json"},
-                data={
-                    "client_id": os.environ.get("GITHUB_CLIENT_ID", ""),
-                    "client_secret": os.environ.get("GITHUB_CLIENT_SECRET", ""),
-                    "code": code,
-                    "redirect_uri": redirect_uri,
-                },
-            )
-        elif provider == "linear":
-            token_url = "https://api.linear.app/oauth/token"
-            response = await client.post(
-                token_url,
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
-                data={
-                    "client_id": os.environ.get("LINEAR_CLIENT_ID", ""),
-                    "client_secret": os.environ.get("LINEAR_CLIENT_SECRET", ""),
-                    "code": code,
-                    "redirect_uri": redirect_uri,
-                    "grant_type": "authorization_code",
-                },
-            )
-        else:
-            raise HTTPException(status_code=400, detail=f"OAuth not supported for {provider}")
-
-        if response.status_code != HTTP_OK:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Failed to exchange code: {response.text}"
-            )
-
-        token_data = response.json()
-
-    access_token = token_data.get("access_token")
-    if not access_token:
-        raise HTTPException(status_code=400, detail="No access token received")
-
-    # Get user info
-    user_info = {}
-    if provider == "github":
-        from tracertm.clients.github_client import GitHubClient
-        gh_client = GitHubClient(access_token)
-        try:
-            user_info = await gh_client.get_authenticated_user()
-        finally:
-            await gh_client.close()
-    elif provider == "linear":
-        from tracertm.clients.linear_client import LinearClient
-        linear_client = LinearClient(access_token)
-        try:
-            user_info = await linear_client.get_viewer()
-        finally:
-            await linear_client.close()
-
-    # Store encrypted credential
-    encryption_key = os.environ.get("ENCRYPTION_KEY", "")
-    if not encryption_key:
-        raise HTTPException(status_code=500, detail="Encryption key not configured")
-
-    encryption_service = EncryptionService(encryption_key)
-    repo = IntegrationCredentialRepository(db, encryption_service)
-
-    # Check for existing credential
-    sub = claims.get("sub")
-    if credential_scope == "user":
-        if not isinstance(sub, str):
-            raise HTTPException(status_code=401, detail="User ID not found")
-        existing = await repo.get_global_by_user_and_provider(sub, provider)
-    else:
-        if not isinstance(project_id, str) or not isinstance(provider, str):
-            raise HTTPException(status_code=400, detail="Project and provider required")
-        existing = await repo.get_by_project_and_provider(project_id, provider)
-    if existing:
-        # Update existing
-        await repo.update(
-            existing.id,
-            token=access_token,
-            refresh_token=token_data.get("refresh_token"),
-            expires_at=None,  # GitHub tokens don't expire
-            scopes=token_data.get("scope", "").split(",") if provider == "linear" else token_data.get("scope", "").split(" "),
-            provider_user_id=str(user_info.get("id", "")),
-            provider_metadata={"user": user_info},
-        )
-        credential_id = existing.id
-    else:
-        # Create new
-        created_by = claims.get("sub")
-        credential = await repo.create(
-            project_id=project_id if credential_scope != "user" else None,
-            provider=provider,
-            credential_type="oauth",
-            token=access_token,
-            refresh_token=token_data.get("refresh_token"),
-            scopes=token_data.get("scope", "").split(",") if provider == "linear" else token_data.get("scope", "").split(" "),
-            provider_user_id=str(user_info.get("id", "")),
-            provider_metadata={"user": user_info},
-            created_by_user_id=created_by if isinstance(created_by, str) else None,
-        )
-        credential_id = credential.id
-
-    return {
-        "success": True,
-        "credential_id": credential_id,
-        "provider": provider,
-        "user": {
-            "id": user_info.get("id"),
-            "login": user_info.get("login") or user_info.get("email"),
-            "name": user_info.get("name"),
-            "avatar_url": user_info.get("avatar_url") or user_info.get("avatarUrl"),
-        },
-    }
+    return await oauth_callback_handler(
+        request=request,
+        data=data,
+        claims=claims,
+        db=db,
+        ensure_project_access_fn=ensure_project_access,
+    )
 
 
 @app.get("/api/v1/integrations/credentials")
@@ -8413,6 +7627,7 @@ async def validate_credential(
     try:
         if credential.provider == "github":
             from tracertm.clients.github_client import GitHubClient
+
             client = GitHubClient(token)
             try:
                 user_info = await client.get_authenticated_user()
@@ -8421,6 +7636,7 @@ async def validate_credential(
                 await client.close()
         elif credential.provider == "linear":
             from tracertm.clients.linear_client import LinearClient
+
             client = LinearClient(token)
             try:
                 user_info = await client.get_viewer()
@@ -8493,9 +7709,7 @@ async def list_mappings(
     ensure_project_access(project_id, claims)
 
     repo = IntegrationMappingRepository(db)
-    mappings, _total = await repo.list_by_project(
-        project_id, external_system=provider
-    )
+    mappings, _total = await repo.list_by_project(project_id, external_system=provider)
 
     return {
         "mappings": [
@@ -8504,12 +7718,8 @@ async def list_mappings(
                 "credential_id": m.integration_credential_id,
                 "provider": m.external_system,
                 "direction": m.direction,
-                "local_item_id": m.project_id
-                if m.tracertm_item_type == "project_root"
-                else m.tracertm_item_id,
-                "local_item_type": "project"
-                if m.tracertm_item_type == "project_root"
-                else m.tracertm_item_type,
+                "local_item_id": m.project_id if m.tracertm_item_type == "project_root" else m.tracertm_item_id,
+                "local_item_type": "project" if m.tracertm_item_type == "project_root" else m.tracertm_item_type,
                 "external_id": m.external_id,
                 "external_type": m.external_system,
                 "external_url": m.external_url,
@@ -8763,9 +7973,7 @@ async def get_sync_status(
     encryption_key = os.environ.get("ENCRYPTION_KEY", "")
     encryption_service = EncryptionService(encryption_key) if encryption_key else None
     cred_repo = IntegrationCredentialRepository(db, encryption_service)
-    credentials = await cred_repo.get_by_project(
-        project_id, include_global_user_id=claims.get("sub")
-    )
+    credentials = await cred_repo.get_by_project(project_id, include_global_user_id=claims.get("sub"))
 
     # Get queue stats
     queue_result = await db.execute(
@@ -8901,9 +8109,7 @@ async def get_sync_queue(
     ensure_project_access(project_id, claims)
 
     queue_repo = IntegrationSyncQueueRepository(db)
-    items, _total = await queue_repo.list_by_project(
-        project_id, status=status, limit=limit
-    )
+    items, _total = await queue_repo.list_by_project(project_id, status=status, limit=limit)
 
     priority_map = {"low": 0, "normal": 1, "high": 2, "critical": 3}
     mapping_lookup = {}
@@ -8913,9 +8119,7 @@ async def get_sync_queue(
         from tracertm.models.integration import IntegrationMapping
 
         mapping_ids = list({item.mapping_id for item in items})
-        result = await db.execute(
-            select(IntegrationMapping).where(IntegrationMapping.id.in_(mapping_ids))
-        )
+        result = await db.execute(select(IntegrationMapping).where(IntegrationMapping.id.in_(mapping_ids)))
         mapping_lookup = {m.id: m for m in result.scalars().all()}
 
     return {
@@ -8979,9 +8183,7 @@ async def list_conflicts(
             {
                 "id": c.id,
                 "mapping_id": c.mapping_id,
-                "provider": mappings.get(c.mapping_id).external_system
-                if mappings.get(c.mapping_id)
-                else "unknown",
+                "provider": mappings.get(c.mapping_id).external_system if mappings.get(c.mapping_id) else "unknown",
                 "conflict_type": "field_mismatch",
                 "field_name": c.field,
                 "local_value": c.tracertm_value,
@@ -9044,8 +8246,10 @@ async def resolve_conflict(
     if resolution == "skip":
         await conflict_repo.ignore(conflict_id)
     else:
-        resolved_value = merged_value if resolution == "merge" else (
-            conflict.tracertm_value if resolution == "local" else conflict.external_value
+        resolved_value = (
+            merged_value
+            if resolution == "merge"
+            else (conflict.tracertm_value if resolution == "local" else conflict.external_value)
         )
         await conflict_repo.resolve(
             conflict_id,
@@ -9088,7 +8292,7 @@ async def list_github_repos(
 
     enforce_rate_limit(request, claims)
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if account_id and user_id:
         # Verify user has access to account
         account_repo = AccountRepository(db)
@@ -9136,10 +8340,10 @@ async def list_github_repos(
                     page=page,
                 )
                 # Handle both formats: { repositories: [...] } and list
-                if isinstance(repos_result, dict[str, Any]):
+                if isinstance(repos_result, dict):
                     repos = repos_result.get("repositories", [])
                 else:
-                    repos = repos_result if isinstance(repos_result, list[Any]) else []
+                    repos = repos_result if isinstance(repos_result, list) else []
 
         # Fallback to OAuth credential
         elif credential_id:
@@ -9218,7 +8422,7 @@ async def create_github_repo(
 
     enforce_rate_limit(request, claims)
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -9359,6 +8563,7 @@ async def list_github_issues(
 
 # ==================== GITHUB APP INSTALLATION ====================
 
+
 @app.get("/api/v1/integrations/github/app/install-url")
 async def get_github_app_install_url(
     account_id: str,
@@ -9369,7 +8574,7 @@ async def get_github_app_install_url(
     from tracertm.config.github_app import get_github_app_config
     from tracertm.repositories.account_repository import AccountRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -9385,6 +8590,7 @@ async def get_github_app_install_url(
 
     # Generate state token with account_id
     import secrets
+
     state = secrets.token_urlsafe(32)
     state_data = f"{account_id}:{state}"
 
@@ -9397,82 +8603,14 @@ async def get_github_app_install_url(
 
 
 @app.post("/api/v1/integrations/github/app/webhook")
-async def github_app_webhook(
+async def github_app_webhook_endpoint(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """Handle GitHub App webhook events."""
-    from tracertm.config.github_app import get_github_app_config
-    from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
+    from tracertm.api.handlers.webhooks import github_app_webhook
 
-    config = get_github_app_config()
-
-    # Verify webhook signature
-    signature = request.headers.get("X-Hub-Signature-256", "")
-    body = await request.body()
-
-    if not config.verify_webhook_signature(body, signature):
-        raise HTTPException(status_code=401, detail="Invalid webhook signature")
-
-    event_type = request.headers.get("X-GitHub-Event", "")
-    payload = await request.json()
-
-    installation_repo = GitHubAppInstallationRepository(db)
-
-    if event_type == "installation":
-        action = payload.get("action")
-        installation_data = payload.get("installation", {})
-        installation_id = installation_data.get("id")
-
-        if action == "created":
-            # Extract account_id from installation metadata or setup action (state during installation)
-            _account_id = payload.get("account_id")
-            # For now, we'll need to handle this differently - account_id should be in installation metadata
-            # or we need to store it during the installation flow
-
-            # Get account from installation account login
-            account_login = installation_data.get("account", {}).get("login", "")
-            target_type = installation_data.get("target_type", "Organization")
-            target_id = installation_data.get("account", {}).get("id")
-
-            # For now, create installation without account_id - will need to link later
-            # In production, account_id should be passed via state parameter during installation
-            # For MVP, we'll allow creating without account_id and link via API
-
-            installation = await installation_repo.create(
-                account_id="",  # Will be set via separate endpoint
-                installation_id=installation_id,
-                account_login=account_login,
-                target_type=target_type,
-                target_id=target_id,
-                permissions=installation_data.get("permissions", {}),
-                repository_selection=installation_data.get("repository_selection", "all"),
-            )
-
-            await db.commit()
-
-            return {"status": "created", "installation_id": installation.id}
-
-        if action == "deleted":
-            existing = await installation_repo.get_by_github_installation_id(installation_id)
-            if existing:
-                await installation_repo.delete(existing.id)
-                await db.commit()
-
-            return {"status": "deleted"}
-
-        if action in ["suspend", "unsuspend"]:
-            existing = await installation_repo.get_by_github_installation_id(installation_id)
-            if existing:
-                await installation_repo.update(
-                    existing.id,
-                    suspended_at=(action == "suspend"),
-                )
-                await db.commit()
-
-            return {"status": action}
-
-    return {"status": "ok"}
+    return await github_app_webhook(request, db)
 
 
 @app.get("/api/v1/integrations/github/app/installations")
@@ -9485,7 +8623,7 @@ async def list_github_app_installations(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -9527,7 +8665,7 @@ async def link_github_app_installation(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     account_id = data.get("account_id")
 
     if not user_id or not account_id:
@@ -9568,7 +8706,7 @@ async def delete_github_app_installation(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -9996,11 +9134,7 @@ async def receive_github_webhook(
     signature_header = request.headers.get("X-Hub-Signature-256", "")
 
     if webhook.secret:
-        expected_signature = "sha256=" + hmac.new(
-            webhook.secret.encode(),
-            body,
-            hashlib.sha256
-        ).hexdigest()
+        expected_signature = "sha256=" + hmac.new(webhook.secret.encode(), body, hashlib.sha256).hexdigest()
 
         if not hmac.compare_digest(signature_header, expected_signature):
             raise HTTPException(status_code=401, detail="Invalid signature")
@@ -10062,11 +9196,7 @@ async def receive_linear_webhook(
     signature_header = request.headers.get("Linear-Signature", "")
 
     if webhook.secret:
-        expected_signature = hmac.new(
-            webhook.secret.encode(),
-            body,
-            hashlib.sha256
-        ).hexdigest()
+        expected_signature = hmac.new(webhook.secret.encode(), body, hashlib.sha256).hexdigest()
 
         if not hmac.compare_digest(signature_header, expected_signature):
             raise HTTPException(status_code=401, detail="Invalid signature")
@@ -10113,306 +9243,19 @@ async def get_integration_stats(
     db: AsyncSession = Depends(get_db),
 ):
     """Get integration statistics for a project."""
-    from sqlalchemy import func, select
+    from tracertm.api.handlers.integrations import get_integration_stats_handler
 
-    from tracertm.models.integration import (
-        IntegrationConflict,
-        IntegrationMapping,
-        IntegrationSyncLog,
-        IntegrationSyncQueue,
-    )
-    from tracertm.repositories.integration_repository import (
-        IntegrationCredentialRepository,
-    )
-    from tracertm.services.encryption_service import EncryptionService
-
-    enforce_rate_limit(request, claims)
-    ensure_project_access(project_id, claims)
-
-    encryption_key = os.environ.get("ENCRYPTION_KEY", "")
-    encryption_service = EncryptionService(encryption_key) if encryption_key else None
-    cred_repo = IntegrationCredentialRepository(db, encryption_service)
-
-    credentials = await cred_repo.get_by_project(
-        project_id, include_global_user_id=claims.get("sub")
-    )
-
-    # Provider stats
-    providers = [
-        {
-            "provider": c.provider,
-            "status": c.status,
-            "credential_type": c.credential_type,
-        }
-        for c in credentials
-    ]
-
-    # Mapping stats
-    mapping_result = await db.execute(
-        select(
-            IntegrationMapping.external_system,
-            IntegrationMapping.status,
-            func.count().label("count"),
-        )
-        .where(IntegrationMapping.project_id == project_id)
-        .group_by(IntegrationMapping.external_system, IntegrationMapping.status)
-    )
-
-    mapping_stats = {"total": 0, "active": 0, "by_provider": {}}
-    for row in mapping_result.all():
-        cnt: Any = row[2]
-        status_val: Any = row[1]
-        ext: Any = row[0]
-        mapping_stats["total"] += int(cnt)
-        if str(status_val) == "active":
-            mapping_stats["active"] += int(cnt)
-        if str(ext) not in mapping_stats["by_provider"]:
-            mapping_stats["by_provider"][str(ext)] = 0
-        mapping_stats["by_provider"][str(ext)] += int(cnt)
-
-    # Sync stats
-    queue_pending = await db.scalar(
-        select(func.count())
-        .select_from(IntegrationSyncQueue)
-        .join(IntegrationMapping)
-        .where(
-            IntegrationMapping.project_id == project_id,
-            IntegrationSyncQueue.status == "pending",
-        )
-    )
-
-    from datetime import UTC, datetime, timedelta
-    week_ago = datetime.now(UTC) - timedelta(days=7)
-
-    sync_logs_result = await db.execute(
-        select(
-            IntegrationSyncLog.success,
-            func.count().label("count"),
-        )
-        .join(IntegrationMapping)
-        .where(
-            IntegrationMapping.project_id == project_id,
-            IntegrationSyncLog.created_at >= week_ago,
-        )
-        .group_by(IntegrationSyncLog.success)
-    )
-
-    sync_counts = {"total": 0, "success": 0}
-    for row in sync_logs_result.all():
-        cnt: Any = row[1]
-        success_val: Any = row[0]
-        sync_counts["total"] += int(cnt)
-        if bool(success_val):
-            sync_counts["success"] += int(cnt)
-
-    success_rate = (
-        round(sync_counts["success"] / sync_counts["total"] * 100, 1)
-        if sync_counts["total"] > 0 else 0
-    )
-
-    # Conflict stats
-    conflict_result = await db.execute(
-        select(
-            IntegrationConflict.resolution_status,
-            func.count().label("count"),
-        )
-        .join(IntegrationMapping)
-        .where(IntegrationMapping.project_id == project_id)
-        .group_by(IntegrationConflict.resolution_status)
-    )
-
-    conflict_stats = {"pending": 0, "resolved": 0}
-    for row in conflict_result.all():
-        cnt: Any = row[1]
-        status_val: Any = row[0]
-        if str(status_val) == "pending":
-            conflict_stats["pending"] = int(cnt)
-        elif str(status_val) == "resolved":
-            conflict_stats["resolved"] = int(cnt)
-
-    return {
-        "project_id": project_id,
-        "providers": providers,
-        "mappings": mapping_stats,
-        "sync": {
-            "queue_pending": queue_pending or 0,
-            "recent_syncs": sync_counts["total"],
-            "success_rate": success_rate,
-        },
-        "conflicts": conflict_stats,
-    }
+    return await get_integration_stats_handler(request, project_id, claims, db)
 
 
 # ==================== AI CHAT ====================
 
+from tracertm.api.handlers.chat import simple_chat as _simple_chat_impl
+from tracertm.api.handlers.chat import stream_chat as _stream_chat_impl
 
-from fastapi.responses import StreamingResponse
-
-from tracertm.schemas.chat import ChatRequest
-
-
-@app.post("/api/v1/chat/stream")
-async def stream_chat(
-    request: Request,
-    request_body: ChatRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
-    """Stream AI chat completion using Server-Sent Events.
-
-    This endpoint streams responses from AI providers (Claude, Codex, Gemini)
-    using SSE format for real-time message delivery. Supports tool use for
-    filesystem operations, CLI commands, and TraceRTM API operations.
-    When session_id is provided, tools run in a per-session sandbox (persisted with chat).
-    """
-    from tracertm.agent import get_agent_service
-    from tracertm.services.ai_service import AIServiceError, get_ai_service
-    from tracertm.services.ai_tools import set_allowed_paths
-
-    enforce_rate_limit(request, claims)
-
-    messages = [
-        {"role": msg.role.value, "content": msg.content}
-        for msg in request_body.messages
-    ]
-
-    # Per-session sandbox: use AgentService when session_id is set
-    use_agent_sandbox = bool(request_body.session_id and request_body.session_id.strip())
-
-    def _agent_service() -> Any:
-        """Use app-scoped agent service (DB + NATS) when available, else global singleton."""
-        if request and hasattr(request.app.state, "agent_service"):
-            return request.app.state.agent_service
-        return get_agent_service()
-
-    async def generate() -> AsyncGenerator[str, None]:
-        """Generate SSE stream with tool use support."""
-        try:
-            if use_agent_sandbox:
-                from tracertm.agent.agent_service import StreamChatOptions
-                from tracertm.agent.types import SandboxConfig
-                sandbox_config = None
-                if request_body.context and request_body.context.project_id:
-                    sandbox_config = SandboxConfig(project_id=request_body.context.project_id)
-                agent_service = _agent_service()
-                opts = StreamChatOptions(
-                    provider=request_body.provider.value,
-                    model=request_body.model,
-                    system_prompt=request_body.system_prompt,
-                    max_tokens=request_body.max_tokens,
-                    enable_tools=True,
-                )
-                async for chunk in agent_service.stream_chat_with_sandbox(
-                    messages=messages,
-                    session_id=request_body.session_id,
-                    options=opts,
-                    db_session=db,
-                    sandbox_config=sandbox_config,
-                ):
-                    yield chunk
-            else:
-                ai_service = get_ai_service()
-                working_directory = None
-                if request_body.context and request_body.context.project_id:
-                    working_directory = str(Path.cwd())
-                if working_directory:
-                    set_allowed_paths([working_directory])
-                async for chunk in ai_service.stream_chat(
-                    messages=messages,
-                    provider=request_body.provider.value,
-                    model=request_body.model,
-                    system_prompt=request_body.system_prompt,
-                    max_tokens=request_body.max_tokens,
-                    enable_tools=True,
-                    working_directory=working_directory,
-                    db_session=db,
-                ):
-                    yield chunk
-
-        except AIServiceError as e:
-            import json
-            error_data = json.dumps({"type": "error", "data": {"error": str(e)}})
-            yield f"data: {error_data}\n\n"
-        except Exception as e:
-            import json
-            logger.error(f"Chat streaming error: {e}", exc_info=True)
-            error_data = json.dumps({"type": "error", "data": {"error": "An unexpected error occurred"}})
-            yield f"data: {error_data}\n\n"
-
-    return StreamingResponse(
-        generate(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",  # Disable nginx buffering
-        },
-    )
-
-
-@app.post("/api/v1/chat")
-async def simple_chat(
-    request: Request,
-    request_body: ChatRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
-    """Non-streaming chat completion (for testing/simple use cases)."""
-    from tracertm.agent import get_agent_service
-    from tracertm.services.ai_service import AIServiceError, get_ai_service
-
-    enforce_rate_limit(request, claims)
-
-    messages = [
-        {"role": msg.role.value, "content": msg.content}
-        for msg in request_body.messages
-    ]
-    use_agent_sandbox = bool(request_body.session_id and request_body.session_id.strip())
-
-    try:
-        if use_agent_sandbox:
-            from tracertm.agent.agent_service import StreamChatOptions
-            from tracertm.agent.types import SandboxConfig
-            sandbox_config = None
-            if request_body.context and request_body.context.project_id:
-                sandbox_config = SandboxConfig(project_id=request_body.context.project_id)
-            agent_service = getattr(request.app.state, "agent_service", None) if request else None
-            if agent_service is None:
-                agent_service = get_agent_service()
-            opts = StreamChatOptions(
-                provider=request_body.provider.value,
-                model=request_body.model,
-                system_prompt=request_body.system_prompt,
-                max_tokens=request_body.max_tokens,
-            )
-            response = await agent_service.simple_chat_with_sandbox(
-                messages=messages,
-                session_id=request_body.session_id,
-                options=opts,
-                db_session=db,
-                sandbox_config=sandbox_config,
-            )
-        else:
-            ai_service = get_ai_service()
-            response = await ai_service.simple_chat(
-                messages=messages,
-                provider=request_body.provider.value,
-                model=request_body.model,
-                system_prompt=request_body.system_prompt,
-                max_tokens=request_body.max_tokens,
-            )
-
-        return {
-            "content": response,
-            "model": request_body.model,
-            "provider": request_body.provider.value,
-        }
-
-    except AIServiceError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except Exception as e:
-        logger.error(f"Chat error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+# Register chat endpoints
+app.post("/api/v1/chat/stream")(_stream_chat_impl)
+app.post("/api/v1/chat")(_simple_chat_impl)
 
 
 if __name__ == "__main__":

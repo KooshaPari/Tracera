@@ -17,7 +17,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 from .common import _call_tool, _maybe_select_project, _wrap, link_tools
 
@@ -43,7 +43,8 @@ async def link_manage(
 
     if action == "create":
         result = await _call_tool(
-            link_tools, "create_link",
+            link_tools,
+            "create_link",
             source_id=payload.get("source_id"),
             target_id=payload.get("target_id"),
             link_type=payload.get("link_type"),
@@ -53,7 +54,8 @@ async def link_manage(
         return _wrap(result, ctx, action)
     if action == "list":
         result = await _call_tool(
-            link_tools, "list_links",
+            link_tools,
+            "list_links",
             item_id=payload.get("item_id"),
             link_type=payload.get("link_type"),
             limit=payload.get("limit", 50),
@@ -62,7 +64,8 @@ async def link_manage(
         return _wrap(result, ctx, action)
     if action == "show":
         result = await _call_tool(
-            link_tools, "show_links",
+            link_tools,
+            "show_links",
             item_id=payload.get("item_id"),
             view=payload.get("view"),
             ctx=ctx,

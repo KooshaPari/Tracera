@@ -50,6 +50,7 @@ bun install
 ```
 
 This installs:
+
 - `figma-api` - Figma REST API client
 - `yaml` - YAML parser for metadata
 - `glob` - File pattern matching
@@ -66,6 +67,7 @@ bun run figma:pull
 ```
 
 This creates:
+
 - `.trace/.meta/designs.yaml` - Sync metadata with tokens
 - Design tokens imported from your Figma file
 
@@ -97,6 +99,7 @@ bun run figma:export
 ```
 
 This generates:
+
 - `.figma-output/manifest.json` - Plugin manifest
 - `.figma-output/code.js` - Plugin logic
 - `.figma-output/ui.html` - Plugin UI
@@ -281,6 +284,7 @@ Now use `Cmd+Shift+P` → `Tasks: Run Task` → `Figma: Sync`
 ### "Access token invalid"
 
 Your token may have expired. Generate a new one:
+
 1. Go to Figma Account Settings
 2. Delete old token
 3. Generate new token
@@ -289,6 +293,7 @@ Your token may have expired. Generate a new one:
 ### "File not found"
 
 Check your file key is correct:
+
 1. Open file in Figma
 2. Copy URL
 3. Extract key: `https://www.figma.com/file/KEY/...`
@@ -327,6 +332,7 @@ components: {
 ## Support
 
 For issues or questions:
+
 1. Check [README.md](./README.md) for detailed docs
 2. Review [types.ts](./types.ts) for API types
 3. Examine [config.ts](./config.ts) for configuration options

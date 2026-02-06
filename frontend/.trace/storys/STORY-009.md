@@ -3,8 +3,8 @@ created: '2026-01-31T01:20:31.228516'
 external_id: STORY-009
 id: 315ac60d-a765-4fc7-ab23-8ac4946fb58e
 links:
-- target: EPIC-002
-  type: parent_of
+  - target: EPIC-002
+    type: parent_of
 owner: null
 parent: EPIC-002
 priority: high
@@ -19,4 +19,3 @@ version: 1
 ## Description
 
 Build login page with email/password form, validation, error handling, 'Remember me' checkbox, and social login buttons. Include loading states and success redirect.
-

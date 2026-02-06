@@ -21,6 +21,7 @@ from tracertm.models.specification import ADR, Contract, Feature, Scenario
 @dataclass
 class ADROptions:
     """Optional parameters for ADR creation."""
+
     status: str = "proposed"
     decision_drivers: list[str] | None = None
     considered_options: list[dict] | None = None
@@ -34,6 +35,7 @@ class ADROptions:
 @dataclass
 class ADRContent:
     """Core content for ADR creation."""
+
     title: str
     context: str
     decision: str
@@ -43,6 +45,7 @@ class ADRContent:
 @dataclass
 class ContractOptions:
     """Optional parameters for Contract creation."""
+
     preconditions: list[dict] | None = None
     postconditions: list[dict] | None = None
     invariants: list[dict] | None = None
@@ -56,6 +59,7 @@ class ContractOptions:
 @dataclass
 class ContractContent:
     """Core content for Contract creation."""
+
     item_id: str
     title: str
     contract_type: str
@@ -64,6 +68,7 @@ class ContractContent:
 @dataclass
 class FeatureOptions:
     """Optional parameters for Feature creation."""
+
     description: str | None = None
     as_a: str | None = None
     i_want: str | None = None
@@ -78,12 +83,14 @@ class FeatureOptions:
 @dataclass
 class FeatureContent:
     """Core content for Feature creation."""
+
     name: str
 
 
 @dataclass
 class ScenarioOptions:
     """Optional parameters for Scenario creation."""
+
     description: str | None = None
     is_outline: bool = False
     background: list[dict] | None = None
@@ -101,6 +108,7 @@ class ScenarioOptions:
 @dataclass
 class ScenarioContent:
     """Core content for Scenario creation."""
+
     title: str
     gherkin_text: str
 
@@ -108,6 +116,7 @@ class ScenarioContent:
 @dataclass
 class StepDefinitionOptions:
     """Optional parameters for StepDefinition creation."""
+
     language: str = "python"
     description: str | None = None
     parameters: list[dict] | None = None
@@ -117,6 +126,7 @@ class StepDefinitionOptions:
 @dataclass
 class StepDefinitionContent:
     """Core content for StepDefinition creation."""
+
     step_pattern: str
     step_type: str
     implementation_code: str

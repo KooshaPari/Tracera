@@ -6,6 +6,9 @@ set -euo pipefail
 
 VAULT_ADDR="${VAULT_ADDR:-http://127.0.0.1:8200}"
 VAULT_TOKEN_FILE=".vault-root-token"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+
+bash "$ROOT/scripts/shell/guard-port.sh" "Vault" "8200" "vault"
 
 # Check if vault is already running; hold process so process-compose shows "running" not "completed"
 if curl -sf "$VAULT_ADDR/v1/sys/health" >/dev/null 2>&1; then

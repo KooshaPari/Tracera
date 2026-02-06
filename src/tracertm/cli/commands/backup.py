@@ -8,12 +8,10 @@ import gzip
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import typer
 from sqlalchemy import text
-from sqlalchemy.orm import Session
-
-from typing import Any
 from tracertm.config.manager import ConfigManager
 from tracertm.storage import LocalStorageManager
 from tracertm.cli.ui import (
@@ -25,7 +23,6 @@ from tracertm.cli.ui import (
     spinner,
     progress_bar,
     format_filesize,
-    format_datetime,
 )
 
 app = typer.Typer(help="Backup and restore commands")
@@ -193,11 +190,11 @@ def restore_project(
 
         with spinner("Validating backup"):
             # Validate backup format
-            if not isinstance(backup_data, dict[str, Any]) or "version" not in backup_data:
+            if not isinstance(backup_data, dict) or "version" not in backup_data:
                 console.print(error_panel("Invalid backup file format", "Backup file is corrupted or incompatible"))
                 raise typer.Exit(code=1)
 
-            if "tables" not in backup_data or not isinstance(backup_data["tables"], dict[str, Any]):
+            if "tables" not in backup_data or not isinstance(backup_data["tables"], dict):
                 console.print(error_panel("Backup missing table data", "Backup file is incomplete"))
                 raise typer.Exit(code=1)
 

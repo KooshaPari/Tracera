@@ -510,11 +510,8 @@ ruff format .
 #### Type Checking
 
 ```bash
-# mypy
-mypy tracertm/
-
-# Or basedpyright (stricter)
-basedpyright tracertm/
+# ty (type checking)
+ty check src/ --error-on-warning
 ```
 
 ### Pre-commit Hooks

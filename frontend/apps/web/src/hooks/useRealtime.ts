@@ -5,206 +5,133 @@
  * React Query cache for real-time UI updates.
  */
 
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { realtimeClient } from "../lib/websocket";
-import { logger } from "@/lib/logger";
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+
+import { logger } from '@/lib/logger';
+
+import { realtimeClient } from '../lib/websocket';
 
 export interface RealtimeConfig {
-	projectId?: string;
-	onEvent?: (event: any) => void;
-	enableToasts?: boolean;
+  projectId?: string;
+  onEvent?: (event: any) => void;
+  enableToasts?: boolean;
 }
 
 export function useRealtime(config: RealtimeConfig = {}) {
-	const { projectId, onEvent } = config;
-	// Const queryClient = useQueryClient();
-	const [isConnected, setIsConnected] = useState(false);
+  const { projectId, onEvent } = config;
+  // Const queryClient = useQueryClient();
+  const [isConnected, setIsConnected] = useState(false);
 
-	useEffect(() => {
-		// Get auth token from storage or context
-		// TODO: Replace with your actual auth token retrieval
-		const token = localStorage.getItem("auth_token") || "";
+  useEffect(() => {
+    // Get auth token from storage or context
+    // TODO: Replace with your actual auth token retrieval
+    const token = localStorage.getItem('auth_token') || '';
 
-		if (!token) {
-			logger.warn("No auth token found, skipping WebSocket connection");
-			return;
-		}
+    if (!token) {
+      logger.warn('No auth token found, skipping WebSocket connection');
+      return;
+    }
 
-		// Connect to WebSocket with token and optional project ID
-		realtimeClient.connect(token, projectId);
+    // Connect to WebSocket with token and optional project ID
+    realtimeClient.connect(token, projectId);
 
-		// Monitor connection status
-		const checkConnection = setInterval(() => {
-			setIsConnected(realtimeClient.isConnected());
-		}, 1000);
+    // Monitor connection status
+    const checkConnection = setInterval(() => {
+      setIsConnected(realtimeClient.isConnected());
+    }, 1000);
 
-		// Cleanup
-		return () => {
-			clearInterval(checkConnection);
-			realtimeClient.disconnect();
-		};
-	}, [projectId]);
+    // Cleanup
+    return () => {
+      clearInterval(checkConnection);
+      realtimeClient.disconnect();
+    };
+  }, [projectId]);
 
-	// Listen for all events and call custom handler
-	useEffect(() => {
-		if (!onEvent) {
-			return;
-		}
+  // Listen for all events and call custom handler
+  useEffect(() => {
+    if (!onEvent) {
+      return;
+    }
 
-		const unsubscribe = realtimeClient.on("*", onEvent);
-		return unsubscribe;
-	}, [onEvent]);
+    const unsubscribe = realtimeClient.on('*', onEvent);
+    return unsubscribe;
+  }, [onEvent]);
 
-	return { isConnected };
+  return { isConnected };
 }
 
 export function useRealtimeUpdates(projectId?: string) {
-	const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-	useEffect(() => {
-		if (!projectId) {
-			return;
-		}
+  useEffect(() => {
+    if (!projectId) {
+      return;
+    }
 
-		// Get auth token
-		const token = localStorage.getItem("auth_token") || "";
-		if (!token) {
-			return;
-		}
+    // Get auth token
+    const token = localStorage.getItem('auth_token') || '';
+    if (!token) {
+      return;
+    }
 
-		// Connect to WebSocket
-		realtimeClient.connect(token, projectId);
+    // Connect to WebSocket
+    realtimeClient.connect(token, projectId);
 
-		// Subscribe to item events
-		const unsubItem = realtimeClient.on("item.created", (event) => {
-			logger.info("Item created:", event);
-			undefined;
+    // Subscribe to item events
+    const unsubItem = realtimeClient.on('item.created', (event) => {});
 
-			toast.success(
-				`New item created: ${event.data["title"] || event.entity_id}`,
-			);
-		});
+    const unsubItemUpdate = realtimeClient.on('item.updated', (event) => {});
 
-		const unsubItemUpdate = realtimeClient.on("item.updated", (event) => {
-			logger.info("Item updated:", event);
-			undefined;
-			undefined;
+    const unsubItemDelete = realtimeClient.on('item.deleted', (event) => {});
 
-			toast.info(`Item updated: ${event.data["title"] || event.entity_id}`);
-		});
+    // Subscribe to link events
+    const unsubLink = realtimeClient.on('link.created', (event) => {});
 
-		const unsubItemDelete = realtimeClient.on("item.deleted", (event) => {
-			logger.info("Item deleted:", event);
-			undefined;
+    const unsubLinkDelete = realtimeClient.on('link.deleted', (event) => {});
 
-			toast.info(`Item deleted: ${event.entity_id}`);
-		});
+    // Subscribe to spec events (from Python backend)
+    const unsubSpec = realtimeClient.on('spec.created', (event) => {});
 
-		// Subscribe to link events
-		const unsubLink = realtimeClient.on("link.created", (event) => {
-			logger.info("Link created:", event);
-			undefined;
+    const unsubSpecUpdate = realtimeClient.on('spec.updated', (event) => {});
 
-			toast.success("New link created");
-		});
+    // Subscribe to AI analysis events
+    const unsubAI = realtimeClient.on('ai.analysis.complete', (event) => {});
 
-		const unsubLinkDelete = realtimeClient.on("link.deleted", (event) => {
-			logger.info("Link deleted:", event);
-			undefined;
+    // Subscribe to execution events
+    const unsubExecution = realtimeClient.on('execution.completed', (event) => {});
 
-			toast.info("Link deleted");
-		});
+    const unsubExecutionFailed = realtimeClient.on('execution.failed', (event) => {});
 
-		// Subscribe to spec events (from Python backend)
-		const unsubSpec = realtimeClient.on("spec.created", (event) => {
-			logger.info("Spec created:", event);
-			undefined;
+    // Subscribe to workflow events
+    const unsubWorkflow = realtimeClient.on('workflow.completed', (event) => {});
 
-			toast.success(`New specification created`);
-		});
+    // Subscribe to project events
+    const unsubProject = realtimeClient.on('project.updated', (event) => {});
 
-		const unsubSpecUpdate = realtimeClient.on("spec.updated", (event) => {
-			logger.info("Spec updated:", event);
-			undefined;
-			undefined;
-
-			toast.info(`Specification updated`);
-		});
-
-		// Subscribe to AI analysis events
-		const unsubAI = realtimeClient.on("ai.analysis.complete", (event) => {
-			logger.info("AI analysis complete:", event);
-			undefined;
-
-			toast.success(
-				`AI analysis complete for specification ${event.data["spec_id"]}`,
-			);
-		});
-
-		// Subscribe to execution events
-		const unsubExecution = realtimeClient.on("execution.completed", (event) => {
-			logger.info("Execution completed:", event);
-			undefined;
-			undefined;
-
-			toast.success(`Execution ${event.entity_id} completed`);
-		});
-
-		const unsubExecutionFailed = realtimeClient.on(
-			"execution.failed",
-			(event) => {
-				logger.info("Execution failed:", event);
-				undefined;
-				undefined;
-
-				toast.error(`Execution ${event.entity_id} failed`);
-			},
-		);
-
-		// Subscribe to workflow events
-		const unsubWorkflow = realtimeClient.on("workflow.completed", (event) => {
-			logger.info("Workflow completed:", event);
-			undefined;
-
-			toast.success(`Workflow completed`);
-		});
-
-		// Subscribe to project events
-		const unsubProject = realtimeClient.on("project.updated", (event) => {
-			logger.info("Project updated:", event);
-			undefined;
-			undefined;
-
-			toast.info("Project updated");
-		});
-
-		// Cleanup all subscriptions
-		return () => {
-			unsubItem();
-			unsubItemUpdate();
-			unsubItemDelete();
-			unsubLink();
-			unsubLinkDelete();
-			unsubSpec();
-			unsubSpecUpdate();
-			unsubAI();
-			unsubExecution();
-			unsubExecutionFailed();
-			unsubWorkflow();
-			unsubProject();
-			realtimeClient.disconnect();
-		};
-	}, [projectId, queryClient]);
+    // Cleanup all subscriptions
+    return () => {
+      unsubItem();
+      unsubItemUpdate();
+      unsubItemDelete();
+      unsubLink();
+      unsubLinkDelete();
+      unsubSpec();
+      unsubSpecUpdate();
+      unsubAI();
+      unsubExecution();
+      unsubExecutionFailed();
+      unsubWorkflow();
+      unsubProject();
+      realtimeClient.disconnect();
+    };
+  }, [projectId, queryClient]);
 }
 
-export function useRealtimeEvent(
-	eventType: string,
-	callback: (event: any) => void,
-) {
-	useEffect(() => {
-		const unsubscribe = realtimeClient.on(eventType, callback);
-		return unsubscribe;
-	}, [eventType, callback]);
+export function useRealtimeEvent(eventType: string, callback: (event: any) => void) {
+  useEffect(() => {
+    const unsubscribe = realtimeClient.on(eventType, callback);
+    return unsubscribe;
+  }, [eventType, callback]);
 }

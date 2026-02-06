@@ -4,6 +4,8 @@
 
 set -e
 NATS_PORT="${NATS_PORT:-4222}"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+NATS_CONFIG_PATH="${NATS_CONFIG_PATH:-${ROOT}/config/nats-server.conf}"
 
 if command -v lsof >/dev/null 2>&1; then
   if lsof -Pi :"$NATS_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
@@ -12,4 +14,4 @@ if command -v lsof >/dev/null 2>&1; then
   fi
 fi
 
-exec nats-server -js -m 8222 -p 4222 -D
+exec nats-server -c "${NATS_CONFIG_PATH}"

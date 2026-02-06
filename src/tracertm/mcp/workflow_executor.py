@@ -69,7 +69,7 @@ class WorkflowExecutor:
 
             # Extract result content
             if result.structured_content:
-                content = result.structured_content
+                content: Any = result.structured_content
             elif result.data:
                 content = result.data
             else:

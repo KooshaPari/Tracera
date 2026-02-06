@@ -40,6 +40,7 @@ apps/docs/
 ## Current Status
 
 **Phases 1-7 Complete:**
+
 - ✅ Basic infrastructure working
 - ✅ Monorepo integration complete
 - ✅ Dev server runs on port 3001
@@ -51,6 +52,7 @@ apps/docs/
 - ✅ CI/CD with GitHub Actions
 
 **Production Deployment:**
+
 - URL: https://docs.tracertm.com
 - Auto-deploys from main branch
 - Preview deployments for PRs
@@ -66,6 +68,7 @@ apps/docs/
 ## Development
 
 The site uses:
+
 - **Next.js 16** with App Router and Turbopack
 - **Fumadocs** for documentation features
 - **MDX** for content with GFM and syntax highlighting
@@ -80,6 +83,7 @@ The site uses:
 ## Integration
 
 Integrated into frontend monorepo:
+
 - Workspace: `@tracertm/docs`
 - Scripts: `dev:docs`, `build:docs` in frontend root
 - Turbo tasks: Uses standard build/dev/typecheck
@@ -99,12 +103,14 @@ bun run deploy:prod
 ### Automated Deployment
 
 Automatic deployment via GitHub Actions:
+
 - **Preview**: Every pull request gets a unique preview URL
 - **Production**: Auto-deploys on push to main branch
 
 ### Setup Guide
 
 See detailed deployment documentation:
+
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete deployment guide
 - **[GITHUB_ACTIONS_SETUP.md](./GITHUB_ACTIONS_SETUP.md)** - CI/CD setup instructions
 
@@ -121,20 +127,20 @@ For production, set these in Vercel dashboard.
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `bun run dev` | Start development server |
-| `bun run build` | Build for production |
-| `bun run start` | Start production server |
-| `bun run lint` | Run ESLint |
-| `bun run typecheck` | Run TypeScript checks |
-| `bun run openapi` | Generate OpenAPI spec |
-| `bun run openapi:sync` | Sync OpenAPI from backend |
-| `bun run deploy` | Deploy to Vercel |
-| `bun run deploy:preview` | Deploy preview |
-| `bun run deploy:prod` | Deploy to production |
-| `bun run test:e2e` | Run E2E tests |
-| `bun run test:performance` | Run performance tests |
+| Command                    | Description               |
+| -------------------------- | ------------------------- |
+| `bun run dev`              | Start development server  |
+| `bun run build`            | Build for production      |
+| `bun run start`            | Start production server   |
+| `bun run lint`             | Run ESLint                |
+| `bun run typecheck`        | Run TypeScript checks     |
+| `bun run openapi`          | Generate OpenAPI spec     |
+| `bun run openapi:sync`     | Sync OpenAPI from backend |
+| `bun run deploy`           | Deploy to Vercel          |
+| `bun run deploy:preview`   | Deploy preview            |
+| `bun run deploy:prod`      | Deploy to production      |
+| `bun run test:e2e`         | Run E2E tests             |
+| `bun run test:performance` | Run performance tests     |
 
 ## Documentation
 

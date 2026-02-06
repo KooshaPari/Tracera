@@ -151,13 +151,13 @@ describe('API Routes Validation', () => {
       results.push(result);
 
       // Assertions
-      expect(status, `${route.method} ${route.path} should respond with status > 0`).toBeGreaterThan(
+      expect(
+        status,
+        `${route.method} ${route.path} should respond with status > 0`,
+      ).toBeGreaterThan(0);
+      expect(errors.length, `${route.method} ${route.path} should not have critical errors`).toBe(
         0,
       );
-      expect(
-        errors.length,
-        `${route.method} ${route.path} should not have critical errors`,
-      ).toBe(0);
 
       // Log success
       console.log(
@@ -181,13 +181,10 @@ describe('API Routes Validation', () => {
         successRate: ((successCount / results.length) * 100).toFixed(2) + '%',
       },
       performance: {
-        averageResponseTime: (
-          results.reduce((sum, r) => sum + r.duration, 0) / results.length
-        ).toFixed(2) + 'ms',
-        minResponseTime:
-          Math.min(...results.map((r) => r.duration)).toFixed(2) + 'ms',
-        maxResponseTime:
-          Math.max(...results.map((r) => r.duration)).toFixed(2) + 'ms',
+        averageResponseTime:
+          (results.reduce((sum, r) => sum + r.duration, 0) / results.length).toFixed(2) + 'ms',
+        minResponseTime: Math.min(...results.map((r) => r.duration)).toFixed(2) + 'ms',
+        maxResponseTime: Math.max(...results.map((r) => r.duration)).toFixed(2) + 'ms',
       },
       details: {
         successful: results.filter((r) => r.errors.length === 0),

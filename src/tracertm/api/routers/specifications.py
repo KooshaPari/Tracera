@@ -561,7 +561,9 @@ async def list_contracts_for_project(
 
     try:
         contracts = await service.list_contracts(project_id, item_id)
-        return ContractListResponse(total=len(contracts), contracts=[ContractResponse.model_validate(c) for c in contracts])
+        return ContractListResponse(
+            total=len(contracts), contracts=[ContractResponse.model_validate(c) for c in contracts]
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to list contracts: {e!s}") from e
 
@@ -942,7 +944,9 @@ async def list_scenarios_for_feature(
 
     try:
         scenarios = await service.list_scenarios(feature_id)
-        return ScenarioListResponse(total=len(scenarios), scenarios=[ScenarioResponse.model_validate(s) for s in scenarios])
+        return ScenarioListResponse(
+            total=len(scenarios), scenarios=[ScenarioResponse.model_validate(s) for s in scenarios]
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to list scenarios: {e!s}") from e
 

@@ -2124,10 +2124,7 @@ async def analyze_ears_pattern(
             pattern_type = EARSPatternType.COMPLEX
 
         raw_components = ears_analysis.get("components", {})
-        components = {
-            k: EARSComponent(**v) if isinstance(v, dict[str, Any]) else v
-            for k, v in raw_components.items()
-        }
+        components = {k: EARSComponent(**v) if isinstance(v, dict[str, Any]) else v for k, v in raw_components.items()}
 
         suggestions: list[str] = []
         for key in ("validation_issues", "improvement_suggestions", "ambiguous_terms"):
@@ -2217,7 +2214,10 @@ async def analyze_quality_dimensions(
             issues=[],  # build from quality_analysis.get("issues") if needed
             critical_issues_count=int(quality_analysis.get("critical_issues_count", 0)),
             warning_issues_count=int(quality_analysis.get("warning_issues_count", 0)),
-            top_improvement_areas=quality_analysis.get("improvement_priority", quality_analysis.get("top_improvement_areas", [])) or [],
+            top_improvement_areas=quality_analysis.get(
+                "improvement_priority", quality_analysis.get("top_improvement_areas", [])
+            )
+            or [],
             analyzed_at=datetime.now(UTC),
         )
     except HTTPException:
@@ -2571,7 +2571,9 @@ async def analyze_flakiness(
         # Call the analytics service (ensure types for checker)
         run_history_list: list[dict[str, Any]] = run_history
         window_size_int: int = window_size
-        analysis = spec_analytics_service.analyze_test_flakiness(run_history=run_history_list, window_size=window_size_int)
+        analysis = spec_analytics_service.analyze_test_flakiness(
+            run_history=run_history_list, window_size=window_size_int
+        )
 
         # Map to API schema: spec_id, probability, entropy, quarantine_recommended, analyzed_at, etc.
         return FlakinessAnalysisResponse(
@@ -2770,7 +2772,7 @@ async def analyze_impact(
                 adjacency = cast(dict[str, list[str]], request.adjacency or {})
             if hasattr(request, "item_metadata"):
                 raw = request.item_metadata
-                item_metadata = cast("dict[str, dict[str, Any]] | None", raw if isinstance(raw, (dict[str, Any], type(None))) else None)
+                item_metadata = cast(dict[str, dict[str, Any]] | None, raw if isinstance(raw, dict) else None)
             if hasattr(request, "max_depth"):
                 max_depth = request.max_depth or 5
 
@@ -2778,7 +2780,7 @@ async def analyze_impact(
         result = spec_analytics_service.analyze_change_impact(
             source_item_id=spec_id,
             adjacency=cast(dict[str, list[str]], adjacency),
-            item_metadata=cast("dict[str, dict[str, Any]] | None", item_metadata),
+            item_metadata=cast(dict[str, dict[str, Any]] | None, item_metadata),
             max_depth=max_depth,
         )
 
@@ -2961,7 +2963,9 @@ async def analyze_coverage_gaps(
         # Call the analytics service (safety_level: SafetyLevel | None from service)
         from tracertm.services.spec_analytics_service import SafetyLevel as ServiceSafetyLevel
 
-        safety: ServiceSafetyLevel | None = safety_level if isinstance(safety_level, (ServiceSafetyLevel, type(None))) else None
+        safety: ServiceSafetyLevel | None = (
+            safety_level if isinstance(safety_level, (ServiceSafetyLevel, type(None))) else None
+        )
         gaps = spec_analytics_service.analyze_coverage_gaps(
             requirements=requirements,
             tests=tests,
@@ -3034,9 +3038,9 @@ async def analyze_suspect_links(
             if hasattr(request, "recent_changes"):
                 recent_changes = request.recent_changes or []
 
-        links_typed = cast("list[dict[str, Any]]", links)
-        versions_typed = cast("dict[str, int]", item_versions)
-        changes_typed = cast("list[dict[str, Any]]", recent_changes)
+        links_typed = cast(list[dict[str, Any]], links)
+        versions_typed = cast(dict[str, int], item_versions)
+        changes_typed = cast(list[dict[str, Any]], recent_changes)
         suspect_links = spec_analytics_service.detect_suspect_links(
             links=links_typed, item_versions=versions_typed, recent_changes=changes_typed
         )

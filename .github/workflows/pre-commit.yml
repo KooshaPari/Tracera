@@ -29,6 +29,4 @@ jobs:
           name: pre-commit-results
           path: |
             .pre-commit-cache/
-            .mypy_cache/
             .ruff_cache/
-

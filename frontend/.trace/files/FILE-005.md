@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Toast notification component with auto-dismiss, manual dismiss, and stacking. Uses React Context for global state.
-

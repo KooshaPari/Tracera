@@ -157,7 +157,7 @@ select = [
 1. **No AI-specific naming patterns detected**:
    ```python
    # These would NOT be caught by N999:
-   dashboard_v2.py          # Valid Python identifier
+   dashboard_compat.py          # Valid Python identifier
    enhanced_dashboard.py    # Valid Python identifier
    dashboard_improved.py    # Valid Python identifier
    ```
@@ -418,7 +418,7 @@ $ cd backend && golangci-lint run --disable-all --enable revive
 
 ```bash
 # Created temporary violations:
-/tmp/naming_test/dashboard_v2.tsx     # Versioned
+/tmp/naming_test/dashboard_compat.tsx     # Versioned
 /tmp/naming_test/NewDashboard.tsx     # Prefixed
 /tmp/naming_test/enhanced_dashboard.tsx  # Prefixed (snake_case)
 /tmp/naming_test/Dashboard_2.tsx      # Numbered

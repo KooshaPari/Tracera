@@ -571,6 +571,8 @@ def generate_stories(
     ) as progress:
         for comp in target_components:
             comp_name = comp.get("name")
+            if not comp_name:
+                continue
             task = progress.add_task(f"Generating {comp_name}...", total=None)
 
             try:
@@ -857,6 +859,8 @@ def export_to_figma(  # pragma: no cover
     ) as progress:
         for comp in target_components:
             comp_name = comp.get("name")
+            if not comp_name:
+                continue
             task = progress.add_task(f"Exporting {comp_name}...", total=None)
 
             try:

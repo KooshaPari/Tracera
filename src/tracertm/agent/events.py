@@ -143,7 +143,7 @@ class AgentEventPublisher:
         ...     project_id="proj-456",
         ...     sandbox_root="/tmp/sandbox",
         ...     provider="claude",
-        ...     model="claude-3-opus"
+        ...     model="claude-3-opus",
         ... )
     """
 
@@ -317,11 +317,7 @@ class AgentEventPublisher:
             return
 
         content = payload.content
-        content_preview = (
-            content[:MAX_CONTENT_PREVIEW_LENGTH]
-            if len(content) > MAX_CONTENT_PREVIEW_LENGTH
-            else content
-        )
+        content_preview = content[:MAX_CONTENT_PREVIEW_LENGTH] if len(content) > MAX_CONTENT_PREVIEW_LENGTH else content
 
         event = BaseEvent(
             event_type=EventType.CHAT_MESSAGE,
@@ -359,10 +355,7 @@ class AgentEventPublisher:
             return
 
         input_summary = str(payload.tool_input)[:MAX_CONTENT_PREVIEW_LENGTH]
-        output_summary = (
-            str(payload.tool_output)[:MAX_CONTENT_PREVIEW_LENGTH]
-            if payload.tool_output else None
-        )
+        output_summary = str(payload.tool_output)[:MAX_CONTENT_PREVIEW_LENGTH] if payload.tool_output else None
 
         event = BaseEvent(
             event_type=EventType.CHAT_TOOL_USE,

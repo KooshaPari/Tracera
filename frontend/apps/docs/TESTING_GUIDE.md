@@ -33,6 +33,7 @@ bun run test:performance
 ```
 
 **What it checks**:
+
 - Total bundle size (target: <200KB gzipped)
 - JavaScript bundle size
 - CSS bundle size
@@ -41,6 +42,7 @@ bun run test:performance
 - Largest chunks and optimization opportunities
 
 **Expected output**:
+
 ```
 📈 Performance Metrics
 ==================================================
@@ -68,11 +70,13 @@ ANALYZE=true bun run build
 ```
 
 This will:
+
 1. Build the production bundle
 2. Generate an interactive treemap
 3. Open in your browser automatically
 
 **Look for**:
+
 - Duplicate dependencies
 - Unexpectedly large packages
 - Unused code that can be removed
@@ -90,6 +94,7 @@ bun run lighthouse
 ```
 
 **What it checks**:
+
 - Performance score (target: >95)
 - Accessibility score (target: >95)
 - Best Practices score (target: >90)
@@ -124,11 +129,13 @@ Edit `lighthouserc.json` to customize:
 ### Interpreting Results
 
 **Performance Score Breakdown**:
+
 - 90-100: Excellent
 - 50-89: Needs improvement
 - 0-49: Poor
 
 **If tests fail**:
+
 1. Check which metric failed
 2. Review Lighthouse report for specific recommendations
 3. Apply optimizations
@@ -160,40 +167,47 @@ bun run test:e2e -g "should open search dialog"
 ### Test Suites
 
 **1. Navigation Tests**
+
 - Homepage loads correctly
 - Navigation to docs works
 - Sidebar navigation works
 - Breadcrumb navigation displays
 
 **2. Search Functionality Tests**
+
 - Search dialog opens with keyboard shortcut (Cmd/Ctrl+K)
 - Search returns results quickly (<100ms)
 - Search results are clickable and navigate correctly
 - Search works with keyboard navigation
 
 **3. OpenAPI Documentation Tests**
+
 - API reference page loads
 - API endpoints display correctly
 - Operations can be expanded/collapsed
 - Request/response schemas render
 
 **4. Dark Mode Tests**
+
 - Theme toggle works
 - Theme persists across page reloads
 - All pages render correctly in both themes
 
 **5. Performance Tests**
+
 - Page load time <3s
 - No layout shifts (CLS <0.1)
 - Time to Interactive <2.5s
 
 **6. Accessibility Tests**
+
 - No automatic a11y violations
 - Keyboard navigation works
 - Proper heading hierarchy
 - Skip to content link exists
 
 **7. Mobile Responsiveness Tests**
+
 - Mobile layout renders correctly
 - Mobile menu works
 - Touch targets are adequate
@@ -311,6 +325,7 @@ ANALYZE=true bun run build
 **4. Performance score too low**
 
 Check Lighthouse report for specific issues:
+
 - Render-blocking resources
 - Unused JavaScript
 - Unoptimized images
@@ -342,17 +357,17 @@ Check Lighthouse report for specific issues:
 
 ### Performance Targets
 
-| Metric | Target | How to Check |
-|--------|--------|--------------|
+| Metric      | Target         | How to Check               |
+| ----------- | -------------- | -------------------------- |
 | Bundle Size | <200KB gzipped | `bun run test:performance` |
-| FCP | <1.5s | `bun run lighthouse` |
-| LCP | <2.5s | `bun run lighthouse` |
-| TTI | <2.5s | `bun run lighthouse` |
-| TBT | <200ms | `bun run lighthouse` |
-| CLS | <0.1 | `bun run lighthouse` |
-| Search | <100ms | `bun run test:e2e` |
-| Build Time | <60s | `bun run test:performance` |
-| Lighthouse | >95 | `bun run lighthouse` |
+| FCP         | <1.5s          | `bun run lighthouse`       |
+| LCP         | <2.5s          | `bun run lighthouse`       |
+| TTI         | <2.5s          | `bun run lighthouse`       |
+| TBT         | <200ms         | `bun run lighthouse`       |
+| CLS         | <0.1           | `bun run lighthouse`       |
+| Search      | <100ms         | `bun run test:e2e`         |
+| Build Time  | <60s           | `bun run test:performance` |
+| Lighthouse  | >95            | `bun run lighthouse`       |
 
 ---
 

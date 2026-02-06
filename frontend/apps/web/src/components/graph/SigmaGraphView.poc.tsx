@@ -16,17 +16,19 @@
  * - 100k nodes: 35-40fps (with simple styling)
  */
 
-import type { Item, Link } from "@tracertm/types";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
+import { useEffect, useMemo, useState } from 'react';
+
+import type { Item, Link } from '@tracertm/types';
+
+import { Badge } from '@tracertm/ui/components/Badge';
+import { Button } from '@tracertm/ui/components/Button';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@tracertm/ui/components/Select";
-import { useEffect, useMemo, useState } from "react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tracertm/ui/components/Select';
 
 // NOTE: These imports will work after installing dependencies
 // Commented out to prevent build errors before installation
@@ -42,21 +44,21 @@ import '@react-sigma/core/lib/react-sigma.min.css';
 // =============================================================================
 
 interface SigmaGraphViewProps {
-	items: Item[];
-	links: Link[];
-	onNodeClick?: (itemId: string) => void;
-	onNodeHover?: (itemId: string | null) => void;
+  items: Item[];
+  links: Link[];
+  onNodeClick?: (itemId: string) => void;
+  onNodeHover?: (itemId: string | null) => void;
 }
 
 interface PerformanceStats {
-	fps: number;
-	memory: number;
-	nodeCount: number;
-	edgeCount: number;
-	renderTime: number;
+  fps: number;
+  memory: number;
+  nodeCount: number;
+  edgeCount: number;
+  renderTime: number;
 }
 
-type LayoutAlgorithm = "force" | "circular" | "random" | "none";
+type LayoutAlgorithm = 'force' | 'circular' | 'random' | 'none';
 
 // =============================================================================
 // GRAPH GENERATION (for POC testing)
@@ -65,50 +67,47 @@ type LayoutAlgorithm = "force" | "circular" | "random" | "none";
 /**
  * Generate random graph for performance testing
  */
-function generateRandomGraph(
-	nodeCount: number,
-	avgDegree = 4,
-): { items: Item[]; links: Link[] } {
-	const items: Item[] = [];
-	const links: Link[] = [];
+function generateRandomGraph(nodeCount: number, avgDegree = 4): { items: Item[]; links: Link[] } {
+  const items: Item[] = [];
+  const links: Link[] = [];
 
-	// Generate nodes
-	for (let i = 0; i < nodeCount; i += 1) {
-		items.push({
-			createdAt: new Date().toISOString(),
-			id: `node-${i}`,
-			priority: "medium",
-			projectId: "test",
-			status: "todo",
-			title: `Node ${i}`,
-			type: ["feature", "requirement", "task", "test"][i % 4] as any,
-			updatedAt: new Date().toISOString(),
-			version: 1,
-			view: "feature",
-		});
-	}
+  // Generate nodes
+  for (let i = 0; i < nodeCount; i += 1) {
+    items.push({
+      createdAt: new Date().toISOString(),
+      id: `node-${i}`,
+      priority: 'medium',
+      projectId: 'test',
+      status: 'todo',
+      title: `Node ${i}`,
+      type: ['feature', 'requirement', 'task', 'test'][i % 4] as any,
+      updatedAt: new Date().toISOString(),
+      version: 1,
+      view: 'feature',
+    });
+  }
 
-	// Generate edges (average degree)
-	const edgeCount = Math.floor((nodeCount * avgDegree) / 2);
-	for (let i = 0; i < edgeCount; i += 1) {
-		const source = Math.floor(Math.random() * nodeCount);
-		const target = Math.floor(Math.random() * nodeCount);
+  // Generate edges (average degree)
+  const edgeCount = Math.floor((nodeCount * avgDegree) / 2);
+  for (let i = 0; i < edgeCount; i += 1) {
+    const source = Math.floor(Math.random() * nodeCount);
+    const target = Math.floor(Math.random() * nodeCount);
 
-		if (source !== target) {
-			links.push({
-				createdAt: new Date().toISOString(),
-				id: `edge-${i}`,
-				projectId: "test",
-				sourceId: `node-${source}`,
-				targetId: `node-${target}`,
-				type: "relates_to" as any,
-				updatedAt: new Date().toISOString(),
-				version: 1,
-			});
-		}
-	}
+    if (source !== target) {
+      links.push({
+        createdAt: new Date().toISOString(),
+        id: `edge-${i}`,
+        projectId: 'test',
+        sourceId: `node-${source}`,
+        targetId: `node-${target}`,
+        type: 'relates_to' as any,
+        updatedAt: new Date().toISOString(),
+        version: 1,
+      });
+    }
+  }
 
-	return { items, links };
+  return { items, links };
 }
 
 // =============================================================================
@@ -248,47 +247,45 @@ Function getColorForType(type: string): string {
 // =============================================================================
 
 function usePerformanceMonitor(enabled: boolean): PerformanceStats | undefined {
-	const [stats, setStats] = useState<PerformanceStats>();
+  const [stats, setStats] = useState<PerformanceStats>();
 
-	useEffect(() => {
-		if (!enabled) {
-			return;
-		}
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
 
-		let frameCount = 0;
-		let lastTime = performance.now();
-		let rafId: number;
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let rafId: number;
 
-		const measure = () => {
-			frameCount += 1;
-			const now = performance.now();
+    const measure = () => {
+      frameCount += 1;
+      const now = performance.now();
 
-			if (now - lastTime >= 1000) {
-				const fps = Math.round((frameCount * 1000) / (now - lastTime));
-				const memory = Math.round(
-					((performance as any).memory?.usedJSHeapSize ?? 0) / 1024 / 1024,
-				);
+      if (now - lastTime >= 1000) {
+        const fps = Math.round((frameCount * 1000) / (now - lastTime));
+        const memory = Math.round(((performance as any).memory?.usedJSHeapSize ?? 0) / 1024 / 1024);
 
-				setStats((prev) => ({
-					edgeCount: prev?.edgeCount ?? 0,
-					fps,
-					memory,
-					nodeCount: prev?.nodeCount ?? 0,
-					renderTime: prev?.renderTime ?? 0,
-				}));
+        setStats((prev) => ({
+          edgeCount: prev?.edgeCount ?? 0,
+          fps,
+          memory,
+          nodeCount: prev?.nodeCount ?? 0,
+          renderTime: prev?.renderTime ?? 0,
+        }));
 
-				frameCount = 0;
-				lastTime = now;
-			}
+        frameCount = 0;
+        lastTime = now;
+      }
 
-			rafId = requestAnimationFrame(measure);
-		};
+      rafId = requestAnimationFrame(measure);
+    };
 
-		rafId = requestAnimationFrame(measure);
-		return () => cancelAnimationFrame(rafId);
-	}, [enabled]);
+    rafId = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(rafId);
+  }, [enabled]);
 
-	return stats;
+  return stats;
 }
 
 // =============================================================================
@@ -296,28 +293,28 @@ function usePerformanceMonitor(enabled: boolean): PerformanceStats | undefined {
 // =============================================================================
 
 export function SigmaGraphView({
-	items,
-	links,
-	// Optional handlers (used when sigma integration is enabled)
-	onNodeClick: _onNodeClick,
-	onNodeHover: _onNodeHover,
+  items,
+  links,
+  // Optional handlers (used when sigma integration is enabled)
+  onNodeClick: _onNodeClick,
+  onNodeHover: _onNodeHover,
 }: SigmaGraphViewProps) {
-	const [showPerformance, _setShowPerformance] = useState(true);
-	const [_layout, _setLayout] = useState<LayoutAlgorithm>("random");
-	const [_isRunningLayout, _setIsRunningLayout] = useState(false);
+  const [showPerformance, _setShowPerformance] = useState(true);
+  const [_layout, _setLayout] = useState<LayoutAlgorithm>('random');
+  const [_isRunningLayout, _setIsRunningLayout] = useState(false);
 
-	const stats = usePerformanceMonitor(showPerformance);
+  const stats = usePerformanceMonitor(showPerformance);
 
-	// Update stats with current counts
-	useEffect(() => {
-		if (stats) {
-			stats.nodeCount = items.length;
-			stats.edgeCount = links.length;
-		}
-	}, [items.length, links.length, stats]);
+  // Update stats with current counts
+  useEffect(() => {
+    if (stats) {
+      stats.nodeCount = items.length;
+      stats.edgeCount = links.length;
+    }
+  }, [items.length, links.length, stats]);
 
-	// NOTE: Uncomment after installing dependencies
-	/*
+  // NOTE: Uncomment after installing dependencies
+  /*
   Return (
     <div className="h-full flex flex-col">
       <SigmaContainer
@@ -356,41 +353,39 @@ export function SigmaGraphView({
   );
   */
 
-	// Placeholder before sigma.js is installed
-	return (
-		<div className="h-full flex items-center justify-center bg-muted/30">
-			<div className="text-center p-8 max-w-2xl">
-				<div className="mb-6">
-					<div className="text-6xl mb-4">📊</div>
-					<h2 className="text-2xl font-bold mb-2">Sigma.js Proof of Concept</h2>
-					<p className="text-muted-foreground">
-						Install dependencies to test WebGL-based graph rendering
-					</p>
-				</div>
+  // Placeholder before sigma.js is installed
+  return (
+    <div className='bg-muted/30 flex h-full items-center justify-center'>
+      <div className='max-w-2xl p-8 text-center'>
+        <div className='mb-6'>
+          <div className='mb-4 text-6xl'>📊</div>
+          <h2 className='mb-2 text-2xl font-bold'>Sigma.js Proof of Concept</h2>
+          <p className='text-muted-foreground'>
+            Install dependencies to test WebGL-based graph rendering
+          </p>
+        </div>
 
-				<div className="bg-background border rounded-lg p-6 mb-6 text-left">
-					<p className="font-mono text-sm mb-4">
-						<code>bun add sigma graphology @react-sigma/core</code>
-					</p>
-					<p className="font-mono text-sm">
-						<code>bun add @react-sigma/layout-forceatlas2</code>
-					</p>
-				</div>
+        <div className='bg-background mb-6 rounded-lg border p-6 text-left'>
+          <p className='mb-4 font-mono text-sm'>
+            <code>bun add sigma graphology @react-sigma/core</code>
+          </p>
+          <p className='font-mono text-sm'>
+            <code>bun add @react-sigma/layout-forceatlas2</code>
+          </p>
+        </div>
 
-				<div className="space-y-2 text-sm text-muted-foreground">
-					<p>
-						✅ After installation, uncomment the code in{" "}
-						<code>SigmaGraphView.poc.tsx</code>
-					</p>
-					<p>✅ Expected performance: 60fps @ 10k nodes, 40fps @ 100k nodes</p>
-					<p>
-						✅ See <code>docs/research/sigma-js-evaluation.md</code> for full
-						analysis
-					</p>
-				</div>
-			</div>
-		</div>
-	);
+        <div className='text-muted-foreground space-y-2 text-sm'>
+          <p>
+            ✅ After installation, uncomment the code in <code>SigmaGraphView.poc.tsx</code>
+          </p>
+          <p>✅ Expected performance: 60fps @ 10k nodes, 40fps @ 100k nodes</p>
+          <p>
+            ✅ See <code>docs/research/sigma-js-evaluation.md</code> for full analysis
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // =============================================================================
@@ -398,125 +393,113 @@ export function SigmaGraphView({
 // =============================================================================
 
 export function SigmaProofOfConcept() {
-	const [nodeCount, setNodeCount] = useState(10_000);
-	const [avgDegree, setAvgDegree] = useState(4);
-	const [layout, setLayout] = useState<LayoutAlgorithm>("random");
+  const [nodeCount, setNodeCount] = useState(10_000);
+  const [avgDegree, setAvgDegree] = useState(4);
+  const [layout, setLayout] = useState<LayoutAlgorithm>('random');
 
-	const { items, links } = useMemo(
-		() => generateRandomGraph(nodeCount, avgDegree),
-		[nodeCount, avgDegree],
-	);
+  const { items, links } = useMemo(
+    () => generateRandomGraph(nodeCount, avgDegree),
+    [nodeCount, avgDegree],
+  );
 
-	const [selectedNode, setSelectedNode] = useState<string | null>(null);
-	const stats = usePerformanceMonitor(true);
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const stats = usePerformanceMonitor(true);
 
-	return (
-		<div className="h-screen flex flex-col">
-			{/* Controls */}
-			<div className="border-b bg-background p-4 flex flex-wrap items-center gap-4">
-				<div className="flex items-center gap-2">
-					<label className="text-sm font-medium">Nodes:</label>
-					<input
-						type="range"
-						min="100"
-						max="100000"
-						step="100"
-						value={nodeCount}
-						onChange={(e) => setNodeCount(Number(e.target.value))}
-						className="w-48"
-					/>
-					<span className="font-mono text-sm w-24">
-						{nodeCount.toLocaleString()}
-					</span>
-				</div>
+  return (
+    <div className='flex h-screen flex-col'>
+      {/* Controls */}
+      <div className='bg-background flex flex-wrap items-center gap-4 border-b p-4'>
+        <div className='flex items-center gap-2'>
+          <label className='text-sm font-medium'>Nodes:</label>
+          <input
+            type='range'
+            min='100'
+            max='100000'
+            step='100'
+            value={nodeCount}
+            onChange={(e) => setNodeCount(Number(e.target.value))}
+            className='w-48'
+          />
+          <span className='w-24 font-mono text-sm'>{nodeCount.toLocaleString()}</span>
+        </div>
 
-				<div className="flex items-center gap-2">
-					<label className="text-sm font-medium">Avg Degree:</label>
-					<input
-						type="range"
-						min="2"
-						max="20"
-						value={avgDegree}
-						onChange={(e) => setAvgDegree(Number(e.target.value))}
-						className="w-32"
-					/>
-					<span className="font-mono text-sm w-8">{avgDegree}</span>
-				</div>
+        <div className='flex items-center gap-2'>
+          <label className='text-sm font-medium'>Avg Degree:</label>
+          <input
+            type='range'
+            min='2'
+            max='20'
+            value={avgDegree}
+            onChange={(e) => setAvgDegree(Number(e.target.value))}
+            className='w-32'
+          />
+          <span className='w-8 font-mono text-sm'>{avgDegree}</span>
+        </div>
 
-				<div className="flex items-center gap-2">
-					<label className="text-sm font-medium">Layout:</label>
-					<Select
-						value={layout}
-						onValueChange={(v) => setLayout(v as LayoutAlgorithm)}
-					>
-						<SelectTrigger className="w-32 h-9">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="random">Random</SelectItem>
-							<SelectItem value="circular">Circular</SelectItem>
-							<SelectItem value="force">Force-Directed</SelectItem>
-							<SelectItem value="none">None</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
+        <div className='flex items-center gap-2'>
+          <label className='text-sm font-medium'>Layout:</label>
+          <Select value={layout} onValueChange={(v) => setLayout(v as LayoutAlgorithm)}>
+            <SelectTrigger className='h-9 w-32'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='random'>Random</SelectItem>
+              <SelectItem value='circular'>Circular</SelectItem>
+              <SelectItem value='force'>Force-Directed</SelectItem>
+              <SelectItem value='none'>None</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-				<div className="flex-1" />
+        <div className='flex-1' />
 
-				{stats && (
-					<div className="flex gap-2">
-						<Badge
-							variant="outline"
-							className={
-								stats.fps >= 55
-									? "bg-green-50"
-									: (stats.fps >= 30
-										? "bg-yellow-50"
-										: "bg-red-50")
-							}
-						>
-							FPS: <span className="font-mono font-bold ml-1">{stats.fps}</span>
-						</Badge>
-						<Badge variant="outline" className="bg-blue-50">
-							Memory:{" "}
-							<span className="font-mono font-bold ml-1">{stats.memory}MB</span>
-						</Badge>
-						<Badge variant="outline" className="bg-purple-50">
-							Edges:{" "}
-							<span className="font-mono font-bold ml-1">
-								{links.length.toLocaleString()}
-							</span>
-						</Badge>
-					</div>
-				)}
-			</div>
+        {stats && (
+          <div className='flex gap-2'>
+            <Badge
+              variant='outline'
+              className={
+                stats.fps >= 55 ? 'bg-green-50' : stats.fps >= 30 ? 'bg-yellow-50' : 'bg-red-50'
+              }
+            >
+              FPS: <span className='ml-1 font-mono font-bold'>{stats.fps}</span>
+            </Badge>
+            <Badge variant='outline' className='bg-blue-50'>
+              Memory: <span className='ml-1 font-mono font-bold'>{stats.memory}MB</span>
+            </Badge>
+            <Badge variant='outline' className='bg-purple-50'>
+              Edges:{' '}
+              <span className='ml-1 font-mono font-bold'>{links.length.toLocaleString()}</span>
+            </Badge>
+          </div>
+        )}
+      </div>
 
-			{/* Graph */}
-			<div className="flex-1 relative">
-				<SigmaGraphView
-					items={items}
-					links={links}
-					onNodeClick={setSelectedNode}
-					onNodeHover={() => {}}
-				/>
+      {/* Graph */}
+      <div className='relative flex-1'>
+        <SigmaGraphView
+          items={items}
+          links={links}
+          onNodeClick={setSelectedNode}
+          onNodeHover={() => {}}
+        />
 
-				{selectedNode && (
-					<div className="absolute bottom-4 left-4 bg-white border rounded-lg shadow-lg p-4 max-w-xs">
-						<h3 className="font-semibold mb-2">Selected Node</h3>
-						<p className="text-sm text-muted-foreground">
-							ID: <code className="text-xs">{selectedNode}</code>
-						</p>
-						<Button
-							size="sm"
-							variant="ghost"
-							className="mt-2"
-							onClick={() => setSelectedNode(null)}
-						>
-							Clear
-						</Button>
-					</div>
-				)}
-			</div>
-		</div>
-	);
+        {selectedNode && (
+          <div className='absolute bottom-4 left-4 max-w-xs rounded-lg border bg-white p-4 shadow-lg'>
+            <h3 className='mb-2 font-semibold'>Selected Node</h3>
+            <p className='text-muted-foreground text-sm'>
+              ID: <code className='text-xs'>{selectedNode}</code>
+            </p>
+            <Button
+              size='sm'
+              variant='ghost'
+              className='mt-2'
+              onClick={() => setSelectedNode(null)}
+            >
+              Clear
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

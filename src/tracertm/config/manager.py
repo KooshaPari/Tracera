@@ -270,9 +270,9 @@ class ConfigManager:
         for key, value in data.items():
             if isinstance(value, Path):
                 result[key] = str(value)
-            elif isinstance(value, dict[str, Any]):
+            elif isinstance(value, dict):
                 result[key] = self._convert_paths_to_strings(value)
-            elif isinstance(value, list[Any]):
+            elif isinstance(value, list):
                 result[key] = [str(item) if isinstance(item, Path) else item for item in value]
             else:
                 result[key] = value
@@ -327,7 +327,7 @@ class ConfigManager:
         try:
             with path.open() as f:
                 data = yaml.safe_load(f) or {}
-            return data if isinstance(data, dict[str, Any]) else {}
+            return data if isinstance(data, dict) else {}
         except Exception:
             return {}
 

@@ -1,4 +1,5 @@
 import { createSearchAPI } from 'fumadocs-core/search/server';
+
 import { source } from '@/source';
 
 /**
@@ -20,7 +21,7 @@ export const { GET } = createSearchAPI('advanced', {
     description: page.data.description ?? '',
     id: page.url,
     structuredData: page.data.structuredData,
-    title: page.data.title,
+    title: page.data.title ?? page.url,
     url: page.url,
   })),
 });

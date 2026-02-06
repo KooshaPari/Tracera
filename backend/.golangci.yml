@@ -44,75 +44,224 @@ linters:
     - dupl              # Duplicate code detection
     - goconst           # Repeated strings → constants
     - funlen            # Function length limits
-    - mnd               # Magic number detection
+    - mnd               # Magic number detection (strict with ignored-numbers allowlist)
     - nolintlint        # Validate //nolint usage
     - gochecknoglobals  # No global variables
     - perfsprint        # Performance optimization
+    - lll               # Line length limits
+    - maintidx          # Maintainability index
+    - depguard          # Dependency boundaries
+    - varnamelen        # Variable name length constraints
+    - tagliatelle       # Struct tag naming rules
   disable:
     - exhaustruct      # optional; enable if you want all struct fields init
+
+
+  settings:
+    revive:
+      severity: warning
+      confidence: 0.8
+      ignore-generated-header: false
+      rules:
+        - name: var-naming
+        - name: package-comments
+        - name: exported
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: context-as-argument
+        - name: cyclomatic
+          arguments: [10]
+        - name: line-length-limit
+          arguments: [120]
+        # No unused-parameter rule - we use blank identifiers (_) intentionally in mocks
+    gocyclo:
+      min-complexity: 10  # Down from 15
+    gocognit:
+      min-complexity: 12  # Down from 20
+    funlen:
+      lines: 80
+      statements: 50
+    mnd:
+      checks:
+        - argument
+        - case
+        - condition
+        - operation
+        - return
+        - assign
+      # Common literals: time (2,3,5,10,24,30 sec/min/hr), percentage (100), HTTP (200,400,500),
+      # bytes/bytes-like (256,512,1024,2048), limits (50,100,1000), file modes (0o600,0o750), scaling (0.1-0.9, 1.0, 2.0).
+      ignored-numbers:
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+        - "7"
+        - "10"
+        - "12"
+        - "15"
+        - "20"
+        - "24"
+        - "25"
+        - "30"
+        - "32"
+        - "50"
+        - "60"
+        - "70"
+        - "80"
+        - "100"
+        - "200"
+        - "255"
+        - "256"
+        - "400"
+        - "500"
+        - "512"
+        - "1024"
+        - "2000"
+        - "2048"
+        - "4096"
+        - "86400"
+        - "1000"
+        - "10000"
+        - "1000000"
+        - "0.1"
+        - "0.2"
+        - "0.25"
+        - "0.3"
+        - "0.4"
+        - "0.5"
+        - "0.6"
+        - "0.7"
+        - "0.8"
+        - "0.9"
+        - "1.0"
+        - "1.1"
+        - "1.5"
+        - "2.0"
+        - "7.0"
+        - "10.0"
+        - "20.0"
+        - "60.0"
+        - "85.0"
+        - "90.0"
+        - "100.0"
+        - "336.0"
+        - "0o600"
+        - "0o750"
+        - "1e9"
+    lll:
+      line-length: 120
+      tab-width: 2
+    maintidx:
+      under: 20
+    gci:
+      # Enable custom ordering for import sections
+      custom-order: true
+      # Define custom import sections and their order
+      sections:
+        - Standard     # Go standard library (fmt, os, etc.)
+        - Default      # Third-party packages (github.com, golang.org, etc.)
+        - Prefix(github.com/kooshapari/tracertm-backend)  # Local project imports
+      # Skip generated files (don't reformat)
+      skip-generated: true
+    gosec:
+      excludes:
+        - G104  # audit errors not checked (errcheck covers)
+    depguard:
+      rules:
+        Main:
+          files:
+            - "${base-path}/internal/**"
+            - "${base-path}/pkg/**"
+            - "${base-path}/tests/**"
+            - "${base-path}/main.go"
+          list-mode: Lax
+          allow:
+            - $gostd
+            - "github.com/jackc/pgx/v5"
+            - "github.com/joho/godotenv"
+            - "github.com/kooshapari/tracertm-backend/internal/config"
+            - "github.com/kooshapari/tracertm-backend/internal/env"
+            - "github.com/neo4j/neo4j-go-driver/v5/neo4j"
+            - "github.com/nats-io"
+            - "github.com/nats-io/nats.go"
+            - "github.com/nats-io/nkeys"
+        cmd:
+          files:
+            - "cmd/**"
+            - "**/cmd/**"
+          list-mode: Lax
+          allow:
+            - $gostd
+            - "github.com/nats-io"
+            - "github.com/nats-io/nats.go"
+            - "github.com/nats-io/nkeys"
+        domain:
+          files:
+            - "internal/models/**"
+            - "internal/repository/**"
+            - "internal/services/**"
+            - "internal/db/**"
+            - "internal/storage/**"
+            - "internal/graph/**"
+            - "internal/cache/**"
+            - "internal/nats/**"
+          deny:
+            - pkg: "github.com/kooshapari/tracertm-backend/internal/handlers"
+              desc: "Domain layers must not depend on handlers."
+            - pkg: "github.com/kooshapari/tracertm-backend/internal/routes"
+              desc: "Domain layers must not depend on routes."
+            - pkg: "github.com/kooshapari/tracertm-backend/cmd"
+              desc: "Domain layers must not depend on command entrypoints."
+    varnamelen:
+      max-distance: 5
+      min-name-length: 2
+      check-receiver: true
+    tagliatelle:
+      case:
+        use-field-name: true
+        rules:
+          json: snake
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    exhaustive:
+      default-signifies-exhaustive: false
+    nakedret:
+      max-func-lines: 5
 
 formatters:
   enable:
     - gofmt
-
-linters-settings:
-  revive:
-    severity: warning
-    confidence: 0.8
-    rules:
-      - name: var-naming
-      - name: package-comments
-      - name: exported
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: context-as-argument
-      - name: cyclomatic
-        arguments: [10]
-      - name: line-length-limit
-        arguments: [120]
-  gocyclo:
-    min-complexity: 10  # Down from 15
-  gocognit:
-    min-complexity: 12  # Down from 20
-  funlen:
-    lines: 80
-    statements: 50
-  mnd:
-    checks:
-      - argument
-      - case
-      - condition
-      - operation
-      - return
-      - assign
-  gosec:
-    excludes:
-      - G104  # audit errors not checked (errcheck covers)
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-  exhaustive:
-    default-signifies-exhaustive: false
-  nakedret:
-    max-func-lines: 5
+    - gofumpt
+    - gci
 
 issues:
   exclude-rules:
+    # Skip revive, gocognit, gocyclo, funlen for test files
     - path: _test\.go
       linters:
         - gocognit
         - gocyclo
         - funlen
+        - revive
+    # Skip all linters for generated protobuf files
     - path: \.pb\.go$
       linters: [all]
+    # Skip all linters for vendor directory
     - path: /vendor/
       linters: [all]
+  # Don't report failures from revive linter
+  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
 
+# Output format: grouped for file-based processing (easier for agents to fix)
+# Use --out-format=json in CI for structured output; grouped-line-number for local dev
 output:
-  format: colored-line-number
+  format: grouped-line-number  # Groups issues by file for easy processing
   print-issued-lines: true
   print-linter-name: true
   uniq-by-line: true

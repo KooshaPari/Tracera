@@ -7,38 +7,39 @@
  * - Performance with large datasets
  */
 
-import { describe, expect, it } from "bun:test";
-import type { ViewportBounds } from "../useViewportGraph";
+import { describe, expect, it } from 'bun:test';
+
+import type { ViewportBounds } from '../useViewportGraph';
 
 // Simple test to verify hook structure without complex mocking
-describe("useViewportGraph", () => {
-	const _projectId = "test-project-123";
+describe('useViewportGraph', () => {
+  const _projectId = 'test-project-123';
 
-	it("should export required types", () => {
-		// Type check - will fail at compile time if types are missing
-		const viewport: ViewportBounds = {
-			maxX: 1000,
-			maxY: 1000,
-			minX: 0,
-			minY: 0,
-			zoom: 1,
-		};
+  it('should export required types', () => {
+    // Type check - will fail at compile time if types are missing
+    const viewport: ViewportBounds = {
+      maxX: 1000,
+      maxY: 1000,
+      minX: 0,
+      minY: 0,
+      zoom: 1,
+    };
 
-		expect(viewport.minX).toBe(0);
-		expect(viewport.zoom).toBe(1);
-	});
+    expect(viewport.minX).toBe(0);
+    expect(viewport.zoom).toBe(1);
+  });
 
-	it("should be importable", async () => {
-		const { useViewportGraph } = await import("../useViewportGraph");
-		expect(typeof useViewportGraph).toBe("function");
-	});
+  it('should be importable', async () => {
+    const { useViewportGraph } = await import('../useViewportGraph');
+    expect(typeof useViewportGraph).toBe('function');
+  });
 
-	// Additional integration tests should be added to verify:
-	// - API endpoint behavior (requires backend mock server)
-	// - Region key generation logic
-	// - Viewport bounds calculation
-	// - Progressive loading behavior
-	// - Cache clearing functionality
+  // Additional integration tests should be added to verify:
+  // - API endpoint behavior (requires backend mock server)
+  // - Region key generation logic
+  // - Viewport bounds calculation
+  // - Progressive loading behavior
+  // - Cache clearing functionality
 });
 
 /**

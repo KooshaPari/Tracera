@@ -24,15 +24,15 @@ class AdvancedAnalyticsService:
         items = await self.items.query(project_id, {})
 
         # Count by status
-        status_counts = {}
+        status_counts: dict[str, int] = {}
         for item in items:
-            status = item.status if hasattr(item, "status") else "unknown"
+            status = str(getattr(item, "status", None) or "unknown")
             status_counts[status] = status_counts.get(status, 0) + 1
 
         # Count by view
-        view_counts = {}
+        view_counts: dict[str, int] = {}
         for item in items:
-            view = item.view if hasattr(item, "view") else "unknown"
+            view = str(getattr(item, "view", None) or "unknown")
             view_counts[view] = view_counts.get(view, 0) + 1
 
         return {
@@ -57,9 +57,9 @@ class AdvancedAnalyticsService:
         events = await self.events.get_by_project(project_id)
 
         # Count by agent
-        agent_counts = {}
+        agent_counts: dict[str, int] = {}
         for event in events:
-            agent_id = event.agent_id if hasattr(event, "agent_id") else "unknown"
+            agent_id = str(getattr(event, "agent_id", None) or "unknown")
             agent_counts[agent_id] = agent_counts.get(agent_id, 0) + 1
 
         return {
@@ -79,12 +79,13 @@ class AdvancedAnalyticsService:
         events = await self.events.get_by_project(project_id)
 
         # Group events by day
-        daily_events = {}
+        daily_events: dict[str, int] = {}
         cutoff_date = datetime.now(UTC) - timedelta(days=days)
 
         for event in events:
-            if hasattr(event, "created_at") and event.created_at >= cutoff_date:
-                date_key = event.created_at.date().isoformat() if hasattr(event.created_at, "date") else "unknown"
+            created_at = getattr(event, "created_at", None)
+            if isinstance(created_at, datetime) and created_at >= cutoff_date:
+                date_key = created_at.date().isoformat()
                 daily_events[date_key] = daily_events.get(date_key, 0) + 1
 
         return {
@@ -101,13 +102,13 @@ class AdvancedAnalyticsService:
 
         # Calculate link statistics
         total_links = 0
-        link_types = {}
+        link_types: dict[str, int] = {}
 
         for item in items:
             outgoing = getattr(item, "outgoing_links", [])
             for link in outgoing:
                 total_links += 1
-                link_type = link.link_type if hasattr(link, "link_type") else "unknown"
+                link_type = str(getattr(link, "link_type", None) or "unknown")
                 link_types[link_type] = link_types.get(link_type, 0) + 1
 
         # Calculate average links per item

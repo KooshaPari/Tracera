@@ -99,6 +99,20 @@ class LogoutResponse(BaseModel):
     message: str | None = Field(None, description="Optional message")
 
 
+class DeviceCompleteRequest(BaseModel):
+    """Request to complete device authorization from browser."""
+
+    user_code: str = Field(..., description="User code from device flow")
+    code: str = Field(..., description="Authorization code from OAuth flow")
+
+
+class DeviceCompleteResponse(BaseModel):
+    """Response after completing device authorization."""
+
+    status: str = Field(..., description="Authorization status")
+    user: dict | None = Field(None, description="User information if available")
+
+
 def _generate_user_code(length: int = 8) -> str:
     """Generate a user-friendly device code."""
     chars = "BCDFGHJKMNPQRTVWXYZ0123456789"
@@ -239,6 +253,75 @@ async def exchange_device_code(
             "id": user_id,
             "email": "user@example.com",
         },
+    )
+
+
+@router.post("/device/complete", response_model=DeviceCompleteResponse)
+async def complete_device_authorization(
+    request: DeviceCompleteRequest,
+) -> DeviceCompleteResponse:
+    """Complete device authorization from browser.
+
+    This endpoint is called by the browser after the user enters the user code
+    and completes authentication through the OAuth flow.
+
+    Args:
+        request: Device completion request with user_code and authorization code
+
+    Returns:
+        Authorization status and user information
+
+    Raises:
+        HTTPException: If user code is invalid or authorization fails
+    """
+    # Find the pending device flow for this user code
+    found_device_code = None
+    for device_code, flow in _DEVICE_FLOWS.items():
+        if flow.get("user_code") == request.user_code and flow["status"] == "pending":
+            found_device_code = device_code
+            break
+
+    if not found_device_code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired user code",
+        )
+
+    # Exchange the authorization code for tokens using WorkOS
+    try:
+        workos_service = _get_workos_service()
+        result = workos_service.authenticate_with_code(request.code)
+    except Exception as e:
+        logger.error(f"Device flow authorization failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Authentication failed: {e!s}",
+        )
+
+    # Extract user information
+    user_info = None
+    if result.get("user"):
+        user_info = result["user"]
+    elif result.get("access_token"):
+        try:
+            claims = workos_service.verify_access_token(result["access_token"])
+            user_info = {
+                "sub": claims.get("sub"),
+                "email": claims.get("email"),
+            }
+        except Exception as e:
+            logger.warning(f"Failed to verify access token: {e}")
+
+    # Update the device flow with authorization
+    _DEVICE_FLOWS[found_device_code]["status"] = "authorized"
+    _DEVICE_FLOWS[found_device_code]["user_id"] = user_info.get("sub") if user_info else None
+    _DEVICE_FLOWS[found_device_code]["access_token"] = result.get("access_token")
+
+    logger.info(f"Device flow authorized for user code {request.user_code}")
+
+    return DeviceCompleteResponse(
+        status="authorized",
+        user=user_info,
     )
 
 

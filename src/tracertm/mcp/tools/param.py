@@ -10,7 +10,6 @@ from __future__ import annotations
 import asyncio
 import gzip
 import json
-import os
 import re
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
@@ -58,11 +57,7 @@ def _list_ingestable_paths(dir_path: str, recursive: bool) -> list[tuple[str, st
         raise ToolError(f"Directory not found: {dir_path}")
     patterns = {".md", ".mdx", ".yaml", ".yml"}
     files = directory.rglob("*") if recursive else directory.iterdir()
-    return [
-        (str(p), p.suffix.lower())
-        for p in files
-        if p.is_file() and p.suffix.lower() in patterns
-    ]
+    return [(str(p), p.suffix.lower()) for p in files if p.is_file() and p.suffix.lower() in patterns]
 
 
 def _backup_write(output_path_str: str, backup_data: dict[str, Any], compress: bool) -> None:
@@ -100,7 +95,7 @@ except Exception:  # pragma: no cover - test fallback when FastMCP isn't availab
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -140,7 +135,7 @@ except Exception:  # pragma: no cover - test fallback
         select_project = _core_unavailable
         query_items = _core_unavailable
 
-    core = _CoreStub()  # type: ignore[assignment]
+    core = _CoreStub()
 
 try:
     from tracertm.mcp.tools import specifications as spec_tools
@@ -149,7 +144,7 @@ except Exception:  # pragma: no cover - test fallback
     class _SpecStub:
         pass
 
-    spec_tools = _SpecStub()  # type: ignore[assignment]
+    spec_tools = _SpecStub()
 from tracertm.cli.commands import design as design_module
 from tracertm.cli.commands import export as export_cmd
 from tracertm.cli.commands import import_cmd as import_cmd_module
@@ -204,7 +199,7 @@ def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
 async def _call_tool(mod: Any, tool_name: str, **kwargs: Any) -> Any:
     """Invoke a tool by name on a module (handles FunctionTool/callable from @mcp.tool())."""
     fn = getattr(mod, tool_name)
-    return await cast(Callable[..., Awaitable[Any]], fn)(**kwargs)  # type: ignore[call-non-callable]
+    return await cast(Callable[..., Awaitable[Any]], fn)(**kwargs)
 
 
 def _get_access_token_from_ctx() -> Any | None:
@@ -277,11 +272,13 @@ def _build_sync_engine() -> SyncEngine:
     except Exception:
         api_client = _NoopApiClient()
 
+    from tracertm.storage.sync_engine import SyncConfig
+
     return SyncEngine(
         db_connection=db_connection,
         api_client=cast(TraceRTMClient, api_client),
         storage_manager=storage_manager,
-        conflict_strategy=conflict_strategy,
+        config=SyncConfig(conflict_strategy=conflict_strategy),
     )
 
 
@@ -318,7 +315,7 @@ async def _get_async_session() -> AsyncSession:
     engine = create_async_engine(database_url, echo=False)
     async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
     session = async_session_maker()
-    session._tracertm_engine = engine  # type: ignore[attr-defined]
+    setattr(session, "_tracertm_engine", engine)
     return session
 
 
@@ -332,7 +329,8 @@ async def project_manage(
 
     if action == "create":
         result = await _call_tool(
-            project_tools, "create_project",
+            project_tools,
+            "create_project",
             name=(payload.get("name") or ""),
             description=payload.get("description"),
             ctx=ctx,
@@ -343,14 +341,16 @@ async def project_manage(
         return _wrap(result, ctx, action)
     if action == "select":
         result = await _call_tool(
-            project_tools, "select_project",
+            project_tools,
+            "select_project",
             project_id=payload.get("project_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "snapshot":
         result = await _call_tool(
-            project_tools, "snapshot_project",
+            project_tools,
+            "snapshot_project",
             project_id=payload.get("project_id"),
             label=payload.get("label"),
             ctx=ctx,
@@ -380,7 +380,8 @@ async def _item_manage_impl(
 
     if action == "create":
         result = await _call_tool(
-            item_tools, "create_item",
+            item_tools,
+            "create_item",
             title=payload.get("title"),
             view=payload.get("view"),
             item_type=payload.get("item_type"),
@@ -395,14 +396,16 @@ async def _item_manage_impl(
         return _wrap(result, ctx, action)
     if action == "get":
         result = await _call_tool(
-            item_tools, "get_item",
+            item_tools,
+            "get_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "update":
         result = await _call_tool(
-            item_tools, "update_item",
+            item_tools,
+            "update_item",
             item_id=payload.get("item_id"),
             title=payload.get("title"),
             description=payload.get("description"),
@@ -415,14 +418,16 @@ async def _item_manage_impl(
         return _wrap(result, ctx, action)
     if action == "delete":
         result = await _call_tool(
-            item_tools, "delete_item",
+            item_tools,
+            "delete_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "query":
         result = await _call_tool(
-            item_tools, "query_items",
+            item_tools,
+            "query_items",
             view=payload.get("view"),
             item_type=payload.get("item_type"),
             status=payload.get("status"),
@@ -433,14 +438,16 @@ async def _item_manage_impl(
         return _wrap(result, ctx, action)
     if action == "summarize_view":
         result = await _call_tool(
-            item_tools, "summarize_view",
+            item_tools,
+            "summarize_view",
             view=payload.get("view"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "bulk_update":
         result = await _call_tool(
-            item_tools, "bulk_update_items",
+            item_tools,
+            "bulk_update_items",
             view=payload.get("view"),
             status=payload.get("status"),
             new_status=payload.get("new_status"),
@@ -463,7 +470,8 @@ async def link_manage(
 
     if action == "create":
         result = await _call_tool(
-            link_tools, "create_link",
+            link_tools,
+            "create_link",
             source_id=payload.get("source_id"),
             target_id=payload.get("target_id"),
             link_type=payload.get("link_type"),
@@ -473,7 +481,8 @@ async def link_manage(
         return _wrap(result, ctx, action)
     if action == "list":
         result = await _call_tool(
-            link_tools, "list_links",
+            link_tools,
+            "list_links",
             item_id=payload.get("item_id"),
             link_type=payload.get("link_type"),
             limit=payload.get("limit", 50),
@@ -482,7 +491,8 @@ async def link_manage(
         return _wrap(result, ctx, action)
     if action == "show":
         result = await _call_tool(
-            link_tools, "show_links",
+            link_tools,
+            "show_links",
             item_id=payload.get("item_id"),
             view=payload.get("view"),
             ctx=ctx,
@@ -504,7 +514,8 @@ async def trace_analyze(
 
     if kind == "gaps":
         result = await _call_tool(
-            trace_tools, "find_gaps",
+            trace_tools,
+            "find_gaps",
             from_view=payload.get("from_view"),
             to_view=payload.get("to_view"),
             ctx=ctx,
@@ -512,7 +523,8 @@ async def trace_analyze(
         return _wrap(result, ctx, kind)
     if kind == "trace_matrix":
         result = await _call_tool(
-            trace_tools, "get_trace_matrix",
+            trace_tools,
+            "get_trace_matrix",
             source_view=payload.get("source_view"),
             target_view=payload.get("target_view"),
             ctx=ctx,
@@ -520,7 +532,8 @@ async def trace_analyze(
         return _wrap(result, ctx, kind)
     if kind == "impact":
         result = await _call_tool(
-            trace_tools, "analyze_impact",
+            trace_tools,
+            "analyze_impact",
             item_id=payload.get("item_id"),
             max_depth=payload.get("max_depth", 5),
             link_types=payload.get("link_types"),
@@ -529,7 +542,8 @@ async def trace_analyze(
         return _wrap(result, ctx, kind)
     if kind == "reverse_impact":
         result = await _call_tool(
-            trace_tools, "analyze_reverse_impact",
+            trace_tools,
+            "analyze_reverse_impact",
             item_id=payload.get("item_id"),
             max_depth=payload.get("max_depth", 5),
             ctx=ctx,
@@ -557,7 +571,8 @@ async def graph_analyze(
         return _wrap(result, ctx, kind)
     if kind == "shortest_path":
         result = await _call_tool(
-            graph_tools, "shortest_path",
+            graph_tools,
+            "shortest_path",
             source_id=payload.get("source_id"),
             target_id=payload.get("target_id"),
             ctx=ctx,
@@ -582,7 +597,8 @@ async def spec_manage(
     if kind == "adr":
         if action == "create":
             result = await _call_tool(
-                spec_tools, "create_adr",
+                spec_tools,
+                "create_adr",
                 project_id=payload.get("project_id"),
                 title=payload.get("title"),
                 context=payload.get("context"),
@@ -595,7 +611,8 @@ async def spec_manage(
             return _wrap(result, ctx, f"{kind}.{action}")
         if action == "list":
             result = await _call_tool(
-                spec_tools, "list_adrs",
+                spec_tools,
+                "list_adrs",
                 project_id=payload.get("project_id"),
                 status=payload.get("status"),
             )
@@ -603,7 +620,8 @@ async def spec_manage(
 
     if kind == "contract" and action == "create":
         result = await _call_tool(
-            spec_tools, "create_contract",
+            spec_tools,
+            "create_contract",
             project_id=payload.get("project_id"),
             item_id=payload.get("item_id"),
             title=payload.get("title"),
@@ -614,7 +632,8 @@ async def spec_manage(
 
     if kind == "feature" and action == "create":
         result = await _call_tool(
-            spec_tools, "create_feature",
+            spec_tools,
+            "create_feature",
             project_id=payload.get("project_id"),
             name=(payload.get("name") or ""),
             description=payload.get("description"),
@@ -626,7 +645,8 @@ async def spec_manage(
 
     if kind == "scenario" and action == "create":
         result = await _call_tool(
-            spec_tools, "create_scenario",
+            spec_tools,
+            "create_scenario",
             feature_id=payload.get("feature_id"),
             title=payload.get("title"),
             gherkin_text=payload.get("gherkin_text"),
@@ -1506,7 +1526,7 @@ async def tui_manage(
 
         proc = await asyncio.create_subprocess_exec(
             *cmd,
-            cwd=os.getcwd(),
+            cwd=Path.cwd(),
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL,
         )
@@ -1743,7 +1763,7 @@ async def design_manage(
             return _wrap({"dry_run": True, "direction": direction}, ctx, action)
         designs_config = design_module._load_designs_config(trace_dir)
         components_config = design_module._load_components_config(trace_dir)
-        cwd = os.getcwd()
+        cwd = Path.cwd()
         if direction in ("pull", "both"):
             proc = await asyncio.create_subprocess_exec("bun", "run", "figma:pull", cwd=cwd)
             await proc.wait()
@@ -1770,11 +1790,16 @@ async def design_manage(
             components_list if all_components else [c for c in components_list if c.get("name") == component]
         )
         generated = []
-        cwd = os.getcwd()
+        cwd = Path.cwd()
         for comp in target_components:
             comp_name = comp.get("name")
             proc = await asyncio.create_subprocess_exec(
-                "bun", "run", "storybook:generate", comp_name, "--template", template,
+                "bun",
+                "run",
+                "storybook:generate",
+                comp_name,
+                "--template",
+                template,
                 cwd=cwd,
             )
             await proc.wait()
@@ -1799,7 +1824,7 @@ async def design_manage(
         target_components = (
             components_list if all_components else [c for c in components_list if c.get("name") == component]
         )
-        cwd = os.getcwd()
+        cwd = Path.cwd()
         exported = []
         for comp in target_components:
             if not comp.get("has_story"):

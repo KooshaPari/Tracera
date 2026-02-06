@@ -272,4 +272,4 @@ bun test src/hooks/__tests__/useViewportGraph.test.ts
 - [useViewportGraph.example.tsx](../../apps/web/src/hooks/useViewportGraph.example.tsx) - Full examples
 - [useGraphs.ts](../../apps/web/src/hooks/useGraphs.ts) - Standard graph loading
 - [useViewportCulling.ts](../../apps/web/src/hooks/useViewportCulling.ts) - Edge culling
-- [Phase 4 Task 4.1 Part 2 Completion](../reports/phase4-task4.1-part2-completion.md) - Full report
+- [Phase 4 Task 4.1 Part 2 Completion](../reports/phase_four-task4.1-part2-completion.md) - Full report

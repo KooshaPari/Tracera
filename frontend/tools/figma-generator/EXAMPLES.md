@@ -64,9 +64,7 @@ export function Button({ variant, size, children, className, ...props }: ButtonP
         "height": 40
       },
       "styles": {
-        "fills": [
-          { "type": "SOLID", "color": "#2563eb", "opacity": 1 }
-        ],
+        "fills": [{ "type": "SOLID", "color": "#2563eb", "opacity": 1 }],
         "cornerRadius": 8,
         "padding": { "top": 8, "right": 16, "bottom": 8, "left": 16 },
         "layoutMode": "HORIZONTAL",
@@ -86,9 +84,7 @@ export function Button({ variant, size, children, className, ...props }: ButtonP
       "name": "variant=secondary, size=md",
       "type": "COMPONENT",
       "styles": {
-        "fills": [
-          { "type": "SOLID", "color": "#e5e7eb" }
-        ],
+        "fills": [{ "type": "SOLID", "color": "#e5e7eb" }],
         "typography": {
           "color": "#111827"
         }
@@ -223,6 +219,7 @@ export function Card({ title, description, image, actions }: CardProps) {
 ### Figma Design Tokens (Input)
 
 Figma file contains:
+
 - Color styles: "Primary/500", "Gray/900", etc.
 - Text styles: "Heading/Large", "Body/Medium", etc.
 - Effect styles: "Shadow/Large", etc.
@@ -335,28 +332,28 @@ $ bun run figma:pull
 
 ```yaml
 # .trace/.meta/designs.yaml
-version: "1.0.0"
-lastSync: "2025-11-30T12:00:00Z"
-figmaFileKey: "ABC123"
+version: '1.0.0'
+lastSync: '2025-11-30T12:00:00Z'
+figmaFileKey: 'ABC123'
 
 components:
   - name: Button
     componentId: button
-    figmaNodeId: "1:234"
+    figmaNodeId: '1:234'
     filePath: packages/ui/src/components/Button.tsx
-    lastModified: "2025-11-30T11:00:00Z"
+    lastModified: '2025-11-30T11:00:00Z'
     syncStatus: synced
 
   - name: Card
     componentId: card
-    figmaNodeId: "1:567"
+    figmaNodeId: '1:567'
     filePath: packages/ui/src/components/Card.tsx
-    lastModified: "2025-11-30T11:30:00Z"
+    lastModified: '2025-11-30T11:30:00Z'
     syncStatus: synced
 
 tokens:
   colors:
-    primary-500: "#3b82f6"
+    primary-500: '#3b82f6'
   # ... more tokens
 ```
 
@@ -414,8 +411,8 @@ on:
     paths:
       - 'frontend/packages/ui/src/components/**'
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
-  workflow_dispatch:  # Manual trigger
+    - cron: '0 */6 * * *' # Every 6 hours
+  workflow_dispatch: # Manual trigger
 
 jobs:
   sync:
@@ -604,7 +601,7 @@ $ bun run figma:upload
 export default {
   addons: [
     '@storybook/addon-essentials',
-    '@storybook/addon-designs',  // Enable Figma integration
+    '@storybook/addon-designs', // Enable Figma integration
   ],
   features: {
     storyStoreV7: true,

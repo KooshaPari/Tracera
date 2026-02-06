@@ -131,7 +131,7 @@ The storage layer is critical for data integrity and requires near-perfect cover
 
 | Module | Lines | Est. Coverage | Gap | Priority |
 |--------|-------|---------------|-----|----------|
-| `apps/dashboard_v2.py` | 426 | 82% | ~75 lines | MEDIUM |
+| `apps/dashboard_compat.py` | 426 | 82% | ~75 lines | MEDIUM |
 | `adapters/storage_adapter.py` | 595 | 80% | ~120 lines | HIGH |
 | `apps/dashboard.py` | 263 | 85% | ~40 lines | LOW |
 | `widgets/sync_status.py` | 312 | 85% | ~45 lines | LOW |

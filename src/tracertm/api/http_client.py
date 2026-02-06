@@ -37,9 +37,7 @@ def _default_base_url() -> str:
 
 
 def _is_retryable_status(status: int) -> bool:
-    return status in {408, 429} or (
-        HTTP_SERVER_ERROR_START <= status < HTTP_SERVER_ERROR_END
-    )
+    return status in {408, 429} or (HTTP_SERVER_ERROR_START <= status < HTTP_SERVER_ERROR_END)
 
 
 def _error_message_and_payload(response: httpx.Response) -> tuple[str, Any | None]:

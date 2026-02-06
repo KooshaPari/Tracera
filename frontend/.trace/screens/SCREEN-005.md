@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Multi-step checkout flow wireframes: Cart Review → Shipping → Payment → Confirmation. Show progress indicator.
-

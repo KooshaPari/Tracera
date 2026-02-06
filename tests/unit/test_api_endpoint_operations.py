@@ -423,7 +423,11 @@ class TestSearchAndFilter:
 
     def test_search_by_name(self):
         """Test search items by name."""
-        items: list[dict[str, int | str]] = [{"id": 1, "name": "Apple"}, {"id": 2, "name": "Application"}, {"id": 3, "name": "Banana"}]
+        items: list[dict[str, int | str]] = [
+            {"id": 1, "name": "Apple"},
+            {"id": 2, "name": "Application"},
+            {"id": 3, "name": "Banana"},
+        ]
 
         query = "app"
         results = [i for i in items if query.lower() in str(i["name"]).lower()]

@@ -51,6 +51,7 @@ bun run generate:stories --component Badge
 ```
 
 Output:
+
 ```
 🎨 TraceRTM Storybook Story Generator
 =====================================
@@ -155,9 +156,9 @@ Edit `.trace/.meta/designs.yaml`:
 ```yaml
 components:
   Badge:
-    figmaUrl: "https://www.figma.com/file/ABC123/Design-System?node-id=456-789"
-    componentId: "comp-badge-001"
-    storyId: "story-badge-001"
+    figmaUrl: 'https://www.figma.com/file/ABC123/Design-System?node-id=456-789'
+    componentId: 'comp-badge-001'
+    storyId: 'story-badge-001'
     variants:
       - default
       - secondary
@@ -180,7 +181,9 @@ const meta: Meta<typeof Badge> = {
   title: 'Components/Badge',
   component: Badge,
   tags: ['autodocs'],
-  argTypes: { /* ... */ },
+  argTypes: {
+    /* ... */
+  },
   parameters: {
     design: {
       type: 'figma',
@@ -189,9 +192,9 @@ const meta: Meta<typeof Badge> = {
     trace: {
       componentId: 'comp-badge-001',
       storyId: 'story-badge-001',
-    }
+    },
   },
-}
+};
 ```
 
 ## Step 5: View in Storybook
@@ -203,6 +206,7 @@ bun run dev:storybook
 Navigate to http://localhost:6006
 
 You'll see:
+
 - **Components > Badge** in the sidebar
 - All variant stories (Default, Secondary, Destructive, etc.)
 - An **AllVariants** showcase story
@@ -258,32 +262,35 @@ Just remember: if you regenerate with `--force`, manual changes will be lost. In
 ## Comparing Manual vs Auto-Generated
 
 **Manual Story (20+ lines, 5+ minutes):**
+
 ```typescript
-import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Badge } from '@tracertm/ui'
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Badge } from '@tracertm/ui';
 
 const meta: Meta<typeof Badge> = {
   title: 'Components/Badge',
   component: Badge,
   tags: ['autodocs'],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: { children: 'Badge', variant: 'default' }
-}
+  args: { children: 'Badge', variant: 'default' },
+};
 
 // ... manually add each variant ...
 ```
 
 **Auto-Generated (0 lines, 2 seconds):**
+
 ```bash
 bun run generate:stories --component Badge
 ```
 
 Gets you:
+
 - All 6 variant stories
 - AllVariants showcase
 - Type-safe argTypes with controls
@@ -313,18 +320,20 @@ const buttonVariants = cva('base', {
     variant: 'default',
     size: 'default',
   },
-})
+});
 ```
 
 Generator creates stories for **both** variants:
 
 ```typescript
-export const Default: Story = { args: { variant: 'default' } }
-export const Destructive: Story = { args: { variant: 'destructive' } }
-export const Outline: Story = { args: { variant: 'outline' } }
-export const Sm: Story = { args: { size: 'sm' } }
-export const Lg: Story = { args: { size: 'lg' } }
-export const AllVariants: Story = { /* showcases all primary variants */ }
+export const Default: Story = { args: { variant: 'default' } };
+export const Destructive: Story = { args: { variant: 'destructive' } };
+export const Outline: Story = { args: { variant: 'outline' } };
+export const Sm: Story = { args: { size: 'sm' } };
+export const Lg: Story = { args: { size: 'lg' } };
+export const AllVariants: Story = {
+  /* showcases all primary variants */
+};
 ```
 
 With controls for both:
@@ -345,6 +354,7 @@ argTypes: {
 ## Tips for Best Results
 
 ### 1. Use CVA for Variants
+
 ```typescript
 // ✅ Good - Auto-generates variant stories
 const variants = cva('base', {
@@ -356,6 +366,7 @@ className={variant === 'primary' ? '...' : '...'}
 ```
 
 ### 2. Define Props Interface
+
 ```typescript
 // ✅ Good - Props extracted
 export interface BadgeProps extends VariantProps<typeof badgeVariants> {}
@@ -365,6 +376,7 @@ export const Badge = ({ ...props }) => ...
 ```
 
 ### 3. Use forwardRef Pattern
+
 ```typescript
 // ✅ Good - Component detected
 export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(...)
@@ -374,14 +386,16 @@ export const Badge = forwardRef<HTMLDivElement, BadgeProps>(...)
 ```
 
 ### 4. Set displayName
+
 ```typescript
 // ✅ Good - Better debugging
-Badge.displayName = 'Badge'
+Badge.displayName = 'Badge';
 ```
 
 ## Common Use Cases
 
 ### Use Case 1: New Design System Component
+
 1. Create component with CVA
 2. `bun run generate:stories --component ComponentName`
 3. View in Storybook
@@ -389,17 +403,20 @@ Badge.displayName = 'Badge'
 5. Regenerate with `--force`
 
 ### Use Case 2: Bulk Story Generation
+
 1. Create multiple components
 2. `bun run generate:stories`
 3. Review all generated stories
 4. Customize if needed
 
 ### Use Case 3: Update After Component Change
+
 1. Modify component variants
 2. `bun run generate:stories --component ComponentName --force`
 3. Stories automatically updated with new variants
 
 ### Use Case 4: Onboarding New Developer
+
 1. Clone repo
 2. `bun install`
 3. `bun run generate:stories`
@@ -409,6 +426,7 @@ Badge.displayName = 'Badge'
 ## Summary
 
 The generator saves time by:
+
 - Eliminating boilerplate story code
 - Auto-detecting component structure
 - Creating consistent story format

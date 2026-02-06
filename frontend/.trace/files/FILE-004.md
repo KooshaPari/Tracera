@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Data table component with sorting, filtering, pagination, and row selection. Generic type support for any data structure.
-

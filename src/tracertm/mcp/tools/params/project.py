@@ -17,7 +17,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 from .common import _call_tool, _wrap, project_tools
 
@@ -42,7 +42,8 @@ async def project_manage(
 
     if action == "create":
         result = await _call_tool(
-            project_tools, "create_project",
+            project_tools,
+            "create_project",
             name=(payload.get("name") or ""),
             description=payload.get("description"),
             ctx=ctx,
@@ -53,14 +54,16 @@ async def project_manage(
         return _wrap(result, ctx, action)
     if action == "select":
         result = await _call_tool(
-            project_tools, "select_project",
+            project_tools,
+            "select_project",
             project_id=payload.get("project_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "snapshot":
         result = await _call_tool(
-            project_tools, "snapshot_project",
+            project_tools,
+            "snapshot_project",
             project_id=payload.get("project_id"),
             label=payload.get("label"),
             ctx=ctx,

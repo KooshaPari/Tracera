@@ -35,10 +35,20 @@ if command -v watchexec &>/dev/null && (( ${#watch_paths[@]} > 0 )); then
   for p in "${watch_paths[@]}"; do
     watch_opts+=(-w "$p")
   done
+  if [[ -n "${WATCH_DEBOUNCE_MS:-}" ]]; then
+    watch_opts+=(--debounce "${WATCH_DEBOUNCE_MS}ms")
+  fi
+  if [[ -n "${WATCH_POLL_MS:-}" ]]; then
+    watch_opts+=(--poll "${WATCH_POLL_MS}ms")
+  fi
   exec watchexec "${watch_opts[@]}" --restart -- "${args[@]}"
 else
   if (( ${#watch_paths[@]} > 0 )) && ! command -v watchexec &>/dev/null; then
     echo "run-with-config-watch.sh: watchexec not found; running without config watch (install: brew install watchexec)" >&2
+  fi
+  if [[ "${WATCH_HOLD_ON_MISSING:-0}" == "1" ]]; then
+    echo "run-with-config-watch.sh: holding process (no watchexec available)." >&2
+    exec sh -c 'while true; do sleep 3600; done'
   fi
   exec "${args[@]}"
 fi

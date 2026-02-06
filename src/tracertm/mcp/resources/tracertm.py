@@ -77,12 +77,7 @@ def project_detail_resource(project_id: str) -> str:
             from tracertm.models.link import Link
             from tracertm.models.project import Project
 
-            project = (
-                session
-                .query(Project)
-                .filter(Project.id.like(f"{project_id}%"))
-                .first()
-            )
+            project = session.query(Project).filter(Project.id.like(f"{project_id}%")).first()
 
             if not project:
                 return f"# Project not found: {project_id}"
@@ -287,7 +282,7 @@ def matrix_resource(project_id: str) -> str:  # noqa: C901, PLR1702
                     coverage[source_view][target_view] = {
                         "linked": len(linked_sources),
                         "total": len(source_ids),
-                        "percentage": round(len(linked_sources) / len(source_ids) * 100, 1) if source_ids else 0,
+                        "percentage": int(round(len(linked_sources) / len(source_ids) * 100, 0)) if source_ids else 0,
                     }
 
             return _format_yaml({
@@ -522,7 +517,7 @@ def impact_view_resource(project_id: str) -> str:  # noqa: C901
                     })
 
             # Sort by impact
-            impact_scores.sort(key=lambda x: x["downstream_count"], reverse=True)
+            impact_scores.sort(key=lambda x: int(x["downstream_count"]), reverse=True)
 
             return _format_yaml({
                 "project_id": project_id,
@@ -587,7 +582,9 @@ def coverage_view_resource(project_id: str) -> str:
                     "total": total,
                     "covered": covered,
                     "percentage": round(covered / total * 100, 1) if total else 0,
-                    "uncovered": [str(item.id)[:8] for item in view_item_list if str(item.id) not in linked_ids][:_MAX_ITEM_LIST_DISPLAY],
+                    "uncovered": [str(item.id)[:8] for item in view_item_list if str(item.id) not in linked_ids][
+                        :_MAX_ITEM_LIST_DISPLAY
+                    ],
                 }
 
             return _format_yaml({

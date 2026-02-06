@@ -12,38 +12,35 @@
  */
 
 export interface ViewportBounds {
-	minX: number;
-	maxX: number;
-	minY: number;
-	maxY: number;
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
 }
 
 export interface NodePosition {
-	x: number;
-	y: number;
+  x: number;
+  y: number;
 }
 
 export interface Edge {
-	id: string;
-	source: string;
-	target: string;
-	[key: string]: any;
+  id: string;
+  source: string;
+  target: string;
+  [key: string]: any;
 }
 
 /**
  * Calculate AABB (Axis-Aligned Bounding Box) for a line segment
  * Used to test if an edge is visible in the viewport
  */
-function getEdgeBounds(
-	sourcePos: NodePosition,
-	targetPos: NodePosition,
-): ViewportBounds {
-	return {
-		minX: Math.min(sourcePos.x, targetPos.x),
-		maxX: Math.max(sourcePos.x, targetPos.x),
-		minY: Math.min(sourcePos.y, targetPos.y),
-		maxY: Math.max(sourcePos.y, targetPos.y),
-	};
+function getEdgeBounds(sourcePos: NodePosition, targetPos: NodePosition): ViewportBounds {
+  return {
+    minX: Math.min(sourcePos.x, targetPos.x),
+    maxX: Math.max(sourcePos.x, targetPos.x),
+    minY: Math.min(sourcePos.y, targetPos.y),
+    maxY: Math.max(sourcePos.y, targetPos.y),
+  };
 }
 
 /**
@@ -51,23 +48,23 @@ function getEdgeBounds(
  * Returns true if the edge's bounding box intersects the viewport
  */
 function isEdgeInViewport(
-	edgeBounds: ViewportBounds,
-	viewportBounds: ViewportBounds,
-	padding: number = 100, // Include edges slightly outside viewport for smooth panning
+  edgeBounds: ViewportBounds,
+  viewportBounds: ViewportBounds,
+  padding: number = 100, // Include edges slightly outside viewport for smooth panning
 ): boolean {
-	const paddedViewport = {
-		minX: viewportBounds.minX - padding,
-		maxX: viewportBounds.maxX + padding,
-		minY: viewportBounds.minY - padding,
-		maxY: viewportBounds.maxY + padding,
-	};
+  const paddedViewport = {
+    minX: viewportBounds.minX - padding,
+    maxX: viewportBounds.maxX + padding,
+    minY: viewportBounds.minY - padding,
+    maxY: viewportBounds.maxY + padding,
+  };
 
-	return !(
-		edgeBounds.maxX < paddedViewport.minX ||
-		edgeBounds.minX > paddedViewport.maxX ||
-		edgeBounds.maxY < paddedViewport.minY ||
-		edgeBounds.minY > paddedViewport.maxY
-	);
+  return !(
+    edgeBounds.maxX < paddedViewport.minX ||
+    edgeBounds.minX > paddedViewport.maxX ||
+    edgeBounds.maxY < paddedViewport.minY ||
+    edgeBounds.minY > paddedViewport.maxY
+  );
 }
 
 /**
@@ -84,21 +81,21 @@ function isEdgeInViewport(
  * - Typical improvement: 40-60% reduction for large graphs
  */
 export function cullEdges(
-	edges: Edge[],
-	nodePositions: Record<string, NodePosition>,
-	viewportBounds: ViewportBounds,
-	padding: number = 100,
+  edges: Edge[],
+  nodePositions: Record<string, NodePosition>,
+  viewportBounds: ViewportBounds,
+  padding: number = 100,
 ): Edge[] {
-	return edges.filter((edge) => {
-		const sourcePos = nodePositions[edge.source];
-		const targetPos = nodePositions[edge.target];
+  return edges.filter((edge) => {
+    const sourcePos = nodePositions[edge.source];
+    const targetPos = nodePositions[edge.target];
 
-		// Skip if node positions are unavailable
-		if (!sourcePos || !targetPos) return false;
+    // Skip if node positions are unavailable
+    if (!sourcePos || !targetPos) return false;
 
-		const edgeBounds = getEdgeBounds(sourcePos, targetPos);
-		return isEdgeInViewport(edgeBounds, viewportBounds, padding);
-	});
+    const edgeBounds = getEdgeBounds(sourcePos, targetPos);
+    return isEdgeInViewport(edgeBounds, viewportBounds, padding);
+  });
 }
 
 /**
@@ -107,25 +104,23 @@ export function cullEdges(
  * @param reactFlowInstance - The ReactFlow instance
  * @returns Viewport bounds in world coordinates
  */
-export function getViewportBounds(
-	reactFlowInstance: any,
-): ViewportBounds | null {
-	if (!reactFlowInstance) return null;
+export function getViewportBounds(reactFlowInstance: any): ViewportBounds | null {
+  if (!reactFlowInstance) return null;
 
-	const viewport = reactFlowInstance.getViewport?.();
-	if (!viewport) return null;
+  const viewport = reactFlowInstance.getViewport?.();
+  if (!viewport) return null;
 
-	const { x, y, zoom } = viewport;
-	const width = window.innerWidth;
-	const height = window.innerHeight;
+  const { x, y, zoom } = viewport;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
 
-	// Convert screen coordinates to world coordinates
-	return {
-		minX: -x / zoom,
-		maxX: (-x + width) / zoom,
-		minY: -y / zoom,
-		maxY: (-y + height) / zoom,
-	};
+  // Convert screen coordinates to world coordinates
+  return {
+    minX: -x / zoom,
+    maxX: (-x + width) / zoom,
+    minY: -y / zoom,
+    maxY: (-y + height) / zoom,
+  };
 }
 
 /**
@@ -134,31 +129,29 @@ export function getViewportBounds(
  * @param nodes - Array of ReactFlow nodes
  * @returns Map of node IDs to positions
  */
-export function extractNodePositions(
-	nodes: any[],
-): Record<string, NodePosition> {
-	const positions: Record<string, NodePosition> = {};
+export function extractNodePositions(nodes: any[]): Record<string, NodePosition> {
+  const positions: Record<string, NodePosition> = {};
 
-	for (const node of nodes) {
-		if (node.position) {
-			positions[node.id] = {
-				x: node.position.x,
-				y: node.position.y,
-			};
-		}
-	}
+  for (const node of nodes) {
+    if (node.position) {
+      positions[node.id] = {
+        x: node.position.x,
+        y: node.position.y,
+      };
+    }
+  }
 
-	return positions;
+  return positions;
 }
 
 /**
  * Statistics about culling performance
  */
 export interface CullingStats {
-	totalEdges: number;
-	visibleEdges: number;
-	culledEdges: number;
-	cullingRatio: number; // Percentage of edges removed (0-100)
+  totalEdges: number;
+  visibleEdges: number;
+  culledEdges: number;
+  cullingRatio: number; // Percentage of edges removed (0-100)
 }
 
 /**
@@ -168,19 +161,16 @@ export interface CullingStats {
  * @param cullableEdges - Filtered edges after culling
  * @returns Statistics object
  */
-export function getCullingStats(
-	edges: Edge[],
-	cullableEdges: Edge[],
-): CullingStats {
-	const totalEdges = edges.length;
-	const visibleEdges = cullableEdges.length;
-	const culledEdges = totalEdges - visibleEdges;
-	const cullingRatio = (culledEdges / totalEdges) * 100;
+export function getCullingStats(edges: Edge[], cullableEdges: Edge[]): CullingStats {
+  const totalEdges = edges.length;
+  const visibleEdges = cullableEdges.length;
+  const culledEdges = totalEdges - visibleEdges;
+  const cullingRatio = (culledEdges / totalEdges) * 100;
 
-	return {
-		totalEdges,
-		visibleEdges,
-		culledEdges,
-		cullingRatio,
-	};
+  return {
+    totalEdges,
+    visibleEdges,
+    culledEdges,
+    cullingRatio,
+  };
 }

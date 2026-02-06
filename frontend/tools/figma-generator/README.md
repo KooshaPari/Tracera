@@ -112,6 +112,7 @@ bun run figma:export
 ```
 
 This creates:
+
 - `.figma-output/figma-plugin.json` - Component data
 - `.figma-output/manifest.json` - Plugin manifest
 - `.figma-output/code.js` - Plugin logic
@@ -133,6 +134,7 @@ bun run figma:sync pull
 ```
 
 Creates/updates:
+
 - `.trace/.meta/designs.yaml` - Sync metadata
 - `.figma-output/stories/*.stories.tsx` - Storybook stories
 
@@ -143,6 +145,7 @@ bun run figma:export-tokens src/design-tokens.ts
 ```
 
 Generates TypeScript file with:
+
 ```typescript
 export const colors = {
   'primary-500': '#3b82f6',
@@ -167,6 +170,7 @@ bun run figma:conflicts
 ```
 
 Reports:
+
 - Components modified locally after last sync
 - Components deleted from Figma
 - Components only in Figma (not in code)
@@ -228,22 +232,23 @@ tokens: {
 
 The converter automatically maps Tailwind classes to Figma properties:
 
-| Tailwind | Figma |
-|----------|-------|
-| `bg-blue-500` | Fill color |
-| `p-4` | Padding: 16px all |
-| `px-4` | Padding: 16px left/right |
-| `gap-4` | Item spacing: 16px |
-| `rounded-lg` | Corner radius: 12px |
-| `flex` | Auto layout: horizontal |
-| `flex-col` | Auto layout: vertical |
-| `text-lg` | Typography: large |
-| `font-bold` | Font weight: 700 |
-| `shadow-md` | Drop shadow effect |
+| Tailwind      | Figma                    |
+| ------------- | ------------------------ |
+| `bg-blue-500` | Fill color               |
+| `p-4`         | Padding: 16px all        |
+| `px-4`        | Padding: 16px left/right |
+| `gap-4`       | Item spacing: 16px       |
+| `rounded-lg`  | Corner radius: 12px      |
+| `flex`        | Auto layout: horizontal  |
+| `flex-col`    | Auto layout: vertical    |
+| `text-lg`     | Typography: large        |
+| `font-bold`   | Font weight: 700         |
+| `shadow-md`   | Drop shadow effect       |
 
 ## Figma Plugin Usage
 
 1. **Generate plugin**:
+
    ```bash
    bun run figma:export
    ```
@@ -263,6 +268,7 @@ The converter automatically maps Tailwind classes to Figma properties:
 ### Setup
 
 1. Configure URL in `.env.local`:
+
    ```bash
    STORY_TO_DESIGN_URL=https://api.story.to.design/v1/sync
    STORY_TO_DESIGN_ENABLED=true
@@ -291,6 +297,7 @@ export default {
 ```
 
 Install addon in Storybook:
+
 ```bash
 bun add -d @storybook/addon-designs
 ```
@@ -300,21 +307,21 @@ bun add -d @storybook/addon-designs
 `.trace/.meta/designs.yaml` structure:
 
 ```yaml
-version: "1.0.0"
-lastSync: "2025-11-30T12:00:00Z"
-figmaFileKey: "ABC123"
+version: '1.0.0'
+lastSync: '2025-11-30T12:00:00Z'
+figmaFileKey: 'ABC123'
 
 components:
   - name: Button
     componentId: button
-    figmaNodeId: "1:234"
+    figmaNodeId: '1:234'
     filePath: packages/ui/src/components/Button.tsx
-    lastModified: "2025-11-30T11:00:00Z"
+    lastModified: '2025-11-30T11:00:00Z'
     syncStatus: synced
 
 tokens:
   colors:
-    primary-500: "#3b82f6"
+    primary-500: '#3b82f6'
   typography:
     text-lg:
       fontFamily: Inter
@@ -338,6 +345,7 @@ Set `FIGMA_FILE_KEY` in `.env.local`. Extract from Figma URL:
 ### "Rate limit exceeded"
 
 Adjust rate limiting in `.env.local`:
+
 ```bash
 FIGMA_RATE_LIMIT_REQUESTS=50
 FIGMA_RATE_LIMIT_MS=60000
@@ -346,6 +354,7 @@ FIGMA_RATE_LIMIT_MS=60000
 ### Conflicts detected
 
 Use conflict resolution:
+
 ```bash
 # Keep local changes
 FIGMA_CONFLICT_RESOLUTION=local bun run figma:sync
@@ -368,7 +377,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '0 0 * * *'  # Daily at midnight
+    - cron: '0 0 * * *' # Daily at midnight
 
 jobs:
   sync:

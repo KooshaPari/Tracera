@@ -341,7 +341,7 @@ def test_error_handling(mock_op):
 - phase3b_database_fixes_report.md
 - phase-3c-pytest-asyncio-fix-report.md
 - PHASE_4_VERIFICATION_REPORT.md
-- phase5_completion_summary.md
+- phase_five_completion_summary.md
 - PHASE_9_FINAL_STATUS_REPORT.md
 - PHASE_10_DEPLOYMENT_PLAN.md
 - PHASE_11_COMPLETION_REPORT.md

@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, ClassVar
 try:
     from textual.app import App, ComposeResult
     from textual.binding import Binding
-    from textual.containers import Container, Horizontal, Vertical
-    from textual.widgets import DataTable, Footer, Header, Input, Static, Tree
+    from textual.containers import Horizontal, Vertical
+    from textual.widgets import Footer, Header, Input, Static, Tree
 
     TEXTUAL_AVAILABLE = True
 except ImportError:
@@ -19,8 +19,8 @@ except ImportError:
     if TYPE_CHECKING:
         from textual.app import App, ComposeResult
         from textual.binding import Binding
-        from textual.containers import Container, Horizontal, Vertical
-        from textual.widgets import DataTable, Footer, Header, Input, Static, Tree
+        from textual.containers import Horizontal, Vertical
+        from textual.widgets import Footer, Header, Input, Static, Tree
     else:
 
         class App:
@@ -29,16 +29,10 @@ except ImportError:
         class ComposeResult:
             pass
 
-        class Container:
-            pass
-
         class Header:
             pass
 
         class Footer:
-            pass
-
-        class DataTable:
             pass
 
         class Tree:
@@ -88,7 +82,7 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        BINDINGS: ClassVar[list] = [
+        BINDINGS: ClassVar[list[Binding]] = [
             Binding("q", "quit", "Quit", priority=True),
             Binding("r", "refresh", "Refresh"),
             Binding("f", "filter", "Filter"),
@@ -220,7 +214,7 @@ if TEXTUAL_AVAILABLE:
                 item_details = self.query_one("#item-details", Static)
                 item_details.update(details)
 
-        def on_input_changed(self, event: Input.Changed) -> None:
+        def on_input_changed(self, _event: Input.Changed) -> None:
             """Handle filter input change."""
             # TODO: Implement filtering
 

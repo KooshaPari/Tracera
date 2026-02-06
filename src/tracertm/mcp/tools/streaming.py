@@ -24,7 +24,7 @@ except Exception:  # pragma: no cover - test fallback when FastMCP isn't availab
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp: Any = _StubMCP()
 
 
 def _get_project_id(project_id: str | None = None) -> str:
@@ -80,12 +80,7 @@ async def stream_impact_analysis(  # noqa: C901, PLR0912
         project_id = item.project_id
 
         # Get all links for the project
-        links = (
-            session
-            .query(Link)
-            .filter(Link.project_id == project_id)
-            .all()
-        )
+        links = session.query(Link).filter(Link.project_id == project_id).all()
 
         # Build adjacency list
         children: dict[str, list[str]] = {}
@@ -216,12 +211,7 @@ def get_matrix_page(  # noqa: PLR0913
         item_lookup = {str(item.id): item for item in items}
 
         # Get links
-        links = (
-            session
-            .query(Link)
-            .filter(Link.project_id.like(f"{project_id}%"))
-            .all()
-        )
+        links = session.query(Link).filter(Link.project_id.like(f"{project_id}%")).all()
 
         # Build matrix rows
         rows = []
@@ -299,12 +289,7 @@ def get_impact_by_depth(  # noqa: C901, PLR0912
         project_id = item.project_id
 
         # Get all links for the project
-        links = (
-            session
-            .query(Link)
-            .filter(Link.project_id == project_id)
-            .all()
-        )
+        links = session.query(Link).filter(Link.project_id == project_id).all()
 
         # Build adjacency list
         children: dict[str, list[str]] = {}
@@ -427,6 +412,7 @@ def get_items_page(  # noqa: PLR0913
             query = query.filter(Item.item_type == item_type.lower())
 
         # Sorting
+        order_col: Any
         if sort_by == "title":
             order_col = Item.title
         elif sort_by == "updated_at":

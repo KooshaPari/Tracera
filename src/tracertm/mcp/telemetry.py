@@ -33,6 +33,11 @@ def setup_telemetry(service_name: str = "tracertm-mcp") -> trace.Tracer:
     Returns:
         Configured tracer instance
     """
+    current_provider = trace.get_tracer_provider()
+    if isinstance(current_provider, TracerProvider):
+        logger.info("Tracing already initialized; using existing tracer provider")
+        return trace.get_tracer(__name__)
+
     # Create resource with service information
     resource = Resource.create({
         "service.name": service_name,
@@ -158,7 +163,7 @@ class TelemetryMiddleware(Middleware):
 
                 # Add auth context if available
                 auth = getattr(ctx, "auth", None)
-                if isinstance(auth, dict[str, Any]):
+                if isinstance(auth, dict):
                     claims = auth.get("claims", {}) or {}
                     span.set_attribute("mcp.auth.subject", claims.get("sub", "unknown"))
                     span.set_attribute("mcp.auth.client_id", claims.get("client_id", "unknown"))

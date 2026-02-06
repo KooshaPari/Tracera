@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Accessible modal dialog component with focus trap, backdrop, and portal rendering. Uses Radix UI primitives.
-

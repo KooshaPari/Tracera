@@ -7,7 +7,7 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.clients.github_client import GitHubClient
+from tracertm.clients.github_client import GitHubClient, IssueListParams, IssueUpdateParams
 from tracertm.clients.linear_client import LinearClient
 from tracertm.repositories.integration_repository import (
     IntegrationCredentialRepository,
@@ -29,7 +29,7 @@ class IntegrationSyncProcessor:
         self.queue = IntegrationSyncQueueRepository(session)
         self.logs = IntegrationSyncLogRepository(session)
 
-    async def process_queue_item(self, queue_item) -> dict[str, Any]:
+    async def process_queue_item(self, queue_item: Any) -> dict[str, Any]:
         started = time.monotonic()
         await self.queue.mark_processing(queue_item.id)
 
@@ -92,7 +92,7 @@ class IntegrationSyncProcessor:
         self,
         client: GitHubClient,
         provider: str,
-        mapping,
+        mapping: Any,
         payload: dict[str, Any],
         direction: str,
     ) -> dict[str, Any]:
@@ -100,13 +100,9 @@ class IntegrationSyncProcessor:
         repo_name = mapping.mapping_metadata.get("repo_full_name") or mapping.external_id
         if direction in ("external_to_tracertm", "bidirectional") and repo_name and "/" in repo_name:
             owner, repo = repo_name.split("/", 1)
-            return await self._sync_github_repo_issues(
-                client=client, mapping=mapping, owner=owner, repo=repo
-            )
+            return await self._sync_github_repo_issues(client=client, mapping=mapping, owner=owner, repo=repo)
         if direction in ("tracertm_to_external", "bidirectional"):
-            return await self._push_github_issue_update(
-                client=client, mapping=mapping, payload=payload
-            )
+            return await self._push_github_issue_update(client=client, mapping=mapping, payload=payload)
         user = await client.get_authenticated_user()
         return {"provider": provider, "user": user.get("login")}
 
@@ -114,15 +110,13 @@ class IntegrationSyncProcessor:
         self,
         client: GitHubClient,
         provider: str,
-        mapping,
+        mapping: Any,
         direction: str,
     ) -> dict[str, Any]:
         """Handle github_projects provider sync; caller must close client."""
         project_id = mapping.mapping_metadata.get("project_id") or mapping.external_id
         if direction in ("external_to_tracertm", "bidirectional") and project_id:
-            return await self._sync_github_project_items(
-                client=client, mapping=mapping, project_id=project_id
-            )
+            return await self._sync_github_project_items(client=client, mapping=mapping, project_id=project_id)
         user = await client.get_authenticated_user()
         return {"provider": provider, "user": user.get("login")}
 
@@ -130,7 +124,7 @@ class IntegrationSyncProcessor:
         self,
         client: LinearClient,
         provider: str,
-        mapping,
+        mapping: Any,
         payload: dict[str, Any],
         direction: str,
     ) -> dict[str, Any]:
@@ -139,17 +133,11 @@ class IntegrationSyncProcessor:
         project_id = mapping.mapping_metadata.get("project_id") or mapping.external_id
         if direction in ("external_to_tracertm", "bidirectional"):
             if team_id:
-                return await self._sync_linear_team_issues(
-                    client=client, mapping=mapping, team_id=team_id
-                )
+                return await self._sync_linear_team_issues(client=client, mapping=mapping, team_id=team_id)
             if project_id:
-                return await self._sync_linear_project_issues(
-                    client=client, mapping=mapping, project_id=project_id
-                )
+                return await self._sync_linear_project_issues(client=client, mapping=mapping, project_id=project_id)
         if direction in ("tracertm_to_external", "bidirectional"):
-            return await self._push_linear_issue_update(
-                client=client, mapping=mapping, payload=payload
-            )
+            return await self._push_linear_issue_update(client=client, mapping=mapping, payload=payload)
         viewer = await client.get_viewer()
         return {"provider": provider, "viewer": viewer.get("name")}
 
@@ -157,7 +145,7 @@ class IntegrationSyncProcessor:
         self,
         provider: str,
         token: str,
-        mapping,
+        mapping: Any,
         payload: dict[str, Any],
         direction: str,
     ) -> dict[str, Any]:
@@ -196,14 +184,18 @@ class IntegrationSyncProcessor:
     async def _sync_github_repo_issues(
         self,
         client: GitHubClient,
-        mapping,
+        mapping: Any,
         owner: str,
         repo: str,
     ) -> dict[str, Any]:
         items_repo = ItemRepository(self.session)
         mapping_repo = IntegrationMappingRepository(self.session)
         repo_full_name = f"{owner}/{repo}"
-        issues = await client.list_issues(owner, repo, state="all", per_page=50, page=1)
+        issues = await client.list_issues(
+            owner,
+            repo,
+            params=IssueListParams(state="all", per_page=50, page=1),
+        )
         created = 0
         updated = 0
         for issue in issues:
@@ -216,7 +208,7 @@ class IntegrationSyncProcessor:
             status = "done" if state == "closed" else "todo"
             assignee = issue.get("assignee") or {}
             owner_name = assignee.get("login")
-            labels = [label.get("name") for label in issue.get("labels", []) if isinstance(label, dict[str, Any])]
+            labels = [label.get("name") for label in issue.get("labels", []) if isinstance(label, dict)]
             item_metadata = {
                 "external_system": "github",
                 "repo_full_name": repo_full_name,
@@ -278,7 +270,7 @@ class IntegrationSyncProcessor:
     async def _sync_github_project_items(
         self,
         client: GitHubClient,
-        mapping,
+        mapping: Any,
         project_id: str,
     ) -> dict[str, Any]:
         items_repo = ItemRepository(self.session)
@@ -349,7 +341,7 @@ class IntegrationSyncProcessor:
     async def _sync_linear_team_issues(
         self,
         client: LinearClient,
-        mapping,
+        mapping: Any,
         team_id: str,
     ) -> dict[str, Any]:
         items_repo = ItemRepository(self.session)
@@ -425,7 +417,7 @@ class IntegrationSyncProcessor:
     async def _sync_linear_project_issues(
         self,
         client: LinearClient,
-        mapping,
+        mapping: Any,
         project_id: str,
     ) -> dict[str, Any]:
         items_repo = ItemRepository(self.session)
@@ -494,7 +486,7 @@ class IntegrationSyncProcessor:
     async def _push_github_issue_update(
         self,
         client: GitHubClient,
-        mapping,
+        mapping: Any,
         payload: dict[str, Any],
     ) -> dict[str, Any]:
         repo_name = mapping.mapping_metadata.get("repo_full_name")
@@ -512,13 +504,18 @@ class IntegrationSyncProcessor:
             if item:
                 title = item.title
                 body = item.description
-        updated = await client.update_issue(owner, repo, int(issue_number), title=title, body=body, state=state)
+        updated = await client.update_issue(
+            owner,
+            repo,
+            int(issue_number),
+            params=IssueUpdateParams(title=title, body=body, state=state),
+        )
         return {"provider": "github", "issue": updated.get("html_url")}
 
     async def _push_linear_issue_update(
         self,
         client: LinearClient,
-        mapping,
+        mapping: Any,
         payload: dict[str, Any],
     ) -> dict[str, Any]:
         issue_id = mapping.external_id

@@ -91,7 +91,7 @@ tests/unit/cli/
 
 tests/unit/tui/
 ├── adapters/test_storage_adapter.py          (532 lines, 28 tests) ✅
-├── apps/test_dashboard_v2.py                 (493 lines, 20 tests) ✅
+├── apps/test_dashboard_compat.py                 (493 lines, 20 tests) ✅
 └── widgets/
     ├── test_conflict_panel.py                (304 lines, 20 tests) ✅
     ├── test_sync_status.py                   (410 lines, 35 tests) ✅

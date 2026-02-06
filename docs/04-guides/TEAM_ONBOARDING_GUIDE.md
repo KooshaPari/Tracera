@@ -113,8 +113,7 @@ git push origin feature-branch
 ```bash
 uv run poe format      # Format code
 uv run poe lint        # Lint with auto-fix
-uv run poe type-check  # Type check (mypy)
-uv run poe type-check-strict  # Ultra-strict (basedpyright)
+uv run ty check src/ --error-on-warning  # Type check (ty)
 uv run poe quality     # All quality checks
 ```
 
@@ -291,8 +290,7 @@ pytest tests/ -vv -s
 ### Type Check Specific File
 
 ```bash
-mypy src/tracertm/models.py
-basedpyright src/tracertm/models.py
+ty check src/tracertm/models.py --error-on-warning
 ```
 
 ## Common Issues
@@ -313,11 +311,8 @@ uv run poe lint
 ### Type Errors
 
 ```bash
-# Check with mypy
-uv run mypy src/
-
-# Check with basedpyright
-uv run basedpyright src/
+# Check with ty
+uv run ty check src/ --error-on-warning
 
 # Fix type annotations
 ```
@@ -358,4 +353,3 @@ pytest tests/ --pdb
 5. Ask questions!
 
 Welcome to the team! 🚀
-

@@ -10,6 +10,7 @@ The TraceRTM frontend is a modern React application built with TypeScript, TanSt
 ## Tech Stack
 
 ### Core Framework
+
 - **React 18** - UI framework with concurrent features
 - **TypeScript** - Type-safe development
 - **Vite** - Fast build tooling
@@ -17,11 +18,13 @@ The TraceRTM frontend is a modern React application built with TypeScript, TanSt
 - **shadcn/ui** - Accessible component library
 
 ### Routing & Data
+
 - **TanStack Router** - Type-safe file-based routing
 - **TanStack Query** - Server state management
 - **Zod** - Runtime validation
 
 ### Graph Visualization
+
 - **React Flow** - Interactive graph visualization
 - **D3.js** - Advanced visualizations
 
@@ -61,17 +64,20 @@ Components follow a clear hierarchy:
 ### State Management
 
 **Server State** (TanStack Query):
+
 - API data fetching
 - Caching and invalidation
 - Optimistic updates
 - Background refetching
 
 **Client State** (React hooks):
+
 - UI state (modals, selections)
 - Form state
 - Local preferences
 
 **URL State** (TanStack Router):
+
 - Current view/page
 - Filters and search params
 - Navigation state
@@ -305,10 +311,7 @@ import react from '@vitejs/plugin-react';
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
 
 export default defineConfig({
-  plugins: [
-    react(),
-    TanStackRouterVite(),
-  ],
+  plugins: [react(), TanStackRouterVite()],
   server: {
     port: 5173,
     proxy: {

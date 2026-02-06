@@ -8,6 +8,7 @@ import asyncio
 import logging
 import os
 import sys
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI
@@ -68,9 +69,7 @@ async def _poll_services(
 
     checks = build_api_checks()
     to_poll_required = [c for c in checks if c.name in required_names and c.url and c.url.strip()]
-    missing_required = [
-        n for n in required_names if not any(c.name == n and c.url and c.url.strip() for c in checks)
-    ]
+    missing_required = [n for n in required_names if not any(c.name == n and c.url and c.url.strip() for c in checks)]
     if missing_required:
         raise RuntimeError(f"Preflight failed for: {', '.join(missing_required)} (missing url)")
 
@@ -81,9 +80,9 @@ async def _poll_services(
             f"[{service_name}] Polling required (indefinite retry, backoff cap {interval_max}s): {names}...\n"
         )
         sys.stderr.flush()
-        results = await asyncio.gather(
-            *[_poll_one_service(service_name, c, True, interval_initial, interval_max) for c in to_poll_required]
-        )
+        results = await asyncio.gather(*[
+            _poll_one_service(service_name, c, True, interval_initial, interval_max) for c in to_poll_required
+        ])
         required_failures = [name for name, ok in results if not ok]
         if required_failures:
             raise RuntimeError(f"Preflight failed for: {'; '.join(required_failures)}")
@@ -223,105 +222,96 @@ async def initialize_agent_service(event_bus: Any) -> Any:
     )
 
 
+async def _handle_item_created(cache_service: Any, event: dict[str, Any]) -> None:
+    """Handle item.created events from NATS."""
+    entity_id = event.get("entity_id")
+    project_id = event.get("project_id")
+    entity_type = event.get("entity_type")
+
+    logger.info("Received item.created event: %s (type: %s, project: %s)", entity_id, entity_type, project_id)
+
+    if project_id:
+        await _invalidate_item_caches(cache_service, project_id)
+
+    if entity_type == "requirement":
+        logger.info("Requirement created: %s, ready for AI analysis workflow", entity_id)
+
+
+async def _handle_item_updated(cache_service: Any, event: dict[str, Any]) -> None:
+    """Handle item.updated events from NATS."""
+    entity_id = event.get("entity_id")
+    project_id = event.get("project_id")
+    entity_type = event.get("entity_type")
+
+    logger.info("Received item.updated event: %s (type: %s, project: %s)", entity_id, entity_type, project_id)
+
+    if project_id:
+        await _invalidate_item_update_caches(cache_service, project_id)
+
+
+async def _handle_item_deleted(cache_service: Any, event: dict[str, Any]) -> None:
+    """Handle item.deleted events from NATS."""
+    entity_id = event.get("entity_id")
+    project_id = event.get("project_id")
+
+    logger.info("Received item.deleted event: %s (project: %s)", entity_id, project_id)
+
+    if project_id:
+        await _invalidate_item_deletion_caches(cache_service, project_id)
+
+
+async def _handle_link_created(cache_service: Any, event: dict[str, Any]) -> None:
+    """Handle link.created events from NATS."""
+    entity_id = event.get("entity_id")
+    project_id = event.get("project_id")
+
+    logger.info("Received link.created event: %s (project: %s)", entity_id, project_id)
+
+    if project_id:
+        await _invalidate_link_caches(cache_service, project_id)
+
+
+async def _handle_link_deleted(cache_service: Any, event: dict[str, Any]) -> None:
+    """Handle link.deleted events from NATS."""
+    entity_id = event.get("entity_id")
+    project_id = event.get("project_id")
+
+    logger.info("Received link.deleted event: %s (project: %s)", entity_id, project_id)
+
+    if project_id:
+        await _invalidate_link_caches(cache_service, project_id)
+
+
+async def _handle_project_updated(cache_service: Any, event: dict[str, Any]) -> None:
+    """Handle project.updated events from NATS."""
+    project_id = event.get("project_id")
+
+    logger.info("Received project.updated event: %s", project_id)
+
+    if project_id:
+        await _invalidate_project_caches(cache_service, project_id)
+
+
+async def _handle_project_deleted(cache_service: Any, event: dict[str, Any]) -> None:
+    """Handle project.deleted events from NATS."""
+    project_id = event.get("project_id")
+
+    logger.info("Received project.deleted event: %s", project_id)
+
+    if project_id:
+        await _invalidate_project_caches(cache_service, project_id)
+
+
 def create_event_handlers(cache_service: Any) -> dict[str, Any]:
-    """Create event handlers for NATS events.
-
-    Args:
-        cache_service: Cache service for invalidation
-
-    Returns:
-        Dictionary mapping event names to handler functions
-    """
-    async def handle_item_created(event: dict[str, Any]) -> None:
-        """Handle item.created events from NATS."""
-        entity_id = event.get("entity_id")
-        project_id = event.get("project_id")
-        entity_type = event.get("entity_type")
-
-        logger.info("Received item.created event: %s (type: %s, project: %s)", entity_id, entity_type, project_id)
-
-        # Invalidate relevant caches for this project
-        if project_id:
-            await _invalidate_item_caches(cache_service, project_id)
-
-        # Trigger workflows if needed (e.g., for requirements)
-        if entity_type == "requirement":
-            logger.info("Requirement created: %s, ready for AI analysis workflow", entity_id)
-            # Future: Queue for AI analysis, traceability checks, etc.
-
-    async def handle_item_updated(event: dict[str, Any]) -> None:
-        """Handle item.updated events from NATS."""
-        entity_id = event.get("entity_id")
-        project_id = event.get("project_id")
-        entity_type = event.get("entity_type")
-
-        logger.info("Received item.updated event: %s (type: %s, project: %s)", entity_id, entity_type, project_id)
-
-        # Invalidate relevant caches
-        if project_id:
-            await _invalidate_item_update_caches(cache_service, project_id)
-
-    async def handle_item_deleted(event: dict[str, Any]) -> None:
-        """Handle item.deleted events from NATS."""
-        entity_id = event.get("entity_id")
-        project_id = event.get("project_id")
-
-        logger.info("Received item.deleted event: %s (project: %s)", entity_id, project_id)
-
-        # Invalidate relevant caches
-        if project_id:
-            await _invalidate_item_deletion_caches(cache_service, project_id)
-
-    async def handle_link_created(event: dict[str, Any]) -> None:
-        """Handle link.created events from NATS."""
-        entity_id = event.get("entity_id")
-        project_id = event.get("project_id")
-
-        logger.info("Received link.created event: %s (project: %s)", entity_id, project_id)
-
-        # Invalidate relevant caches - links affect graph and traceability
-        if project_id:
-            await _invalidate_link_caches(cache_service, project_id)
-
-    async def handle_link_deleted(event: dict[str, Any]) -> None:
-        """Handle link.deleted events from NATS."""
-        entity_id = event.get("entity_id")
-        project_id = event.get("project_id")
-
-        logger.info("Received link.deleted event: %s (project: %s)", entity_id, project_id)
-
-        # Invalidate relevant caches
-        if project_id:
-            await _invalidate_link_caches(cache_service, project_id)
-
-    async def handle_project_updated(event: dict[str, Any]) -> None:
-        """Handle project.updated events from NATS."""
-        project_id = event.get("project_id")
-
-        logger.info("Received project.updated event: %s", project_id)
-
-        # Invalidate project-level caches
-        if project_id:
-            await _invalidate_project_caches(cache_service, project_id)
-
-    async def handle_project_deleted(event: dict[str, Any]) -> None:
-        """Handle project.deleted events from NATS."""
-        project_id = event.get("project_id")
-
-        logger.info("Received project.deleted event: %s", project_id)
-
-        # Invalidate all project-related caches
-        if project_id:
-            await _invalidate_project_caches(cache_service, project_id)
-
+    """Create event handlers for NATS events."""
     return {
-        "item_created": handle_item_created,
-        "item_updated": handle_item_updated,
-        "item_deleted": handle_item_deleted,
-        "link_created": handle_link_created,
-        "link_deleted": handle_link_deleted,
-        "project_updated": handle_project_updated,
-        "project_deleted": handle_project_deleted,
+        "item_created": partial(_handle_item_created, cache_service),
+        "item_updated": partial(_handle_item_updated, cache_service),
+        "item_deleted": partial(_handle_item_deleted, cache_service),
+        "link_created": partial(_handle_link_created, cache_service),
+        "link_deleted": partial(_handle_link_deleted, cache_service),
+        "project_updated": partial(_handle_project_updated, cache_service),
+        "project_deleted": partial(_handle_project_deleted, cache_service),
     }
 
 
@@ -448,6 +438,7 @@ async def initialize_nats_bridge(app: FastAPI) -> None:
 
     # Get cache service for event handlers
     from tracertm.api.deps import get_cache_service
+
     cache_service = get_cache_service()
 
     # Create and subscribe event handlers
@@ -455,6 +446,18 @@ async def initialize_nats_bridge(app: FastAPI) -> None:
     await subscribe_to_events(event_bus, handlers)
 
     logger.info("NATS bridge initialized successfully at %s", os.getenv("NATS_URL", "nats://localhost:4222"))
+
+
+async def initialize_grpc_server(app: FastAPI) -> None:
+    """Initialize Python gRPC server (required for internal gRPC clients)."""
+    try:
+        from tracertm.grpc.server import start_grpc_server
+
+        grpc_server = await start_grpc_server()
+        app.state.grpc_server = grpc_server
+    except Exception as e:
+        # gRPC is required for Go->Python internal calls; fail clearly.
+        raise RuntimeError(f"Python gRPC server failed to start: {e}") from e
 
 
 async def startup_initialization(app: FastAPI) -> None:
@@ -486,3 +489,6 @@ async def startup_initialization(app: FastAPI) -> None:
 
     # Initialize NATS bridge (includes event handlers)
     await initialize_nats_bridge(app)
+
+    # Initialize Python gRPC server
+    await initialize_grpc_server(app)

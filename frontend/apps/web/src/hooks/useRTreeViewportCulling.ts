@@ -20,317 +20,469 @@
  * ```
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { RBushSpatialIndex } from "@/lib/spatialIndex";
-import type { Edge, NodePosition, ViewportBounds } from "@/lib/spatialIndex";
-import { getViewportBounds } from "@/lib/viewportCulling";
-import { logger } from "@/lib/logger";
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-interface UseRTreeViewportCullingProps {
-	edges: Edge[];
-	nodes: any[];
-	reactFlowInstance: any;
-	enabled?: boolean;
-	padding?: number;
-	onStatsChange?: (stats: CullingStats) => void;
-	// Advanced options
-	rebuildThreshold?: number; // Rebuild index when changes > this %
-	minEdgesForRTree?: number; // Minimum edges to use R-tree
+import { logger } from '../lib/logger';
+import {
+  RBushSpatialIndex,
+  type Edge,
+  type NodePosition,
+  type ViewportBounds,
+} from '../lib/spatialIndex';
+import { getViewportBounds } from '../lib/viewportCulling';
+
+const ZERO = 0;
+const DEFAULT_PADDING = 100;
+const DEFAULT_MIN_EDGES_FOR_RTREE = 10_000;
+const LINEAR_EDGE_TIME_MS = 0.0007;
+const SPEEDUP_FALLBACK = 1;
+const RATIO_PERCENT_MULTIPLIER = 100;
+const QUERY_TIME_DECIMALS = 3;
+const BUILD_TIME_DECIMALS = 3;
+const SPEEDUP_DECIMALS = 2;
+const RATIO_DECIMALS = 1;
+
+interface ReactFlowViewport {
+  x: number;
+  y: number;
+  zoom: number;
 }
 
-interface CullingStats {
-	totalEdges: number;
-	visibleEdges: number;
-	culledEdges: number;
-	cullingRatio: number; // Percentage of edges removed (0-100)
-	queryTimeMs?: number;
-	indexBuildTimeMs?: number;
-	usingRTree: boolean;
+interface ReactFlowInstance {
+  getViewport?: () => ReactFlowViewport;
+  addListener?: (event: 'move', handler: () => void) => void;
+  removeListener?: (event: 'move', handler: () => void) => void;
+}
+
+interface RTreeNode {
+  id: string;
+  position?: NodePosition;
+}
+
+interface UseRTreeViewportCullingProps {
+  edges: Edge[];
+  nodes: RTreeNode[];
+  reactFlowInstance?: ReactFlowInstance;
+  enabled?: boolean;
+  padding?: number;
+  onStatsChange?: (stats: CullingStats) => void;
+  rebuildThreshold?: number;
+  minEdgesForRTree?: number;
 }
 
 interface UseRTreeViewportCullingResult {
-	cullableEdges: Edge[];
-	cullingStats: CullingStats | null;
-	viewportBounds: ViewportBounds | null;
-	isEnabled: boolean;
-	spatialIndex: RBushSpatialIndex | null;
+  cullableEdges: Edge[];
+  cullingStats?: CullingStats;
+  viewportBounds?: ViewportBounds;
+  isEnabled: boolean;
+  spatialIndex?: RBushSpatialIndex;
 }
 
-/**
- * Extract node positions from ReactFlow nodes
- */
-function extractNodePositions(nodes: any[]): Map<string, NodePosition> {
-	const positions = new Map<string, NodePosition>();
-
-	for (const node of nodes) {
-		if (node.position) {
-			positions.set(node.id, {
-				x: node.position.x,
-				y: node.position.y,
-			});
-		}
-	}
-
-	return positions;
+interface QueryResult {
+  edges: Edge[];
+  queryTimeMs: number;
 }
 
-/**
- * Hook for R-tree based viewport culling
- *
- * Provides O(log n) viewport queries instead of O(n) linear search.
- * Automatically falls back to linear search for small graphs.
- *
- * @param props - Configuration options
- * @returns Culled edges and statistics
- */
-export function useRTreeViewportCulling({
-	edges,
-	nodes,
-	reactFlowInstance,
-	enabled = true,
-	padding = 100,
-	onStatsChange,
-	// RebuildThreshold = 0.1, // Rebuild if >10% changed
-	minEdgesForRTree = 10_000, // Only use R-tree for large graphs
-}: UseRTreeViewportCullingProps): UseRTreeViewportCullingResult {
-	const [viewportBounds, setViewportBounds] = useState<ViewportBounds | null>(
-		null,
-	);
-
-	// Determine if we should use R-tree
-	const useRTree = enabled && edges.length >= minEdgesForRTree;
-
-	// Extract node positions (memoized)
-	const nodePositions = useMemo(() => extractNodePositions(nodes), [nodes]);
-
-	// Build spatial index (memoized)
-	const [indexBuildTime, setIndexBuildTime] = useState<number>(0);
-	const spatialIndex = useMemo(() => {
-		if (!useRTree) {
-			return null;
-		}
-
-		const startTime = performance.now();
-		const index = new RBushSpatialIndex();
-		index.bulkLoad(edges, nodePositions);
-		const buildTime = performance.now() - startTime;
-
-		setIndexBuildTime(buildTime);
-
-		return index;
-	}, [edges, nodePositions, useRTree]);
-
-	// Clear index on unmount
-	useEffect(
-		() => () => {
-			spatialIndex?.clear();
-		},
-		[spatialIndex],
-	);
-
-	// Update viewport bounds on viewport change
-	const handleViewportChange = useCallback(() => {
-		if (!enabled) {
-			return;
-		}
-
-		const bounds = getViewportBounds(reactFlowInstance);
-		setViewportBounds(bounds);
-	}, [enabled, reactFlowInstance]);
-
-	// Listen for viewport changes
-	useEffect(() => {
-		if (!enabled || !reactFlowInstance) {
-			return;
-		}
-
-		// Get initial viewport bounds
-		handleViewportChange();
-
-		// Listen to move events (pan/zoom)
-		const handleMove = () => handleViewportChange();
-		reactFlowInstance.addListener?.("move", handleMove);
-
-		// Also listen on window resize
-		window.addEventListener("resize", handleViewportChange);
-
-		return () => {
-			reactFlowInstance.removeListener?.("move", handleMove);
-			window.removeEventListener("resize", handleViewportChange);
-		};
-	}, [enabled, reactFlowInstance, handleViewportChange]);
-
-	// Cull edges based on viewport
-	const [queryTime, setQueryTime] = useState<number>(0);
-	const cullableEdges = useMemo(() => {
-		if (!enabled || !viewportBounds) {
-			return edges;
-		}
-
-		const startTime = performance.now();
-		let result: Edge[];
-
-		if (spatialIndex) {
-			// O(log n) R-tree query
-			result = spatialIndex.searchViewport(viewportBounds, padding);
-		} else {
-			// O(n) fallback for small graphs
-			result = edges.filter((edge) => {
-				const sourcePos = nodePositions.get(edge.source);
-				const targetPos = nodePositions.get(edge.target);
-				if (!sourcePos || !targetPos) {
-					return false;
-				}
-
-				const edgeBounds = {
-					maxX: Math.max(sourcePos.x, targetPos.x),
-					maxY: Math.max(sourcePos.y, targetPos.y),
-					minX: Math.min(sourcePos.x, targetPos.x),
-					minY: Math.min(sourcePos.y, targetPos.y),
-				};
-
-				const searchBounds = {
-					maxX: viewportBounds.maxX + padding,
-					maxY: viewportBounds.maxY + padding,
-					minX: viewportBounds.minX - padding,
-					minY: viewportBounds.minY - padding,
-				};
-
-				return !(
-					edgeBounds.maxX < searchBounds.minX ||
-					edgeBounds.minX > searchBounds.maxX ||
-					edgeBounds.maxY < searchBounds.minY ||
-					edgeBounds.minY > searchBounds.maxY
-				);
-			});
-		}
-
-		const queryTimeMs = performance.now() - startTime;
-		setQueryTime(queryTimeMs);
-
-		return result;
-	}, [enabled, edges, nodePositions, viewportBounds, padding, spatialIndex]);
-
-	// Calculate and report statistics
-	const cullingStats = useMemo(() => {
-		const totalEdges = edges.length;
-		const visibleEdges = cullableEdges.length;
-		const culledEdges = totalEdges - visibleEdges;
-		const cullingRatio = totalEdges > 0 ? (culledEdges / totalEdges) * 100 : 0;
-
-		const stats: CullingStats = {
-			culledEdges,
-			cullingRatio,
-			indexBuildTimeMs: indexBuildTime,
-			queryTimeMs: queryTime,
-			totalEdges,
-			usingRTree: !!spatialIndex,
-			visibleEdges,
-		};
-
-		// Report stats change if callback provided
-		if (onStatsChange) {
-			onStatsChange(stats);
-		}
-
-		return stats;
-	}, [
-		edges.length,
-		cullableEdges.length,
-		queryTime,
-		indexBuildTime,
-		spatialIndex,
-		onStatsChange,
-	]);
-
-	return {
-		cullableEdges,
-		cullingStats,
-		isEnabled: enabled,
-		spatialIndex,
-		viewportBounds,
-	};
+interface IndexResult {
+  index?: RBushSpatialIndex;
+  buildTimeMs: number;
 }
 
-/**
- * Performance monitoring hook for R-tree culling
- *
- * Provides detailed statistics about culling performance.
- *
- * Usage:
- * ```typescript
- * const stats = useRTreeCullingStats(cullingStats);
- * logger.info(`Query: ${stats.queryTimeMs.toFixed(2)}ms`);
- * logger.info(`Speedup: ${stats.estimatedSpeedupVsLinear.toFixed(2)}x`);
- * ```
- */
-export function useRTreeCullingStats(stats: CullingStats | null): {
-	culledCount: number;
-	visibleCount: number;
-	savedPercentage: number;
-	queryTimeMs: number;
-	buildTimeMs: number;
-	usingRTree: boolean;
-	estimatedSpeedupVsLinear: number;
+interface ComputeCullableEdgesParams {
+  enabled: boolean;
+  edges: Edge[];
+  nodePositions: Map<string, NodePosition>;
+  viewportBounds: ViewportBounds | undefined;
+  padding: number;
+  spatialIndex?: RBushSpatialIndex;
+}
+
+interface CullingStats {
+  totalEdges: number;
+  visibleEdges: number;
+  culledEdges: number;
+  cullingRatio: number;
+  queryTimeMs?: number;
+  indexBuildTimeMs?: number;
+  usingRTree: boolean;
+}
+
+const DEFAULT_CULLING_STATS: CullingStats = {
+  culledEdges: ZERO,
+  cullingRatio: ZERO,
+  totalEdges: ZERO,
+  usingRTree: false,
+  visibleEdges: ZERO,
+};
+
+const useRTreeCullingStats = (
+  cullingStats?: CullingStats,
+): {
+  buildTimeMs: number;
+  culledCount: number;
+  estimatedSpeedupVsLinear: number;
+  queryTimeMs: number;
+  savedPercentage: number;
+  totalCount: number;
+  usingRTree: boolean;
+  visibleCount: number;
+} =>
+  useMemo(() => {
+    const stats = cullingStats ?? DEFAULT_CULLING_STATS;
+    const totalCount = stats.totalEdges;
+    const visibleCount = stats.visibleEdges;
+    const culledCount = stats.culledEdges;
+    let savedPercentage = ZERO;
+    if (totalCount > ZERO) {
+      savedPercentage = (culledCount / totalCount) * RATIO_PERCENT_MULTIPLIER;
+    }
+    const queryTimeMs = stats.queryTimeMs ?? ZERO;
+    const buildTimeMs = stats.indexBuildTimeMs ?? ZERO;
+    let estimatedSpeedupVsLinear = SPEEDUP_FALLBACK;
+    if (stats.usingRTree && queryTimeMs > ZERO) {
+      estimatedSpeedupVsLinear = Math.max(
+        (LINEAR_EDGE_TIME_MS * totalCount) / queryTimeMs,
+        SPEEDUP_FALLBACK,
+      );
+    }
+
+    return {
+      buildTimeMs,
+      culledCount,
+      estimatedSpeedupVsLinear,
+      queryTimeMs,
+      savedPercentage,
+      totalCount,
+      usingRTree: stats.usingRTree,
+      visibleCount,
+    };
+  }, [cullingStats]);
+
+function extractNodePositions(nodes: RTreeNode[]): Map<string, NodePosition> {
+  const positions = new Map<string, NodePosition>();
+
+  for (const node of nodes) {
+    if (node.position) {
+      positions.set(node.id, {
+        x: node.position.x,
+        y: node.position.y,
+      });
+    }
+  }
+
+  return positions;
+}
+
+function buildSpatialIndex(
+  edges: Edge[],
+  nodePositions: Map<string, NodePosition>,
+  shouldUseRTree: boolean,
+): IndexResult {
+  if (!shouldUseRTree) {
+    return { buildTimeMs: ZERO };
+  }
+
+  const startTime = performance.now();
+  const index = new RBushSpatialIndex();
+  index.bulkLoad(edges, nodePositions);
+
+  return {
+    buildTimeMs: performance.now() - startTime,
+    index,
+  };
+}
+
+function buildEdgeBounds(sourcePos: NodePosition, targetPos: NodePosition): ViewportBounds {
+  return {
+    maxX: Math.max(sourcePos.x, targetPos.x),
+    maxY: Math.max(sourcePos.y, targetPos.y),
+    minX: Math.min(sourcePos.x, targetPos.x),
+    minY: Math.min(sourcePos.y, targetPos.y),
+  };
+}
+
+function buildSearchBounds(viewportBounds: ViewportBounds, padding: number): ViewportBounds {
+  return {
+    maxX: viewportBounds.maxX + padding,
+    maxY: viewportBounds.maxY + padding,
+    minX: viewportBounds.minX - padding,
+    minY: viewportBounds.minY - padding,
+  };
+}
+
+function isBoundsVisible(edgeBounds: ViewportBounds, searchBounds: ViewportBounds): boolean {
+  return !(
+    edgeBounds.maxX < searchBounds.minX ||
+    edgeBounds.minX > searchBounds.maxX ||
+    edgeBounds.maxY < searchBounds.minY ||
+    edgeBounds.minY > searchBounds.maxY
+  );
+}
+
+function filterEdgesLinear(
+  edges: Edge[],
+  nodePositions: Map<string, NodePosition>,
+  viewportBounds: ViewportBounds,
+  padding: number,
+): Edge[] {
+  const searchBounds = buildSearchBounds(viewportBounds, padding);
+
+  return edges.filter((edge) => {
+    const sourcePos = nodePositions.get(edge.source);
+    const targetPos = nodePositions.get(edge.target);
+
+    if (!sourcePos || !targetPos) {
+      return false;
+    }
+
+    const edgeBounds = buildEdgeBounds(sourcePos, targetPos);
+    return isBoundsVisible(edgeBounds, searchBounds);
+  });
+}
+
+function computeCullableEdges({
+  enabled,
+  edges,
+  nodePositions,
+  viewportBounds,
+  padding,
+  spatialIndex,
+}: ComputeCullableEdgesParams): QueryResult {
+  if (!enabled || !viewportBounds) {
+    return { edges, queryTimeMs: ZERO };
+  }
+
+  const startTime = performance.now();
+  let result = edges;
+
+  if (spatialIndex) {
+    result = spatialIndex.searchViewport(viewportBounds, padding);
+  } else {
+    result = filterEdgesLinear(edges, nodePositions, viewportBounds, padding);
+  }
+
+  return {
+    edges: result,
+    queryTimeMs: performance.now() - startTime,
+  };
+}
+
+function buildCullingStats(
+  totalEdges: number,
+  visibleEdges: number,
+  queryTime: number,
+  indexBuildTime: number,
+  usingRTree: boolean,
+): CullingStats {
+  const culledEdges = totalEdges - visibleEdges;
+  let cullingRatio = ZERO;
+
+  if (totalEdges > ZERO) {
+    cullingRatio = (culledEdges / totalEdges) * RATIO_PERCENT_MULTIPLIER;
+  }
+
+  return {
+    culledEdges,
+    cullingRatio,
+    indexBuildTimeMs: indexBuildTime,
+    queryTimeMs: queryTime,
+    totalEdges,
+    usingRTree,
+    visibleEdges,
+  };
+}
+
+function calculateEstimatedSpeedup(totalEdges: number, queryTimeMs: number): number {
+  if (queryTimeMs <= ZERO) {
+    return SPEEDUP_FALLBACK;
+  }
+
+  const estimatedLinearMs = totalEdges * LINEAR_EDGE_TIME_MS;
+  return estimatedLinearMs / queryTimeMs;
+}
+
+function normalizeStats(stats: CullingStats | undefined): CullingStats {
+  if (stats) {
+    return stats;
+  }
+
+  return DEFAULT_CULLING_STATS;
+}
+
+function getRTreeCullingStats(stats: CullingStats | undefined): {
+  culledCount: number;
+  visibleCount: number;
+  savedPercentage: number;
+  queryTimeMs: number;
+  buildTimeMs: number;
+  usingRTree: boolean;
+  estimatedSpeedupVsLinear: number;
 } {
-	const culledCount = stats?.culledEdges ?? 0;
-	const visibleCount = stats?.visibleEdges ?? 0;
-	const savedPercentage = stats?.cullingRatio ?? 0;
-	const queryTimeMs = stats?.queryTimeMs ?? 0;
-	const buildTimeMs = stats?.indexBuildTimeMs ?? 0;
-	const usingRTree = stats?.usingRTree ?? false;
+  const normalizedStats = normalizeStats(stats);
+  const {
+    culledEdges: culledCount,
+    cullingRatio: savedPercentage,
+    indexBuildTimeMs,
+    queryTimeMs: rawQueryTimeMs,
+    totalEdges,
+    usingRTree,
+    visibleEdges: visibleCount,
+  } = normalizedStats;
+  const queryTimeMs = rawQueryTimeMs ?? ZERO;
+  const buildTimeMs = indexBuildTimeMs ?? ZERO;
+  const estimatedSpeedupVsLinear = calculateEstimatedSpeedup(totalEdges, queryTimeMs);
 
-	// Estimate linear search time based on total edges
-	// Rough estimate: 0.0007ms per edge (from benchmarks)
-	const totalEdges = stats?.totalEdges ?? 0;
-	const estimatedLinearMs = totalEdges * 0.0007;
-	const estimatedSpeedupVsLinear =
-		queryTimeMs > 0 ? estimatedLinearMs / queryTimeMs : 1;
-
-	return {
-		buildTimeMs,
-		culledCount,
-		estimatedSpeedupVsLinear,
-		queryTimeMs,
-		savedPercentage,
-		usingRTree,
-		visibleCount,
-	};
+  return {
+    buildTimeMs,
+    culledCount,
+    estimatedSpeedupVsLinear,
+    queryTimeMs,
+    savedPercentage,
+    usingRTree,
+    visibleCount,
+  };
 }
 
-/**
- * Debug hook to monitor R-tree performance
- *
- * Logs performance statistics to console.
- * Use during development to verify optimization.
- *
- * Usage:
- * ```typescript
- * useRTreeDebug(cullingStats, edges.length);
- * ```
- */
-export function useRTreeDebug(
-	stats: CullingStats | null,
-	edgeCount: number,
-): void {
-	useEffect(() => {
-		if (!stats) {
-			return;
-		}
+function useViewportBoundsState(
+  enabled: boolean,
+  reactFlowInstance?: ReactFlowInstance,
+): ViewportBounds | undefined {
+  const [viewportBounds, setViewportBounds] = useState<ViewportBounds | undefined>();
 
-		const detailedStats = useRTreeCullingStats(stats);
+  const handleViewportChange = useCallback((): void => {
+    if (!enabled || !reactFlowInstance) {
+      setViewportBounds(undefined);
+      return;
+    }
 
-		logger.group("🌳 R-tree Viewport Culling Stats");
-		logger.info(`Edges: ${edgeCount.toLocaleString()}`);
-		logger.info(`Visible: ${detailedStats.visibleCount.toLocaleString()}`);
-		logger.info(`Culled: ${detailedStats.culledCount.toLocaleString()}`);
-		logger.info(`Culling Ratio: ${detailedStats.savedPercentage.toFixed(1)}%`);
-		logger.info(`Query Time: ${detailedStats.queryTimeMs.toFixed(3)}ms`);
-		logger.info(`Build Time: ${detailedStats.buildTimeMs.toFixed(3)}ms`);
-		logger.info(`Using R-tree: ${detailedStats.usingRTree ? "✅" : "❌"}`);
-		logger.info(
-			`Estimated Speedup: ${detailedStats.estimatedSpeedupVsLinear.toFixed(2)}x`,
-		);
-		logger.groupEnd();
-	}, [stats, edgeCount]);
+    const bounds = getViewportBounds(reactFlowInstance);
+    if (!bounds) {
+      setViewportBounds(undefined);
+      return;
+    }
+
+    setViewportBounds(bounds);
+  }, [enabled, reactFlowInstance]);
+
+  useEffect((): (() => void) | undefined => {
+    if (!enabled || !reactFlowInstance) {
+      return;
+    }
+
+    handleViewportChange();
+
+    const handleMove = (): void => handleViewportChange();
+
+    if (reactFlowInstance.addListener) {
+      reactFlowInstance.addListener('move', handleMove);
+    }
+
+    window.addEventListener('resize', handleViewportChange);
+
+    return () => {
+      if (reactFlowInstance.removeListener) {
+        reactFlowInstance.removeListener('move', handleMove);
+      }
+      window.removeEventListener('resize', handleViewportChange);
+    };
+  }, [enabled, reactFlowInstance, handleViewportChange]);
+
+  return viewportBounds;
 }
+
+const useRTreeViewportCulling = ({
+  edges,
+  nodes,
+  reactFlowInstance,
+  enabled = true,
+  padding = DEFAULT_PADDING,
+  onStatsChange,
+  minEdgesForRTree = DEFAULT_MIN_EDGES_FOR_RTREE,
+}: UseRTreeViewportCullingProps): UseRTreeViewportCullingResult => {
+  const useRTree = enabled && edges.length >= minEdgesForRTree;
+  const nodePositions = useMemo(() => extractNodePositions(nodes), [nodes]);
+  const viewportBounds = useViewportBoundsState(enabled, reactFlowInstance);
+
+  const indexResult = useMemo(
+    () => buildSpatialIndex(edges, nodePositions, useRTree),
+    [edges, nodePositions, useRTree],
+  );
+
+  const queryResult = useMemo(
+    () =>
+      computeCullableEdges({
+        enabled,
+        edges,
+        nodePositions,
+        viewportBounds,
+        padding,
+        spatialIndex: indexResult.index,
+      }),
+    [enabled, edges, nodePositions, viewportBounds, padding, indexResult.index],
+  );
+
+  const cullingStats = useMemo(
+    () =>
+      buildCullingStats(
+        edges.length,
+        queryResult.edges.length,
+        queryResult.queryTimeMs,
+        indexResult.buildTimeMs,
+        indexResult.index !== undefined,
+      ),
+    [edges.length, queryResult.edges.length, queryResult.queryTimeMs, indexResult],
+  );
+
+  useEffect(() => {
+    if (onStatsChange) {
+      onStatsChange(cullingStats);
+    }
+  }, [cullingStats, onStatsChange]);
+
+  useEffect((): void | (() => void) => {
+    if (!indexResult.index) {
+      return;
+    }
+
+    return () => {
+      indexResult.index?.clear();
+    };
+  }, [indexResult.index]);
+
+  return {
+    cullableEdges: queryResult.edges,
+    cullingStats,
+    isEnabled: enabled,
+    spatialIndex: indexResult.index,
+    viewportBounds,
+  };
+};
+
+const useRTreeDebug = (stats: CullingStats | undefined, edgeCount: number): void => {
+  useEffect(() => {
+    if (!stats) {
+      return;
+    }
+
+    const detailedStats = getRTreeCullingStats(stats);
+    let rTreeLabel = '❌';
+    if (detailedStats.usingRTree) {
+      rTreeLabel = '✅';
+    }
+
+    logger.info('🌳 R-tree Viewport Culling Stats');
+    logger.info(`Edges: ${edgeCount.toLocaleString()}`);
+    logger.info(`Visible: ${detailedStats.visibleCount.toLocaleString()}`);
+    logger.info(`Culled: ${detailedStats.culledCount.toLocaleString()}`);
+    logger.info(`Culling Ratio: ${detailedStats.savedPercentage.toFixed(RATIO_DECIMALS)}%`);
+    logger.info(`Query Time: ${detailedStats.queryTimeMs.toFixed(QUERY_TIME_DECIMALS)}ms`);
+    logger.info(`Build Time: ${detailedStats.buildTimeMs.toFixed(BUILD_TIME_DECIMALS)}ms`);
+    logger.info(`Using R-tree: ${rTreeLabel}`);
+    logger.info(
+      `Estimated Speedup: ${detailedStats.estimatedSpeedupVsLinear.toFixed(SPEEDUP_DECIMALS)}x`,
+    );
+    logger.info('🌳 End R-tree Viewport Culling Stats');
+  }, [stats, edgeCount]);
+};
+
+export { useRTreeCullingStats, useRTreeDebug, useRTreeViewportCulling, type CullingStats };

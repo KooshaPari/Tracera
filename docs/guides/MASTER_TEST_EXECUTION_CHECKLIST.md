@@ -20,7 +20,7 @@
 - [ ] Install Python testing tools (pytest, coverage)
 - [ ] Configure code coverage tools
 - [ ] Setup linting tools (golangci-lint, eslint, pylint)
-- [ ] Setup type checking (tsc, mypy)
+- [ ] Setup type checking (tsc, ty)
 - [ ] Configure test reporters
 
 ## Phase 1: AI Foundation (Weeks 1-2)
@@ -244,4 +244,3 @@
 - [ ] Security targets met
 - [ ] Documentation complete
 - [ ] Ready for production
-

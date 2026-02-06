@@ -1,5 +1,6 @@
-import { BookOpenIcon, CodeIcon, HomeIcon } from 'lucide-react';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
+
+import { BookOpenIcon, CodeIcon, HomeIcon } from 'lucide-react';
 
 /**
  * Shared layout configuration

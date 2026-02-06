@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Slide-out cart drawer component. Shows cart items, quantities, totals, and checkout button. Updates in real-time.
-

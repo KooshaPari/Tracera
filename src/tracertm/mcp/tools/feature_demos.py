@@ -65,7 +65,7 @@ def demo_versioned_tool(x: int, y: int) -> dict[str, Any]:
 
 
 @mcp.tool(version="2.0", description="Versioned demo tool v2 (supports z and mode)")
-def demo_versioned_tool_v2(x: int, y: int, z: int = 0, mode: str = "sum") -> dict[str, Any]:
+def demo_versioned_tool_extended(x: int, y: int, z: int = 0, mode: str = "sum") -> dict[str, Any]:
     if mode == "sum":
         result = x + y + z
     elif mode == "product":

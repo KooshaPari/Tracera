@@ -81,7 +81,7 @@ postgres:
   volumes:
     - postgres_data:/var/lib/postgresql/data
   ports:
-    - "5432:5432"
+    - '5432:5432'
 ```
 
 ### Redis
@@ -93,7 +93,7 @@ postgres:
 redis:
   image: redis:7-alpine
   ports:
-    - "6379:6379"
+    - '6379:6379'
   volumes:
     - redis_data:/data
 ```
@@ -106,10 +106,10 @@ redis:
 ```yaml
 nats:
   image: nats:latest
-  command: ["-js", "-m", "8222"]
+  command: ['-js', '-m', '8222']
   ports:
-    - "4222:4222"
-    - "8222:8222"
+    - '4222:4222'
+    - '8222:8222'
 ```
 
 ### API
@@ -126,7 +126,7 @@ api:
     REDIS_URL: redis://redis:6379
     NATS_URL: nats://nats:4222
   ports:
-    - "8000:8000"
+    - '8000:8000'
   depends_on:
     - postgres
     - redis
@@ -239,8 +239,8 @@ services:
   - type: web
     name: tracertm-api
     env: python
-    buildCommand: "uv sync && alembic upgrade head"
-    startCommand: "uvicorn src.tracertm.api.main:app --host 0.0.0.0 --port $PORT"
+    buildCommand: 'uv sync && alembic upgrade head'
+    startCommand: 'uvicorn src.tracertm.api.main:app --host 0.0.0.0 --port $PORT'
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -404,11 +404,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 ### API won't start
 
 1. Check database connection:
+
    ```bash
    docker-compose logs postgres
    ```
 
 2. Verify migrations:
+
    ```bash
    alembic current
    ```
@@ -421,6 +423,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 ### Database connection errors
 
 1. Verify PostgreSQL is running:
+
    ```bash
    docker-compose ps postgres
    ```
@@ -433,11 +436,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 ### Performance issues
 
 1. Enable query logging:
+
    ```python
    engine = create_async_engine(DATABASE_URL, echo=True)
    ```
 
 2. Check slow queries:
+
    ```sql
    SELECT * FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10;
    ```

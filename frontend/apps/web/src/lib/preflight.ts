@@ -1,76 +1,84 @@
 type PreflightResult = {
-	errors: string[];
-	ok: boolean;
+  errors: string[];
+  ok: boolean;
 };
 
 type PreflightCheck = {
-	name: string;
-	url: string;
+  name: string;
+  url: string;
 };
 
-type PreflightState = "checking" | "healthy" | "unhealthy";
+type PreflightState = 'checking' | 'healthy' | 'unhealthy';
 
 type PreflightUpdate = {
-	error?: string;
-	hint?: string;
-	isRetrying?: boolean;
-	ok: boolean;
+  error?: string;
+  hint?: string;
+  isRetrying?: boolean;
+  ok: boolean;
 };
 
 type HealthCheckResult = {
-	error: string | null;
-	hint?: string;
+  error: string | null;
+  hint?: string;
 };
 
-type InfraStatus = "degraded" | "healthy" | "unknown" | "unhealthy";
+type InfraStatus = 'degraded' | 'healthy' | 'unknown' | 'unhealthy';
 
 type InfraDisplay = {
-	color: string;
-	label: string;
-	state: PreflightState;
+  color: string;
+  label: string;
+  state: PreflightState;
 };
 
-const DEFAULT_TIMEOUT_MS = Number("8000");
-const FULL_PERCENT = Number("100");
-const RELOAD_DELAY_MS = Number("240");
-const HTTP_UNAUTHORIZED = Number("401");
-const HTTP_FORBIDDEN = Number("403");
+const DEFAULT_TIMEOUT_MS = Number('8000');
+const FULL_PERCENT = Number('100');
+const RELOAD_DELAY_MS = Number('240');
+const HTTP_UNAUTHORIZED = Number('401');
+const HTTP_FORBIDDEN = Number('403');
 
 const PREFLIGHT_STATE_COLORS: Record<PreflightState, string> = {
-	checking: "#f59e0b",
-	healthy: "#22c55e",
-	unhealthy: "#ef4444",
+  checking: '#f59e0b',
+  healthy: '#22c55e',
+  unhealthy: '#ef4444',
 };
 
 const INFRA_STATUS_COLORS: Record<InfraStatus, string> = {
-	degraded: "#f59e0b",
-	healthy: "#22c55e",
-	unknown: "#6b7280",
-	unhealthy: "#ef4444",
+  degraded: '#f59e0b',
+  healthy: '#22c55e',
+  unknown: '#6b7280',
+  unhealthy: '#ef4444',
 };
 
 const INFRA_STATUS_LABELS: Record<InfraStatus, string> = {
-	degraded: "Degraded",
-	healthy: "Healthy",
-	unknown: "Checking",
-	unhealthy: "Down",
+  degraded: 'Degraded',
+  healthy: 'Healthy',
+  unknown: 'Checking',
+  unhealthy: 'Down',
 };
 
 const INFRA_STATUS_STATES: Record<InfraStatus, PreflightState> = {
-	degraded: "checking",
-	healthy: "healthy",
-	unknown: "checking",
-	unhealthy: "unhealthy",
+  degraded: 'checking',
+  healthy: 'healthy',
+  unknown: 'checking',
+  unhealthy: 'unhealthy',
 };
 
 const PREFLIGHT_STATUS_ICONS: Record<PreflightState, string> = {
-	checking: "…",
-	healthy: "✓",
-	unhealthy: "✕",
+  checking: '●',
+  healthy: '✓',
+  unhealthy: '✕',
 };
 
-const PREFLIGHT_ITEMS_TOKEN = "__PREFLIGHT_ITEMS__";
-const PREFLIGHT_INFRA_TOKEN = "__PREFLIGHT_INFRA__";
+const INFRA_DISPLAY_NAMES: Record<string, string> = {
+  database: 'Database',
+  redis: 'Redis',
+  nats: 'NATS',
+  go_backend: 'Go Backend',
+  mcp: 'MCP',
+};
+
+const PREFLIGHT_ITEMS_TOKEN = '__PREFLIGHT_ITEMS__';
+const PREFLIGHT_INFRA_TOKEN = '__PREFLIGHT_INFRA__';
 const PREFLIGHT_TEMPLATE = `
 		<style>
 		@keyframes shimmer {
@@ -94,6 +102,20 @@ const PREFLIGHT_TEMPLATE = `
 			animation: shimmer 1.2s ease-in-out infinite;
 			height: 10px; border-radius: 999px;
 		}
+		.preflight-list {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+			max-height: 260px;
+			overflow-y: auto;
+			scroll-behavior: smooth;
+		}
+		.preflight-item {
+			transition: opacity 260ms ease, transform 260ms ease;
+		}
+		.preflight-item[data-active="true"] {
+			opacity: 1;
+		}
 		.preflight-item[data-state="healthy"] { border: 1px solid rgba(34,197,94,0.4); background: rgba(34,197,94,0.08); }
 		.preflight-item[data-state="unhealthy"] { border: 1px solid rgba(239,68,68,0.4); background: rgba(239,68,68,0.08); }
 		.preflight-item[data-state="checking"] { border: 1px solid rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
@@ -112,7 +134,7 @@ const PREFLIGHT_TEMPLATE = `
 				<div style="height:10px;background:#111827;border-radius:999px;overflow:hidden;margin-bottom:16px;">
 					<div data-progress style="width:0%;height:100%;background:#f59e0b;transition:width 200ms ease;"></div>
 				</div>
-				<ul data-preflight-list style="list-style:none;padding:0;margin:0;display:none;">${PREFLIGHT_ITEMS_TOKEN}</ul>
+				<ul data-preflight-list class="preflight-list">${PREFLIGHT_ITEMS_TOKEN}</ul>
 				${PREFLIGHT_INFRA_TOKEN}
 				<div data-preflight-footer style="margin-top:16px;color:#9aa4b2;font-size:14px;display:none;">
 					Status updates will appear as checks complete.
@@ -121,35 +143,32 @@ const PREFLIGHT_TEMPLATE = `
 		</div>
 	`;
 
-const fetchWithTimeout = async (
-	url: string,
-	timeoutMs = DEFAULT_TIMEOUT_MS,
-): Promise<Response> => {
-	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), timeoutMs);
-	try {
-		const response = await fetch(url, {
-			credentials: "omit",
-			method: "GET",
-			mode: "cors",
-			signal: controller.signal,
-		});
-		return response;
-	} finally {
-		clearTimeout(timer);
-	}
+const fetchWithTimeout = async (url: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<Response> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      credentials: 'omit',
+      method: 'GET',
+      mode: 'cors',
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(timer);
+  }
 };
 
 const buildCheckItems = (checks: PreflightCheck[]): string =>
-	checks
-		.map(
-			(check) =>
-				`<li data-check="${check.name}" data-state="checking" class="preflight-item" style="display:none;align-items:flex-start;gap:12px;padding:12px;border-radius:12px;margin-bottom:10px;">
-					<span data-status style="width:16px;height:16px;border-radius:999px;background:#f59e0b;display:inline-block;margin-top:4px;"></span>
+  checks
+    .map(
+      (check) =>
+        `<li data-check="${check.name}" data-state="checking" data-active="false" class="preflight-item" style="display:none;align-items:flex-start;gap:12px;padding:12px;border-radius:12px;margin-bottom:10px;opacity:0.25;">
+					<span data-status style="width:16px;height:16px;border-radius:999px;background:#f59e0b;display:inline-flex;align-items:center;justify-content:center;margin-top:4px;color:#0b0f14;font-weight:700;font-size:10px;">●</span>
 					<div style="flex:1;">
 						<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
 							<span data-label style="color:#e6edf3;font-weight:600;">${check.name}</span>
-							<span data-icon style="font-size:14px;color:#f59e0b;">…</span>
+							<span data-icon style="font-size:14px;color:#f59e0b;">●</span>
 							<span data-status-text style="font-size:12px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
 						</div>
 					<div data-error style="margin-top:4px;color:#fca5a5;font-size:13px;display:none;"></div>
@@ -158,456 +177,492 @@ const buildCheckItems = (checks: PreflightCheck[]): string =>
 				</div>
 					<button data-retry style="margin-left:8px;display:none;padding:6px 10px;border-radius:8px;border:1px solid #f59e0b;background:#f59e0b;color:#0b0f14;font-weight:600;cursor:pointer;">Retry</button>
 				</li>`,
-		)
-		.join("");
+    )
+    .join('');
+
+const getInfraItems = (checks: PreflightCheck[]): string[] => {
+  const dependsOnBackend = checks.some((check) => check.name.includes('backend'));
+  if (!dependsOnBackend) return [];
+  return ['database', 'redis', 'nats', 'go_backend', 'mcp'];
+};
 
 const buildInfraSkeleton = (infraItems: string[]): string =>
-	infraItems
-		.map(
-			(name) =>
-				`<li data-infra="${name}" data-state="checking" class="infra-item" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;margin-bottom:8px;">
+  infraItems
+    .map(
+      (name) =>
+        `<li data-infra="${name}" data-state="checking" class="infra-item" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;margin-bottom:8px;">
 					<span data-infra-status style="width:12px;height:12px;border-radius:999px;background:#f59e0b;display:inline-block;"></span>
-					<span style="flex:1;color:#e6edf3;">${name}</span>
+					<span style="flex:1;color:#e6edf3;">${INFRA_DISPLAY_NAMES[name] || name}</span>
 					<span data-infra-text style="font-size:11px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
 					<div class="preflight-skeleton" style="width:120px;"></div>
 				</li>`,
-		)
-		.join("");
+    )
+    .join('');
 
 const buildInfraSection = (infraItems: string[]): string => {
-	if (infraItems.length === 0) {
-		return "";
-	}
+  if (infraItems.length === 0) {
+    return '';
+  }
 
-	const infraSkeleton = buildInfraSkeleton(infraItems);
-	return `
-			<details data-infra-panel style="margin-top:18px;padding-top:12px;border-top:1px solid #1f2a37;display:none;">
-				<summary style="cursor:pointer;color:#9aa4b2;font-weight:600;">Infrastructure checks</summary>
+  const infraSkeleton = buildInfraSkeleton(infraItems);
+  return `
+			<details data-infra-panel open style="margin-top:18px;padding-top:12px;border-top:1px solid #1f2a37;">
+				<summary style="cursor:pointer;color:#9aa4b2;font-weight:600;">Dependencies</summary>
 				<ul data-infra-list style="list-style:none;padding:0;margin:12px 0 0 0;">${infraSkeleton}</ul>
 			</details>`;
 };
 
 const renderPreflightLoading = (checks: PreflightCheck[]): void => {
-	const root = document.getElementById("root");
-	if (!root) {
-		throw new Error("Root element not found");
-	}
+  const root = document.getElementById('root');
+  if (!root) {
+    throw new Error('Root element not found');
+  }
 
-	const items = buildCheckItems(checks);
-	const infraItems: string[] = [];
-	const infraSection = buildInfraSection(infraItems);
+  const items = buildCheckItems(checks);
+  const infraItems = getInfraItems(checks);
+  const infraSection = buildInfraSection(infraItems);
 
-	root.innerHTML = PREFLIGHT_TEMPLATE.replace(PREFLIGHT_ITEMS_TOKEN, items).replace(
-		PREFLIGHT_INFRA_TOKEN,
-		infraSection,
-	);
+  root.innerHTML = PREFLIGHT_TEMPLATE.replace(PREFLIGHT_ITEMS_TOKEN, items).replace(
+    PREFLIGHT_INFRA_TOKEN,
+    infraSection,
+  );
+
+  setRevealOrder(checks);
 };
 
 const revealFailurePanel = (): void => {
-	const list = document.querySelector(
-		"[data-preflight-list]",
-	) as HTMLElement | null;
-	const infra = document.querySelector(
-		"[data-infra-panel]",
-	) as HTMLElement | null;
-	const footer = document.querySelector(
-		"[data-preflight-footer]",
-	) as HTMLElement | null;
-	if (list) {
-		list.style.display = "block";
-	}
-	if (infra) {
-		infra.style.display = "block";
-	}
-	if (footer) {
-		footer.style.display = "block";
-	}
+  const list = document.querySelector('[data-preflight-list]') as HTMLElement | null;
+  const infra = document.querySelector('[data-infra-panel]') as HTMLElement | null;
+  const footer = document.querySelector('[data-preflight-footer]') as HTMLElement | null;
+  if (list) {
+    list.style.display = 'block';
+  }
+  if (infra) {
+    infra.style.display = 'block';
+  }
+  if (footer) {
+    footer.style.display = 'block';
+  }
 };
 
 const revealItem = (name: string): void => {
-	const item = document.querySelector(
-		`[data-check="${name}"]`,
-	) as HTMLElement | null;
-	if (item) {
-		item.style.display = "flex";
-	}
+  const item = document.querySelector(`[data-check="${name}"]`) as HTMLElement | null;
+  if (item) {
+    item.style.display = 'flex';
+    item.dataset.active = 'true';
+  }
+};
+
+let revealOrder: string[] = [];
+let revealIndex = 0;
+
+const setRevealOrder = (checks: PreflightCheck[]): void => {
+  revealOrder = checks.map((check) => check.name);
+  revealIndex = 0;
+  revealNext();
+};
+
+const revealNext = (): void => {
+  if (revealIndex >= revealOrder.length) return;
+  const nextName = revealOrder[revealIndex];
+  revealIndex += 1;
+  revealItem(nextName);
+  setListOpacity();
+};
+
+const setListOpacity = (): void => {
+  const list = document.querySelector('[data-preflight-list]') as HTMLElement | null;
+  if (!list) return;
+  const items = Array.from(list.querySelectorAll<HTMLElement>('[data-check]'));
+  const total = items.length;
+  items.forEach((item, index) => {
+    const distance = total - index - 1;
+    const opacity = Math.max(0.2, 1 - distance * 0.15);
+    item.style.opacity = `${opacity}`;
+  });
+};
+
+const scrollToLatest = (name: string): void => {
+  const list = document.querySelector('[data-preflight-list]') as HTMLElement | null;
+  const item = document.querySelector(`[data-check="${name}"]`) as HTMLElement | null;
+  if (!list || !item) return;
+  const top = item.offsetTop - 12;
+  list.scrollTo({ top, behavior: 'smooth' });
+  item.animate(
+    [
+      { transform: 'translateY(0)' },
+      { transform: 'translateY(-6px)' },
+      { transform: 'translateY(0)' },
+    ],
+    { duration: 260, easing: 'cubic-bezier(0.2, 0.9, 0.2, 1)' },
+  );
 };
 
 const getPreflightState = (update: PreflightUpdate): PreflightState => {
-	if (update.ok) {
-		return "healthy";
-	}
-	if (update.isRetrying) {
-		return "checking";
-	}
-	return "unhealthy";
+  if (update.ok) {
+    return 'healthy';
+  }
+  if (update.isRetrying) {
+    return 'checking';
+  }
+  return 'unhealthy';
 };
 
 const getStatusLabel = (update: PreflightUpdate): string => {
-	if (update.ok) {
-		return "Healthy";
-	}
-	if (update.isRetrying) {
-		return "Retrying";
-	}
-	return "Down";
+  if (update.ok) {
+    return 'Healthy';
+  }
+  if (update.isRetrying) {
+    return 'Retrying';
+  }
+  return 'Down';
 };
 
 const updatePreflightCheck = (name: string, update: PreflightUpdate): void => {
-	const item = document.querySelector(`[data-check="${name}"]`);
-	if (!item) return;
-	const status = item.querySelector("[data-status]") as HTMLElement | null;
-	const icon = item.querySelector("[data-icon]") as HTMLElement | null;
-	const errorEl = item.querySelector("[data-error]") as HTMLElement | null;
-	const hintEl = item.querySelector("[data-hint]") as HTMLElement | null;
-	const skeleton = item.querySelector("[data-skeleton]") as HTMLElement | null;
-	const retryBtn = item.querySelector(
-		"[data-retry]",
-	) as HTMLButtonElement | null;
-	const statusText = item.querySelector(
-		"[data-status-text]",
-	) as HTMLElement | null;
-	const state = getPreflightState(update);
+  const item = document.querySelector(`[data-check="${name}"]`);
+  if (!item) return;
+  const status = item.querySelector('[data-status]') as HTMLElement | null;
+  const icon = item.querySelector('[data-icon]') as HTMLElement | null;
+  const errorEl = item.querySelector('[data-error]') as HTMLElement | null;
+  const hintEl = item.querySelector('[data-hint]') as HTMLElement | null;
+  const skeleton = item.querySelector('[data-skeleton]') as HTMLElement | null;
+  const retryBtn = item.querySelector('[data-retry]') as HTMLButtonElement | null;
+  const statusText = item.querySelector('[data-status-text]') as HTMLElement | null;
+  const state = getPreflightState(update);
 
-	if (!update.ok && !update.isRetrying) {
-		revealItem(name);
-		revealFailurePanel();
-	}
+  revealNext();
 
-	if (status) {
-		status.style.background = PREFLIGHT_STATE_COLORS[state];
-	}
-	if (icon) {
-		icon.textContent = PREFLIGHT_STATUS_ICONS[state];
-		icon.style.color = PREFLIGHT_STATE_COLORS[state];
-	}
-	if (errorEl) {
-		errorEl.textContent = update.error || "";
-		errorEl.style.display = update.ok ? "none" : "block";
-		errorEl.style.color = update.isRetrying ? "#f59e0b" : "#fca5a5";
-	}
-	if (hintEl) {
-		hintEl.textContent = update.hint || "";
-		hintEl.style.display = update.hint && !update.ok ? "block" : "none";
-	}
-	if (skeleton) {
-		skeleton.style.display = update.ok ? "none" : "block";
-	}
-	if (retryBtn) {
-		retryBtn.style.display = update.ok ? "none" : "inline-flex";
-	}
-	item.setAttribute("data-state", state);
-	if (statusText) {
-		const statusLabel = getStatusLabel(update);
-		statusText.textContent = statusLabel;
-		statusText.style.color = PREFLIGHT_STATE_COLORS[state];
-	}
+  if (status) {
+    status.style.background = PREFLIGHT_STATE_COLORS[state];
+    status.textContent = PREFLIGHT_STATUS_ICONS[state];
+  }
+  if (icon) {
+    icon.textContent = PREFLIGHT_STATUS_ICONS[state];
+    icon.style.color = PREFLIGHT_STATE_COLORS[state];
+  }
+  if (errorEl) {
+    errorEl.textContent = update.error || '';
+    errorEl.style.display = update.ok ? 'none' : 'block';
+    errorEl.style.color = update.isRetrying ? '#f59e0b' : '#fca5a5';
+  }
+  if (hintEl) {
+    hintEl.textContent = update.hint || '';
+    hintEl.style.display = update.hint && !update.ok ? 'block' : 'none';
+  }
+  if (skeleton) {
+    skeleton.style.display = update.ok ? 'none' : 'block';
+  }
+  if (retryBtn) {
+    retryBtn.style.display = update.ok ? 'none' : 'inline-flex';
+  }
+  item.setAttribute('data-state', state);
+  setListOpacity();
+  scrollToLatest(name);
+  if (statusText) {
+    const statusLabel = getStatusLabel(update);
+    statusText.textContent = statusLabel;
+    statusText.style.color = PREFLIGHT_STATE_COLORS[state];
+  }
 };
 
 const updatePreflightProgress = (percent: number): void => {
-	const bar = document.querySelector("[data-progress]") as HTMLElement | null;
-	if (bar) {
-		bar.style.width = `${percent}%`;
-		bar.style.background =
-			percent >= FULL_PERCENT
-				? PREFLIGHT_STATE_COLORS.healthy
-				: PREFLIGHT_STATE_COLORS.checking;
-	}
+  const bar = document.querySelector('[data-progress]') as HTMLElement | null;
+  if (bar) {
+    bar.style.width = `${percent}%`;
+    bar.style.background =
+      percent >= FULL_PERCENT ? PREFLIGHT_STATE_COLORS.healthy : PREFLIGHT_STATE_COLORS.checking;
+  }
 };
 
 const getInfraDisplay = (status: InfraStatus): InfraDisplay => ({
-	color: INFRA_STATUS_COLORS[status],
-	label: INFRA_STATUS_LABELS[status],
-	state: INFRA_STATUS_STATES[status],
+  color: INFRA_STATUS_COLORS[status],
+  label: INFRA_STATUS_LABELS[status],
+  state: INFRA_STATUS_STATES[status],
 });
 
-const updateInfraStatus = (map: Record<string, string>): void => {
-	const list = document.querySelector("[data-infra-list]");
-	if (!list) return;
+const updateInfraStatus = (map: Record<string, InfraStatus>): void => {
+  const list = document.querySelector('[data-infra-list]');
+  if (!list) return;
 
-	const entries = [...list.querySelectorAll("[data-infra]")];
-	entries.forEach((entry) => {
-		const key = entry.getAttribute("data-infra") || "";
-		const status = (map[key] || "unknown") as InfraStatus;
-		const display = getInfraDisplay(status);
-		const dot = entry.querySelector(
-			"[data-infra-status]",
-		) as HTMLElement | null;
-		const shimmer = entry.querySelector(
-			".preflight-skeleton",
-		) as HTMLElement | null;
-		const text = entry.querySelector("[data-infra-text]") as HTMLElement | null;
-		if (dot) {
-			dot.style.background = display.color;
-		}
-		if (shimmer) {
-			shimmer.style.display = status === "unknown" ? "block" : "none";
-		}
-		entry.setAttribute("data-state", display.state);
-		if (text) {
-			text.textContent = display.label;
-			text.style.color = display.color;
-		}
-	});
+  const entries = [...list.querySelectorAll('[data-infra]')];
+  entries.forEach((entry) => {
+    const key = entry.getAttribute('data-infra') || '';
+    const status = (map[key] || 'unknown') as InfraStatus;
+    const display = getInfraDisplay(status);
+    const dot = entry.querySelector('[data-infra-status]') as HTMLElement | null;
+    const shimmer = entry.querySelector('.preflight-skeleton') as HTMLElement | null;
+    const text = entry.querySelector('[data-infra-text]') as HTMLElement | null;
+    if (dot) {
+      dot.style.background = display.color;
+    }
+    if (shimmer) {
+      shimmer.style.display = status === 'unknown' ? 'block' : 'none';
+    }
+    entry.setAttribute('data-state', display.state);
+    if (text) {
+      text.textContent = display.label;
+      text.style.color = display.color;
+    }
+  });
 };
 
 const pulseItem = (element: Element | null): void => {
-	if (!element) return;
-	element.classList.remove("preflight-fade");
-	requestAnimationFrame(() => {
-		element.classList.add("preflight-fade");
-	});
+  if (!element) return;
+  element.classList.remove('preflight-fade');
+  requestAnimationFrame(() => {
+    element.classList.add('preflight-fade');
+  });
 };
 
 const fadeOutAndReload = (): void => {
-	const card = document.querySelector(
-		"[data-preflight-card]",
-	) as HTMLElement | null;
-	if (!card) {
-		window.location.reload();
-		return;
-	}
-	card.style.transition = "opacity 220ms ease";
-	card.style.opacity = "0";
-	setTimeout(() => window.location.reload(), RELOAD_DELAY_MS);
+  const card = document.querySelector('[data-preflight-card]') as HTMLElement | null;
+  if (!card) {
+    window.location.reload();
+    return;
+  }
+  card.style.transition = 'opacity 220ms ease';
+  card.style.opacity = '0';
+  setTimeout(() => window.location.reload(), RELOAD_DELAY_MS);
 };
 
 const checkHealth = async (target: string): Promise<HealthCheckResult> => {
-	const normalized = target.replace(/\/$/, "");
-	const explicit = normalized.includes("/api/");
-	const paths = explicit ? [""] : ["/health", "/api/v1/health"];
+  const normalized = target.replace(/\/$/, '');
+  const explicit = normalized.includes('/api/');
+  const paths = explicit ? [''] : ['/health', '/api/v1/health'];
 
-	for (const path of paths) {
-		const url = `${normalized}${path}`;
-		try {
-			const response = await fetchWithTimeout(url);
-			if (response.ok) {
-				return { error: null };
-			}
-			if (
-				response.status === HTTP_UNAUTHORIZED ||
-				response.status === HTTP_FORBIDDEN
-			) {
-				return {
-					error: `Health check failed for ${normalized}`,
-					hint: "Blocked by auth; verify health endpoints allow public GET.",
-				};
-			}
-			if (response.type === "opaque") {
-				return {
-					error: `Health check failed for ${normalized}`,
-					hint: "Blocked by CORS. Check allowed origins for this service.",
-				};
-			}
-		} catch (error) {
-			const message =
-				error instanceof DOMException ? error.name : String(error);
-			if (message === "AbortError") {
-				return {
-					error: `Health check failed for ${normalized}`,
-					hint: "Timed out. Service may be slow or blocked by the browser.",
-				};
-			}
-			// Try next path
-		}
-	}
+  for (const path of paths) {
+    const url = `${normalized}${path}`;
+    try {
+      const response = await fetchWithTimeout(url);
+      if (response.ok) {
+        return { error: null };
+      }
+      if (response.status === HTTP_UNAUTHORIZED || response.status === HTTP_FORBIDDEN) {
+        return {
+          error: `Health check failed for ${normalized}`,
+          hint: 'Blocked by auth; verify health endpoints allow public GET.',
+        };
+      }
+      if (response.type === 'opaque') {
+        return {
+          error: `Health check failed for ${normalized}`,
+          hint: 'Blocked by CORS. Check allowed origins for this service.',
+        };
+      }
+    } catch (error) {
+      const message = error instanceof DOMException ? error.name : String(error);
+      if (message === 'AbortError') {
+        return {
+          error: `Health check failed for ${normalized}`,
+          hint: 'Timed out. Service may be slow or blocked by the browser.',
+        };
+      }
+      // Try next path
+    }
+  }
 
-	return {
-		error: `Health check failed for ${normalized}`,
-		hint: "Check service URL and local firewall/CORS settings.",
-	};
+  return {
+    error: `Health check failed for ${normalized}`,
+    hint: 'Check service URL and local firewall/CORS settings.',
+  };
 };
 
-const fetchPythonInfra = async (
-	baseUrl: string,
-): Promise<Record<string, string>> => {
-	const normalized = baseUrl.replace(/\/$/, "");
-	const status: Record<string, string> = {};
+const normalizeInfraStatus = (value?: string | null): InfraStatus | null => {
+  if (!value) return null;
+  const lower = value.toLowerCase();
+  if (lower === 'healthy' || lower === 'ok') return 'healthy';
+  if (lower === 'degraded') return 'degraded';
+  if (lower === 'unhealthy' || lower === 'down') return 'unhealthy';
+  return null;
+};
 
-	try {
-		const response = await fetchWithTimeout(`${normalized}/api/v1/health`);
-		if (!response.ok) {
-			return status;
-		}
-		const data = (await response.json()) as {
-			components?: Record<string, { status?: string }>;
-			integration?: Record<string, { status?: string }>;
-		};
+const fetchPythonInfra = async (baseUrl: string): Promise<Record<string, InfraStatus>> => {
+  const normalized = baseUrl.replace(/\/$/, '');
+  const status: Record<string, InfraStatus> = {};
 
-		const components = data.components || {};
-		const integration = data.integration || {};
-		if (components["database"]?.status) {
-			status.postgres = components["database"].status;
-		}
-		if (components["redis"]?.status) {
-			status.redis = components["redis"].status;
-		}
-		if (components["nats"]?.status) {
-			status.nats = components["nats"].status;
-		}
-		if (integration["go_backend"]?.status) {
-			status.go_backend = integration["go_backend"].status;
-		}
-	} catch {
-		return status;
-	}
+  try {
+    const response = await fetchWithTimeout(`${normalized}/api/v1/health`);
+    if (!response.ok) {
+      return status;
+    }
+    const data = (await response.json()) as {
+      components?: Record<string, { status?: string }>;
+      integration?: Record<string, { status?: string }>;
+    };
 
-	return status;
+    const components = data.components || {};
+    const integration = data.integration || {};
+    const databaseStatus = normalizeInfraStatus(components['database']?.status);
+    if (databaseStatus) status.database = databaseStatus;
+    const redisStatus = normalizeInfraStatus(components['redis']?.status);
+    if (redisStatus) status.redis = redisStatus;
+    const natsStatus = normalizeInfraStatus(components['nats']?.status);
+    if (natsStatus) status.nats = natsStatus;
+    const goStatus = normalizeInfraStatus(integration['go_backend']?.status);
+    if (goStatus) status.go_backend = goStatus;
+  } catch {
+    return status;
+  }
+
+  return status;
+};
+
+const fetchMcpStatus = async (baseUrl: string): Promise<Record<string, InfraStatus>> => {
+  const normalized = baseUrl.replace(/\/$/, '');
+  try {
+    const response = await fetchWithTimeout(`${normalized}/api/v1/mcp/config`);
+    if (!response.ok) {
+      return { mcp: 'unhealthy' };
+    }
+    const data = (await response.json()) as { mcp_base_url?: string | null };
+    if (data.mcp_base_url && data.mcp_base_url.trim().length > 0) {
+      return { mcp: 'healthy' };
+    }
+    return { mcp: 'degraded' };
+  } catch {
+    return { mcp: 'unhealthy' };
+  }
 };
 
 const getDevHost = (): string =>
-	window.location.hostname && window.location.hostname !== "localhost"
-		? window.location.hostname
-		: "127.0.0.1";
+  window.location.hostname && window.location.hostname !== 'localhost'
+    ? window.location.hostname
+    : '127.0.0.1';
 
 const buildChecks = (): PreflightCheck[] => {
-	const checks: PreflightCheck[] = [];
-	if (import.meta.env.PROD) {
-		const baseUrl = import.meta.env?.VITE_API_URL || window.location.origin;
-		checks.push({ name: "backend", url: baseUrl });
-		return checks;
-	}
+  const checks: PreflightCheck[] = [];
+  if (import.meta.env.PROD) {
+    const baseUrl = import.meta.env?.VITE_API_URL || window.location.origin;
+    checks.push({ name: 'backend', url: baseUrl });
+    return checks;
+  }
 
-	// Use single Caddy URL when app is served via gateway (port 4000) or VITE_API_URL points at Caddy
-	const devHost = getDevHost();
-	const useCaddy =
-		window.location.port === "4000" ||
-		(import.meta.env?.VITE_API_URL ?? "").includes(":4000");
-	const caddyBase =
-		window.location.port === "4000"
-			? window.location.origin
-			: (import.meta.env?.VITE_API_URL ?? "").replace(/\/$/, "") ||
-				`http://${devHost}:4000`;
+  // Use single Caddy URL when app is served via gateway (port 4000) or VITE_API_URL points at Caddy
+  const devHost = getDevHost();
+  const useCaddy =
+    window.location.port === '4000' || (import.meta.env?.VITE_API_URL ?? '').includes(':4000');
+  const caddyBase =
+    window.location.port === '4000'
+      ? window.location.origin
+      : (import.meta.env?.VITE_API_URL ?? '').replace(/\/$/, '') || `http://${devHost}:4000`;
 
-	if (useCaddy) {
-		checks.push({ name: "backend", url: caddyBase });
-		return checks;
-	}
+  if (useCaddy) {
+    checks.push({ name: 'backend', url: caddyBase });
+    return checks;
+  }
 
-	checks.push({ name: "python-backend", url: `http://${devHost}:8000` });
-	checks.push({ name: "go-backend", url: `http://${devHost}:8080` });
-	return checks;
+  checks.push({ name: 'python-backend', url: `http://${devHost}:8000` });
+  checks.push({ name: 'go-backend', url: `http://${devHost}:8080` });
+  return checks;
 };
 
-const updateInfraIfNeeded = async (
-	check: PreflightCheck,
-	ok: boolean,
-): Promise<void> => {
-	if (
-		!check.name.includes("python-backend") ||
-		!ok ||
-		!document.querySelector("[data-infra-list]")
-	) {
-		return;
-	}
-	const infra = await fetchPythonInfra(check.url);
-	updateInfraStatus(infra);
+const updateInfraIfNeeded = async (check: PreflightCheck, ok: boolean): Promise<void> => {
+  const isPythonOrCaddy = check.name === 'python-backend' || check.name === 'backend';
+  if (!isPythonOrCaddy || !ok || !document.querySelector('[data-infra-list]')) {
+    return;
+  }
+  const infra = await fetchPythonInfra(check.url);
+  const mcpStatus = await fetchMcpStatus(check.url);
+  updateInfraStatus({ ...infra, ...mcpStatus });
 };
 
 const updateProgress = (completed: number, total: number): void => {
-	const percent = Math.round((completed / total) * FULL_PERCENT);
-	updatePreflightProgress(percent);
+  const percent = Math.round((completed / total) * FULL_PERCENT);
+  updatePreflightProgress(percent);
 };
 
-const wireRetryButton = (
-	check: PreflightCheck,
-	retryHandler: () => void,
-): void => {
-	const item = document.querySelector(`[data-check="${check.name}"]`);
-	const retryBtn = item?.querySelector(
-		"[data-retry]",
-	) as HTMLButtonElement | null;
-	if (retryBtn) {
-		retryBtn.onclick = () => {
-			retryHandler();
-		};
-	}
+const wireRetryButton = (check: PreflightCheck, retryHandler: () => void): void => {
+  const item = document.querySelector(`[data-check="${check.name}"]`);
+  const retryBtn = item?.querySelector('[data-retry]') as HTMLButtonElement | null;
+  if (retryBtn) {
+    retryBtn.onclick = () => {
+      retryHandler();
+    };
+  }
 };
 
 const handleCheckResult = async (options: {
-	check: PreflightCheck;
-	completed: number;
-	error: string | null;
-	errors: string[];
-	hint?: string;
-	statusMap: Map<string, boolean>;
-	total: number;
+  check: PreflightCheck;
+  completed: number;
+  error: string | null;
+  errors: string[];
+  hint?: string;
+  statusMap: Map<string, boolean>;
+  total: number;
 }): Promise<number> => {
-	const { check, completed, errors, hint, statusMap, total, error } = options;
-	const ok = !error;
-	statusMap.set(check.name, ok);
-	updatePreflightCheck(check.name, { error: error || undefined, hint, ok });
-	await updateInfraIfNeeded(check, ok);
-	if (error) {
-		errors.push(`${check.name}: ${error}`);
-	}
-	const nextCompleted = completed + 1;
-	updateProgress(nextCompleted, total);
-	return nextCompleted;
+  const { check, completed, errors, hint, statusMap, total, error } = options;
+  const ok = !error;
+  statusMap.set(check.name, ok);
+  updatePreflightCheck(check.name, { error: error || undefined, hint, ok });
+  await updateInfraIfNeeded(check, ok);
+  if (error) {
+    errors.push(`${check.name}: ${error}`);
+  }
+  const nextCompleted = completed + 1;
+  updateProgress(nextCompleted, total);
+  return nextCompleted;
 };
 
 export const runFrontendPreflight = async (): Promise<PreflightResult> => {
-	const errors: string[] = [];
-	const checks = buildChecks();
-	const statusMap = new Map<string, boolean>();
+  const errors: string[] = [];
+  const checks = buildChecks();
+  const statusMap = new Map<string, boolean>();
 
-	renderPreflightLoading(checks);
-	let completed = 0;
+  renderPreflightLoading(checks);
+  let completed = 0;
 
-	const retryCheck = async (check: PreflightCheck): Promise<void> => {
-		const item = document.querySelector(`[data-check="${check.name}"]`);
-		pulseItem(item);
-		updatePreflightCheck(check.name, {
-			error: "Retrying...",
-			isRetrying: true,
-			ok: false,
-		});
-		const { error, hint } = await checkHealth(check.url);
-		const ok = !error;
-		statusMap.set(check.name, ok);
-		updatePreflightCheck(check.name, { error: error || undefined, hint, ok });
-		await updateInfraIfNeeded(check, ok);
-		const allOk = [...statusMap.values()].every(Boolean);
-		if (allOk) {
-			fadeOutAndReload();
-		}
-	};
+  const retryCheck = async (check: PreflightCheck): Promise<void> => {
+    const item = document.querySelector(`[data-check="${check.name}"]`);
+    pulseItem(item);
+    updatePreflightCheck(check.name, {
+      error: 'Retrying...',
+      isRetrying: true,
+      ok: false,
+    });
+    const { error, hint } = await checkHealth(check.url);
+    const ok = !error;
+    statusMap.set(check.name, ok);
+    updatePreflightCheck(check.name, { error: error || undefined, hint, ok });
+    await updateInfraIfNeeded(check, ok);
+    const allOk = [...statusMap.values()].every(Boolean);
+    if (allOk) {
+      fadeOutAndReload();
+    }
+  };
 
-	for (const check of checks) {
-		const { error, hint } = await checkHealth(check.url);
-		completed = await handleCheckResult({
-			check,
-			completed,
-			error,
-			errors,
-			hint,
-			statusMap,
-			total: checks.length,
-		});
-		wireRetryButton(check, () => {
-			retryCheck(check);
-		});
-	}
+  for (const check of checks) {
+    const { error, hint } = await checkHealth(check.url);
+    completed = await handleCheckResult({
+      check,
+      completed,
+      error,
+      errors,
+      hint,
+      statusMap,
+      total: checks.length,
+    });
+    wireRetryButton(check, () => {
+      retryCheck(check);
+    });
+  }
 
-	return { errors, ok: errors.length === 0 };
+  return { errors, ok: errors.length === 0 };
 };
 
 export const renderPreflightFailure = (result: PreflightResult): void => {
-	const root = document.getElementById("root");
-	if (!root) {
-		throw new Error("Root element not found");
-	}
-	revealFailurePanel();
+  const root = document.getElementById('root');
+  if (!root) {
+    throw new Error('Root element not found');
+  }
+  revealFailurePanel();
 
-	const details = result.errors.map((err) => `<li>${err}</li>`).join("");
-	const footer = root.querySelector(
-		"[data-preflight-footer]",
-	) as HTMLElement | null;
-	if (!footer) {
-		return;
-	}
+  const details = result.errors.map((err) => `<li>${err}</li>`).join('');
+  const footer = root.querySelector('[data-preflight-footer]') as HTMLElement | null;
+  if (!footer) {
+    return;
+  }
 
-	footer.innerHTML = `
+  footer.innerHTML = `
 		<div style="margin-top:16px;">
 			<h2 style="font-size:18px;margin:0 0 8px 0;color:#fca5a5;">Backend resources unavailable</h2>
 			<p style="margin:0 0 12px 0;color:#9aa4b2;">The frontend requires the backend services to be reachable before it can start.</p>
@@ -620,12 +675,12 @@ export const renderPreflightFailure = (result: PreflightResult): void => {
 		</div>
 	`;
 
-	const retry = document.getElementById("preflight-retry");
-	if (retry) {
-		retry.onclick = () => fadeOutAndReload();
-	}
-	const refresh = document.getElementById("preflight-refresh");
-	if (refresh) {
-		refresh.onclick = () => fadeOutAndReload();
-	}
+  const retry = document.getElementById('preflight-retry');
+  if (retry) {
+    retry.onclick = () => fadeOutAndReload();
+  }
+  const refresh = document.getElementById('preflight-refresh');
+  if (refresh) {
+    refresh.onclick = () => fadeOutAndReload();
+  }
 };

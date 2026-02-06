@@ -148,7 +148,7 @@ black tracertm/
 ruff check tracertm/
 
 # Type checking
-mypy tracertm/
+ty check src/ --error-on-warning
 ```
 
 ---
@@ -165,4 +165,3 @@ For issues or questions:
 ## 🎉 You're Ready!
 
 Start building TraceRTM! 🚀
-

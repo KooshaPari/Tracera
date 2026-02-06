@@ -38,22 +38,29 @@
             reverse_proxy localhost:8000
         }
 
-        # Notifications API (Python)
+        # Notifications API (Go backend; includes SSE stream)
         handle /api/v1/notifications {
-            reverse_proxy localhost:8000
+            reverse_proxy localhost:8080
         }
         handle /api/v1/notifications/ {
-            reverse_proxy localhost:8000
+            reverse_proxy localhost:8080
         }
         handle /api/v1/notifications/* {
-            reverse_proxy localhost:8000
+            reverse_proxy localhost:8080
         }
 
         # WebSocket (Go backend) – explicit so upgrade headers are passed
         handle /api/v1/ws {
+            header Access-Control-Allow-Origin http://localhost:4000
+            header Access-Control-Allow-Credentials true
+            header Access-Control-Allow-Methods "GET, OPTIONS"
+            header Access-Control-Allow-Headers "Content-Type, Authorization, X-Request-ID, Upgrade, Connection"
             reverse_proxy localhost:8080 {
-                header_up Connection {>Connection}
-                header_up Upgrade {>Upgrade}
+                transport http {
+                    versions 1.1
+                }
+                header_up Connection "Upgrade"
+                header_up Upgrade "websocket"
             }
         }
 
@@ -77,15 +84,29 @@
 
         # Legacy WebSocket path (prefer /api/v1/ws)
         handle /ws {
+            header Access-Control-Allow-Origin http://localhost:4000
+            header Access-Control-Allow-Credentials true
+            header Access-Control-Allow-Methods "GET, OPTIONS"
+            header Access-Control-Allow-Headers "Content-Type, Authorization, X-Request-ID, Upgrade, Connection"
             reverse_proxy localhost:8080 {
-                header_up Connection {>Connection}
-                header_up Upgrade {>Upgrade}
+                transport http {
+                    versions 1.1
+                }
+                header_up Connection "Upgrade"
+                header_up Upgrade "websocket"
             }
         }
         handle /ws/* {
+            header Access-Control-Allow-Origin http://localhost:4000
+            header Access-Control-Allow-Credentials true
+            header Access-Control-Allow-Methods "GET, OPTIONS"
+            header Access-Control-Allow-Headers "Content-Type, Authorization, X-Request-ID, Upgrade, Connection"
             reverse_proxy localhost:8080 {
-                header_up Connection {>Connection}
-                header_up Upgrade {>Upgrade}
+                transport http {
+                    versions 1.1
+                }
+                header_up Connection "Upgrade"
+                header_up Upgrade "websocket"
             }
         }
 

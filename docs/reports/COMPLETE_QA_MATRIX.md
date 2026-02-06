@@ -193,7 +193,7 @@ Priority: 🔴 CRITICAL - Must fix before production
 | File | Errors | Primary Issue | Estimated Fix Time |
 |------|--------|---------------|-------------------|
 | `api/client.py` | 50 | Missing annotations, Session confusion | 4-6 hours |
-| `tui/apps/dashboard_v2.py` | 22 | Name redefinitions (import pattern) | 1 hour |
+| `tui/apps/dashboard_compat.py` | 22 | Name redefinitions (import pattern) | 1 hour |
 | `cli/commands/item.py` | 22 | Session type mismatches | 2-3 hours |
 | `cli/commands/link.py` | 20 | Session type mismatches | 2-3 hours |
 | `services/bulk_operation_service.py` | 18 | Union-attr, indexing | 2-3 hours |

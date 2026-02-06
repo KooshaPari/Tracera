@@ -18,6 +18,7 @@ from tracertm.storage.sync_engine import SyncEngine, SyncState, SyncStatus
 @dataclass
 class ItemCreateConfig:
     """Configuration for creating items."""
+
     external_id: str | None = None
     description: str | None = None
     status: str = "todo"
@@ -30,6 +31,7 @@ class ItemCreateConfig:
 @dataclass
 class ItemUpdateConfig:
     """Configuration for updating items."""
+
     title: str | None = None
     description: str | None = None
     status: str | None = None
@@ -86,7 +88,9 @@ class StorageAdapter:
         project_storage = self.storage.get_project_storage(project_name)
         return project_storage.get_project()
 
-    def create_project(self, name: str, description: str | None = None, metadata: dict[str, Any] | None = None) -> Project:
+    def create_project(
+        self, name: str, description: str | None = None, metadata: dict[str, Any] | None = None
+    ) -> Project:
         """
         Create or update project.
 

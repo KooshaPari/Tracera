@@ -20,27 +20,27 @@ const ZOOM_THRESHOLD_CLOSE = 1;
 const ZOOM_THRESHOLD_VERY_CLOSE = 2;
 
 export enum LODLevel {
-	VeryFar,
-	Far,
-	Medium,
-	Close,
-	VeryClose,
+  VeryFar,
+  Far,
+  Medium,
+  Close,
+  VeryClose,
 }
 
 /** Zoom thresholds (inclusive lower bound). */
 const ZOOM_THRESHOLDS: Record<LODLevel, number> = {
-	[LODLevel.VeryFar]: ZOOM_THRESHOLD_VERY_FAR,
-	[LODLevel.Far]: ZOOM_THRESHOLD_FAR,
-	[LODLevel.Medium]: ZOOM_THRESHOLD_MEDIUM,
-	[LODLevel.Close]: ZOOM_THRESHOLD_CLOSE,
-	[LODLevel.VeryClose]: ZOOM_THRESHOLD_VERY_CLOSE,
+  [LODLevel.VeryFar]: ZOOM_THRESHOLD_VERY_FAR,
+  [LODLevel.Far]: ZOOM_THRESHOLD_FAR,
+  [LODLevel.Medium]: ZOOM_THRESHOLD_MEDIUM,
+  [LODLevel.Close]: ZOOM_THRESHOLD_CLOSE,
+  [LODLevel.VeryClose]: ZOOM_THRESHOLD_VERY_CLOSE,
 };
 
-const LOD_STEPS: Array<{ level: LODLevel; maxZoom: number }> = [
-	{ level: LODLevel.VeryFar, maxZoom: ZOOM_THRESHOLD_FAR },
-	{ level: LODLevel.Far, maxZoom: ZOOM_THRESHOLD_MEDIUM },
-	{ level: LODLevel.Medium, maxZoom: ZOOM_THRESHOLD_CLOSE },
-	{ level: LODLevel.Close, maxZoom: ZOOM_THRESHOLD_VERY_CLOSE },
+const LOD_STEPS: { level: LODLevel; maxZoom: number }[] = [
+  { level: LODLevel.VeryFar, maxZoom: ZOOM_THRESHOLD_FAR },
+  { level: LODLevel.Far, maxZoom: ZOOM_THRESHOLD_MEDIUM },
+  { level: LODLevel.Medium, maxZoom: ZOOM_THRESHOLD_CLOSE },
+  { level: LODLevel.Close, maxZoom: ZOOM_THRESHOLD_VERY_CLOSE },
 ];
 
 /** Default node count above which we force at most Medium LOD (simplified nodes). */
@@ -55,38 +55,36 @@ export const LOD_NODE_COUNT_THRESHOLD = 100;
  * @returns LODLevel; when nodeCount >= forceSimplifiedAbove and zoom would give Close/VeryClose, returns Medium.
  */
 const determineLODLevel = (
-	zoom: number,
-	options?: { nodeCount?: number; forceSimplifiedAbove?: number },
+  zoom: number,
+  options?: { nodeCount?: number; forceSimplifiedAbove?: number },
 ): LODLevel => {
-	const { nodeCount, forceSimplifiedAbove = LOD_NODE_COUNT_THRESHOLD } =
-		options ?? {};
+  const { nodeCount, forceSimplifiedAbove = LOD_NODE_COUNT_THRESHOLD } = options ?? {};
 
-	let level = LODLevel.VeryClose;
-	for (const step of LOD_STEPS) {
-		if (zoom < step.maxZoom) {
-			level = step.level;
-			break;
-		}
-	}
+  let level = LODLevel.VeryClose;
+  for (const step of LOD_STEPS) {
+    if (zoom < step.maxZoom) {
+      ({ level } = step);
+      break;
+    }
+  }
 
-	const hasNodeCount = nodeCount !== undefined && nodeCount !== null;
-	if (
-		forceSimplifiedAbove > 0 &&
-		hasNodeCount &&
-		nodeCount >= forceSimplifiedAbove &&
-		level > LODLevel.Medium
-	) {
-		return LODLevel.Medium;
-	}
-	return level;
+  const hasNodeCount = nodeCount !== undefined && nodeCount !== null;
+  if (
+    forceSimplifiedAbove > 0 &&
+    hasNodeCount &&
+    nodeCount >= forceSimplifiedAbove &&
+    level > LODLevel.Medium
+  ) {
+    return LODLevel.Medium;
+  }
+  return level;
 };
 
 /**
  * Whether this LOD should use a simplified (light) node type (e.g. small pill, no previews).
  * True for VeryFar, Far, Medium; false for Close, VeryClose.
  */
-const shouldUseSimplifiedNode = (lod: LODLevel): boolean =>
-	lod <= LODLevel.Medium;
+const shouldUseSimplifiedNode = (lod: LODLevel): boolean => lod <= LODLevel.Medium;
 
 /** Returns the zoom value that is the lower bound for the given LOD level. */
 const getLODZoomThreshold = (level: LODLevel): number => ZOOM_THRESHOLDS[level];

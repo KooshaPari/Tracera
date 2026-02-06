@@ -62,9 +62,9 @@ class QueryOptimizer:
             )
             .options(
                 # Eager load source links (where this item is the source)
-                selectinload(Item.source_links),  # type: ignore[attr-defined]
+                selectinload(Item.source_links),
                 # Eager load target links (where this item is the target)
-                selectinload(Item.target_links),  # type: ignore[attr-defined]
+                selectinload(Item.target_links),
             )
             .limit(limit)
         )
@@ -105,9 +105,9 @@ class QueryOptimizer:
             .where(Link.project_id == project_id)
             .options(
                 # Eager load source item
-                joinedload(Link.source_item),  # type: ignore[attr-defined]
+                joinedload(Link.source_item),
                 # Eager load target item
-                joinedload(Link.target_item),  # type: ignore[attr-defined]
+                joinedload(Link.target_item),
             )
             .limit(limit)
         )
@@ -137,8 +137,8 @@ class QueryOptimizer:
             select(Project)
             .where(Project.id == project_id)
             .options(
-                selectinload(Project.items).selectinload(Item.source_links),  # type: ignore[attr-defined]
-                selectinload(Project.items).selectinload(Item.target_links),  # type: ignore[attr-defined]
+                selectinload(Project.items).selectinload(Item.source_links),
+                selectinload(Project.items).selectinload(Item.target_links),
             )
         )
 
@@ -171,9 +171,9 @@ class QueryOptimizer:
             )
             .options(
                 # Load parent
-                joinedload(Item.parent),  # type: ignore[attr-defined]
+                joinedload(Item.parent),
                 # Load children
-                selectinload(Item.children),  # type: ignore[attr-defined]
+                selectinload(Item.children),
             )
         )
 
@@ -239,8 +239,8 @@ class QueryOptimizer:
                 Item.deleted_at.is_(None),
             )
             .options(
-                selectinload(Item.source_links),  # type: ignore[attr-defined]
-                selectinload(Item.target_links),  # type: ignore[attr-defined]
+                selectinload(Item.source_links),
+                selectinload(Item.target_links),
             )
         )
 
@@ -260,8 +260,8 @@ class QueryOptimizer:
             select(Link)
             .where(Link.project_id == project_id)
             .options(
-                joinedload(Link.source_item),  # type: ignore[attr-defined]
-                joinedload(Link.target_item),  # type: ignore[attr-defined]
+                joinedload(Link.source_item),
+                joinedload(Link.target_item),
             )
         )
 

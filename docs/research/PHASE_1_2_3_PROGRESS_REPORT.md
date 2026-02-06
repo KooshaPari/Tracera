@@ -52,7 +52,7 @@ Phase 2 Test Files:
 ├── /tests/unit/api/test_main.py                     (386 lines, 16 tests)
 ├── /tests/unit/cli/test_storage_helper.py           (534 lines, 33 tests)
 ├── /tests/unit/tui/adapters/test_storage_adapter.py (532 lines, 28 tests)
-├── /tests/unit/tui/apps/test_dashboard_v2.py        (493 lines, 20 tests)
+├── /tests/unit/tui/apps/test_dashboard_compat.py        (493 lines, 20 tests)
 ├── /tests/unit/tui/widgets/test_conflict_panel.py   (304 lines, 20 tests)
 ├── /tests/unit/tui/widgets/test_sync_status.py      (410 lines, 35 tests)
 ├── /tests/unit/tui/widgets/test_all_widgets.py      (202 lines, 23 tests)

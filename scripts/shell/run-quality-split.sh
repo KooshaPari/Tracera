@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Run quality as multiple parallel steps (lint, type, proto, build, test per suite).
 # Each step writes to .quality/logs/<step>.log and .quality/logs/<step>.exit.
+# Linters use grouped output format (grouped by file) for easy processing by agents.
 # Report is run after all steps (and optionally every REFRESH_INTERVAL s while running).
 # Usage: REFRESH_INTERVAL=2 (optional) to refresh report as logs arrive.
 
 set -e
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 mkdir -p .quality/logs
 LOG_DIR=".quality/logs"
@@ -55,7 +56,7 @@ if [ -n "$REFRESH_INTERVAL" ]; then
       done=0
       for step in "${STEPS[@]}"; do [ -f "$LOG_DIR/$step.exit" ] && done=$((done+1)); done
       [ "$done" -eq "${#STEPS[@]}" ] && break
-      "$ROOT/scripts/quality-report.sh" 2>/dev/null || true
+      "$ROOT/scripts/shell/quality-report.sh" 2>/dev/null || true
       sleep "$REFRESH_INTERVAL"
     done
   ) &
@@ -99,7 +100,7 @@ done
 printf '],"ok":%s}' "$([ ${#FAILED_STEPS[@]} -eq 0 ] && echo true || echo false)" >> "$ROOT/.quality/last-run.json"
 
 # Report (reads per-step logs; groups lint/type by file, tests separate)
-"$ROOT/scripts/quality-report.sh" "$@"
+"$ROOT/scripts/shell/quality-report.sh" "$@"
 
 [ ${#FAILED_STEPS[@]} -gt 0 ] && exit 1
 exit 0

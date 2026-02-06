@@ -66,11 +66,11 @@ class TestTuiAppsImports:
 
         assert DashboardApp is not None
 
-    def test_dashboard_v2_import(self):
-        """Test dashboard_v2 module can be imported."""
-        from tracertm.tui.apps import dashboard_v2
+    def test_dashboard_compat_import(self):
+        """Test dashboard_compat module can be imported."""
+        from tracertm.tui.apps import dashboard_compat
 
-        assert dashboard_v2 is not None
+        assert dashboard_compat is not None
 
     def test_graph_app_import(self):
         """Test GraphApp can be imported."""

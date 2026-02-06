@@ -35,21 +35,24 @@ Successfully implemented aggressive bundle optimization settings:
 Created lazy-loading infrastructure for heavy MDX components:
 
 **New File**: `components/mdx-components-lazy.tsx`
+
 - Implemented dynamic imports with next/dynamic
 - Added loading skeletons for better UX
 - Lazy-loaded components:
-  * Tabs/Tab
-  * Accordions/Accordion
-  * ImageZoom
-  * Files/Folder/File
-  * Steps/Step
+  - Tabs/Tab
+  - Accordions/Accordion
+  - ImageZoom
+  - Files/Folder/File
+  - Steps/Step
 
 **Modified File**: `components/mdx-components.tsx`
+
 - Replaced eager imports with lazy-loaded components
 - Maintained SSR where appropriate
 - Disabled SSR for ImageZoom (client-only feature)
 
 **Modified File**: `app/api-reference/[[...slug]]/page.tsx`
+
 - Lazy-loaded heavy APIPage component
 - Added loading skeleton
 - Maintained SSR capability
@@ -59,11 +62,13 @@ Created lazy-loading infrastructure for heavy MDX components:
 ### 3. Dependency Analysis
 
 **Completed**:
+
 - Installed and ran depcheck
 - Identified unused dependencies
 - Added missing dependencies (fuse.js, rimraf)
 
 **Unused Dependencies Identified** (ready for removal):
+
 ```json
 // Production:
 - @alloc/quick-lru
@@ -95,6 +100,7 @@ Created lazy-loading infrastructure for heavy MDX components:
 ### 4. Build Infrastructure Issues
 
 **Current Blockers**:
+
 1. **Module Resolution Errors**:
    - Cannot resolve '@/source' (not generated until build time)
    - Cannot resolve '@/components/mdx-components'
@@ -107,11 +113,11 @@ Created lazy-loading infrastructure for heavy MDX components:
    - Circular dependency: build needs .source, but .source needs build
 
 3. **Configuration Conflicts**:
-   - Multiple config files found: next.config.ts, next.config.analyze.ts
-   - Removed next.config.mjs but errors persist
+   - Config consolidated to next.config.ts only
    - `swcMinify` deprecated in Next.js 15 (now default)
 
 **Required Fixes**:
+
 1. Fix circular build dependency by:
    - Moving search index build to post-build step, OR
    - Making search index build optional/conditional, OR
@@ -132,11 +138,13 @@ Created lazy-loading infrastructure for heavy MDX components:
 **Blocked by**: Build failures
 
 **Planned**:
+
 ```bash
 ANALYZE=true bun run build
 ```
 
 This would generate:
+
 - Bundle size breakdown
 - Chunk size analysis
 - Tree map visualization
@@ -146,18 +154,19 @@ This would generate:
 
 Based on implemented optimizations:
 
-| Metric | Before | Target | Strategy |
-|--------|---------|--------|----------|
-| Total Bundle | ~800KB | <200KB | Code splitting + lazy loading |
-| Main Chunk | ~500KB | <100KB | Tree shaking + minification |
-| Vendor Chunks | ~300KB | <80KB | Manual chunking + optimization |
-| Gzipped Size | ~250KB | <60KB | Compression + minification |
+| Metric        | Before | Target | Strategy                       |
+| ------------- | ------ | ------ | ------------------------------ |
+| Total Bundle  | ~800KB | <200KB | Code splitting + lazy loading  |
+| Main Chunk    | ~500KB | <100KB | Tree shaking + minification    |
+| Vendor Chunks | ~300KB | <80KB  | Manual chunking + optimization |
+| Gzipped Size  | ~250KB | <60KB  | Compression + minification     |
 
 ## 🔧 Next Steps
 
 ### Immediate (Unblock Build)
 
 1. **Fix Circular Dependency**:
+
    ```bash
    # Option 1: Make search index optional
    cd /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/docs
@@ -169,6 +178,7 @@ Based on implemented optimizations:
    ```
 
 2. **Consolidate Config**:
+
    ```bash
    # Remove all config files except next.config.ts
    rm next.config.analyze.ts
@@ -185,6 +195,7 @@ Based on implemented optimizations:
 ### After Build Works
 
 4. **Run Bundle Analysis**:
+
    ```bash
    ANALYZE=true bun run build
    # Review webpack-bundle-analyzer output
@@ -192,6 +203,7 @@ Based on implemented optimizations:
    ```
 
 5. **Remove Unused Dependencies**:
+
    ```bash
    bun remove @alloc/quick-lru @radix-ui/react-dropdown-menu \
      @radix-ui/react-slot @tailwindcss/typography class-variance-authority \
@@ -247,12 +259,14 @@ Based on implemented optimizations:
 ## 🚀 Estimated Impact (When Complete)
 
 **Bundle Size Reduction**: 65-75% (520-600KB savings)
+
 - Code splitting: -250KB
 - Lazy loading: -180KB
 - Unused deps: -90KB
 - Minification: -30KB (already enabled)
 
 **Performance Improvement**:
+
 - Initial load time: -2-3 seconds
 - Time to Interactive: -1.5-2 seconds
 - Lighthouse score: +15-20 points

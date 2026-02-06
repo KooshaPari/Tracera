@@ -169,7 +169,7 @@ class AdvancedTraceabilityEnhancementsService:
                 target_id = link.target_item_id if hasattr(link, "target_item_id") else None
                 if target_id in [t.id for t in target_items]:
                     row.setdefault("targets", [])
-                    if isinstance(row["targets"], list[Any]):
+                    if isinstance(row["targets"], list):
                         row["targets"].append({
                             "target_id": target_id,
                             "link_type": (link.link_type if hasattr(link, "link_type") else "unknown"),

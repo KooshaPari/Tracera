@@ -64,16 +64,10 @@ if [ -f "$FRONTEND_SAMPLE" ]; then
     time_command "oxlint (standard config)" \
         bun run --cwd frontend oxlint "$FRONTEND_SAMPLE"
 
-    if [ -f "frontend/.oxlintrc.json.ai-strict" ]; then
-        time_command "oxlint (AI-strict config)" \
-            bun run --cwd frontend oxlint -c .oxlintrc.json.ai-strict "$FRONTEND_SAMPLE"
+    if [ -f "frontend/.oxlintrc.json" ]; then
+        time_command "oxlint (strict config)" \
+            bun run --cwd frontend oxlint -c .oxlintrc.json "$FRONTEND_SAMPLE"
     fi
-fi
-
-# Frontend - Biome
-if [ -f "$FRONTEND_SAMPLE" ]; then
-    time_command "Biome check (fast)" \
-        bash -c 'cd frontend && bun run check:fix'
 fi
 
 # Python - Ruff (fast)
@@ -102,13 +96,10 @@ echo ""
 echo "📊 SLOW CHECKS (CI only - not in pre-commit)"
 echo "----------------------------------------------"
 
-# Python - MyPy (slow)
+# Python - Ty (slow)
 if [ -f "$PYTHON_SAMPLE" ]; then
-    time_command "MyPy (type checking)" \
-        mypy "$PYTHON_SAMPLE" || true
-
-    time_command "basedpyright (ultra-strict)" \
-        basedpyright "$PYTHON_SAMPLE" || true
+    time_command "Ty (type checking)" \
+        ty check "$PYTHON_SAMPLE" || true
 fi
 
 # Go - golangci-lint (comprehensive, can be slow)
@@ -129,22 +120,19 @@ echo "========================="
 echo ""
 echo "✅ FAST (Local Pre-commit) - Target <5s total:"
 echo "   • oxlint (standard config)          ~100-300ms"
-echo "   • Biome check + format              ~200-500ms"
 echo "   • Ruff check + format               ~100-400ms"
 echo "   • gofmt                              ~50-200ms"
 echo "   • Basic file checks                  ~10-50ms"
-echo "   • Prettier (YAML/JSON/MD)            ~100-300ms"
 echo ""
 echo "⚠️  SLOW (CI Only) - Move to workflows:"
-echo "   • MyPy type checking                 >1s"
-echo "   • basedpyright type checking         >2s"
+echo "   • Ty type checking                   >1s"
 echo "   • golangci-lint (7 new linters)      >2s"
 echo "   • Bandit security scan               >1s"
 echo "   • Semgrep security scan              >2s"
 echo ""
 echo "✨ RECOMMENDATIONS:"
 echo "   1. Keep oxlint with STANDARD config in pre-commit (fast)"
-echo "   2. Move AI-strict oxlint to CI (may be slower)"
+echo "   2. Run strict oxlint in CI (may be slower)"
 echo "   3. Keep Ruff complexity rules in pre-commit (still fast)"
 echo "   4. Move golangci-lint 7 new linters to CI if >5s"
 echo "   5. All security scans stay in CI only"

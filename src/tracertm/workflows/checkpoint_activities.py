@@ -309,9 +309,7 @@ async def create_sandbox_snapshot(
                 # Create tar archive
                 compression_mode = cast(
                     Literal["w", "w:gz", "w:bz2"],
-                    {"gzip": "w:gz", "bzip2": "w:bz2", "none": "w"}.get(
-                        compression, "w:gz"
-                    ),
+                    {"gzip": "w:gz", "bzip2": "w:bz2", "none": "w"}.get(compression, "w:gz"),
                 )
 
                 with tarfile.open(temp_path, mode=compression_mode) as tar:

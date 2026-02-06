@@ -17,7 +17,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 from .common import _call_tool, _maybe_select_project, _wrap, trace_tools
 
@@ -45,7 +45,8 @@ async def trace_analyze(
 
     if kind == "gaps":
         result = await _call_tool(
-            trace_tools, "find_gaps",
+            trace_tools,
+            "find_gaps",
             from_view=payload.get("from_view"),
             to_view=payload.get("to_view"),
             ctx=ctx,
@@ -53,7 +54,8 @@ async def trace_analyze(
         return _wrap(result, ctx, kind)
     if kind == "trace_matrix":
         result = await _call_tool(
-            trace_tools, "get_trace_matrix",
+            trace_tools,
+            "get_trace_matrix",
             source_view=payload.get("source_view"),
             target_view=payload.get("target_view"),
             ctx=ctx,
@@ -61,7 +63,8 @@ async def trace_analyze(
         return _wrap(result, ctx, kind)
     if kind == "impact":
         result = await _call_tool(
-            trace_tools, "analyze_impact",
+            trace_tools,
+            "analyze_impact",
             item_id=payload.get("item_id"),
             max_depth=payload.get("max_depth", 5),
             link_types=payload.get("link_types"),
@@ -70,7 +73,8 @@ async def trace_analyze(
         return _wrap(result, ctx, kind)
     if kind == "reverse_impact":
         result = await _call_tool(
-            trace_tools, "analyze_reverse_impact",
+            trace_tools,
+            "analyze_reverse_impact",
             item_id=payload.get("item_id"),
             max_depth=payload.get("max_depth", 5),
             ctx=ctx,
@@ -103,7 +107,7 @@ async def quality_analyze(
             async def analyze_quality(self, **kwargs):
                 raise ToolError("Specification tools unavailable")
 
-        spec_tools = _SpecStub()  # type: ignore
+        spec_tools: Any = _SpecStub()
 
     result = await _call_tool(spec_tools, "analyze_quality", item_id=payload.get("item_id"))
     return _wrap(result, ctx, "quality.analyze")

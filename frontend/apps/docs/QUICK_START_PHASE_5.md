@@ -25,16 +25,19 @@ bun run start
 ## 🔍 Search Features
 
 ### Keyboard Shortcuts
+
 - **Mac:** `Cmd + K`
 - **Windows/Linux:** `Ctrl + K`
 
 ### What Gets Indexed
+
 - Page titles (weight: 10)
 - Descriptions (weight: 5)
 - Headings (weight: 3)
 - Content (weight: 1)
 
 ### Performance
+
 - **Target:** <100ms per query
 - **Method:** In-memory indexing
 - **Features:** Fuzzy matching, result previews
@@ -44,27 +47,32 @@ bun run start
 ## 🧭 Navigation Components
 
 ### 1. Breadcrumbs
+
 Shows current page location in hierarchy.
 
 **Where:** Top of every documentation page
 **Example:** Docs > Guides > Configuration
 
 ### 2. Table of Contents
+
 Lists all headings on current page.
 
 **Where:** Right sidebar (sticky)
 **Features:** Active section highlighting, scroll-to-section
 
 ### 3. Previous/Next
+
 Navigate between adjacent pages.
 
 **Where:** Bottom of every page
 **Format:** "← Previous Page" and "Next Page →"
 
 ### 4. Sidebar
+
 Auto-generated from content structure.
 
 **Features:**
+
 - Collapsible sections
 - Active page highlighting
 - Icon support
@@ -74,23 +82,27 @@ Auto-generated from content structure.
 ## 🎨 UI Enhancements
 
 ### Dark Mode
+
 - **Toggle:** Click moon/sun icon in nav
 - **Persistence:** Saves preference
 - **Scope:** Entire site including code blocks
 
 ### Code Blocks
+
 ```typescript
 // Automatic copy button
-const example = "Click copy icon ↗";
+const example = 'Click copy icon ↗';
 ```
 
 **Features:**
+
 - Copy to clipboard
 - Syntax highlighting (GitHub themes)
 - Line highlighting: ` ```lang {1,3-5} `
 - Language badges
 
 ### Links
+
 - **Internal:** Standard navigation
 - **External:** Icon indicator + new tab
 
@@ -99,21 +111,24 @@ const example = "Click copy icon ↗";
 ## 📝 MDX Components Reference
 
 ### Tabs
+
 ```mdx
 <Tabs items={['npm', 'bun']}>
-  <Tab value="npm">npm install</Tab>
-  <Tab value="bun">bun install</Tab>
+  <Tab value='npm'>npm install</Tab>
+  <Tab value='bun'>bun install</Tab>
 </Tabs>
 ```
 
 ### Callouts
+
 ```mdx
-<Callout type="info">Information</Callout>
-<Callout type="warning">Warning</Callout>
-<Callout type="error">Error</Callout>
+<Callout type='info'>Information</Callout>
+<Callout type='warning'>Warning</Callout>
+<Callout type='error'>Error</Callout>
 ```
 
 ### Steps
+
 ```mdx
 <Steps>
   <Step>First step</Step>
@@ -122,18 +137,21 @@ const example = "Click copy icon ↗";
 ```
 
 ### File Tree
+
 ```mdx
 <Files>
-  <Folder name="src">
-    <File name="index.ts" />
-    <File name="utils.ts" />
+  <Folder name='src'>
+    <File name='index.ts' />
+    <File name='utils.ts' />
   </Folder>
 </Files>
 ```
 
 ### Images
+
 ```mdx
 ![Alt text](./image.png)
+
 <!-- Automatically zoomable on click -->
 ```
 
@@ -142,16 +160,19 @@ const example = "Click copy icon ↗";
 ## 📁 Key Files
 
 ### Configuration
+
 - **Search:** `lib/search-config.ts`
 - **Navigation:** `app/layout.config.tsx`
 - **MDX:** `source.config.ts`
 
 ### Components
+
 - **Navigation:** `components/navigation.tsx`
 - **MDX:** `components/mdx-components.tsx`
 - **Utils:** `lib/utils.ts`
 
 ### API Routes
+
 - **Search:** `app/api/search/route.ts`
 
 ---
@@ -159,6 +180,7 @@ const example = "Click copy icon ↗";
 ## 🧪 Quick Test
 
 1. **Start server:**
+
    ```bash
    bun run dev
    ```
@@ -184,6 +206,7 @@ const example = "Click copy icon ↗";
 ## 🔧 Troubleshooting
 
 ### Search not working?
+
 1. Check browser console for errors
 2. Verify `/api/search` returns results:
    ```bash
@@ -191,12 +214,15 @@ const example = "Click copy icon ↗";
    ```
 
 ### Navigation empty?
+
 1. Ensure `.source` directory exists
 2. Check `content/docs/meta.json` files exist
 3. Verify MDX files have frontmatter
 
 ### Build failing?
+
 1. Clean build:
+
    ```bash
    rm -rf .next
    pkill -f "next"
@@ -214,18 +240,21 @@ const example = "Click copy icon ↗";
 ## ✅ Feature Checklist
 
 **Search:**
+
 - [x] Cmd+K / Ctrl+K opens search
 - [x] Results appear instantly
 - [x] Click result navigates to page
 - [x] Search is fast (<100ms)
 
 **Navigation:**
+
 - [x] Sidebar shows all pages
 - [x] Breadcrumbs show path
 - [x] TOC highlights section
 - [x] Previous/Next works
 
 **UI:**
+
 - [x] Dark mode toggle works
 - [x] Code copy button works
 - [x] External links have icon

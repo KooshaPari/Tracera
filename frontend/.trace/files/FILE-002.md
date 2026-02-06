@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Form input component with validation states, error messages, and label support. Supports controlled/uncontrolled modes.
-

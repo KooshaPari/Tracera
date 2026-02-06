@@ -59,90 +59,97 @@ Initiates the device authorization flow.
 
 <Tabs items={['TypeScript', 'Python', 'curl', 'Go']}>
   <Tab value="TypeScript">
-    ```typescript
-    const response = await fetch('http://localhost:8000/api/v1/auth/device/code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        client_id: 'your-client-id',
-        scope: 'openid profile email'
-      })
-    });
+    <pre>
+      <code className="language-typescript">{String.raw`const response = await fetch('http://localhost:8000/api/v1/auth/device/code', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    client_id: 'your-client-id',
+    scope: 'openid profile email'
+  })
+});
 
-    const data = await response.json();
-    console.log('Verification URL:', data.verification_url);
-    console.log('User Code:', data.user_code);
-    ```
+const data = await response.json();
+console.log('Verification URL:', data.verification_url);
+console.log('User Code:', data.user_code);`}</code>
+
+</pre>
+
   </Tab>
 
   <Tab value="Python">
-    ```python
-    import requests
+    <pre>
+      <code className="language-python">{String.raw`import requests
 
-    response = requests.post(
-        'http://localhost:8000/api/v1/auth/device/code',
-        json={
-            'client_id': 'your-client-id',
-            'scope': 'openid profile email'
-        }
-    )
+response = requests.post(
+'http://localhost:8000/api/v1/auth/device/code',
+json={
+'client_id': 'your-client-id',
+'scope': 'openid profile email'
+}
+)
 
-    data = response.json()
-    print(f"Verification URL: {data['verification_url']}")
-    print(f"User Code: {data['user_code']}")
-    ```
+data = response.json()
+print(f"Verification URL: {data['verification_url']}")
+print(f"User Code: {data['user_code']}")`}</code>
+
+</pre>
+
   </Tab>
 
-  <Tab value="curl">
-    ```bash
-    curl -X POST http://localhost:8000/api/v1/auth/device/code \
-      -H "Content-Type: application/json" \
-      -d '{
-        "client_id": "your-client-id",
-        "scope": "openid profile email"
-      }'
-    ```
-  </Tab>
+<Tab value='curl'>
+  <pre>
+    <code className='language-bash'>{String.raw`curl -X POST http://localhost:8000/api/v1/auth/device/code \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_id": "your-client-id",
+    "scope": "openid profile email"
+  }'`}</code>
+  </pre>
+</Tab>
 
   <Tab value="Go">
-    ```go
-    package main
+    <pre>
+      <code className="language-go">{String.raw`package main
 
-    import (
-        "bytes"
-        "encoding/json"
-        "fmt"
-        "net/http"
+import (
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "net/http"
+)
+
+func main() {
+data := map[string]string{
+"client_id": "your-client-id",
+"scope": "openid profile email",
+}
+
+    jsonData, _ := json.Marshal(data)
+
+    resp, err := http.Post(
+        "http://localhost:8000/api/v1/auth/device/code",
+        "application/json",
+        bytes.NewBuffer(jsonData),
     )
 
-    func main() {
-        data := map[string]string{
-            "client_id": "your-client-id",
-            "scope":     "openid profile email",
-        }
-
-        jsonData, _ := json.Marshal(data)
-
-        resp, err := http.Post(
-            "http://localhost:8000/api/v1/auth/device/code",
-            "application/json",
-            bytes.NewBuffer(jsonData),
-        )
-
-        if err != nil {
-            panic(err)
-        }
-        defer resp.Body.Close()
-
-        var result map[string]interface{}
-        json.NewDecoder(resp.Body).Decode(&result)
-
-        fmt.Println("Verification URL:", result["verification_url"])
-        fmt.Println("User Code:", result["user_code"])
+    if err != nil {
+        panic(err)
     }
-    ```
+    defer resp.Body.Close()
+
+    var result map[string]interface{}
+    json.NewDecoder(resp.Body).Decode(&result)
+
+    fmt.Println("Verification URL:", result["verification_url"])
+    fmt.Println("User Code:", result["user_code"])
+
+}`}</code>
+
+</pre>
+
   </Tab>
 </Tabs>
 
@@ -164,6 +171,7 @@ Poll this endpoint to check if the user has completed authorization.
 **Responses:**
 
 **Success (200):**
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -173,6 +181,7 @@ Poll this endpoint to check if the user has completed authorization.
 ```
 
 **Pending (400):**
+
 ```json
 {
   "error": "authorization_pending",
@@ -181,6 +190,7 @@ Poll this endpoint to check if the user has completed authorization.
 ```
 
 **Expired (400):**
+
 ```json
 {
   "error": "expired_token",
@@ -195,6 +205,7 @@ Poll this endpoint to check if the user has completed authorization.
 Returns information about the currently authenticated user.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access_token>
 ```
@@ -215,8 +226,8 @@ Authorization: Bearer <access_token>
 ```typescript
 const response = await fetch('http://localhost:8000/api/v1/auth/me', {
   headers: {
-    'Authorization': `Bearer ${accessToken}`
-  }
+    Authorization: `Bearer ${accessToken}`,
+  },
 });
 
 const user = await response.json();
@@ -234,6 +245,7 @@ All authentication endpoints return standard error responses:
 ```
 
 Common error codes:
+
 - `invalid_client` - Invalid client_id
 - `invalid_request` - Missing or invalid parameters
 - `authorization_pending` - User hasn't authorized yet

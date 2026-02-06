@@ -54,10 +54,10 @@ class GitHubProjectService:
         # List Projects v2 for the repository owner
         is_org = True  # Assume org for now, could be determined dynamically
         try:
-            projects = await client.list_projects_v2(owner=github_repo_owner, is_org=is_org)
+            projects = await client.list_projects_graphql(owner=github_repo_owner, is_org=is_org)
         except Exception:
             # If org fails, try as user
-            projects = await client.list_projects_v2(owner=github_repo_owner, is_org=False)
+            projects = await client.list_projects_graphql(owner=github_repo_owner, is_org=False)
 
         linked_projects = []
 

@@ -7,8 +7,9 @@ Tests for:
 - ProjectMetricsSchema
 """
 
-import pandas as pd
 import pytest
+
+pd = pytest.importorskip("pandas")
 
 try:
     from pandera import ValidationError

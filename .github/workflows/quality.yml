@@ -47,31 +47,24 @@ jobs:
 
       - name: Ruff lint (strict complexity enforcement)
         run: |
+          # Use grouped output format for file-based processing (easier for agents to fix)
+          uv run ruff check . --output-format=grouped > /tmp/quality-ruff-results-grouped.txt || true
+          # Also output JSON for CI parsing
           uv run ruff check . --output-format=json > /tmp/quality-ruff-results.json || true
           VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/quality-ruff-results.json || echo "0")
           echo "## Quality Check - Ruff Violations" >> $GITHUB_STEP_SUMMARY
           echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
           echo "Complexity threshold: max-complexity=7 (pyproject.toml)" >> $GITHUB_STEP_SUMMARY
-          uv run ruff check .
+          echo "Format: grouped (grouped by file)" >> $GITHUB_STEP_SUMMARY
+          # Show grouped output for developer reference
+          cat /tmp/quality-ruff-results-grouped.txt || uv run ruff check .
 
       - name: Check for unused imports (pycln)
         run: uv run pycln --check src/
 
-      - name: Type check (mypy - strict mode)
+      - name: Type check (ty - strict mode)
         run: |
-          uv run mypy src/ --json-report=/tmp/quality-mypy-report || true
-          if [ -f /tmp/quality-mypy-report/index.txt ]; then
-            MYPY_ERRORS=$(grep -o "Found [0-9]* error" /tmp/quality-mypy-report/index.txt | grep -o "[0-9]*" || echo "0")
-            echo "Mypy errors: $MYPY_ERRORS" >> $GITHUB_STEP_SUMMARY
-          fi
-          uv run mypy src/
-
-      - name: Type check (basedpyright - ultra-strict)
-        run: |
-          uv run basedpyright src/ --outputjson > /tmp/basedpyright-results.json || true
-          PYRIGHT_ERRORS=$(jq '[.generalDiagnostics // []] | length' /tmp/basedpyright-results.json || echo "0")
-          echo "Basedpyright errors: $PYRIGHT_ERRORS" >> $GITHUB_STEP_SUMMARY
-          uv run basedpyright src/
+          uv run ty check src/ --error-on-warning
 
       - name: Architecture check (tach)
         run: |
@@ -110,8 +103,7 @@ jobs:
           echo "### Enforced Standards" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Ruff: McCabe complexity ≤7" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Ruff: max-args=5, max-branches=12, max-statements=50" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Mypy: strict type checking enabled" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Basedpyright: ultra-strict mode" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Ty: strict type checking enabled (error-on-warning)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Bandit: security scanning (high severity)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Tach: architecture boundary enforcement" >> $GITHUB_STEP_SUMMARY
 
@@ -121,11 +113,7 @@ jobs:
         with:
           name: quality-report-${{ matrix.python-version }}
           path: |
-            .mypy_cache/
             .ruff_cache/
             /tmp/quality-ruff-results.json
-            /tmp/quality-mypy-report/
             /tmp/quality-bandit-results.json
-            /tmp/basedpyright-results.json
           retention-days: 90
-

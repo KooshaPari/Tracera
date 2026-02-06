@@ -78,6 +78,7 @@ figma-generator/
 ### 1. Figma API Client (`figma-api-client.ts`)
 
 **Capabilities:**
+
 - ✅ File data retrieval with full document tree
 - ✅ Component extraction from Figma files
 - ✅ Image export (PNG, JPG, SVG, PDF)
@@ -88,16 +89,18 @@ figma-generator/
 - ✅ Error handling with custom error types
 
 **Key Methods:**
+
 ```typescript
-client.getFile(fileKey)           // Get complete file
-client.getComponents(fileKey)     // Extract components
-client.exportImages(fileKey, ids) // Export as images
-client.getVariables(fileKey)      // Get design tokens
-client.getVersions(fileKey)       // Version history
-client.getComments(fileKey)       // Comments
+client.getFile(fileKey); // Get complete file
+client.getComponents(fileKey); // Extract components
+client.exportImages(fileKey, ids); // Export as images
+client.getVariables(fileKey); // Get design tokens
+client.getVersions(fileKey); // Version history
+client.getComments(fileKey); // Comments
 ```
 
 **Rate Limiting:**
+
 - Default: 100 requests per 60 seconds
 - Configurable via environment variables
 - Automatic backoff and retry
@@ -105,6 +108,7 @@ client.getComments(fileKey)       // Comments
 ### 2. Code to Design Converter (`code-to-design.ts`)
 
 **Capabilities:**
+
 - ✅ TypeScript AST parsing
 - ✅ Component structure extraction
 - ✅ Props definition parsing
@@ -114,21 +118,22 @@ client.getComments(fileKey)       // Comments
 
 **Tailwind Mappings:**
 
-| Tailwind Class | Figma Property |
-|----------------|----------------|
-| `bg-{color}` | Fill color |
-| `p-{size}` | Padding (all) |
-| `px-{size}`, `py-{size}` | Padding (axis) |
-| `pt/r/b/l-{size}` | Padding (side) |
-| `gap-{size}` | Item spacing |
-| `rounded-{size}` | Corner radius |
-| `flex` | Layout mode: HORIZONTAL |
-| `flex-col` | Layout mode: VERTICAL |
-| `text-{size}` | Typography |
-| `font-{weight}` | Font weight |
-| `shadow-{size}` | Drop shadow effect |
+| Tailwind Class           | Figma Property          |
+| ------------------------ | ----------------------- |
+| `bg-{color}`             | Fill color              |
+| `p-{size}`               | Padding (all)           |
+| `px-{size}`, `py-{size}` | Padding (axis)          |
+| `pt/r/b/l-{size}`        | Padding (side)          |
+| `gap-{size}`             | Item spacing            |
+| `rounded-{size}`         | Corner radius           |
+| `flex`                   | Layout mode: HORIZONTAL |
+| `flex-col`               | Layout mode: VERTICAL   |
+| `text-{size}`            | Typography              |
+| `font-{weight}`          | Font weight             |
+| `shadow-{size}`          | Drop shadow effect      |
 
 **Example:**
+
 ```typescript
 // Input: className="flex flex-col gap-4 p-6 bg-blue-500 rounded-lg"
 // Output:
@@ -146,6 +151,7 @@ client.getComments(fileKey)       // Comments
 **Output Formats:**
 
 #### A. Figma Plugin
+
 ```
 .figma-output/
 ├── manifest.json      # Plugin configuration
@@ -155,16 +161,19 @@ client.getComments(fileKey)       // Comments
 ```
 
 **Installation:**
+
 1. `bun run figma:export`
 2. Figma → Plugins → Development → Import plugin from manifest
 3. Select `.figma-output/manifest.json`
 
 **Usage:**
+
 - Run plugin in Figma
 - Click "Import Components"
 - Components appear as Figma components with full structure
 
 #### B. story.to.design Integration
+
 ```
 .figma-output/
 ├── story-to-design.json  # API payload
@@ -175,6 +184,7 @@ client.getComments(fileKey)       // Comments
 ```
 
 **Generated Stories:**
+
 ```typescript
 import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from '@tracertm/ui';
@@ -227,22 +237,23 @@ bun run figma:upload
 ```
 
 **Metadata Format (`.trace/.meta/designs.yaml`):**
+
 ```yaml
-version: "1.0.0"
-lastSync: "2025-11-30T12:00:00Z"
-figmaFileKey: "ABC123"
+version: '1.0.0'
+lastSync: '2025-11-30T12:00:00Z'
+figmaFileKey: 'ABC123'
 
 components:
   - name: Button
     componentId: button
-    figmaNodeId: "1:234"
+    figmaNodeId: '1:234'
     filePath: packages/ui/src/components/Button.tsx
-    lastModified: "2025-11-30T11:00:00Z"
+    lastModified: '2025-11-30T11:00:00Z'
     syncStatus: synced
 
 tokens:
   colors:
-    primary-500: "#3b82f6"
+    primary-500: '#3b82f6'
   typography:
     text-lg:
       fontFamily: Inter
@@ -250,14 +261,15 @@ tokens:
       fontWeight: 400
       lineHeight: 28
   spacing:
-    "4": 16
+    '4': 16
   borderRadius:
     lg: 8
   shadows:
-    md: "0 4px 6px rgba(0, 0, 0, 0.1)"
+    md: '0 4px 6px rgba(0, 0, 0, 0.1)'
 ```
 
 **Conflict Resolution:**
+
 ```bash
 # Keep local changes
 FIGMA_CONFLICT_RESOLUTION=local bun run figma:sync
@@ -315,6 +327,7 @@ bun run figma:conflicts
 ```
 
 **Environment Variables:**
+
 ```bash
 # Required
 FIGMA_ACCESS_TOKEN=figd_...
@@ -485,6 +498,7 @@ class FigmaGeneratorError extends Error {
 ```
 
 Error scenarios covered:
+
 - ✅ Invalid API token
 - ✅ File not found
 - ✅ Rate limit exceeded

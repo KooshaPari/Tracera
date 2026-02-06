@@ -45,7 +45,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
-from tracertm.services.spec_analytics_service_v2 import SpecAnalyticsServiceV2
+# from tracertm.services.spec_analytics_service_v2 import SpecAnalyticsServiceV2  # TODO: Fix missing module
 
 # Threshold constants for analysis
 _MIN_SAMPLES_FOR_METRICS = 2
@@ -690,7 +690,7 @@ class EARSPatternAnalyzer:
             incomplete_markers=incomplete,
         )
 
-    def _extract_components(self, pattern_type: EARSPatternType, match: re.Match) -> EARSComponents:
+    def _extract_components(self, pattern_type: EARSPatternType, match: re.Match[str]) -> EARSComponents:
         """Extract structured components from regex match."""
         groups = match.groups()
 
@@ -824,13 +824,13 @@ class EARSPatternAnalyzer:
         if pattern_type == EARSPatternType.UBIQUITOUS:
             return f"The {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
         if pattern_type == EARSPatternType.EVENT_DRIVEN:
-            return f"WHEN {components.trigger or '<trigger>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
+            return f"WHEN {components.trigger or '<trigger>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."  # noqa: E501
         if pattern_type == EARSPatternType.STATE_DRIVEN:
-            return f"WHILE {components.precondition or '<state>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
+            return f"WHILE {components.precondition or '<state>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."  # noqa: E501
         if pattern_type == EARSPatternType.OPTIONAL:
-            return f"WHERE {components.constraint or '<feature>'} is enabled, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
+            return f"WHERE {components.constraint or '<feature>'} is enabled, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."  # noqa: E501
         if pattern_type == EARSPatternType.UNWANTED:
-            return f"IF {components.precondition or '<condition>'}, THEN the {components.system_name or '<system>'} shall NOT {components.postcondition or '<action>'}."
+            return f"IF {components.precondition or '<condition>'}, THEN the {components.system_name or '<system>'} shall NOT {components.postcondition or '<action>'}."  # noqa: E501
         if pattern_type == EARSPatternType.COMPLEX:
             parts = []
             if components.precondition:
@@ -1658,7 +1658,7 @@ class FlakinessDetector:
         return max_count
 
     def _detect_patterns(
-        self, runs: list[dict[str, Any]], durations: list[float], timestamps: list[Any]
+        self, runs: list[dict[str, Any]], durations: list[float], _timestamps: list[Any]
     ) -> list[FlakinessPattern]:
         """Detect specific flakiness patterns."""
         patterns = []
@@ -2640,7 +2640,7 @@ class SpecAnalyticsService:
 
 
 # Create singleton instance for easy import
-spec_analytics = SpecAnalyticsServiceV2()
+spec_analytics = SpecAnalyticsService()
 spec_analytics_service = spec_analytics
 
 

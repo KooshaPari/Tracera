@@ -14,8 +14,9 @@ import sys
 import time
 from pathlib import Path
 
-import psutil  # type: ignore[import-untyped,import-not-found]
 import pytest
+
+psutil = pytest.importorskip("psutil")
 
 # Performance targets
 STARTUP_TIME_THRESHOLD_MS = 500

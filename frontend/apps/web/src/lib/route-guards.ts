@@ -3,8 +3,10 @@
  * Provides authentication checks and redirects for protected routes
  */
 
-import { redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores/authStore";
+import { redirect } from '@tanstack/react-router';
+
+import { logger } from '@/lib/logger';
+import { useAuthStore } from '@/stores/authStore';
 
 /**
  * Route guard that requires user authentication.
@@ -32,35 +34,48 @@ import { useAuthStore } from "@/stores/authStore";
  * });
  * ```
  */
-export function requireAuth(options?: {
-	redirectTo?: string;
-	includeReturnUrl?: boolean;
-}) {
-	const { redirectTo = "/", includeReturnUrl = true } = options || {};
+const hasValidSession = async (): Promise<boolean> => {
+  try {
+    const { isAuthenticated, token, user, validateSession } = useAuthStore.getState();
+    const normalizedToken = token?.trim();
+    if (isAuthenticated && user && normalizedToken) {
+      return true;
+    }
+    if (!normalizedToken) {
+      return false;
+    }
+    const ok = await validateSession();
+    const latest = useAuthStore.getState();
+    return Boolean(ok && latest.isAuthenticated && latest.user && latest.token?.trim());
+  } catch (error) {
+    logger.error('Session validation error:', error);
+    return false;
+  }
+};
 
-	const { isAuthenticated, user } = useAuthStore.getState();
-	const hasStoredToken =
-		typeof window !== "undefined" &&
-		typeof localStorage !== "undefined" &&
-		(localStorage.getItem("auth_token") ||
-			localStorage.getItem("authToken") ||
-			localStorage.getItem("tracertm-auth-store"));
-	const isE2E =
-		typeof window !== "undefined" &&
-		(Boolean((window as any).__E2E__) ||
-			(typeof navigator !== "undefined" && navigator.webdriver));
+export async function requireAuth(options?: { redirectTo?: string; includeReturnUrl?: boolean }) {
+  const { redirectTo = '/auth/login', includeReturnUrl = true } = options || {};
 
-	if ((!isAuthenticated || !user) && !hasStoredToken && !isE2E) {
-		// Build redirect with optional returnTo parameter
-		const search = includeReturnUrl
-			? { returnTo: window.location.pathname + window.location.search }
-			: undefined;
+  const isE2E =
+    typeof window !== 'undefined' &&
+    (Boolean((window as any).__E2E__) || (typeof navigator !== 'undefined' && navigator.webdriver));
 
-		throw redirect({
-			to: redirectTo,
-			search,
-		});
-	}
+  if (isE2E) {
+    return;
+  }
+
+  const isValid = await hasValidSession();
+  if (!isValid) {
+    // Build redirect with optional returnTo parameter
+    const search = includeReturnUrl
+      ? { returnTo: window.location.pathname + window.location.search }
+      : undefined;
+
+    throw redirect({
+      to: redirectTo,
+      search,
+    });
+  }
 }
 
 /**
@@ -80,44 +95,42 @@ export function requireAuth(options?: {
  * });
  * ```
  */
-export function requireAuthWithAccount(options?: {
-	redirectTo?: string;
-	includeReturnUrl?: boolean;
+export async function requireAuthWithAccount(options?: {
+  redirectTo?: string;
+  includeReturnUrl?: boolean;
 }) {
-	const { redirectTo = "/", includeReturnUrl = true } = options || {};
+  const { redirectTo = '/auth/login', includeReturnUrl = true } = options || {};
 
-	const { isAuthenticated, user, account } = useAuthStore.getState();
-	const hasStoredToken =
-		typeof window !== "undefined" &&
-		typeof localStorage !== "undefined" &&
-		(localStorage.getItem("auth_token") ||
-			localStorage.getItem("authToken") ||
-			localStorage.getItem("tracertm-auth-store"));
-	const isE2E =
-		typeof window !== "undefined" &&
-		(Boolean((window as any).__E2E__) ||
-			(typeof navigator !== "undefined" && navigator.webdriver));
+  const isE2E =
+    typeof window !== 'undefined' &&
+    (Boolean((window as any).__E2E__) || (typeof navigator !== 'undefined' && navigator.webdriver));
 
-	if ((!isAuthenticated || !user) && !hasStoredToken && !isE2E) {
-		const search = includeReturnUrl
-			? { returnTo: window.location.pathname + window.location.search }
-			: undefined;
+  if (isE2E) {
+    return;
+  }
 
-		throw redirect({
-			to: redirectTo,
-			search,
-		});
-	}
+  const isValid = await hasValidSession();
+  if (!isValid) {
+    const search = includeReturnUrl
+      ? { returnTo: window.location.pathname + window.location.search }
+      : undefined;
 
-	// If account is required but not present, redirect to account selection or setup
-	if (!account && !hasStoredToken && !isE2E) {
-		throw redirect({
-			to: "/account/select",
-			search: includeReturnUrl
-				? { returnTo: window.location.pathname + window.location.search }
-				: undefined,
-		});
-	}
+    throw redirect({
+      to: redirectTo,
+      search,
+    });
+  }
+
+  // If account is required but not present, redirect to account selection or setup
+  const { account } = useAuthStore.getState();
+  if (!account) {
+    throw redirect({
+      to: '/account/select',
+      search: includeReturnUrl
+        ? { returnTo: window.location.pathname + window.location.search }
+        : undefined,
+    });
+  }
 }
 
 /**
@@ -128,31 +141,29 @@ export function requireAuthWithAccount(options?: {
  * @param options.redirectTo - Where to redirect non-admin users (default: "/home")
  * @throws {redirect} Redirects if user is not authenticated or not admin
  */
-export function requireAdmin(options?: { redirectTo?: string }) {
-	const redirectTo = options?.redirectTo ?? "/home";
+export async function requireAdmin(options?: { redirectTo?: string }) {
+  const redirectTo = options?.redirectTo ?? '/home';
 
-	const { isAuthenticated, user } = useAuthStore.getState();
-	const hasStoredToken =
-		typeof window !== "undefined" &&
-		typeof localStorage !== "undefined" &&
-		(localStorage.getItem("auth_token") ||
-			localStorage.getItem("authToken") ||
-			localStorage.getItem("tracertm-auth-store"));
-	const isE2E =
-		typeof window !== "undefined" &&
-		(Boolean((window as any).__E2E__) ||
-			(typeof navigator !== "undefined" && navigator.webdriver));
+  const isE2E =
+    typeof window !== 'undefined' &&
+    (Boolean((window as any).__E2E__) || (typeof navigator !== 'undefined' && navigator.webdriver));
 
-	if ((!isAuthenticated || !user) && !hasStoredToken && !isE2E) {
-		throw redirect({
-			to: "/auth/login",
-			search: { returnTo: window.location.pathname + window.location.search },
-		});
-	}
+  if (isE2E) {
+    return;
+  }
 
-	if (user.role !== "admin") {
-		throw redirect({ to: redirectTo });
-	}
+  const isValid = await hasValidSession();
+  if (!isValid) {
+    throw redirect({
+      to: '/auth/login',
+      search: { returnTo: window.location.pathname + window.location.search },
+    });
+  }
+
+  const { user } = useAuthStore.getState();
+  if (!user || user.role !== 'admin') {
+    throw redirect({ to: redirectTo });
+  }
 }
 
 /**
@@ -170,6 +181,6 @@ export function requireAdmin(options?: { redirectTo?: string }) {
  * ```
  */
 export function checkAuth() {
-	const { isAuthenticated, user, account } = useAuthStore.getState();
-	return { isAuthenticated, user, account };
+  const { isAuthenticated, user, account } = useAuthStore.getState();
+  return { isAuthenticated, user, account };
 }

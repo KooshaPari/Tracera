@@ -1,6 +1,7 @@
 """Item listing handlers and helpers for reducing complexity."""
 
 import re
+from dataclasses import dataclass
 from typing import Any
 
 from fastapi import HTTPException
@@ -30,6 +31,18 @@ VIEW_ALIAS_MAP = {
     "performance": ["performance"],
     "security": ["security"],
 }
+
+
+@dataclass(frozen=True)
+class ItemListParams:
+    """Parameters for item list queries."""
+
+    project_id: str | None
+    view: str | None
+    status: str | None
+    parent_id: str | None
+    skip: int
+    limit: int
 
 
 def normalize_view_name(name: str) -> str:
@@ -75,9 +88,7 @@ async def resolve_view_matches(
     if project_id:
         # Query database for actual view values
         result = await db.execute(
-            select(Item.view)
-            .where(Item.project_id == project_id, Item.deleted_at.is_(None))
-            .distinct()
+            select(Item.view).where(Item.project_id == project_id, Item.deleted_at.is_(None)).distinct()
         )
         candidates = [row[0] for row in result.all()]
 
@@ -99,33 +110,21 @@ async def resolve_view_matches(
     return [view, f"{view}s"]
 
 
-def generate_cache_key(
-    cache: CacheService,
-    project_id: str,
-    status: str | None,
-    parent_id: str | None,
-    skip: int,
-    limit: int,
-) -> str:
+def generate_cache_key(cache: CacheService, params: ItemListParams) -> str:
     """Generate cache key for item list query."""
     return cache._generate_key(
         "items",
-        project_id=project_id,
-        status=status or "",
-        parent_id=parent_id or "",
-        skip=skip,
-        limit=limit,
+        project_id=params.project_id,
+        status=params.status or "",
+        parent_id=params.parent_id or "",
+        skip=params.skip,
+        limit=params.limit,
     )
 
 
 async def try_get_from_cache(
     cache: CacheService,
-    project_id: str | None,
-    view: str | None,
-    status: str | None,
-    parent_id: str | None,
-    skip: int,
-    limit: int,
+    params: ItemListParams,
 ) -> tuple[str | None, dict[str, Any] | None]:
     """Attempt to get cached result for simple queries.
 
@@ -133,29 +132,24 @@ async def try_get_from_cache(
     is not applicable or cache miss.
     """
     # Only cache simple queries without view resolution
-    if not project_id or view:
+    if not params.project_id or params.view:
         return None, None
 
-    cache_key = generate_cache_key(cache, project_id, status, parent_id, skip, limit)
+    cache_key = generate_cache_key(cache, params)
     cached = await cache.get(cache_key)
     return cache_key, cached
 
 
-def build_query_conditions(
-    project_id: str | None,
-    status: str | None,
-    parent_id: str | None,
-    view_matches: list[str],
-) -> list[Any]:
+def build_query_conditions(params: ItemListParams, view_matches: list[str]) -> list[Any]:
     """Build SQLAlchemy filter conditions for item query."""
     conditions = [Item.deleted_at.is_(None)]
 
-    if project_id:
-        conditions.append(Item.project_id == project_id)
-    if status:
-        conditions.append(Item.status == status)
-    if parent_id:
-        conditions.append(Item.parent_id == parent_id)
+    if params.project_id:
+        conditions.append(Item.project_id == params.project_id)
+    if params.status:
+        conditions.append(Item.status == params.status)
+    if params.parent_id:
+        conditions.append(Item.parent_id == params.parent_id)
     if view_matches:
         conditions.append(Item.view.in_(view_matches))
 
@@ -165,8 +159,7 @@ def build_query_conditions(
 async def execute_item_query(
     db: AsyncSession,
     conditions: list[Any],
-    skip: int,
-    limit: int,
+    params: ItemListParams,
 ) -> tuple[int, list[Any]]:
     """Execute count and items query with given conditions.
 
@@ -179,14 +172,9 @@ async def execute_item_query(
         total_count = count_result.scalar() or 0
 
         # Items query
-        items_query = (
-            select(Item)
-            .where(*conditions)
-            .order_by(Item.created_at.desc())
-            .offset(skip)
-        )
-        if limit is not None and limit > 0:
-            items_query = items_query.limit(limit)
+        items_query = select(Item).where(*conditions).order_by(Item.created_at.desc()).offset(params.skip)
+        if params.limit is not None and params.limit > 0:
+            items_query = items_query.limit(params.limit)
 
         items_result = await db.execute(items_query)
         items = list(items_result.scalars().all())
@@ -214,11 +202,7 @@ def serialize_item_for_list(item: Any, project_id: str | None) -> dict[str, Any]
         "type": getattr(item, "item_type", getattr(item, "view", "")),
         "status": getattr(item, "status", ""),
         "priority": getattr(item, "priority", "medium"),
-        "created_at": (
-            created_at.isoformat()
-            if hasattr(item, "created_at") and created_at
-            else None
-        ),
+        "created_at": (created_at.isoformat() if hasattr(item, "created_at") and created_at else None),
     }
 
 

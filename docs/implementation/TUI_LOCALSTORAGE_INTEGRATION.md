@@ -48,7 +48,7 @@ The TUI has been enhanced to use the LocalStorageManager instead of direct datab
 **Widgets:**
 - `src/tracertm/tui/widgets/sync_status.py` - Sync status indicator widget
 - `src/tracertm/tui/widgets/conflict_panel.py` - Conflict resolution panel
-- `src/tracertm/tui/apps/dashboard_v2.py` - Enhanced dashboard with LocalStorage integration
+- `src/tracertm/tui/apps/dashboard_compat.py` - Enhanced dashboard with LocalStorage integration
 
 **Storage:**
 - `src/tracertm/storage/local_storage.py` - LocalStorageManager (SQLite + Markdown)

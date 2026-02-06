@@ -4,40 +4,37 @@
  * Generates HTML reports with charts and comparison tables from benchmark results
  */
 
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 
 interface BenchmarkResults {
-	timestamp: string;
-	testEnvironment: {
-		userAgent: string;
-		viewport: { width: number; height: number };
-		devicePixelRatio: number;
-	};
-	scenarios: {
-		load10kGraph: any;
-		continuousPan: any;
-		zoomOperations: any;
-		nodeSelection: any;
-		lodTransitions: any;
-	};
-	summary: {
-		overallScore: number;
-		performanceGrade: string;
-		readyForProduction: boolean;
-		blockers: string[];
-		recommendations: string[];
-	};
+  timestamp: string;
+  testEnvironment: {
+    userAgent: string;
+    viewport: { width: number; height: number };
+    devicePixelRatio: number;
+  };
+  scenarios: {
+    load10kGraph: any;
+    continuousPan: any;
+    zoomOperations: any;
+    nodeSelection: any;
+    lodTransitions: any;
+  };
+  summary: {
+    overallScore: number;
+    performanceGrade: string;
+    readyForProduction: boolean;
+    blockers: string[];
+    recommendations: string[];
+  };
 }
 
 /**
  * Generate HTML report from benchmark results
  */
-async function generateHTMLReport(
-	results: BenchmarkResults,
-	outputPath: string,
-): Promise<void> {
-	const html = `<!DOCTYPE html>
+async function generateHTMLReport(results: BenchmarkResults, outputPath: string): Promise<void> {
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -190,7 +187,7 @@ async function generateHTMLReport(
         Overall Score: ${results.summary.overallScore}/100
       </div>
       <div style="font-size: 1rem; margin-top: 0.5rem;">
-        ${results.summary.readyForProduction ? "✅ Production Ready" : "❌ Not Production Ready"}
+        ${results.summary.readyForProduction ? '✅ Production Ready' : '❌ Not Production Ready'}
       </div>
     </div>
 
@@ -253,8 +250,8 @@ async function generateHTMLReport(
           <td>${results.scenarios.load10kGraph.initialRenderTime}ms</td>
           <td>&lt; 3000ms</td>
           <td>&lt; 5000ms</td>
-          <td class="${results.scenarios.load10kGraph.initialRenderTime < 3000 ? "status-pass" : "status-fail"}">
-            ${results.scenarios.load10kGraph.initialRenderTime < 3000 ? "✓ PASS" : "✗ FAIL"}
+          <td class="${results.scenarios.load10kGraph.initialRenderTime < 3000 ? 'status-pass' : 'status-fail'}">
+            ${results.scenarios.load10kGraph.initialRenderTime < 3000 ? '✓ PASS' : '✗ FAIL'}
           </td>
         </tr>
         <tr>
@@ -262,8 +259,8 @@ async function generateHTMLReport(
           <td>${results.scenarios.continuousPan.continuousPanFPS.toFixed(1)} fps</td>
           <td>&gt; 30 fps</td>
           <td>&gt; 30 fps</td>
-          <td class="${results.scenarios.continuousPan.continuousPanFPS > 30 ? "status-pass" : "status-warn"}">
-            ${results.scenarios.continuousPan.continuousPanFPS > 30 ? "✓ PASS" : "⚠ WARN"}
+          <td class="${results.scenarios.continuousPan.continuousPanFPS > 30 ? 'status-pass' : 'status-warn'}">
+            ${results.scenarios.continuousPan.continuousPanFPS > 30 ? '✓ PASS' : '⚠ WARN'}
           </td>
         </tr>
         <tr>
@@ -271,8 +268,8 @@ async function generateHTMLReport(
           <td>${results.scenarios.zoomOperations.zoomFPS.toFixed(1)} fps</td>
           <td>&gt; 30 fps</td>
           <td>&gt; 30 fps</td>
-          <td class="${results.scenarios.zoomOperations.zoomFPS > 30 ? "status-pass" : "status-warn"}">
-            ${results.scenarios.zoomOperations.zoomFPS > 30 ? "✓ PASS" : "⚠ WARN"}
+          <td class="${results.scenarios.zoomOperations.zoomFPS > 30 ? 'status-pass' : 'status-warn'}">
+            ${results.scenarios.zoomOperations.zoomFPS > 30 ? '✓ PASS' : '⚠ WARN'}
           </td>
         </tr>
         <tr>
@@ -280,8 +277,8 @@ async function generateHTMLReport(
           <td>${results.scenarios.nodeSelection.avgNodeSelectionTime.toFixed(0)}ms</td>
           <td>&lt; 100ms</td>
           <td>&lt; 50ms</td>
-          <td class="${results.scenarios.nodeSelection.avgNodeSelectionTime < 100 ? "status-pass" : "status-warn"}">
-            ${results.scenarios.nodeSelection.avgNodeSelectionTime < 100 ? "✓ PASS" : "⚠ WARN"}
+          <td class="${results.scenarios.nodeSelection.avgNodeSelectionTime < 100 ? 'status-pass' : 'status-warn'}">
+            ${results.scenarios.nodeSelection.avgNodeSelectionTime < 100 ? '✓ PASS' : '⚠ WARN'}
           </td>
         </tr>
         <tr>
@@ -289,8 +286,8 @@ async function generateHTMLReport(
           <td>${results.scenarios.load10kGraph.finalMemoryMB.toFixed(0)}MB</td>
           <td>&lt; 500MB</td>
           <td>&lt; 800MB</td>
-          <td class="${results.scenarios.load10kGraph.finalMemoryMB < 500 ? "status-pass" : "status-warn"}">
-            ${results.scenarios.load10kGraph.finalMemoryMB < 500 ? "✓ PASS" : "⚠ WARN"}
+          <td class="${results.scenarios.load10kGraph.finalMemoryMB < 500 ? 'status-pass' : 'status-warn'}">
+            ${results.scenarios.load10kGraph.finalMemoryMB < 500 ? '✓ PASS' : '⚠ WARN'}
           </td>
         </tr>
         <tr>
@@ -298,38 +295,38 @@ async function generateHTMLReport(
           <td>${results.scenarios.lodTransitions.lodTransitionTime.toFixed(0)}ms</td>
           <td>&lt; 100ms</td>
           <td>&lt; 50ms</td>
-          <td class="${results.scenarios.lodTransitions.lodTransitionTime < 100 ? "status-pass" : "status-warn"}">
-            ${results.scenarios.lodTransitions.lodTransitionTime < 100 ? "✓ PASS" : "⚠ WARN"}
+          <td class="${results.scenarios.lodTransitions.lodTransitionTime < 100 ? 'status-pass' : 'status-warn'}">
+            ${results.scenarios.lodTransitions.lodTransitionTime < 100 ? '✓ PASS' : '⚠ WARN'}
           </td>
         </tr>
       </tbody>
     </table>
 
     ${
-			results.summary.blockers.length > 0
-				? `
+      results.summary.blockers.length > 0
+        ? `
     <div class="blockers">
       <h2>⚠️ Performance Blockers</h2>
       <ul>
-        ${results.summary.blockers.map((b) => `<li>${b}</li>`).join("")}
+        ${results.summary.blockers.map((b) => `<li>${b}</li>`).join('')}
       </ul>
     </div>
     `
-				: ""
-		}
+        : ''
+    }
 
     ${
-			results.summary.recommendations.length > 0
-				? `
+      results.summary.recommendations.length > 0
+        ? `
     <div class="recommendations">
       <h2>💡 Optimization Recommendations</h2>
       <ul>
-        ${results.summary.recommendations.map((r) => `<li>${r}</li>`).join("")}
+        ${results.summary.recommendations.map((r) => `<li>${r}</li>`).join('')}
       </ul>
     </div>
     `
-				: ""
-		}
+        : ''
+    }
 
     <div class="environment">
       <h3 style="color: #4ecca3; margin-bottom: 1rem;">Test Environment</h3>
@@ -434,44 +431,39 @@ async function generateHTMLReport(
 </body>
 </html>`;
 
-	await fs.writeFile(outputPath, html);
+  await fs.writeFile(outputPath, html);
 }
 
 /**
  * Main execution
  */
 async function main() {
-	const resultsDir = path.join(__dirname, "../performance-results");
+  const resultsDir = path.join(__dirname, '../performance-results');
 
-	try {
-		// Find the most recent benchmark results
-		const files = await fs.readdir(resultsDir);
-		const jsonFiles = files.filter(
-			(f) => f.startsWith("10k-baseline-") && f.endsWith(".json"),
-		);
+  try {
+    // Find the most recent benchmark results
+    const files = await fs.readdir(resultsDir);
+    const jsonFiles = files.filter((f) => f.startsWith('10k-baseline-') && f.endsWith('.json'));
 
-		if (jsonFiles.length === 0) {
-			process.exit(1);
-		}
+    if (jsonFiles.length === 0) {
+      process.exit(1);
+    }
 
-		// Sort by timestamp and get the latest
-		jsonFiles.sort();
-		const latestFile = jsonFiles.at(-1);
-		const resultsPath = path.join(resultsDir, latestFile);
+    // Sort by timestamp and get the latest
+    jsonFiles.sort();
+    const latestFile = jsonFiles.at(-1);
+    const resultsPath = path.join(resultsDir, latestFile);
 
-		// Read results
-		const resultsContent = await fs.readFile(resultsPath, "utf8");
-		const results: BenchmarkResults = JSON.parse(resultsContent);
+    // Read results
+    const resultsContent = await fs.readFile(resultsPath, 'utf8');
+    const results: BenchmarkResults = JSON.parse(resultsContent);
 
-		// Generate HTML report
-		const reportPath = path.join(
-			resultsDir,
-			latestFile.replace(".json", ".html"),
-		);
-		await generateHTMLReport(results, reportPath);
-	} catch (error) {
-		process.exit(1);
-	}
+    // Generate HTML report
+    const reportPath = path.join(resultsDir, latestFile.replace('.json', '.html'));
+    await generateHTMLReport(results, reportPath);
+  } catch {
+    process.exit(1);
+  }
 }
 
 undefined;

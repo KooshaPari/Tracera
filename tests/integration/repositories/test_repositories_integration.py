@@ -245,7 +245,11 @@ async def test_item_repository_create_invalid_parent(db_session: AsyncSession):
 
     with pytest.raises(ValueError, match="Parent item .* not found"):
         await item_repo.create(
-            project_id=str(project.id), title="Orphan Item", view="STORY", item_type="story", parent_id="nonexistent-parent"
+            project_id=str(project.id),
+            title="Orphan Item",
+            view="STORY",
+            item_type="story",
+            parent_id="nonexistent-parent",
         )
 
 
@@ -335,7 +339,9 @@ async def test_item_repository_get_by_id_excludes_deleted(db_session: AsyncSessi
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    item = await item_repo.create(project_id=str(project.id), title="To Be Deleted", view="FEATURE", item_type="feature")
+    item = await item_repo.create(
+        project_id=str(project.id), title="To Be Deleted", view="FEATURE", item_type="feature"
+    )
     await db_session.commit()
 
     # Soft delete
@@ -692,9 +698,15 @@ async def test_item_repository_get_by_project_with_status(db_session: AsyncSessi
 
     item_repo = ItemRepository(db_session)
 
-    await item_repo.create(project_id=str(project.id), title="Todo 1", view="FEATURE", item_type="feature", status="todo")
-    await item_repo.create(project_id=str(project.id), title="Todo 2", view="FEATURE", item_type="feature", status="todo")
-    await item_repo.create(project_id=str(project.id), title="Done 1", view="FEATURE", item_type="feature", status="done")
+    await item_repo.create(
+        project_id=str(project.id), title="Todo 1", view="FEATURE", item_type="feature", status="todo"
+    )
+    await item_repo.create(
+        project_id=str(project.id), title="Todo 2", view="FEATURE", item_type="feature", status="todo"
+    )
+    await item_repo.create(
+        project_id=str(project.id), title="Done 1", view="FEATURE", item_type="feature", status="done"
+    )
     await db_session.commit()
 
     todo_items = await item_repo.get_by_project(str(project.id), status="todo")
@@ -956,7 +968,11 @@ async def test_item_repository_count_by_status(db_session: AsyncSession):
         )
     for i in range(2):
         await item_repo.create(
-            project_id=str(project.id), title=f"In Progress {i}", view="FEATURE", item_type="feature", status="in_progress"
+            project_id=str(project.id),
+            title=f"In Progress {i}",
+            view="FEATURE",
+            item_type="feature",
+            status="in_progress",
         )
     await item_repo.create(project_id=str(project.id), title="Done", view="FEATURE", item_type="feature", status="done")
     await db_session.commit()
@@ -1053,15 +1069,22 @@ async def test_link_repository_get_by_project(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    p1_item1 = await item_repo.create(project_id=str(project1.id), title="P1 Item 1", view="FEATURE", item_type="feature")
+    p1_item1 = await item_repo.create(
+        project_id=str(project1.id), title="P1 Item 1", view="FEATURE", item_type="feature"
+    )
     p1_item2 = await item_repo.create(project_id=str(project1.id), title="P1 Item 2", view="API", item_type="api")
-    p2_item1 = await item_repo.create(project_id=str(project2.id), title="P2 Item 1", view="FEATURE", item_type="feature")
+    p2_item1 = await item_repo.create(
+        project_id=str(project2.id), title="P2 Item 1", view="FEATURE", item_type="feature"
+    )
     p2_item2 = await item_repo.create(project_id=str(project2.id), title="P2 Item 2", view="API", item_type="api")
     await db_session.commit()
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=str(project1.id), source_item_id=str(p1_item1.id), target_item_id=str(p1_item2.id), link_type="implements"
+        project_id=str(project1.id),
+        source_item_id=str(p1_item1.id),
+        target_item_id=str(p1_item2.id),
+        link_type="implements",
     )
     await link_repo.create(
         project_id=str(project2.id), source_item_id=str(p2_item1.id), target_item_id=str(p2_item2.id), link_type="tests"
@@ -1096,10 +1119,16 @@ async def test_link_repository_get_by_source(db_session: AsyncSession):
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target1.id), link_type="implements"
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target1.id),
+        link_type="implements",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target2.id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target2.id),
+        link_type="depends_on",
     )
     await db_session.commit()
 
@@ -1127,10 +1156,16 @@ async def test_link_repository_get_by_target(db_session: AsyncSession):
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(source1.id), target_item_id=str(target.id), link_type="implements"
+        project_id=str(project.id),
+        source_item_id=str(source1.id),
+        target_item_id=str(target.id),
+        link_type="implements",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(source2.id), target_item_id=str(target.id), link_type="implements"
+        project_id=str(project.id),
+        source_item_id=str(source2.id),
+        target_item_id=str(target.id),
+        link_type="implements",
     )
     await db_session.commit()
 
@@ -1158,7 +1193,9 @@ async def test_link_repository_get_by_item(db_session: AsyncSession):
 
     link_repo = LinkRepository(db_session)
     # item2 as source
-    await link_repo.create(project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="tests")
+    await link_repo.create(
+        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="tests"
+    )
     # item2 as target
     await link_repo.create(
         project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
@@ -1234,7 +1271,9 @@ async def test_link_repository_delete_by_item(db_session: AsyncSession):
     await link_repo.create(
         project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
     )
-    await link_repo.create(project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="tests")
+    await link_repo.create(
+        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="tests"
+    )
     await db_session.commit()
 
     # Delete all links for item2
@@ -1488,7 +1527,9 @@ async def test_transaction_rollback_item_creation(db_session: AsyncSession):
     item_repo = ItemRepository(db_session)
 
     # Create item
-    item = await item_repo.create(project_id=str(project.id), title="Temporary Item", view="FEATURE", item_type="feature")
+    item = await item_repo.create(
+        project_id=str(project.id), title="Temporary Item", view="FEATURE", item_type="feature"
+    )
     item_id = item.id
 
     # Rollback instead of commit
@@ -1580,7 +1621,9 @@ async def test_complex_query_items_with_links(db_session: AsyncSession):
     await link_repo.create(
         project_id=str(project.id), source_item_id=str(feature.id), target_item_id=str(api.id), link_type="implements"
     )
-    await link_repo.create(project_id=str(project.id), source_item_id=str(test.id), target_item_id=str(api.id), link_type="tests")
+    await link_repo.create(
+        project_id=str(project.id), source_item_id=str(test.id), target_item_id=str(api.id), link_type="tests"
+    )
     await db_session.commit()
 
     # Traverse graph

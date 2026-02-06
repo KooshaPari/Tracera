@@ -28,7 +28,7 @@ Successfully updated TraceRTM's TUI to use the new LocalStorageManager for offli
    - Resolution actions (local, remote, manual merge)
    - **Lines of code:** ~250
 
-4. **Enhanced Dashboard** (`src/tracertm/tui/apps/dashboard_v2.py`)
+4. **Enhanced Dashboard** (`src/tracertm/tui/apps/dashboard_compat.py`)
    - Complete rewrite using StorageAdapter
    - Integrated sync status display
    - Conflict notifications
@@ -138,7 +138,7 @@ Successfully updated TraceRTM's TUI to use the new LocalStorageManager for offli
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Enhanced Dashboard                        │
-│                   (dashboard_v2.py)                          │
+│                   (dashboard_compat.py)                          │
 │  ┌────────────────┐  ┌──────────────┐  ┌─────────────────┐ │
 │  │ SyncStatusWidget│  │ConflictPanel │  │ DataTables      │ │
 │  │  - Online/off  │  │  - List      │  │  - Items        │ │
@@ -478,7 +478,7 @@ The implementation provides a solid foundation for future enhancements while mai
 | `tui/adapters/storage_adapter.py`             | Python     | 550   | Reactive storage interface   |
 | `tui/widgets/sync_status.py`                  | Python     | 290   | Sync status widget           |
 | `tui/widgets/conflict_panel.py`               | Python     | 250   | Conflict resolution UI       |
-| `tui/apps/dashboard_v2.py`                    | Python     | 380   | Enhanced dashboard           |
+| `tui/apps/dashboard_compat.py`                    | Python     | 380   | Enhanced dashboard           |
 | `cli/commands/tui.py`                         | Python     | +20   | Updated CLI command          |
 | `TUI_LOCALSTORAGE_INTEGRATION.md`             | Markdown   | 850   | Integration guide            |
 | `examples/tui_integration_demo.py`            | Python     | 420   | Demo script                  |

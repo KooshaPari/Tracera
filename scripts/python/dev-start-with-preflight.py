@@ -119,6 +119,8 @@ def main() -> int:
 
     # Load environment
     env = load_env_file(repo_root)
+    env.setdefault("PC_PORT_NUM", "18080")
+    os.environ.update(env)
 
     # Run preflight checks
     passed, results = run_preflight_checks(repo_root, env)
@@ -131,7 +133,8 @@ def main() -> int:
 
     # Build and execute process-compose
     pc_config = build_process_compose_config(repo_root, pc_config_path)
-    pc_args = pc_config + (sys.argv[1:] if len(sys.argv) > 1 else ["up", "--logs-truncate"])
+    pc_port = env.get("PC_PORT_NUM", "18080")
+    pc_args = pc_config + ["--port", pc_port] + (sys.argv[1:] if len(sys.argv) > 1 else ["up", "--logs-truncate"])
     pc_bin = "process-compose"
 
     try:

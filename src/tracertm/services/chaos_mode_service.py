@@ -11,8 +11,8 @@ from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 
 MIN_LINE_LEN_FOR_ITEM = 10
-HEADER_LEVEL_PARENT_1 = 1
-HEADER_LEVEL_PARENT_2 = 2
+HEADER_LEVEL_PARENT_PRIMARY = 1
+HEADER_LEVEL_PARENT_SECONDARY = 2
 
 
 class ChaosModeService:
@@ -41,6 +41,7 @@ class ChaosModeService:
 
             # Check if item is stale
             is_stale = False
+            days_since_update = 0
             if hasattr(item, "updated_at"):
                 days_since_update = (datetime.now(UTC) - item.updated_at).days
                 is_stale = days_since_update > days_inactive
@@ -288,7 +289,7 @@ class ChaosModeService:
                     items_created += 1
 
                     # Set as parent for next level (header levels that become parents)
-                    if level in (HEADER_LEVEL_PARENT_1, HEADER_LEVEL_PARENT_2):
+                    if level in (HEADER_LEVEL_PARENT_PRIMARY, HEADER_LEVEL_PARENT_SECONDARY):
                         current_parent = item.id
 
             # YAML list items (- Item)

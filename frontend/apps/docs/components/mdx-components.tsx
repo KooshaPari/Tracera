@@ -1,5 +1,7 @@
-import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { Callout } from 'fumadocs-ui/components/callout';
+import defaultMdxComponents from 'fumadocs-ui/mdx';
+
+import { Icon } from './icon-sprite';
 import {
   AccordionLazy,
   AccordionsLazy,
@@ -13,7 +15,6 @@ import {
   TabsLazy,
 } from './mdx-components-lazy';
 import { DocImage } from './optimized-image';
-import { Icon } from './icon-sprite';
 
 /**
  * Custom MDX components for enhanced documentation
@@ -68,7 +69,7 @@ export const mdxComponents = {
         })}
       >
         {children}
-        {isExternal && <Icon name="external-link" size={12} className="inline-block" />}
+        {isExternal && <Icon name='external-link' size={12} className='inline-block' />}
       </a>
     );
   },

@@ -61,7 +61,9 @@ async def test_get_by_id(db_session: AsyncSession):
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     created = await link_repo.create(
@@ -87,8 +89,12 @@ async def test_get_links_for_item(db_session: AsyncSession):
     feature = await item_repo.create(
         project_id=str(project.id), title="Feature", view="FEATURE", item_type="feature", status="todo"
     )
-    code1 = await item_repo.create(project_id=str(project.id), title="Code 1", view="CODE", item_type="file", status="todo")
-    code2 = await item_repo.create(project_id=str(project.id), title="Code 2", view="CODE", item_type="file", status="todo")
+    code1 = await item_repo.create(
+        project_id=str(project.id), title="Code 1", view="CODE", item_type="file", status="todo"
+    )
+    code2 = await item_repo.create(
+        project_id=str(project.id), title="Code 2", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
@@ -119,7 +125,9 @@ async def test_delete_link(db_session: AsyncSession):
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
@@ -185,7 +193,9 @@ async def test_get_by_target(db_session: AsyncSession):
     source2 = await item_repo.create(
         project_id=str(project.id), title="Source 2", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
@@ -216,7 +226,9 @@ async def test_link_with_metadata(db_session: AsyncSession):
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
@@ -263,7 +275,9 @@ async def test_create_link_with_explicit_graph_id(db_session: AsyncSession):
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
@@ -317,7 +331,9 @@ async def test_create_link_resolves_graph_from_source_item_view(db_session: Asyn
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     # Now create link without graph_id - should resolve from source item's view
     link_repo = LinkRepository(db_session)
@@ -367,7 +383,9 @@ async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession)
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     # No ItemView exists for source, so view-based lookup will fail
     # Should fall back to default graph
@@ -403,7 +421,9 @@ async def test_create_link_raises_error_when_no_graph_found(db_session: AsyncSes
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
 
@@ -453,7 +473,9 @@ async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession):
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
 
@@ -593,7 +615,9 @@ async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession):
     source2 = await item_repo.create(
         project_id=str(project.id), title="Source 2", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
 
@@ -714,7 +738,9 @@ async def test_get_by_project_with_none_graph_id(db_session: AsyncSession):
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
@@ -740,7 +766,9 @@ async def test_get_by_source_with_none_graph_id(db_session: AsyncSession):
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
@@ -766,7 +794,9 @@ async def test_get_by_target_with_none_graph_id(db_session: AsyncSession):
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
@@ -792,7 +822,9 @@ async def test_get_by_item_with_none_graph_id(db_session: AsyncSession):
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
@@ -943,7 +975,9 @@ async def test_create_link_with_link_metadata_parameter(db_session: AsyncSession
     source = await item_repo.create(
         project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
+    target = await item_repo.create(
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+    )
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(

@@ -17,6 +17,30 @@ from sqlalchemy.orm import sessionmaker
 # pytest_asyncio and pytest_benchmark are loaded by root conftest / auto-discovery
 pytest_plugins = ()
 
+# Avoid MCP metrics bind conflicts during test collection.
+os.environ["TRACERTM_MCP_METRICS_PORT"] = "0"
+os.environ["PYTEST_RUNNING"] = "1"
+_mcp_tmp_dir = Path(".pytest_mcp_tmp")
+_mcp_tmp_dir.mkdir(exist_ok=True)
+_mcp_skills_dir = _mcp_tmp_dir / "skills"
+_mcp_skills_dir.mkdir(exist_ok=True)
+os.environ.setdefault("TRACERTM_MCP_FILESYSTEM_ROOT", str(_mcp_tmp_dir))
+os.environ.setdefault("TRACERTM_MCP_SKILLS_ROOTS", str(_mcp_skills_dir))
+os.environ.setdefault("TRACERTM_MCP_OPENAPI_SPEC", "frontend/apps/web/public/specs/openapi.json")
+os.environ.setdefault("TRACERTM_MCP_PROXY_TARGETS", "http://127.0.0.1:4000/api/v1/mcp")
+os.environ.setdefault("TRACERTM_MCP_NAMESPACE", "tracertm")
+os.environ.setdefault("TRACERTM_MCP_TOOL_TRANSFORMS", "{}")
+os.environ.setdefault("TRACERTM_MCP_VERSION_GTE", "0.0.0")
+os.environ.setdefault("TRACERTM_MCP_VERSION_LT", "9999.0.0")
+os.environ.setdefault("TRACERTM_MCP_SESSION_STATE_REDIS", "redis://localhost:6379/0")
+os.environ.setdefault("TRACERTM_MCP_STRUCTURED_LOGGING", "true")
+os.environ.setdefault("TRACERTM_MCP_TELEMETRY_ENABLED", "true")
+os.environ.setdefault("TRACERTM_MCP_METRICS_ENABLED", "true")
+os.environ.setdefault("TRACERTM_MCP_METRICS_HOST", "127.0.0.1")
+os.environ.setdefault("TRACERTM_MCP_PERF_MONITORING", "true")
+os.environ.setdefault("TRACERTM_MCP_ENHANCED_ERRORS", "true")
+os.environ.setdefault("TRACERTM_MCP_RATE_LIMIT_ENABLED", "true")
+
 try:
     from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 except ImportError:

@@ -11,12 +11,14 @@ Successfully implemented a complete production deployment pipeline for the Trace
 ## What Was Built
 
 ### 1. Vercel Deployment Configuration
+
 - Production-ready Vercel configuration
 - Security headers and caching policies
 - API endpoint rewrites
 - Build optimization settings
 
 ### 2. CI/CD Pipeline
+
 - GitHub Actions workflow for automated deployment
 - Preview deployments for pull requests
 - Production deployments for main branch
@@ -24,12 +26,14 @@ Successfully implemented a complete production deployment pipeline for the Trace
 - Post-deployment validation
 
 ### 3. Deployment Scripts
+
 - Interactive deployment script with validation
 - Quick deploy shortcuts (preview/production)
 - OpenAPI synchronization script
 - Deployment validation script
 
 ### 4. Documentation Suite
+
 - Complete deployment guide (9,500+ words)
 - GitHub Actions setup guide (5,000+ words)
 - Deployment checklist (6,000+ words)
@@ -39,17 +43,20 @@ Successfully implemented a complete production deployment pipeline for the Trace
 ## Key Features
 
 ### Automated Deployment
+
 - **Pull Requests**: Automatic preview deployment with unique URL
 - **Main Branch**: Automatic production deployment
 - **Manual Trigger**: Deploy on-demand via GitHub Actions UI
 
 ### OpenAPI Integration
+
 - Automatic spec generation from Go backend
 - Validation of generated spec
 - Integration with Fumadocs OpenAPI component
 - Public API endpoints for JSON/YAML specs
 
 ### Validation & Testing
+
 - Automated post-deployment checks
 - Site accessibility validation
 - OpenAPI spec verification
@@ -57,6 +64,7 @@ Successfully implemented a complete production deployment pipeline for the Trace
 - Security header validation
 
 ### Custom Domain Support
+
 - HTTPS enforcement
 - SSL certificate auto-provisioning
 - DNS configuration guide
@@ -65,6 +73,7 @@ Successfully implemented a complete production deployment pipeline for the Trace
 ## Files Created (16 Total)
 
 ### Configuration (4 files)
+
 ```
 frontend/apps/docs/
 ├── vercel.json                      # Vercel platform config
@@ -74,6 +83,7 @@ frontend/apps/docs/
 ```
 
 ### Scripts (5 files)
+
 ```
 frontend/apps/docs/scripts/
 ├── deploy.sh                        # Main deployment script (interactive)
@@ -84,6 +94,7 @@ frontend/apps/docs/scripts/
 ```
 
 ### Documentation (6 files)
+
 ```
 frontend/apps/docs/
 ├── DEPLOYMENT.md                    # Complete deployment guide
@@ -95,12 +106,14 @@ frontend/apps/docs/
 ```
 
 ### CI/CD (1 file)
+
 ```
 .github/workflows/
 └── docs-deploy.yml                  # GitHub Actions workflow
 ```
 
 ### Modified Files (2)
+
 ```
 frontend/apps/docs/
 ├── package.json                     # Added deployment scripts
@@ -112,18 +125,21 @@ frontend/apps/docs/
 ### For Developers
 
 1. **Install prerequisites**:
+
    ```bash
    bun install --global vercel@latest
    vercel login
    ```
 
 2. **Link project**:
+
    ```bash
    cd frontend/apps/docs
    vercel link
    ```
 
 3. **Deploy preview**:
+
    ```bash
    bun run deploy:preview
    ```
@@ -136,6 +152,7 @@ frontend/apps/docs/
 ### For CI/CD Setup
 
 1. **Get Vercel credentials**:
+
    ```bash
    cat .vercel/project.json
    ```
@@ -154,30 +171,33 @@ frontend/apps/docs/
 ## Deployment Workflow
 
 ### Automatic (CI/CD)
+
 ```
 Push to main → GitHub Actions → Generate OpenAPI → Build → Deploy → Validate → Production
 Pull Request → GitHub Actions → Generate OpenAPI → Build → Deploy → Preview URL in PR
 ```
 
 ### Manual (Scripts)
+
 ```
 bun run deploy:prod → Check requirements → Generate OpenAPI → Build → Deploy → Validate → Summary
 ```
 
 ### Manual (Vercel CLI)
+
 ```
 vercel --prod → Build → Deploy → Production URL
 ```
 
 ## Key Commands
 
-| Command | Purpose |
-|---------|---------|
-| `bun run deploy:preview` | Deploy preview version |
-| `bun run deploy:prod` | Deploy to production |
-| `bun run openapi:sync` | Sync OpenAPI spec from backend |
-| `bash scripts/validate-deployment.sh` | Validate deployment |
-| `vercel --prod` | Direct Vercel deployment |
+| Command                               | Purpose                        |
+| ------------------------------------- | ------------------------------ |
+| `bun run deploy:preview`              | Deploy preview version         |
+| `bun run deploy:prod`                 | Deploy to production           |
+| `bun run openapi:sync`                | Sync OpenAPI spec from backend |
+| `bash scripts/validate-deployment.sh` | Validate deployment            |
+| `vercel --prod`                       | Direct Vercel deployment       |
 
 ## Validation Checklist
 
@@ -216,12 +236,14 @@ After deployment, the system validates:
 ## Monitoring & Analytics
 
 ### Built-in Monitoring
+
 - Vercel Analytics (ready to enable)
 - Deployment logs in Vercel dashboard
 - GitHub Actions logs for CI/CD
 - Automated validation on every deployment
 
 ### Manual Monitoring
+
 - Deployment validation script
 - Performance testing (`bun run test:performance`)
 - E2E testing (`bun run test:e2e`)
@@ -230,33 +252,40 @@ After deployment, the system validates:
 ## Documentation Structure
 
 ### For Quick Reference
+
 - **[DEPLOYMENT_QUICK_START.md](./DEPLOYMENT_QUICK_START.md)** - Get started in 20 minutes
 
 ### For Complete Understanding
+
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete deployment guide
 - **[DEPLOYMENT_FLOW.md](./DEPLOYMENT_FLOW.md)** - Visual diagrams and flows
 
 ### For Setup
+
 - **[GITHUB_ACTIONS_SETUP.md](./GITHUB_ACTIONS_SETUP.md)** - CI/CD configuration
 
 ### For Operations
+
 - **[DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)** - Pre/post deployment tasks
 
 ## Rollback Procedures
 
 ### Quick Rollback (Vercel Dashboard)
+
 1. Go to Vercel project → Deployments
 2. Find last working deployment
 3. Click "Promote to Production"
 4. Done! (~1 minute)
 
 ### Git Rollback
+
 1. Find working commit: `git log --oneline`
 2. Revert: `git revert <commit>`
 3. Push: `git push origin main`
 4. Auto-deploys (~5 minutes)
 
 ### Emergency Rollback
+
 ```bash
 vercel --prod --force
 # Select previous deployment
@@ -265,6 +294,7 @@ vercel --prod --force
 ## Custom Domain Configuration
 
 ### DNS Setup
+
 ```
 Type: A or CNAME
 Name: docs
@@ -272,6 +302,7 @@ Value: 76.76.21.21 (or cname.vercel-dns.com)
 ```
 
 ### SSL/HTTPS
+
 - Automatically provisioned by Vercel
 - Uses Let's Encrypt
 - Auto-renewal configured
@@ -280,12 +311,14 @@ Value: 76.76.21.21 (or cname.vercel-dns.com)
 ## Testing Strategy
 
 ### Pre-Deployment
+
 - TypeScript compilation (`bun run typecheck`)
 - Linting (`bun run lint`)
 - Local build (`bun run build`)
 - E2E tests (`bun run test:e2e`)
 
 ### Post-Deployment
+
 - Automated validation (GitHub Actions)
 - Manual validation script
 - Performance testing
@@ -336,6 +369,7 @@ Value: 76.76.21.21 (or cname.vercel-dns.com)
 ## Troubleshooting
 
 Common issues and solutions are documented in:
+
 - [DEPLOYMENT.md](./DEPLOYMENT.md) - Troubleshooting section
 - [GITHUB_ACTIONS_SETUP.md](./GITHUB_ACTIONS_SETUP.md) - Setup troubleshooting
 - [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) - Quick reference table

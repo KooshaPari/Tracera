@@ -151,15 +151,17 @@ async def create_snapshot_with_events(params: CreateSnapshotParams) -> dict[str,
         ...     CreateSnapshotParams,
         ...     create_snapshot_with_events,
         ... )
-        >>> result = await create_snapshot_with_events(CreateSnapshotParams(
-        ...     session_id="sess-123",
-        ...     sandbox_path="/tmp/sandbox/sess-123",
-        ...     snapshot_id="snap-456",
-        ...     s3_key="snapshots/sess-123/snap-456.tar.gz",
-        ...     snapshot_service=snapshot_svc,
-        ...     event_publisher=event_pub,
-        ...     project_id="proj-789",
-        ... ))
+        >>> result = await create_snapshot_with_events(
+        ...     CreateSnapshotParams(
+        ...         session_id="sess-123",
+        ...         sandbox_path="/tmp/sandbox/sess-123",
+        ...         snapshot_id="snap-456",
+        ...         s3_key="snapshots/sess-123/snap-456.tar.gz",
+        ...         snapshot_service=snapshot_svc,
+        ...         event_publisher=event_pub,
+        ...         project_id="proj-789",
+        ...     )
+        ... )
     """
     try:
         result = {
@@ -202,15 +204,17 @@ async def restore_snapshot_with_events(params: RestoreSnapshotParams) -> dict[st
         ...     RestoreSnapshotParams,
         ...     restore_snapshot_with_events,
         ... )
-        >>> result = await restore_snapshot_with_events(RestoreSnapshotParams(
-        ...     session_id="sess-123",
-        ...     snapshot_id="snap-456",
-        ...     s3_key="snapshots/sess-123/snap-456.tar.gz",
-        ...     restore_to="/tmp/sandbox/sess-123-restored",
-        ...     snapshot_service=snapshot_svc,
-        ...     event_publisher=event_pub,
-        ...     project_id="proj-789",
-        ... ))
+        >>> result = await restore_snapshot_with_events(
+        ...     RestoreSnapshotParams(
+        ...         session_id="sess-123",
+        ...         snapshot_id="snap-456",
+        ...         s3_key="snapshots/sess-123/snap-456.tar.gz",
+        ...         restore_to="/tmp/sandbox/sess-123-restored",
+        ...         snapshot_service=snapshot_svc,
+        ...         event_publisher=event_pub,
+        ...         project_id="proj-789",
+        ...     )
+        ... )
     """
     try:
         result = {

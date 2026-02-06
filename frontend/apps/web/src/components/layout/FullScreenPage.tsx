@@ -1,11 +1,9 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 interface FullScreenPageProps {
-	children: ReactNode;
+  children: ReactNode;
 }
 
 export const FullScreenPage = ({ children }: FullScreenPageProps) => (
-	<div className="fixed inset-0 z-[100] bg-background overflow-auto">
-		{children}
-	</div>
+  <div className='bg-background fixed inset-0 z-[100] overflow-auto'>{children}</div>
 );

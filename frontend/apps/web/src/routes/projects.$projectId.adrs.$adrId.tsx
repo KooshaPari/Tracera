@@ -1,15 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ADRDetailView } from "@/views/ADRDetailView";
-import { requireAuth } from "@/lib/route-guards";
+import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute("/projects/$projectId/adrs/$adrId" as any)(
-	{
-		beforeLoad: () => requireAuth(),
-		component: ADRDetailPage,
-	},
-);
+import { requireAuth } from '@/lib/route-guards';
+import { ADRDetailView } from '@/views/ADRDetailView';
+
+export const Route = createFileRoute('/projects/$projectId/adrs/$adrId' as any)({
+  beforeLoad: async () => await requireAuth(),
+  component: ADRDetailPage,
+});
 
 function ADRDetailPage() {
-	// ADRDetailView uses useParams internally
-	return <ADRDetailView />;
+  // ADRDetailView uses useParams internally
+  return <ADRDetailView />;
 }

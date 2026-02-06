@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useAuth } from "@workos-inc/authkit-react";
-import { useEffect } from "react";
+import { createFileRoute } from '@tanstack/react-router';
+import { useAuth } from '@workos-inc/authkit-react';
+import { useEffect } from 'react';
 
 /**
  * Login redirect handler
@@ -8,26 +8,26 @@ import { useEffect } from "react";
  * No custom UI - delegates fully to WorkOS AuthKit.
  */
 const Login = () => {
-	const { user, isLoading, signIn } = useAuth();
+  const { user, isLoading, signIn } = useAuth();
 
-	useEffect(() => {
-		if (user && !isLoading) {
-			globalThis.location.href = "/home";
-		} else if (!isLoading && !user) {
-			signIn?.();
-		}
-	}, [user, isLoading, signIn]);
+  useEffect(() => {
+    if (user && !isLoading) {
+      globalThis.location.href = '/home';
+    } else if (!isLoading && !user) {
+      signIn?.();
+    }
+  }, [user, isLoading, signIn]);
 
-	// Minimal loading UI (shown briefly during redirect)
-	return (
-		<div className="flex min-h-screen items-center justify-center">
-			<div className="text-center">
-				<p className="text-lg">Redirecting to sign in...</p>
-			</div>
-		</div>
-	);
+  // Minimal loading UI (shown briefly during redirect)
+  return (
+    <div className='flex min-h-screen items-center justify-center'>
+      <div className='text-center'>
+        <p className='text-lg'>Redirecting to sign in...</p>
+      </div>
+    </div>
+  );
 };
 
-export const Route = createFileRoute("/auth/login")({
-	component: Login,
+export const Route = createFileRoute('/auth/login')({
+  component: Login,
 });

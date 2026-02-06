@@ -553,8 +553,12 @@ async def test_item_count_by_status_excludes_deleted(db_session: AsyncSession):
 
     repo = ItemRepository(db_session)
 
-    item1 = await repo.create(project_id=str(project.id), title="Todo 1", view="FEATURE", item_type="feature", status="todo")
-    item2 = await repo.create(project_id=str(project.id), title="Todo 2", view="FEATURE", item_type="feature", status="todo")
+    item1 = await repo.create(
+        project_id=str(project.id), title="Todo 1", view="FEATURE", item_type="feature", status="todo"
+    )
+    item2 = await repo.create(
+        project_id=str(project.id), title="Todo 2", view="FEATURE", item_type="feature", status="todo"
+    )
     await db_session.commit()
 
     # Delete one
@@ -840,7 +844,11 @@ async def test_event_log_sequential_ids(db_session: AsyncSession):
     repo = EventRepository(db_session)
 
     event1 = await repo.log(
-        project_id=str(project.id), event_type="created", entity_type="item", entity_id="item1", data={"title": "Item 1"}
+        project_id=str(project.id),
+        event_type="created",
+        entity_type="item",
+        entity_id="item1",
+        data={"title": "Item 1"},
     )
     await db_session.commit()
 
@@ -1081,7 +1089,11 @@ async def test_event_get_entity_at_time_deleted(db_session: AsyncSession):
     repo = EventRepository(db_session)
 
     await repo.log(
-        project_id=str(project.id), event_type="created", entity_type="item", entity_id="item1", data={"title": "Item 1"}
+        project_id=str(project.id),
+        event_type="created",
+        entity_type="item",
+        entity_id="item1",
+        data={"title": "Item 1"},
     )
     await db_session.flush()
 
@@ -1124,7 +1136,11 @@ async def test_event_get_entity_at_time_before_creation(db_session: AsyncSession
     past_time = datetime.now(UTC) - timedelta(hours=1)
 
     await repo.log(
-        project_id=str(project.id), event_type="created", entity_type="item", entity_id="item1", data={"title": "Item 1"}
+        project_id=str(project.id),
+        event_type="created",
+        entity_type="item",
+        entity_id="item1",
+        data={"title": "Item 1"},
     )
     await db_session.commit()
 
@@ -1263,7 +1279,9 @@ async def test_event_sourcing_full_lifecycle(db_session: AsyncSession):
 
     # Delete
     t4 = datetime.now(UTC)
-    await repo.log(project_id=str(project.id), event_type="deleted", entity_type="item", entity_id="lifecycle-item", data={})
+    await repo.log(
+        project_id=str(project.id), event_type="deleted", entity_type="item", entity_id="lifecycle-item", data={}
+    )
     await db_session.commit()
 
     # Reconstruct at different times

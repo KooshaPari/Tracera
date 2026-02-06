@@ -15,7 +15,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 
 @mcp.tool(description="Unified saved query operations")

@@ -1,78 +1,66 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
-import { requireAuth } from "@/lib/route-guards";
-import { logger } from "@/lib/logger";
+import { createFileRoute } from '@tanstack/react-router';
+import { Suspense, lazy } from 'react';
+
+import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
+import { logger } from '@/lib/logger';
+import { requireAuth } from '@/lib/route-guards';
 
 const DashboardView = lazy(() =>
-	import("@/views/DashboardView").then((m) => {
-		const Comp = m.DashboardView;
-		if (Comp === null || Comp === undefined) {
-			logger.error("DashboardView module did not export a component", m);
-			return {
-				default: () => (
-					<div className="p-6 text-destructive" role="alert">
-						Failed to load dashboard.
-					</div>
-				),
-			};
-		}
-		return { default: Comp };
-	}),
+  import('@/views/DashboardView').then((m) => {
+    const Comp = m.DashboardView;
+    if (Comp === null || Comp === undefined) {
+      logger.error('DashboardView module did not export a component', m);
+      return {
+        default: () => (
+          <div className='text-destructive p-6' role='alert'>
+            Failed to load dashboard.
+          </div>
+        ),
+      };
+    }
+    return { default: Comp };
+  }),
 );
 
 function DashboardComponent() {
-	const { systemStatus } = Route.useLoaderData();
-	return (
-		<Suspense
-			fallback={
-				<div className="flex items-center justify-center h-64">
-					Loading dashboard...
-				</div>
-			}
-		>
-			<DashboardView systemStatus={systemStatus} />
-		</Suspense>
-	);
+  const { systemStatus } = Route.useLoaderData();
+  return (
+    <Suspense
+      fallback={
+        <div className='flex h-64 items-center justify-center'>
+          <LoadingSpinner text='Loading dashboard...' />
+        </div>
+      }
+    >
+      <DashboardView systemStatus={systemStatus} />
+    </Suspense>
+  );
 }
 
-export const Route = createFileRoute("/home")({
-	beforeLoad: () => requireAuth(),
-	component: DashboardComponent,
-	loader: async () => {
-		// Preload dashboard data for enterprise feel
-		try {
-			const [
-				{ fetchProjects },
-				{ fetchRecentItems },
-				{ fetchSystemStatus },
-			] = await Promise.all([
-				import("@/api/projects"),
-				import("@/api/items"),
-				import("@/api/system"),
-			]);
+export const Route = createFileRoute('/home')({
+  // Unauthenticated users should be sent back to the public landing page.
+  beforeLoad: async () => await requireAuth({ includeReturnUrl: false, redirectTo: '/' }),
+  component: DashboardComponent,
+  loader: async () => {
+    // Only fetch systemStatus here; projects are fetched by DashboardView's
+    // useProjects() hook (with staleTime caching) to avoid a double-fetch.
+    try {
+      const { fetchSystemStatus } = await import('@/api/system');
+      const systemStatus = await fetchSystemStatus().catch(() => ({
+        queuedJobs: 0,
+        status: 'healthy' as const,
+        uptime: 99.9,
+      }));
 
-			const [projects, recentItems, systemStatus] = await Promise.all([
-				fetchProjects().catch(() => []),
-				fetchRecentItems().catch(() => []),
-				fetchSystemStatus().catch(() => ({
-					queuedJobs: 0,
-					status: "healthy" as const,
-					uptime: 99.9,
-				})),
-			]);
-
-			return { projects, recentItems, systemStatus };
-		} catch {
-			// Return empty data on error to prevent page crash
-			return {
-				projects: [],
-				recentItems: [],
-				systemStatus: {
-					queuedJobs: 0,
-					status: "healthy" as const,
-					uptime: 99.9,
-				},
-			};
-		}
-	},
+      return { systemStatus };
+    } catch {
+      return {
+        systemStatus: {
+          queuedJobs: 0,
+          status: 'healthy' as const,
+          uptime: 99.9,
+        },
+      };
+    }
+  },
 });

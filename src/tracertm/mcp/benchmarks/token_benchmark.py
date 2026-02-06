@@ -16,6 +16,10 @@ from typing import Any
 _TOKEN_BATCH_SIZE = 50
 # Target token reduction percentage for "achieved" status
 _TARGET_REDUCTION_PCT = 50
+# Default list response item count
+_DEFAULT_LIST_ITEM_COUNT = 50
+# List benchmark sizes
+_LIST_BENCHMARK_COUNTS = (50, 100)
 
 # Mock data for testing
 MOCK_ITEM = {
@@ -112,7 +116,7 @@ def benchmark_single_item():
     print("\n📉 Reduction:")
     print(f"  - Size: {size_reduction:.1f}%")
     print(f"  - Tokens: {token_reduction:.1f}%")
-    print("  - Target: 50%")
+    print(f"  - Target: {_TARGET_REDUCTION_PCT}%")
     print(f"  - Status: {'✅ ACHIEVED' if token_reduction >= _TARGET_REDUCTION_PCT else '⚠️  SHORT'}")
 
     return {
@@ -122,7 +126,7 @@ def benchmark_single_item():
     }
 
 
-def benchmark_list_response(item_count: int = 50):
+def benchmark_list_response(item_count: int = _DEFAULT_LIST_ITEM_COUNT):
     """Benchmark list response with multiple items."""
     print("\n" + "=" * 80)
     print(f"List Response Benchmark ({item_count} items)")
@@ -172,7 +176,7 @@ def benchmark_list_response(item_count: int = 50):
     print("\n📉 Reduction:")
     print(f"  - Size: {size_reduction:.1f}%")
     print(f"  - Tokens: {token_reduction:.1f}%")
-    print("  - Target: 50%")
+    print(f"  - Target: {_TARGET_REDUCTION_PCT}%")
     print(f"  - Status: {'✅ ACHIEVED' if token_reduction >= _TARGET_REDUCTION_PCT else '⚠️  SHORT'}")
 
     return {
@@ -338,15 +342,15 @@ def main():
     print("\n" + "=" * 80)
     print("MCP Token Optimization Benchmarks")
     print("=" * 80)
-    print("\nTarget: 50% token reduction across all operations")
+    print(f"\nTarget: {_TARGET_REDUCTION_PCT}% token reduction across all operations")
     print("\n")
 
     results = {}
 
     # Run benchmarks
     results["single_item"] = benchmark_single_item()
-    results["list_50"] = benchmark_list_response(50)
-    results["list_100"] = benchmark_list_response(100)
+    results["list_50"] = benchmark_list_response(_LIST_BENCHMARK_COUNTS[0])
+    results["list_100"] = benchmark_list_response(_LIST_BENCHMARK_COUNTS[1])
     results["compression"] = benchmark_compression()
     results["streaming"] = benchmark_streaming()
     results["errors"] = benchmark_error_messages()
@@ -361,13 +365,13 @@ def main():
     ])
 
     print(f"\n📊 Average Token Reduction: {avg_reduction:.1f}%")
-    print("🎯 Target: 50%")
+    print(f"🎯 Target: {_TARGET_REDUCTION_PCT}%")
     print(f"📈 Status: {'✅ ACHIEVED' if avg_reduction >= _TARGET_REDUCTION_PCT else '⚠️  SHORT'}")
 
     print("\n📋 Breakdown:")
     print(f"  - Single Item: {results['single_item']['reduction_pct']:.1f}%")
-    print(f"  - List (50 items): {results['list_50']['reduction_pct']:.1f}%")
-    print(f"  - List (100 items): {results['list_100']['reduction_pct']:.1f}%")
+    print(f"  - List ({_LIST_BENCHMARK_COUNTS[0]} items): {results['list_50']['reduction_pct']:.1f}%")
+    print(f"  - List ({_LIST_BENCHMARK_COUNTS[1]} items): {results['list_100']['reduction_pct']:.1f}%")
     print(f"  - Compression: {results['compression']['reduction_pct']:.1f}%")
     print(f"  - Streaming: {results['streaming']['reduction_pct']:.1f}%")
     print(f"  - Errors: {results['errors']['reduction_pct']:.1f}%")

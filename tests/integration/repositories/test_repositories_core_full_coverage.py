@@ -201,7 +201,9 @@ async def test_project_update_all_fields(db_session_wp34: AsyncSession):
     project = await repo.create(name=f"Original-{uuid4()}")
     await db_session_wp34.commit()
 
-    updated = await repo.update(str(project.id), name="Updated", description="New description", metadata={"key": "value"})
+    updated = await repo.update(
+        str(project.id), name="Updated", description="New description", metadata={"key": "value"}
+    )
     assert updated is not None
     assert updated.name == "Updated"
     assert updated.description == "New description"
@@ -594,7 +596,11 @@ async def test_item_get_children(db_session_wp34: AsyncSession):
     parent = await item_repo.create(project_id=str(project.id), title="Parent", view="FEATURE", item_type="feature")
     for i in range(3):
         await item_repo.create(
-            project_id=str(project.id), title=f"Child {i}", view="FEATURE", item_type="feature", parent_id=str(parent.id)
+            project_id=str(project.id),
+            title=f"Child {i}",
+            view="FEATURE",
+            item_type="feature",
+            parent_id=str(parent.id),
         )
     await db_session_wp34.commit()
 
@@ -902,7 +908,9 @@ async def test_link_delete_by_item(db_session_wp34: AsyncSession):
     await link_repo.create(
         project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item3.id), link_type="depends_on"
     )
-    await link_repo.create(project_id=str(project.id), source_item_id=str(item3.id), target_item_id=str(item1.id), link_type="tests")
+    await link_repo.create(
+        project_id=str(project.id), source_item_id=str(item3.id), target_item_id=str(item1.id), link_type="tests"
+    )
     await db_session_wp34.commit()
 
     deleted_count = await link_repo.delete_by_item(item1.id)
@@ -1280,7 +1288,12 @@ async def test_item_query_multiple_filters(db_session_wp34: AsyncSession):
         status="done",
     )
     await item_repo.create(
-        project_id=str(project.id), title="High Priority Test", view="TEST", item_type="test", priority="high", status="todo"
+        project_id=str(project.id),
+        title="High Priority Test",
+        view="TEST",
+        item_type="test",
+        priority="high",
+        status="todo",
     )
     await db_session_wp34.commit()
 
@@ -1526,7 +1539,9 @@ async def test_item_count_by_status_excludes_deleted(db_session_wp34: AsyncSessi
     item1 = await item_repo.create(
         project_id=str(project.id), title="Item 1", view="FEATURE", item_type="feature", status="todo"
     )
-    await item_repo.create(project_id=str(project.id), title="Item 2", view="FEATURE", item_type="feature", status="todo")
+    await item_repo.create(
+        project_id=str(project.id), title="Item 2", view="FEATURE", item_type="feature", status="todo"
+    )
     await db_session_wp34.commit()
 
     # Soft delete one item
@@ -1586,7 +1601,11 @@ async def test_item_get_children_with_multiple_levels(db_session_wp34: AsyncSess
     children = []
     for i in range(3):
         child = await item_repo.create(
-            project_id=str(project.id), title=f"Child {i}", view="FEATURE", item_type="feature", parent_id=str(parent.id)
+            project_id=str(project.id),
+            title=f"Child {i}",
+            view="FEATURE",
+            item_type="feature",
+            parent_id=str(parent.id),
         )
         children.append(child)
 
@@ -1634,7 +1653,11 @@ async def test_item_descendants_tree_shape(db_session_wp34: AsyncSession):
     for letter, branch in [("A", branch_a), ("B", branch_b)]:
         for i in [1, 2]:
             await item_repo.create(
-                project_id=str(project.id), title=f"{letter}{i}", view="FEATURE", item_type="feature", parent_id=branch.id
+                project_id=str(project.id),
+                title=f"{letter}{i}",
+                view="FEATURE",
+                item_type="feature",
+                parent_id=branch.id,
             )
     await db_session_wp34.commit()
 
@@ -2081,7 +2104,11 @@ async def test_full_workflow(db_session_wp34: AsyncSession):
 
     # Create items
     feature = await item_repo.create(
-        project_id=str(project.id), title="User Authentication", view="FEATURE", item_type="feature", status="in_progress"
+        project_id=str(project.id),
+        title="User Authentication",
+        view="FEATURE",
+        item_type="feature",
+        status="in_progress",
     )
     test = await item_repo.create(
         project_id=str(project.id), title="Auth Tests", view="TEST", item_type="test", status="todo"
@@ -2289,7 +2316,10 @@ async def test_link_type_custom(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="custom_relationship"
+        project_id=str(project.id),
+        source_item_id=str(item1.id),
+        target_item_id=str(item2.id),
+        link_type="custom_relationship",
     )
     await db_session_wp34.commit()
 
@@ -2306,15 +2336,23 @@ async def test_link_type_duplicates_allowed(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = []
     for i in range(3):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
     link1 = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(items[0].id), target_item_id=str(items[1].id), link_type="implements"
+        project_id=str(project.id),
+        source_item_id=str(items[0].id),
+        target_item_id=str(items[1].id),
+        link_type="implements",
     )
     link2 = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(items[0].id), target_item_id=str(items[2].id), link_type="implements"
+        project_id=str(project.id),
+        source_item_id=str(items[0].id),
+        target_item_id=str(items[2].id),
+        link_type="implements",
     )
     await db_session_wp34.commit()
 
@@ -2366,13 +2404,18 @@ async def test_bidirectional_navigation_outgoing(db_session_wp34: AsyncSession):
     source = await item_repo.create(project_id=str(project.id), title="Source", view="FEATURE", item_type="feature")
     targets = []
     for i in range(3):
-        item = await item_repo.create(project_id=str(project.id), title=f"Target {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Target {i}", view="FEATURE", item_type="feature"
+        )
         targets.append(item)
     await db_session_wp34.commit()
 
     for target in targets:
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target.id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(source.id),
+            target_item_id=str(target.id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -2392,13 +2435,18 @@ async def test_bidirectional_navigation_incoming(db_session_wp34: AsyncSession):
     target = await item_repo.create(project_id=str(project.id), title="Target", view="FEATURE", item_type="feature")
     sources = []
     for i in range(3):
-        item = await item_repo.create(project_id=str(project.id), title=f"Source {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Source {i}", view="FEATURE", item_type="feature"
+        )
         sources.append(item)
     await db_session_wp34.commit()
 
     for source in sources:
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target.id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(source.id),
+            target_item_id=str(target.id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -2417,16 +2465,24 @@ async def test_bidirectional_mixed_operations(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     middle = await item_repo.create(project_id=str(project.id), title="Middle", view="FEATURE", item_type="feature")
     upstream = await item_repo.create(project_id=str(project.id), title="Upstream", view="FEATURE", item_type="feature")
-    downstream = await item_repo.create(project_id=str(project.id), title="Downstream", view="FEATURE", item_type="feature")
+    downstream = await item_repo.create(
+        project_id=str(project.id), title="Downstream", view="FEATURE", item_type="feature"
+    )
     await db_session_wp34.commit()
 
     # Create incoming link
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(upstream.id), target_item_id=str(middle.id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(upstream.id),
+        target_item_id=str(middle.id),
+        link_type="depends_on",
     )
     # Create outgoing link
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(middle.id), target_item_id=str(downstream.id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(middle.id),
+        target_item_id=str(downstream.id),
+        link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2467,7 +2523,10 @@ async def test_transitive_dependency_chain_linear(db_session_wp34: AsyncSession)
     # Create chain: A -> B -> C -> D
     for i in range(3):
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(items[i].id), target_item_id=str(items[i + 1].id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(items[i].id),
+            target_item_id=str(items[i + 1].id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -2490,14 +2549,19 @@ async def test_transitive_dependency_chain_branching(db_session_wp34: AsyncSessi
     parent = await item_repo.create(project_id=str(project.id), title="Parent", view="FEATURE", item_type="feature")
     children = []
     for i in range(3):
-        item = await item_repo.create(project_id=str(project.id), title=f"Child {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Child {i}", view="FEATURE", item_type="feature"
+        )
         children.append(item)
     await db_session_wp34.commit()
 
     # Create branches: parent -> child1, parent -> child2, parent -> child3
     for child in children:
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(parent.id), target_item_id=str(child.id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(parent.id),
+            target_item_id=str(child.id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -2520,7 +2584,9 @@ async def test_transitive_dependency_chain_diamond(db_session_wp34: AsyncSession
     await db_session_wp34.commit()
 
     # Create diamond: top -> left -> bottom, top -> right -> bottom
-    await link_repo.create(project_id=str(project.id), source_item_id=str(top.id), target_item_id=str(left.id), link_type="depends_on")
+    await link_repo.create(
+        project_id=str(project.id), source_item_id=str(top.id), target_item_id=str(left.id), link_type="depends_on"
+    )
     await link_repo.create(
         project_id=str(project.id), source_item_id=str(top.id), target_item_id=str(right.id), link_type="depends_on"
     )
@@ -2630,19 +2696,30 @@ async def test_cycle_detection_three_item_cycle(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = []
     for i in range(3):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
     # Create cycle: 0 -> 1 -> 2 -> 0
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(items[0].id), target_item_id=str(items[1].id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(items[0].id),
+        target_item_id=str(items[1].id),
+        link_type="depends_on",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(items[1].id), target_item_id=str(items[2].id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(items[1].id),
+        target_item_id=str(items[2].id),
+        link_type="depends_on",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(items[2].id), target_item_id=str(items[0].id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(items[2].id),
+        target_item_id=str(items[0].id),
+        link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2726,7 +2803,9 @@ async def test_link_filtering_by_type_multiple_types(db_session_wp34: AsyncSessi
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = []
     for i in range(4):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
@@ -2739,7 +2818,10 @@ async def test_link_filtering_by_type_multiple_types(db_session_wp34: AsyncSessi
             link_type="implements",
         )
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(items[i].id), target_item_id=str(items[(i + 2) % 4].id), link_type="tests"
+            project_id=str(project.id),
+            source_item_id=str(items[i].id),
+            target_item_id=str(items[(i + 2) % 4].id),
+            link_type="tests",
         )
     await db_session_wp34.commit()
 
@@ -2871,14 +2953,19 @@ async def test_link_query_all_links_in_project(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = []
     for i in range(5):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
     # Create 5 links
     for i in range(4):
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(items[i].id), target_item_id=str(items[i + 1].id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(items[i].id),
+            target_item_id=str(items[i + 1].id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -2945,16 +3032,24 @@ async def test_graph_operations_connected_component(db_session_wp34: AsyncSessio
     # Create two disconnected pairs
     items = []
     for i in range(4):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
     # Connect 0-1 and 2-3 (two components)
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(items[0].id), target_item_id=str(items[1].id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(items[0].id),
+        target_item_id=str(items[1].id),
+        link_type="depends_on",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(items[2].id), target_item_id=str(items[3].id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(items[2].id),
+        target_item_id=str(items[3].id),
+        link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2974,16 +3069,24 @@ async def test_graph_operations_isolated_item(db_session_wp34: AsyncSession):
     # Create 4 items
     items = []
     for i in range(4):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
     # Connect only first 3, leave 4th isolated
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(items[0].id), target_item_id=str(items[1].id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(items[0].id),
+        target_item_id=str(items[1].id),
+        link_type="depends_on",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(items[1].id), target_item_id=str(items[2].id), link_type="depends_on"
+        project_id=str(project.id),
+        source_item_id=str(items[1].id),
+        target_item_id=str(items[2].id),
+        link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -3027,9 +3130,14 @@ async def test_edge_case_many_links_single_source(db_session_wp34: AsyncSession)
 
     # Create 15 target items
     for i in range(15):
-        target = await item_repo.create(project_id=str(project.id), title=f"Target {i}", view="FEATURE", item_type="feature")
+        target = await item_repo.create(
+            project_id=str(project.id), title=f"Target {i}", view="FEATURE", item_type="feature"
+        )
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target.id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(source.id),
+            target_item_id=str(target.id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -3049,9 +3157,14 @@ async def test_edge_case_many_links_single_target(db_session_wp34: AsyncSession)
 
     # Create 15 source items
     for i in range(15):
-        source = await item_repo.create(project_id=str(project.id), title=f"Source {i}", view="FEATURE", item_type="feature")
+        source = await item_repo.create(
+            project_id=str(project.id), title=f"Source {i}", view="FEATURE", item_type="feature"
+        )
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target.id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(source.id),
+            target_item_id=str(target.id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -3106,14 +3219,19 @@ async def test_traversal_depth_first_ordering(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = []
     for i in range(5):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
     # Create linear chain: 0 -> 1 -> 2 -> 3 -> 4
     for i in range(4):
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(items[i].id), target_item_id=str(items[i + 1].id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(items[i].id),
+            target_item_id=str(items[i + 1].id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -3134,7 +3252,9 @@ async def test_traversal_breadth_first_ordering(db_session_wp34: AsyncSession):
     root = await item_repo.create(project_id=str(project.id), title="Root", view="FEATURE", item_type="feature")
     level1 = []
     for i in range(3):
-        item = await item_repo.create(project_id=str(project.id), title=f"Level1-{i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Level1-{i}", view="FEATURE", item_type="feature"
+        )
         level1.append(item)
     await db_session_wp34.commit()
 
@@ -3160,7 +3280,9 @@ async def test_complex_graph_all_paths(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = {}
     for name in ["a", "b", "c", "d", "e"]:
-        item = await item_repo.create(project_id=str(project.id), title=f"Item-{name}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item-{name}", view="FEATURE", item_type="feature"
+        )
         items[name] = item
     await db_session_wp34.commit()
 
@@ -3168,7 +3290,10 @@ async def test_complex_graph_all_paths(db_session_wp34: AsyncSession):
     edges = [("a", "b"), ("a", "c"), ("b", "d"), ("c", "d"), ("d", "e")]
     for src, tgt in edges:
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(items[src].id), target_item_id=str(items[tgt].id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(items[src].id),
+            target_item_id=str(items[tgt].id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -3228,7 +3353,10 @@ async def test_link_type_special_characters(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="custom-link_type.v2"
+        project_id=str(project.id),
+        source_item_id=str(item1.id),
+        target_item_id=str(item2.id),
+        link_type="custom-link_type.v2",
     )
     await db_session_wp34.commit()
 
@@ -3308,7 +3436,9 @@ async def test_link_count_by_type(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = []
     for i in range(6):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
@@ -3317,7 +3447,10 @@ async def test_link_count_by_type(db_session_wp34: AsyncSession):
     custom_type2 = f"custom_tests_{uuid4()}"
     for i in range(3):
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(items[i].id), target_item_id=str(items[i + 1].id), link_type=custom_type
+            project_id=str(project.id),
+            source_item_id=str(items[i].id),
+            target_item_id=str(items[i + 1].id),
+            link_type=custom_type,
         )
     for i in range(2):
         await link_repo.create(
@@ -3345,7 +3478,9 @@ async def test_link_count_by_item_hub(db_session_wp34: AsyncSession):
     hub = await item_repo.create(project_id=str(project.id), title="Hub", view="FEATURE", item_type="feature")
     spokes = []
     for i in range(10):
-        item = await item_repo.create(project_id=str(project.id), title=f"Spoke {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Spoke {i}", view="FEATURE", item_type="feature"
+        )
         spokes.append(item)
     await db_session_wp34.commit()
 
@@ -3369,7 +3504,9 @@ async def test_link_count_all(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = []
     for i in range(4):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
@@ -3377,7 +3514,10 @@ async def test_link_count_all(db_session_wp34: AsyncSession):
 
     for i in range(3):
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(items[i].id), target_item_id=str(items[i + 1].id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(items[i].id),
+            target_item_id=str(items[i + 1].id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -3461,14 +3601,19 @@ async def test_scale_50_items_multiple_links(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = []
     for i in range(50):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
     # Create chain of 49 links
     for i in range(49):
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(items[i].id), target_item_id=str(items[i + 1].id), link_type="depends_on"
+            project_id=str(project.id),
+            source_item_id=str(items[i].id),
+            target_item_id=str(items[i + 1].id),
+            link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -3486,7 +3631,9 @@ async def test_scale_complex_dependency_graph(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
     items = []
     for i in range(20):
-        item = await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
+        item = await item_repo.create(
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+        )
         items.append(item)
     await db_session_wp34.commit()
 
@@ -3523,7 +3670,9 @@ async def test_validation_empty_link_type(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     # Empty string type should be allowed at repo level
-    link = await link_repo.create(project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="")
+    link = await link_repo.create(
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type=""
+    )
     await db_session_wp34.commit()
 
     found = await link_repo.get_by_id(str(link.id))

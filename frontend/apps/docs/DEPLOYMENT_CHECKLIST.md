@@ -7,22 +7,26 @@ Use this checklist to ensure a smooth deployment of the TraceRTM documentation s
 ### Local Testing
 
 - [ ] Code compiles without TypeScript errors
+
   ```bash
   bun run typecheck
   ```
 
 - [ ] Build succeeds locally
+
   ```bash
   bun run build
   ```
 
 - [ ] Dev server works correctly
+
   ```bash
   bun run dev
   # Visit http://localhost:3001
   ```
 
 - [ ] OpenAPI spec generates successfully
+
   ```bash
   bun run openapi:sync
   ```
@@ -35,6 +39,7 @@ Use this checklist to ensure a smooth deployment of the TraceRTM documentation s
 ### Code Quality
 
 - [ ] Code is linted
+
   ```bash
   bun run lint
   ```
@@ -121,6 +126,7 @@ Set in Vercel project settings:
 ### Automated Checks
 
 Run validation script:
+
 ```bash
 cd frontend/apps/docs
 bash scripts/validate-deployment.sh
@@ -131,12 +137,14 @@ bash scripts/validate-deployment.sh
 ### Manual Verification
 
 #### Homepage
+
 - [ ] https://docs.tracertm.com loads
 - [ ] No console errors
 - [ ] Navigation works
 - [ ] Links work
 
 #### Documentation
+
 - [ ] https://docs.tracertm.com/docs loads
 - [ ] Sidebar navigation works
 - [ ] Search works
@@ -144,12 +152,14 @@ bash scripts/validate-deployment.sh
 - [ ] Images load
 
 #### API Reference
+
 - [ ] https://docs.tracertm.com/api-reference loads
 - [ ] OpenAPI spec displays correctly
 - [ ] Try It Out feature works (if enabled)
 - [ ] Examples are correct
 
 #### OpenAPI Endpoints
+
 - [ ] https://docs.tracertm.com/api/openapi.json returns valid JSON
 - [ ] https://docs.tracertm.com/api/openapi.yaml returns valid YAML
 - [ ] Both specs are identical in content
@@ -162,6 +172,7 @@ bash scripts/validate-deployment.sh
 - [ ] Lighthouse score > 90 (SEO)
 
 Run performance audit:
+
 ```bash
 bun run test:performance
 ```
@@ -169,6 +180,7 @@ bun run test:performance
 ### Browser Compatibility
 
 Test in multiple browsers:
+
 - [ ] Chrome/Edge (Chromium)
 - [ ] Firefox
 - [ ] Safari
@@ -177,6 +189,7 @@ Test in multiple browsers:
 ### Responsive Design
 
 Test at different viewport sizes:
+
 - [ ] Mobile (320px - 767px)
 - [ ] Tablet (768px - 1023px)
 - [ ] Desktop (1024px+)
@@ -236,10 +249,10 @@ Test at different viewport sizes:
 
 ## Sign-Off
 
-- [ ] Deployment validated by: _______________
-- [ ] Date: _______________
-- [ ] Production URL verified: _______________
-- [ ] All stakeholders notified: _______________
+- [ ] Deployment validated by: **\*\***\_\_\_**\*\***
+- [ ] Date: **\*\***\_\_\_**\*\***
+- [ ] Production URL verified: **\*\***\_\_\_**\*\***
+- [ ] All stakeholders notified: **\*\***\_\_\_**\*\***
 
 ---
 
@@ -266,13 +279,13 @@ bun run openapi:sync
 
 ### Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| Build fails | Check TypeScript errors: `bun run typecheck` |
-| OpenAPI missing | Run: `bun run openapi:sync` |
-| Deployment fails | Check GitHub Actions logs |
-| Site not accessible | Check DNS propagation (up to 48h) |
-| Slow performance | Run bundle analyzer: `ANALYZE=true bun run build` |
+| Issue               | Solution                                          |
+| ------------------- | ------------------------------------------------- |
+| Build fails         | Check TypeScript errors: `bun run typecheck`      |
+| OpenAPI missing     | Run: `bun run openapi:sync`                       |
+| Deployment fails    | Check GitHub Actions logs                         |
+| Site not accessible | Check DNS propagation (up to 48h)                 |
+| Slow performance    | Run bundle analyzer: `ANALYZE=true bun run build` |
 
 ### Support Resources
 

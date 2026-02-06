@@ -26,6 +26,8 @@ The BMad Method Module (BMM) provides a comprehensive team of specialized AI age
 
 **Philosophy:** AI agents act as expert collaborators, not code monkeys. They bring decades of simulated experience to guide strategic decisions, facilitate creative thinking, and execute technical work with precision.
 
+**Execution autonomy:** Agents decide priority order and required commands on their own. They do not ask for permission to run repo commands or request priority order; they choose and proceed independently unless a hard external dependency blocks progress (e.g., missing credentials or user-only access).
+
 ### All BMM Agents
 
 **Core Development (8 agents):**

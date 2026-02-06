@@ -86,9 +86,9 @@ scripts/shell/check-naming-explosion-python.sh
 ```python
 src/tracertm/mcp/tools/streaming_v2.py
 src/tracertm/services/spec_analytics_service_v2.py
-src/tracertm/tui/apps/dashboard_v2.py
+src/tracertm/tui/apps/dashboard_compat.py
 tests/unit/api/test_api_comprehensive_fixed.py
-tests/unit/tui/apps/test_dashboard_v2.py
+tests/unit/tui/apps/test_dashboard_compat.py
 ```
 
 **Ruff N999 Configuration** (already in pyproject.toml):
@@ -198,7 +198,7 @@ $ ./scripts/shell/check-naming-explosion-go.sh
 
 **Forbidden**:
 ```python
-❌ dashboard_v2.py            # Versioned
+❌ dashboard_compat.py            # Versioned
 ❌ new_dashboard.py           # Prefixed
 ❌ enhanced_dashboard.py      # Prefixed
 ❌ dashboard_2.py             # Numbered
@@ -271,9 +271,9 @@ apps/web/src/hooks/useQAEnhancedNodeData.ts
 ```
 src/tracertm/mcp/tools/streaming_v2.py
 src/tracertm/services/spec_analytics_service_v2.py
-src/tracertm/tui/apps/dashboard_v2.py
+src/tracertm/tui/apps/dashboard_compat.py
 tests/unit/api/test_api_comprehensive_fixed.py
-tests/unit/tui/apps/test_dashboard_v2.py
+tests/unit/tui/apps/test_dashboard_compat.py
 ```
 
 **Recommended Action**:

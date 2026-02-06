@@ -1,100 +1,87 @@
 // EquivalenceImport.tsx - Import component for equivalence mappings and canonical concepts
 // Supports JSON/CSV import with validation, preview, and merge/replace options
 
-import type {
-	CanonicalConcept,
-	CanonicalProjection,
-	EquivalenceLink,
-} from "@tracertm/types";
+import { AlertTriangle, ChevronDown, ChevronRight, Trash2, Upload } from 'lucide-react';
+import { memo, useCallback, useState } from 'react';
+
+import type { CanonicalConcept, CanonicalProjection, EquivalenceLink } from '@tracertm/types';
+
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription, AlertTitle } from '@tracertm/ui/components/Alert';
+import { Badge } from '@tracertm/ui/components/Badge';
+import { Button } from '@tracertm/ui/components/Button';
 import {
-	Alert,
-	AlertDescription,
-	AlertTitle,
-} from "@tracertm/ui/components/Alert";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tracertm/ui/components/Card';
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@tracertm/ui/components/Card";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@tracertm/ui/components/Dialog';
+import { ScrollArea } from '@tracertm/ui/components/ScrollArea';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@tracertm/ui/components/Dialog";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tracertm/ui/components/Select';
+import { Separator } from '@tracertm/ui/components/Separator';
+
+import type { EquivalenceExportPackage, EquivalenceImportOptions } from './utils/equivalenceIO';
+
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@tracertm/ui/components/Select";
-import {
-	AlertTriangle,
-	ChevronDown,
-	ChevronRight,
-	Trash2,
-	Upload,
-} from "lucide-react";
-import type {
-	EquivalenceExportPackage,
-	EquivalenceImportOptions,
-} from "./utils/equivalenceIO";
-import {
-	deserializeFromJSON,
-	mergeExportPackages,
-	validateExportPackage,
-} from "./utils/equivalenceIO";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
-import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
-import { Separator } from "@tracertm/ui/components/Separator";
-import { memo, useCallback, useState } from "react";
+  deserializeFromJSON,
+  mergeExportPackages,
+  validateExportPackage,
+} from './utils/equivalenceIO';
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 export interface EquivalenceImportProps {
-	/** Existing equivalence links */
-	existingLinks: EquivalenceLink[];
-	/** Existing canonical concepts */
-	existingConcepts: CanonicalConcept[];
-	/** Existing canonical projections */
-	existingProjections: CanonicalProjection[];
-	/** Project ID for context */
-	projectId: string;
-	/** Callback when import is ready to apply */
-	onApplyImport?: (
-		links: EquivalenceLink[],
-		concepts: CanonicalConcept[],
-		projections: CanonicalProjection[],
-	) => void | Promise<void>;
-	/** Whether import operation is in progress */
-	isLoading?: boolean;
+  /** Existing equivalence links */
+  existingLinks: EquivalenceLink[];
+  /** Existing canonical concepts */
+  existingConcepts: CanonicalConcept[];
+  /** Existing canonical projections */
+  existingProjections: CanonicalProjection[];
+  /** Project ID for context */
+  projectId: string;
+  /** Callback when import is ready to apply */
+  onApplyImport?: (
+    links: EquivalenceLink[],
+    concepts: CanonicalConcept[],
+    projections: CanonicalProjection[],
+  ) => void | Promise<void>;
+  /** Whether import operation is in progress */
+  isLoading?: boolean;
 }
 
 interface ImportState {
-	fileContent?: string;
-	fileType?: "json" | "csv";
-	parsedData?: EquivalenceExportPackage;
-	validationErrors: string[];
-	conflicts: ConflictInfo[];
-	options: EquivalenceImportOptions;
-	showPreview: boolean;
+  fileContent?: string;
+  fileType?: 'json' | 'csv';
+  parsedData?: EquivalenceExportPackage;
+  validationErrors: string[];
+  conflicts: ConflictInfo[];
+  options: EquivalenceImportOptions;
+  showPreview: boolean;
 }
 
 interface ConflictInfo {
-	type: "link" | "concept" | "projection";
-	existingId: string;
-	incomingId: string;
-	existingData: unknown;
-	incomingData: unknown;
+  type: 'link' | 'concept' | 'projection';
+  existingId: string;
+  incomingId: string;
+  existingData: unknown;
+  incomingData: unknown;
 }
 
 // =============================================================================
@@ -102,12 +89,12 @@ interface ConflictInfo {
 // =============================================================================
 
 const DEFAULT_IMPORT_OPTIONS: EquivalenceImportOptions = {
-	conflictResolution: "skip",
-	mode: "merge",
-	preserveTimestamps: false,
-	targetProjectId: undefined,
-	updateProjectId: true,
-	validateReferences: true,
+  conflictResolution: 'skip',
+  mode: 'merge',
+  preserveTimestamps: false,
+  targetProjectId: undefined,
+  updateProjectId: true,
+  validateReferences: true,
 };
 
 // =============================================================================
@@ -115,592 +102,534 @@ const DEFAULT_IMPORT_OPTIONS: EquivalenceImportOptions = {
 // =============================================================================
 
 function EquivalenceImportComponent({
-	existingLinks,
-	existingConcepts,
-	existingProjections,
-	projectId,
-	onApplyImport,
-	isLoading = false,
+  existingLinks,
+  existingConcepts,
+  existingProjections,
+  projectId,
+  onApplyImport,
+  isLoading = false,
 }: EquivalenceImportProps) {
-	const [isOpen, setIsOpen] = useState(false);
-	const [state, setState] = useState<ImportState>({
-		conflicts: [],
-		options: { ...DEFAULT_IMPORT_OPTIONS, targetProjectId: projectId },
-		showPreview: false,
-		validationErrors: [],
-	});
-	const [isApplying, setIsApplying] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [state, setState] = useState<ImportState>({
+    conflicts: [],
+    options: { ...DEFAULT_IMPORT_OPTIONS, targetProjectId: projectId },
+    showPreview: false,
+    validationErrors: [],
+  });
+  const [isApplying, setIsApplying] = useState(false);
 
-	// Handle file selection
-	const handleFileSelect = useCallback(
-		async (event: React.ChangeEvent<HTMLInputElement>) => {
-			const file = event.target.files?.[0];
-			if (!file) {
-				return;
-			}
+  // Handle file selection
+  const handleFileSelect = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) {
+        return;
+      }
 
-			try {
-				const content = await file.text();
-				const fileType = file.name.endsWith(".json") ? "json" : "csv";
+      try {
+        const content = await file.text();
+        const fileType = file.name.endsWith('.json') ? 'json' : 'csv';
 
-				let parsedData: EquivalenceExportPackage | null = null;
-				let validationErrors: string[] = [];
+        let parsedData: EquivalenceExportPackage | null = null;
+        let validationErrors: string[] = [];
 
-				if (fileType === "json") {
-					try {
-						parsedData = deserializeFromJSON(content);
-						const validation = validateExportPackage(parsedData);
-						if (!validation.valid) {
-							validationErrors = validation.errors;
-						}
-					} catch (error) {
-						validationErrors = [
-							error instanceof Error ? error.message : "Failed to parse JSON",
-						];
-					}
-				} else {
-					// CSV parsing - would need separate file handling
-					validationErrors = ["CSV import requires separate file selection"];
-				}
+        if (fileType === 'json') {
+          try {
+            parsedData = deserializeFromJSON(content);
+            const validation = validateExportPackage(parsedData);
+            if (!validation.valid) {
+              validationErrors = validation.errors;
+            }
+          } catch (error) {
+            validationErrors = [error instanceof Error ? error.message : 'Failed to parse JSON'];
+          }
+        } else {
+          // CSV parsing - would need separate file handling
+          validationErrors = ['CSV import requires separate file selection'];
+        }
 
-				// Check for conflicts
-				const conflicts = findConflicts(
-					existingLinks,
-					existingConcepts,
-					existingProjections,
-					parsedData ?? undefined,
-				);
+        // Check for conflicts
+        const conflicts = findConflicts(
+          existingLinks,
+          existingConcepts,
+          existingProjections,
+          parsedData ?? undefined,
+        );
 
-				setState({
-					conflicts,
-					fileContent: content,
-					fileType,
-					options: { ...state.options, targetProjectId: projectId },
-					parsedData: parsedData ?? undefined,
-					showPreview: true,
-					validationErrors,
-				});
-			} catch (error) {
-				setState({
-					...state,
-					validationErrors: [
-						error instanceof Error ? error.message : "Failed to read file",
-					],
-				});
-			}
-		},
-		[existingLinks, existingConcepts, existingProjections, projectId, state],
-	);
+        setState({
+          conflicts,
+          fileContent: content,
+          fileType,
+          options: { ...state.options, targetProjectId: projectId },
+          parsedData: parsedData ?? undefined,
+          showPreview: true,
+          validationErrors,
+        });
+      } catch (error) {
+        setState({
+          ...state,
+          validationErrors: [error instanceof Error ? error.message : 'Failed to read file'],
+        });
+      }
+    },
+    [existingLinks, existingConcepts, existingProjections, projectId, state],
+  );
 
-	// Apply import
-	const handleApplyImport = useCallback(async () => {
-		const parsedData = state.parsedData;
-		if (!parsedData) {
-			return;
-		}
+  // Apply import
+  const handleApplyImport = useCallback(async () => {
+    const { parsedData } = state;
+    if (!parsedData) {
+      return;
+    }
 
-		setIsApplying(true);
-		try {
-			const targetProjectId = state.options.targetProjectId || projectId;
+    setIsApplying(true);
+    try {
+      const targetProjectId = state.options.targetProjectId || projectId;
 
-			// Merge data if needed
-			let finalLinks = parsedData.equivalenceLinks;
-			let finalConcepts = parsedData.canonicalConcepts;
-			let finalProjections = parsedData.canonicalProjections;
+      // Merge data if needed
+      let finalLinks = parsedData.equivalenceLinks;
+      let finalConcepts = parsedData.canonicalConcepts;
+      let finalProjections = parsedData.canonicalProjections;
 
-			if (state.options.mode === "merge" && state.options.updateProjectId) {
-				const merged = mergeExportPackages(
-					{
-						canonicalConcepts: existingConcepts,
-						canonicalProjections: existingProjections,
-						equivalenceLinks: existingLinks,
-						exportedAt: new Date().toISOString(),
-						projectId: targetProjectId,
-						version: "1.0",
-					},
-					{
-						canonicalConcepts: finalConcepts,
-						canonicalProjections: finalProjections,
-						equivalenceLinks: finalLinks,
-						exportedAt: parsedData.exportedAt,
-						projectId: targetProjectId,
-						version: "1.0",
-					},
-					state.options,
-				);
+      if (state.options.mode === 'merge' && state.options.updateProjectId) {
+        const merged = mergeExportPackages(
+          {
+            canonicalConcepts: existingConcepts,
+            canonicalProjections: existingProjections,
+            equivalenceLinks: existingLinks,
+            exportedAt: new Date().toISOString(),
+            projectId: targetProjectId,
+            version: '1.0',
+          },
+          {
+            canonicalConcepts: finalConcepts,
+            canonicalProjections: finalProjections,
+            equivalenceLinks: finalLinks,
+            exportedAt: parsedData.exportedAt,
+            projectId: targetProjectId,
+            version: '1.0',
+          },
+          state.options,
+        );
 
-				finalLinks = merged.equivalenceLinks;
-				finalConcepts = merged.canonicalConcepts;
-				finalProjections = merged.canonicalProjections;
-			} else if (state.options.updateProjectId) {
-				// Replace mode - update project IDs
-				finalLinks = finalLinks.map((l) => ({
-					...l,
-					projectId: targetProjectId,
-				}));
-				finalConcepts = finalConcepts.map((c) => ({
-					...c,
-					projectId: targetProjectId,
-				}));
-				finalProjections = finalProjections.map((p) => ({
-					...p,
-					projectId: targetProjectId,
-				}));
-			}
+        finalLinks = merged.equivalenceLinks;
+        finalConcepts = merged.canonicalConcepts;
+        finalProjections = merged.canonicalProjections;
+      } else if (state.options.updateProjectId) {
+        // Replace mode - update project IDs
+        finalLinks = finalLinks.map((l) => ({
+          ...l,
+          projectId: targetProjectId,
+        }));
+        finalConcepts = finalConcepts.map((c) => ({
+          ...c,
+          projectId: targetProjectId,
+        }));
+        finalProjections = finalProjections.map((p) => ({
+          ...p,
+          projectId: targetProjectId,
+        }));
+      }
 
-			// Call callback
-			if (onApplyImport) {
-				await onApplyImport(finalLinks, finalConcepts, finalProjections);
-			}
+      // Call callback
+      if (onApplyImport) {
+        await onApplyImport(finalLinks, finalConcepts, finalProjections);
+      }
 
-			setIsOpen(false);
-			setState({
-				conflicts: [],
-				options: { ...DEFAULT_IMPORT_OPTIONS, targetProjectId: projectId },
-				showPreview: false,
-				validationErrors: [],
-			});
-		} catch (error) {
-			setState({
-				...state,
-				validationErrors: [
-					error instanceof Error ? error.message : "Failed to apply import",
-				],
-			});
-		} finally {
-			setIsApplying(false);
-		}
-	}, [
-		state,
-		projectId,
-		existingLinks,
-		existingConcepts,
-		existingProjections,
-		onApplyImport,
-	]);
+      setIsOpen(false);
+      setState({
+        conflicts: [],
+        options: { ...DEFAULT_IMPORT_OPTIONS, targetProjectId: projectId },
+        showPreview: false,
+        validationErrors: [],
+      });
+    } catch (error) {
+      setState({
+        ...state,
+        validationErrors: [error instanceof Error ? error.message : 'Failed to apply import'],
+      });
+    } finally {
+      setIsApplying(false);
+    }
+  }, [state, projectId, existingLinks, existingConcepts, existingProjections, onApplyImport]);
 
-	const isReady =
-		state.parsedData &&
-		state.validationErrors.length === 0 &&
-		!isLoading &&
-		!isApplying;
+  const isReady =
+    state.parsedData && state.validationErrors.length === 0 && !isLoading && !isApplying;
 
-	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				<Button variant="outline" size="sm" className="gap-2">
-					<Upload className="h-4 w-4" />
-					Import
-				</Button>
-			</DialogTrigger>
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant='outline' size='sm' className='gap-2'>
+          <Upload className='h-4 w-4' />
+          Import
+        </Button>
+      </DialogTrigger>
 
-			<DialogContent className="max-w-2xl max-h-[80vh]">
-				<DialogHeader>
-					<DialogTitle>Import Equivalence Data</DialogTitle>
-					<DialogDescription>
-						Import equivalence mappings and canonical concepts from JSON or CSV
-					</DialogDescription>
-				</DialogHeader>
+      <DialogContent className='max-h-[80vh] max-w-2xl'>
+        <DialogHeader>
+          <DialogTitle>Import Equivalence Data</DialogTitle>
+          <DialogDescription>
+            Import equivalence mappings and canonical concepts from JSON or CSV
+          </DialogDescription>
+        </DialogHeader>
 
-				<ScrollArea className="h-auto max-h-[calc(80vh-120px)]">
-					<div className="space-y-6 pr-4">
-						{/* File Selection */}
-						{!state.fileContent ? (
-							<Card>
-								<CardHeader>
-									<CardTitle className="text-base">Select File</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<div className="flex items-center justify-center w-full">
-										<label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-muted-foreground rounded-lg cursor-pointer hover:bg-accent">
-											<div className="flex flex-col items-center justify-center pt-5 pb-6">
-												<Upload className="h-10 w-10 text-muted-foreground mb-2" />
-												<p className="text-sm font-medium">
-													Click to select file or drag and drop
-												</p>
-												<p className="text-xs text-muted-foreground">
-													JSON or CSV files supported
-												</p>
-											</div>
-											<input
-												type="file"
-												className="hidden"
-												accept=".json,.csv"
-												onChange={handleFileSelect}
-											/>
-										</label>
-									</div>
-								</CardContent>
-							</Card>
-						) : (
-							<>
-								{/* File Information */}
-								<Card>
-									<CardHeader>
-										<div className="flex items-center justify-between">
-											<div>
-												<CardTitle className="text-base">
-													File Information
-												</CardTitle>
-											</div>
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() =>
-													setState({
-														...state,
-														fileContent: undefined,
-														parsedData: undefined,
-														validationErrors: [],
-													})
-												}
-											>
-												<Trash2 className="h-4 w-4" />
-											</Button>
-										</div>
-									</CardHeader>
-									<CardContent className="space-y-2 text-sm">
-										<div className="flex justify-between">
-											<span className="text-muted-foreground">File Type:</span>
-											<Badge>{state.fileType?.toUpperCase()}</Badge>
-										</div>
-										{state.parsedData && (
-											<>
-												<div className="flex justify-between">
-													<span className="text-muted-foreground">
-														Exported:
-													</span>
-													<span>
-														{new Date(
-															state.parsedData.exportedAt,
-														).toLocaleString()}
-													</span>
-												</div>
-												<div className="flex justify-between">
-													<span className="text-muted-foreground">
-														Source Project:
-													</span>
-													<span>{state.parsedData.projectId}</span>
-												</div>
-											</>
-										)}
-									</CardContent>
-								</Card>
+        <ScrollArea className='h-auto max-h-[calc(80vh-120px)]'>
+          <div className='space-y-6 pr-4'>
+            {/* File Selection */}
+            {!state.fileContent ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className='text-base'>Select File</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='flex w-full items-center justify-center'>
+                    <label className='border-muted-foreground hover:bg-accent flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed'>
+                      <div className='flex flex-col items-center justify-center pt-5 pb-6'>
+                        <Upload className='text-muted-foreground mb-2 h-10 w-10' />
+                        <p className='text-sm font-medium'>Click to select file or drag and drop</p>
+                        <p className='text-muted-foreground text-xs'>JSON or CSV files supported</p>
+                      </div>
+                      <input
+                        type='file'
+                        className='hidden'
+                        accept='.json,.csv'
+                        onChange={handleFileSelect}
+                      />
+                    </label>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                {/* File Information */}
+                <Card>
+                  <CardHeader>
+                    <div className='flex items-center justify-between'>
+                      <div>
+                        <CardTitle className='text-base'>File Information</CardTitle>
+                      </div>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        onClick={() =>
+                          setState({
+                            ...state,
+                            fileContent: undefined,
+                            parsedData: undefined,
+                            validationErrors: [],
+                          })
+                        }
+                      >
+                        <Trash2 className='h-4 w-4' />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className='space-y-2 text-sm'>
+                    <div className='flex justify-between'>
+                      <span className='text-muted-foreground'>File Type:</span>
+                      <Badge>{state.fileType?.toUpperCase()}</Badge>
+                    </div>
+                    {state.parsedData && (
+                      <>
+                        <div className='flex justify-between'>
+                          <span className='text-muted-foreground'>Exported:</span>
+                          <span>{new Date(state.parsedData.exportedAt).toLocaleString()}</span>
+                        </div>
+                        <div className='flex justify-between'>
+                          <span className='text-muted-foreground'>Source Project:</span>
+                          <span>{state.parsedData.projectId}</span>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
 
-								{/* Validation Errors */}
-								{state.validationErrors.length > 0 && (
-									<Alert variant="destructive">
-										<AlertTriangle className="h-4 w-4" />
-										<AlertTitle>Validation Error</AlertTitle>
-										<AlertDescription>
-											<ul className="list-disc pl-5 mt-2 space-y-1">
-												{state.validationErrors.map((error, idx) => (
-													<li key={idx} className="text-xs">
-														{error}
-													</li>
-												))}
-											</ul>
-										</AlertDescription>
-									</Alert>
-								)}
+                {/* Validation Errors */}
+                {state.validationErrors.length > 0 && (
+                  <Alert variant='destructive'>
+                    <AlertTriangle className='h-4 w-4' />
+                    <AlertTitle>Validation Error</AlertTitle>
+                    <AlertDescription>
+                      <ul className='mt-2 list-disc space-y-1 pl-5'>
+                        {state.validationErrors.map((error, idx) => (
+                          <li key={idx} className='text-xs'>
+                            {error}
+                          </li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                )}
 
-								{/* Conflicts */}
-								{state.conflicts.length > 0 && (
-									<Card>
-										<CardHeader>
-											<CardTitle className="text-base flex items-center gap-2">
-												<AlertTriangle className="h-4 w-4 text-amber-500" />
-												Conflicts Found ({state.conflicts.length})
-											</CardTitle>
-											<CardDescription>
-												These items already exist in your project
-											</CardDescription>
-										</CardHeader>
-										<CardContent>
-											<div className="space-y-2 max-h-[200px] overflow-y-auto">
-												{state.conflicts.map((conflict, idx) => (
-													<div
-														key={idx}
-														className="flex items-start gap-2 p-2 bg-accent rounded text-sm"
-													>
-														<AlertTriangle className="h-4 w-4 mt-0.5 text-amber-500 shrink-0" />
-														<div className="flex-1">
-															<p className="font-medium">
-																{conflict.type} ({conflict.existingId})
-															</p>
-															<p className="text-xs text-muted-foreground">
-																Will be{" "}
-																{state.options.conflictResolution ===
-																"overwrite"
-																	? "overwritten"
-																	: (state.options.conflictResolution ===
-																			"merge_metadata"
-																		? "merged"
-																		: "skipped")}
-															</p>
-														</div>
-													</div>
-												))}
-											</div>
-										</CardContent>
-									</Card>
-								)}
+                {/* Conflicts */}
+                {state.conflicts.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className='flex items-center gap-2 text-base'>
+                        <AlertTriangle className='h-4 w-4 text-amber-500' />
+                        Conflicts Found ({state.conflicts.length})
+                      </CardTitle>
+                      <CardDescription>These items already exist in your project</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className='max-h-[200px] space-y-2 overflow-y-auto'>
+                        {state.conflicts.map((conflict, idx) => (
+                          <div
+                            key={idx}
+                            className='bg-accent flex items-start gap-2 rounded p-2 text-sm'
+                          >
+                            <AlertTriangle className='mt-0.5 h-4 w-4 shrink-0 text-amber-500' />
+                            <div className='flex-1'>
+                              <p className='font-medium'>
+                                {conflict.type} ({conflict.existingId})
+                              </p>
+                              <p className='text-muted-foreground text-xs'>
+                                Will be{' '}
+                                {state.options.conflictResolution === 'overwrite'
+                                  ? 'overwritten'
+                                  : state.options.conflictResolution === 'merge_metadata'
+                                    ? 'merged'
+                                    : 'skipped'}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-								{/* Import Options */}
-								<Card>
-									<CardHeader>
-										<CardTitle className="text-base">Import Options</CardTitle>
-									</CardHeader>
-									<CardContent className="space-y-4">
-										{/* Mode Selection */}
-										<div className="space-y-2">
-											<label className="text-sm font-medium">Import Mode</label>
-											<Select
-												value={state.options.mode}
-												onValueChange={(mode) =>
-													setState({
-														...state,
-														options: {
-															...state.options,
-															mode: mode as "merge" | "replace",
-														},
-													})
-												}
-											>
-												<SelectTrigger>
-													<SelectValue />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="merge">
-														Merge (combine with existing)
-													</SelectItem>
-													<SelectItem value="replace">
-														Replace (overwrite all)
-													</SelectItem>
-												</SelectContent>
-											</Select>
-										</div>
+                {/* Import Options */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className='text-base'>Import Options</CardTitle>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                    {/* Mode Selection */}
+                    <div className='space-y-2'>
+                      <label className='text-sm font-medium'>Import Mode</label>
+                      <Select
+                        value={state.options.mode}
+                        onValueChange={(mode) =>
+                          setState({
+                            ...state,
+                            options: {
+                              ...state.options,
+                              mode: mode as 'merge' | 'replace',
+                            },
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='merge'>Merge (combine with existing)</SelectItem>
+                          <SelectItem value='replace'>Replace (overwrite all)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-										<Separator />
+                    <Separator />
 
-										{/* Conflict Resolution */}
-										{state.options.mode === "merge" && (
-											<div className="space-y-2">
-												<label className="text-sm font-medium">
-													Conflict Resolution
-												</label>
-												<Select
-													value={state.options.conflictResolution}
-													onValueChange={(resolution) =>
-														setState({
-															...state,
-															options: {
-																...state.options,
-																conflictResolution: resolution as
-																	| "skip"
-																	| "overwrite"
-																	| "merge_metadata",
-															},
-														})
-													}
-												>
-													<SelectTrigger>
-														<SelectValue />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="skip">
-															Skip existing items
-														</SelectItem>
-														<SelectItem value="overwrite">
-															Overwrite with imported data
-														</SelectItem>
-														<SelectItem value="merge_metadata">
-															Merge metadata only
-														</SelectItem>
-													</SelectContent>
-												</Select>
-											</div>
-										)}
+                    {/* Conflict Resolution */}
+                    {state.options.mode === 'merge' && (
+                      <div className='space-y-2'>
+                        <label className='text-sm font-medium'>Conflict Resolution</label>
+                        <Select
+                          value={state.options.conflictResolution}
+                          onValueChange={(resolution) =>
+                            setState({
+                              ...state,
+                              options: {
+                                ...state.options,
+                                conflictResolution: resolution as
+                                  | 'skip'
+                                  | 'overwrite'
+                                  | 'merge_metadata',
+                              },
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value='skip'>Skip existing items</SelectItem>
+                            <SelectItem value='overwrite'>Overwrite with imported data</SelectItem>
+                            <SelectItem value='merge_metadata'>Merge metadata only</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
-										<Separator />
+                    <Separator />
 
-										{/* Other Options */}
-										<div className="space-y-2">
-											<div className="flex items-center gap-2">
-												<Checkbox
-													id="validate-refs"
-													checked={state.options.validateReferences}
-													onCheckedChange={(checked: boolean) =>
-														setState({
-															...state,
-															options: {
-																...state.options,
-																validateReferences: checked,
-															},
-														})
-													}
-												/>
-												<label
-													htmlFor="validate-refs"
-													className="text-sm font-medium cursor-pointer"
-												>
-													Validate References
-												</label>
-											</div>
+                    {/* Other Options */}
+                    <div className='space-y-2'>
+                      <div className='flex items-center gap-2'>
+                        <Checkbox
+                          id='validate-refs'
+                          checked={state.options.validateReferences}
+                          onCheckedChange={(checked: boolean) =>
+                            setState({
+                              ...state,
+                              options: {
+                                ...state.options,
+                                validateReferences: checked,
+                              },
+                            })
+                          }
+                        />
+                        <label
+                          htmlFor='validate-refs'
+                          className='cursor-pointer text-sm font-medium'
+                        >
+                          Validate References
+                        </label>
+                      </div>
 
-											<div className="flex items-center gap-2">
-												<Checkbox
-													id="preserve-timestamps"
-													checked={state.options.preserveTimestamps}
-													onCheckedChange={(checked: boolean) =>
-														setState({
-															...state,
-															options: {
-																...state.options,
-																preserveTimestamps: checked,
-															},
-														})
-													}
-												/>
-												<label
-													htmlFor="preserve-timestamps"
-													className="text-sm font-medium cursor-pointer"
-												>
-													Preserve Original Timestamps
-												</label>
-											</div>
+                      <div className='flex items-center gap-2'>
+                        <Checkbox
+                          id='preserve-timestamps'
+                          checked={state.options.preserveTimestamps}
+                          onCheckedChange={(checked: boolean) =>
+                            setState({
+                              ...state,
+                              options: {
+                                ...state.options,
+                                preserveTimestamps: checked,
+                              },
+                            })
+                          }
+                        />
+                        <label
+                          htmlFor='preserve-timestamps'
+                          className='cursor-pointer text-sm font-medium'
+                        >
+                          Preserve Original Timestamps
+                        </label>
+                      </div>
 
-											<div className="flex items-center gap-2">
-												<Checkbox
-													id="update-project"
-													checked={state.options.updateProjectId}
-													onCheckedChange={(checked: boolean) =>
-														setState({
-															...state,
-															options: {
-																...state.options,
-																updateProjectId: checked,
-															},
-														})
-													}
-												/>
-												<label
-													htmlFor="update-project"
-													className="text-sm font-medium cursor-pointer"
-												>
-													Update Project ID to Current
-												</label>
-											</div>
-										</div>
-									</CardContent>
-								</Card>
+                      <div className='flex items-center gap-2'>
+                        <Checkbox
+                          id='update-project'
+                          checked={state.options.updateProjectId}
+                          onCheckedChange={(checked: boolean) =>
+                            setState({
+                              ...state,
+                              options: {
+                                ...state.options,
+                                updateProjectId: checked,
+                              },
+                            })
+                          }
+                        />
+                        <label
+                          htmlFor='update-project'
+                          className='cursor-pointer text-sm font-medium'
+                        >
+                          Update Project ID to Current
+                        </label>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-								{/* Import Preview */}
-								{state.showPreview && state.parsedData && (
-									<Card>
-										<CardHeader>
-											<Button
-												variant="ghost"
-												className="w-full justify-between px-0 h-auto py-0"
-												onClick={() =>
-													setState({
-														...state,
-														showPreview: !state.showPreview,
-													})
-												}
-											>
-												<span className="text-base font-semibold">
-													Import Preview
-												</span>
-												{state.showPreview ? (
-													<ChevronDown className="h-4 w-4" />
-												) : (
-													<ChevronRight className="h-4 w-4" />
-												)}
-											</Button>
-										</CardHeader>
+                {/* Import Preview */}
+                {state.showPreview && state.parsedData && (
+                  <Card>
+                    <CardHeader>
+                      <Button
+                        variant='ghost'
+                        className='h-auto w-full justify-between px-0 py-0'
+                        onClick={() =>
+                          setState({
+                            ...state,
+                            showPreview: !state.showPreview,
+                          })
+                        }
+                      >
+                        <span className='text-base font-semibold'>Import Preview</span>
+                        {state.showPreview ? (
+                          <ChevronDown className='h-4 w-4' />
+                        ) : (
+                          <ChevronRight className='h-4 w-4' />
+                        )}
+                      </Button>
+                    </CardHeader>
 
-										{state.showPreview && (
-											<CardContent className="space-y-3 text-sm">
-												<div className="grid grid-cols-2 gap-4">
-													<div>
-														<p className="text-muted-foreground mb-1">
-															Equivalence Links
-														</p>
-														<p className="text-lg font-semibold">
-															{state.parsedData.equivalenceLinks.length}
-														</p>
-													</div>
-													<div>
-														<p className="text-muted-foreground mb-1">
-															Canonical Concepts
-														</p>
-														<p className="text-lg font-semibold">
-															{state.parsedData.canonicalConcepts.length}
-														</p>
-													</div>
-													<div>
-														<p className="text-muted-foreground mb-1">
-															Projections
-														</p>
-														<p className="text-lg font-semibold">
-															{state.parsedData.canonicalProjections.length}
-														</p>
-													</div>
-													<div>
-														<p className="text-muted-foreground mb-1">
-															Conflicts
-														</p>
-														<p className="text-lg font-semibold">
-															{state.conflicts.length}
-														</p>
-													</div>
-												</div>
-											</CardContent>
-										)}
-									</Card>
-								)}
-							</>
-						)}
-					</div>
-				</ScrollArea>
+                    {state.showPreview && (
+                      <CardContent className='space-y-3 text-sm'>
+                        <div className='grid grid-cols-2 gap-4'>
+                          <div>
+                            <p className='text-muted-foreground mb-1'>Equivalence Links</p>
+                            <p className='text-lg font-semibold'>
+                              {state.parsedData.equivalenceLinks.length}
+                            </p>
+                          </div>
+                          <div>
+                            <p className='text-muted-foreground mb-1'>Canonical Concepts</p>
+                            <p className='text-lg font-semibold'>
+                              {state.parsedData.canonicalConcepts.length}
+                            </p>
+                          </div>
+                          <div>
+                            <p className='text-muted-foreground mb-1'>Projections</p>
+                            <p className='text-lg font-semibold'>
+                              {state.parsedData.canonicalProjections.length}
+                            </p>
+                          </div>
+                          <div>
+                            <p className='text-muted-foreground mb-1'>Conflicts</p>
+                            <p className='text-lg font-semibold'>{state.conflicts.length}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    )}
+                  </Card>
+                )}
+              </>
+            )}
+          </div>
+        </ScrollArea>
 
-				{/* Action Buttons */}
-				<div className="flex items-center justify-end gap-2 border-t pt-4">
-					{state.fileContent && (
-						<>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() =>
-									setState({
-										...state,
-										fileContent: undefined,
-										parsedData: undefined,
-										validationErrors: [],
-									})
-								}
-							>
-								Clear
-							</Button>
-							<Button
-								variant="default"
-								size="sm"
-								disabled={!isReady}
-								className="gap-2"
-								onClick={handleApplyImport}
-							>
-								{isApplying && (
-									<div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-								)}
-								{isApplying ? "Importing..." : "Apply Import"}
-							</Button>
-						</>
-					)}
-				</div>
-			</DialogContent>
-		</Dialog>
-	);
+        {/* Action Buttons */}
+        <div className='flex items-center justify-end gap-2 border-t pt-4'>
+          {state.fileContent && (
+            <>
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() =>
+                  setState({
+                    ...state,
+                    fileContent: undefined,
+                    parsedData: undefined,
+                    validationErrors: [],
+                  })
+                }
+              >
+                Clear
+              </Button>
+              <Button
+                variant='default'
+                size='sm'
+                disabled={!isReady}
+                className='gap-2'
+                onClick={handleApplyImport}
+              >
+                {isApplying && (
+                  <div className='h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
+                )}
+                {isApplying ? 'Importing...' : 'Apply Import'}
+              </Button>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 // =============================================================================
@@ -711,63 +640,63 @@ function EquivalenceImportComponent({
  * Find conflicts between existing and incoming data
  */
 function findConflicts(
-	existingLinks: EquivalenceLink[],
-	existingConcepts: CanonicalConcept[],
-	existingProjections: CanonicalProjection[],
-	parsedData?: EquivalenceExportPackage,
+  existingLinks: EquivalenceLink[],
+  existingConcepts: CanonicalConcept[],
+  existingProjections: CanonicalProjection[],
+  parsedData?: EquivalenceExportPackage,
 ): ConflictInfo[] {
-	if (!parsedData) {
-		return [];
-	}
+  if (!parsedData) {
+    return [];
+  }
 
-	const conflicts: ConflictInfo[] = [];
-	const existingLinkIds = new Set(existingLinks.map((l) => l.id));
-	const existingConceptIds = new Set(existingConcepts.map((c) => c.id));
-	const existingProjectionIds = new Set(existingProjections.map((p) => p.id));
+  const conflicts: ConflictInfo[] = [];
+  const existingLinkIds = new Set(existingLinks.map((l) => l.id));
+  const existingConceptIds = new Set(existingConcepts.map((c) => c.id));
+  const existingProjectionIds = new Set(existingProjections.map((p) => p.id));
 
-	// Check for link conflicts
-	for (const link of parsedData.equivalenceLinks) {
-		if (existingLinkIds.has(link.id)) {
-			const existing = existingLinks.find((l) => l.id === link.id);
-			conflicts.push({
-				existingData: existing,
-				existingId: link.id,
-				incomingData: link,
-				incomingId: link.id,
-				type: "link",
-			});
-		}
-	}
+  // Check for link conflicts
+  for (const link of parsedData.equivalenceLinks) {
+    if (existingLinkIds.has(link.id)) {
+      const existing = existingLinks.find((l) => l.id === link.id);
+      conflicts.push({
+        existingData: existing,
+        existingId: link.id,
+        incomingData: link,
+        incomingId: link.id,
+        type: 'link',
+      });
+    }
+  }
 
-	// Check for concept conflicts
-	for (const concept of parsedData.canonicalConcepts) {
-		if (existingConceptIds.has(concept.id)) {
-			const existing = existingConcepts.find((c) => c.id === concept.id);
-			conflicts.push({
-				existingData: existing,
-				existingId: concept.id,
-				incomingData: concept,
-				incomingId: concept.id,
-				type: "concept",
-			});
-		}
-	}
+  // Check for concept conflicts
+  for (const concept of parsedData.canonicalConcepts) {
+    if (existingConceptIds.has(concept.id)) {
+      const existing = existingConcepts.find((c) => c.id === concept.id);
+      conflicts.push({
+        existingData: existing,
+        existingId: concept.id,
+        incomingData: concept,
+        incomingId: concept.id,
+        type: 'concept',
+      });
+    }
+  }
 
-	// Check for projection conflicts
-	for (const projection of parsedData.canonicalProjections) {
-		if (existingProjectionIds.has(projection.id)) {
-			const existing = existingProjections.find((p) => p.id === projection.id);
-			conflicts.push({
-				existingData: existing,
-				existingId: projection.id,
-				incomingData: projection,
-				incomingId: projection.id,
-				type: "projection",
-			});
-		}
-	}
+  // Check for projection conflicts
+  for (const projection of parsedData.canonicalProjections) {
+    if (existingProjectionIds.has(projection.id)) {
+      const existing = existingProjections.find((p) => p.id === projection.id);
+      conflicts.push({
+        existingData: existing,
+        existingId: projection.id,
+        incomingData: projection,
+        incomingId: projection.id,
+        type: 'projection',
+      });
+    }
+  }
 
-	return conflicts;
+  return conflicts;
 }
 
 // =============================================================================

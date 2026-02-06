@@ -28,7 +28,7 @@ Fix 146 failing TUI widget tests by creating proper Textual application context 
 - `/tests/unit/tui/adapters/test_storage_adapter.py` (28 tests)
 
 #### Tier 2: TUI Applications (63 tests)
-- `/tests/unit/tui/apps/test_dashboard_v2.py` (20 tests)
+- `/tests/unit/tui/apps/test_dashboard_compat.py` (20 tests)
 - `/tests/unit/tui/apps/test_dashboard_app.py` (20 tests)
 - `/tests/unit/tui/apps/test_graph_app.py` (15 tests)
 - `/tests/unit/tui/apps/test_browser_app.py` (8 tests)
@@ -268,7 +268,7 @@ async def test_widget_error_handling(textual_app_context):
    - Many interaction tests
 
 #### Medium Priority: App Tests (43 tests, 1.5 hours)
-3. `/tests/unit/tui/apps/test_dashboard_v2.py` (20 tests)
+3. `/tests/unit/tui/apps/test_dashboard_compat.py` (20 tests)
 4. `/tests/unit/tui/apps/test_dashboard_app.py` (20 tests)
 5. `/tests/unit/tui/apps/test_browser_app.py` (8 tests)
 

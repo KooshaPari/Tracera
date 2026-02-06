@@ -57,23 +57,20 @@ const analysis: CacheAnalysis = {
   },
 };
 
-
-
 const buildDir = join(process.cwd(), '.next');
 const publicDir = join(process.cwd(), 'public');
 
 if (!existsSync(buildDir)) {
-  
   process.exit(1);
 }
 
 // Analyze static assets
 const staticDir = join(buildDir, 'static');
 if (existsSync(staticDir)) {
-  
-
   function analyzeDirectory(dir: string, category: 'chunks' | 'css' | 'media') {
-    if (!existsSync(dir)) {return;}
+    if (!existsSync(dir)) {
+      return;
+    }
 
     const files = readdirSync(dir);
     let totalSize = 0;
@@ -83,7 +80,7 @@ if (existsSync(staticDir)) {
       const stats = statSync(filePath);
 
       if (stats.isFile()) {
-        const {size} = stats;
+        const { size } = stats;
         totalSize += size;
         analysis.staticAssets.total += 1;
         analysis.staticAssets.totalSize += size;
@@ -120,15 +117,11 @@ if (existsSync(staticDir)) {
   if (analysis.chunks.total > 0) {
     analysis.chunks.avgSize = chunksSize / analysis.chunks.total;
   }
-
-  
 }
 
 // Analyze pages
 const pagesDir = join(buildDir, 'server/app');
 if (existsSync(pagesDir)) {
-  
-
   let totalPageSize = 0;
 
   function countPages(dir: string) {
@@ -151,8 +144,6 @@ if (existsSync(pagesDir)) {
   if (analysis.pages.total > 0) {
     analysis.pages.avgSize = totalPageSize / analysis.pages.total;
   }
-
-  
 }
 
 // Check for service worker
@@ -160,94 +151,58 @@ const swPath = join(publicDir, 'sw.js');
 if (existsSync(swPath)) {
   analysis.serviceWorker.exists = true;
   analysis.serviceWorker.size = statSync(swPath).size;
-  
 }
 
 // Display results
 
-
-
-
-
-
-
-
-
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
 
 const hashRatio = analysis.staticAssets.hashed / analysis.staticAssets.total;
-const hashStatus = hashRatio > 0.8 ? '✅' : (hashRatio > 0.5 ? '⚠️' : '❌');
-
-
-
-
-
-
-if (analysis.chunks.largest) {
-  
-  
-}
+const hashStatus = hashRatio > 0.8 ? '✅' : hashRatio > 0.5 ? '⚠️' : '❌';
 
 const largestChunkSize = analysis.chunks.largest?.size || 0;
-const chunkStatus = largestChunkSize < 200 * 1024 ? '✅' : (largestChunkSize < 400 * 1024 ? '⚠️' : '❌');
+const largestChunkName = analysis.chunks.largest?.name || 'n/a';
+const chunkStatus =
+  largestChunkSize < 200 * 1024 ? '✅' : largestChunkSize < 400 * 1024 ? '⚠️' : '❌';
+const serviceWorkerStatus = analysis.serviceWorker.exists ? '✅' : '❌';
 
-
-
-
-
-
-
-
-
-
-if (analysis.serviceWorker.exists) {
-  
-}
+console.log(`Hashed assets: ${hashStatus} ${(hashRatio * 100).toFixed(1)}%`);
+console.log(
+  `Static assets: ${analysis.staticAssets.total} files (${formatBytes(analysis.staticAssets.totalSize)})`,
+);
+console.log(
+  `Chunks: ${analysis.chunks.total} files, avg ${formatBytes(analysis.chunks.avgSize)}, largest ${largestChunkName} (${formatBytes(largestChunkSize)}) ${chunkStatus}`,
+);
+console.log(`Pages: ${analysis.pages.total} files, avg ${formatBytes(analysis.pages.avgSize)}`);
+console.log(
+  `Service worker: ${serviceWorkerStatus}${analysis.serviceWorker.exists ? ` (${formatBytes(analysis.serviceWorker.size)})` : ''}`,
+);
 
 // Recommendations
 
-
-
 if (hashRatio < 0.9) {
-  
+  console.log('Recommendation: Increase content hashing coverage for static assets.');
 }
 
 if (largestChunkSize > 400 * 1024) {
-  
+  console.log('Recommendation: Split large chunks to improve caching efficiency.');
 }
 
 if (!analysis.serviceWorker.exists) {
-  
-  
+  console.log('Recommendation: Add a service worker for offline caching.');
 }
 
 if (analysis.pages.total < 5) {
-  
+  console.log('Recommendation: Verify static pages are being generated as expected.');
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-if (analysis.serviceWorker.exists) {
-  
-} else {
-  
-}
-
-
-
-
-
-
-
 
 const allGood = hashRatio > 0.8 && largestChunkSize < 400 * 1024 && analysis.pages.total > 5;
 process.exit(allGood ? 0 : 1);

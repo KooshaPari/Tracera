@@ -12,6 +12,7 @@ _STATUS_UNAUTHORIZED = 401
 _MIN_IDENTIFIER_PARTS = 2
 
 import httpx
+from pydantic import BaseModel, Field
 from tenacity import (
     retry,
     retry_if_exception,
@@ -38,6 +39,83 @@ class LinearAuthError(LinearClientError):
 
 class LinearNotFoundError(LinearClientError):
     """Resource not found."""
+
+
+# ==================== PYDANTIC MODELS ====================
+
+
+class IssueCreateRequest(BaseModel):
+    """Request model for creating an issue."""
+
+    team_id: str = Field(..., description="Team ID to create issue in")
+    title: str = Field(..., description="Issue title")
+    description: str | None = Field(None, description="Issue description")
+    priority: int | None = Field(None, ge=0, le=4, description="Issue priority (0-4)")
+    assignee_id: str | None = Field(None, description="User ID to assign issue to")
+    state_id: str | None = Field(None, description="Workflow state ID")
+    parent_id: str | None = Field(None, description="Parent issue ID")
+    label_ids: list[str] | None = Field(None, description="List of label IDs")
+    estimate: int | None = Field(None, ge=0, description="Issue estimate")
+    due_date: str | None = Field(None, description="ISO date string for due date")
+
+    def to_linear_input(self) -> dict[str, Any]:
+        """Convert to Linear API input format."""
+        data: dict[str, Any] = {
+            "teamId": self.team_id,
+            "title": self.title,
+        }
+        if self.description:
+            data["description"] = self.description
+        if self.priority is not None:
+            data["priority"] = self.priority
+        if self.assignee_id:
+            data["assigneeId"] = self.assignee_id
+        if self.state_id:
+            data["stateId"] = self.state_id
+        if self.parent_id:
+            data["parentId"] = self.parent_id
+        if self.label_ids:
+            data["labelIds"] = self.label_ids
+        if self.estimate is not None:
+            data["estimate"] = self.estimate
+        if self.due_date:
+            data["dueDate"] = self.due_date
+        return data
+
+
+class IssueUpdateRequest(BaseModel):
+    """Request model for updating an issue."""
+
+    issue_id: str = Field(..., description="Issue ID to update")
+    title: str | None = Field(None, description="New issue title")
+    description: str | None = Field(None, description="New issue description")
+    priority: int | None = Field(None, ge=0, le=4, description="New priority (0-4)")
+    assignee_id: str | None = Field(None, description="New assignee user ID")
+    state_id: str | None = Field(None, description="New workflow state ID")
+    label_ids: list[str] | None = Field(None, description="New list of label IDs")
+    estimate: int | None = Field(None, ge=0, description="New estimate")
+    due_date: str | None = Field(None, description="New ISO date string for due date")
+
+    def to_linear_input(self) -> dict[str, Any]:
+        """Convert to Linear API input format (only set fields)."""
+        data: dict[str, Any] = {}
+        if self.title is not None:
+            data["title"] = self.title
+        if self.description is not None:
+            data["description"] = self.description
+        if self.priority is not None:
+            data["priority"] = self.priority
+        if self.assignee_id is not None:
+            data["assigneeId"] = self.assignee_id
+        if self.state_id is not None:
+            data["stateId"] = self.state_id
+        if self.label_ids is not None:
+            data["labelIds"] = self.label_ids
+        if self.estimate is not None:
+            data["estimate"] = self.estimate
+        if self.due_date is not None:
+            data["dueDate"] = self.due_date
+        return data
 
 
 class LinearClient:
@@ -448,20 +526,15 @@ class LinearClient:
             raise LinearNotFoundError(f"Issue {identifier} not found")
         return issues[0]
 
-    async def create_issue(  # noqa: C901, PLR0913
-        self,
-        team_id: str,
-        title: str,
-        description: str | None = None,
-        priority: int | None = None,
-        assignee_id: str | None = None,
-        state_id: str | None = None,
-        parent_id: str | None = None,
-        label_ids: list[str] | None = None,
-        estimate: int | None = None,
-        due_date: str | None = None,
-    ) -> dict[str, Any]:
-        """Create a new issue."""
+    async def create_issue(self, request: IssueCreateRequest) -> dict[str, Any]:
+        """Create a new issue.
+
+        Args:
+            request: IssueCreateRequest model with issue details
+
+        Returns:
+            Created issue object with id, identifier, url, etc.
+        """
         query = """
         mutation($input: IssueCreateInput!) {
             issueCreate(input: $input) {
@@ -483,43 +556,19 @@ class LinearClient:
             }
         }
         """
-        input_data: dict[str, Any] = {
-            "teamId": team_id,
-            "title": title,
-        }
-        if description:
-            input_data["description"] = description
-        if priority is not None:
-            input_data["priority"] = priority
-        if assignee_id:
-            input_data["assigneeId"] = assignee_id
-        if state_id:
-            input_data["stateId"] = state_id
-        if parent_id:
-            input_data["parentId"] = parent_id
-        if label_ids:
-            input_data["labelIds"] = label_ids
-        if estimate is not None:
-            input_data["estimate"] = estimate
-        if due_date:
-            input_data["dueDate"] = due_date
-
+        input_data = request.to_linear_input()
         result = await self._query(query, {"input": input_data})
         return result.get("issueCreate", {}).get("issue", {})
 
-    async def update_issue(  # noqa: C901, PLR0913
-        self,
-        issue_id: str,
-        title: str | None = None,
-        description: str | None = None,
-        priority: int | None = None,
-        assignee_id: str | None = None,
-        state_id: str | None = None,
-        label_ids: list[str] | None = None,
-        estimate: int | None = None,
-        due_date: str | None = None,
-    ) -> dict[str, Any]:
-        """Update an existing issue."""
+    async def update_issue(self, request: IssueUpdateRequest) -> dict[str, Any]:
+        """Update an existing issue.
+
+        Args:
+            request: IssueUpdateRequest model with update details
+
+        Returns:
+            Updated issue object
+        """
         query = """
         mutation($id: String!, $input: IssueUpdateInput!) {
             issueUpdate(id: $id, input: $input) {
@@ -538,25 +587,8 @@ class LinearClient:
             }
         }
         """
-        input_data: dict[str, Any] = {}
-        if title is not None:
-            input_data["title"] = title
-        if description is not None:
-            input_data["description"] = description
-        if priority is not None:
-            input_data["priority"] = priority
-        if assignee_id is not None:
-            input_data["assigneeId"] = assignee_id
-        if state_id is not None:
-            input_data["stateId"] = state_id
-        if label_ids is not None:
-            input_data["labelIds"] = label_ids
-        if estimate is not None:
-            input_data["estimate"] = estimate
-        if due_date is not None:
-            input_data["dueDate"] = due_date
-
-        result = await self._query(query, {"id": issue_id, "input": input_data})
+        input_data = request.to_linear_input()
+        result = await self._query(query, {"id": request.issue_id, "input": input_data})
         return result.get("issueUpdate", {}).get("issue", {})
 
     async def archive_issue(self, issue_id: str) -> bool:

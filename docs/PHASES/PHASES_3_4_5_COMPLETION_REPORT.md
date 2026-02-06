@@ -49,7 +49,7 @@ EXECUTION TIME:                  46 seconds (optimized!)
    - Service integration scenarios
 
 ### Phase 4: Edge Cases & Special
-6. ✅ `test_edge_cases_phase4.py` - 59 tests
+6. ✅ `test_edge_cases_phase_four.py` - 59 tests
    - Boundary conditions (zero, negative, very large values)
    - Error scenarios (None, empty, invalid JSON)
    - Concurrency scenarios
@@ -60,7 +60,7 @@ EXECUTION TIME:                  46 seconds (optimized!)
    - Special characters & unicode
 
 ### Phase 5: Advanced Workflows
-7. ✅ `test_phase5_advanced_coverage.py` - 44 tests
+7. ✅ `test_phase_five_advanced_coverage.py` - 44 tests
    - API endpoint validation (13 tests)
    - Service method coverage (10 tests)
    - Workflow integration (6 tests)
@@ -308,9 +308,9 @@ TOTAL:                    16 hours   → 70.58% final (1,296 tests)
 tests/unit/cli/test_item_commands.py           → 67 tests
 tests/unit/cli/test_project_link_commands.py   → 45 tests
 tests/unit/cli/test_data_commands.py           → 58 tests
-tests/unit/test_edge_cases_phase4.py           → 59 tests
+tests/unit/test_edge_cases_phase_four.py           → 59 tests
 tests/unit/services/test_critical_services.py  → 37 tests
-tests/unit/test_phase5_advanced_coverage.py    → 44 tests
+tests/unit/test_phase_five_advanced_coverage.py    → 44 tests
 ────────────────────────────────────────────────────────
 TOTAL NEW TESTS:                               310 tests
 ```

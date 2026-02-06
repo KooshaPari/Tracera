@@ -1054,7 +1054,7 @@ rtm test list --lang python
 We need to test the test command itself:
 
 ```python
-# tests/unit/cli/test_test_command.py
+# tests/unit/cli/test_cli_test_command.py
 
 def test_test_command_discovery():
     """Test that test discovery works."""

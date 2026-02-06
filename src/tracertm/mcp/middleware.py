@@ -68,14 +68,14 @@ class AuthMiddleware(Middleware):
                 return
 
             auth = getattr(ctx, "auth", None)
-            if not isinstance(auth, dict[str, Any]):
+            if not isinstance(auth, dict):
                 logger.warning(f"Auth context invalid for tool: {tool_name}")
                 next_fn = getattr(ctx, "next", None)
                 if next_fn is not None and callable(next_fn):
                     await next_fn()
                 return
 
-            auth_dict: dict[str, Any] = cast(dict[str, Any], auth)
+            auth_dict: dict[str, Any] = cast(dict, auth)
             # Validate token freshness
             await self._validate_token(auth_dict)
 
@@ -260,8 +260,8 @@ class RateLimitMiddleware(Middleware):
             return "global"
 
         auth = getattr(ctx, "auth", None)
-        if isinstance(auth, dict[str, Any]):
-            auth_d = cast(dict[str, Any], auth)
+        if isinstance(auth, dict):
+            auth_d = cast(dict, auth)
             claims = auth_d.get("claims", {})
             return str(claims.get("sub", "anonymous"))
 

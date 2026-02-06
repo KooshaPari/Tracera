@@ -2,155 +2,156 @@
  * Tests for websocketStore
  */
 
-import { act, renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { useWebSocketStore } from "../../stores/websocket-store";
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-describe("websocketStore", () => {
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
+import { useWebSocketStore } from '../../stores/websocket-store';
 
-	describe("initial state", () => {
-		it("should have correct initial values", () => {
-			const { result } = renderHook(() => useWebSocketStore());
+describe('websocketStore', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-			expect(result.current.isConnected).toBe(false);
-			expect(result.current.reconnectAttempts).toBe(0);
-			expect(result.current.lastEvent).toBeNull();
-			expect(result.current.events).toEqual([]);
-			expect(result.current.activeChannels.size).toBe(0);
-		});
-	});
+  describe('initial state', () => {
+    it('should have correct initial values', () => {
+      const { result } = renderHook(() => useWebSocketStore());
 
-	describe("connect", () => {
-		it("should connect websocket", () => {
-			const { result } = renderHook(() => useWebSocketStore());
+      expect(result.current.isConnected).toBeFalsy();
+      expect(result.current.reconnectAttempts).toBe(0);
+      expect(result.current.lastEvent).toBeNull();
+      expect(result.current.events).toEqual([]);
+      expect(result.current.activeChannels.size).toBe(0);
+    });
+  });
 
-			act(() => {
-				result.current.connect();
-			});
+  describe('connect', () => {
+    it('should connect websocket', () => {
+      const { result } = renderHook(() => useWebSocketStore());
 
-			// Initial state is false until connection completes
-			expect(result.current.isConnected).toBeDefined();
-		});
-	});
+      act(() => {
+        result.current.connect();
+      });
 
-	describe("disconnect", () => {
-		it("should disconnect websocket", () => {
-			const { result } = renderHook(() => useWebSocketStore());
+      // Initial state is false until connection completes
+      expect(result.current.isConnected).toBeDefined();
+    });
+  });
 
-			act(() => {
-				result.current.disconnect();
-			});
+  describe('disconnect', () => {
+    it('should disconnect websocket', () => {
+      const { result } = renderHook(() => useWebSocketStore());
 
-			expect(result.current.isConnected).toBe(false);
-		});
-	});
+      act(() => {
+        result.current.disconnect();
+      });
 
-	describe("subscribe", () => {
-		it("should subscribe to a channel", () => {
-			const { result } = renderHook(() => useWebSocketStore());
-			const callback = vi.fn();
+      expect(result.current.isConnected).toBeFalsy();
+    });
+  });
 
-			act(() => {
-				result.current.subscribe("test-channel", callback);
-			});
+  describe('subscribe', () => {
+    it('should subscribe to a channel', () => {
+      const { result } = renderHook(() => useWebSocketStore());
+      const callback = vi.fn();
 
-			expect(result.current.activeChannels.has("test-channel")).toBe(true);
-		});
+      act(() => {
+        result.current.subscribe('test-channel', callback);
+      });
 
-		it("should unsubscribe from a channel", () => {
-			const { result } = renderHook(() => useWebSocketStore());
-			const callback = vi.fn();
+      expect(result.current.activeChannels.has('test-channel')).toBeTruthy();
+    });
 
-			let unsubscribe: () => void;
+    it('should unsubscribe from a channel', () => {
+      const { result } = renderHook(() => useWebSocketStore());
+      const callback = vi.fn();
 
-			act(() => {
-				unsubscribe = result.current.subscribe("test-channel", callback);
-			});
+      let unsubscribe: () => void;
 
-			expect(result.current.activeChannels.has("test-channel")).toBe(true);
+      act(() => {
+        unsubscribe = result.current.subscribe('test-channel', callback);
+      });
 
-			act(() => {
-				unsubscribe();
-			});
+      expect(result.current.activeChannels.has('test-channel')).toBeTruthy();
 
-			expect(result.current.activeChannels.has("test-channel")).toBe(false);
-		});
-	});
+      act(() => {
+        unsubscribe();
+      });
 
-	describe("events", () => {
-		it("should add events", () => {
-			const { result } = renderHook(() => useWebSocketStore());
-			const event = {
-				record: { id: "item-1" },
-				schema: "public",
-				table: "items" as const,
-				timestamp: Date.now(),
-				type: "updated" as const,
-			};
+      expect(result.current.activeChannels.has('test-channel')).toBeFalsy();
+    });
+  });
 
-			act(() => {
-				result.current.addEvent(event);
-			});
+  describe('events', () => {
+    it('should add events', () => {
+      const { result } = renderHook(() => useWebSocketStore());
+      const event = {
+        record: { id: 'item-1' },
+        schema: 'public',
+        table: 'items' as const,
+        timestamp: Date.now(),
+        type: 'updated' as const,
+      };
 
-			expect(result.current.lastEvent).toEqual(event);
-			expect(result.current.events).toContain(event);
-		});
+      act(() => {
+        result.current.addEvent(event);
+      });
 
-		it("should limit events to 100", () => {
-			const { result } = renderHook(() => useWebSocketStore());
+      expect(result.current.lastEvent).toEqual(event);
+      expect(result.current.events).toContain(event);
+    });
 
-			act(() => {
-				for (let i = 0; i < 150; i++) {
-					result.current.addEvent({
-						record: { id: i },
-						schema: "public",
-						table: "items" as const,
-						timestamp: Date.now(),
-						type: "created" as const,
-					});
-				}
-			});
+    it('should limit events to 100', () => {
+      const { result } = renderHook(() => useWebSocketStore());
 
-			expect(result.current.events.length).toBe(100);
-		});
+      act(() => {
+        for (let i = 0; i < 150; i++) {
+          result.current.addEvent({
+            record: { id: i },
+            schema: 'public',
+            table: 'items' as const,
+            timestamp: Date.now(),
+            type: 'created' as const,
+          });
+        }
+      });
 
-		it("should clear events", () => {
-			const { result } = renderHook(() => useWebSocketStore());
+      expect(result.current.events.length).toBe(100);
+    });
 
-			act(() => {
-				result.current.addEvent({
-					record: {},
-					schema: "public",
-					table: "items" as const,
-					timestamp: Date.now(),
-					type: "created" as const,
-				});
-				result.current.clearEvents();
-			});
+    it('should clear events', () => {
+      const { result } = renderHook(() => useWebSocketStore());
 
-			expect(result.current.events).toEqual([]);
-			expect(result.current.lastEvent).toBeNull();
-		});
-	});
+      act(() => {
+        result.current.addEvent({
+          record: {},
+          schema: 'public',
+          table: 'items' as const,
+          timestamp: Date.now(),
+          type: 'created' as const,
+        });
+        result.current.clearEvents();
+      });
 
-	describe("setConnectionStatus", () => {
-		it("should set connection status", () => {
-			const { result } = renderHook(() => useWebSocketStore());
+      expect(result.current.events).toEqual([]);
+      expect(result.current.lastEvent).toBeNull();
+    });
+  });
 
-			act(() => {
-				result.current.setConnectionStatus(true);
-			});
+  describe('setConnectionStatus', () => {
+    it('should set connection status', () => {
+      const { result } = renderHook(() => useWebSocketStore());
 
-			expect(result.current.isConnected).toBe(true);
+      act(() => {
+        result.current.setConnectionStatus(true);
+      });
 
-			act(() => {
-				result.current.setConnectionStatus(false);
-			});
+      expect(result.current.isConnected).toBeTruthy();
 
-			expect(result.current.isConnected).toBe(false);
-		});
-	});
+      act(() => {
+        result.current.setConnectionStatus(false);
+      });
+
+      expect(result.current.isConnected).toBeFalsy();
+    });
+  });
 });

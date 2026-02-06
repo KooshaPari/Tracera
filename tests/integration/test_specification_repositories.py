@@ -53,7 +53,11 @@ async def test_item(db_session: AsyncSession, test_project: Project) -> Item:
     """Create a test item for contracts."""
     repo = ItemRepository(db_session)
     item = await repo.create(
-        project_id=str(test_project.id), title="Test API", view="api", item_type="function", description="Test API function"
+        project_id=str(test_project.id),
+        title="Test API",
+        view="api",
+        item_type="function",
+        description="Test API function",
     )
     await db_session.commit()
     return item
@@ -184,10 +188,20 @@ async def test_adr_list_by_status(db_session: AsyncSession, test_project: Projec
     repo = ADRRepository(db_session)
 
     await repo.create(
-        project_id=str(test_project.id), title="Proposed ADR", context="C", decision="D", consequences="C", status="proposed"
+        project_id=str(test_project.id),
+        title="Proposed ADR",
+        context="C",
+        decision="D",
+        consequences="C",
+        status="proposed",
     )
     await repo.create(
-        project_id=str(test_project.id), title="Accepted ADR", context="C", decision="D", consequences="C", status="accepted"
+        project_id=str(test_project.id),
+        title="Accepted ADR",
+        context="C",
+        decision="D",
+        consequences="C",
+        status="accepted",
     )
     await db_session.commit()
 
@@ -201,7 +215,9 @@ async def test_adr_update_with_locking(db_session: AsyncSession, test_project: P
     """Test ADR update with optimistic locking."""
     repo = ADRRepository(db_session)
 
-    adr = await repo.create(project_id=str(test_project.id), title="Original", context="C", decision="D", consequences="C")
+    adr = await repo.create(
+        project_id=str(test_project.id), title="Original", context="C", decision="D", consequences="C"
+    )
     await db_session.commit()
 
     # Update with correct version
@@ -215,7 +231,9 @@ async def test_adr_update_version_conflict(db_session: AsyncSession, test_projec
     """Test ADR update fails with version conflict."""
     repo = ADRRepository(db_session)
 
-    adr = await repo.create(project_id=str(test_project.id), title="Original", context="C", decision="D", consequences="C")
+    adr = await repo.create(
+        project_id=str(test_project.id), title="Original", context="C", decision="D", consequences="C"
+    )
     await db_session.commit()
 
     # Try to update with wrong version
@@ -273,11 +291,21 @@ async def test_adr_count_by_status(db_session: AsyncSession, test_project: Proje
 
     for i in range(2):
         await repo.create(
-            project_id=str(test_project.id), title=f"ADR {i}", context="C", decision="D", consequences="C", status="proposed"
+            project_id=str(test_project.id),
+            title=f"ADR {i}",
+            context="C",
+            decision="D",
+            consequences="C",
+            status="proposed",
         )
 
     await repo.create(
-        project_id=str(test_project.id), title="Accepted", context="C", decision="D", consequences="C", status="accepted"
+        project_id=str(test_project.id),
+        title="Accepted",
+        context="C",
+        decision="D",
+        consequences="C",
+        status="accepted",
     )
     await db_session.commit()
 
@@ -297,7 +325,11 @@ async def test_contract_create_basic(db_session: AsyncSession, test_project: Pro
     repo = ContractRepository(db_session)
 
     contract = await repo.create(
-        project_id=str(test_project.id), item_id=str(test_item.id), title="API Contract", contract_type="api", status="draft"
+        project_id=str(test_project.id),
+        item_id=str(test_item.id),
+        title="API Contract",
+        contract_type="api",
+        status="draft",
     )
     await db_session.commit()
 
@@ -349,7 +381,9 @@ async def test_contract_list_by_item(db_session: AsyncSession, test_project: Pro
     repo = ContractRepository(db_session)
 
     for i in range(3):
-        await repo.create(project_id=str(test_project.id), item_id=str(test_item.id), title=f"Contract {i}", contract_type="api")
+        await repo.create(
+            project_id=str(test_project.id), item_id=str(test_item.id), title=f"Contract {i}", contract_type="api"
+        )
     await db_session.commit()
 
     contracts = await repo.list_by_item(str(test_item.id))
@@ -380,7 +414,11 @@ async def test_contract_status_transitions(db_session: AsyncSession, test_projec
     repo = ContractRepository(db_session)
 
     contract = await repo.create(
-        project_id=str(test_project.id), item_id=str(test_item.id), title="API Contract", contract_type="api", status="draft"
+        project_id=str(test_project.id),
+        item_id=str(test_item.id),
+        title="API Contract",
+        contract_type="api",
+        status="draft",
     )
     await db_session.commit()
 

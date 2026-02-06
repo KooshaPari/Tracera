@@ -327,7 +327,7 @@ TOOLS = [
 # =============================================================================
 
 # Directories that are allowed for filesystem operations
-ALLOWED_PATHS: list[str] = []  # Empty = allow all (configure per-project)
+ALLOWED_PATHS: list[pathlib.Path] = []  # Empty = allow all (configure per-project)
 
 # Commands that are blocked for security
 BLOCKED_COMMANDS = [
@@ -435,7 +435,7 @@ def is_path_allowed(path: str) -> bool:
     except (OSError, ValueError):
         return False
 
-    return any(real_path.startswith(allowed) for allowed in ALLOWED_PATHS)
+    return any(real_path.is_relative_to(allowed) for allowed in ALLOWED_PATHS)
 
 
 def is_binary_file(filepath: str) -> bool:
@@ -756,6 +756,7 @@ async def _run_command(params: dict[str, Any], base_dir: str | None) -> dict[str
     for var in sensitive_vars:
         env.pop(var, None)
 
+    process: asyncio.subprocess.Process | None = None
     try:
         process = await asyncio.create_subprocess_shell(
             command,
@@ -784,7 +785,8 @@ async def _run_command(params: dict[str, Any], base_dir: str | None) -> dict[str
     except TimeoutError:
         # Try to kill the process
         try:
-            process.kill()
+            if process is not None:
+                process.kill()
         except Exception as e:
             logger.debug("Process kill failed: %s", e)
         return {"success": False, "error": f"Command timed out after {timeout}s"}

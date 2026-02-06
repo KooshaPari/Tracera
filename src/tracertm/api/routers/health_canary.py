@@ -8,14 +8,11 @@ from typing import Any
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from .health import (
-    ComponentHealth,
-    IntegrationHealth,
+from tracertm.api.handlers.health import (
     check_database,
     check_go_backend,
     check_nats,
     check_redis,
-    get_version,
 )
 
 router = APIRouter(prefix="/health", tags=["health"])
@@ -53,9 +50,14 @@ class CanaryHealthResponse(BaseModel):
     version: str
     timestamp: datetime
     deployment: DeploymentInfo
-    components: dict[str, ComponentHealth]
-    integration: IntegrationHealth | None = None
+    components: dict[str, dict[str, Any]]
+    integration: dict[str, Any] | None = None
     metrics: CanaryMetrics | None = None
+
+
+def get_version() -> str:
+    """Get API version string."""
+    return os.getenv("APP_VERSION", "dev")
 
 
 def get_deployment_info() -> DeploymentInfo:
@@ -105,46 +107,58 @@ async def get_canary_health(
     db = None
     redis = None
     nats = None
-    go_backend_url = os.getenv("GO_BACKEND_URL", "")
     is_canary = os.getenv("CANARY_DEPLOYMENT", "false").lower() == "true"
 
     components = {}
 
     # Check all components
     if db is not None:
-        components["database"] = await check_database(db)
+        components.update(await check_database(db))
     else:
-        components["database"] = ComponentHealth(
-            status="degraded",
-            message="Database dependency not available",
-            last_check=datetime.now(UTC),
-        )
+        components["database"] = {
+            "status": "degraded",
+            "message": "Database dependency not available",
+            "last_check": datetime.now(UTC),
+        }
+        components["migrations"] = {
+            "status": "unknown",
+            "message": "Database dependency not available",
+            "last_check": datetime.now(UTC),
+        }
 
-    components["redis"] = await check_redis(redis)
-    components["nats"] = check_nats(nats)  # sync
-    components["go_backend"] = await check_go_backend(go_backend_url)
+    if redis is not None:
+        components.update(await check_redis(redis))
+    else:
+        components["redis"] = {
+            "status": "degraded",
+            "message": "Redis dependency not available",
+            "last_check": datetime.now(UTC),
+        }
+
+    components.update(await check_nats(nats))
+    components.update(await check_go_backend())
 
     # Integration health
-    integration = IntegrationHealth(
-        database=components["database"],
-        redis=components["redis"],
-        nats=components["nats"],
-        go_backend=components["go_backend"],
-    )
+    integration = {
+        "database": components.get("database"),
+        "redis": components.get("redis"),
+        "nats": components.get("nats"),
+        "go_backend": components.get("go_backend"),
+    }
 
     # Overall status
     overall_status = "healthy"
     for comp in components.values():
-        if comp.status == "unhealthy":
+        if comp.get("status") == "unhealthy":
             overall_status = "unhealthy"
             break
-        if comp.status == "degraded":
+        if comp.get("status") == "degraded":
             overall_status = "degraded"
 
     # Build response
     response = CanaryHealthResponse(
         status=overall_status,
-        version=get_version(),
+        version="1.0.0",
         timestamp=datetime.now(UTC),
         deployment=get_deployment_info(),
         components=components,

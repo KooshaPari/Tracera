@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
-import { source } from '@/source';
+
 import { mdxComponents } from '@/components/mdx-components';
+import { source } from '@/source';
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>;
@@ -12,14 +14,16 @@ export default async function Page(props: PageProps) {
   const params = await props.params;
   const page = source.getPage(params.slug);
 
-  if (!page) {notFound();}
+  if (!page) {
+    notFound();
+  }
 
   const MDX = page.data.body;
 
   return (
     <DocsPage
       toc={page.data.toc}
-      full={page.data.full}
+      full={page.data.full ?? false}
       tableOfContent={{
         single: false,
         style: 'clerk',
@@ -29,7 +33,7 @@ export default async function Page(props: PageProps) {
       }}
       editOnGithub={{
         owner: 'yourusername',
-        path: `content/docs/${page.file.path}`,
+        path: `content/docs/${page.data.info.path}`,
         repo: 'tracertm',
         sha: 'main',
       }}
@@ -51,7 +55,9 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params;
   const page = source.getPage(params.slug);
 
-  if (!page) {notFound();}
+  if (!page) {
+    notFound();
+  }
 
   return {
     description: page.data.description,

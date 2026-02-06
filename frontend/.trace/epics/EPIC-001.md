@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Build a comprehensive design system with reusable React components following design tokens, accessibility standards (WCAG 2.1 AA), and responsive design principles. Components should be documented with Storybook.
-

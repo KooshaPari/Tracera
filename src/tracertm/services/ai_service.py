@@ -52,7 +52,7 @@ class AIService:
             if not api_key:
                 raise AIServiceError("ANTHROPIC_API_KEY environment variable is not set")
             try:
-                import anthropic  # type: ignore[import-not-found]
+                import anthropic
 
                 self._anthropic_client = anthropic.AsyncAnthropic(api_key=api_key)
             except ImportError as e:

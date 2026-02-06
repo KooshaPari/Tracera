@@ -161,7 +161,7 @@ class TemporalService:
         # Start workflow execution
         # Type ignore: workflow classes have @workflow.run decorated methods which type checker can't infer
         handle = await client.start_workflow(
-            workflow_class.run,  # type: ignore[attr-defined]
+            workflow_class.run,
             **workflow_args,
             id=workflow_id,
             task_queue=task_queue,

@@ -13,10 +13,10 @@
  * @see https://docs.sentry.io/platforms/javascript/guides/react/
  */
 
-import * as Sentry from "@sentry/react";
+import * as Sentry from '@sentry/react';
 
-const SENTRY_DSN = import.meta.env["VITE_SENTRY_DSN"];
-const BUILD_ID = import.meta.env["VITE_BUILD_ID"] || "local";
+const SENTRY_DSN = import.meta.env['VITE_SENTRY_DSN'];
+const BUILD_ID = import.meta.env['VITE_BUILD_ID'] || 'local';
 const SAMPLE_RATE_LOW = 0.1;
 const SAMPLE_RATE_HUNDRED_PERCENT = 1.0;
 const TIMESTAMP_MILLISECONDS_DIVISOR = 1000;
@@ -28,111 +28,101 @@ const TIMESTAMP_MILLISECONDS_DIVISOR = 1000;
  * Includes performance monitoring, replay sessions, and React-specific integrations.
  */
 export const initSentry = (): void => {
-	const environment = import.meta.env.MODE;
+  const environment = import.meta.env.MODE;
 
-	// Skip initialization if no DSN is provided or in test environment
-	if (!SENTRY_DSN || environment === "test") {
-		console.log(
-			"[Sentry] Skipping initialization (no DSN or test environment)",
-		);
-		return;
-	}
+  // Skip initialization if no DSN is provided or in test environment
+  if (!SENTRY_DSN || environment === 'test') {
+    console.log('[Sentry] Skipping initialization (no DSN or test environment)');
+    return;
+  }
 
-	Sentry.init({
-		dsn: SENTRY_DSN,
-		environment,
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment,
 
-		// Integrations
-		integrations: [
-			// Browser tracing for performance monitoring
-			Sentry.browserTracingIntegration({
-				// Enable automatic route tracking with TanStack Router
-				enableInp: true,
-			}),
+    // Integrations
+    integrations: [
+      // Browser tracing for performance monitoring
+      Sentry.browserTracingIntegration({
+        // Enable automatic route tracking with TanStack Router
+        enableInp: true,
+      }),
 
-			// Session replay for debugging (only in production)
-			...(environment === "production"
-				? [
-						Sentry.replayIntegration({
-							// Capture 10% of sessions for performance monitoring
-							sessionSampleRate: SAMPLE_RATE_LOW,
-							// Capture 100% of sessions with errors
-							errorSampleRate: SAMPLE_RATE_HUNDRED_PERCENT,
-							// Mask all text and images for privacy
-							maskAllText: true,
-							maskAllInputs: true,
-							blockAllMedia: true,
-						}),
-					]
-				: []),
-		],
+      // Session replay for debugging (only in production)
+      ...(environment === 'production'
+        ? [
+            Sentry.replayIntegration({
+              // Mask all text and images for privacy
+              maskAllText: true,
+              maskAllInputs: true,
+              blockAllMedia: true,
+            }),
+          ]
+        : []),
+    ],
 
-		// Performance Monitoring
-		// Lower sample rate in production to reduce bandwidth
-		tracesSampleRate:
-			environment === "production" ? SAMPLE_RATE_LOW : SAMPLE_RATE_HUNDRED_PERCENT,
+    // Performance Monitoring
+    // Lower sample rate in production to reduce bandwidth
+    tracesSampleRate: environment === 'production' ? SAMPLE_RATE_LOW : SAMPLE_RATE_HUNDRED_PERCENT,
 
-		// Session Replay
-		// Capture replays for 10% of sessions, 100% of error sessions
-		replaysSessionSampleRate: SAMPLE_RATE_LOW,
-		replaysOnErrorSampleRate: SAMPLE_RATE_HUNDRED_PERCENT,
+    // Session Replay
+    // Capture replays for 10% of sessions, 100% of error sessions
+    replaysSessionSampleRate: SAMPLE_RATE_LOW,
+    replaysOnErrorSampleRate: SAMPLE_RATE_HUNDRED_PERCENT,
 
-		// Release tracking for versioning
-		release: import.meta.env.VITE_APP_VERSION || "unknown",
+    // Release tracking for versioning
+    release: import.meta.env.VITE_APP_VERSION || 'unknown',
 
-		// Dist tracking for deployment identification
-		dist: BUILD_ID,
+    // Dist tracking for deployment identification
+    dist: BUILD_ID,
 
-		// Hook for filtering errors before sending to Sentry
-		beforeSend(event, hint) {
-			// Filter out known non-critical errors
-			const error = hint.originalException;
+    // Hook for filtering errors before sending to Sentry
+    beforeSend(event, hint) {
+      // Filter out known non-critical errors
+      const error = hint.originalException;
 
-			if (error instanceof Error) {
-				// Ignore network errors that are expected (user offline, etc.)
-				if (
-					error.message.includes("Failed to fetch") ||
-					error.message.includes("Network request failed")
-				) {
-					return null;
-				}
+      if (error instanceof Error) {
+        // Ignore network errors that are expected (user offline, etc.)
+        if (
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('Network request failed')
+        ) {
+          return null;
+        }
 
-				// Ignore chunk loading errors (usually transient)
-				if (
-					error.message.includes("Loading chunk") ||
-					error.message.includes("ChunkLoadError")
-				) {
-					return null;
-				}
-			}
+        // Ignore chunk loading errors (usually transient)
+        if (error.message.includes('Loading chunk') || error.message.includes('ChunkLoadError')) {
+          return null;
+        }
+      }
 
-			return event;
-		},
+      return event;
+    },
 
-		// Ignore specific errors from browser extensions
-		ignoreErrors: [
-			// Browser extension errors
-			"ResizeObserver loop limit exceeded",
-			"Non-Error promise rejection captured",
-			// Chrome extensions
-			"chrome-extension://",
-			"moz-extension://",
-			// Browser quirks
-			"ResizeObserver loop completed with undelivered notifications",
-		],
+    // Ignore specific errors from browser extensions
+    ignoreErrors: [
+      // Browser extension errors
+      'ResizeObserver loop limit exceeded',
+      'Non-Error promise rejection captured',
+      // Chrome extensions
+      'chrome-extension://',
+      'moz-extension://',
+      // Browser quirks
+      'ResizeObserver loop completed with undelivered notifications',
+    ],
 
-		// Denylist for URLs that shouldn't trigger error reports
-		denyUrls: [
-			// Browser extensions
-			/extensions\//i,
-			/^chrome:\/\//i,
-			/^moz-extension:\/\//i,
-			// Development tools
-			/^webpack-internal:\/\//i,
-		],
-	});
+    // Denylist for URLs that shouldn't trigger error reports
+    denyUrls: [
+      // Browser extensions
+      /extensions\//i,
+      /^chrome:\/\//i,
+      /^moz-extension:\/\//i,
+      // Development tools
+      /^webpack-internal:\/\//i,
+    ],
+  });
 
-	console.log(`[Sentry] Initialized for ${environment} environment`);
+  console.log(`[Sentry] Initialized for ${environment} environment`);
 };
 
 /**
@@ -142,23 +132,19 @@ export const initSentry = (): void => {
  * @param email - User email (optional)
  * @param username - Username (optional)
  */
-export const setSentryUser = (
-	userId: string,
-	email?: string,
-	username?: string,
-): void => {
-	Sentry.setUser({
-		id: userId,
-		email,
-		username,
-	});
+export const setSentryUser = (userId: string, email?: string, username?: string): void => {
+  Sentry.setUser({
+    id: userId,
+    email,
+    username,
+  });
 };
 
 /**
  * Clear user context (e.g., on logout)
  */
 export const clearSentryUser = (): void => {
-	Sentry.setUser(null);
+  Sentry.setUser(null);
 };
 
 /**
@@ -167,11 +153,8 @@ export const clearSentryUser = (): void => {
  * @param context - Context name
  * @param data - Context data
  */
-export const setSentryContext = (
-	context: string,
-	data: Record<string, unknown>,
-): void => {
-	Sentry.setContext(context, data);
+export const setSentryContext = (context: string, data: Record<string, unknown>): void => {
+  Sentry.setContext(context, data);
 };
 
 /**
@@ -182,16 +165,16 @@ export const setSentryContext = (
  * @param level - Severity level
  */
 export const addSentryBreadcrumb = (
-	message: string,
-	category: string = "custom",
-	level: "info" | "warning" | "error" | "debug" = "info",
+  message: string,
+  category: string = 'custom',
+  level: 'info' | 'warning' | 'error' | 'debug' = 'info',
 ): void => {
-	Sentry.addBreadcrumb({
-		message,
-		category,
-		level,
-		timestamp: Date.now() / TIMESTAMP_MILLISECONDS_DIVISOR,
-	});
+  Sentry.addBreadcrumb({
+    message,
+    category,
+    level,
+    timestamp: Date.now() / TIMESTAMP_MILLISECONDS_DIVISOR,
+  });
 };
 
 /**
@@ -200,20 +183,17 @@ export const addSentryBreadcrumb = (
  * @param error - Error to capture
  * @param context - Additional context (optional)
  */
-export const captureException = (
-	error: Error,
-	context?: Record<string, unknown>,
-): void => {
-	if (context) {
-		Sentry.withScope((scope) => {
-			Object.entries(context).forEach(([key, value]) => {
-				scope.setContext(key, value as Record<string, unknown>);
-			});
-			Sentry.captureException(error);
-		});
-	} else {
-		Sentry.captureException(error);
-	}
+export const captureException = (error: Error, context?: Record<string, unknown>): void => {
+  if (context) {
+    Sentry.withScope((scope) => {
+      Object.entries(context).forEach(([key, value]) => {
+        scope.setContext(key, value as Record<string, unknown>);
+      });
+      Sentry.captureException(error);
+    });
+  } else {
+    Sentry.captureException(error);
+  }
 };
 
 /**
@@ -223,10 +203,10 @@ export const captureException = (
  * @param level - Severity level
  */
 export const captureMessage = (
-	message: string,
-	level: "info" | "warning" | "error" | "debug" = "info",
+  message: string,
+  level: 'info' | 'warning' | 'error' | 'debug' = 'info',
 ): void => {
-	Sentry.captureMessage(message, level);
+  Sentry.captureMessage(message, level);
 };
 
 // Re-export Sentry for advanced usage

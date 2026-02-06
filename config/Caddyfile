@@ -152,9 +152,9 @@ localhost {
 		reverse_proxy localhost:8000
 	}
 
-	# Notifications API
+	# Notifications API (Go backend; includes SSE stream)
 	handle /api/v1/notifications/* {
-		reverse_proxy localhost:8000
+		reverse_proxy localhost:8080
 	}
 
 	# Authentication API
@@ -209,8 +209,11 @@ localhost {
 	# WebSocket endpoint (upgrade headers for ws)
 	handle /api/v1/ws {
 		reverse_proxy localhost:8080 {
-			header_up Connection {>Connection}
-			header_up Upgrade {>Upgrade}
+			transport http {
+				versions 1.1
+			}
+			header_up Connection "Upgrade"
+			header_up Upgrade "websocket"
 		}
 	}
 

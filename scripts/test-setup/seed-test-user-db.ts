@@ -1,9 +1,20 @@
+// @ts-expect-error - pg types not always available
 import { Client } from 'pg';
-import * as crypto from 'crypto';
+import { createHash } from 'crypto';
 
-async function seedTestUser() {
+interface QueryResult {
+  rows: Array<{ id: string; email: string }>;
+}
+
+async function seedTestUser(): Promise<void> {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    console.warn('⚠️ DATABASE_URL not set - skipping database seeding');
+    return;
+  }
+
   const client = new Client({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: databaseUrl,
   });
 
   try {
@@ -13,21 +24,21 @@ async function seedTestUser() {
     const testEmail = 'kooshapari@kooshapari.com';
     const testPassword = 'testAdmin123';
 
-    const hashedPassword = crypto.createHash('sha256').update(testPassword).digest('hex');
+    const hashedPassword = createHash('sha256').update(testPassword).digest('hex');
 
-    const result = await client.query(
+    const result = (await client.query(
       `INSERT INTO users (id, email, name, password_hash, role, created_at)
        VALUES ($1, $2, $3, $4, $5, NOW())
        ON CONFLICT (email) DO UPDATE SET password_hash = $4
        RETURNING id, email`,
       [
-        'test-admin-' + Date.now(),
+        `test-admin-${Date.now()}`,
         testEmail,
         'Test Admin',
         hashedPassword,
         'admin',
       ],
-    );
+    )) as QueryResult;
 
     console.log(`✅ Database test user created/updated:`, result.rows[0]);
   } catch (error) {
@@ -40,5 +51,6 @@ async function seedTestUser() {
 
 seedTestUser().catch((error) => {
   console.error('Fatal error:', error);
+  // eslint-disable-next-line no-process-exit
   process.exit(1);
 });

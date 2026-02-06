@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Reusable button component with TypeScript types, variants, sizes, and loading states. Exports ButtonProps interface.
-

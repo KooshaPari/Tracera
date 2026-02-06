@@ -33,6 +33,7 @@ uvicorn tracertm.api.main:app --reload
 ```
 
 Verify it's running:
+
 ```bash
 curl http://localhost:4000/openapi.json | head
 ```
@@ -48,6 +49,7 @@ bun run openapi
 ```
 
 Expected output:
+
 ```
 🚀 OpenAPI Spec Generator
 📡 Fetching OpenAPI spec from http://localhost:4000/openapi.json...
@@ -129,8 +131,8 @@ Creates a new project.
 **Request Body:**
 \`\`\`json
 {
-  "name": "My Project",
-  "description": "Project description"
+"name": "My Project",
+"description": "Project description"
 }
 \`\`\`
 
@@ -182,22 +184,27 @@ bun run lint
 While the docs site is being fixed, use these alternatives:
 
 1. **Swagger UI** (Interactive)
+
    ```
    http://localhost:4000/docs
    ```
+
    - Try API endpoints
    - See request/response schemas
    - Execute requests directly
 
 2. **ReDoc** (Read-only)
+
    ```
    http://localhost:4000/redoc
    ```
+
    - Clean, organized view
    - Searchable
    - Download OpenAPI spec
 
 3. **Raw OpenAPI**
+
    ```bash
    # JSON
    curl http://localhost:4000/openapi.json
@@ -213,6 +220,7 @@ While the docs site is being fixed, use these alternatives:
 **Error**: `Failed to connect to backend at http://localhost:4000`
 
 **Solution**:
+
 ```bash
 # Start the backend
 uvicorn tracertm.api.main:app --reload
@@ -226,6 +234,7 @@ curl http://localhost:4000/openapi.json
 **Problem**: Generated YAML is stale
 
 **Solution**:
+
 ```bash
 # Regenerate manually
 bun run openapi
@@ -243,6 +252,7 @@ bun run build
 **Workaround**: Use manual API documentation until resolved
 
 **Permanent Fix**: (In progress)
+
 ```bash
 cd frontend/apps/docs
 rm -rf node_modules
@@ -252,16 +262,18 @@ bun install
 ## Code Sample Examples
 
 ### TypeScript (fetch)
+
 ```typescript
 const response = await fetch('http://localhost:4000/api/v1/auth/me', {
   headers: {
-    'Authorization': `Bearer ${accessToken}`
-  }
+    Authorization: `Bearer ${accessToken}`,
+  },
 });
 const user = await response.json();
 ```
 
 ### Python (requests)
+
 ```python
 import requests
 
@@ -273,12 +285,14 @@ user = response.json()
 ```
 
 ### curl
+
 ```bash
 curl -H "Authorization: Bearer $ACCESS_TOKEN" \
   http://localhost:4000/api/v1/auth/me
 ```
 
 ### Go
+
 ```go
 req, _ := http.NewRequest("GET", "http://localhost:4000/api/v1/auth/me", nil)
 req.Header.Set("Authorization", "Bearer "+accessToken)
@@ -358,6 +372,7 @@ jobs:
 ## Support
 
 For issues or questions:
+
 1. Check `PHASE_4_OPENAPI_INTEGRATION_SUMMARY.md`
 2. Review troubleshooting section above
 3. Inspect generation script logs

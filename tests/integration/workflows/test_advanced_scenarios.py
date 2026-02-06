@@ -199,9 +199,9 @@ class TestComplexDependencyWorkflows:
         depth = 0
 
         while depth < 9:
-            outgoing = sync_db_session.execute(
-                select(Link).where(Link.source_item_id == current_item.id)
-            ).scalars().all()
+            outgoing = (
+                sync_db_session.execute(select(Link).where(Link.source_item_id == current_item.id)).scalars().all()
+            )
             if outgoing:
                 current_item = sync_db_session.get(Item, outgoing[0].target_item_id)
                 assert current_item is not None
@@ -261,9 +261,7 @@ class TestComplexDependencyWorkflows:
         assert len(all_links) == 4
 
         # Verify node D has 2 incoming
-        d_incoming = sync_db_session.execute(
-            select(Link).where(Link.target_item_id == items["D"].id)
-        ).scalars().all()
+        d_incoming = sync_db_session.execute(select(Link).where(Link.target_item_id == items["D"].id)).scalars().all()
         assert len(d_incoming) == 2
 
 
@@ -494,9 +492,7 @@ class TestDataMigrationAndTransformation:
         sync_db_session.commit()
 
         # Verify import results
-        imported_items = sync_db_session.execute(
-            select(Item).where(Item.project_id == str(project.id))
-        ).scalars().all()
+        imported_items = sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
         assert len(imported_items) == valid_count
         assert valid_count == 24  # 30 - 6 invalid
         assert invalid_count == 6
@@ -552,9 +548,7 @@ class TestDataMigrationAndTransformation:
         sync_db_session.commit()
 
         # Verify conversion
-        imported_items = sync_db_session.execute(
-            select(Item).where(Item.project_id == str(project.id))
-        ).scalars().all()
+        imported_items = sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
         assert len(imported_items) == 2
 
         item1 = sync_db_session.get(Item, "LEGACY-001")
@@ -599,9 +593,7 @@ class TestDataMigrationAndTransformation:
         sync_db_session.commit()
 
         # Verify all reconciled
-        all_items = sync_db_session.execute(
-            select(Item).where(Item.project_id == str(project.id))
-        ).scalars().all()
+        all_items = sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
         reconciled_count = sum(1 for i in all_items if i.item_metadata.get("reconciled", False))
         assert reconciled_count == 5
 
@@ -659,25 +651,21 @@ class TestExportImportCycles:
         sync_db_session.commit()
 
         # Export state
-        exported_items = sync_db_session.execute(
-            select(Item).where(Item.project_id == str(project.id))
-        ).scalars().all()
+        exported_items = sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
         exported_count = len(exported_items)
 
-        exported_links = sync_db_session.execute(
-            select(Link).where(Link.project_id == str(project.id))
-        ).scalars().all()
+        exported_links = sync_db_session.execute(select(Link).where(Link.project_id == str(project.id))).scalars().all()
         exported_links_count = len(exported_links)
 
         # Reimport (verify counts)
-        reimported_items = sync_db_session.execute(
-            select(Item).where(Item.project_id == str(project.id))
-        ).scalars().all()
+        reimported_items = (
+            sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
+        )
         assert len(reimported_items) == exported_count
 
-        reimported_links = sync_db_session.execute(
-            select(Link).where(Link.project_id == str(project.id))
-        ).scalars().all()
+        reimported_links = (
+            sync_db_session.execute(select(Link).where(Link.project_id == str(project.id))).scalars().all()
+        )
         assert len(reimported_links) == exported_links_count
 
     def test_metadata_preservation_through_export(self, sync_db_session: Session):
@@ -760,9 +748,7 @@ class TestExportImportCycles:
         sync_db_session.commit()
 
         # Verify export
-        exported_links = sync_db_session.execute(
-            select(Link).where(Link.project_id == str(project.id))
-        ).scalars().all()
+        exported_links = sync_db_session.execute(select(Link).where(Link.project_id == str(project.id))).scalars().all()
         assert len(exported_links) == 2
 
         # Verify link types
@@ -819,9 +805,9 @@ class TestErrorRecoveryAndResilience:
             sync_db_session.rollback()
 
         # Verify rollback
-        items_after_failed_import = sync_db_session.execute(
-            select(Item).where(Item.project_id == str(project.id))
-        ).scalars().all()
+        items_after_failed_import = (
+            sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
+        )
         assert len(items_after_failed_import) == 0
 
         # Retry with corrected logic (skip problematic item)
@@ -841,9 +827,7 @@ class TestErrorRecoveryAndResilience:
         sync_db_session.commit()
 
         # Verify successful retry
-        final_items = sync_db_session.execute(
-            select(Item).where(Item.project_id == str(project.id))
-        ).scalars().all()
+        final_items = sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
         assert len(final_items) == items_to_import - 1
 
     def test_handling_corrupted_metadata(self, sync_db_session: Session):

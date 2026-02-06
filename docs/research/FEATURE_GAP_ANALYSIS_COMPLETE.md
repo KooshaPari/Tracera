@@ -208,7 +208,7 @@ This document provides a comprehensive walkthrough of features and gaps across a
 
 #### From `src/tracertm/tui/`:
 - ✅ `tui/apps/dashboard.py` - Dashboard app
-- ✅ `tui/apps/dashboard_v2.py` - Enhanced dashboard
+- ✅ `tui/apps/dashboard_compat.py` - Enhanced dashboard
 - ✅ `tui/apps/graph.py` - Graph visualization app
 - ✅ `tui/apps/browser.py` - Item browser app
 - ✅ `tui/widgets/view_switcher.py` - View switcher widget

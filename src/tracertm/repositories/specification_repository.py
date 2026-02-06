@@ -24,7 +24,7 @@ class ADRRepository:
         unique_part = str(uuid4())[:8].upper()
         return f"ADR-{timestamp}-{unique_part}"
 
-    async def create(
+    async def create(  # noqa: PLR0913
         self,
         project_id: str,
         title: str,
@@ -245,7 +245,7 @@ class ContractRepository:
         unique_part = str(uuid4())[:8].upper()
         return f"CTR-{timestamp}-{unique_part}"
 
-    async def create(
+    async def create(  # noqa: PLR0913
         self,
         project_id: str,
         item_id: str,
@@ -450,7 +450,7 @@ class FeatureRepository:
         unique_part = str(uuid4())[:8].upper()
         return f"FEAT-{timestamp}-{unique_part}"
 
-    async def create(
+    async def create(  # noqa: PLR0913
         self,
         project_id: str,
         name: str,
@@ -654,7 +654,7 @@ class ScenarioRepository:
         unique_part = str(uuid4())[:8].upper()
         return f"SC-{timestamp}-{unique_part}"
 
-    async def create(
+    async def create(  # noqa: PLR0913
         self,
         feature_id: str,
         title: str,

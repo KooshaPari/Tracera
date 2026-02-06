@@ -306,7 +306,7 @@ class ItemRepository:
 ---
 
 #### 4. TUI Dashboard v2 App (HIGH)
-**File**: `src/tracertm/tui/apps/dashboard_v2.py`
+**File**: `src/tracertm/tui/apps/dashboard_compat.py`
 **Statements**: 190
 **Purpose**: Terminal UI dashboard application
 

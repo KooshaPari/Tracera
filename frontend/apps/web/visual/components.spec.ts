@@ -3,12 +3,12 @@
  * Tests visual consistency of buttons, inputs, cards, badges, and other UI primitives
  */
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from '@playwright/test';
 
-test.describe("Button Component Visual Tests", () => {
-	test.beforeEach(async ({ page }) => {
-		// Create a test page with all button variants
-		await page.setContent(`
+test.describe('Button Component Visual Tests', () => {
+  test.beforeEach(async ({ page }) => {
+    // Create a test page with all button variants
+    await page.setContent(`
       <!DOCTYPE html>
       <html>
         <head>
@@ -22,14 +22,14 @@ test.describe("Button Component Visual Tests", () => {
         </body>
       </html>
     `);
-	});
+  });
 
-	test("button variants in light theme", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+  test('button variants in light theme', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="space-y-8">
           <section class="space-y-4">
             <h2 class="text-2xl font-bold">Button Variants</h2>
@@ -96,23 +96,20 @@ test.describe("Button Component Visual Tests", () => {
           </section>
         </div>
       `;
-		});
+    });
 
-		// Take screenshot of all button variants
-		await expect(page.locator("#root")).toHaveScreenshot(
-			"buttons-variants.png",
-			{
-				maxDiffPixels: 100,
-			},
-		);
-	});
+    // Take screenshot of all button variants
+    await expect(page.locator('#root')).toHaveScreenshot('buttons-variants.png', {
+      maxDiffPixels: 100,
+    });
+  });
 
-	test("button hover states", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+  test('button hover states', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="space-y-4">
           <button id="default-btn" class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
             Default Hover
@@ -122,28 +119,24 @@ test.describe("Button Component Visual Tests", () => {
           </button>
         </div>
       `;
-		});
+    });
 
-		// Hover over button
-		await page.locator("#default-btn").hover();
-		await expect(page.locator("#default-btn")).toHaveScreenshot(
-			"button-default-hover.png",
-		);
+    // Hover over button
+    await page.locator('#default-btn').hover();
+    await expect(page.locator('#default-btn')).toHaveScreenshot('button-default-hover.png');
 
-		await page.locator("#outline-btn").hover();
-		await expect(page.locator("#outline-btn")).toHaveScreenshot(
-			"button-outline-hover.png",
-		);
-	});
+    await page.locator('#outline-btn').hover();
+    await expect(page.locator('#outline-btn')).toHaveScreenshot('button-outline-hover.png');
+  });
 });
 
-test.describe("Input Component Visual Tests", () => {
-	test("input variants and states", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+test.describe('Input Component Visual Tests', () => {
+  test('input variants and states', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="p-8 space-y-6 max-w-md">
           <section class="space-y-4">
             <h2 class="text-2xl font-bold">Input States</h2>
@@ -176,24 +169,21 @@ test.describe("Input Component Visual Tests", () => {
           </section>
         </div>
       `;
-		});
+    });
 
-		await expect(page.locator("#root")).toHaveScreenshot(
-			"inputs-variants.png",
-			{
-				maxDiffPixels: 100,
-			},
-		);
-	});
+    await expect(page.locator('#root')).toHaveScreenshot('inputs-variants.png', {
+      maxDiffPixels: 100,
+    });
+  });
 });
 
-test.describe("Card Component Visual Tests", () => {
-	test("card layouts", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+test.describe('Card Component Visual Tests', () => {
+  test('card layouts', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="p-8 space-y-6">
           <section class="space-y-4">
             <h2 class="text-2xl font-bold">Card Variants</h2>
@@ -250,21 +240,21 @@ test.describe("Card Component Visual Tests", () => {
           </section>
         </div>
       `;
-		});
+    });
 
-		await expect(page.locator("#root")).toHaveScreenshot("cards-variants.png", {
-			maxDiffPixels: 100,
-		});
-	});
+    await expect(page.locator('#root')).toHaveScreenshot('cards-variants.png', {
+      maxDiffPixels: 100,
+    });
+  });
 });
 
-test.describe("Badge Component Visual Tests", () => {
-	test("badge variants", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+test.describe('Badge Component Visual Tests', () => {
+  test('badge variants', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="p-8 space-y-6">
           <section class="space-y-4">
             <h2 class="text-2xl font-bold">Badge Variants</h2>
@@ -312,24 +302,21 @@ test.describe("Badge Component Visual Tests", () => {
           </section>
         </div>
       `;
-		});
+    });
 
-		await expect(page.locator("#root")).toHaveScreenshot(
-			"badges-variants.png",
-			{
-				maxDiffPixels: 100,
-			},
-		);
-	});
+    await expect(page.locator('#root')).toHaveScreenshot('badges-variants.png', {
+      maxDiffPixels: 100,
+    });
+  });
 });
 
-test.describe("Form Components Visual Tests", () => {
-	test("complete form layout", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+test.describe('Form Components Visual Tests', () => {
+  test('complete form layout', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="p-8 max-w-2xl mx-auto">
           <div class="rounded-xl border bg-card text-card-foreground shadow">
             <div class="flex flex-col space-y-1.5 p-6">
@@ -387,21 +374,21 @@ test.describe("Form Components Visual Tests", () => {
           </div>
         </div>
       `;
-		});
+    });
 
-		await expect(page.locator("#root")).toHaveScreenshot("form-complete.png", {
-			maxDiffPixels: 100,
-		});
-	});
+    await expect(page.locator('#root')).toHaveScreenshot('form-complete.png', {
+      maxDiffPixels: 100,
+    });
+  });
 });
 
-test.describe("Loading and Empty States", () => {
-	test("loading states", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+test.describe('Loading and Empty States', () => {
+  test('loading states', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="p-8 space-y-8">
           <section class="space-y-4">
             <h2 class="text-2xl font-bold">Loading Spinners</h2>
@@ -443,24 +430,24 @@ test.describe("Loading and Empty States", () => {
           </section>
         </div>
       `;
-		});
+    });
 
-		// Disable animations for consistent screenshots
-		await page.addStyleTag({
-			content: "*, *::before, *::after { animation: none !important; }",
-		});
+    // Disable animations for consistent screenshots
+    await page.addStyleTag({
+      content: '*, *::before, *::after { animation: none !important; }',
+    });
 
-		await expect(page.locator("#root")).toHaveScreenshot("loading-states.png", {
-			maxDiffPixels: 100,
-		});
-	});
+    await expect(page.locator('#root')).toHaveScreenshot('loading-states.png', {
+      maxDiffPixels: 100,
+    });
+  });
 
-	test("empty states", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+  test('empty states', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="p-8">
           <div class="rounded-xl border bg-card p-12">
             <div class="flex flex-col items-center justify-center text-center space-y-4">
@@ -482,21 +469,21 @@ test.describe("Loading and Empty States", () => {
           </div>
         </div>
       `;
-		});
+    });
 
-		await expect(page.locator("#root")).toHaveScreenshot("empty-state.png", {
-			maxDiffPixels: 100,
-		});
-	});
+    await expect(page.locator('#root')).toHaveScreenshot('empty-state.png', {
+      maxDiffPixels: 100,
+    });
+  });
 });
 
-test.describe("Alert Component Visual Tests", () => {
-	test("alert variants", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+test.describe('Alert Component Visual Tests', () => {
+  test('alert variants', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="p-8 space-y-6 bg-background max-w-3xl">
           <section class="space-y-4">
             <h2 class="text-2xl font-bold">Alert Variants</h2>
@@ -591,24 +578,21 @@ test.describe("Alert Component Visual Tests", () => {
           </section>
         </div>
       `;
-		});
+    });
 
-		await expect(page.locator("#root")).toHaveScreenshot(
-			"alerts-variants.png",
-			{
-				maxDiffPixels: 100,
-			},
-		);
-	});
+    await expect(page.locator('#root')).toHaveScreenshot('alerts-variants.png', {
+      maxDiffPixels: 100,
+    });
+  });
 });
 
-test.describe("Select and Dropdown Visual Tests", () => {
-	test("select and dropdown states", async ({ page }) => {
-		await page.goto("http://localhost:5173");
+test.describe('Select and Dropdown Visual Tests', () => {
+  test('select and dropdown states', async ({ page }) => {
+    await page.goto('http://localhost:5173');
 
-		await page.evaluate(() => {
-			const root = document.querySelector("#root")!;
-			root.innerHTML = `
+    await page.evaluate(() => {
+      const root = document.querySelector('#root')!;
+      root.innerHTML = `
         <div class="p-8 space-y-6 bg-background max-w-2xl">
           <section class="space-y-4">
             <h2 class="text-2xl font-bold">Select Components</h2>
@@ -680,13 +664,10 @@ test.describe("Select and Dropdown Visual Tests", () => {
           </section>
         </div>
       `;
-		});
+    });
 
-		await expect(page.locator("#root")).toHaveScreenshot(
-			"select-checkbox-radio.png",
-			{
-				maxDiffPixels: 100,
-			},
-		);
-	});
+    await expect(page.locator('#root')).toHaveScreenshot('select-checkbox-radio.png', {
+      maxDiffPixels: 100,
+    });
+  });
 });

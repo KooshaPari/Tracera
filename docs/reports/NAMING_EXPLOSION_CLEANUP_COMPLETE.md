@@ -28,11 +28,11 @@ Removed duplicate script files with part# suffixes:
 
 | Original Name | New Name | Rationale |
 |--------------|----------|-----------|
-| `test_phase4_framework.py` | `test_integration_framework.py` | Describes WHAT it tests (integration framework) |
+| `test_phase_four_framework.py` | `test_integration_framework.py` | Describes WHAT it tests (integration framework) |
 | `test_phase7_service_algorithms.py` | `test_algorithm_internals.py` | Focuses on algorithm implementation details |
 | `test_phase6_api_endpoints.py` | `test_api_endpoint_operations.py` | Tests endpoint operations |
 | `test_phase8_comprehensive_coverage.py` | `test_api_response_workflows.py` | Tests API response workflows |
-| `test_phase5_advanced_coverage.py` | `test_api_validation_patterns.py` | Tests validation patterns |
+| `test_phase_five_advanced_coverage.py` | `test_api_validation_patterns.py` | Tests validation patterns |
 | `test_phase15a_core_edge_cases.py` | `test_core_edge_cases.py` | Tests core edge cases |
 | `test_phase6_complex_services.py` | `test_graph_algorithms.py` | Tests graph algorithm implementations |
 | `test_phase9_final_coverage.py` | `test_language_primitives.py` | Tests language primitives |

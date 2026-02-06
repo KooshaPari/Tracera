@@ -88,11 +88,11 @@ generate_grpc_code() {
     cd "$PROJECT_ROOT"
   fi
 
-  protoc --go_out=backend/pkg/proto \
+  protoc -Iproto --go_out=backend/pkg/proto \
     --go_opt=paths=source_relative \
     --go-grpc_out=backend/pkg/proto \
     --go-grpc_opt=paths=source_relative \
-    proto/tracertm/v1/tracertm.proto
+    tracertm/v1/tracertm.proto
 
   if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Go code generated successfully${NC}"
@@ -121,7 +121,7 @@ PY
   env -u PROTOC_INCLUDE python -m grpc_tools.protoc -Iproto -I"$GRPC_TOOLS_PROTO_PATH" \
     --python_out=src/tracertm/proto \
     --grpc_python_out=src/tracertm/proto \
-    proto/tracertm/v1/tracertm.proto
+    tracertm/v1/tracertm.proto
 
   if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Python code generated successfully${NC}"
@@ -131,14 +131,15 @@ PY
   fi
 
   # Create __init__.py if it doesn't exist
+  mkdir -p src/tracertm/proto/tracertm/v1
   if [ ! -f src/tracertm/proto/__init__.py ]; then
     cat > src/tracertm/proto/__init__.py << 'EOF'
 """Generated protobuf and gRPC code for TraceRTM services."""
 
 # Import generated modules for easier access
 try:
-    from .tracertm_pb2 import *
-    from .tracertm_pb2_grpc import *
+    from .tracertm.v1.tracertm_pb2 import *
+    from .tracertm.v1.tracertm_pb2_grpc import *
 except ImportError:
     # Generated files don't exist yet
     pass
@@ -152,24 +153,25 @@ EOF
 
     # Check if protoc-gen-grpc-web is installed
     if ! command -v protoc-gen-grpc-web &> /dev/null; then
-      echo -e "${YELLOW}Installing protoc-gen-grpc-web...${NC}"
-      echo "Please install manually:"
+      echo -e "${RED}❌ Error: protoc-gen-grpc-web is required for TypeScript generation${NC}"
+      echo "Install manually:"
       echo "  macOS: brew install protoc-gen-grpc-web"
       echo "  Linux: Download from https://github.com/grpc/grpc-web/releases"
-      echo -e "${YELLOW}Skipping TypeScript generation${NC}"
+      exit 1
+    fi
+
+    mkdir -p frontend/apps/web/src/api/grpc
+
+    protoc -Iproto \
+      --js_out=import_style=commonjs:frontend/apps/web/src/api/grpc \
+      --grpc-web_out=import_style=typescript,mode=grpcwebtext:frontend/apps/web/src/api/grpc \
+      tracertm/v1/tracertm.proto
+
+    if [ $? -eq 0 ]; then
+      echo -e "${GREEN}✅ TypeScript code generated successfully${NC}"
     else
-      mkdir -p frontend/apps/web/src/api/grpc
-
-      protoc -I. \
-        --js_out=import_style=commonjs:frontend/apps/web/src/api/grpc \
-        --grpc-web_out=import_style=typescript,mode=grpcwebtext:frontend/apps/web/src/api/grpc \
-        proto/tracertm/v1/tracertm.proto
-
-      if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ TypeScript code generated successfully${NC}"
-      else
-        echo -e "${RED}❌ Failed to generate TypeScript code${NC}"
-      fi
+      echo -e "${RED}❌ Failed to generate TypeScript code${NC}"
+      exit 1
     fi
   fi
 
@@ -178,11 +180,11 @@ EOF
   echo ""
   echo "Generated files:"
   echo "  ${GREEN}Go (server):${NC}"
-  echo "    - backend/pkg/proto/tracertm.pb.go"
-  echo "    - backend/pkg/proto/tracertm_grpc.pb.go"
+  echo "    - backend/pkg/proto/tracertm/v1/tracertm.pb.go"
+  echo "    - backend/pkg/proto/tracertm/v1/tracertm_grpc.pb.go"
   echo "  ${GREEN}Python (client):${NC}"
-  echo "    - src/tracertm/proto/tracertm_pb2.py"
-  echo "    - src/tracertm/proto/tracertm_pb2_grpc.py"
+  echo "    - src/tracertm/proto/tracertm/v1/tracertm_pb2.py"
+  echo "    - src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py"
 
   if [ "$GENERATE_TS" = true ] && command -v protoc-gen-grpc-web &> /dev/null; then
     echo "  ${GREEN}TypeScript (client):${NC}"

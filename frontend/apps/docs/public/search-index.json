@@ -29,25 +29,19 @@
   "index": {
     "keys": [
       {
-        "path": [
-          "title"
-        ],
+        "path": ["title"],
         "id": "title",
         "weight": 10,
         "src": "title"
       },
       {
-        "path": [
-          "description"
-        ],
+        "path": ["description"],
         "id": "description",
         "weight": 5,
         "src": "description"
       },
       {
-        "path": [
-          "headings"
-        ],
+        "path": ["headings"],
         "id": "headings",
         "weight": 3,
         "src": "headings"

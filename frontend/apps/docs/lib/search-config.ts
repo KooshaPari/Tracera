@@ -38,17 +38,17 @@ export interface SearchIndexConfig {
 
 export const searchConfig: SearchIndexConfig = {
   weights: {
-    title: 10,        // Titles are most important
-    description: 5,   // Descriptions are very relevant
-    heading: 3,       // Headings are moderately important
-    content: 1,       // Content is baseline relevance
+    title: 10, // Titles are most important
+    description: 5, // Descriptions are very relevant
+    heading: 3, // Headings are moderately important
+    content: 1, // Content is baseline relevance
   },
 
   priorityPages: [
-    '/docs',                          // Documentation home
-    '/docs/getting-started',          // Getting started
-    '/docs/getting-started/quick-start',  // Quick start guide
-    '/docs/guides',                   // Guides section
+    '/docs', // Documentation home
+    '/docs/getting-started', // Getting started
+    '/docs/getting-started/quick-start', // Quick start guide
+    '/docs/guides', // Guides section
   ],
 
   minQueryLength: 2,
@@ -62,7 +62,7 @@ export const searchConfig: SearchIndexConfig = {
 export function formatSearchPreview(
   content: string,
   query: string,
-  maxLength: number = 150
+  maxLength: number = 150,
 ): string {
   const lowerContent = content.toLowerCase();
   const lowerQuery = query.toLowerCase();

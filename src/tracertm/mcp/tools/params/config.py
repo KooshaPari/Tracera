@@ -19,7 +19,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 from tracertm.config.manager import ConfigManager
 
@@ -57,13 +57,14 @@ async def _config_manage_impl(
     config = ConfigManager()
     project_id = payload.get("project_id")
 
-    if action == "init":
+    def _action_init() -> dict[str, Any]:
         database_url = payload.get("database_url")
         if not database_url:
             raise ToolError("database_url is required for config init.")
         result = config.init(database_url=database_url).model_dump()
         return _wrap(result, ctx, action)
-    if action == "get":
+
+    def _action_get() -> dict[str, Any]:
         key = payload.get("key")
         if not key:
             raise ToolError("key is required for config get.")
@@ -75,21 +76,34 @@ async def _config_manage_impl(
                 return _wrap({"key": key, "value": stored.get(key)}, ctx, action)
         value = config.get(key, project_id=project_id)
         return _wrap({"key": key, "value": value}, ctx, action)
-    if action == "set":
+
+    def _action_set() -> dict[str, Any]:
         key = payload.get("key")
         if key is None:
             raise ToolError("key is required for config set.")
         value = payload.get("value")
         config.set(key, value, project_id=project_id)
         return _wrap({"key": key, "value": value}, ctx, action)
-    if action == "unset":
+
+    def _action_unset() -> dict[str, Any]:
         key = payload.get("key")
         if not key:
             raise ToolError("key is required for config unset.")
         config.set(key, None, project_id=project_id)
         return _wrap({"key": key}, ctx, action)
-    if action == "list":
+
+    def _action_list() -> dict[str, Any]:
         result = config.get_config(project_id=project_id)
         return _wrap(result, ctx, action)
 
-    raise ToolError(f"Unknown config action: {action}")
+    handlers = {
+        "init": _action_init,
+        "get": _action_get,
+        "set": _action_set,
+        "unset": _action_unset,
+        "list": _action_list,
+    }
+    handler = handlers.get(action)
+    if handler is None:
+        raise ToolError(f"Unknown config action: {action}")
+    return handler()

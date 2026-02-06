@@ -165,16 +165,10 @@ pytest tests/test_models.py::test_name -vv
 
 ## Type Checking
 
-### MyPy
+### Ty (strict)
 
 ```bash
-uv run mypy src/
-```
-
-### basedpyright (Ultra-strict)
-
-```bash
-uv run basedpyright src/
+uv run ty check src/ --error-on-warning
 ```
 
 ### Fix Type Errors
@@ -390,4 +384,3 @@ git push origin v1.0.0
 4. Create GitHub issue
 
 Happy coding! 🚀
-

@@ -4,12 +4,8 @@
 
 set -e
 REDIS_EXPORTER_PORT="${REDIS_EXPORTER_PORT:-9121}"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-if command -v lsof >/dev/null 2>&1; then
-  if lsof -Pi :"$REDIS_EXPORTER_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "redis_exporter already listening on port $REDIS_EXPORTER_PORT; holding process for process-compose."
-    exec sh -c 'while true; do sleep 3600; done'
-  fi
-fi
+bash "$ROOT/scripts/shell/guard-port.sh" "redis_exporter" "$REDIS_EXPORTER_PORT" "redis_exporter"
 
 exec redis_exporter --redis.addr=redis://localhost:6379

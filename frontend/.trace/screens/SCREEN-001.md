@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Main application layout with sidebar navigation, header with user menu, and content area. Responsive with mobile hamburger menu.
-

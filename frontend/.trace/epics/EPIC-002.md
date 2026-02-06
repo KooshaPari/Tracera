@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Complete authentication user interface with login, registration, password reset flows. Includes form validation, error handling, loading states, and integration with auth API.
-

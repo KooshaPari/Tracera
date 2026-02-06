@@ -74,7 +74,7 @@ def textual_app_context():
 ---
 
 ### 2. Fixed NoActiveAppError in Dashboard Tests
-**File:** `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/tui/apps/test_dashboard_v2.py`
+**File:** `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/tui/apps/test_dashboard_compat.py`
 
 **Issue:** Test was calling `compose()` directly without proper app context, causing IndexError.
 
@@ -84,10 +84,10 @@ def textual_app_context():
 @pytest.mark.asyncio
 async def test_compose_creates_widgets(self):
     """Test compose method creates all required widgets."""
-    from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
+    from tracertm.tui.apps.dashboard_compat import EnhancedDashboardApp
 
-    with patch("tracertm.tui.apps.dashboard_v2.ConfigManager"):
-        with patch("tracertm.tui.apps.dashboard_v2.StorageAdapter"):
+    with patch("tracertm.tui.apps.dashboard_compat.ConfigManager"):
+        with patch("tracertm.tui.apps.dashboard_compat.StorageAdapter"):
             app = EnhancedDashboardApp()
 
             # Run app in test mode to properly initialize compose stack
@@ -176,7 +176,7 @@ tests/unit/tui/ - 148 tests collected
 | Module | Tests | Status |
 |--------|-------|--------|
 | `test_storage_adapter.py` | 28 | ✅ All passing |
-| `test_dashboard_v2.py` | 20 | ✅ All passing |
+| `test_dashboard_compat.py` | 20 | ✅ All passing |
 | `test_browser_app.py` | 4 | ✅ All passing |
 | `test_dashboard_app.py` | 4 | ✅ All passing |
 | `test_graph_app.py` | 4 | ✅ All passing |
@@ -298,7 +298,7 @@ The TUI test suite now has **97.9% pass rate** with comprehensive coverage of:
   - Added `textual_app_context` fixture with async context manager
 
 ### Test Files Fixed
-- `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/tui/apps/test_dashboard_v2.py`
+- `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/tui/apps/test_dashboard_compat.py`
   - Fixed `test_compose_creates_widgets` to use app.run_test()
   
 - `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/tui/widgets/test_conflict_panel.py`

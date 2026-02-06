@@ -61,7 +61,9 @@ class VersionBlock(Base, TimestampMixin):
 
     # Block content
     version_number: Mapped[int] = mapped_column(Integer, nullable=False)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+    )
     author_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     change_type: Mapped[str] = mapped_column(String(50), nullable=False)  # 'create', 'update', 'delete', 'restore'
     change_summary: Mapped[str | None] = mapped_column(Text, nullable=True)

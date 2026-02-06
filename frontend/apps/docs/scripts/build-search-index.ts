@@ -12,10 +12,11 @@
  * Run: bun run scripts/build-search-index.ts
  */
 
+import Fuse, { type IFuseOptions } from 'fuse.js';
 import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+
 import { searchConfig } from '../lib/search-config';
-import Fuse from 'fuse.js';
 
 interface SearchDocument {
   id: string;
@@ -40,11 +41,11 @@ interface FrontMatter {
  * Higher priority pages appear first in search results
  */
 function getPagePriority(url: string): number {
-  const priorityIndex = searchConfig.priorityPages.findIndex((pattern) =>
-    url.includes(pattern)
-  );
+  const priorityIndex = searchConfig.priorityPages.findIndex((pattern) => url.includes(pattern));
 
-  if (priorityIndex === -1) {return 0;}
+  if (priorityIndex === -1) {
+    return 0;
+  }
 
   // Higher priority = lower index in priorityPages array
   return searchConfig.priorityPages.length - priorityIndex;
@@ -55,7 +56,9 @@ function getPagePriority(url: string): number {
  * Removes code blocks, frontmatter, and formatting
  */
 function extractContent(rawContent: string): string {
-  if (!rawContent) {return '';}
+  if (!rawContent) {
+    return '';
+  }
 
   return (
     rawContent
@@ -79,7 +82,9 @@ function extractContent(rawContent: string): string {
  * Extract headings from content
  */
 function extractHeadings(rawContent: string): string[] {
-  if (!rawContent) {return [];}
+  if (!rawContent) {
+    return [];
+  }
 
   const headings: string[] = [];
   const headingRegex = /^#{1,6}\s+(.+)$/gm;
@@ -97,17 +102,23 @@ function extractHeadings(rawContent: string): string[] {
  */
 function parseFrontMatter(content: string): FrontMatter {
   const frontMatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
-  if (!frontMatterMatch) {return {};}
+  if (!frontMatterMatch) {
+    return {};
+  }
 
-  const frontMatterText = frontMatterMatch[1];
+  const frontMatterText = frontMatterMatch[1] ?? '';
   const frontMatter: FrontMatter = {};
 
   // Simple YAML parsing for common fields
   const titleMatch = frontMatterText.match(/title:\s*['"]?([^'":\n]+)['"]?/);
-  if (titleMatch) {frontMatter.title = titleMatch[1].trim();}
+  if (titleMatch) {
+    frontMatter.title = titleMatch[1].trim();
+  }
 
   const descMatch = frontMatterText.match(/description:\s*['"]?([^'":\n]+)['"]?/);
-  if (descMatch) {frontMatter.description = descMatch[1].trim();}
+  if (descMatch) {
+    frontMatter.description = descMatch[1].trim();
+  }
 
   return frontMatter;
 }
@@ -154,12 +165,8 @@ function filePathToURL(filePath: string, contentDir: string): string {
  * Build search index from all pages
  */
 function buildSearchIndex(): SearchDocument[] {
-  
-
   const contentDir = join(process.cwd(), 'content', 'docs');
   const mdxFiles = findMDXFiles(contentDir);
-
-  
 
   const documents: SearchDocument[] = mdxFiles.map((filePath) => {
     const rawContent = readFileSync(filePath, 'utf8');
@@ -179,7 +186,6 @@ function buildSearchIndex(): SearchDocument[] {
     };
   });
 
-  
   return documents;
 }
 
@@ -188,9 +194,7 @@ function buildSearchIndex(): SearchDocument[] {
  * Optimized for fast search (<100ms)
  */
 function createFuseIndex(documents: SearchDocument[]) {
-  
-
-  const fuseOptions: Fuse.IFuseOptions<SearchDocument> = {
+  const fuseOptions: IFuseOptions<SearchDocument> = {
     // Performance optimizations - tuned for <100ms
     threshold: 0.35, // Balanced fuzzy matching
     distance: 80, // Moderate distance
@@ -228,8 +232,6 @@ function createFuseIndex(documents: SearchDocument[]) {
   // Get the serializable index
   const index = fuse.getIndex();
 
-  
-
   return {
     documents,
     index: index.toJSON(),
@@ -242,8 +244,6 @@ function createFuseIndex(documents: SearchDocument[]) {
  */
 async function main() {
   try {
-    
-
     // Build search index
     const documents = buildSearchIndex();
 
@@ -258,18 +258,13 @@ async function main() {
     const outputPath = join(publicDir, 'search-index.json');
     writeFileSync(outputPath, JSON.stringify(searchIndex, null, 2));
 
-    
-
     // Calculate and display stats
     const indexSize = JSON.stringify(searchIndex).length;
-    
-    
-    
+    console.log(`Search index built: ${documents.length} docs, ${indexSize} bytes`);
 
-    
     process.exit(0);
   } catch (error) {
-    
+    console.error('Failed to build search index:', error);
     process.exit(1);
   }
 }

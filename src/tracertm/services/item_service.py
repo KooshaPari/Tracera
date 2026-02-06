@@ -119,12 +119,8 @@ class ItemService:
         """List items in a project, optionally filtered by view and status."""
         p = params or ListItemsParams()
         if p.view:
-            return await self.items.get_by_view(
-                project_id, p.view, p.status, limit=p.limit, offset=p.offset
-            )
-        return await self.items.get_by_project(
-            project_id, status=p.status, limit=p.limit, offset=p.offset
-        )
+            return await self.items.get_by_view(project_id, p.view, p.status, limit=p.limit, offset=p.offset)
+        return await self.items.get_by_project(project_id, status=p.status, limit=p.limit, offset=p.offset)
 
     async def update_item(
         self,
@@ -383,7 +379,7 @@ class ItemService:
     ) -> dict[str, Any]:
         """Preview bulk update without applying changes."""
         # Get items matching filters
-        items = await self.items.list_by_filters(filters, project_id)  # type: ignore[union-attr]
+        items = await self.items.list_by_filters(filters, project_id)
 
         # Show what would be updated
         return {
@@ -412,7 +408,7 @@ class ItemService:
     ) -> dict[str, Any]:
         """Bulk update items matching filters."""
         # Get items matching filters
-        items = await self.items.list_by_filters(filters, project_id)  # type: ignore[union-attr]
+        items = await self.items.list_by_filters(filters, project_id)
 
         if not items:
             return {
@@ -469,7 +465,7 @@ class ItemService:
     ) -> dict[str, Any]:
         """Bulk delete items matching filters."""
         # Get items matching filters
-        items = await self.items.list_by_filters(filters, project_id)  # type: ignore[union-attr]
+        items = await self.items.list_by_filters(filters, project_id)
 
         if not items:
             return {
@@ -513,9 +509,7 @@ class ItemService:
             "errors": errors,
         }
 
-    async def _collect_related_outgoing(
-        self, project_id: str, item_id: str, link_type: str | None
-    ) -> list[Item]:
+    async def _collect_related_outgoing(self, project_id: str, item_id: str, link_type: str | None) -> list[Item]:
         """Collect items linked from item_id (outgoing)."""
         out: list[Item] = []
         links = await self.links.get_by_source(item_id)
@@ -527,9 +521,7 @@ class ItemService:
                 out.append(target)
         return out
 
-    async def _collect_related_incoming(
-        self, project_id: str, item_id: str, link_type: str | None
-    ) -> list[Item]:
+    async def _collect_related_incoming(self, project_id: str, item_id: str, link_type: str | None) -> list[Item]:
         """Collect items linking to item_id (incoming)."""
         out: list[Item] = []
         links = await self.links.get_by_target(item_id)
@@ -574,13 +566,9 @@ class ItemService:
         try:
             related: list[Item] = []
             if direction in ("outgoing", "both"):
-                related.extend(
-                    await self._collect_related_outgoing(project_id, item_id, link_type)
-                )
+                related.extend(await self._collect_related_outgoing(project_id, item_id, link_type))
             if direction in ("incoming", "both"):
-                related.extend(
-                    await self._collect_related_incoming(project_id, item_id, link_type)
-                )
+                related.extend(await self._collect_related_incoming(project_id, item_id, link_type))
             return self._deduplicate_items(related)
         except Exception as e:
             logger.error(f"Error getting related items for {item_id}: {e}", exc_info=True)

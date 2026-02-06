@@ -33,7 +33,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 from tracertm.storage.file_watcher import TraceFileWatcher
 from tracertm.storage.local_storage import LocalStorageManager
@@ -184,7 +184,7 @@ def backup_manage(  # noqa: C901, PLR0912, PLR0915
         else:
             backup_data = json.loads(backup_file.read_text(encoding="utf-8"))
 
-        if not isinstance(backup_data, dict[str, Any]) or "tables" not in backup_data:
+        if not isinstance(backup_data, dict) or "tables" not in backup_data:
             raise ToolError("Invalid backup format.")
 
         with storage.get_session() as session:
@@ -249,10 +249,10 @@ def file_watch_manage(
     if action == "status":
         watch_id = payload.get("watch_id")
         if watch_id:
-            watcher = _WATCHERS.get(watch_id)
-            if not watcher:
+            target_watcher: Any = _WATCHERS.get(watch_id)
+            if not target_watcher:
                 raise ToolError("watch_id not found.")
-            return _wrap({"watch_id": watch_id, "stats": watcher.get_stats()}, ctx, action)
+            return _wrap({"watch_id": watch_id, "stats": target_watcher.get_stats()}, ctx, action)
         return _wrap({k: v.get_stats() for k, v in _WATCHERS.items()}, ctx, action)
 
     raise ToolError(f"Unknown watch action: {action}")

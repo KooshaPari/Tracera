@@ -17,15 +17,15 @@ const ROOT_DIR = process.cwd();
 // Target versions from root package.json
 const TARGET_VERSIONS = {
   // Core frameworks
-  'react': '^19.2.0',
+  react: '^19.2.0',
   'react-dom': '^19.2.0',
-  'typescript': 'npm:@typescript/native-preview@7.0.0-dev.20251201.1',
+  typescript: 'npm:@typescript/native-preview@7.0.0-dev.20251201.1',
 
   // Build tools
-  'vite': '^8.0.0-beta.11',
+  vite: '^8.0.0-beta.11',
   '@vitejs/plugin-react': '5.1.2',
   '@vitejs/plugin-react-swc': '^4.2.2',
-  'esbuild': '^0.27.2',
+  esbuild: '^0.27.2',
 
   // React ecosystem
   '@tanstack/react-router': '^1.157.16',
@@ -38,7 +38,7 @@ const TARGET_VERSIONS = {
   '@types/react-dom': '^19.2.3',
 
   // Testing
-  'vitest': '^3.0.6',
+  vitest: '^3.0.6',
   '@testing-library/react': '^16.3.0',
   '@playwright/test': '^1.50.3',
 
@@ -57,9 +57,9 @@ const TARGET_VERSIONS = {
   // Common utilities
   'lucide-react': '^0.563.0',
   'react-hook-form': '^7.71.1',
-  'zod': '^4.1.13',
+  zod: '^4.1.13',
   'date-fns': '^4.1.0',
-  'clsx': '^2.1.1',
+  clsx: '^2.1.1',
   'tailwind-merge': '^3.4.0',
 
   // Node types
@@ -67,7 +67,7 @@ const TARGET_VERSIONS = {
 
   // Tooling
   '@biomejs/biome': '^2.3.13',
-  'turbo': '^2.6.1',
+  turbo: '^2.6.1',
 
   // Storybook (enforce v10)
   '@storybook/react': '10.2.1',
@@ -93,11 +93,10 @@ async function updateRootPackageJson() {
 
   // Sort overrides alphabetically
   pkg.overrides = Object.fromEntries(
-    Object.entries(pkg.overrides).toSorted(([a], [b]) => a.localeCompare(b))
+    Object.entries(pkg.overrides).toSorted(([a], [b]) => a.localeCompare(b)),
   );
 
   await writeFile(pkgPath, JSON.stringify(pkg, null, '\t') + '\n');
-  
 
   return pkg;
 }
@@ -123,32 +122,16 @@ async function generateReport(rootPkg) {
     timestamp: new Date().toISOString(),
   };
 
-  await writeFile(
-    'deduplication-report.json',
-    JSON.stringify(report, null, 2)
-  );
+  await writeFile('deduplication-report.json', JSON.stringify(report, null, 2));
 
-  
-  
-  
-  
-  
-  
   report.nextSteps.forEach((step) => {});
-  
 }
 
 async function main() {
-  
-
   try {
     const rootPkg = await updateRootPackageJson();
     await generateReport(rootPkg);
-
-    
-    
   } catch (error) {
-    
     process.exit(1);
   }
 }

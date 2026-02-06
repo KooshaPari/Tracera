@@ -4,12 +4,8 @@
 
 set -e
 TEMPORAL_PORT="${TEMPORAL_PORT:-7233}"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-if command -v lsof >/dev/null 2>&1; then
-  if lsof -Pi :"$TEMPORAL_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "Temporal already running on port $TEMPORAL_PORT; holding process for process-compose."
-    exec sh -c 'while true; do sleep 3600; done'
-  fi
-fi
+bash "$ROOT/scripts/shell/guard-port.sh" "Temporal" "$TEMPORAL_PORT" "temporal"
 
 exec temporal server start-dev --db-filename .temporal/temporal.db

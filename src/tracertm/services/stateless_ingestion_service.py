@@ -20,8 +20,8 @@ try:
     from markdown import Markdown
     from markdown_it import MarkdownIt
 except ImportError:
-    Markdown = cast(Any, None)  # type: ignore
-    MarkdownIt = cast(Any, None)  # type: ignore
+    Markdown = cast(Any, None)
+    MarkdownIt = cast(Any, None)
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
@@ -44,9 +44,7 @@ class StatelessIngestionService:
 
     def _validate_file_extension(self, path: Path, allowed: tuple[str, ...], label: str) -> None:
         if path.suffix.lower() not in allowed:
-            raise ValueError(
-                f"Invalid file extension: {path.suffix}. Expected {label}"
-            )
+            raise ValueError(f"Invalid file extension: {path.suffix}. Expected {label}")
 
     def _ensure_file_exists(self, path: Path, file_path: str) -> None:
         if not path.exists():
@@ -876,7 +874,7 @@ class StatelessIngestionService:
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML: {e}") from e
 
-        if not isinstance(data, dict[str, Any]):
+        if not isinstance(data, dict):
             raise ValueError("YAML root must be a dictionary")
 
         format_type = self._detect_yaml_format(data, path)
@@ -885,9 +883,7 @@ class StatelessIngestionService:
             if format_type == "openapi":
                 paths = data.get("paths", {})
                 schemas = data.get("components", {}).get("schemas", {})
-                endpoint_count = sum(
-                    len([m for m in methods if not m.startswith("x-")]) for methods in paths.values()
-                )
+                endpoint_count = sum(len([m for m in methods if not m.startswith("x-")]) for methods in paths.values())
                 return {
                     "dry_run": True,
                     "format": "openapi",

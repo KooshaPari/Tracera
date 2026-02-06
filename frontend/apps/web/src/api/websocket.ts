@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 
 import { clientCore } from './client-core';
 
-const API_BASE_URL = clientCore.API_BASE_URL;
+const { API_BASE_URL } = clientCore;
 
 const AUTH_CLOSE_CODE = 1008;
 const AUTH_TIMEOUT_MS = 5000;
@@ -59,10 +59,10 @@ const isRealtimeEvent = (value: unknown): value is RealtimeEvent => {
   }
 
   const eventType = value['type'];
-  const table = value['table'];
-  const schema = value['schema'];
-  const record = value['record'];
-  const timestamp = value['timestamp'];
+  const { table } = value;
+  const { schema } = value;
+  const { record } = value;
+  const { timestamp } = value;
 
   if (eventType !== 'created' && eventType !== 'updated' && eventType !== 'deleted') {
     return false;
@@ -97,10 +97,15 @@ class WebSocketManager {
       throw new TypeError('WebSocketManager requires a browser environment');
     }
     const wsProtocol = WebSocketManager.getWebSocketProtocol();
-    const apiUrl = API_BASE_URL.replace(/^https?:/, wsProtocol);
-    // Align with lib/websocket and gateway: single WebSocket path /api/v1/ws
+    const envWsUrl = import.meta.env?.VITE_WS_URL;
+    const rawBaseUrl =
+      typeof envWsUrl === 'string' && envWsUrl.trim() !== '' ? envWsUrl.trim() : API_BASE_URL;
+    const wsBase = rawBaseUrl.replace(/^https?:/, wsProtocol).replace(/\/$/, '');
+    const wsPath = wsBase.includes('/api/v1/ws') ? wsBase : `${wsBase}/api/v1/ws`;
     // Server requires project_id query parameter; use 'global' as default for app-level connections
-    this.baseUrl = `${apiUrl.replace(/\/$/, '')}/api/v1/ws?project_id=global`;
+    this.baseUrl = wsPath.includes('?')
+      ? `${wsPath}&project_id=global`
+      : `${wsPath}?project_id=global`;
     this.getToken = getToken;
   }
 
@@ -177,7 +182,7 @@ class WebSocketManager {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error('Failed to resolve token');
+      throw new Error('Failed to resolve token', { cause: error });
     }
   }
 

@@ -14,16 +14,16 @@ snapshot:
 
   # Viewport widths to capture
   widths:
-    - 375   # Mobile
-    - 768   # Tablet
-    - 1280  # Desktop
-    - 1920  # Large desktop
+    - 375 # Mobile
+    - 768 # Tablet
+    - 1280 # Desktop
+    - 1920 # Large desktop
 
   # Minimum snapshot height
   min-height: 1024
 
   # Wait for network idle before taking snapshot
-  percy-css: ""
+  percy-css: ''
 
 # Discovery configuration
 discovery:

@@ -14,6 +14,7 @@ bun run generate:stories
 ```
 
 This will:
+
 - Scan all components in `packages/ui/src/components/` and `apps/web/src/components/`
 - Generate CSF 3.0 stories in `apps/storybook/src/stories/`
 - Create an example design metadata file at `.trace/.meta/designs.yaml` if it doesn't exist
@@ -46,22 +47,24 @@ For a component like `Button.tsx` with CVA variants:
 const buttonVariants = cva('base', {
   variants: {
     variant: { default: '...', destructive: '...', outline: '...' },
-    size: { default: '...', sm: '...', lg: '...' }
+    size: { default: '...', sm: '...', lg: '...' },
   },
-  defaultVariants: { variant: 'default', size: 'default' }
-})
+  defaultVariants: { variant: 'default', size: 'default' },
+});
 ```
 
 You get:
 
 ```typescript
 // apps/storybook/src/stories/Button.stories.tsx
-export const Default: Story = { args: { variant: 'default' } }
-export const Destructive: Story = { args: { variant: 'destructive' } }
-export const Outline: Story = { args: { variant: 'outline' } }
-export const Sm: Story = { args: { size: 'sm' } }
-export const Lg: Story = { args: { size: 'lg' } }
-export const AllVariants: Story = { /* showcase render */ }
+export const Default: Story = { args: { variant: 'default' } };
+export const Destructive: Story = { args: { variant: 'destructive' } };
+export const Outline: Story = { args: { variant: 'outline' } };
+export const Sm: Story = { args: { size: 'sm' } };
+export const Lg: Story = { args: { size: 'lg' } };
+export const AllVariants: Story = {
+  /* showcase render */
+};
 ```
 
 ## Adding Figma Links
@@ -71,9 +74,9 @@ Edit `.trace/.meta/designs.yaml`:
 ```yaml
 components:
   Button:
-    figmaUrl: "https://www.figma.com/file/YOUR-FILE-ID/Design-System?node-id=123"
-    componentId: "comp-button-001"
-    storyId: "story-button-001"
+    figmaUrl: 'https://www.figma.com/file/YOUR-FILE-ID/Design-System?node-id=123'
+    componentId: 'comp-button-001'
+    storyId: 'story-button-001'
 ```
 
 Then regenerate:
@@ -166,6 +169,7 @@ export const CardTitle = ...
 ### "No components found"
 
 Check that:
+
 - Component files are `.tsx`
 - Files are in `packages/ui/src/components/` or `apps/web/src/components/`
 - Files aren't named `*.test.tsx` or `*.stories.tsx`
@@ -184,6 +188,7 @@ importPathMapping: {
 ### Variants not detected
 
 Ensure:
+
 - Using `class-variance-authority` package
 - CVA object uses exact structure (see examples)
 - Component has `VariantProps<typeof variants>` in props type
@@ -201,7 +206,7 @@ export const defaultConfig: GeneratorConfig = {
   generateVariants: true,
   generateShowcase: true,
   overwriteExisting: false,
-}
+};
 ```
 
 ### Custom Templates
@@ -227,6 +232,7 @@ bun run generate:stories
 ```
 
 Output:
+
 ```
 🎨 TraceRTM Storybook Story Generator
 =====================================
@@ -252,6 +258,7 @@ bun run generate:stories --component Button --force --verbose
 ```
 
 Output:
+
 ```
 🎨 TraceRTM Storybook Story Generator
 =====================================

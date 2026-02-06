@@ -23,29 +23,31 @@
  * ```
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import type { CullingStats, Edge, ViewportBounds } from '@/lib/viewportCulling';
+
 import {
-	cullEdges,
-	extractNodePositions,
-	getCullingStats,
-	getViewportBounds,
-} from "@/lib/viewportCulling";
-import type { CullingStats, Edge, ViewportBounds } from "@/lib/viewportCulling";
+  cullEdges,
+  extractNodePositions,
+  getCullingStats,
+  getViewportBounds,
+} from '@/lib/viewportCulling';
 
 interface UseViewportCullingProps {
-	edges: Edge[];
-	nodes: any[];
-	reactFlowInstance: any;
-	enabled?: boolean;
-	padding?: number;
-	onStatsChange?: (stats: CullingStats) => void;
+  edges: Edge[];
+  nodes: any[];
+  reactFlowInstance: any;
+  enabled?: boolean;
+  padding?: number;
+  onStatsChange?: (stats: CullingStats) => void;
 }
 
 interface UseViewportCullingResult {
-	cullableEdges: Edge[];
-	cullingStats: CullingStats | null;
-	viewportBounds: ViewportBounds | null;
-	isEnabled: boolean;
+  cullableEdges: Edge[];
+  cullingStats: CullingStats | null;
+  viewportBounds: ViewportBounds | null;
+  isEnabled: boolean;
 }
 
 /**
@@ -55,79 +57,77 @@ interface UseViewportCullingResult {
  * @returns Culled edges and statistics
  */
 export function useViewportCulling({
-	edges,
-	nodes,
-	reactFlowInstance,
-	enabled = true,
-	padding = 100,
-	onStatsChange,
+  edges,
+  nodes,
+  reactFlowInstance,
+  enabled = true,
+  padding = 100,
+  onStatsChange,
 }: UseViewportCullingProps): UseViewportCullingResult {
-	const [viewportBounds, setViewportBounds] = useState<ViewportBounds | null>(
-		null,
-	);
+  const [viewportBounds, setViewportBounds] = useState<ViewportBounds | null>(null);
 
-	// Extract node positions (memoized to avoid recalculation)
-	const nodePositions = useMemo(() => extractNodePositions(nodes), [nodes]);
+  // Extract node positions (memoized to avoid recalculation)
+  const nodePositions = useMemo(() => extractNodePositions(nodes), [nodes]);
 
-	// Update viewport bounds on viewport change
-	const handleViewportChange = useCallback(() => {
-		if (!enabled) {
-			return;
-		}
+  // Update viewport bounds on viewport change
+  const handleViewportChange = useCallback(() => {
+    if (!enabled) {
+      return;
+    }
 
-		const bounds = getViewportBounds(reactFlowInstance);
-		setViewportBounds(bounds);
-	}, [enabled, reactFlowInstance]);
+    const bounds = getViewportBounds(reactFlowInstance);
+    setViewportBounds(bounds);
+  }, [enabled, reactFlowInstance]);
 
-	// Listen for viewport changes
-	useEffect(() => {
-		if (!enabled || !reactFlowInstance) {
-			return;
-		}
+  // Listen for viewport changes
+  useEffect(() => {
+    if (!enabled || !reactFlowInstance) {
+      return;
+    }
 
-		// Get viewport bounds initially
-		handleViewportChange();
+    // Get viewport bounds initially
+    handleViewportChange();
 
-		// Listen to move events (pan/zoom)
-		const handleMove = () => handleViewportChange();
-		reactFlowInstance.addListener?.("move", handleMove);
+    // Listen to move events (pan/zoom)
+    const handleMove = () => handleViewportChange();
+    reactFlowInstance.addListener?.('move', handleMove);
 
-		// Also listen on window resize
-		window.addEventListener("resize", handleViewportChange);
+    // Also listen on window resize
+    window.addEventListener('resize', handleViewportChange);
 
-		return () => {
-			reactFlowInstance.removeListener?.("move", handleMove);
-			window.removeEventListener("resize", handleViewportChange);
-		};
-	}, [enabled, reactFlowInstance, handleViewportChange]);
+    return () => {
+      reactFlowInstance.removeListener?.('move', handleMove);
+      window.removeEventListener('resize', handleViewportChange);
+    };
+  }, [enabled, reactFlowInstance, handleViewportChange]);
 
-	// Cull edges based on viewport
-	const cullableEdges = useMemo(() => {
-		if (!enabled || !viewportBounds) {
-			return edges;
-		}
+  // Cull edges based on viewport
+  const cullableEdges = useMemo(() => {
+    if (!enabled || !viewportBounds) {
+      return edges;
+    }
 
-		return cullEdges(edges, nodePositions, viewportBounds, padding);
-	}, [enabled, edges, nodePositions, viewportBounds, padding]);
+    return cullEdges(edges, nodePositions, viewportBounds, padding);
+  }, [enabled, edges, nodePositions, viewportBounds, padding]);
 
-	// Calculate and report statistics
-	const cullingStats = useMemo(() => {
-		const stats = getCullingStats(edges, cullableEdges);
+  // Calculate and report statistics
+  const cullingStats = useMemo(() => {
+    const stats = getCullingStats(edges, cullableEdges);
 
-		// Report stats change if callback provided
-		if (onStatsChange) {
-			onStatsChange(stats);
-		}
+    // Report stats change if callback provided
+    if (onStatsChange) {
+      onStatsChange(stats);
+    }
 
-		return stats;
-	}, [edges, cullableEdges, onStatsChange]);
+    return stats;
+  }, [edges, cullableEdges, onStatsChange]);
 
-	return {
-		cullableEdges,
-		cullingStats,
-		isEnabled: enabled,
-		viewportBounds,
-	};
+  return {
+    cullableEdges,
+    cullingStats,
+    isEnabled: enabled,
+    viewportBounds,
+  };
 }
 
 /**
@@ -140,13 +140,13 @@ export function useViewportCulling({
  * ```
  */
 export function useViewportCullingStats(stats: CullingStats | null): {
-	culledCount: number;
-	visibleCount: number;
-	savedPercentage: number;
+  culledCount: number;
+  visibleCount: number;
+  savedPercentage: number;
 } {
-	return {
-		culledCount: stats?.culledEdges ?? 0,
-		savedPercentage: stats?.cullingRatio ?? 0,
-		visibleCount: stats?.visibleEdges ?? 0,
-	};
+  return {
+    culledCount: stats?.culledEdges ?? 0,
+    savedPercentage: stats?.cullingRatio ?? 0,
+    visibleCount: stats?.visibleEdges ?? 0,
+  };
 }

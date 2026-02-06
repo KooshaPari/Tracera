@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3001';
+const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3001';
 
 test.describe('Documentation Site E2E Tests', () => {
   test.describe('Navigation', () => {
@@ -29,7 +29,10 @@ test.describe('Documentation Site E2E Tests', () => {
       await page.goto(BASE_URL);
 
       // Click on docs link
-      await page.getByRole('link', { name: /docs|documentation/i }).first().click();
+      await page
+        .getByRole('link', { name: /docs|documentation/i })
+        .first()
+        .click();
 
       // Should navigate to docs page
       await expect(page).toHaveURL(/\/docs/);
@@ -60,7 +63,9 @@ test.describe('Documentation Site E2E Tests', () => {
       await page.goto(`${BASE_URL}/docs/getting-started`);
 
       // Check for breadcrumb navigation
-      const breadcrumb = page.locator('nav[aria-label*="breadcrumb" i], .breadcrumb, ol[role="list"]').first();
+      const breadcrumb = page
+        .locator('nav[aria-label*="breadcrumb" i], .breadcrumb, ol[role="list"]')
+        .first();
 
       if (await breadcrumb.isVisible()) {
         const links = breadcrumb.locator('a');
@@ -78,9 +83,9 @@ test.describe('Documentation Site E2E Tests', () => {
       await page.keyboard.press(`${modifier}+k`);
 
       // Search dialog should appear
-      await expect(
-        page.locator('dialog, [role="dialog"], [cmdk-root]').first()
-      ).toBeVisible({ timeout: 1000 });
+      await expect(page.locator('dialog, [role="dialog"], [cmdk-root]').first()).toBeVisible({
+        timeout: 1000,
+      });
     });
 
     test('should search and display results quickly', async ({ page }) => {
@@ -91,7 +96,9 @@ test.describe('Documentation Site E2E Tests', () => {
       await page.keyboard.press(`${modifier}+k`);
 
       // Wait for search input
-      const searchInput = page.locator('input[type="search"], input[placeholder*="search" i]').first();
+      const searchInput = page
+        .locator('input[type="search"], input[placeholder*="search" i]')
+        .first();
       await expect(searchInput).toBeVisible({ timeout: 1000 });
 
       // Measure search performance
@@ -119,7 +126,9 @@ test.describe('Documentation Site E2E Tests', () => {
       const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
       await page.keyboard.press(`${modifier}+k`);
 
-      const searchInput = page.locator('input[type="search"], input[placeholder*="search" i]').first();
+      const searchInput = page
+        .locator('input[type="search"], input[placeholder*="search" i]')
+        .first();
       await searchInput.fill('getting');
 
       // Wait for results and click first one
@@ -143,9 +152,9 @@ test.describe('Documentation Site E2E Tests', () => {
       await expect(page).toHaveURL(/api-reference/);
 
       // API endpoints should be visible
-      await expect(
-        page.locator('h2, h3, .endpoint, [data-endpoint]').first()
-      ).toBeVisible({ timeout: 3000 });
+      await expect(page.locator('h2, h3, .endpoint, [data-endpoint]').first()).toBeVisible({
+        timeout: 3000,
+      });
     });
 
     test('should expand/collapse API operations', async ({ page }) => {
@@ -159,7 +168,7 @@ test.describe('Documentation Site E2E Tests', () => {
 
         // Details should expand
         await expect(
-          page.locator('details[open], [data-state="open"], .expanded').first()
+          page.locator('details[open], [data-state="open"], .expanded').first(),
         ).toBeVisible();
       }
     });
@@ -179,9 +188,9 @@ test.describe('Documentation Site E2E Tests', () => {
       await page.goto(BASE_URL);
 
       // Find theme toggle button
-      const themeToggle = page.locator(
-        'button[aria-label*="theme" i], button[title*="theme" i], [data-theme-toggle]'
-      ).first();
+      const themeToggle = page
+        .locator('button[aria-label*="theme" i], button[title*="theme" i], [data-theme-toggle]')
+        .first();
 
       await expect(themeToggle).toBeVisible();
 
@@ -204,9 +213,9 @@ test.describe('Documentation Site E2E Tests', () => {
       await page.goto(BASE_URL);
 
       // Toggle to dark mode
-      const themeToggle = page.locator(
-        'button[aria-label*="theme" i], button[title*="theme" i], [data-theme-toggle]'
-      ).first();
+      const themeToggle = page
+        .locator('button[aria-label*="theme" i], button[title*="theme" i], [data-theme-toggle]')
+        .first();
 
       await themeToggle.click();
       await page.waitForTimeout(100);
@@ -241,23 +250,26 @@ test.describe('Documentation Site E2E Tests', () => {
       await page.goto(`${BASE_URL}/docs`);
 
       // Monitor for layout shifts
-      const cls = await page.evaluate(() => new Promise<number>((resolve) => {
-          let clsValue = 0;
+      const cls = await page.evaluate(
+        () =>
+          new Promise<number>((resolve) => {
+            let clsValue = 0;
 
-          const observer = new PerformanceObserver((list) => {
-            for (const entry of list.getEntries()) {
-              if ((entry as any).hadRecentInput) continue;
-              clsValue += (entry as any).value;
-            }
-          });
+            const observer = new PerformanceObserver((list) => {
+              for (const entry of list.getEntries()) {
+                if ((entry as any).hadRecentInput) continue;
+                clsValue += (entry as any).value;
+              }
+            });
 
-          observer.observe({ buffered: true, type: 'layout-shift' });
+            observer.observe({ buffered: true, type: 'layout-shift' });
 
-          setTimeout(() => {
-            observer.disconnect();
-            resolve(clsValue);
-          }, 2000);
-        }));
+            setTimeout(() => {
+              observer.disconnect();
+              resolve(clsValue);
+            }, 2000);
+          }),
+      );
 
       // CLS should be < 0.1
       expect(cls).toBeLessThan(0.1);
@@ -266,24 +278,27 @@ test.describe('Documentation Site E2E Tests', () => {
     test('should have fast time to interactive', async ({ page }) => {
       await page.goto(`${BASE_URL}/docs`);
 
-      const tti = await page.evaluate(() => new Promise<number>((resolve) => {
-          const observer = new PerformanceObserver((list) => {
-            for (const entry of list.getEntries()) {
-              if (entry.entryType === 'navigation') {
-                const nav = entry as PerformanceNavigationTiming;
-                const tti = nav.domInteractive - nav.fetchStart;
-                resolve(tti);
+      const tti = await page.evaluate(
+        () =>
+          new Promise<number>((resolve) => {
+            const observer = new PerformanceObserver((list) => {
+              for (const entry of list.getEntries()) {
+                if (entry.entryType === 'navigation') {
+                  const nav = entry as PerformanceNavigationTiming;
+                  const tti = nav.domInteractive - nav.fetchStart;
+                  resolve(tti);
+                }
               }
-            }
-          });
+            });
 
-          observer.observe({ buffered: true, type: 'navigation' });
+            observer.observe({ buffered: true, type: 'navigation' });
 
-          setTimeout(() => {
-            observer.disconnect();
-            resolve(0);
-          }, 1000);
-        }));
+            setTimeout(() => {
+              observer.disconnect();
+              resolve(0);
+            }, 1000);
+          }),
+      );
 
       // TTI should be < 2500ms
       if (tti > 0) {
@@ -301,7 +316,7 @@ test.describe('Documentation Site E2E Tests', () => {
 
       // Should have skip to content link
       const skipLink = page.locator('a[href="#main"], a[href="#content"]').first();
-      if (await skipLink.count() > 0) {
+      if ((await skipLink.count()) > 0) {
         await expect(skipLink).toHaveAttribute('href');
       }
 
@@ -329,7 +344,7 @@ test.describe('Documentation Site E2E Tests', () => {
 
   test.describe('Mobile Responsiveness', () => {
     test.use({
-      viewport: { height: 667, width: 375 } // IPhone SE size
+      viewport: { height: 667, width: 375 }, // IPhone SE size
     });
 
     test('should render correctly on mobile', async ({ page }) => {
@@ -339,9 +354,11 @@ test.describe('Documentation Site E2E Tests', () => {
       await expect(page.locator('main, article').first()).toBeVisible();
 
       // Mobile menu button should be visible
-      const menuButton = page.locator('button[aria-label*="menu" i], button[aria-controls*="menu" i]').first();
+      const menuButton = page
+        .locator('button[aria-label*="menu" i], button[aria-controls*="menu" i]')
+        .first();
 
-      if (await menuButton.count() > 0) {
+      if ((await menuButton.count()) > 0) {
         await expect(menuButton).toBeVisible();
       }
     });
@@ -349,15 +366,15 @@ test.describe('Documentation Site E2E Tests', () => {
     test('should open mobile navigation', async ({ page }) => {
       await page.goto(`${BASE_URL}/docs`);
 
-      const menuButton = page.locator('button[aria-label*="menu" i], button[aria-controls*="menu" i]').first();
+      const menuButton = page
+        .locator('button[aria-label*="menu" i], button[aria-controls*="menu" i]')
+        .first();
 
-      if (await menuButton.count() > 0) {
+      if ((await menuButton.count()) > 0) {
         await menuButton.click();
 
         // Navigation should appear
-        await expect(
-          page.locator('nav, aside, [role="navigation"]').first()
-        ).toBeVisible();
+        await expect(page.locator('nav, aside, [role="navigation"]').first()).toBeVisible();
       }
     });
   });

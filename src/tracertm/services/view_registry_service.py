@@ -347,12 +347,12 @@ class ViewRegistryService:
         return views
 
     @classmethod
-    def get_phase_1_views(cls) -> list[ViewMetadata]:
+    def get_phase_one_views(cls) -> list[ViewMetadata]:
         """Get Phase 1 views."""
         return cls.list_views(phase=1)
 
     @classmethod
-    def get_phase_2_views(cls) -> list[ViewMetadata]:
+    def get_phase_two_views(cls) -> list[ViewMetadata]:
         """Get Phase 2 views."""
         return cls.list_views(phase=2)
 

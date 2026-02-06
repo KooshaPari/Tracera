@@ -19,7 +19,7 @@ def run_server() -> None:
 try:
     from tracertm.mcp.server import mcp
 except Exception:  # pragma: no cover - allow imports in limited test envs
-    mcp = None  # type: ignore[assignment]
+    mcp = None
 
 try:
     from tracertm.mcp.http_transport import (
@@ -32,6 +32,7 @@ try:
         mount_mcp_to_fastapi,
         run_http_server,
     )
+
     _http_ok = True
 except Exception:  # pragma: no cover - allow imports in limited test envs
     _http_ok = False

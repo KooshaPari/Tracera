@@ -10,7 +10,7 @@
  * - Preloaded search index for instant results
  */
 
-import Fuse from 'fuse.js';
+import Fuse, { type FuseIndex, type FuseResultMatch, type IFuseOptions } from 'fuse.js';
 
 interface SearchDocument {
   id: string;
@@ -24,8 +24,8 @@ interface SearchDocument {
 }
 
 interface SearchIndex {
-  options: Fuse.IFuseOptions<SearchDocument>;
-  index: Fuse.FuseIndex<SearchDocument>;
+  options: IFuseOptions<SearchDocument>;
+  index: ReturnType<FuseIndex<SearchDocument>['toJSON']>;
   documents: SearchDocument[];
 }
 
@@ -39,7 +39,7 @@ interface SearchMessage {
 interface SearchResult {
   item: SearchDocument;
   score?: number;
-  matches?: readonly Fuse.FuseResultMatch[];
+  matches?: readonly FuseResultMatch[];
 }
 
 let fuse: Fuse<SearchDocument> | null = null;
@@ -65,12 +65,12 @@ function initializeSearch(indexData: SearchIndex) {
       type: 'init-complete',
       duration,
       documentCount: documents.length,
-    }, self.location.origin);
+    });
   } catch (error) {
     self.postMessage({
       type: 'error',
       error: error instanceof Error ? error.message : 'Failed to initialize search',
-    }, self.location.origin);
+    });
   }
 }
 
@@ -104,7 +104,7 @@ function performSearch(query: string, maxResults: number = 20): SearchResult[] {
     query,
     duration,
     resultCount: results.length,
-  }, self.location.origin);
+  });
 
   return results;
 }
@@ -133,15 +133,15 @@ self.addEventListener('message', (event: MessageEvent<SearchMessage>) => {
         self.postMessage({
           type: 'error',
           error: `Unknown message type: ${type}`,
-        }, self.location.origin);
+        });
     }
   } catch (error) {
     self.postMessage({
       type: 'error',
       error: error instanceof Error ? error.message : 'Unknown error',
-    }, self.location.origin);
+    });
   }
 });
 
 // Signal that worker is ready
-self.postMessage({ type: 'ready' }, self.location.origin);
+self.postMessage({ type: 'ready' });

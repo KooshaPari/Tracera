@@ -37,7 +37,7 @@ except Exception:  # pragma: no cover - test fallback
         select_project = _core_unavailable
         query_items = _core_unavailable
 
-    core = _CoreStub()  # type: ignore[assignment]
+    core = _CoreStub()
 
 try:
     from tracertm.mcp.tools import specifications as spec_tools
@@ -46,7 +46,7 @@ except Exception:  # pragma: no cover - test fallback
     class _SpecStub:
         pass
 
-    spec_tools = _SpecStub()  # type: ignore[assignment]
+    spec_tools = _SpecStub()
 
 # Wire unified dispatch to core tool implementations.
 project_tools = core
@@ -106,6 +106,32 @@ def _get_access_token_from_ctx() -> Any | None:
     return get_access_token()
 
 
+def _collect_allowed_project_ids(claims: dict[str, Any]) -> list[str]:
+    """Collect project IDs from token claims."""
+    allowed: list[str] = []
+    if claims.get("project_id"):
+        allowed.append(claims["project_id"])
+    project_ids = claims.get("project_ids")
+    if isinstance(project_ids, str):
+        allowed.extend([p.strip() for p in project_ids.split(",") if p.strip()])
+    elif isinstance(project_ids, (list, tuple, set)):
+        allowed.extend([str(p) for p in project_ids if p])
+    return allowed
+
+
+def _validate_project_id(project_id: str | None, allowed: list[str]) -> str | None:
+    """Validate project_id against allowed list."""
+    if not allowed:
+        return project_id
+    if project_id:
+        if project_id not in allowed:
+            raise ToolError("Project access denied for requested project_id.")
+        return project_id
+    if len(allowed) == 1:
+        return allowed[0]
+    raise ToolError("project_id required for this request.")
+
+
 def _resolve_project_id(payload: dict[str, Any], ctx: Any | None) -> str | None:
     """Resolve and validate project_id from payload and context."""
     project_id = payload.get("project_id")
@@ -114,25 +140,8 @@ def _resolve_project_id(payload: dict[str, Any], ctx: Any | None) -> str | None:
         return project_id
 
     claims = getattr(token, "claims", {}) or {}
-    allowed = []
-    if claims.get("project_id"):
-        allowed.append(claims["project_id"])
-    project_ids = claims.get("project_ids")
-    if isinstance(project_ids, str):
-        allowed.extend([p.strip() for p in project_ids.split(",") if p.strip()])
-    elif isinstance(project_ids, (list, tuple, set)):
-        allowed.extend([str(p) for p in project_ids if p])
-
-    if allowed:
-        if project_id:
-            if project_id not in allowed:
-                raise ToolError("Project access denied for requested project_id.")
-            return project_id
-        if len(allowed) == 1:
-            return allowed[0]
-        raise ToolError("project_id required for this request.")
-
-    return project_id
+    allowed = _collect_allowed_project_ids(claims)
+    return _validate_project_id(project_id, allowed)
 
 
 async def _maybe_select_project(payload: dict[str, Any], ctx: Any | None) -> None:
@@ -172,11 +181,13 @@ def _build_sync_engine() -> SyncEngine:
         api_client = _NoopApiClient()
 
     # SyncEngine accepts TraceRTMClient; _NoopApiClient is duck-type compatible (get_changes).
+    from tracertm.storage.sync_engine import SyncConfig
+
     return SyncEngine(
         db_connection=db_connection,
-        api_client=api_client,  # type: ignore[arg-type]
+        api_client=cast(Any, api_client),
         storage_manager=storage_manager,
-        conflict_strategy=conflict_strategy,
+        config=SyncConfig(conflict_strategy=conflict_strategy),
     )
 
 
@@ -216,5 +227,5 @@ async def _get_async_session() -> AsyncSession:
     engine = create_async_engine(database_url, echo=False)
     async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
     session = async_session_maker()
-    session._tracertm_engine = engine  # type: ignore[attr-defined]
+    session._tracertm_engine = engine
     return session

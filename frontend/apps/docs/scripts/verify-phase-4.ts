@@ -106,7 +106,7 @@ async function verifyFontOptimization(): Promise<void> {
     },
     {
       name: 'Font Fallback',
-      test: () => fileContains(layoutPath, "fallback:"),
+      test: () => fileContains(layoutPath, 'fallback:'),
     },
     {
       name: 'Font Variable',
@@ -150,8 +150,7 @@ async function verifySpriteSystem(): Promise<void> {
     },
     {
       name: 'Navigation Uses Sprite',
-      test: () =>
-        fileContains(join(process.cwd(), 'components/navigation.tsx'), 'Icon name='),
+      test: () => fileContains(join(process.cwd(), 'components/navigation.tsx'), 'Icon name='),
     },
   ];
 
@@ -319,9 +318,6 @@ async function verifyDocumentation(): Promise<void> {
  * Print results
  */
 function printResults(): void {
-  
-  
-
   // Group by category
   const categories = [
     { count: 5, name: '📸 Image Optimization', start: 0 },
@@ -334,14 +330,13 @@ function printResults(): void {
   ];
 
   for (const category of categories) {
-    
     const categoryResults = results.slice(category.start, category.start + category.count);
 
     for (const result of categoryResults) {
       const icon = result.passed ? '✓' : '✗';
       const color = result.passed ? '\x1B[32m' : '\x1B[31m';
       const reset = '\x1B[0m';
-      
+      console.log(`${color}${icon} ${result.title}${reset} — ${result.details}`);
     }
   }
 
@@ -350,18 +345,13 @@ function printResults(): void {
   const total = results.length;
   const percentage = Math.round((passed / total) * 100);
 
-  
-  
-
   if (percentage === 100) {
-    
+    console.log(`✅ Phase 4 verification passed (${passed}/${total})`);
   } else if (percentage >= 80) {
-    
+    console.log(`⚠️ Phase 4 verification partial (${passed}/${total})`);
   } else {
-    
+    console.log(`❌ Phase 4 verification failed (${passed}/${total})`);
   }
-
-  
 }
 
 /**
@@ -385,7 +375,6 @@ async function verify(): Promise<void> {
 
     process.exit(percentage === 100 ? 0 : 1);
   } catch (error) {
-    
     process.exit(1);
   }
 }

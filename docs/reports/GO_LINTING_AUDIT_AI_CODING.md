@@ -32,7 +32,7 @@ The configuration has **zero protection** against AI-generated naming anti-patte
 
 | Anti-Pattern | Detection Method | Status |
 |--------------|------------------|--------|
-| Versioned files (`dashboard_v2.go`) | Custom regex or gocritic pattern | ❌ Not configured |
+| Versioned files (`dashboard_compat.go`) | Custom regex or gocritic pattern | ❌ Not configured |
 | Numbered suffixes (`handler_2.go`, `service_3.go`) | Custom regex | ❌ Not configured |
 | Prefix explosion (`NewUserService`, `ImprovedUserService`) | revive var-naming or custom | ❌ Not configured |
 | Duplicate identifier names | revive var-naming | ⚠️ Enabled but weak |
@@ -481,7 +481,7 @@ issues:
 
 ### Priority 2: Naming Explosion Prevention (Custom)
 
-**Problem**: No built-in linter detects `dashboard_v2.go`, `handler_2.go`, `NewImprovedUserService`.
+**Problem**: No built-in linter detects `dashboard_compat.go`, `handler_2.go`, `NewImprovedUserService`.
 
 **Solution**: Add custom `gocritic` rules or write a custom linter.
 
@@ -585,7 +585,7 @@ package gorules
 
 import "github.com/quasilyte/go-ruleguard/dsl"
 
-// DetectVersionedFiles flags files like "dashboard_v2.go"
+// DetectVersionedFiles flags files like "dashboard_compat.go"
 func DetectVersionedFiles(m dsl.Matcher) {
     m.Import("path/filepath")
     m.Match(`$_`).
@@ -637,7 +637,7 @@ Create `.git/hooks/pre-commit`:
 # Check for _v2, _v3, etc.
 FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$' | grep -E '_v[0-9]+\.go$')
 if [ -n "$FILES" ]; then
-    echo "❌ Versioned file names detected (e.g., dashboard_v2.go):"
+    echo "❌ Versioned file names detected (e.g., dashboard_compat.go):"
     echo "$FILES"
     echo "Refactor existing files instead of creating versions."
     exit 1

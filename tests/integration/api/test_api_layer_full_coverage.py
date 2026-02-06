@@ -1048,7 +1048,7 @@ class TestTraceRTMClientItemOperations:
         tracertm_client._session.add(item)
         tracertm_client._session.commit()
 
-        results = tracertm_client.query_items(status="done")
+        results = tracertm_client.query_items(options={"status": "done"})
         assert len(results) == 1
         assert results[0]["status"] == "done"
 
@@ -1078,11 +1078,9 @@ class TestTraceRTMClientItemOperations:
     def test_create_item(self, tracertm_client):
         """Test creating an item."""
         result = tracertm_client.create_item(
-            title="New Item",
-            view="FEATURE",
-            item_type="requirement",
-            description="Test description",
-            status="todo",
+            "New Item",
+            "FEATURE",
+            {"item_type": "requirement", "description": "Test description", "status": "todo"},
         )
         assert result["id"] is not None
         assert result["title"] == "New Item"
@@ -1092,10 +1090,9 @@ class TestTraceRTMClientItemOperations:
         """Test creating item with metadata."""
         metadata = {"priority": "high", "owner": "team-1"}
         result = tracertm_client.create_item(
-            title="Item with Meta",
-            view="FEATURE",
-            item_type="requirement",
-            metadata=metadata,
+            "Item with Meta",
+            "FEATURE",
+            {"item_type": "requirement", "metadata": metadata},
         )
         assert result["id"] is not None
 
@@ -1112,18 +1109,14 @@ class TestTraceRTMClientItemOperations:
         tracertm_client._session.add(item)
         tracertm_client._session.commit()
 
-        result = tracertm_client.update_item(
-            item.id,
-            title="Updated Title",
-            status="done",
-        )
+        result = tracertm_client.update_item(item.id, {"title": "Updated Title", "status": "done"})
         assert result["title"] == "Updated Title"
         assert result["status"] == "done"
 
     def test_update_item_not_found(self, tracertm_client):
         """Test updating non-existent item raises error."""
         with pytest.raises(ValueError) as exc_info:
-            tracertm_client.update_item("nonexistent-id", title="Updated")
+            tracertm_client.update_item("nonexistent-id", {"title": "Updated"})
         assert "Item not found" in str(exc_info.value)
 
     def test_delete_item(self, tracertm_client):
@@ -2464,9 +2457,11 @@ class TestAdvancedQueryOperations:
         tracertm_client._session.commit()
 
         results = tracertm_client.query_items(
-            view="FEATURE",
-            status="in_progress",
-            item_type="requirement",
+            options={
+                "view": "FEATURE",
+                "status": "in_progress",
+                "item_type": "requirement",
+            },
             priority="high",
             owner="agent-1",
         )
@@ -2514,12 +2509,12 @@ class TestAdvancedQueryOperations:
             tracertm_client._session.add(item)
         tracertm_client._session.commit()
 
-        results = tracertm_client.query_items(limit=5)
+        results = tracertm_client.query_items(options={"limit": 5})
         assert len(results) == 5
 
     def test_query_items_no_results(self, tracertm_client):
         """Test querying items returns empty when no matches."""
-        results = tracertm_client.query_items(status="nonexistent_status")
+        results = tracertm_client.query_items(options={"status": "nonexistent_status"})
         assert results == []
 
     def test_get_item_with_prefix_match(self, tracertm_client):
@@ -3018,19 +3013,18 @@ class TestDataEncodingEdgeCases:
     def test_create_item_with_unicode_characters(self, tracertm_client):
         """Test creating item with unicode characters."""
         result = tracertm_client.create_item(
-            title="Unicode Test: 你好世界 🌍 Привет мир",
-            view="FEATURE",
-            item_type="requirement",
+            "Unicode Test: 你好世界 🌍 Привет мир",
+            "FEATURE",
+            {"item_type": "requirement"},
         )
         assert result["id"] is not None
 
     def test_create_item_with_special_characters(self, tracertm_client):
         """Test creating item with special characters."""
         result = tracertm_client.create_item(
-            title="Special: <>&\"'\\n\\t",
-            view="FEATURE",
-            item_type="requirement",
-            description="Description with special: <>|{}[]",
+            "Special: <>&\"'\\n\\t",
+            "FEATURE",
+            {"item_type": "requirement", "description": "Description with special: <>|{}[]"},
         )
         assert result["id"] is not None
 
@@ -3038,9 +3032,9 @@ class TestDataEncodingEdgeCases:
         """Test creating item with very long title."""
         long_title = "a" * 500
         result = tracertm_client.create_item(
-            title=long_title,
-            view="FEATURE",
-            item_type="requirement",
+            long_title,
+            "FEATURE",
+            {"item_type": "requirement"},
         )
         assert result["id"] is not None
 

@@ -62,7 +62,11 @@ class TestAPIEndpointValidation:
 
     def test_backup_create_response(self):
         """Test backup creation response."""
-        response: dict[str, str | int] = {"backup_id": "backup-123", "timestamp": "2025-11-22T10:00:00Z", "items_count": 42}
+        response: dict[str, str | int] = {
+            "backup_id": "backup-123",
+            "timestamp": "2025-11-22T10:00:00Z",
+            "items_count": 42,
+        }
         assert "backup_id" in response
         assert response["items_count"] >= 0
 
@@ -85,7 +89,11 @@ class TestAPIEndpointValidation:
 
     def test_error_response_structure(self):
         """Test error response structure."""
-        error_response: dict[str, str | int] = {"error": "Invalid request", "code": 400, "details": "Missing required field: name"}
+        error_response: dict[str, str | int] = {
+            "error": "Invalid request",
+            "code": 400,
+            "details": "Missing required field: name",
+        }
         assert "error" in error_response
         assert error_response["code"] >= 400
 

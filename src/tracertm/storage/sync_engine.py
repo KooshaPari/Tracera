@@ -26,9 +26,8 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import text
 
-from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
-
 from tracertm.database.connection import DatabaseConnection
+from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
 from tracertm.storage.local_storage import LocalStorageManager
 
 if TYPE_CHECKING:
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
 @dataclass
 class SyncConfig:
     """Configuration for sync engine behavior."""
+
     conflict_strategy: ConflictStrategy = ConflictStrategy.LAST_WRITE_WINS
     max_retries: int = 3
     retry_delay: float = 1.0
@@ -204,7 +204,7 @@ class SyncQueue:
         self._ensure_tables()
 
     @property
-    def engine(self):  # type: ignore[no-untyped-def]
+    def engine(self):
         """Get database engine, ensuring it's not None."""
         if self.db.engine is None:
             raise RuntimeError("Database engine not initialized")
@@ -392,7 +392,7 @@ class SyncStateManager:
         self._ensure_tables()
 
     @property
-    def engine(self):  # type: ignore[no-untyped-def]
+    def engine(self):
         """Get database engine, ensuring it's not None."""
         if self.db.engine is None:
             raise RuntimeError("Database engine not initialized")
@@ -564,7 +564,7 @@ class SyncEngine:
         self._sync_lock: asyncio.Lock = asyncio.Lock()
 
     @property
-    def engine(self):  # type: ignore[no-untyped-def]
+    def engine(self):
         """Get database engine, ensuring it's not None."""
         if self.db.engine is None:
             raise RuntimeError("Database engine not initialized")

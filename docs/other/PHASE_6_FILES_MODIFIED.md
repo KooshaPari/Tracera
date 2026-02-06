@@ -37,8 +37,8 @@ def textual_app_context():
 
 ---
 
-### 2. tests/unit/tui/apps/test_dashboard_v2.py
-**Path:** `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/tui/apps/test_dashboard_v2.py`
+### 2. tests/unit/tui/apps/test_dashboard_compat.py
+**Path:** `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/unit/tui/apps/test_dashboard_compat.py`
 
 **Changes:**
 - Modified `test_compose_creates_widgets()` method in `TestDashboardAppComposition` class
@@ -165,7 +165,7 @@ with patch("tracertm.storage.conflict_resolver.ConflictResolver"):  # Correct
 
 ```bash
 tests/conftest.py                                | +31 lines (fixture added)
-tests/unit/tui/apps/test_dashboard_v2.py        | ~15 lines (method rewritten)
+tests/unit/tui/apps/test_dashboard_compat.py        | ~15 lines (method rewritten)
 tests/unit/tui/widgets/test_conflict_panel.py   | ~20 lines (2 tests modified)
 tests/unit/tui/adapters/test_storage_adapter.py | ~4 lines (2 patch paths fixed)
 PHASE_6_COMPLETION_REPORT.md                    | +500 lines (new file)

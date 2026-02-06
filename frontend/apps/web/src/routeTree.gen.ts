@@ -9,15 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as HomeRouteImport } from './routes/home'
-import { Route as AgentsRouteImport } from './routes/agents'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as LandingRouteImport } from './routes/landing'
+import { Route as ItemsRouteImport } from './routes/items'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SettingsIndexRouteImport } from './routes/settings.index'
-import { Route as SearchIndexRouteImport } from './routes/search.index'
-import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
-import { Route as ItemsIndexRouteImport } from './routes/items.index'
-import { Route as GraphIndexRouteImport } from './routes/graph.index'
-import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as GraphRouteImport } from './routes/graph'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AgentsRouteImport } from './routes/agents'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as RootRouteImport } from './routes/root'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as ItemsTreeRouteImport } from './routes/items.tree'
 import { Route as ItemsTableRouteImport } from './routes/items.table'
@@ -69,9 +72,49 @@ import { Route as ProjectsProjectIdAdrsAdrIdRouteImport } from './routes/project
 import { Route as ProjectsProjectIdViewsViewTypeItemIdRouteImport } from './routes/projects.$projectId.views.$viewType.$itemId'
 import { Route as ProjectsProjectIdFeaturesFeatureIdScenariosScenarioIdRouteImport } from './routes/projects.$projectId.features.$featureId.scenarios.$scenarioId'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingRoute = LandingRouteImport.update({
+  id: '/landing',
+  path: '/landing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItemsRoute = ItemsRouteImport.update({
+  id: '/items',
+  path: '/items',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/index',
+  path: '/index',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GraphRoute = GraphRouteImport.update({
+  id: '/graph',
+  path: '/graph',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgentsRoute = AgentsRouteImport.update({
@@ -79,65 +122,40 @@ const AgentsRoute = AgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RootRoute = RootRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsIndexRoute = SettingsIndexRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SearchIndexRoute = SearchIndexRouteImport.update({
-  id: '/search/',
-  path: '/search/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
-  id: '/projects/',
-  path: '/projects/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ItemsIndexRoute = ItemsIndexRouteImport.update({
-  id: '/items/',
-  path: '/items/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GraphIndexRoute = GraphIndexRouteImport.update({
-  id: '/graph/',
-  path: '/graph/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
-  id: '/projects/$projectId',
-  path: '/projects/$projectId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$projectId',
+  path: '/$projectId',
+  getParentRoute: () => ProjectsRoute,
 } as any)
 const ItemsTreeRoute = ItemsTreeRouteImport.update({
-  id: '/items/tree',
-  path: '/items/tree',
-  getParentRoute: () => rootRouteImport,
+  id: '/tree',
+  path: '/tree',
+  getParentRoute: () => ItemsRoute,
 } as any)
 const ItemsTableRoute = ItemsTableRouteImport.update({
-  id: '/items/table',
-  path: '/items/table',
-  getParentRoute: () => rootRouteImport,
+  id: '/table',
+  path: '/table',
+  getParentRoute: () => ItemsRoute,
 } as any)
 const ItemsKanbanRoute = ItemsKanbanRouteImport.update({
-  id: '/items/kanban',
-  path: '/items/kanban',
-  getParentRoute: () => rootRouteImport,
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => ItemsRoute,
 } as any)
 const ItemsItemIdRoute = ItemsItemIdRouteImport.update({
-  id: '/items/$itemId',
-  path: '/items/$itemId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$itemId',
+  path: '/$itemId',
+  getParentRoute: () => ItemsRoute,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/auth/register',
@@ -405,9 +423,18 @@ const ProjectsProjectIdFeaturesFeatureIdScenariosScenarioIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof RootRoute
+  '/admin': typeof AdminRoute
   '/agents': typeof AgentsRoute
+  '/dashboard': typeof DashboardRoute
+  '/graph': typeof GraphRoute
   '/home': typeof HomeRoute
+  '/index': typeof IndexRoute
+  '/items': typeof ItemsRouteWithChildren
+  '/landing': typeof LandingRoute
+  '/projects': typeof ProjectsRouteWithChildren
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
@@ -417,12 +444,6 @@ export interface FileRoutesByFullPath {
   '/items/table': typeof ItemsTableRoute
   '/items/tree': typeof ItemsTreeRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
-  '/admin/': typeof AdminIndexRoute
-  '/graph/': typeof GraphIndexRoute
-  '/items/': typeof ItemsIndexRoute
-  '/projects/': typeof ProjectsIndexRoute
-  '/search/': typeof SearchIndexRoute
-  '/settings/': typeof SettingsIndexRoute
   '/projects/$projectId/adrs': typeof ProjectsProjectIdAdrsRouteWithChildren
   '/projects/$projectId/agents': typeof ProjectsProjectIdAgentsRoute
   '/projects/$projectId/compliance': typeof ProjectsProjectIdComplianceRoute
@@ -466,9 +487,18 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/features/$featureId/scenarios/$scenarioId': typeof ProjectsProjectIdFeaturesFeatureIdScenariosScenarioIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof RootRoute
+  '/admin': typeof AdminRoute
   '/agents': typeof AgentsRoute
+  '/dashboard': typeof DashboardRoute
+  '/graph': typeof GraphRoute
   '/home': typeof HomeRoute
+  '/index': typeof IndexRoute
+  '/items': typeof ItemsRouteWithChildren
+  '/landing': typeof LandingRoute
+  '/projects': typeof ProjectsRouteWithChildren
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
@@ -478,12 +508,6 @@ export interface FileRoutesByTo {
   '/items/table': typeof ItemsTableRoute
   '/items/tree': typeof ItemsTreeRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
-  '/admin': typeof AdminIndexRoute
-  '/graph': typeof GraphIndexRoute
-  '/items': typeof ItemsIndexRoute
-  '/projects': typeof ProjectsIndexRoute
-  '/search': typeof SearchIndexRoute
-  '/settings': typeof SettingsIndexRoute
   '/projects/$projectId/adrs': typeof ProjectsProjectIdAdrsRouteWithChildren
   '/projects/$projectId/agents': typeof ProjectsProjectIdAgentsRoute
   '/projects/$projectId/compliance': typeof ProjectsProjectIdComplianceRoute
@@ -528,9 +552,18 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/': typeof RootRoute
+  '/admin': typeof AdminRoute
   '/agents': typeof AgentsRoute
+  '/dashboard': typeof DashboardRoute
+  '/graph': typeof GraphRoute
   '/home': typeof HomeRoute
+  '/index': typeof IndexRoute
+  '/items': typeof ItemsRouteWithChildren
+  '/landing': typeof LandingRoute
+  '/projects': typeof ProjectsRouteWithChildren
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
@@ -540,12 +573,6 @@ export interface FileRoutesById {
   '/items/table': typeof ItemsTableRoute
   '/items/tree': typeof ItemsTreeRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
-  '/admin/': typeof AdminIndexRoute
-  '/graph/': typeof GraphIndexRoute
-  '/items/': typeof ItemsIndexRoute
-  '/projects/': typeof ProjectsIndexRoute
-  '/search/': typeof SearchIndexRoute
-  '/settings/': typeof SettingsIndexRoute
   '/projects/$projectId/adrs': typeof ProjectsProjectIdAdrsRouteWithChildren
   '/projects/$projectId/agents': typeof ProjectsProjectIdAgentsRoute
   '/projects/$projectId/compliance': typeof ProjectsProjectIdComplianceRoute
@@ -592,8 +619,17 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/agents'
+    | '/dashboard'
+    | '/graph'
     | '/home'
+    | '/index'
+    | '/items'
+    | '/landing'
+    | '/projects'
+    | '/search'
+    | '/settings'
     | '/auth/callback'
     | '/auth/login'
     | '/auth/logout'
@@ -603,12 +639,6 @@ export interface FileRouteTypes {
     | '/items/table'
     | '/items/tree'
     | '/projects/$projectId'
-    | '/admin/'
-    | '/graph/'
-    | '/items/'
-    | '/projects/'
-    | '/search/'
-    | '/settings/'
     | '/projects/$projectId/adrs'
     | '/projects/$projectId/agents'
     | '/projects/$projectId/compliance'
@@ -653,8 +683,17 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/agents'
+    | '/dashboard'
+    | '/graph'
     | '/home'
+    | '/index'
+    | '/items'
+    | '/landing'
+    | '/projects'
+    | '/search'
+    | '/settings'
     | '/auth/callback'
     | '/auth/login'
     | '/auth/logout'
@@ -664,12 +703,6 @@ export interface FileRouteTypes {
     | '/items/table'
     | '/items/tree'
     | '/projects/$projectId'
-    | '/admin'
-    | '/graph'
-    | '/items'
-    | '/projects'
-    | '/search'
-    | '/settings'
     | '/projects/$projectId/adrs'
     | '/projects/$projectId/agents'
     | '/projects/$projectId/compliance'
@@ -714,8 +747,17 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/agents'
+    | '/dashboard'
+    | '/graph'
     | '/home'
+    | '/index'
+    | '/items'
+    | '/landing'
+    | '/projects'
+    | '/search'
+    | '/settings'
     | '/auth/callback'
     | '/auth/login'
     | '/auth/logout'
@@ -725,12 +767,6 @@ export interface FileRouteTypes {
     | '/items/table'
     | '/items/tree'
     | '/projects/$projectId'
-    | '/admin/'
-    | '/graph/'
-    | '/items/'
-    | '/projects/'
-    | '/search/'
-    | '/settings/'
     | '/projects/$projectId/adrs'
     | '/projects/$projectId/agents'
     | '/projects/$projectId/compliance'
@@ -775,33 +811,87 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  RootRoute: typeof RootRoute
+  AdminRoute: typeof AdminRoute
   AgentsRoute: typeof AgentsRoute
+  DashboardRoute: typeof DashboardRoute
+  GraphRoute: typeof GraphRoute
   HomeRoute: typeof HomeRoute
+  IndexRoute: typeof IndexRoute
+  ItemsRoute: typeof ItemsRouteWithChildren
+  LandingRoute: typeof LandingRoute
+  ProjectsRoute: typeof ProjectsRouteWithChildren
+  SearchRoute: typeof SearchRoute
+  SettingsRoute: typeof SettingsRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthLogoutRoute: typeof AuthLogoutRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
-  ItemsItemIdRoute: typeof ItemsItemIdRoute
-  ItemsKanbanRoute: typeof ItemsKanbanRoute
-  ItemsTableRoute: typeof ItemsTableRoute
-  ItemsTreeRoute: typeof ItemsTreeRoute
-  ProjectsProjectIdRoute: typeof ProjectsProjectIdRouteWithChildren
-  AdminIndexRoute: typeof AdminIndexRoute
-  GraphIndexRoute: typeof GraphIndexRoute
-  ItemsIndexRoute: typeof ItemsIndexRoute
-  ProjectsIndexRoute: typeof ProjectsIndexRoute
-  SearchIndexRoute: typeof SearchIndexRoute
-  SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landing': {
+      id: '/landing'
+      path: '/landing'
+      fullPath: '/landing'
+      preLoaderRoute: typeof LandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/items': {
+      id: '/items'
+      path: '/items'
+      fullPath: '/items'
+      preLoaderRoute: typeof ItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/index': {
+      id: '/index'
+      path: '/index'
+      fullPath: '/index'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/graph': {
+      id: '/graph'
+      path: '/graph'
+      fullPath: '/graph'
+      preLoaderRoute: typeof GraphRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agents': {
@@ -811,89 +901,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings/': {
-      id: '/settings/'
-      path: '/settings'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof SettingsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search/': {
-      id: '/search/'
-      path: '/search'
-      fullPath: '/search/'
-      preLoaderRoute: typeof SearchIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects/': {
-      id: '/projects/'
-      path: '/projects'
-      fullPath: '/projects/'
-      preLoaderRoute: typeof ProjectsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/items/': {
-      id: '/items/'
-      path: '/items'
-      fullPath: '/items/'
-      preLoaderRoute: typeof ItemsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/graph/': {
-      id: '/graph/'
-      path: '/graph'
-      fullPath: '/graph/'
-      preLoaderRoute: typeof GraphIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/': {
-      id: '/admin/'
-      path: '/admin'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
+      preLoaderRoute: typeof RootRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/$projectId': {
       id: '/projects/$projectId'
-      path: '/projects/$projectId'
+      path: '/$projectId'
       fullPath: '/projects/$projectId'
       preLoaderRoute: typeof ProjectsProjectIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ProjectsRoute
     }
     '/items/tree': {
       id: '/items/tree'
-      path: '/items/tree'
+      path: '/tree'
       fullPath: '/items/tree'
       preLoaderRoute: typeof ItemsTreeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ItemsRoute
     }
     '/items/table': {
       id: '/items/table'
-      path: '/items/table'
+      path: '/table'
       fullPath: '/items/table'
       preLoaderRoute: typeof ItemsTableRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ItemsRoute
     }
     '/items/kanban': {
       id: '/items/kanban'
-      path: '/items/kanban'
+      path: '/kanban'
       fullPath: '/items/kanban'
       preLoaderRoute: typeof ItemsKanbanRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ItemsRoute
     }
     '/items/$itemId': {
       id: '/items/$itemId'
-      path: '/items/$itemId'
+      path: '/$itemId'
       fullPath: '/items/$itemId'
       preLoaderRoute: typeof ItemsItemIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ItemsRoute
     }
     '/auth/register': {
       id: '/auth/register'
@@ -1213,6 +1268,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ItemsRouteChildren {
+  ItemsItemIdRoute: typeof ItemsItemIdRoute
+  ItemsKanbanRoute: typeof ItemsKanbanRoute
+  ItemsTableRoute: typeof ItemsTableRoute
+  ItemsTreeRoute: typeof ItemsTreeRoute
+}
+
+const ItemsRouteChildren: ItemsRouteChildren = {
+  ItemsItemIdRoute: ItemsItemIdRoute,
+  ItemsKanbanRoute: ItemsKanbanRoute,
+  ItemsTableRoute: ItemsTableRoute,
+  ItemsTreeRoute: ItemsTreeRoute,
+}
+
+const ItemsRouteWithChildren = ItemsRoute._addFileChildren(ItemsRouteChildren)
+
 interface ProjectsProjectIdAdrsRouteChildren {
   ProjectsProjectIdAdrsAdrIdRoute: typeof ProjectsProjectIdAdrsAdrIdRoute
 }
@@ -1375,25 +1446,35 @@ const ProjectsProjectIdRouteChildren: ProjectsProjectIdRouteChildren = {
 const ProjectsProjectIdRouteWithChildren =
   ProjectsProjectIdRoute._addFileChildren(ProjectsProjectIdRouteChildren)
 
+interface ProjectsRouteChildren {
+  ProjectsProjectIdRoute: typeof ProjectsProjectIdRouteWithChildren
+}
+
+const ProjectsRouteChildren: ProjectsRouteChildren = {
+  ProjectsProjectIdRoute: ProjectsProjectIdRouteWithChildren,
+}
+
+const ProjectsRouteWithChildren = ProjectsRoute._addFileChildren(
+  ProjectsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  RootRoute: RootRoute,
+  AdminRoute: AdminRoute,
   AgentsRoute: AgentsRoute,
+  DashboardRoute: DashboardRoute,
+  GraphRoute: GraphRoute,
   HomeRoute: HomeRoute,
+  IndexRoute: IndexRoute,
+  ItemsRoute: ItemsRouteWithChildren,
+  LandingRoute: LandingRoute,
+  ProjectsRoute: ProjectsRouteWithChildren,
+  SearchRoute: SearchRoute,
+  SettingsRoute: SettingsRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthLogoutRoute: AuthLogoutRoute,
   AuthRegisterRoute: AuthRegisterRoute,
-  ItemsItemIdRoute: ItemsItemIdRoute,
-  ItemsKanbanRoute: ItemsKanbanRoute,
-  ItemsTableRoute: ItemsTableRoute,
-  ItemsTreeRoute: ItemsTreeRoute,
-  ProjectsProjectIdRoute: ProjectsProjectIdRouteWithChildren,
-  AdminIndexRoute: AdminIndexRoute,
-  GraphIndexRoute: GraphIndexRoute,
-  ItemsIndexRoute: ItemsIndexRoute,
-  ProjectsIndexRoute: ProjectsIndexRoute,
-  SearchIndexRoute: SearchIndexRoute,
-  SettingsIndexRoute: SettingsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

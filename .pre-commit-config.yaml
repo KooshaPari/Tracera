@@ -4,7 +4,7 @@
 # Update: pre-commit autoupdate
 #
 # PERFORMANCE NOTES:
-# - Slow checks (mypy, basedpyright, semgrep, interrogate, pytest) moved to CI
+# - Slow checks (ty, semgrep, interrogate, pytest) moved to CI
 # - Fast linting/formatting kept in pre-commit with STRICT configs
 # - Parallel execution enabled
 # - File filtering optimized for changed files only
@@ -21,14 +21,16 @@ repos:
 
   # Ruff - Lightning-fast linting and formatting (Python)
   # Uses pyproject.toml config with complexity rules (C90, PLR)
+  # Note: Output format defaults to text (grouped by file for easy processing)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.0
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix, --exit-non-zero-on-fix, --output-format=grouped]
         # Complexity limits from pyproject.toml:
         # - McCabe max-complexity: 7
         # - max-args: 5, max-branches: 12, max-returns: 6, max-statements: 50
+        # Output: grouped by file for easy processing by agents
         pass_filenames: true
       - id: ruff-format
         # Strict format: double quotes, 4-space indent, trailing commas
@@ -84,6 +86,40 @@ repos:
         files: ^backend/
         pass_filenames: true
 
+  # Quality Guards - naming explosion + file LOC limits (strict, fast-ish)
+  - repo: local
+    hooks:
+      - id: generated-contracts
+        name: generated contracts (OpenAPI + SDKs)
+        entry: bash scripts/shell/check-generated-contracts.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: loc-guard
+        name: file LOC guard
+        entry: bash scripts/shell/check-file-loc.sh
+        language: system
+        pass_filenames: false
+      - id: naming-explosion-python
+        name: naming explosion (python)
+        entry: bash scripts/shell/check-naming-explosion-python.sh
+        language: system
+        pass_filenames: false
+      - id: naming-explosion-go
+        name: naming explosion (go)
+        entry: bash scripts/shell/check-naming-explosion-go.sh
+        language: system
+        pass_filenames: false
+      - id: naming-explosion-frontend
+        name: naming explosion (frontend)
+        entry: bash -c 'cd frontend && bash scripts/check-naming-explosion.sh'
+        language: system
+      - id: routes-entrypoints
+        name: routes entrypoint guard
+        entry: bash scripts/shell/check-route-entrypoints.sh
+        language: system
+        pass_filenames: false
+
   # Frontend - oxlint (fast, strict linting)
   # Uses standard .oxlintrc.json (AI-strict config moved to CI)
   - repo: local
@@ -110,12 +146,32 @@ repos:
         pass_filenames: false
         files: ^frontend/.*\.(js|ts|tsx|jsx|json|mjs|cjs)$
 
+  # Desktop app - oxlint (fast lint)
+  - repo: local
+    hooks:
+      - id: oxlint-desktop
+        name: oxlint (desktop app)
+        entry: bash -c 'cd frontend/apps/desktop && bun x oxlint -c .oxlintrc.json .'
+        language: system
+        pass_filenames: false
+        files: ^frontend/apps/desktop/.*\.(js|ts|tsx|jsx|mjs|cjs)$
+
+  # Quick coverage check on staged frontend files
+  - repo: local
+    hooks:
+      - id: vitest-changed
+        name: vitest (changed files only)
+        entry: bash -c 'cd frontend && bun run vitest --changed --run 2>/dev/null || true'
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*\.(ts|tsx)$
+        stages: [pre-push]
+
 # ============================================================================
 # SLOW CHECKS - MOVED TO CI ONLY (See .github/workflows/quality.yml)
 # ============================================================================
 # The following checks are now CI-only for better developer experience:
-# - MyPy (type checking) - runs in CI quality.yml
-# - basedpyright (ultra-strict type checking) - runs in CI quality.yml
+# - Ty (type checking) - runs in CI quality.yml
 # - Bandit (security) - runs in CI quality.yml
 # - Semgrep (security) - runs in CI quality.yml
 # - Interrogate (docstring coverage) - runs in CI quality.yml
@@ -126,8 +182,7 @@ repos:
 # - pytest (tests) - runs in CI ci.yml and tests.yml
 #
 # Run these manually when needed:
-#   uv run mypy src/
-#   uv run basedpyright src/
+#   uv run ty check src/ --error-on-warning
 #   uv run bandit -r src/
 #   semgrep --config=p/security-audit src/
 #   uv run interrogate -vv src/
@@ -170,4 +225,3 @@ minimum_pre_commit_version: 2.15.0
 
 # Parallel execution (enabled by default in pre-commit v3.0+)
 # This will run independent hooks in parallel automatically
-

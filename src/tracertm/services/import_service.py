@@ -115,9 +115,7 @@ class ImportService:
                 errors.append(f"Item {i}: view is required")
         return errors
 
-    def _validate_links_section(
-        self, links: list[dict], item_ids: set[str | None]
-    ) -> list[str]:
+    def _validate_links_section(self, links: list[dict], item_ids: set[str | None]) -> list[str]:
         """Validate links reference existing items; return list of errors."""
         errors: list[str] = []
         for i, link in enumerate(links):

@@ -9,15 +9,16 @@ Enables CLI tokens to work seamlessly with MCP by:
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING, Any
 
 from tracertm.mcp.token_manager import TokenInfo, TokenManager, get_token_manager
 
-try:
+if TYPE_CHECKING:
     from tracertm.cli.auth import AuthTokens, TokenStorage, get_token_storage
-except ImportError:
-    AuthTokens = None  # type: ignore[assignment,misc]
-    TokenStorage = None  # type: ignore[assignment,misc]
-    get_token_storage = None  # type: ignore[assignment,misc]
+else:
+    AuthTokens = Any
+    TokenStorage = Any
+    get_token_storage = None
 
 logger = logging.getLogger(__name__)
 

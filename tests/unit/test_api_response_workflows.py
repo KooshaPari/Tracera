@@ -17,13 +17,23 @@ class TestAPIResponsePaths:
 
     def test_item_create_response(self):
         """Test item create response."""
-        response: dict[str, int | str] = {"id": 1, "name": "Test", "status": "active", "created_at": "2025-11-22T10:00:00Z"}
+        response: dict[str, int | str] = {
+            "id": 1,
+            "name": "Test",
+            "status": "active",
+            "created_at": "2025-11-22T10:00:00Z",
+        }
         assert response["id"] > 0
         assert "created_at" in response
 
     def test_item_list_response(self):
         """Test item list response structure."""
-        response: dict[str, int | list[dict[str, int]]] = {"items": [{"id": 1}, {"id": 2}], "total": 2, "skip": 0, "limit": 10}
+        response: dict[str, int | list[dict[str, int]]] = {
+            "items": [{"id": 1}, {"id": 2}],
+            "total": 2,
+            "skip": 0,
+            "limit": 10,
+        }
         assert len(response["items"]) == 2
         assert response["total"] == 2
 
@@ -261,7 +271,11 @@ class TestSpecialConfigurations:
 
     def test_security_configuration(self):
         """Test security configuration."""
-        config: dict[str, bool | list[str] | int] = {"ssl_enabled": True, "cors_origins": ["http://localhost:3000"], "rate_limit": 100}
+        config: dict[str, bool | list[str] | int] = {
+            "ssl_enabled": True,
+            "cors_origins": ["http://localhost:3000"],
+            "rate_limit": 100,
+        }
 
         assert config["ssl_enabled"] is True
         assert len(config["cors_origins"]) > 0

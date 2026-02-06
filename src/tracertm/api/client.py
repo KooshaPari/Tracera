@@ -129,7 +129,7 @@ def get_async_session(database_url: str | None = None) -> AsyncSession:
         if isinstance(async_sess, AsyncSession):
             return async_sess
     # Fallback: wrap sync engine
-    return AsyncSession(db.engine)  # type: ignore[arg-type]
+    return AsyncSession(db.engine)
 
 
 class TraceRTMClient:
@@ -308,8 +308,9 @@ class TraceRTMClient:
         if not self.agent_id:
             return  # Skip logging if no agent registered
 
+        session: Session | None = None
         try:
-            session = self._get_session()
+            session = self._ensure_sync_session()
             project_id = self._get_project_id()
 
             event = Event(
@@ -320,13 +321,14 @@ class TraceRTMClient:
                 data=data or {},  # Ensure data is always a dict
                 agent_id=self.agent_id,
             )
-            session.add(event)
-            session.flush()  # Flush to get ID, but don't commit yet
-            session.commit()
+            if session is not None:
+                session.add(event)
+                session.flush()  # Flush to get ID, but don't commit yet
+                session.commit()
         except Exception:
             # Rollback on error and silently fail logging to not break operations
             try:
-                if "session" in locals():
+                if session is not None:
                     session.rollback()
             except Exception:
                 pass
@@ -492,6 +494,98 @@ class TraceRTMClient:
         session = self._ensure_sync_session()
         return session.query(Project).all()
 
+    def _apply_item_filters(
+        self,
+        query: Any,
+        view: str | None,
+        status: str | None,
+        item_type: str | None,
+        filters: dict[str, Any],
+    ) -> tuple[Any, str | None]:
+        if view:
+            query = query.filter(Item.view == view.upper())
+        if status:
+            query = query.filter(Item.status == status)
+        resolved_item_type = item_type or filters.pop("type", None)
+        if resolved_item_type:
+            query = query.filter(Item.item_type == resolved_item_type)
+        if "priority" in filters:
+            query = query.filter(Item.priority == filters["priority"])
+        if "owner" in filters:
+            query = query.filter(Item.owner == filters["owner"])
+        if "parent_id" in filters:
+            query = query.filter(Item.parent_id == filters["parent_id"])
+        query = query.filter(Item.deleted_at.is_(None))
+        return query, resolved_item_type
+
+    def _apply_item_sort(self, query: Any, sort: str | None, order: str | None) -> Any:
+        sort_field = sort
+        if not sort_field:
+            return query
+        attr_map = {
+            "created_at": Item.created_at if hasattr(Item, "created_at") else None,
+            "item_type": Item.item_type,
+            "priority": Item.priority,
+            "status": Item.status,
+            "title": Item.title,
+            "type": Item.item_type,
+            "updated_at": Item.updated_at if hasattr(Item, "updated_at") else None,
+            "view": Item.view,
+        }
+        column = attr_map.get(sort_field)
+        if column is None:
+            return query
+        sort_order = (order or "asc").lower()
+        return query.order_by(column.asc() if sort_order == "asc" else column.desc())
+
+    def _apply_item_pagination(self, query: Any, limit: int, offset: int) -> Any:
+        if offset:
+            query = query.offset(offset)
+        if limit:
+            query = query.limit(limit)
+        return query
+
+    def _apply_item_memory_filters(
+        self,
+        items: list[Item],
+        search: str | None,
+        metadata_filter: dict[str, Any] | None,
+    ) -> list[Item]:
+        if search:
+            lowered = search.lower()
+            items = [
+                item
+                for item in items
+                if (item.title and lowered in item.title.lower())
+                or (item.description and lowered in item.description.lower())
+            ]
+        if metadata_filter:
+
+            def match_meta(it: Item) -> bool:
+                meta = it.item_metadata or {}
+                return all(meta.get(k) == v for k, v in metadata_filter.items())
+
+            items = [item for item in items if match_meta(item)]
+        return items
+
+    def _commit_item_update(self, session: Any, item: Item, original_version: int) -> ItemView:
+        session.commit()
+        self._log_operation(
+            "item_updated",
+            "item",
+            str(item.id),
+            {
+                "title": item.title,
+                "status": item.status,
+                "version": original_version,
+                "new_version": item.version,
+            },
+        )
+        item_view = self._as_item_view(item)
+        if item_view is None:
+            raise ValueError("Item not found after update")
+        return item_view
+
     # FR37: Query project state
     def query_items(
         self,
@@ -520,70 +614,26 @@ class TraceRTMClient:
         session = self._ensure_sync_session()
 
         query = session.query(Item)
-        if view:
-            query = query.filter(Item.view == view.upper())
-        if status:
-            query = query.filter(Item.status == status)
-        item_type = item_type or filters.pop("type", None)
-        if item_type:
-            query = query.filter(Item.item_type == item_type)
-        if "priority" in filters:
-            query = query.filter(Item.priority == filters["priority"])
-        if "owner" in filters:
-            query = query.filter(Item.owner == filters["owner"])
-        if "parent_id" in filters:
-            query = query.filter(Item.parent_id == filters["parent_id"])
-        query = query.filter(Item.deleted_at.is_(None))
+        query, resolved_type = self._apply_item_filters(query, view, status, item_type, filters)
 
         # Sorting support used by tests
         sort_field = sort or filters.get("sort")
-        if sort_field:
-            attr_map = {
-                "title": Item.title,
-                "status": Item.status,
-                "priority": Item.priority,
-                "view": Item.view,
-                "type": Item.item_type,
-                "item_type": Item.item_type,
-                "created_at": Item.created_at if hasattr(Item, "created_at") else None,
-                "updated_at": Item.updated_at if hasattr(Item, "updated_at") else None,
-            }
-            column = attr_map.get(sort_field)
-            if column is not None:
-                query = query.order_by(column.asc() if (order or "asc").lower() == "asc" else column.desc())
-
-        if offset:
-            query = query.offset(offset)
-        if limit:
-            query = query.limit(limit)
+        query = self._apply_item_sort(query, sort_field, order)
+        query = self._apply_item_pagination(query, limit, offset)
 
         items = query.all()
 
         # In-memory filters for text search and metadata
         search = filters.get("search")
         metadata_filter = filters.get("metadata_filter")
-        if search:
-            lowered = search.lower()
-            items = [
-                item
-                for item in items
-                if (item.title and lowered in item.title.lower())
-                or (item.description and lowered in item.description.lower())
-            ]
-        if metadata_filter:
-
-            def match_meta(it: Item) -> bool:
-                meta = it.item_metadata or {}
-                return all(meta.get(k) == v for k, v in metadata_filter.items())
-
-            items = [item for item in items if match_meta(item)]
+        items = self._apply_item_memory_filters(items, search, metadata_filter)
 
         # Log query operation
         self._log_operation(
             "items_queried",
             "query",
             "multiple",
-            {"view": view, "status": status, "count": len(items)},
+            {"view": view, "status": status, "type": resolved_type, "count": len(items)},
         )
 
         return [self._as_item_view(item) for item in items]
@@ -761,22 +811,7 @@ class TraceRTMClient:
 
         # Optimistic locking (FR42) - version will be incremented automatically
         try:
-            session.commit()
-
-            # Log operation (FR41)
-            self._log_operation(
-                "item_updated",
-                "item",
-                item.id,
-                {
-                    "title": item.title,
-                    "status": item.status,
-                    "version": original_version,
-                    "new_version": item.version,
-                },
-            )
-
-            return self._as_item_view(item)
+            return self._commit_item_update(session, item, original_version)
         except StaleDataError:
             # Conflict detected (FR43) - will be retried by decorator
             session.rollback()
@@ -988,7 +1023,11 @@ class TraceRTMClient:
         for data in items_data:
             data = dict[str, Any](data)
             data.setdefault("project_id", project_id)
-            created.append(self.create_item(**data))
+            title = data.pop("title", "")
+            view = data.pop("view", "FEATURE")
+            if "type" in data:
+                data["item_type"] = data.pop("type")
+            created.append(self.create_item(title, view, **data))
         return created if self._patched_session else BatchResult(created, {"items_created": len(created)})
 
     def batch_update_items(self, updates: list[dict[str, Any]]) -> list[ItemView | Any] | BatchResult:
@@ -1005,7 +1044,7 @@ class TraceRTMClient:
             if item_id is None:
                 continue
             try:
-                updated.append(self.update_item(item_id=item_id, **payload))
+                updated.append(self.update_item(item_id, payload))
             except ValueError:
                 # Skip missing items in batch mode
                 continue

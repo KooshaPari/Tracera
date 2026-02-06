@@ -1,12 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/route-guards";
-import { ScenarioDetailView } from "@/views/ScenarioDetailView";
+import type { ReactElement } from 'react';
 
-const ScenarioDetailPage = () => <ScenarioDetailView />;
+import { createFileRoute } from '@tanstack/react-router';
+
+import { requireAuth } from '@/lib/route-guards';
+import { ScenarioDetailView } from '@/views/ScenarioDetailView';
+
+const ScenarioDetailPage = (): ReactElement => <ScenarioDetailView />;
 
 export const Route = createFileRoute(
-	"/projects/$projectId/features/$featureId/scenarios/$scenarioId" as any,
+  '/projects/$projectId/features/$featureId/scenarios/$scenarioId',
 )({
-	beforeLoad: () => requireAuth(),
-	component: ScenarioDetailPage,
+  beforeLoad: async () => await requireAuth(),
+  component: ScenarioDetailPage,
 });

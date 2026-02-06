@@ -7,11 +7,7 @@ paths:
   /api/v1/auth/device/code:
     post:
       summary: Device Code Endpoint
-      description: |-
-        Start device authorization flow. Returns device code and verification URL.
-
-        The user navigates to the verification URL and enters the user code.
-        The device then polls /api/v1/auth/device/token to complete authentication.
+      description: FastAPI endpoint wrapper for device code.
       operationId: device_code_endpoint_api_v1_auth_device_code_post
       requestBody:
         content:
@@ -36,14 +32,33 @@ paths:
   /api/v1/auth/device/token:
     post:
       summary: Device Token Endpoint
-      description: |-
-        Poll for device authorization completion.
-
-        The device should poll this endpoint with the device_code until
-        authentication is complete or the code expires.
-        Returns access_token on success, or 400 with 'authorization_pending'
-        while waiting, or 'expired_token' if the code has expired.
+      description: FastAPI endpoint wrapper for device token.
       operationId: device_token_endpoint_api_v1_auth_device_token_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: true
+              type: object
+              title: Data
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/device/complete:
+    post:
+      summary: Device Complete Endpoint
+      description: FastAPI endpoint wrapper for device complete.
+      operationId: device_complete_endpoint_api_v1_auth_device_complete_post
       requestBody:
         content:
           application/json:
@@ -67,7 +82,7 @@ paths:
   /api/v1/auth/me:
     get:
       summary: Auth Me Endpoint
-      description: Return current authenticated user context with account info.
+      description: FastAPI endpoint wrapper for auth/me.
       operationId: auth_me_endpoint_api_v1_auth_me_get
       responses:
         '200':
@@ -93,19 +108,12 @@ paths:
         Raises:
             HTTPException: If refresh token invalid or expired
       operationId: refresh_access_token_api_v1_auth_refresh_post
-      parameters:
-        - name: database_url
-          in: query
-          required: true
-          schema:
-            type: string
-            title: Database Url
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RefreshTokenRequest'
+        required: true
       responses:
         '200':
           description: Successful Response
@@ -134,27 +142,20 @@ paths:
         Returns:
             Success response
       operationId: revoke_token_api_v1_auth_revoke_post
-      parameters:
-        - name: database_url
-          in: query
-          required: true
-          schema:
-            type: string
-            title: Database Url
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RevokeTokenRequest'
+        required: true
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                type: object
                 additionalProperties: true
+                type: object
                 title: Response Revoke Token Api V1 Auth Revoke Post
         '422':
           description: Validation Error
@@ -165,7 +166,7 @@ paths:
   /api/v1/auth/logout:
     post:
       summary: Auth Logout Endpoint
-      description: Return logout metadata including WorkOS logout URL if sid is present.
+      description: FastAPI endpoint wrapper for auth logout.
       operationId: auth_logout_endpoint_api_v1_auth_logout_post
       responses:
         '200':
@@ -173,6 +174,30 @@ paths:
           content:
             application/json:
               schema: {}
+  /api/v1/auth/logout-expired:
+    post:
+      tags:
+        - auth
+      summary: Logout Expired
+      description: |-
+        Log out when token is expired (no auth required).
+
+        This endpoint allows clients to clear cookies even when their token has expired.
+        Used as a fallback when normal /logout fails with 401 Unauthorized.
+
+        Args:
+            response: FastAPI response for cookie manipulation
+
+        Returns:
+            LogoutResponse: Success response
+      operationId: logout_expired_api_v1_auth_logout_expired_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
   /api/v1/adrs/:
     post:
       tags:
@@ -1651,6 +1676,410 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/agent/sessions:
+    post:
+      tags:
+        - Agent
+      summary: Create Agent Session
+      description: Create an agent session (sandbox). Returns session_id and sandbox_root for use in chat.
+      operationId: create_agent_session_api_v1_agent_sessions_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentSessionCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSessionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+        - Agent
+      summary: List Agent Sessions
+      description: List agent sessions, optionally filtered by project_id.
+      operationId: list_agent_sessions_api_v1_agent_sessions_get
+      parameters:
+        - name: project_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            description: Filter by project ID
+            title: Project Id
+          description: Filter by project ID
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 200
+            minimum: 1
+            default: 50
+            title: Limit
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            title: Offset
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSessionListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/agent/sessions/{session_id}:
+    get:
+      tags:
+        - Agent
+      summary: Get Agent Session
+      description: Get agent session metadata by session_id.
+      operationId: get_agent_session_api_v1_agent_sessions__session_id__get
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Session Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSessionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+        - Agent
+      summary: Delete Agent Session
+      description: Delete an agent session from DB and cache; sandbox directory may remain on disk unless cleanup is enabled.
+      operationId: delete_agent_session_api_v1_agent_sessions__session_id__delete
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Session Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/agent/run:
+    post:
+      tags:
+        - Agent
+      summary: Start Agent Run
+      description: Start a checkpointed agent run workflow in Temporal. Use for long or resumable runs.
+      operationId: start_agent_run_api_v1_agent_run_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRunRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRunResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/mcp/messages:
+    post:
+      tags:
+        - MCP
+      summary: Mcp Messages
+      description: |-
+        Handle JSON-RPC 2.0 MCP messages.
+
+        This endpoint processes MCP protocol messages using JSON-RPC 2.0 format.
+        Authentication is handled by FastAPI's auth_guard, and user context is
+        automatically set for all tool executions.
+
+        Args:
+            request: JSON-RPC request
+            claims: Auth claims from auth_guard
+
+        Returns:
+            JSON-RPC response
+      operationId: mcp_messages_api_v1_mcp_messages_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JSONRPCRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JSONRPCResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    options:
+      tags:
+        - MCP
+      summary: Mcp Messages Options
+      description: |-
+        Handle CORS preflight for MCP messages endpoint.
+
+        Returns:
+            Response with CORS headers
+      operationId: mcp_messages_options_api_v1_mcp_messages_options
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/v1/mcp/sse:
+    get:
+      tags:
+        - MCP
+      summary: Mcp Sse
+      description: |-
+        Server-Sent Events endpoint for streaming MCP responses.
+
+        This endpoint provides real-time streaming of MCP events using SSE.
+        Useful for long-running operations or real-time updates.
+
+        Supports both generic SSE connections and task-specific progress streaming
+        via the ?task_id= query parameter.
+
+        Args:
+            request: FastAPI request object (for query params)
+            claims: Auth claims from auth_guard
+
+        Returns:
+            SSE stream
+      operationId: mcp_sse_api_v1_mcp_sse_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/v1/mcp/tools:
+    get:
+      tags:
+        - MCP
+      summary: Mcp Tools
+      description: |-
+        List available MCP tools.
+
+        This endpoint provides a simple way to discover available MCP tools
+        without using JSON-RPC protocol.
+
+        Args:
+            claims: Auth claims from auth_guard
+
+        Returns:
+            List of available tools
+      operationId: mcp_tools_api_v1_mcp_tools_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolsListResponse'
+  /api/v1/mcp/health:
+    get:
+      tags:
+        - MCP
+      summary: Mcp Health
+      description: |-
+        MCP router health check.
+
+        Returns:
+            Health status
+      operationId: mcp_health_api_v1_mcp_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Mcp Health Api V1 Mcp Health Get
+  /api/v1/integrations/oauth/start:
+    post:
+      summary: Start Oauth Flow
+      description: Start OAuth flow for an external integration provider.
+      operationId: start_oauth_flow_api_v1_integrations_oauth_start_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: true
+              type: object
+              title: Data
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/integrations/oauth/callback:
+    post:
+      summary: Oauth Callback
+      description: Handle OAuth callback and store credentials.
+      operationId: oauth_callback_api_v1_integrations_oauth_callback_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: true
+              type: object
+              title: Data
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/integrations/credentials:
+    get:
+      summary: List Credentials
+      description: List integration credentials for a project.
+      operationId: list_credentials_api_v1_integrations_credentials_get
+      parameters:
+        - name: project_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Project Id
+        - name: include_global
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+            title: Include Global
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/integrations/credentials/{credential_id}/validate:
+    post:
+      summary: Validate Credential
+      description: Validate an integration credential.
+      operationId: validate_credential_api_v1_integrations_credentials__credential_id__validate_post
+      parameters:
+        - name: credential_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Credential Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/integrations/credentials/{credential_id}:
+    delete:
+      summary: Delete Credential
+      description: Delete an integration credential.
+      operationId: delete_credential_api_v1_integrations_credentials__credential_id__delete
+      parameters:
+        - name: credential_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Credential Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /health:
     get:
       summary: Health Check
@@ -1661,11 +2090,26 @@ paths:
           description: Successful Response
           content:
             application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+                title: Response Health Check Health Get
+  /metrics:
+    get:
+      summary: Metrics
+      description: Prometheus scrape endpoint for monitoring (process metrics, etc.).
+      operationId: metrics_metrics_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
               schema: {}
   /api/v1/health:
     get:
       summary: Api Health Check
-      description: API health check endpoint.
+      description: API health check endpoint with component status.
       operationId: api_health_check_api_v1_health_get
       responses:
         '200':
@@ -1683,7 +2127,10 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Get Csrf Token Api V1 Csrf Token Get
   /api/v1/cache/stats:
     get:
       summary: Cache Stats
@@ -1694,7 +2141,10 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Cache Stats Api V1 Cache Stats Get
   /api/v1/cache/clear:
     post:
       summary: Cache Clear
@@ -1714,7 +2164,10 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Cache Clear Api V1 Cache Clear Post
         '422':
           description: Validation Error
           content:
@@ -1731,7 +2184,10 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Mcp Config Api V1 Mcp Config Get
   /api/v1/auth/callback:
     post:
       summary: Auth Callback
@@ -1758,7 +2214,7 @@ paths:
   /api/v1/items:
     get:
       summary: List Items
-      description: List items in a project.
+      description: List items in a project. Returns empty list on any backend error so callers (e.g. home loader) do not get 500.
       operationId: list_items_api_v1_items_get
       parameters:
         - name: project_id
@@ -1865,6 +2321,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      summary: Update Item Endpoint
+      description: Update an item with optimistic locking (if expected_version provided).
+      operationId: update_item_endpoint_api_v1_items__item_id__put
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Item Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
     delete:
       summary: Delete Item Endpoint
       description: Delete an item (permission-gated).
@@ -1898,19 +2383,25 @@ paths:
           in: query
           required: false
           schema:
-            type: string
+            anyOf:
+              - type: string
+              - type: 'null'
             title: Project Id
         - name: source_id
           in: query
           required: false
           schema:
-            type: string
+            anyOf:
+              - type: string
+              - type: 'null'
             title: Source Id
         - name: target_id
           in: query
           required: false
           schema:
-            type: string
+            anyOf:
+              - type: string
+              - type: 'null'
             title: Target Id
         - name: skip
           in: query
@@ -1930,7 +2421,9 @@ paths:
           in: query
           required: false
           schema:
-            type: string
+            anyOf:
+              - type: string
+              - type: 'null'
             title: Exclude Types
       responses:
         '200':
@@ -1966,6 +2459,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/links/grouped:
+    get:
+      summary: List Links Grouped
+      description: Show links for an item grouped as incoming/outgoing.
+      operationId: list_links_grouped_api_v1_links_grouped_get
+      parameters:
+        - name: project_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Project Id
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Item Id
+        - name: view
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: View
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/links/{link_id}:
     put:
       summary: Update Link
@@ -1984,6 +2515,166 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LinkUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      summary: Delete Link
+      description: Delete link.
+      operationId: delete_link_api_v1_links__link_id__delete
+      parameters:
+        - name: link_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Link Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/analysis/gaps:
+    get:
+      summary: Get Traceability Gaps
+      description: Find coverage gaps between two views.
+      operationId: get_traceability_gaps_api_v1_analysis_gaps_get
+      parameters:
+        - name: project_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Project Id
+        - name: from_view
+          in: query
+          required: true
+          schema:
+            type: string
+            title: From View
+        - name: to_view
+          in: query
+          required: true
+          schema:
+            type: string
+            title: To View
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/analysis/trace-matrix:
+    get:
+      summary: Get Traceability Matrix
+      description: Generate traceability matrix.
+      operationId: get_traceability_matrix_api_v1_analysis_trace_matrix_get
+      parameters:
+        - name: project_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Project Id
+        - name: source_view
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Source View
+        - name: target_view
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Target View
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/analysis/reverse-impact/{item_id}:
+    get:
+      summary: Get Reverse Impact
+      description: Analyze upstream dependencies of an item.
+      operationId: get_reverse_impact_api_v1_analysis_reverse_impact__item_id__get
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Item Id
+        - name: project_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Project Id
+        - name: max_depth
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 5
+            title: Max Depth
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/analysis/health/{project_id}:
+    get:
+      summary: Get Project Health
+      description: Get high-level health metrics for a project.
+      operationId: get_project_health_api_v1_analysis_health__project_id__get
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Project Id
       responses:
         '200':
           description: Successful Response
@@ -2086,6 +2777,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/items/bulk-update:
+    post:
+      summary: Bulk Update Items Endpoint
+      description: Bulk update item status with optional preview.
+      operationId: bulk_update_items_endpoint_api_v1_items_bulk_update_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemBulkUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/items/summary:
+    get:
+      summary: Summarize Items Endpoint
+      description: Summarize items in a view (counts by status + samples).
+      operationId: summarize_items_endpoint_api_v1_items_summary_get
+      parameters:
+        - name: project_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Project Id
+        - name: view
+          in: query
+          required: true
+          schema:
+            type: string
+            title: View
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/refresh:
     post:
       summary: Refresh Access Token Endpoint
@@ -2114,7 +2858,7 @@ paths:
   /api/v1/auth/signup:
     post:
       summary: Signup Endpoint
-      description: Create a new user account and initial account.
+      description: FastAPI endpoint wrapper for signup.
       operationId: signup_endpoint_api_v1_auth_signup_post
       requestBody:
         content:
@@ -2139,36 +2883,8 @@ paths:
   /api/v1/auth/login:
     post:
       summary: Login Endpoint
-      description: Login endpoint - currently delegates to WorkOS AuthKit.
+      description: FastAPI endpoint wrapper for login.
       operationId: login_endpoint_api_v1_auth_login_post
-      requestBody:
-        content:
-          application/json:
-            schema:
-              additionalProperties: true
-              type: object
-              title: Data
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/auth/device/complete:
-    post:
-      summary: Device Complete Endpoint
-      description: |-
-        Complete device authorization from browser.
-
-        This endpoint is called by the browser after the user enters the code.
-      operationId: device_complete_endpoint_api_v1_auth_device_complete_post
       requestBody:
         content:
           application/json:
@@ -2251,7 +2967,7 @@ paths:
   /api/v1/workflows/trigger:
     post:
       summary: Trigger Workflow Endpoint
-      description: Trigger a Hatchet workflow by name.
+      description: Trigger a Temporal workflow by name.
       operationId: trigger_workflow_endpoint_api_v1_workflows_trigger_post
       requestBody:
         content:
@@ -2274,7 +2990,7 @@ paths:
   /api/v1/workflows/graph-snapshot:
     post:
       summary: Trigger Graph Snapshot
-      description: Trigger graph snapshot workflow in Hatchet.
+      description: Trigger graph snapshot workflow in Temporal.
       operationId: trigger_graph_snapshot_api_v1_workflows_graph_snapshot_post
       parameters:
         - name: project_id
@@ -2304,7 +3020,7 @@ paths:
   /api/v1/workflows/graph-validate:
     post:
       summary: Trigger Graph Validation
-      description: Trigger graph validation workflow in Hatchet.
+      description: Trigger graph validation workflow in Temporal.
       operationId: trigger_graph_validation_api_v1_workflows_graph_validate_post
       parameters:
         - name: project_id
@@ -2334,7 +3050,7 @@ paths:
   /api/v1/workflows/graph-export:
     post:
       summary: Trigger Graph Export
-      description: Trigger graph export workflow in Hatchet.
+      description: Trigger graph export workflow in Temporal.
       operationId: trigger_graph_export_api_v1_workflows_graph_export_post
       parameters:
         - name: project_id
@@ -2358,7 +3074,7 @@ paths:
   /api/v1/workflows/graph-diff:
     post:
       summary: Trigger Graph Diff
-      description: Trigger graph diff workflow in Hatchet.
+      description: Trigger graph diff workflow in Temporal.
       operationId: trigger_graph_diff_api_v1_workflows_graph_diff_post
       parameters:
         - name: project_id
@@ -2400,7 +3116,7 @@ paths:
   /api/v1/workflows/integrations-sync:
     post:
       summary: Trigger Integrations Sync
-      description: Trigger integration sync workflow in Hatchet.
+      description: Trigger integration sync workflow in Temporal.
       operationId: trigger_integrations_sync_api_v1_workflows_integrations_sync_post
       parameters:
         - name: limit
@@ -2425,7 +3141,7 @@ paths:
   /api/v1/workflows/integrations-retry:
     post:
       summary: Trigger Integrations Retry
-      description: Trigger integration retry workflow in Hatchet.
+      description: Trigger integration retry workflow in Temporal.
       operationId: trigger_integrations_retry_api_v1_workflows_integrations_retry_post
       parameters:
         - name: limit
@@ -2435,6 +3151,38 @@ paths:
             type: integer
             default: 50
             title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/temporal/summary:
+    get:
+      summary: Get Temporal Summary
+      description: Get Temporal health and summary metrics for dashboards.
+      operationId: get_temporal_summary_api_v1_temporal_summary_get
+      parameters:
+        - name: workflow_limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+            title: Workflow Limit
+        - name: schedule_limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 200
+            title: Schedule Limit
       responses:
         '200':
           description: Successful Response
@@ -2504,7 +3252,7 @@ paths:
   /api/v1/projects/{project_id}/workflows/schedules/bootstrap:
     post:
       summary: Bootstrap Workflow Schedules
-      description: Create default Hatchet schedules for graph snapshots and integration retries.
+      description: Create default Temporal schedules for graph snapshots and integration retries.
       operationId: bootstrap_workflow_schedules_api_v1_projects__project_id__workflows_schedules_bootstrap_post
       parameters:
         - name: project_id
@@ -2528,7 +3276,7 @@ paths:
   /api/v1/projects/{project_id}/workflows/schedules:
     get:
       summary: List Workflow Schedules
-      description: List Hatchet schedules scoped to a project.
+      description: List Temporal schedules scoped to a project.
       operationId: list_workflow_schedules_api_v1_projects__project_id__workflows_schedules_get
       parameters:
         - name: project_id
@@ -2537,6 +3285,20 @@ paths:
           schema:
             type: string
             title: Project Id
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+            title: Limit
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            title: Offset
       responses:
         '200':
           description: Successful Response
@@ -2552,7 +3314,7 @@ paths:
   /api/v1/projects/{project_id}/workflows/schedules/{cron_id}:
     delete:
       summary: Delete Workflow Schedule
-      description: Delete a Hatchet schedule.
+      description: Delete a Temporal schedule.
       operationId: delete_workflow_schedule_api_v1_projects__project_id__workflows_schedules__cron_id__delete
       parameters:
         - name: project_id
@@ -2712,7 +3474,7 @@ paths:
   /api/v1/projects/{project_id}/export:
     get:
       summary: Export Project
-      description: Export project data to various formats.
+      description: Export project data to various formats. Use format=full for canonical JSON (project+items+links).
       operationId: export_project_api_v1_projects__project_id__export_get
       parameters:
         - name: project_id
@@ -2743,7 +3505,7 @@ paths:
   /api/v1/projects/{project_id}/import:
     post:
       summary: Import Project
-      description: Import project data from various formats.
+      description: Import project data into an existing project (items only for json/csv).
       operationId: import_project_api_v1_projects__project_id__import_post
       parameters:
         - name: project_id
@@ -2758,6 +3520,33 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImportRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/import:
+    post:
+      summary: Import Full Project
+      description: >-
+        Import a full project from canonical JSON (project + items + links). Creates new project and resolves item ids
+        for links.
+      operationId: import_full_project_api_v1_import_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: true
+              type: object
+              title: Body
+        required: true
       responses:
         '200':
           description: Successful Response
@@ -4148,9 +4937,9 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/executions/{execution_id}:
     get:
-      summary: Get Execution
+      summary: Get Execution By Id Endpoint
       description: Get a specific process execution.
-      operationId: get_execution_api_v1_executions__execution_id__get
+      operationId: get_execution_by_id_endpoint_api_v1_executions__execution_id__get
       parameters:
         - name: execution_id
           in: path
@@ -4172,9 +4961,9 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/executions/{execution_id}/start:
     post:
-      summary: Start Execution
+      summary: Start Execution Endpoint
       description: Start a pending execution.
-      operationId: start_execution_api_v1_executions__execution_id__start_post
+      operationId: start_execution_endpoint_api_v1_executions__execution_id__start_post
       parameters:
         - name: execution_id
           in: path
@@ -4226,9 +5015,9 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/executions/{execution_id}/complete:
     post:
-      summary: Complete Execution
+      summary: Complete Execution Endpoint
       description: Complete a process execution.
-      operationId: complete_execution_api_v1_executions__execution_id__complete_post
+      operationId: complete_execution_endpoint_api_v1_executions__execution_id__complete_post
       parameters:
         - name: execution_id
           in: path
@@ -5190,8 +5979,10 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              anyOf:
+                - type: object
+                  additionalProperties: true
+                - type: 'null'
               title: Start Data
       responses:
         '200':
@@ -5221,8 +6012,10 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              anyOf:
+                - type: object
+                  additionalProperties: true
+                - type: 'null'
               title: Complete Data
       responses:
         '200':
@@ -5252,8 +6045,10 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              anyOf:
+                - type: object
+                  additionalProperties: true
+                - type: 'null'
               title: Cancel Data
       responses:
         '200':
@@ -5697,9 +6492,9 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/coverage/matrix:
     get:
-      summary: Get Traceability Matrix
+      summary: Get Coverage Matrix Endpoint
       description: Get the traceability matrix for a project.
-      operationId: get_traceability_matrix_api_v1_coverage_matrix_get
+      operationId: get_coverage_matrix_endpoint_api_v1_coverage_matrix_get
       parameters:
         - name: project_id
           in: query
@@ -6330,137 +7125,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/integrations/oauth/start:
-    post:
-      summary: Start Oauth Flow
-      description: Start OAuth flow for an external integration provider.
-      operationId: start_oauth_flow_api_v1_integrations_oauth_start_post
-      requestBody:
-        content:
-          application/json:
-            schema:
-              additionalProperties: true
-              type: object
-              title: Data
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/integrations/oauth/callback:
-    post:
-      summary: Oauth Callback
-      description: Handle OAuth callback and store credentials.
-      operationId: oauth_callback_api_v1_integrations_oauth_callback_post
-      requestBody:
-        content:
-          application/json:
-            schema:
-              additionalProperties: true
-              type: object
-              title: Data
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/integrations/credentials:
-    get:
-      summary: List Credentials
-      description: List integration credentials for a project.
-      operationId: list_credentials_api_v1_integrations_credentials_get
-      parameters:
-        - name: project_id
-          in: query
-          required: false
-          schema:
-            anyOf:
-              - type: string
-              - type: 'null'
-            title: Project Id
-        - name: include_global
-          in: query
-          required: false
-          schema:
-            type: boolean
-            default: true
-            title: Include Global
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/integrations/credentials/{credential_id}/validate:
-    post:
-      summary: Validate Credential
-      description: Validate an integration credential.
-      operationId: validate_credential_api_v1_integrations_credentials__credential_id__validate_post
-      parameters:
-        - name: credential_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Credential Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/integrations/credentials/{credential_id}:
-    delete:
-      summary: Delete Credential
-      description: Delete an integration credential.
-      operationId: delete_credential_api_v1_integrations_credentials__credential_id__delete
-      parameters:
-        - name: credential_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Credential Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/integrations/mappings:
     get:
       summary: List Mappings
@@ -6477,7 +7141,9 @@ paths:
           in: query
           required: false
           schema:
-            type: string
+            anyOf:
+              - type: string
+              - type: 'null'
             title: Provider
       responses:
         '200':
@@ -6572,9 +7238,9 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/integrations/sync/status:
     get:
-      summary: Get Sync Status
+      summary: Get Integration Sync Status
       description: Get sync status summary for a project.
-      operationId: get_sync_status_api_v1_integrations_sync_status_get
+      operationId: get_integration_sync_status_api_v1_integrations_sync_status_get
       parameters:
         - name: project_id
           in: query
@@ -6635,7 +7301,9 @@ paths:
           in: query
           required: false
           schema:
-            type: string
+            anyOf:
+              - type: string
+              - type: 'null'
             title: Status
         - name: limit
           in: query
@@ -6890,9 +7558,9 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/integrations/github/app/webhook:
     post:
-      summary: Github App Webhook
+      summary: Github App Webhook Endpoint
       description: Handle GitHub App webhook events.
-      operationId: github_app_webhook_api_v1_integrations_github_app_webhook_post
+      operationId: github_app_webhook_endpoint_api_v1_integrations_github_app_webhook_post
       responses:
         '200':
           description: Successful Response
@@ -7282,6 +7950,16 @@ paths:
         This endpoint streams responses from AI providers (Claude, Codex, Gemini)
         using SSE format for real-time message delivery. Supports tool use for
         filesystem operations, CLI commands, and TraceRTM API operations.
+        When session_id is provided, tools run in a per-session sandbox (persisted with chat).
+
+        Args:
+            request: FastAPI request object
+            request_body: Chat request with messages and settings
+            claims: Auth claims from JWT token
+            db: Database session
+
+        Returns:
+            StreamingResponse with SSE data
       operationId: stream_chat_api_v1_chat_stream_post
       requestBody:
         content:
@@ -7304,7 +7982,20 @@ paths:
   /api/v1/chat:
     post:
       summary: Simple Chat
-      description: Non-streaming chat completion (for testing/simple use cases).
+      description: |-
+        Non-streaming chat completion (for testing/simple use cases).
+
+        Args:
+            request: FastAPI request object
+            request_body: Chat request with messages and settings
+            claims: Auth claims from JWT token
+            db: Database session
+
+        Returns:
+            Dict with content, model, and provider
+
+        Raises:
+            HTTPException: On AI service errors
       operationId: simple_chat_api_v1_chat_post
       requestBody:
         content:
@@ -7317,7 +8008,10 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Simple Chat Api V1 Chat Post
         '422':
           description: Validation Error
           content:
@@ -7387,6 +8081,10 @@ components:
       description: Schema for ADR activity log entry.
     ADRCreate:
       properties:
+        project_id:
+          type: string
+          minLength: 1
+          title: Project Id
         title:
           type: string
           maxLength: 500
@@ -7455,6 +8153,7 @@ components:
           title: Metadata
       type: object
       required:
+        - project_id
         - title
         - context
         - decision
@@ -7714,6 +8413,123 @@ components:
       type: object
       title: AdvancedSearchRequest
       description: Request model for advanced search endpoint.
+    AgentRunRequest:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+          description: Agent session ID
+        initial_messages_json:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Initial Messages Json
+          description: JSON array of message dicts to start from
+        max_turns:
+          type: integer
+          maximum: 100
+          minimum: 1
+          title: Max Turns
+          description: Maximum agent turns
+          default: 10
+      type: object
+      required:
+        - session_id
+      title: AgentRunRequest
+      description: Request to start an agent run workflow (Temporal).
+    AgentRunResponse:
+      properties:
+        workflow_id:
+          type: string
+          title: Workflow Id
+        run_id:
+          type: string
+          title: Run Id
+        session_id:
+          type: string
+          title: Session Id
+        status:
+          type: string
+          title: Status
+          default: started
+      type: object
+      required:
+        - workflow_id
+        - run_id
+        - session_id
+      title: AgentRunResponse
+      description: Response after starting an agent run workflow.
+    AgentSessionCreate:
+      properties:
+        project_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Project Id
+          description: Optional project to scope the session
+        session_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Session Id
+          description: Optional explicit session ID; otherwise generated
+      type: object
+      title: AgentSessionCreate
+      description: Request to create an agent session.
+    AgentSessionListResponse:
+      properties:
+        sessions:
+          items:
+            $ref: '#/components/schemas/AgentSessionResponse'
+          type: array
+          title: Sessions
+        total:
+          type: integer
+          title: Total
+        limit:
+          type: integer
+          title: Limit
+        offset:
+          type: integer
+          title: Offset
+      type: object
+      required:
+        - sessions
+        - total
+        - limit
+        - offset
+      title: AgentSessionListResponse
+      description: Paginated list of agent sessions.
+    AgentSessionResponse:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+        sandbox_root:
+          type: string
+          title: Sandbox Root
+        project_id:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Project Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+        - session_id
+        - sandbox_root
+        - created_at
+        - updated_at
+      title: AgentSessionResponse
+      description: Agent session metadata returned by API.
     AuthCallbackPayload:
       properties:
         code:
@@ -7723,6 +8539,7 @@ components:
       required:
         - code
       title: AuthCallbackPayload
+      description: Schema for auth callback payload.
     AutomationStatus:
       type: string
       enum:
@@ -7938,6 +8755,12 @@ components:
           minimum: 1
           title: Max Tokens
           default: 4096
+        session_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Session Id
+          description: Optional session/chat ID for per-session sandbox; tools run under this sandbox path.
       type: object
       required:
         - messages
@@ -8012,6 +8835,14 @@ components:
       description: Schema for contract activity log entry.
     ContractCreate:
       properties:
+        project_id:
+          type: string
+          minLength: 1
+          title: Project Id
+        item_id:
+          type: string
+          minLength: 1
+          title: Item Id
         title:
           type: string
           maxLength: 500
@@ -8073,6 +8904,8 @@ components:
           title: Metadata
       type: object
       required:
+        - project_id
+        - item_id
         - title
       title: ContractCreate
       description: Schema for creating a contract.
@@ -8418,6 +9251,40 @@ components:
         - verification_uri_complete
       title: DeviceCodeResponse
       description: Response with device code.
+    DeviceCompleteRequest:
+      properties:
+        user_code:
+          type: string
+          title: User Code
+          description: User code from device flow
+        code:
+          type: string
+          title: Code
+          description: Authorization code from OAuth flow
+      type: object
+      required:
+        - user_code
+        - code
+      title: DeviceCompleteRequest
+      description: Request to complete device authorization from browser.
+    DeviceCompleteResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Authorization status
+        user:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: User
+          description: User information if available
+      type: object
+      required:
+        - status
+      title: DeviceCompleteResponse
+      description: Response after completing device authorization.
     EmbeddingStatusResponse:
       properties:
         total_requested:
@@ -9195,6 +10062,10 @@ components:
       description: Schema for feature activity log entry.
     FeatureCreate:
       properties:
+        project_id:
+          type: string
+          minLength: 1
+          title: Project Id
         name:
           type: string
           maxLength: 500
@@ -9249,6 +10120,7 @@ components:
           title: Metadata
       type: object
       required:
+        - project_id
         - name
       title: FeatureCreate
       description: Schema for creating a feature.
@@ -9423,6 +10295,34 @@ components:
         - data
       title: ImportRequest
       description: Request model for import endpoint.
+    ItemBulkUpdate:
+      properties:
+        project_id:
+          type: string
+          title: Project Id
+        view:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: View
+        status:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Status
+        new_status:
+          type: string
+          title: New Status
+        preview:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Preview
+      type: object
+      required:
+        - project_id
+        - new_status
+      title: ItemBulkUpdate
     ItemCreate:
       properties:
         project_id:
@@ -9473,6 +10373,103 @@ components:
         - title
         - type
       title: ItemCreate
+    ItemUpdate:
+      properties:
+        title:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Title
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        status:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Status
+        priority:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Priority
+        owner:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Owner
+        metadata:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Metadata
+        expected_version:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Expected Version
+      type: object
+      title: ItemUpdate
+    JSONRPCRequest:
+      properties:
+        jsonrpc:
+          type: string
+          title: Jsonrpc
+          description: JSON-RPC version
+          default: '2.0'
+        method:
+          type: string
+          title: Method
+          description: Method name
+        params:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Params
+          description: Method parameters
+        id:
+          anyOf:
+            - type: string
+            - type: integer
+            - type: 'null'
+          title: Id
+          description: Request ID
+      type: object
+      required:
+        - method
+      title: JSONRPCRequest
+      description: JSON-RPC 2.0 request.
+    JSONRPCResponse:
+      properties:
+        jsonrpc:
+          type: string
+          title: Jsonrpc
+          description: JSON-RPC version
+          default: '2.0'
+        result:
+          anyOf:
+            - {}
+            - type: 'null'
+          title: Result
+        error:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Error
+        id:
+          anyOf:
+            - type: string
+            - type: integer
+            - type: 'null'
+          title: Id
+      type: object
+      title: JSONRPCResponse
+      description: JSON-RPC 2.0 response.
     LinkCreate:
       properties:
         project_id:
@@ -9515,6 +10512,22 @@ components:
           title: Metadata
       type: object
       title: LinkUpdate
+    LogoutResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          description: Logout successful
+          default: true
+        message:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Message
+          description: Optional message
+      type: object
+      title: LogoutResponse
+      description: Logout success response.
     MeResponse:
       properties:
         user:
@@ -11107,6 +12120,39 @@ components:
         - access_token
       title: TokenResponse
       description: Successful token response.
+    ToolInfo:
+      properties:
+        name:
+          type: string
+          title: Name
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        inputSchema:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Inputschema
+      type: object
+      required:
+        - name
+      title: ToolInfo
+      description: Information about an available MCP tool.
+    ToolsListResponse:
+      properties:
+        tools:
+          items:
+            $ref: '#/components/schemas/ToolInfo'
+          type: array
+          title: Tools
+      type: object
+      required:
+        - tools
+      title: ToolsListResponse
+      description: Response for tools list endpoint.
     UpdateProjectRequest:
       properties:
         name:

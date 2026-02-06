@@ -17,4 +17,3 @@ version: 1
 ## Description
 
 Responsive grid layout for product cards. Adapts from 4 columns (desktop) to 2 columns (tablet) to 1 column (mobile).
-

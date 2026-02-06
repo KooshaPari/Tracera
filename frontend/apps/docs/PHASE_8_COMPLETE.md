@@ -64,7 +64,7 @@ frontend/apps/docs/
 │   └── performance-audit.ts              # Performance testing script
 ├── lighthouserc.json                     # Lighthouse CI config
 ├── playwright.config.ts                  # Playwright config
-├── next.config.mjs                       # Optimized Next.js config
+├── next.config.ts                       # Optimized Next.js config
 ├── TESTING_GUIDE.md                      # Complete testing guide
 ├── PERFORMANCE_REPORT.md                 # Report template
 ├── PHASE_8_QUICK_REFERENCE.md            # Quick reference
@@ -76,6 +76,7 @@ frontend/apps/docs/
 ## Testing Commands
 
 ### Quick Start
+
 ```bash
 cd frontend/apps/docs
 
@@ -90,6 +91,7 @@ bun run audit:bundle     # Visual bundle analysis
 ```
 
 ### Development Commands
+
 ```bash
 # E2E tests in UI mode
 bun run test:e2e:ui
@@ -108,15 +110,15 @@ bunx playwright show-report
 
 ## Success Criteria
 
-| Metric | Target | Test Command | Status |
-|--------|--------|--------------|--------|
-| Bundle Size (gzipped) | <200KB | `test:performance` | ⏳ Ready to test |
-| First Contentful Paint | <1.5s | `lighthouse` | ⏳ Ready to test |
-| Time to Interactive | <2.5s | `lighthouse` | ⏳ Ready to test |
-| Search Response | <100ms | `test:e2e` | ⏳ Ready to test |
-| Lighthouse Performance | >95 | `lighthouse` | ⏳ Ready to test |
-| Build Time | <60s | `test:performance` | ⏳ Ready to test |
-| All E2E Tests | Pass | `test:e2e` | ⏳ Ready to test |
+| Metric                 | Target | Test Command       | Status           |
+| ---------------------- | ------ | ------------------ | ---------------- |
+| Bundle Size (gzipped)  | <200KB | `test:performance` | ⏳ Ready to test |
+| First Contentful Paint | <1.5s  | `lighthouse`       | ⏳ Ready to test |
+| Time to Interactive    | <2.5s  | `lighthouse`       | ⏳ Ready to test |
+| Search Response        | <100ms | `test:e2e`         | ⏳ Ready to test |
+| Lighthouse Performance | >95    | `lighthouse`       | ⏳ Ready to test |
+| Build Time             | <60s   | `test:performance` | ⏳ Ready to test |
+| All E2E Tests          | Pass   | `test:e2e`         | ⏳ Ready to test |
 
 ---
 
@@ -125,12 +127,14 @@ bunx playwright show-report
 ### 1. Performance Audit (`bun run test:performance`)
 
 **What it tests**:
+
 - Build time measurement
 - Bundle size analysis (JS, CSS, images)
 - Chunk size analysis
 - Automated pass/fail validation
 
 **Success criteria**:
+
 - Build time <60s
 - Bundle size <200KB gzipped
 
@@ -139,6 +143,7 @@ bunx playwright show-report
 ### 2. Lighthouse CI (`bun run lighthouse`)
 
 **What it tests**:
+
 - Performance score
 - Core Web Vitals (FCP, LCP, TTI, TBT, CLS)
 - Accessibility score
@@ -146,6 +151,7 @@ bunx playwright show-report
 - SEO score
 
 **Success criteria**:
+
 - Performance >95
 - Accessibility >95
 - All Core Web Vitals within targets
@@ -155,6 +161,7 @@ bunx playwright show-report
 ### 3. E2E Tests (`bun run test:e2e`)
 
 **Test categories**:
+
 - ✅ Navigation (7 tests)
 - ✅ Search functionality (3 tests)
 - ✅ OpenAPI documentation (3 tests)
@@ -172,6 +179,7 @@ bunx playwright show-report
 ### 4. Bundle Analysis (`bun run audit:bundle`)
 
 **What it analyzes**:
+
 - Package size breakdown
 - Duplicate dependencies
 - Unused code
@@ -188,6 +196,7 @@ bunx playwright show-report
 ### Automated Testing
 
 Tests run automatically on:
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop`
 - Changes to `frontend/apps/docs/**`
@@ -201,6 +210,7 @@ Tests run automatically on:
 ### PR Comments
 
 Automatic PR comments include:
+
 - Test execution summary
 - Links to artifacts
 - Performance highlights
@@ -210,6 +220,7 @@ Automatic PR comments include:
 ## Performance Optimizations Implemented
 
 ### 1. Bundle Optimization
+
 - ✅ Tree shaking enabled
 - ✅ Code splitting configured
 - ✅ Package import optimization
@@ -217,17 +228,20 @@ Automatic PR comments include:
 - ✅ Production source maps disabled
 
 ### 2. Caching Strategy
+
 - ✅ Immutable cache for static assets (1 year)
 - ✅ Stale-while-revalidate for HTML (1 hour / 1 day)
 - ✅ ETag generation enabled
 
 ### 3. Code Splitting
+
 - ✅ React in separate chunk
 - ✅ Fumadocs libraries in separate chunk
 - ✅ Lucide icons in separate chunk
 - ✅ Vendor libraries chunked
 
 ### 4. Image Optimization
+
 - ✅ AVIF and WebP formats
 - ✅ Responsive sizing
 - ✅ Lazy loading ready
@@ -239,12 +253,14 @@ Automatic PR comments include:
 ### To Execute Tests
 
 1. **Start backend** (if testing API docs):
+
    ```bash
    # From project root
    make dev
    ```
 
 2. **Run tests**:
+
    ```bash
    cd frontend/apps/docs
    bun run test:all
@@ -263,6 +279,7 @@ Automatic PR comments include:
 ### To Optimize if Tests Fail
 
 1. **Bundle too large**:
+
    ```bash
    bun run audit:bundle
    # Look for:
@@ -291,22 +308,26 @@ Automatic PR comments include:
 ### Common Issues
 
 **1. Port 3001 already in use**
+
 ```bash
 lsof -ti:3001 | xargs kill -9
 ```
 
 **2. Playwright browsers not installed**
+
 ```bash
 bunx playwright install --with-deps
 ```
 
 **3. Backend not running**
+
 ```bash
 # Lighthouse and E2E tests need backend for API docs
 # Start with: make dev (from project root)
 ```
 
 **4. Tests timing out**
+
 - Increase timeout in `playwright.config.ts`
 - Check system resources
 - Ensure backend is responsive
@@ -365,7 +386,7 @@ bunx playwright install --with-deps
 
 - `lighthouserc.json` - Lighthouse CI configuration
 - `playwright.config.ts` - Playwright test configuration
-- `next.config.mjs` - Optimized Next.js configuration
+- `next.config.ts` - Optimized Next.js configuration
 - `.github/workflows/docs-performance.yml` - CI/CD workflow
 
 ---

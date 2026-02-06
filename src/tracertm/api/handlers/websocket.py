@@ -60,9 +60,7 @@ def extract_token_from_request(websocket: WebSocket) -> str | None:
     return None
 
 
-async def receive_auth_message(
-    websocket: WebSocket, timeout_seconds: float = 10.0
-) -> str | None:
+async def receive_auth_message(websocket: WebSocket, timeout_seconds: float = 10.0) -> str | None:
     """Receive auth message from WebSocket client.
 
     Waits for first message with format: { "type": "auth", "token": "..." }
@@ -83,6 +81,55 @@ async def receive_auth_message(
         token = (msg.get("token") or "").strip()
         return token if token else None
     return None
+
+
+async def _log_disconnect_before_auth(websocket: WebSocket, exc: WebSocketDisconnect) -> None:
+    code = getattr(exc, "code", None)
+    if code in {1000, 1001}:
+        logger.info("WebSocket client disconnected before auth from %s (code=%s)", websocket.client, code)
+    else:
+        logger.warning("WebSocket disconnected before auth from %s: %s", websocket.client, exc)
+
+
+async def _receive_token_after_accept(
+    websocket: WebSocket,
+    ws_closed: dict[str, bool],
+    timeout_seconds: float = 10.0,
+) -> str | None:
+    try:
+        token = await receive_auth_message(websocket, timeout_seconds=timeout_seconds)
+    except TimeoutError:
+        logger.info("WebSocket auth timeout (no auth message) from %s", websocket.client)
+        await close_websocket_once(websocket, ws_closed, 1008, "Authentication timeout")
+        return None
+    except WebSocketDisconnect as exc:
+        await _log_disconnect_before_auth(websocket, exc)
+        return None
+    except Exception as exc:
+        logger.warning("WebSocket failed to receive auth message from %s: %s", websocket.client, exc)
+        await close_websocket_once(websocket, ws_closed, 1008, "Invalid auth")
+        return None
+
+    if not token:
+        await handle_auth_failure(websocket, ws_closed, "Missing auth message")
+        return None
+    return token
+
+
+async def _verify_token_or_close(
+    websocket: WebSocket,
+    ws_closed: dict[str, bool],
+    token: str,
+    verify_token_func,
+) -> dict[str, Any] | None:
+    try:
+        claims = verify_token_func(token)
+        logger.info("WebSocket authenticated: user=%s from %s", claims.get("sub"), websocket.client)
+        return claims
+    except Exception as exc:
+        logger.warning("WebSocket rejected: invalid token from %s: %s", websocket.client, exc)
+        await handle_auth_failure(websocket, ws_closed, str(exc))
+        return None
 
 
 async def handle_auth_failure(
@@ -128,26 +175,8 @@ async def authenticate_websocket(websocket: WebSocket, verify_token_func) -> dic
 
     # If no token yet, expect auth in first message
     if not token:
-        try:
-            token = await receive_auth_message(websocket, timeout_seconds=10.0)
-            if not token:
-                await handle_auth_failure(websocket, ws_closed, "Missing auth message")
-                return None
-        except TimeoutError:
-            logger.info("WebSocket auth timeout (no auth message) from %s", websocket.client)
-            await close_websocket_once(websocket, ws_closed, 1008, "Authentication timeout")
-            return None
-        except WebSocketDisconnect as e:
-            # Normal closure (1000/1001) = client closed tab or navigated away
-            code = getattr(e, "code", None)
-            if code in {1000, 1001}:
-                logger.info("WebSocket client disconnected before auth from %s (code=%s)", websocket.client, code)
-            else:
-                logger.warning("WebSocket disconnected before auth from %s: %s", websocket.client, e)
-            return None
-        except Exception as e:
-            logger.warning("WebSocket failed to receive auth message from %s: %s", websocket.client, e)
-            await close_websocket_once(websocket, ws_closed, 1008, "Invalid auth")
+        token = await _receive_token_after_accept(websocket, ws_closed, timeout_seconds=10.0)
+        if not token:
             return None
 
     # Verify token
@@ -155,14 +184,7 @@ async def authenticate_websocket(websocket: WebSocket, verify_token_func) -> dic
         await handle_auth_failure(websocket, ws_closed, "No token provided")
         return None
 
-    try:
-        claims = verify_token_func(token)
-        logger.info("WebSocket authenticated: user=%s from %s", claims.get("sub"), websocket.client)
-        return claims
-    except Exception as exc:
-        logger.warning("WebSocket rejected: invalid token from %s: %s", websocket.client, exc)
-        await handle_auth_failure(websocket, ws_closed, str(exc))
-        return None
+    return await _verify_token_or_close(websocket, ws_closed, token, verify_token_func)
 
 
 async def send_auth_success(websocket: WebSocket) -> bool:

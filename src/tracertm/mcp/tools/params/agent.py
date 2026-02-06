@@ -15,7 +15,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 
 # Register @mcp.tool decorators here to avoid duplicates with param.py

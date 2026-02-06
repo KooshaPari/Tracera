@@ -9,62 +9,62 @@
  * - Storybook Setup: ../../.storybook/README.md
  */
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from '@storybook/react';
 
 // Import { COMPONENT_NAME } from "../COMPONENT_NAME";
 
 const meta: Meta = {
-	// Set the title following the naming convention: Type/Category/ComponentName
-	title: "Components/Graph/ComponentName",
-	// Component: COMPONENT_NAME,
-	tags: ["autodocs"],
+  // Set the title following the naming convention: Type/Category/ComponentName
+  title: 'Components/Graph/ComponentName',
+  // Component: COMPONENT_NAME,
+  tags: ['autodocs', 'skip-tests'],
 
-	// Configure visual regression testing
-	parameters: {
-		// Chromatic configuration for visual snapshots
-		chromatic: {
-			// Test both light and dark modes
-			modes: {
-				dark: {
-					matcherUrl: "**/dark",
-					query: "[data-theme='dark']",
-				},
-				light: {
-					matcherUrl: "**/light",
-					query: "[data-theme='light']",
-				},
-			},
-			// Delay before taking snapshot (wait for animations)
-			// Increase if component has longer animations
-			delay: 300,
-			// Pause animations at the end for consistency
-			pauseAnimationAtEnd: true,
-			// Don't skip visual snapshots for this component
-			disableSnapshot: false,
-		},
-		// Define available viewports
-		viewport: {
-			defaultViewport: "desktop",
-		},
-	},
+  // Configure visual regression testing
+  parameters: {
+    // Chromatic configuration for visual snapshots
+    chromatic: {
+      // Test both light and dark modes
+      modes: {
+        dark: {
+          matcherUrl: '**/dark',
+          query: "[data-theme='dark']",
+        },
+        light: {
+          matcherUrl: '**/light',
+          query: "[data-theme='light']",
+        },
+      },
+      // Delay before taking snapshot (wait for animations)
+      // Increase if component has longer animations
+      delay: 300,
+      // Pause animations at the end for consistency
+      pauseAnimationAtEnd: true,
+      // Don't skip visual snapshots for this component
+      disableSnapshot: false,
+    },
+    // Define available viewports
+    viewport: {
+      defaultViewport: 'desktop',
+    },
+  },
 
-	// Define component props for interactive control in Storybook UI
-	argTypes: {
-		// Example arg type definitions
-		// Variant: {
-		// 	Control: "select",
-		// 	Options: ["primary", "secondary", "outline"],
-		// 	Description: "Button visual style variant",
-		// },
-		// Disabled: {
-		// 	Control: "boolean",
-		// 	Description: "Disable the component",
-		// },
-		// OnClick: {
-		// 	Action: "clicked",
-		// 	Description: "Click handler",
-		// },
-	},
+  // Define component props for interactive control in Storybook UI
+  argTypes: {
+    // Example arg type definitions
+    // Variant: {
+    // 	Control: "select",
+    // 	Options: ["primary", "secondary", "outline"],
+    // 	Description: "Button visual style variant",
+    // },
+    // Disabled: {
+    // 	Control: "boolean",
+    // 	Description: "Disable the component",
+    // },
+    // OnClick: {
+    // 	Action: "clicked",
+    // 	Description: "Click handler",
+    // },
+  },
 };
 
 export default meta;
@@ -78,11 +78,11 @@ type Story = StoryObj<typeof meta>;
  * Use realistic but minimal props to showcase the component's typical usage.
  */
 export const Default: Story = {
-	args: {
-		// Add props for your component
-		// Label: "Default Button",
-		// Variant: "primary",
-	},
+  args: {
+    // Add props for your component
+    // Label: "Default Button",
+    // Variant: "primary",
+  },
 };
 
 /**
@@ -92,10 +92,10 @@ export const Default: Story = {
  * Test that disabled components are visually distinct and cannot be interacted with.
  */
 export const Disabled: Story = {
-	args: {
-		// ...Default.args,
-		// Disabled: true,
-	},
+  args: {
+    // ...Default.args,
+    // Disabled: true,
+  },
 };
 
 /**
@@ -106,14 +106,14 @@ export const Disabled: Story = {
  * Viewport: 375x667 (iPhone size)
  */
 export const Mobile: Story = {
-	args: {
-		// ...Default.args,
-	},
-	parameters: {
-		viewport: {
-			defaultViewport: "mobile",
-		},
-	},
+  args: {
+    // ...Default.args,
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: 'mobile',
+    },
+  },
 };
 
 /**
@@ -124,14 +124,14 @@ export const Mobile: Story = {
  * Viewport: 768x1024 (iPad size)
  */
 export const Tablet: Story = {
-	args: {
-		// ...Default.args,
-	},
-	parameters: {
-		viewport: {
-			defaultViewport: "tablet",
-		},
-	},
+  args: {
+    // ...Default.args,
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: 'tablet',
+    },
+  },
 };
 
 /**
@@ -142,26 +142,26 @@ export const Tablet: Story = {
  * Light mode is tested automatically, this explicitly tests dark.
  */
 export const DarkMode: Story = {
-	args: {
-		// ...Default.args,
-	},
-	decorators: [
-		(Story) => (
-			<div className="dark" data-theme="dark" style={{ minHeight: "100vh" }}>
-				<Story />
-			</div>
-		),
-	],
-	parameters: {
-		chromatic: {
-			// Only test dark mode for this variant
-			modes: {
-				dark: {
-					query: "[data-theme='dark']",
-				},
-			},
-		},
-	},
+  args: {
+    // ...Default.args,
+  },
+  decorators: [
+    (Story) => (
+      <div className='dark' data-theme='dark' style={{ minHeight: '100vh' }}>
+        <Story />
+      </div>
+    ),
+  ],
+  parameters: {
+    chromatic: {
+      // Only test dark mode for this variant
+      modes: {
+        dark: {
+          query: "[data-theme='dark']",
+        },
+      },
+    },
+  },
 };
 
 /**
@@ -172,23 +172,22 @@ export const DarkMode: Story = {
  * This captures the visual hover effect for regression detection.
  */
 export const Hovered: Story = {
-	args: {
-		// ...Default.args,
-	},
-	play: async ({ canvasElement }) => {
-		// Find the interactive element to hover over
-		const element =
-			canvasElement.querySelector("button") || canvasElement.firstChild;
-		if (element && element instanceof HTMLElement) {
-			element.dispatchEvent(
-				new MouseEvent("mouseenter", {
-					bubbles: true,
-					cancelable: true,
-					view: globalThis,
-				}),
-			);
-		}
-	},
+  args: {
+    // ...Default.args,
+  },
+  play: async ({ canvasElement }) => {
+    // Find the interactive element to hover over
+    const element = canvasElement.querySelector('button') ?? canvasElement.firstChild;
+    if (element && element instanceof HTMLElement) {
+      element.dispatchEvent(
+        new MouseEvent('mouseenter', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        }),
+      );
+    }
+  },
 };
 
 /**
@@ -199,16 +198,15 @@ export const Hovered: Story = {
  * Tests that focus styles are visible and provide good contrast.
  */
 export const Focused: Story = {
-	args: {
-		// ...Default.args,
-	},
-	play: async ({ canvasElement }) => {
-		const element =
-			canvasElement.querySelector("button") || canvasElement.firstChild;
-		if (element instanceof HTMLElement) {
-			element.focus();
-		}
-	},
+  args: {
+    // ...Default.args,
+  },
+  play: async ({ canvasElement }) => {
+    const element = canvasElement.querySelector('button') ?? canvasElement.firstChild;
+    if (element instanceof HTMLElement) {
+      element.focus();
+    }
+  },
 };
 
 /**
@@ -219,17 +217,16 @@ export const Focused: Story = {
  * Shows the visual feedback when the element is actively being used.
  */
 export const Active: Story = {
-	args: {
-		// ...Default.args,
-	},
-	play: async ({ canvasElement }) => {
-		const element =
-			canvasElement.querySelector("button") || canvasElement.firstChild;
-		if (element instanceof HTMLElement) {
-			element.classList.add("active");
-			element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-		}
-	},
+  args: {
+    // ...Default.args,
+  },
+  play: async ({ canvasElement }) => {
+    const element = canvasElement.querySelector('button') ?? canvasElement.firstChild;
+    if (element instanceof HTMLElement) {
+      element.classList.add('active');
+      element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    }
+  },
 };
 
 /**

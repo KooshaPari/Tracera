@@ -5,12 +5,8 @@
 
 set -e
 NEO4J_BOLT_PORT="${NEO4J_BOLT_PORT:-7687}"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-if command -v lsof >/dev/null 2>&1; then
-  if lsof -Pi :"$NEO4J_BOLT_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "Neo4j already running on port $NEO4J_BOLT_PORT; holding process for process-compose."
-    exec sh -c 'while true; do sleep 3600; done'
-  fi
-fi
+bash "$ROOT/scripts/shell/guard-port.sh" "Neo4j" "$NEO4J_BOLT_PORT" "neo4j"
 
 exec neo4j console

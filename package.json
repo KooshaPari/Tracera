@@ -6,13 +6,14 @@
     "dev:down": "make dev-down",
     "dev:logs": "make dev-logs",
     "dev:status": "make dev-status",
-    "build": "cd frontend && bun run build",
+    "dev:storybook": "cd frontend/apps/storybook && bun run dev",
+    "build": "cd frontend && bunx turbo build --no-daemon --filter=!@tracertm/storybook",
     "quality": "make quality",
     "check": "make check",
     "lint": "cd frontend && bun run lint",
     "lint:all": "make lint",
     "lint:frontend": "cd frontend && bun run lint",
-    "lint:fix": "make format",
+    "lint:fix": "make format && cd frontend && bun run format",
     "type-check": "make type-check",
     "typecheck": "cd frontend && bun run typecheck",
     "format": "make format",
@@ -32,8 +33,6 @@
     "format:python": "make py-format",
     "format:go": "make go-format",
     "type-check:ty": "make type-check-ty",
-    "type-check:basedpyright": "make type-check-basedpyright",
-    "type-check:pyright": "make type-check-pyright",
     "clean": "make clean",
     "db:migrate": "make db-migrate",
     "db:rollback": "make db-rollback",
@@ -52,5 +51,10 @@
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-collapsible": "1.1.12",
     "oxlint-tsgolint": "0.11.4"
+  },
+  "devDependencies": {
+    "eslint-plugin-boundaries": "5.0.1",
+    "eslint-plugin-check-file": "2.1.0",
+    "eslint-plugin-filenames": "1.3.2"
   }
 }

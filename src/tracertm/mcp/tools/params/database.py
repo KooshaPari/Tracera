@@ -18,12 +18,72 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
 
 from .common import _wrap
+
+
+def _require_db(config: ConfigManager) -> DatabaseConnection:
+    database_url = config.get("database_url")
+    if not database_url:
+        raise ToolError("Database URL not configured.")
+    db = DatabaseConnection(database_url)
+    db.connect()
+    return db
+
+
+def _action_init(config: ConfigManager, payload: dict[str, Any], ctx: Any | None, action: str) -> dict[str, Any]:
+    database_url = payload.get("database_url")
+    if database_url:
+        config.set("database_url", database_url)
+    return _wrap({"database_url": config.get("database_url")}, ctx, action)
+
+
+def _action_status(config: ConfigManager, ctx: Any | None, action: str) -> dict[str, Any]:
+    db = _require_db(config)
+    try:
+        health = db.health_check()
+        return _wrap(health, ctx, action)
+    finally:
+        db.close()
+
+
+def _action_migrate(config: ConfigManager, ctx: Any | None, action: str) -> dict[str, Any]:
+    db = _require_db(config)
+    try:
+        db.create_tables()
+        health = db.health_check()
+        return _wrap(health, ctx, action)
+    finally:
+        db.close()
+
+
+def _action_reset(config: ConfigManager, payload: dict[str, Any], ctx: Any | None, action: str) -> dict[str, Any]:
+    confirm = bool(payload.get("confirm"))
+    if not confirm:
+        raise ToolError("confirm=true is required for destructive operations.")
+    db = _require_db(config)
+    try:
+        db.drop_tables()
+        db.create_tables()
+        return _wrap({"status": "ok", "action": action}, ctx, action)
+    finally:
+        db.close()
+
+
+def _action_rollback(config: ConfigManager, payload: dict[str, Any], ctx: Any | None, action: str) -> dict[str, Any]:
+    confirm = bool(payload.get("confirm"))
+    if not confirm:
+        raise ToolError("confirm=true is required for destructive operations.")
+    db = _require_db(config)
+    try:
+        db.drop_tables()
+        return _wrap({"status": "ok", "action": action}, ctx, action)
+    finally:
+        db.close()
 
 
 @mcp.tool(description="Unified database operations")
@@ -47,41 +107,14 @@ async def database_manage(
     action = action.lower()
     config = ConfigManager()
 
-    if action == "init":
-        database_url = payload.get("database_url")
-        if database_url:
-            config.set("database_url", database_url)
-        return _wrap({"database_url": config.get("database_url")}, ctx, action)
-
-    database_url = config.get("database_url")
-    if not database_url:
-        raise ToolError("Database URL not configured.")
-
-    db = DatabaseConnection(database_url)
-    db.connect()
-
-    if action == "status":
-        health = db.health_check()
-        db.close()
-        return _wrap(health, ctx, action)
-
-    if action == "migrate":
-        db.create_tables()
-        health = db.health_check()
-        db.close()
-        return _wrap(health, ctx, action)
-
-    if action in {"reset", "rollback"}:
-        confirm = bool(payload.get("confirm", False))
-        if not confirm:
-            raise ToolError("confirm=true is required for destructive operations.")
-        if action == "rollback":
-            db.drop_tables()
-        else:
-            db.drop_tables()
-            db.create_tables()
-        db.close()
-        return _wrap({"status": "ok", "action": action}, ctx, action)
-
-    db.close()
-    raise ToolError(f"Unknown db action: {action}")
+    handlers = {
+        "init": lambda: _action_init(config, payload, ctx, action),
+        "status": lambda: _action_status(config, ctx, action),
+        "migrate": lambda: _action_migrate(config, ctx, action),
+        "reset": lambda: _action_reset(config, payload, ctx, action),
+        "rollback": lambda: _action_rollback(config, payload, ctx, action),
+    }
+    handler = handlers.get(action)
+    if handler is None:
+        raise ToolError(f"Unknown db action: {action}")
+    return handler()

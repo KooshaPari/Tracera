@@ -1,4 +1,4 @@
-import { expect, test } from "./global-setup";
+import { expect, test } from './global-setup';
 
 /**
  * Integration Workflow Tests
@@ -7,589 +7,567 @@ import { expect, test } from "./global-setup";
  * in realistic user workflows.
  */
 
-test.describe("Project to Items Workflow", () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto("/");
-		await page.waitForLoadState("networkidle");
-	});
+test.describe('Project to Items Workflow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+  });
 
-	test("should create project and add items in one flow", async ({ page }) => {
-		// Navigate to projects
-		await page.goto("/projects");
-		await page.waitForURL("/projects");
-		await page.waitForLoadState("networkidle");
+  test('should create project and add items in one flow', async ({ page }) => {
+    // Navigate to projects
+    await page.goto('/projects');
+    await page.waitForURL('/projects');
+    await page.waitForLoadState('networkidle');
 
-		// Try multiple ways to create a project
-		let _clicked = false;
+    // Try multiple ways to create a project
+    let _clicked = false;
 
-		// Try clicking the "+ New Project" button
-		const newProjectBtn = page
-			.locator("button")
-			.filter({ hasText: /new project/i })
-			.first();
-		if (await newProjectBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await newProjectBtn.click();
-			_clicked = true;
-		} else {
-			// Try navigating with search param
-			await page.goto("/projects?action=create");
-		}
+    // Try clicking the "+ New Project" button
+    const newProjectBtn = page
+      .locator('button')
+      .filter({ hasText: /new project/i })
+      .first();
+    if (await newProjectBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await newProjectBtn.click();
+      _clicked = true;
+    } else {
+      // Try navigating with search param
+      await page.goto('/projects?action=create');
+    }
 
-		await page.waitForTimeout(500);
+    await page.waitForTimeout(500);
 
-		// Fill form fields if dialog is open
-		const nameInput = page.locator('input[id="project-name"]');
-		if (await nameInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await nameInput.fill("Test Project");
-			await page.fill(
-				'textarea[id="project-description"]',
-				"A test project for workflow",
-			);
+    // Fill form fields if dialog is open
+    const nameInput = page.locator('input[id="project-name"]');
+    if (await nameInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await nameInput.fill('Test Project');
+      await page.fill('textarea[id="project-description"]', 'A test project for workflow');
 
-			const createBtn = page
-				.locator("button")
-				.filter({ hasText: /create project/i })
-				.first();
-			if (await createBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-				await createBtn.click();
-				await page.waitForURL(/\/projects\/[^?]+/);
-				await page.waitForTimeout(500);
-			}
-		}
-	});
+      const createBtn = page
+        .locator('button')
+        .filter({ hasText: /create project/i })
+        .first();
+      if (await createBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await createBtn.click();
+        await page.waitForURL(/\/projects\/[^?]+/);
+        await page.waitForTimeout(500);
+      }
+    }
+  });
 
-	test("should link items within project context", async ({ page }) => {
-		// Navigate to items
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should link items within project context', async ({ page }) => {
+    // Navigate to items
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Click on first item if available
-		const itemCards = page.locator("tbody tr");
-		if (
-			await itemCards
-				.first()
-				.isVisible({ timeout: 2000 })
-				.catch(() => false)
-		) {
-			await itemCards.first().click();
-			await page.waitForTimeout(500);
+    // Click on first item if available
+    const itemCards = page.locator('tbody tr');
+    if (
+      await itemCards
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
+      await itemCards.first().click();
+      await page.waitForTimeout(500);
 
-			// Try to navigate to item detail
-			const itemLinks = page.locator('a[href*="/items/"]');
-			if (
-				await itemLinks
-					.first()
-					.isVisible({ timeout: 1000 })
-					.catch(() => false)
-			) {
-				await itemLinks.first().click();
-				await page.waitForURL(/\/items\/.*/);
-			}
-		}
+      // Try to navigate to item detail
+      const itemLinks = page.locator('a[href*="/items/"]');
+      if (
+        await itemLinks
+          .first()
+          .isVisible({ timeout: 1000 })
+          .catch(() => false)
+      ) {
+        await itemLinks.first().click();
+        await page.waitForURL(/\/items\/.*/);
+      }
+    }
 
-		// Verify we're on an item page or skip this test
-		await page.waitForTimeout(300);
-	});
+    // Verify we're on an item page or skip this test
+    await page.waitForTimeout(300);
+  });
 
-	test("should manage project lifecycle with items", async ({ page }) => {
-		// Create project
-		await page.goto("/projects");
-		await page.waitForLoadState("networkidle");
+  test('should manage project lifecycle with items', async ({ page }) => {
+    // Create project
+    await page.goto('/projects');
+    await page.waitForLoadState('networkidle');
 
-		// Navigate with search param to open create dialog
-		await page.goto("/projects?action=create");
-		await page.waitForTimeout(500);
+    // Navigate with search param to open create dialog
+    await page.goto('/projects?action=create');
+    await page.waitForTimeout(500);
 
-		// Fill form fields if dialog is open
-		const nameInput = page.locator('input[id="project-name"]');
-		if (await nameInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await nameInput.fill("Lifecycle Project");
+    // Fill form fields if dialog is open
+    const nameInput = page.locator('input[id="project-name"]');
+    if (await nameInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await nameInput.fill('Lifecycle Project');
 
-			const createBtn = page
-				.locator("button")
-				.filter({ hasText: /create project/i })
-				.first();
-			if (await createBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-				await createBtn.click();
-				await page.waitForURL(/\/projects\/[^?]+/);
-				await page.waitForTimeout(500);
-			}
-		}
+      const createBtn = page
+        .locator('button')
+        .filter({ hasText: /create project/i })
+        .first();
+      if (await createBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await createBtn.click();
+        await page.waitForURL(/\/projects\/[^?]+/);
+        await page.waitForTimeout(500);
+      }
+    }
 
-		// Navigate back to projects to verify
-		await page.goto("/projects");
-		await page.waitForLoadState("networkidle");
-	});
+    // Navigate back to projects to verify
+    await page.goto('/projects');
+    await page.waitForLoadState('networkidle');
+  });
 });
 
-test.describe("Search to Navigation Workflow", () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto("/");
-		await page.waitForLoadState("networkidle");
-	});
+test.describe('Search to Navigation Workflow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+  });
 
-	test("should search and navigate to results", async ({ page }) => {
-		// Try to open global search with Cmd+K or Ctrl+K
-		const modifier = process.platform === "darwin" ? "Meta" : "Control";
-		await page.keyboard.press(`${modifier}+KeyK`);
-		await page.waitForTimeout(500);
+  test('should search and navigate to results', async ({ page }) => {
+    // Try to open global search with Cmd+K or Ctrl+K
+    const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
+    await page.keyboard.press(`${modifier}+KeyK`);
+    await page.waitForTimeout(500);
 
-		// Look for search dialog or input
-		const searchInput = page
-			.locator('input[placeholder*="search" i], input[type="search"]')
-			.first();
-		if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await searchInput.fill("authentication");
-			await page.waitForTimeout(500);
+    // Look for search dialog or input
+    const searchInput = page
+      .locator('input[placeholder*="search" i], input[type="search"]')
+      .first();
+    if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await searchInput.fill('authentication');
+      await page.waitForTimeout(500);
 
-			// Look for clickable results
-			const results = page
-				.locator('button, a, div[role="option"]')
-				.filter({ hasText: /authentication/i });
-			if (
-				await results
-					.first()
-					.isVisible({ timeout: 1000 })
-					.catch(() => false)
-			) {
-				await results.first().click();
-				await page.waitForTimeout(500);
-			}
-		}
-	});
+      // Look for clickable results
+      const results = page
+        .locator('button, a, div[role="option"]')
+        .filter({ hasText: /authentication/i });
+      if (
+        await results
+          .first()
+          .isVisible({ timeout: 1000 })
+          .catch(() => false)
+      ) {
+        await results.first().click();
+        await page.waitForTimeout(500);
+      }
+    }
+  });
 
-	test("should filter search by type", async ({ page }) => {
-		// Navigate to items page where filtering is available
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should filter search by type', async ({ page }) => {
+    // Navigate to items page where filtering is available
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Look for filter controls
-		const filterButtons = page.locator("button").filter({ hasText: /filter/i });
-		if (
-			await filterButtons
-				.first()
-				.isVisible({ timeout: 2000 })
-				.catch(() => false)
-		) {
-			await filterButtons.first().click();
-			await page.waitForTimeout(300);
-		}
-	});
+    // Look for filter controls
+    const filterButtons = page.locator('button').filter({ hasText: /filter/i });
+    if (
+      await filterButtons
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
+      await filterButtons.first().click();
+      await page.waitForTimeout(300);
+    }
+  });
 
-	test("should search within project context", async ({ page }) => {
-		// Navigate to a project if it exists
-		await page.goto("/projects");
-		await page.waitForLoadState("networkidle");
+  test('should search within project context', async ({ page }) => {
+    // Navigate to a project if it exists
+    await page.goto('/projects');
+    await page.waitForLoadState('networkidle');
 
-		// Look for a clickable project link
-		const projectLinks = page.locator('a[href*="/projects/"]').first();
-		if (await projectLinks.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await projectLinks.click();
-			await page.waitForURL(/\/projects\/.*/);
-			await page.waitForTimeout(500);
-		}
-	});
+    // Look for a clickable project link
+    const projectLinks = page.locator('a[href*="/projects/"]').first();
+    if (await projectLinks.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await projectLinks.click();
+      await page.waitForURL(/\/projects\/.*/);
+      await page.waitForTimeout(500);
+    }
+  });
 
-	test("should navigate between search results using keyboard", async ({
-		page,
-	}) => {
-		// Navigate to items which should have keyboard support
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should navigate between search results using keyboard', async ({ page }) => {
+    // Navigate to items which should have keyboard support
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Look for table or list that can be navigated
-		const tableRows = page.locator('tbody tr, [role="row"]');
-		if (
-			await tableRows
-				.first()
-				.isVisible({ timeout: 2000 })
-				.catch(() => false)
-		) {
-			await tableRows.first().focus();
-			await page.keyboard.press("ArrowDown");
-			await page.waitForTimeout(300);
-		}
-	});
+    // Look for table or list that can be navigated
+    const tableRows = page.locator('tbody tr, [role="row"]');
+    if (
+      await tableRows
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
+      await tableRows.first().focus();
+      await page.keyboard.press('ArrowDown');
+      await page.waitForTimeout(300);
+    }
+  });
 });
 
-test.describe("Dashboard to Detail Workflow", () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto("/");
-		await page.waitForLoadState("networkidle");
-	});
+test.describe('Dashboard to Detail Workflow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+  });
 
-	test("should navigate from dashboard widget to detail view", async ({
-		page,
-	}) => {
-		// Look for clickable items on dashboard
-		const dashboardLinks = page.locator('a[href*="/projects/"]').first();
-		if (await dashboardLinks.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await dashboardLinks.click();
-			await page.waitForURL(/\/projects\/.*/);
-			await page.waitForTimeout(500);
-		}
-	});
+  test('should navigate from dashboard widget to detail view', async ({ page }) => {
+    // Look for clickable items on dashboard
+    const dashboardLinks = page.locator('a[href*="/projects/"]').first();
+    if (await dashboardLinks.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await dashboardLinks.click();
+      await page.waitForURL(/\/projects\/.*/);
+      await page.waitForTimeout(500);
+    }
+  });
 
-	test("should navigate from dashboard stats to filtered lists", async ({
-		page,
-	}) => {
-		// Look for clickable stat items on dashboard
-		const statLinks = page
-			.locator("button, a")
-			.filter({ hasText: /item|status|progress/i })
-			.first();
-		if (await statLinks.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await statLinks.click();
-			await page.waitForTimeout(500);
-		}
-	});
+  test('should navigate from dashboard stats to filtered lists', async ({ page }) => {
+    // Look for clickable stat items on dashboard
+    const statLinks = page
+      .locator('button, a')
+      .filter({ hasText: /item|status|progress/i })
+      .first();
+    if (await statLinks.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await statLinks.click();
+      await page.waitForTimeout(500);
+    }
+  });
 
-	test("should update dashboard after creating item", async ({ page }) => {
-		// Navigate to items to create an item
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should update dashboard after creating item', async ({ page }) => {
+    // Navigate to items to create an item
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Look for create button
-		const createButton = page
-			.locator("button")
-			.filter({ hasText: /new|create|add/i })
-			.first();
-		if (await createButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await createButton.click();
-			await page.waitForTimeout(500);
-		}
+    // Look for create button
+    const createButton = page
+      .locator('button')
+      .filter({ hasText: /new|create|add/i })
+      .first();
+    if (await createButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await createButton.click();
+      await page.waitForTimeout(500);
+    }
 
-		// Return to dashboard
-		await page.goto("/");
-		await page.waitForLoadState("networkidle");
-	});
+    // Return to dashboard
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+  });
 });
 
-test.describe("Item CRUD with Links Workflow", () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
-	});
+test.describe('Item CRUD with Links Workflow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
+  });
 
-	test("should create item, add links, and verify in graph", async ({
-		page,
-	}) => {
-		// Look for new item button
-		const newItemButton = page
-			.locator("button")
-			.filter({ hasText: /new|create/i })
-			.first();
-		if (await newItemButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await newItemButton.click();
-			await page.waitForTimeout(500);
+  test('should create item, add links, and verify in graph', async ({ page }) => {
+    // Look for new item button
+    const newItemButton = page
+      .locator('button')
+      .filter({ hasText: /new|create/i })
+      .first();
+    if (await newItemButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await newItemButton.click();
+      await page.waitForTimeout(500);
 
-			// Look for title input
-			const titleInput = page
-				.locator('input[name="title"], input[placeholder*="title" i]')
-				.first();
-			if (await titleInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-				await titleInput.fill("Test Item");
-				await page.waitForTimeout(300);
-			}
-		}
+      // Look for title input
+      const titleInput = page.locator('input[name="title"], input[placeholder*="title" i]').first();
+      if (await titleInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await titleInput.fill('Test Item');
+        await page.waitForTimeout(300);
+      }
+    }
 
-		// Navigate to graph
-		await page.goto("/graph");
-		await page.waitForLoadState("networkidle");
-	});
+    // Navigate to graph
+    await page.goto('/graph');
+    await page.waitForLoadState('networkidle');
+  });
 
-	test("should update item and preserve links", async ({ page }) => {
-		// Navigate to items
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should update item and preserve links', async ({ page }) => {
+    // Navigate to items
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Click on first item
-		const firstItemLink = page.locator('a[href*="/items/"]').first();
-		if (await firstItemLink.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await firstItemLink.click();
-			await page.waitForURL(/\/items\/.*/);
-			await page.waitForTimeout(500);
+    // Click on first item
+    const firstItemLink = page.locator('a[href*="/items/"]').first();
+    if (await firstItemLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstItemLink.click();
+      await page.waitForURL(/\/items\/.*/);
+      await page.waitForTimeout(500);
 
-			// Look for edit button
-			const editButton = page
-				.locator("button")
-				.filter({ hasText: /edit/i })
-				.first();
-			if (await editButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-				await editButton.click();
-				await page.waitForTimeout(300);
-			}
-		}
-	});
+      // Look for edit button
+      const editButton = page.locator('button').filter({ hasText: /edit/i }).first();
+      if (await editButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await editButton.click();
+        await page.waitForTimeout(300);
+      }
+    }
+  });
 
-	test("should delete item and update linked items", async ({ page }) => {
-		// Navigate to items
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should delete item and update linked items', async ({ page }) => {
+    // Navigate to items
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Look for first item
-		const firstItemLink = page.locator('a[href*="/items/"]').first();
-		if (await firstItemLink.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await firstItemLink.click();
-			await page.waitForURL(/\/items\/.*/);
-			await page.waitForTimeout(500);
+    // Look for first item
+    const firstItemLink = page.locator('a[href*="/items/"]').first();
+    if (await firstItemLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstItemLink.click();
+      await page.waitForURL(/\/items\/.*/);
+      await page.waitForTimeout(500);
 
-			// Look for delete button
-			const deleteButton = page
-				.locator("button")
-				.filter({ hasText: /delete/i })
-				.first();
-			if (await deleteButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-				await deleteButton.click();
-				await page.waitForTimeout(300);
+      // Look for delete button
+      const deleteButton = page
+        .locator('button')
+        .filter({ hasText: /delete/i })
+        .first();
+      if (await deleteButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await deleteButton.click();
+        await page.waitForTimeout(300);
 
-				// Look for confirm button
-				const confirmButton = page
-					.locator("button")
-					.filter({ hasText: /confirm|yes/i })
-					.first();
-				if (
-					await confirmButton.isVisible({ timeout: 1000 }).catch(() => false)
-				) {
-					await confirmButton.click();
-					await page.waitForTimeout(500);
-				}
-			}
-		}
-	});
+        // Look for confirm button
+        const confirmButton = page
+          .locator('button')
+          .filter({ hasText: /confirm|yes/i })
+          .first();
+        if (await confirmButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+          await confirmButton.click();
+          await page.waitForTimeout(500);
+        }
+      }
+    }
+  });
 });
 
-test.describe("Sync and Collaboration Workflow", () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto("/");
-		await page.waitForLoadState("networkidle");
-	});
+test.describe('Sync and Collaboration Workflow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+  });
 
-	test("should sync changes across tabs", async ({ browser }) => {
-		// Create two contexts (tabs)
-		const context1 = await browser.newContext();
-		const page1 = await context1.newPage();
-		await page1.goto("/items");
-		await page1.waitForLoadState("networkidle");
+  test('should sync changes across tabs', async ({ browser }) => {
+    // Create two contexts (tabs)
+    const context1 = await browser.newContext();
+    const page1 = await context1.newPage();
+    await page1.goto('/items');
+    await page1.waitForLoadState('networkidle');
 
-		const context2 = await browser.newContext();
-		const page2 = await context2.newPage();
-		await page2.goto("/items");
-		await page2.waitForLoadState("networkidle");
+    const context2 = await browser.newContext();
+    const page2 = await context2.newPage();
+    await page2.goto('/items');
+    await page2.waitForLoadState('networkidle');
 
-		// Wait a bit for initial load
-		await page1.waitForTimeout(500);
-		await page2.waitForTimeout(500);
+    // Wait a bit for initial load
+    await page1.waitForTimeout(500);
+    await page2.waitForTimeout(500);
 
-		// Both should be on items page
-		await expect(page1).toHaveURL(/\/items/);
-		await expect(page2).toHaveURL(/\/items/);
+    // Both should be on items page
+    await expect(page1).toHaveURL(/\/items/);
+    await expect(page2).toHaveURL(/\/items/);
 
-		await context1.close();
-		await context2.close();
-	});
+    await context1.close();
+    await context2.close();
+  });
 
-	test("should handle offline mode gracefully", async ({ page, context }) => {
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should handle offline mode gracefully', async ({ page, context }) => {
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Go offline
-		await context.setOffline(true);
-		await page.waitForTimeout(500);
+    // Go offline
+    await context.setOffline(true);
+    await page.waitForTimeout(500);
 
-		// Try to interact with page
-		const buttons = page.locator("button").first();
-		if (await buttons.isVisible({ timeout: 1000 }).catch(() => false)) {
-			// Page should still be responsive even offline
-			await buttons.isEnabled();
-		}
+    // Try to interact with page
+    const buttons = page.locator('button').first();
+    if (await buttons.isVisible({ timeout: 1000 }).catch(() => false)) {
+      // Page should still be responsive even offline
+      await buttons.isEnabled();
+    }
 
-		// Go back online
-		await context.setOffline(false);
-		await page.waitForTimeout(500);
+    // Go back online
+    await context.setOffline(false);
+    await page.waitForTimeout(500);
 
-		// Page should work normally
-		await expect(page).toHaveURL(/\/items/);
-	});
+    // Page should work normally
+    await expect(page).toHaveURL(/\/items/);
+  });
 
-	test("should resolve sync conflicts", async ({ page }) => {
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should resolve sync conflicts', async ({ page }) => {
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Navigate to an item if available
-		const firstItemLink = page.locator('a[href*="/items/"]').first();
-		if (await firstItemLink.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await firstItemLink.click();
-			await page.waitForURL(/\/items\/.*/);
-			await page.waitForTimeout(500);
-		}
-	});
+    // Navigate to an item if available
+    const firstItemLink = page.locator('a[href*="/items/"]').first();
+    if (await firstItemLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstItemLink.click();
+      await page.waitForURL(/\/items\/.*/);
+      await page.waitForTimeout(500);
+    }
+  });
 
-	test("should show real-time updates", async ({ page }) => {
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should show real-time updates', async ({ page }) => {
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Page should be responsive to interactions
-		const buttons = page.locator("button");
-		if (
-			await buttons
-				.first()
-				.isVisible({ timeout: 2000 })
-				.catch(() => false)
-		) {
-			await expect(buttons.first()).toBeVisible();
-		}
-	});
+    // Page should be responsive to interactions
+    const buttons = page.locator('button');
+    if (
+      await buttons
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
+      await expect(buttons.first()).toBeVisible();
+    }
+  });
 });
 
-test.describe("Multi-Agent Workflow", () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto("/agents");
-		await page.waitForLoadState("networkidle");
-	});
+test.describe('Multi-Agent Workflow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/agents');
+    await page.waitForLoadState('networkidle');
+  });
 
-	test("should create agents and assign to items", async ({ page }) => {
-		// Look for agents on page
-		const agentCards = page
-			.locator("div, section")
-			.filter({ hasText: /agent/i });
-		if (
-			await agentCards
-				.first()
-				.isVisible({ timeout: 2000 })
-				.catch(() => false)
-		) {
-			// Agents page is visible
-			await expect(page).toHaveURL(/\/agents/);
-		}
+  test('should create agents and assign to items', async ({ page }) => {
+    // Look for agents on page
+    const agentCards = page.locator('div, section').filter({ hasText: /agent/i });
+    if (
+      await agentCards
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
+      // Agents page is visible
+      await expect(page).toHaveURL(/\/agents/);
+    }
 
-		// Navigate to items
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+    // Navigate to items
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Back to agents
-		await page.goto("/agents");
-		await page.waitForLoadState("networkidle");
-	});
+    // Back to agents
+    await page.goto('/agents');
+    await page.waitForLoadState('networkidle');
+  });
 
-	test("should track agent workload", async ({ page }) => {
-		// Agents page should be loaded
-		await expect(page).toHaveURL(/\/agents/);
+  test('should track agent workload', async ({ page }) => {
+    // Agents page should be loaded
+    await expect(page).toHaveURL(/\/agents/);
 
-		// Look for agent list items
-		const agentLinks = page
-			.locator("a, button")
-			.filter({ hasText: /agent|analyzer|runner/i });
-		if (
-			await agentLinks
-				.first()
-				.isVisible({ timeout: 2000 })
-				.catch(() => false)
-		) {
-			await agentLinks.first().click();
-			await page.waitForTimeout(500);
-		}
-	});
+    // Look for agent list items
+    const agentLinks = page.locator('a, button').filter({ hasText: /agent|analyzer|runner/i });
+    if (
+      await agentLinks
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
+      await agentLinks.first().click();
+      await page.waitForTimeout(500);
+    }
+  });
 
-	test("should filter items by agent", async ({ page }) => {
-		// Navigate to items
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
+  test('should filter items by agent', async ({ page }) => {
+    // Navigate to items
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
 
-		// Look for filter button
-		const filterButton = page
-			.locator("button")
-			.filter({ hasText: /filter/i })
-			.first();
-		if (await filterButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-			await filterButton.click();
-			await page.waitForTimeout(500);
-		}
-	});
+    // Look for filter button
+    const filterButton = page
+      .locator('button')
+      .filter({ hasText: /filter/i })
+      .first();
+    if (await filterButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await filterButton.click();
+      await page.waitForTimeout(500);
+    }
+  });
 });
 
-test.describe("Bulk Operations Workflow", () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto("/items");
-		await page.waitForLoadState("networkidle");
-	});
+test.describe('Bulk Operations Workflow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/items');
+    await page.waitForLoadState('networkidle');
+  });
 
-	test("should select multiple items and bulk update", async ({ page }) => {
-		// Look for checkboxes
-		const checkboxes = page.locator('[type="checkbox"], [role="checkbox"]');
-		if (
-			await checkboxes
-				.first()
-				.isVisible({ timeout: 2000 })
-				.catch(() => false)
-		) {
-			await checkboxes.first().click();
-			await page.waitForTimeout(300);
+  test('should select multiple items and bulk update', async ({ page }) => {
+    // Look for checkboxes
+    const checkboxes = page.locator('[type="checkbox"], [role="checkbox"]');
+    if (
+      await checkboxes
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
+      await checkboxes.first().click();
+      await page.waitForTimeout(300);
 
-			if (
-				await checkboxes
-					.nth(1)
-					.isVisible({ timeout: 1000 })
-					.catch(() => false)
-			) {
-				await checkboxes.nth(1).click();
-				await page.waitForTimeout(300);
-			}
-		}
+      if (
+        await checkboxes
+          .nth(1)
+          .isVisible({ timeout: 1000 })
+          .catch(() => false)
+      ) {
+        await checkboxes.nth(1).click();
+        await page.waitForTimeout(300);
+      }
+    }
 
-		// Look for bulk action toolbar
-		const bulkToolbar = page.locator(
-			'[data-testid="bulk-action-bar"], [data-testid="bulk-toolbar"]',
-		);
-		if (await bulkToolbar.isVisible({ timeout: 2000 }).catch(() => false)) {
-			// Bulk toolbar is visible - workflow working
-			await expect(bulkToolbar).toBeVisible();
-		}
-	});
+    // Look for bulk action toolbar
+    const bulkToolbar = page.locator(
+      '[data-testid="bulk-action-bar"], [data-testid="bulk-toolbar"]',
+    );
+    if (await bulkToolbar.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Bulk toolbar is visible - workflow working
+      await expect(bulkToolbar).toBeVisible();
+    }
+  });
 
-	test("should bulk delete with confirmation", async ({ page }) => {
-		// Look for checkboxes
-		const checkboxes = page.locator('[type="checkbox"], [role="checkbox"]');
-		if (
-			await checkboxes
-				.first()
-				.isVisible({ timeout: 2000 })
-				.catch(() => false)
-		) {
-			await checkboxes.first().click();
-			await page.waitForTimeout(300);
-		}
+  test('should bulk delete with confirmation', async ({ page }) => {
+    // Look for checkboxes
+    const checkboxes = page.locator('[type="checkbox"], [role="checkbox"]');
+    if (
+      await checkboxes
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
+      await checkboxes.first().click();
+      await page.waitForTimeout(300);
+    }
 
-		// Look for delete button
-		const deleteButton = page
-			.locator("button")
-			.filter({ hasText: /delete/i })
-			.first();
-		if (await deleteButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-			await deleteButton.click();
-			await page.waitForTimeout(500);
+    // Look for delete button
+    const deleteButton = page
+      .locator('button')
+      .filter({ hasText: /delete/i })
+      .first();
+    if (await deleteButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await deleteButton.click();
+      await page.waitForTimeout(500);
 
-			// Look for confirmation dialog
-			const confirmButton = page
-				.locator("button")
-				.filter({ hasText: /confirm|yes/i })
-				.first();
-			if (await confirmButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-				await confirmButton.click();
-				await page.waitForTimeout(500);
-			}
-		}
-	});
+      // Look for confirmation dialog
+      const confirmButton = page
+        .locator('button')
+        .filter({ hasText: /confirm|yes/i })
+        .first();
+      if (await confirmButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await confirmButton.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  });
 
-	test("should bulk export items", async ({ page }) => {
-		// Look for export button
-		const exportButton = page
-			.locator("button")
-			.filter({ hasText: /export/i })
-			.first();
-		if (await exportButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-			// Export button exists - feature is implemented
-			await expect(exportButton).toBeVisible();
-		}
-	});
+  test('should bulk export items', async ({ page }) => {
+    // Look for export button
+    const exportButton = page
+      .locator('button')
+      .filter({ hasText: /export/i })
+      .first();
+    if (await exportButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Export button exists - feature is implemented
+      await expect(exportButton).toBeVisible();
+    }
+  });
 });

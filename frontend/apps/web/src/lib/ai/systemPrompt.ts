@@ -4,7 +4,7 @@
  * Builds context-aware system prompts for the AI assistant.
  */
 
-import type { ChatContext } from "./types";
+import type { ChatContext } from './types';
 
 /** Base system prompt for TraceRTM PM Expert */
 const BASE_PROMPT = `You are the **TraceRTM PM Expert**, an AI assistant specialized in requirements traceability and project management within TraceRTM.
@@ -64,48 +64,48 @@ const BASE_PROMPT = `You are the **TraceRTM PM Expert**, an AI assistant special
 
 /** Build complete system prompt with optional context */
 export function buildSystemPrompt(context?: ChatContext): string {
-	const parts: string[] = [BASE_PROMPT];
+  const parts: string[] = [BASE_PROMPT];
 
-	if (context) {
-		parts.push("\n## Current Session Context\n");
+  if (context) {
+    parts.push('\n## Current Session Context\n');
 
-		if (context.project) {
-			parts.push(`### Active Project`);
-			parts.push(`- **Name**: ${context.project.name}`);
-			parts.push(`- **ID**: ${context.project.id}`);
-			if (context.project.description) {
-				parts.push(`- **Description**: ${context.project.description}`);
-			}
-			parts.push("");
-		}
+    if (context.project) {
+      parts.push(`### Active Project`);
+      parts.push(`- **Name**: ${context.project.name}`);
+      parts.push(`- **ID**: ${context.project.id}`);
+      if (context.project.description) {
+        parts.push(`- **Description**: ${context.project.description}`);
+      }
+      parts.push('');
+    }
 
-		if (context.currentView) {
-			parts.push(`### Current View: ${context.currentView}`);
-			parts.push("");
-		}
+    if (context.currentView) {
+      parts.push(`### Current View: ${context.currentView}`);
+      parts.push('');
+    }
 
-		if (context.selectedItems && context.selectedItems.length > 0) {
-			parts.push(`### Selected Items (${context.selectedItems.length})`);
-			for (const item of context.selectedItems.slice(0, 10)) {
-				const statusBadge = item.status ? ` [${item.status}]` : "";
-				parts.push(`- **${item.title}** (${item.type})${statusBadge}`);
-			}
-			if (context.selectedItems.length > 10) {
-				parts.push(`- ... and ${context.selectedItems.length - 10} more items`);
-			}
-			parts.push("");
-		}
+    if (context.selectedItems && context.selectedItems.length > 0) {
+      parts.push(`### Selected Items (${context.selectedItems.length})`);
+      for (const item of context.selectedItems.slice(0, 10)) {
+        const statusBadge = item.status ? ` [${item.status}]` : '';
+        parts.push(`- **${item.title}** (${item.type})${statusBadge}`);
+      }
+      if (context.selectedItems.length > 10) {
+        parts.push(`- ... and ${context.selectedItems.length - 10} more items`);
+      }
+      parts.push('');
+    }
 
-		if (context.recentActivity && context.recentActivity.length > 0) {
-			parts.push("### Recent Activity");
-			for (const activity of context.recentActivity.slice(0, 5)) {
-				parts.push(`- ${activity}`);
-			}
-			parts.push("");
-		}
-	}
+    if (context.recentActivity && context.recentActivity.length > 0) {
+      parts.push('### Recent Activity');
+      for (const activity of context.recentActivity.slice(0, 5)) {
+        parts.push(`- ${activity}`);
+      }
+      parts.push('');
+    }
+  }
 
-	parts.push(`
+  parts.push(`
 ## Response Guidelines
 When the user asks about their project:
 1. Reference the context above when relevant
@@ -115,10 +115,10 @@ When the user asks about their project:
 5. For quality questions, consider test coverage and QA metrics
 `);
 
-	return parts.join("\n");
+  return parts.join('\n');
 }
 
 /** Build a minimal prompt without context */
 export function buildMinimalPrompt(): string {
-	return BASE_PROMPT;
+  return BASE_PROMPT;
 }

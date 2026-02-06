@@ -59,19 +59,20 @@ bun run dev
 
 ### Why NATS Over Redis?
 
-| Feature | NATS JetStream | Redis |
-|---------|----------------|-------|
-| Message Delivery | At-least-once, exactly-once ✅ | At-most-once ❌ |
-| Persistence | Built-in JetStream ✅ | Requires AOF/RDB ⚠️ |
-| Work Queues | Pull consumers ✅ | Lua scripts ⚠️ |
-| Clustering | Native ✅ | Complex sharding ⚠️ |
-| DAG Coordination | Perfect fit ✅ | Workarounds needed ❌ |
+| Feature          | NATS JetStream                 | Redis                 |
+| ---------------- | ------------------------------ | --------------------- |
+| Message Delivery | At-least-once, exactly-once ✅ | At-most-once ❌       |
+| Persistence      | Built-in JetStream ✅          | Requires AOF/RDB ⚠️   |
+| Work Queues      | Pull consumers ✅              | Lua scripts ⚠️        |
+| Clustering       | Native ✅                      | Complex sharding ⚠️   |
+| DAG Coordination | Perfect fit ✅                 | Workarounds needed ❌ |
 
 **Decision**: Use NATS for distributed event coordination and agent orchestration.
 
 ### Versioning Strategy
 
 **Hybrid event sourcing + snapshots**:
+
 - Events: Complete audit trail, time-travel capability
 - Snapshots: Performance optimization (every 100 events)
 - Git-style: Content-addressable commits with DAG structure
@@ -80,6 +81,7 @@ bun run dev
 ### Storage Architecture
 
 **SQLite → PostgreSQL migration path**:
+
 - Start: SQLite for simplicity and local development
 - Scale: PostgreSQL for production and multi-user scenarios
 - Optional: Neo4j for graph queries on links
@@ -88,12 +90,14 @@ bun run dev
 ## Technology Stack
 
 ### Core Framework
+
 - **FastMCP**: stdio MCP server foundation
 - **Python 3.12**: Latest Python with type hints
 - **uv**: Fast Python package manager
 - **NATS**: Event coordination and messaging
 
 ### Frontend
+
 - **React 18**: UI framework
 - **TanStack Router**: Type-safe routing
 - **TanStack Query**: Data fetching and caching
@@ -101,11 +105,13 @@ bun run dev
 - **shadcn/ui**: Component library
 
 ### CLI & TUI
+
 - **Typer**: Beautiful CLI framework
 - **Rich**: Terminal formatting
 - **Textual**: Interactive TUI
 
 ### Versioning & Storage
+
 - **pygit2**: Git-style versioning
 - **SQLAlchemy**: ORM for database
 - **SQLite/PostgreSQL**: Primary storage
@@ -173,7 +179,7 @@ ruff format .
 bun run lint
 
 # Type checking
-mypy src/
+ty check src/ --error-on-warning
 ```
 
 ### 5. Commit and Push
@@ -192,15 +198,15 @@ git push origin feature/your-feature-name
 
 ## Performance Targets
 
-| Operation | Target | Strategy |
-|-----------|--------|----------|
-| View Switch | &lt;50ms | Caching + virtual scrolling |
-| Item Creation | &lt;200ms | Intelligent CRUD with async |
-| Commit | &lt;100ms | Batch operations |
-| Time-Travel | &lt;500ms | Snapshot + event replay |
-| Critical Path | &lt;2s | Optimized DAG algorithms |
-| NL Verification | &lt;5s | Multi-tier caching |
-| Full Validation | &lt;30s | Parallel processing |
+| Operation       | Target    | Strategy                    |
+| --------------- | --------- | --------------------------- |
+| View Switch     | &lt;50ms  | Caching + virtual scrolling |
+| Item Creation   | &lt;200ms | Intelligent CRUD with async |
+| Commit          | &lt;100ms | Batch operations            |
+| Time-Travel     | &lt;500ms | Snapshot + event replay     |
+| Critical Path   | &lt;2s    | Optimized DAG algorithms    |
+| NL Verification | &lt;5s    | Multi-tier caching          |
+| Full Validation | &lt;30s   | Parallel processing         |
 
 ## Common Tasks
 

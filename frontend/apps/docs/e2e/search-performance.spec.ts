@@ -238,8 +238,8 @@ test.describe('Instant Search', () => {
     await page.waitForTimeout(500);
 
     // Should have initialization log
-    const hasInitLog = logs.some((log) =>
-      log.includes('Search worker initialized') || log.includes('init')
+    const hasInitLog = logs.some(
+      (log) => log.includes('Search worker initialized') || log.includes('init'),
     );
     expect(hasInitLog).toBeTruthy();
   });

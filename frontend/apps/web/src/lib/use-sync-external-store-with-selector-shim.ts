@@ -11,9 +11,8 @@
 
 // Import the real implementation via alias so we don't resolve to this shim (circular)
 // @ts-expect-error - CJS module with no TypeScript types
-import real from "use-sync-external-store-with-selector-real";
+import real from 'use-sync-external-store-with-selector-real';
 
-export const useSyncExternalStoreWithSelector =
-	real?.useSyncExternalStoreWithSelector ?? real;
+export const useSyncExternalStoreWithSelector = real?.useSyncExternalStoreWithSelector ?? real;
 
 export default real;

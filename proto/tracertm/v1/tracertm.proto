@@ -133,6 +133,25 @@ service AIService {
   rpc ExtractEntities(ExtractEntitiesRequest) returns (ExtractEntitiesResponse);
 }
 
+// ============================================================================
+// SpecAnalyticsService - Provided by Python, Consumed by Go
+// ============================================================================
+
+// SpecAnalyticsService provides requirement/spec analytics from the Python backend
+service SpecAnalyticsService {
+  // AnalyzeSpec performs a single spec analysis
+  rpc AnalyzeSpec(AnalyzeSpecRequest) returns (AnalyzeSpecResponse);
+
+  // BatchAnalyzeSpecs analyzes multiple specs in one call
+  rpc BatchAnalyzeSpecs(BatchAnalyzeSpecsRequest) returns (BatchAnalyzeSpecsResponse);
+
+  // ValidateISO29148 checks ISO 29148 compliance
+  rpc ValidateISO29148(ValidateISO29148Request) returns (ValidateISO29148Response);
+
+  // GetEARSPatterns extracts EARS patterns
+  rpc GetEARSPatterns(GetEARSPatternsRequest) returns (GetEARSPatternsResponse);
+}
+
 // Request to analyze a requirement
 message AnalyzeRequirementRequest {
   string item_id = 1;
@@ -214,6 +233,91 @@ message ExtractEntitiesRequest {
 message ExtractEntitiesResponse {
   repeated Entity entities = 1;
   int32 total_count = 2;
+}
+
+// Request to analyze a specification
+message AnalyzeSpecRequest {
+  string spec_id = 1;
+  string content = 2;
+  string project_id = 3;
+}
+
+// Response containing spec analysis
+message AnalyzeSpecResponse {
+  SpecAnalysisResult result = 1;
+}
+
+// Batch analyze request
+message BatchAnalyzeSpecsRequest {
+  repeated AnalyzeSpecRequest requests = 1;
+}
+
+// Batch analyze response
+message BatchAnalyzeSpecsResponse {
+  repeated SpecAnalysisResult results = 1;
+}
+
+// Validate ISO 29148 request
+message ValidateISO29148Request {
+  string spec_id = 1;
+  string content = 2;
+  string project_id = 3;
+}
+
+// Validate ISO 29148 response
+message ValidateISO29148Response {
+  bool compliant_with_iso = 1;
+  repeated string recommendations = 2;
+}
+
+// Get EARS patterns request
+message GetEARSPatternsRequest {
+  string spec_id = 1;
+  string content = 2;
+  string project_id = 3;
+}
+
+// Get EARS patterns response
+message GetEARSPatternsResponse {
+  repeated EARSPattern ears_patterns = 1;
+}
+
+// Spec analysis result
+message SpecAnalysisResult {
+  string spec_id = 1;
+  bool compliant_with_iso = 2;
+  repeated EARSPattern ears_patterns = 3;
+  ODCClassification odc_classification = 4;
+  FormalVerificationResult formal_verification = 5;
+  repeated string recommendations = 6;
+  double quality_score = 7;
+  string quality_grade = 8;
+}
+
+// EARSPattern represents an EARS (Easy Approach to Requirements Syntax) pattern match
+message EARSPattern {
+  string type = 1; // UBIQUITOUS, EVENT_DRIVEN, UNWANTED_BEHAVIOR, STATE_DRIVEN, OPTIONAL_FEATURE, etc.
+  bool matched = 2;
+  double confidence = 3;
+}
+
+// Formal verification result
+message FormalVerificationResult {
+  bool is_verifiable = 1;
+  string logical_formula = 2;
+  repeated string contradictions = 3;
+  repeated string ambiguities = 4;
+}
+
+// ODC classification result
+message ODCClassification {
+  string defect_type = 1;
+  string trigger = 2;
+  string impact = 3;
+  string qualifier = 4;
+  string age = 5;
+  string source = 6;
+  double confidence = 7;
 }
 
 // An extracted entity

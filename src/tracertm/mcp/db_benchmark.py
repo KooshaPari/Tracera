@@ -23,6 +23,16 @@ from tracertm.models.item import Item
 _TARGET_IMPROVEMENT_PCT = 50
 # Minimum CLI args: script name, database_url, project_id
 _MIN_CLI_ARGS = 3
+# Database query limits
+_QUERY_LIMIT = 50
+# Progress update frequency
+_PROGRESS_UPDATE_FREQ = 10
+# Number of items to process for N+1 query simulation
+_ITEMS_TO_PROCESS = 10
+# Number of unique cache keys
+_UNIQUE_CACHE_KEYS = 10
+# Cache TTL in seconds
+_CACHE_TTL_SECONDS = 300
 
 
 class BenchmarkRunner:
@@ -32,7 +42,7 @@ class BenchmarkRunner:
         self.database_url = database_url
         self.results: dict[str, Any] = {}
 
-    def benchmark_sync_queries(self, project_id: str, iterations: int = 100):
+    def benchmark_sync_queries(self, project_id: str, iterations: int = _PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ):
         """Benchmark old synchronous queries without pooling."""
         print("\n=== Benchmarking OLD implementation (sync, no pooling) ===")
 
@@ -46,10 +56,16 @@ class BenchmarkRunner:
             session = Session(db.engine)
 
             # Query items
-            items = session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).limit(50).all()
+            items = (
+                session
+                .query(Item)
+                .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
+                .limit(_QUERY_LIMIT)
+                .all()
+            )
 
             # N+1 query: Access links for each item
-            for item in items[:10]:  # Just first 10 to keep it reasonable
+            for item in items[:_ITEMS_TO_PROCESS]:  # Just first N items to keep it reasonable
                 _ = len(item.source_links or [])
                 _ = len(item.target_links or [])
 
@@ -59,7 +75,7 @@ class BenchmarkRunner:
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
 
-            if (i + 1) % 10 == 0:
+            if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
                 print(f"  Completed {i + 1}/{iterations} iterations")
 
         avg_time = sum(times) / len(times)
@@ -76,7 +92,9 @@ class BenchmarkRunner:
             "iterations": iterations,
         }
 
-    async def benchmark_async_pooled(self, project_id: str, iterations: int = 100):
+    async def benchmark_async_pooled(
+        self, project_id: str, iterations: int = _PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ
+    ):
         """Benchmark new async queries with connection pooling."""
         print("\n=== Benchmarking NEW implementation (async + pooling) ===")
 
@@ -94,21 +112,21 @@ class BenchmarkRunner:
                         Item.project_id == project_id,
                         Item.deleted_at.is_(None),
                     )
-                    .limit(50)
+                    .limit(_QUERY_LIMIT)
                 )
 
                 result = await session.execute(query)
                 items = result.scalars().all()
 
                 # N+1 query: Access links
-                for item in items[:10]:
+                for item in items[:_ITEMS_TO_PROCESS]:
                     _ = len(item.source_links or [])
                     _ = len(item.target_links or [])
 
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
 
-            if (i + 1) % 10 == 0:
+            if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
                 print(f"  Completed {i + 1}/{iterations} iterations")
 
         avg_time = sum(times) / len(times)
@@ -125,7 +143,9 @@ class BenchmarkRunner:
             "iterations": iterations,
         }
 
-    async def benchmark_eager_loading(self, project_id: str, iterations: int = 100):
+    async def benchmark_eager_loading(
+        self, project_id: str, iterations: int = _PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ
+    ):
         """Benchmark with eager loading (no N+1)."""
         print("\n=== Benchmarking EAGER LOADING (no N+1) ===")
 
@@ -140,11 +160,11 @@ class BenchmarkRunner:
                 items = await QueryOptimizer.get_items_with_links(
                     session,
                     project_id,
-                    limit=50,
+                    limit=_QUERY_LIMIT,
                 )
 
                 # Access links (already loaded)
-                for item in items[:10]:
+                for item in items[:_ITEMS_TO_PROCESS]:
                     src_links = getattr(item, "source_links", None) or []
                     tgt_links = getattr(item, "target_links", None) or []
                     _ = len(src_links)
@@ -153,7 +173,7 @@ class BenchmarkRunner:
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
 
-            if (i + 1) % 10 == 0:
+            if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
                 print(f"  Completed {i + 1}/{iterations} iterations")
 
         avg_time = sum(times) / len(times)
@@ -188,7 +208,7 @@ class BenchmarkRunner:
             start = time.perf_counter()
 
             # Simulate cached query pattern
-            cache_key = f"benchmark_query_{i % 10}"  # 10 unique queries
+            cache_key = f"benchmark_query_{i % _UNIQUE_CACHE_KEYS}"  # N unique queries
 
             cached = await cache.get(cache_key, project_id=project_id)
 
@@ -199,20 +219,20 @@ class BenchmarkRunner:
                         project_id,
                         limit=50,
                     )
-                    await cache.set(cache_key, items, ttl=300, project_id=project_id)
+                    await cache.set(cache_key, items, ttl=_CACHE_TTL_SECONDS, project_id=project_id)
             else:
                 items = cached
                 cache_hits += 1
 
             # Access data
-            for item in items[:10]:
+            for item in items[:_ITEMS_TO_PROCESS]:
                 src_links = getattr(item, "source_links", None) or []
                 _ = len(src_links)
 
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
 
-            if (i + 1) % 10 == 0:
+            if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
                 print(f"  Completed {i + 1}/{iterations} iterations")
 
         avg_time = sum(times) / len(times)
@@ -299,15 +319,15 @@ async def run_benchmark(database_url: str, project_id: str):
     print("=" * 70)
     print(f"\nDatabase: {database_url}")
     print(f"Project ID: {project_id}")
-    print("Iterations per test: 100")
+    print(f"Iterations per test: {_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ}")
 
     runner = BenchmarkRunner(database_url)
 
     # Run benchmarks
-    runner.benchmark_sync_queries(project_id, iterations=100)
-    await runner.benchmark_async_pooled(project_id, iterations=100)
-    await runner.benchmark_eager_loading(project_id, iterations=100)
-    await runner.benchmark_with_cache(project_id, iterations=100)
+    runner.benchmark_sync_queries(project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ)
+    await runner.benchmark_async_pooled(project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ)
+    await runner.benchmark_eager_loading(project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ)
+    await runner.benchmark_with_cache(project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ)
 
     # Print summary
     runner.print_summary()

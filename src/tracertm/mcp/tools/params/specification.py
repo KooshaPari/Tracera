@@ -17,7 +17,7 @@ except Exception:  # pragma: no cover
 
             return decorator
 
-    mcp = _StubMCP()  # type: ignore[assignment]
+    mcp = _StubMCP()
 
 from .common import _call_tool, _maybe_select_project, _wrap
 
@@ -42,7 +42,7 @@ except Exception:
         async def create_scenario(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
 
-    spec_tools = _SpecStub()  # type: ignore
+    spec_tools: Any = _SpecStub()
 
 
 @mcp.tool(description="Unified specification operations")
@@ -71,7 +71,8 @@ async def specification_manage(
     if kind == "adr":
         if action == "create":
             result = await _call_tool(
-                spec_tools, "create_adr",
+                spec_tools,
+                "create_adr",
                 project_id=payload.get("project_id"),
                 title=payload.get("title"),
                 context=payload.get("context"),
@@ -84,7 +85,8 @@ async def specification_manage(
             return _wrap(result, ctx, f"{kind}.{action}")
         if action == "list":
             result = await _call_tool(
-                spec_tools, "list_adrs",
+                spec_tools,
+                "list_adrs",
                 project_id=payload.get("project_id"),
                 status=payload.get("status"),
             )
@@ -92,7 +94,8 @@ async def specification_manage(
 
     if kind == "contract" and action == "create":
         result = await _call_tool(
-            spec_tools, "create_contract",
+            spec_tools,
+            "create_contract",
             project_id=payload.get("project_id"),
             item_id=payload.get("item_id"),
             title=payload.get("title"),
@@ -103,7 +106,8 @@ async def specification_manage(
 
     if kind == "feature" and action == "create":
         result = await _call_tool(
-            spec_tools, "create_feature",
+            spec_tools,
+            "create_feature",
             project_id=payload.get("project_id"),
             name=(payload.get("name") or ""),
             description=payload.get("description"),
@@ -115,7 +119,8 @@ async def specification_manage(
 
     if kind == "scenario" and action == "create":
         result = await _call_tool(
-            spec_tools, "create_scenario",
+            spec_tools,
+            "create_scenario",
             feature_id=payload.get("feature_id"),
             title=payload.get("title"),
             gherkin_text=payload.get("gherkin_text"),

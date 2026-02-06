@@ -59,9 +59,9 @@ class JSONRPCResponse(BaseModel):
     """JSON-RPC 2.0 response."""
 
     jsonrpc: str = Field("2.0", description="JSON-RPC version")
-    result: Any | None = Field(None, description="Result data")
-    error: dict[str, Any] | None = Field(None, description="Error information")
-    id: str | int | None = Field(None, description="Request ID")
+    result: Any | None = None
+    error: dict[str, Any] | None = None
+    id: str | int | None = None
 
 
 class ToolInfo(BaseModel):
@@ -331,11 +331,13 @@ async def mcp_messages(
         return JSONRPCResponse(
             jsonrpc="2.0",
             result=result,
+            error=None,
             id=request.id,
         )
     except HTTPException as e:
         return JSONRPCResponse(
             jsonrpc="2.0",
+            result=None,
             error={
                 "code": e.status_code,
                 "message": e.detail,
@@ -346,6 +348,7 @@ async def mcp_messages(
         logger.exception(f"Unexpected error in MCP message handler: {e}")
         return JSONRPCResponse(
             jsonrpc="2.0",
+            result=None,
             error={
                 "code": 500,
                 "message": f"Internal server error: {e!s}",

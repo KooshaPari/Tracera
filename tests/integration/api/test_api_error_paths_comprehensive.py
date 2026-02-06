@@ -433,7 +433,9 @@ class TestTraceRTMClientDatabaseErrors:
             client = TraceRTMClient(agent_name="TestAgent")
 
             with patch.object(client, "_get_session") as mock_session_getter:
-                mock_session_getter.side_effect = OperationalError("Connection lost", None, Exception("Connection lost"))
+                mock_session_getter.side_effect = OperationalError(
+                    "Connection lost", None, Exception("Connection lost")
+                )
 
                 with pytest.raises(OperationalError):
                     client.register_agent("TestAgent")

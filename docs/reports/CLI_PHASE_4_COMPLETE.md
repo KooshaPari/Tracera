@@ -79,7 +79,7 @@ CLI Optimization Phase 4 has been successfully completed, adding comprehensive s
 4. `/cli/tracertm/commands/debug.py` - Debug commands
 5. `/cli/tests/test_aliases.py` - Alias tests
 6. `/cli/tests/test_debug.py` - Debug tests
-7. `/cli/scripts/validate_phase4.sh` - Validation script
+7. `/cli/scripts/validate_phase_four.sh` - Validation script
 8. `/cli/DEVELOPER_GUIDE.md` - Developer documentation
 9. `/cli/PHASE_4_QUICK_REFERENCE.md` - Quick reference
 10. `/cli/PHASE_4_COMPLETION_SUMMARY.md` - Implementation summary
@@ -303,7 +303,7 @@ trace debug log        # View logs
 - `cli/PHASE_4_COMPLETION_SUMMARY.md` - Implementation details
 
 ### Validation
-- `cli/scripts/validate_phase4.sh` - Automated checks
+- `cli/scripts/validate_phase_four.sh` - Automated checks
 - `trace debug validate` - Runtime validation
 - `trace debug info` - System information
 

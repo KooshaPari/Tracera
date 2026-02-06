@@ -1,34 +1,27 @@
-import type { User } from "../stores/authStore";
-import { useAuthStore } from "../stores/authStore";
+import type { User } from '../stores/authStore';
+
+import { useAuthStore } from '../stores/authStore';
 
 export function useAuth() {
-	const {
-		user,
-		token,
-		isAuthenticated,
-		isLoading,
-		login,
-		logout,
-		refreshToken,
-		updateProfile,
-	} = useAuthStore();
+  const { user, token, isAuthenticated, isLoading, login, logout, refreshToken, updateProfile } =
+    useAuthStore();
 
-	return {
-		isAuthenticated,
-		isLoading,
-		login,
-		logout,
-		refreshToken,
-		token,
-		updateProfile,
-		user,
-	};
+  return {
+    isAuthenticated,
+    isLoading,
+    login,
+    logout,
+    refreshToken,
+    token,
+    updateProfile,
+    user,
+  };
 }
 
 export function useUser(): User | null {
-	return useAuthStore((state) => state.user);
+  return useAuthStore((state) => state.user);
 }
 
 export function useIsAuthenticated(): boolean {
-	return useAuthStore((state) => state.isAuthenticated);
+  return useAuthStore((state) => state.isAuthenticated);
 }

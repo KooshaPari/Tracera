@@ -1,8 +1,19 @@
-import { Client } from '@workos-inc/node';
+import type { Client as WorkOSClient } from '@workos-inc/node';
 
-const client = new Client({
-  apiKey: process.env.WORKOS_API_KEY,
-});
+// Import with dynamic require to handle optional dependency
+let client: WorkOSClient | null = null;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Client } = require('@workos-inc/node');
+  if (process.env.WORKOS_API_KEY) {
+    client = new Client({
+      apiKey: process.env.WORKOS_API_KEY,
+    });
+  }
+} catch {
+  // WorkOS SDK not available - will skip WorkOS user creation
+}
 
 interface TestUserOptions {
   email: string;
@@ -12,27 +23,41 @@ interface TestUserOptions {
   organizationId: string;
 }
 
-async function createTestUser(opts: TestUserOptions) {
+interface WorkOSUser {
+  id: string;
+}
+
+async function createTestUser(opts: TestUserOptions): Promise<{
+  email: string;
+  password: string;
+  workosId: string | undefined;
+  status: string;
+}> {
   try {
     console.log(`Creating test user: ${opts.email}`);
 
-    let workosUser;
-    try {
-      workosUser = await client.userManagement.createUser({
-        email: opts.email,
-        firstName: opts.firstName,
-        lastName: opts.lastName,
-        organizationId: opts.organizationId,
-        password: opts.password,
-      });
-      console.log(`✅ WorkOS user created: ${workosUser.id}`);
-    } catch (error: any) {
-      if (error.message?.includes('already exists')) {
-        console.log(`⚠️ WorkOS user already exists: ${opts.email}`);
-        workosUser = null;
-      } else {
-        throw error;
+    let workosUser: WorkOSUser | null = null;
+    if (client) {
+      try {
+        workosUser = await client.userManagement.createUser({
+          email: opts.email,
+          firstName: opts.firstName,
+          lastName: opts.lastName,
+          organizationId: opts.organizationId,
+          password: opts.password,
+        });
+        console.log(`✅ WorkOS user created: ${workosUser.id}`);
+      } catch (error: unknown) {
+        const err = error as Error;
+        if (err.message?.includes('already exists')) {
+          console.log(`⚠️ WorkOS user already exists: ${opts.email}`);
+          workosUser = null;
+        } else {
+          throw error;
+        }
       }
+    } else {
+      console.log(`⚠️ WorkOS SDK not available - skipping WorkOS user creation`);
     }
 
     return {

@@ -45,6 +45,9 @@ try:
 except ImportError:
     TEXTUAL_AVAILABLE = False
 
+if not TEXTUAL_AVAILABLE:
+    pytest.skip("Textual not available", allow_module_level=True)
+
 
 # =============================================================================
 # ItemListWidget Tests

@@ -23,7 +23,7 @@ The original detection scripts missed these common AI versioning patterns:
 benchmark_phase2.py
 benchmark_phase3.py
 items_phase3.py
-verify_phase4.py
+verify_phase_four.py
 component_phase2.tsx
 
 # Final/Latest/Revised (MISSED)
@@ -38,7 +38,7 @@ After enhancement, detection now catches these actual files in the codebase:
 
 **Python (3 new violations detected):**
 - `src/tracertm/mcp/tools/items_phase3.py`
-- `src/tracertm/mcp/verify_phase4.py`
+- `src/tracertm/mcp/verify_phase_four.py`
 - `tests/unit/api/test_api_endpoints_final.py`
 
 ---
@@ -178,12 +178,12 @@ All test files were cleaned up after verification.
 ```
 src/tracertm/mcp/tools/items_phase3.py          # NEW
 src/tracertm/mcp/tools/streaming_v2.py
-src/tracertm/mcp/verify_phase4.py               # NEW
+src/tracertm/mcp/verify_phase_four.py               # NEW
 src/tracertm/services/spec_analytics_service_v2.py
-src/tracertm/tui/apps/dashboard_v2.py
+src/tracertm/tui/apps/dashboard_compat.py
 tests/unit/api/test_api_comprehensive_fixed.py
 tests/unit/api/test_api_endpoints_final.py      # NEW
-tests/unit/tui/apps/test_dashboard_v2.py
+tests/unit/tui/apps/test_dashboard_compat.py
 ```
 
 **Frontend (5 violations, unchanged):**
@@ -239,15 +239,15 @@ Clean up newly detected violations:
 
 **Python:**
 1. `items_phase3.py` → Consolidate to `items.py`
-2. `verify_phase4.py` → Consolidate to `verify.py`
+2. `verify_phase_four.py` → Consolidate to `verify.py`
 3. `test_api_endpoints_final.py` → Consolidate to `test_api_endpoints.py`
 
 **Existing violations** (already planned for cleanup):
 - `streaming_v2.py`
 - `spec_analytics_service_v2.py`
-- `dashboard_v2.py`
+- `dashboard_compat.py`
 - `test_api_comprehensive_fixed.py`
-- `test_dashboard_v2.py`
+- `test_dashboard_compat.py`
 
 ### Future Enhancements
 

@@ -5,7 +5,7 @@ Tests all TUI applications and widgets using Textual testing framework.
 Targets:
 - apps/browser.py (115 lines)
 - apps/dashboard.py (141 lines)
-- apps/dashboard_v2.py (190 lines)
+- apps/dashboard_compat.py (190 lines)
 - apps/graph.py (123 lines)
 - widgets/*.py (~300 lines)
 - adapters/storage_adapter.py (138 lines)
@@ -45,7 +45,7 @@ from tracertm.testing_factories import create_project
 from tracertm.tui.adapters.storage_adapter import StorageAdapter
 from tracertm.tui.apps.browser import BrowserApp  # type: ignore[possibly-missing-import]
 from tracertm.tui.apps.dashboard import DashboardApp  # type: ignore[possibly-missing-import]
-from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp  # type: ignore[possibly-missing-import]
+from tracertm.tui.apps.dashboard_compat import EnhancedDashboardApp  # type: ignore[possibly-missing-import]
 from tracertm.tui.apps.graph import GraphApp  # type: ignore[possibly-missing-import]
 from tracertm.tui.widgets.conflict_panel import ConflictPanel  # type: ignore[possibly-missing-import]
 from tracertm.tui.widgets.graph_view import GraphViewWidget  # type: ignore[possibly-missing-import]
@@ -977,7 +977,7 @@ class TestDashboardAppIntegration:
 
 
 class TestEnhancedDashboardAppIntegration:
-    """Integration tests for EnhancedDashboardApp (dashboard_v2)."""
+    """Integration tests for EnhancedDashboardApp (dashboard_compat)."""
 
     @pytest.mark.asyncio
     async def test_enhanced_dashboard_launches_with_storage_adapter(self, tmp_path, mock_config_manager):
@@ -987,7 +987,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: App starts with local storage integration
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1005,7 +1005,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Sync status widget is visible
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1023,7 +1023,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Views (epic, story, test, task) are listed
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1041,7 +1041,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: View cycles through epic -> story -> test -> task
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1062,7 +1062,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Data is refreshed and notification shown
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1082,7 +1082,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Error notification is displayed
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1104,7 +1104,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Sync operation executes
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1137,7 +1137,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Notification indicates no conflicts
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1158,7 +1158,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Help text with shortcuts is displayed
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1178,7 +1178,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: App exits gracefully
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1197,7 +1197,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Sync status widget reflects current state
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1221,7 +1221,7 @@ class TestEnhancedDashboardAppIntegration:
         mock_config_manager.get.side_effect = lambda key, default=None: None
 
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1239,7 +1239,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Source column shows "SQLite+MD" or "SQLite"
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1257,7 +1257,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Items table updates to selected view
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1280,7 +1280,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Warning notification about not implemented
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1300,7 +1300,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Callbacks are registered for sync status, conflicts, items
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1327,7 +1327,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Callback is triggered and UI updates
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1359,7 +1359,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Notification is shown
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))
@@ -1388,7 +1388,7 @@ class TestEnhancedDashboardAppIntegration:
         THEN: Data is refreshed
         """
         with patch(
-            "tracertm.tui.apps.dashboard_v2.ConfigManager",
+            "tracertm.tui.apps.dashboard_compat.ConfigManager",
             return_value=mock_config_manager,
         ):
             app = cast(Any, EnhancedDashboardApp(base_dir=tmp_path))

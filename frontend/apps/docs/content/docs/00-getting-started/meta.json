@@ -1,10 +1,4 @@
 {
   "title": "Getting Started",
-  "pages": [
-    "index",
-    "quick-start",
-    "onboarding",
-    "cli-tutorial",
-    "contributing"
-  ]
+  "pages": ["index", "quick-start", "onboarding", "cli-tutorial", "contributing"]
 }

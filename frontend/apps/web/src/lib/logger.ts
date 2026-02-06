@@ -1,109 +1,34 @@
 /**
- * Centralized logging utility for the application.
- *
- * Features:
- * - Development-only debug/info logging
- * - Production-safe error/warn logging
- * - Consistent log formatting
- * - Security: prevents sensitive data leakage in production
+ * Simple logging utility for examples and development
  */
 
-type LogLevel = "debug" | "info" | "warn" | "error";
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-class Logger {
-	private isDev = import.meta.env.DEV;
-
-	/**
-	 * Debug level logging - only visible in development
-	 * Use for detailed debugging information
-	 */
-	debug(...args: unknown[]): void {
-		if (this.isDev) {
-			console.debug("[DEBUG]", ...args);
-		}
-	}
-
-	/**
-	 * Info level logging - only visible in development
-	 * Use for general informational messages
-	 */
-	info(...args: unknown[]): void {
-		if (this.isDev) {
-			console.info("[INFO]", ...args);
-		}
-	}
-
-	/**
-	 * Warning level logging - visible in all environments
-	 * Use for non-critical issues that should be monitored
-	 */
-	warn(...args: unknown[]): void {
-		console.warn("[WARN]", ...args);
-	}
-
-	/**
-	 * Error level logging - visible in all environments
-	 * Use for errors that need attention
-	 */
-	error(...args: unknown[]): void {
-		console.error("[ERROR]", ...args);
-	}
-
-	/**
-	 * Table logging - only visible in development
-	 * Use for displaying tabular data
-	 */
-	table(data: unknown, columns?: string[]): void {
-		if (this.isDev) {
-			console.table(data, columns);
-		}
-	}
-
-	/**
-	 * Group logging - only visible in development
-	 * Use for grouping related log messages
-	 */
-	group(label: string): void {
-		if (this.isDev) {
-			console.group(label);
-		}
-	}
-
-	/**
-	 * Collapsed group logging - only visible in development
-	 */
-	groupCollapsed(label: string): void {
-		if (this.isDev) {
-			console.groupCollapsed(label);
-		}
-	}
-
-	/**
-	 * End group logging - only visible in development
-	 */
-	groupEnd(): void {
-		if (this.isDev) {
-			console.groupEnd();
-		}
-	}
-
-	/**
-	 * Time tracking - only visible in development
-	 */
-	time(label: string): void {
-		if (this.isDev) {
-			console.time(label);
-		}
-	}
-
-	/**
-	 * End time tracking - only visible in development
-	 */
-	timeEnd(label: string): void {
-		if (this.isDev) {
-			console.timeEnd(label);
-		}
-	}
-}
-
-export const logger = new Logger();
+export const logger = {
+  debug: (message: string, ...args: unknown[]) => {
+    if (import.meta.env.DEV) {
+      console.debug(`[DEBUG] ${message}`, ...args);
+    }
+  },
+  info: (message: string, ...args: unknown[]) => {
+    console.info(`[INFO] ${message}`, ...args);
+  },
+  warn: (message: string, ...args: unknown[]) => {
+    console.warn(`[WARN] ${message}`, ...args);
+  },
+  error: (message: string, ...args: unknown[]) => {
+    console.error(`[ERROR] ${message}`, ...args);
+  },
+  group: (message: string, ...args: unknown[]) => {
+    if (import.meta.env.DEV && typeof console.group === 'function') {
+      console.group(message, ...args);
+    } else {
+      console.info(message, ...args);
+    }
+  },
+  groupEnd: () => {
+    if (import.meta.env.DEV && typeof console.groupEnd === 'function') {
+      console.groupEnd();
+    }
+  },
+};

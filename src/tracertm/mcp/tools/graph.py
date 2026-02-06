@@ -98,7 +98,7 @@ async def shortest_path(
         path_len: int | None = None
         if hasattr(path, "__len__"):
             try:
-                path_len = len(path)  # type: ignore[arg-type]
+                path_len = len(path)
             except TypeError:
                 pass
         return wrap_success(

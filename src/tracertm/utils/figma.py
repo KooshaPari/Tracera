@@ -246,16 +246,12 @@ def _validate_figma_url(figma_url: str, metadata: dict[str, Any]) -> list[str]:
         # Validate file_key matches if provided separately
         file_key = metadata.get("figma_file_key")
         if file_key and file_key != parsed.file_key:
-            errors.append(
-                f"figma_file_key '{file_key}' does not match URL file key '{parsed.file_key}'"
-            )
+            errors.append(f"figma_file_key '{file_key}' does not match URL file key '{parsed.file_key}'")
 
         # Validate node_id matches if provided separately
         node_id = metadata.get("figma_node_id")
         if node_id and node_id != parsed.node_id:
-            errors.append(
-                f"figma_node_id '{node_id}' does not match URL node ID '{parsed.node_id}'"
-            )
+            errors.append(f"figma_node_id '{node_id}' does not match URL node ID '{parsed.node_id}'")
     except ValueError as e:
         errors.append(str(e))
 

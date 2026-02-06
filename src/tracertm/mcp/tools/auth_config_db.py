@@ -21,6 +21,110 @@ from tracertm.mcp.core import mcp
 # HTTP status codes for comparisons
 _STATUS_OK: Final[int] = 200
 _STATUS_BAD_REQUEST: Final[int] = 400
+# WorkOS poll intervals
+_DEFAULT_POLL_INTERVAL = 5
+_DEFAULT_EXPIRES_IN = 600
+_SLOW_DOWN_INCREMENT = 5
+
+
+def _start_device_flow(
+    authkit_domain: str,
+    client_id: str,
+    scopes: str | None,
+    connect_endpoint: bool,
+) -> tuple[str, str, str, int, int]:
+    """Start WorkOS device flow and return polling parameters.
+
+    Returns:
+        Tuple of (device_code, user_code, verification_uri, interval, expires_in)
+    """
+    import httpx
+
+    authkit_domain = authkit_domain.rstrip("/")
+    device_endpoint = (
+        f"{authkit_domain}/oauth2/device_authorization" if connect_endpoint else f"{authkit_domain}/authorize/device"
+    )
+
+    payload = {"client_id": client_id}
+    if scopes:
+        payload["scope"] = scopes
+
+    with httpx.Client(timeout=30.0) as client:
+        resp = client.post(device_endpoint, data=payload)
+        if resp.status_code >= _STATUS_BAD_REQUEST:
+            raise RuntimeError(f"Device auth start failed: {resp.status_code} {resp.text}")
+
+        data = resp.json()
+        device_code = data.get("device_code")
+        user_code = data.get("user_code")
+        verification_uri = data.get("verification_uri")
+        interval = int(data.get("interval", _DEFAULT_POLL_INTERVAL))
+        expires_in = int(data.get("expires_in", _DEFAULT_EXPIRES_IN))
+
+        if not device_code or not user_code or not verification_uri:
+            raise RuntimeError("Device auth response missing required fields")
+
+        return device_code, user_code, verification_uri, interval, expires_in
+
+
+def _poll_for_token(
+    authkit_domain: str,
+    device_code: str,
+    client_id: str,
+    interval: int,
+    expires_in: int,
+) -> dict[str, Any]:
+    """Poll for access token using device code.
+
+    Returns:
+        Dict with access_token and token metadata
+    """
+    import httpx
+
+    token_endpoint = f"{authkit_domain.rstrip('/')}/oauth2/token"
+    deadline = time.time() + expires_in
+
+    with httpx.Client(timeout=30.0) as client:
+        while time.time() < deadline:
+            time.sleep(interval)
+            token_payload = {
+                "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+                "device_code": device_code,
+                "client_id": client_id,
+            }
+            token_resp = client.post(token_endpoint, data=token_payload)
+
+            if token_resp.status_code == _STATUS_OK:
+                token_data = token_resp.json()
+                access_token = token_data.get("access_token")
+                if not access_token:
+                    raise RuntimeError("Token response missing access_token")
+
+                return {
+                    "access_token": access_token,
+                    "token_type": token_data.get("token_type", "Bearer"),
+                    "expires_in": token_data.get("expires_in"),
+                }
+
+            error = (
+                token_resp.json().get("error")
+                if token_resp.headers.get("content-type", "").startswith("application/json")
+                else None
+            )
+
+            if error == "authorization_pending":
+                continue
+            if error == "slow_down":
+                interval += _SLOW_DOWN_INCREMENT
+                continue
+            if error == "expired_token":
+                raise RuntimeError("Device code expired. Please try login again.")
+            if error == "access_denied":
+                raise RuntimeError("Access denied. Please approve device login.")
+
+            raise RuntimeError(f"Token request failed: {token_resp.status_code} {token_resp.text}")
+
+    raise RuntimeError("Device code expired. Please try login again.")
 
 
 def _actor_from_context(ctx: Any | None) -> dict[str, Any] | None:
@@ -71,7 +175,7 @@ def _error(message: str, action: str, code: str = "ERROR") -> dict[str, Any]:
 
 
 @mcp.tool()
-def auth_login(  # noqa: C901, PLR0911
+def auth_login(  # noqa: PLR0913
     ctx: Any,
     authkit_domain: str,
     client_id: str,
@@ -90,117 +194,33 @@ def auth_login(  # noqa: C901, PLR0911
     Returns:
         MCP response with access_token and device flow info
     """
-    import httpx
-
     try:
-        authkit_domain = authkit_domain.rstrip("/")
-
-        device_endpoint = (
-            f"{authkit_domain}/oauth2/device_authorization"
-            if connect_endpoint
-            else f"{authkit_domain}/authorize/device"
+        # Start device flow
+        device_code, user_code, verification_uri, interval, expires_in = _start_device_flow(
+            authkit_domain, client_id, scopes, connect_endpoint
         )
-        token_endpoint = f"{authkit_domain}/oauth2/token"
 
-        payload = {"client_id": client_id}
-        if scopes:
-            payload["scope"] = scopes
+        # Poll for token
+        token_data = _poll_for_token(authkit_domain, device_code, client_id, interval, expires_in)
 
-        with httpx.Client(timeout=30.0) as client:
-            resp = client.post(device_endpoint, data=payload)
-            if resp.status_code >= _STATUS_BAD_REQUEST:
-                return _error(
-                    f"Device auth start failed: {resp.status_code} {resp.text}",
-                    "auth_login",
-                    "AUTH_START_FAILED",
-                )
+        # Store token in config
+        config = ConfigManager()
+        config.set("api_token", token_data["access_token"])
 
-            data = resp.json()
-            device_code = data.get("device_code")
-            user_code = data.get("user_code")
-            verification_uri = data.get("verification_uri")
-            interval = int(data.get("interval", 5))
-            expires_in = int(data.get("expires_in", 600))
-
-            if not device_code or not user_code or not verification_uri:
-                return _error(
-                    "Device auth response missing required fields",
-                    "auth_login",
-                    "INVALID_AUTH_RESPONSE",
-                )
-
-            # Start polling for token
-            deadline = time.time() + expires_in
-            while time.time() < deadline:
-                time.sleep(interval)
-                token_payload = {
-                    "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
-                    "device_code": device_code,
-                    "client_id": client_id,
-                }
-                token_resp = client.post(token_endpoint, data=token_payload)
-
-                if token_resp.status_code == _STATUS_OK:
-                    token_data = token_resp.json()
-                    access_token = token_data.get("access_token")
-                    if not access_token:
-                        return _error(
-                            "Token response missing access_token",
-                            "auth_login",
-                            "INVALID_TOKEN_RESPONSE",
-                        )
-
-                    # Store token in config
-                    config = ConfigManager()
-                    config.set("api_token", access_token)
-
-                    return _wrap(
-                        {
-                            "access_token": access_token,
-                            "token_type": token_data.get("token_type", "Bearer"),
-                            "expires_in": token_data.get("expires_in"),
-                            "config_path": str(config.config_path),
-                            "message": "Login successful. Token stored in ~/.tracertm/config.yaml",
-                        },
-                        ctx,
-                        "auth_login",
-                    )
-
-                error = (
-                    token_resp.json().get("error")
-                    if token_resp.headers.get("content-type", "").startswith("application/json")
-                    else None
-                )
-
-                if error == "authorization_pending":
-                    continue
-                if error == "slow_down":
-                    interval += 5
-                    continue
-                if error == "expired_token":
-                    return _error(
-                        "Device code expired. Please try login again.",
-                        "auth_login",
-                        "DEVICE_CODE_EXPIRED",
-                    )
-                if error == "access_denied":
-                    return _error(
-                        "Access denied. Please approve the device login.",
-                        "auth_login",
-                        "ACCESS_DENIED",
-                    )
-
-                return _error(
-                    f"Token request failed: {token_resp.status_code} {token_resp.text}",
-                    "auth_login",
-                    "TOKEN_REQUEST_FAILED",
-                )
-
-            return _error(
-                "Device code expired. Please try login again.",
-                "auth_login",
-                "DEVICE_CODE_EXPIRED",
-            )
+        return _wrap(
+            {
+                "access_token": token_data["access_token"],
+                "token_type": token_data.get("token_type", "Bearer"),
+                "expires_in": token_data.get("expires_in"),
+                "device_code": device_code,
+                "user_code": user_code,
+                "verification_uri": verification_uri,
+                "config_path": str(config.config_path),
+                "message": "Login successful. Token stored in ~/.tracertm/config.yaml",
+            },
+            ctx,
+            "auth_login",
+        )
 
     except Exception as e:
         return _error(f"Authentication failed: {e!s}", "auth_login", "AUTH_ERROR")

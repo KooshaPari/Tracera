@@ -125,12 +125,12 @@ Phase 2 optimization of the TraceRTM MCP server has been successfully completed,
    - Progress reporting
 
 3. **`src/tracertm/mcp/tools/items_optimized.py`** (13 KB)
-   - `create_item_v2()` - Optimized create
-   - `get_item_v2()` - Optimized get
-   - `query_items_v2()` - Optimized query
-   - `update_item_v2()` - Optimized update
-   - `delete_item_v2()` - Optimized delete
-   - `summarize_view_v2()` - Optimized summary
+   - `create_item_optimized()` - Optimized create
+   - `get_item_optimized()` - Optimized get
+   - `query_items_optimized()` - Optimized query
+   - `update_item_optimized()` - Optimized update
+   - `delete_item_optimized()` - Optimized delete
+   - `summarize_view_optimized()` - Optimized summary
 
 4. **`src/tracertm/mcp/tools/base.py`** (Updated)
    - Added `lean` parameter to `wrap_success()`
@@ -302,14 +302,14 @@ from tracertm.mcp.tools.streaming_v2 import *
 ```python
 # Phase 1: Parallel testing
 v1_result = await query_items(view="FEATURE")
-v2_result = await query_items_v2(view="FEATURE")
+v2_result = await query_items_optimized(view="FEATURE")
 
 # Phase 2: Update client code
 # Before: result["data"]["items"]
 # After:  result["items"]
 
 # Phase 3: Production switch
-result = await query_items_v2(...)
+result = await query_items_optimized(...)
 ```
 
 ## Lessons Learned

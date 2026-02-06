@@ -5,12 +5,12 @@ Provides distributed tracing with OTLP export to Jaeger/Tempo.
 
 import logging
 import os
+import threading
 from collections.abc import Callable
 from functools import wraps
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from opentelemetry import trace
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter  # type: ignore[import-untyped]
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -18,8 +18,35 @@ from opentelemetry.trace import Status, StatusCode, Tracer
 
 logger = logging.getLogger(__name__)
 
-# Global tracer instance
+# Global tracer instance and init state
 _tracer: Tracer | None = None
+_tracing_initialized = False
+_tracing_init_calls = 0
+_tracing_init_lock = threading.Lock()
+
+# Try to import exporter - will fail if not installed
+if TYPE_CHECKING:
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+    _exporter_available = True
+else:
+    try:
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+        _exporter_available = True
+    except ImportError:
+        logger.warning(
+            "APM instrumentation not available: No module named 'opentelemetry.exporter'. "
+            "Install with: pip install 'tracertm[observability]'"
+        )
+        _exporter_available = False
+
+        # Create a stub class when exporter is not available
+        class OTLPSpanExporter:
+            """Stub class for type checking when exporter is not installed."""
+
+            def __init__(self, **kwargs: Any) -> None:
+                pass
 
 
 def init_tracing(
@@ -39,56 +66,78 @@ def init_tracing(
     Returns:
         Configured tracer instance
     """
-    global _tracer
+    global _tracer, _tracing_initialized, _tracing_init_calls
 
-    # Get configuration from environment with fallbacks
-    environment = environment or os.getenv("TRACING_ENVIRONMENT", "development")
-    otlp_endpoint = otlp_endpoint or os.getenv("OTLP_ENDPOINT", "localhost:4317")
+    with _tracing_init_lock:
+        _tracing_init_calls += 1
+        if _tracing_initialized and _tracer is not None:
+            logger.warning("init_tracing called more than once; using existing tracer")
+            return _tracer
 
-    logger.info(
-        f"Initializing distributed tracing (service: {service_name}, env: {environment}, endpoint: {otlp_endpoint})"
-    )
+        if _tracer is not None:
+            _tracing_initialized = True
+            return _tracer
 
-    # Create resource with service information
-    resource = Resource.create({
-        SERVICE_NAME: service_name,
-        "service.version": service_version,
-        "deployment.environment": environment,
-        "library.language": "python",
-    })
-
-    # Create OTLP exporter
-    try:
-        otlp_exporter = OTLPSpanExporter(
-            endpoint=otlp_endpoint,
-            insecure=True,  # Use insecure for local development
-        )
-
-        # Create tracer provider with batch span processor
-        provider = TracerProvider(resource=resource)
-        provider.add_span_processor(
-            BatchSpanProcessor(
-                otlp_exporter,
-                max_queue_size=2048,
-                max_export_batch_size=512,
-                schedule_delay_millis=5000,
+        # Check if exporter is available
+        if not _exporter_available:
+            raise RuntimeError(
+                "Distributed tracing is enabled but OpenTelemetry exporter is not installed. "
+                "Install with: pip install 'tracertm[observability]'"
             )
+
+        # Get configuration from environment with fallbacks
+        environment = environment or os.getenv("TRACING_ENVIRONMENT", "development")
+        otlp_endpoint = otlp_endpoint or os.getenv("OTLP_ENDPOINT") or os.getenv("JAEGER_ENDPOINT", "127.0.0.1:4317")
+
+        logger.info(
+            f"Initializing distributed tracing (service: {service_name}, env: {environment}, endpoint: {otlp_endpoint})"
         )
 
-        # Set as global tracer provider
-        trace.set_tracer_provider(provider)
+        current_provider = trace.get_tracer_provider()
+        if isinstance(current_provider, TracerProvider):
+            logger.info("Tracing already initialized; skipping reinitialization")
+            _tracer = trace.get_tracer(__name__, service_version)
+            _tracing_initialized = True
+            return _tracer
 
-        # Create and cache tracer
-        _tracer = trace.get_tracer(__name__, service_version)
+        # Create resource with service information
+        resource = Resource.create({
+            SERVICE_NAME: service_name,
+            "service.version": service_version,
+            "deployment.environment": environment,
+            "library.language": "python",
+        })
 
-        logger.info("✅ Distributed tracing initialized successfully")
-        return _tracer
+        # Create OTLP exporter
+        try:
+            otlp_exporter = OTLPSpanExporter(
+                endpoint=otlp_endpoint,
+                insecure=True,  # Use insecure for local development
+            )
 
-    except Exception as e:
-        logger.error(f"Failed to initialize tracing: {e}")
-        # Return a no-op tracer
-        _tracer = trace.get_tracer(__name__)
-        return _tracer
+            # Create tracer provider with batch span processor
+            provider = TracerProvider(resource=resource)
+            provider.add_span_processor(
+                BatchSpanProcessor(
+                    otlp_exporter,
+                    max_queue_size=2048,
+                    max_export_batch_size=512,
+                    schedule_delay_millis=5000,
+                )
+            )
+
+            # Set as global tracer provider
+            trace.set_tracer_provider(provider)
+
+            # Create and cache tracer
+            _tracer = trace.get_tracer(__name__, service_version)
+            _tracing_initialized = True
+
+            logger.info("✅ Distributed tracing initialized successfully")
+            return _tracer
+
+        except Exception as e:
+            raise RuntimeError(f"Failed to initialize tracing: {e}") from e
 
 
 def get_tracer() -> Tracer:

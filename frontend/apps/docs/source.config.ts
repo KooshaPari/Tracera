@@ -10,21 +10,16 @@
  * - OpenAPI spec integration for API documentation
  */
 
-import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
 import { rehypeCode, remarkGfm, remarkHeading } from 'fumadocs-core/mdx-plugins';
+import { defineConfig, defineDocs, frontmatterSchema } from 'fumadocs-mdx/config';
+import { z } from 'zod';
 
 // Define documentation content sources with full configuration
 export const { docs, meta } = defineDocs({
   dir: 'content/docs',
-  // Enable incremental parsing for better performance
-  incremental: true,
-  // Configure frontmatter schema
-  schema: {
-    frontmatter: (z) => ({
-      description: z.string().optional(),
-      icon: z.string().optional(),
-      index: z.boolean().default(false),
-      title: z.string().optional(),
+  docs: {
+    schema: frontmatterSchema.extend({
+      index: z.boolean().optional(),
     }),
   },
 });
@@ -40,20 +35,13 @@ export const { docs, meta } = defineDocs({
  */
 
 export default defineConfig({
-  // Enable caching for faster rebuilds
-  cache: true,
-
-  // Global configuration for all docs
-  global: {
-    // Enable structured data for better search indexing
-    structuredData: true,
-  },
+  experimentalBuildCache: '.cache/fumadocs',
 
   mdxOptions: {
     // Remark plugins for parsing Markdown
     remarkPlugins: [
-      remarkGfm,      // GitHub Flavored Markdown (tables, task lists, etc.)
-      remarkHeading,  // Heading IDs for Table of Contents
+      remarkGfm, // GitHub Flavored Markdown (tables, task lists, etc.)
+      remarkHeading, // Heading IDs for Table of Contents
     ],
 
     // Rehype plugins for HTML transformation

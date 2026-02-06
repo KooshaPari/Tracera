@@ -472,7 +472,7 @@ async def generate_embeddings(
                 details.append({
                     "spec_id": spec_id,
                     "status": "generated",
-                    "dimension": len(embedding_vec),
+                    "dimension": str(len(embedding_vec)),
                 })
 
             except Exception as e:
@@ -537,8 +537,8 @@ async def get_embedding_stats(
         )
         rows = result.all()
 
-        by_type = {}
-        by_model = {}
+        by_type: dict[str, int] = {}
+        by_model: dict[str, int] = {}
         total = 0
 
         for row in rows:
@@ -653,7 +653,7 @@ async def get_version_chain_stats(
             .where(VersionChainIndex.project_id == project_id)
             .group_by(VersionChainIndex.spec_type)
         )
-        chains_by_type = {row.spec_type: row.count for row in by_type_result.all()}
+        chains_by_type: dict[str, int] = {row.spec_type: row.count for row in by_type_result.all()}
 
         return VersionChainStatsResponse(
             total_chains=total_chains,

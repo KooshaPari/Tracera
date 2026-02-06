@@ -1,9 +1,9 @@
 version: "0.5"
 
 # Global settings
-# Logs: one file per process under log_location; truncate on start (make dev / make dev-tui use --logs-truncate).
+# Logs: single file at log_location; truncate on start (make dev / make dev-tui use --logs-truncate).
 # App services (go-backend, python-backend, frontend, caddy) wrap with scripts/shell/with-lifecycle.sh for [LIFECYCLE] START/STOP in logs.
-log_location: .process-compose/logs
+log_location: .process-compose/process-compose.log
 log_level: info
 shell:
   shell_command: "/bin/bash"
@@ -64,6 +64,8 @@ processes:
       timeout_seconds: 2
       success_threshold: 1
       failure_threshold: 2
+    environment:
+      - "REDIS_CONFIG_PATH=./config/redis.conf"
 
   neo4j:
     # Use wrapper so we don't fail with "already running" when brew or previous run has neo4j up
@@ -101,6 +103,8 @@ processes:
       timeout_seconds: 2
       success_threshold: 1
       failure_threshold: 2
+    environment:
+      - "NATS_CONFIG_PATH=./config/nats-server.conf"
 
   minio:
     # Wrapper: skip start if already running (avoids address already in use)
@@ -173,7 +177,7 @@ processes:
   prometheus:
     # When watchexec is installed (brew install watchexec), restarts on deploy/monitoring/prometheus.yml change.
     # Without watchexec: manual reload via curl -X POST http://localhost:9090/-/reload
-    command: "bash scripts/shell/run-with-config-watch.sh deploy/monitoring/prometheus.yml -- prometheus --config.file=deploy/monitoring/prometheus.yml --storage.tsdb.path=.prometheus --web.console.libraries=/opt/homebrew/share/prometheus/console_libraries --web.console.templates=/opt/homebrew/share/prometheus/consoles --web.enable-lifecycle"
+    command: "bash scripts/shell/prometheus-if-not-running.sh"
     working_dir: "."
     availability:
       restart: on_failure
@@ -182,11 +186,13 @@ processes:
         host: localhost
         port: 9090
         path: /-/ready
-      initial_delay_seconds: 3
+      initial_delay_seconds: 10
       period_seconds: 5
       timeout_seconds: 3
       success_threshold: 1
-      failure_threshold: 2
+      failure_threshold: 6
+    environment:
+      - "WATCH_DEBOUNCE_MS=60000"
 
   #############################################################################
   # Layer 3: Exporters & Log Aggregation
@@ -201,10 +207,8 @@ processes:
       restart: on_failure
       max_restarts: 3
     readiness_probe:
-      http_get:
-        host: localhost
-        port: 16686
-        path: /
+      exec:
+        command: "bash scripts/shell/readiness-jaeger.sh"
       initial_delay_seconds: 5
       period_seconds: 5
       timeout_seconds: 3
@@ -248,11 +252,11 @@ processes:
         host: localhost
         port: 9080
         path: /ready
-      initial_delay_seconds: 2
+      initial_delay_seconds: 10
       period_seconds: 5
       timeout_seconds: 3
       success_threshold: 1
-      failure_threshold: 2
+      failure_threshold: 5
 
   postgres-exporter:
     # Wrapper: skip start if port 9187 already in use (avoids "address already in use" on restart)
@@ -313,7 +317,7 @@ processes:
   #############################################################################
 
   go-backend:
-    command: "bash scripts/shell/with-lifecycle.sh go-backend bash scripts/shell/run-air-in-backend.sh"
+    command: "bash scripts/shell/with-lifecycle.sh go-backend scripts/shell/start-go-backend.sh"
     working_dir: "."
     depends_on:
       postgres:
@@ -323,6 +327,8 @@ processes:
       nats:
         condition: process_healthy
       temporal:
+        condition: process_healthy
+      jaeger:
         condition: process_healthy
     availability:
       restart: on_failure
@@ -330,18 +336,27 @@ processes:
     # Probe after migrations + server start; exec probe prints service + URL + status on failure
     readiness_probe:
       exec:
-        command: "bash scripts/shell/readiness-http.sh go-backend localhost 8080 /api/v1/health 200"
+        command: "bash scripts/shell/readiness-http.sh go-backend localhost 8080 /health 200"
       initial_delay_seconds: 20
       period_seconds: 5
       timeout_seconds: 5
       success_threshold: 1
       failure_threshold: 2
     environment:
+      - "PORT_CLEAR_MODE=kill"
+      - "PORT_CLEAR_PORTS=8080"
+      - "AUTH_PROVIDER=authkit"
+      - "REALTIME_PROVIDER=nats"
+      - "WORKOS_CLIENT_ID=${WORKOS_CLIENT_ID}"
+      - "WORKOS_API_KEY=${WORKOS_API_KEY}"
+      - "WORKOS_AUTHKIT_DOMAIN=${WORKOS_AUTHKIT_DOMAIN}"
+      - "WORKOS_API_BASE_URL=${WORKOS_API_BASE_URL:-https://api.workos.com}"
       - "DB_HOST=localhost"
       - "DB_PORT=5432"
       - "DB_USER=tracertm"
       - "DB_PASSWORD=${DB_PASSWORD:-tracertm_password}"
       - "DB_NAME=tracertm"
+      - "DATABASE_URL=postgres://tracertm:${DB_PASSWORD:-tracertm_password}@localhost:5432/tracertm?sslmode=disable"
       - "REDIS_URL=redis://localhost:6379"
       - "NATS_URL=nats://localhost:4222"
       - "TEMPORAL_HOST=localhost:7233"
@@ -349,9 +364,14 @@ processes:
       - "GRPC_PORT=9091"
       - "GIN_MODE=debug"
       - "PYTHON_BACKEND_URL=http://localhost:8000"
+      - "PYTHON_BACKEND_GRPC_ADDR=127.0.0.1:9092"
+      - "TRACING_ENABLED=true"
+      - "JAEGER_ENDPOINT=127.0.0.1:4317"
+      - "TRACING_ENVIRONMENT=development"
+      - "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
   python-backend:
-    command: "bash scripts/shell/with-lifecycle.sh python-backend .venv/bin/python -m uvicorn tracertm.api.main:app --reload --host 0.0.0.0 --port 8000"
+    command: "bash scripts/shell/with-lifecycle.sh python-backend scripts/shell/start-python-backend.sh"
     working_dir: "."
     depends_on:
       postgres:
@@ -361,6 +381,8 @@ processes:
       nats:
         condition: process_healthy
       temporal:
+        condition: process_healthy
+      jaeger:
         condition: process_healthy
     availability:
       restart: on_failure
@@ -375,7 +397,15 @@ processes:
       success_threshold: 1
       failure_threshold: 3
     environment:
+      - "PORT_CLEAR_MODE=kill"
+      - "PORT_CLEAR_PORTS=8000,9092"
+      - "PYTHON_RELOAD_DELAY=15"
       - "PYTHONPATH=./src"
+      - "PYTHON_GRPC_PORT=9092"
+      - "WORKOS_CLIENT_ID=${WORKOS_CLIENT_ID}"
+      - "WORKOS_API_KEY=${WORKOS_API_KEY}"
+      - "WORKOS_AUTHKIT_DOMAIN=${WORKOS_AUTHKIT_DOMAIN}"
+      - "WORKOS_API_BASE_URL=${WORKOS_API_BASE_URL:-https://api.workos.com}"
       - "DATABASE_URL=postgresql+asyncpg://tracertm:${DB_PASSWORD:-tracertm_password}@localhost:5432/tracertm"
       - "REDIS_URL=redis://localhost:6379"
       - "NATS_URL=nats://localhost:4222"
@@ -384,9 +414,12 @@ processes:
       - "GO_BACKEND_URL=http://localhost:8080"
       - "OPENAI_API_KEY=${OPENAI_API_KEY:-}"
       - "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}"
+      - "TRACING_ENABLED=true"
+      - "OTLP_ENDPOINT=127.0.0.1:4317"
+      - "TRACING_ENVIRONMENT=development"
 
   frontend:
-    command: "bash scripts/shell/with-lifecycle.sh frontend bash -c 'cd frontend && bun run dev'"
+    command: "bash scripts/shell/with-lifecycle.sh frontend scripts/shell/start-frontend.sh"
     working_dir: "."
     availability:
       restart: on_failure
@@ -401,7 +434,11 @@ processes:
       success_threshold: 1
       failure_threshold: 2
     environment:
+      - "PORT_CLEAR_MODE=kill"
+      - "PORT_CLEAR_PORTS=5173"
       - "VITE_API_URL=http://localhost:4000"
+      - "VITE_WORKOS_CLIENT_ID=${WORKOS_CLIENT_ID}"
+      - "VITE_WORKOS_AUTH_DOMAIN=${WORKOS_AUTHKIT_DOMAIN}"
       - "FRONTEND_PORT=5173"
 
   #############################################################################
@@ -410,9 +447,8 @@ processes:
   #############################################################################
 
   docs:
-    command: "bash scripts/shell/with-lifecycle.sh docs bash -c 'cd frontend && bun run dev:docs'"
+    command: "bash scripts/shell/with-lifecycle.sh docs scripts/shell/start-docs.sh"
     working_dir: "."
-    required: false  # Optional: won't fail stack if docs fails
     availability:
       restart: on_failure
       max_restarts: 3
@@ -427,12 +463,16 @@ processes:
       success_threshold: 1
       failure_threshold: 5
     environment:
+      - "PORT_CLEAR_MODE=kill"
+      - "PORT_CLEAR_PORTS=3001"
       - "PORT=3001"
+      - "NEXT_DISABLE_TURBOPACK=1"
+      - "CHOKIDAR_USEPOLLING=1"
+      - "CHOKIDAR_INTERVAL=30000"
 
   storybook:
-    command: "bash scripts/shell/with-lifecycle.sh storybook bash -c 'cd frontend && bun run dev:storybook'"
+    command: "bash scripts/shell/with-lifecycle.sh storybook scripts/shell/start-storybook.sh"
     working_dir: "."
-    required: false  # Optional: won't fail stack if storybook fails
     availability:
       restart: on_failure
       max_restarts: 3
@@ -447,6 +487,8 @@ processes:
       success_threshold: 1
       failure_threshold: 5
     environment:
+      - "PORT_CLEAR_MODE=kill"
+      - "PORT_CLEAR_PORTS=6006"
       - "PORT=6006"
 
   #############################################################################
@@ -454,14 +496,7 @@ processes:
   #############################################################################
 
   caddy:
-    command: "bash scripts/shell/with-lifecycle.sh caddy caddy run --config config/Caddyfile.dev --adapter caddyfile --watch"
-    depends_on:
-      go-backend:
-        condition: process_healthy
-      python-backend:
-        condition: process_healthy
-      frontend:
-        condition: process_healthy
+    command: "bash scripts/shell/caddy-with-guard.sh"
     availability:
       restart: on_failure
     readiness_probe:
@@ -476,9 +511,8 @@ processes:
   grafana:
     # When watchexec is installed (brew install watchexec), restarts on deploy/monitoring/grafana.ini change.
     # run-grafana.sh uses 'grafana server' (not deprecated grafana-server) and sets --homepath so Grafana finds config defaults.
-    command: "bash scripts/shell/run-with-config-watch.sh deploy/monitoring/grafana.ini -- bash scripts/shell/run-grafana.sh"
+    command: "bash scripts/shell/grafana-if-not-running.sh"
     working_dir: "."
-    required: false  # Optional: monitoring service, won't fail stack if unavailable
     depends_on:
       prometheus:
         condition: process_healthy
@@ -499,7 +533,64 @@ processes:
       success_threshold: 1
       failure_threshold: 3
     environment:
+      - "WATCH_DEBOUNCE_MS=60000"
       - "GF_SERVER_HTTP_PORT=3000"
       - "GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}"
       - "GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}"
       - "GF_INSTALL_PLUGINS=redis-datasource"
+
+  #############################################################################
+  # Layer 6: Config Reloaders (watch + reload/restart)
+  #############################################################################
+
+  postgres-reloader:
+    command: "bash scripts/shell/run-with-config-watch.sh ${PGDATA:-/opt/homebrew/var/postgresql@17}/postgresql.conf ${PGDATA:-/opt/homebrew/var/postgresql@17}/pg_hba.conf -- bash scripts/shell/reload-postgres.sh"
+    working_dir: "."
+    depends_on:
+      postgres:
+        condition: process_healthy
+    availability:
+      restart: on_failure
+      max_restarts: 3
+    environment:
+      - "WATCH_DEBOUNCE_MS=60000"
+      - "WATCH_HOLD_ON_MISSING=1"
+
+  redis-reloader:
+    command: "bash scripts/shell/run-with-config-watch.sh ./config/redis.conf -- bash scripts/shell/reload-redis.sh"
+    working_dir: "."
+    depends_on:
+      redis:
+        condition: process_healthy
+    availability:
+      restart: on_failure
+      max_restarts: 3
+    environment:
+      - "WATCH_DEBOUNCE_MS=60000"
+      - "WATCH_HOLD_ON_MISSING=1"
+
+  nats-reloader:
+    command: "bash scripts/shell/run-with-config-watch.sh ./config/nats-server.conf -- bash scripts/shell/reload-nats.sh"
+    working_dir: "."
+    depends_on:
+      nats:
+        condition: process_healthy
+    availability:
+      restart: on_failure
+      max_restarts: 3
+    environment:
+      - "WATCH_DEBOUNCE_MS=60000"
+      - "WATCH_HOLD_ON_MISSING=1"
+
+  temporal-reloader:
+    command: "bash scripts/shell/run-with-config-watch.sh ./config/temporal-reload.trigger -- bash scripts/shell/reload-temporal.sh"
+    working_dir: "."
+    depends_on:
+      temporal:
+        condition: process_healthy
+    availability:
+      restart: on_failure
+      max_restarts: 3
+    environment:
+      - "WATCH_DEBOUNCE_MS=60000"
+      - "WATCH_HOLD_ON_MISSING=1"

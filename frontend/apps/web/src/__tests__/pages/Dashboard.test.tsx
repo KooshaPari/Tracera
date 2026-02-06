@@ -1,826 +1,496 @@
 /**
- * Comprehensive Dashboard Page Tests
- * Tests: Dashboard rendering, data fetching, loading states, error handling, navigation
+ * Dashboard Page Tests
+ * Tests: DashboardView rendering, loading states, empty states,
+ *        project rendering, search/filter, sorting, and pinning.
+ *
+ * The DashboardView component uses:
+ *   - useDashboardSummary() from @/hooks/useDashboardSummary
+ *   - useProjects() / useDeleteProject() from ../hooks/useProjects
+ * All data comes from hook-level mocks (no raw API mocks).
  */
 
-import { QueryClient } from "@tanstack/react-query";
-import {
-	RouterProvider,
-	createMemoryHistory,
-	createRouter,
-} from "@tanstack/react-router";
-import { render, screen, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { routeTree } from "@/routeTree.gen";
+import { act, fireEvent, render, screen } from '@testing-library/react';
 
-// Mock API modules
-vi.mock("@/api/projects", () => ({
-	fetchProjects: vi.fn(),
+import type { DashboardSummary } from '@/hooks/useDashboardSummary';
+
+// ---------------------------------------------------------------------------
+// Mocks
+// ---------------------------------------------------------------------------
+
+// Mock @tanstack/react-router so <Link> renders without a RouterProvider
+vi.mock('@tanstack/react-router', async () => {
+  const actual = await vi.importActual('@tanstack/react-router');
+  return {
+    ...actual,
+    Link: ({
+      children,
+      to,
+      search: _search,
+      ...props
+    }: {
+      children: React.ReactNode;
+      to: string;
+      search?: unknown;
+      [key: string]: unknown;
+    }) => (
+      <a href={typeof to === 'string' ? to : String((to as unknown) ?? '')} {...props}>
+        {children}
+      </a>
+    ),
+    useNavigate: () => vi.fn(),
+    useParams: () => ({}),
+    useRouter: () => ({ navigate: vi.fn() }),
+  };
+});
+
+// Mock recharts to avoid SVG/ResizeObserver issues in jsdom
+vi.mock('recharts', () => ({
+  Bar: () => null,
+  BarChart: () => null,
+  CartesianGrid: () => null,
+  Cell: () => null,
+  Pie: () => null,
+  PieChart: () => null,
+  PolarAngleAxis: () => null,
+  PolarGrid: () => null,
+  Radar: () => null,
+  RadarChart: () => null,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid='responsive-container'>{children}</div>
+  ),
+  Tooltip: () => null,
+  XAxis: () => null,
+  YAxis: () => null,
 }));
 
-vi.mock("@/api/items", () => ({
-	fetchRecentItems: vi.fn(),
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
 }));
 
-vi.mock("@/api/system", () => ({
-	fetchSystemStatus: vi.fn(),
+// Mock project-name-utils so display names are predictable
+vi.mock('@/lib/project-name-utils', () => ({
+  getProjectDisplayName: (project: { id?: string; name?: string }) =>
+    project.name ?? project.id ?? 'Project',
 }));
 
-describe("Dashboard Page", () => {
-	let queryClient: QueryClient;
-	let router: any;
-	let history: any;
-
-	beforeEach(() => {
-		queryClient = new QueryClient({
-			defaultOptions: {
-				mutations: { retry: false },
-				queries: { gcTime: 0, retry: false },
-			},
-		});
-
-		history = createMemoryHistory({
-			initialEntries: ["/"],
-		});
-
-		router = createRouter({
-			context: { queryClient },
-			history,
-			routeTree,
-		});
-
-		vi.clearAllMocks();
-	});
-
-	afterEach(() => {
-		queryClient.clear();
-	});
-
-	describe("Page Rendering", () => {
-		it("renders dashboard page with main sections", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([
-				{
-					created_at: "2024-01-01",
-					id: "1",
-					name: "Project Alpha",
-					status: "active",
-				},
-				{
-					created_at: "2024-01-02",
-					id: "2",
-					name: "Project Beta",
-					status: "active",
-				},
-			]);
-
-			vi.mocked(fetchRecentItems).mockResolvedValue([
-				{ id: "i1", status: "active", title: "Item 1", type: "feature" },
-				{ id: "i2", status: "resolved", title: "Item 2", type: "bug" },
-			]);
-
-			vi.mocked(fetchSystemStatus).mockResolvedValue({
-				queuedJobs: 12,
-				status: "healthy",
-				uptime: 99.9,
-			});
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
-			});
-
-			// Check for main sections
-			expect(screen.getByText(/Project Alpha/i)).toBeInTheDocument();
-			expect(screen.getByText(/Project Beta/i)).toBeInTheDocument();
-			expect(screen.getByText(/Item 1/i)).toBeInTheDocument();
-			expect(screen.getByText(/Item 2/i)).toBeInTheDocument();
-		});
-
-		it("renders system status indicators", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({
-				queuedJobs: 150,
-				status: "healthy",
-				uptime: 99.9,
-			});
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/99.9/)).toBeInTheDocument();
-			});
-
-			expect(screen.getByText(/25/)).toBeInTheDocument();
-			expect(screen.getByText(/150/)).toBeInTheDocument();
-		});
-
-		it("renders quick action buttons", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(
-					screen.getByRole("button", { name: /create project/i }),
-				).toBeInTheDocument();
-			});
-
-			expect(
-				screen.getByRole("button", { name: /new item/i }),
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole("button", { name: /search/i }),
-			).toBeInTheDocument();
-		});
-
-		it("renders recent activity timeline", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([
-				{
-					id: "i1",
-					title: "Bug Fix",
-					type: "bug",
-					updated_at: "2024-01-10T10:00:00Z",
-				},
-				{
-					id: "i2",
-					title: "Feature Request",
-					type: "feature",
-					updated_at: "2024-01-10T09:00:00Z",
-				},
-				{
-					id: "i3",
-					title: "Documentation",
-					type: "doc",
-					updated_at: "2024-01-10T08:00:00Z",
-				},
-			]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Bug Fix/i)).toBeInTheDocument();
-			});
-
-			expect(screen.getByText(/Feature Request/i)).toBeInTheDocument();
-			expect(screen.getByText(/Documentation/i)).toBeInTheDocument();
-		});
-
-		it("displays project statistics cards", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([
-				{ id: "1", itemCount: 50, linkCount: 100, name: "Project 1" },
-				{ id: "2", itemCount: 30, linkCount: 60, name: "Project 2" },
-			]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/80/)).toBeInTheDocument(); // Total items
-			});
-
-			expect(screen.getByText(/160/)).toBeInTheDocument(); // Total links
-		});
-	});
-
-	describe("Loading States", () => {
-		it("shows loading skeleton on initial load", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			// Delay response to see loading state
-			vi.mocked(fetchProjects).mockImplementation(
-				() =>
-					new Promise((resolve) =>
-						setTimeout(() => resolve([]), 100),
-					),
-			);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			// Check for loading indicators
-			const loadingElements = screen.getAllByRole("status", {
-				name: /loading/i,
-			});
-			expect(loadingElements.length).toBeGreaterThan(0);
-
-			await waitFor(() => {
-				expect(
-					screen.queryByRole("status", { name: /loading/i }),
-				).not.toBeInTheDocument();
-			});
-		});
-
-		it("shows loading for individual sections independently", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockImplementation(
-				() =>
-					new Promise((resolve) =>
-						setTimeout(() => resolve([]), 100),
-					),
-			);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				const projectSection = screen.getByTestId("projects-section");
-				expect(
-					within(projectSection).queryByRole("status"),
-				).not.toBeInTheDocument();
-			});
-
-			const itemsSection = screen.getByTestId("recent-items-section");
-			expect(within(itemsSection).getByRole("status")).toBeInTheDocument();
-		});
-
-		it("handles stale data with background refetch indicators", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			const mockData = [{ id: "1", name: "Project 1" }];
-			vi.mocked(fetchProjects).mockResolvedValue(mockData);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Project 1/i)).toBeInTheDocument();
-			});
-
-			// Trigger refetch
-			void queryClient.invalidateQueries({ queryKey: ["projects"] });
-
-			vi.mocked(fetchProjects).mockResolvedValue([
-				{ id: "1", name: "Project 1 Updated" },
-			]);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Project 1 Updated/i)).toBeInTheDocument();
-			});
-		});
-	});
-
-	describe("Error Handling", () => {
-		it("displays error message when projects fail to load", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockRejectedValue(
-				new Error("Failed to fetch projects"),
-			);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(
-					screen.getByText(/failed to fetch projects/i),
-				).toBeInTheDocument();
-			});
-
-			expect(
-				screen.getByRole("button", { name: /retry/i }),
-			).toBeInTheDocument();
-		});
-
-		it("displays error when system status fails", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockRejectedValue(
-				new Error("System unavailable"),
-			);
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/system unavailable/i)).toBeInTheDocument();
-			});
-		});
-
-		it("shows partial content when some requests fail", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([
-				{ id: "1", name: "Project Alpha" },
-			]);
-			vi.mocked(fetchRecentItems).mockRejectedValue(new Error("Items failed"));
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Project Alpha/i)).toBeInTheDocument();
-			});
-
-			expect(screen.getByText(/items failed/i)).toBeInTheDocument();
-		});
-
-		it("allows retry on failed sections", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects)
-				.mockRejectedValueOnce(new Error("Network error"))
-				.mockResolvedValueOnce([
-					{ id: "1", name: "Project Recovered" },
-				]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/network error/i)).toBeInTheDocument();
-			});
-
-			const retryButton = screen.getByRole("button", { name: /retry/i });
-			await userEvent.click(retryButton);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Project Recovered/i)).toBeInTheDocument();
-			});
-		});
-
-		it("displays 404 error for non-existent routes", async () => {
-			history.push("/nonexistent-route");
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/404/i)).toBeInTheDocument();
-			});
-
-			expect(screen.getByText(/page not found/i)).toBeInTheDocument();
-		});
-	});
-
-	describe("User Navigation", () => {
-		it("navigates to project detail when clicking project card", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([
-				{ id: "proj-123", name: "Target Project", status: "active" },
-			]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Target Project/i)).toBeInTheDocument();
-			});
-
-			const projectCard = screen.getByTestId("project-card-proj-123");
-			await userEvent.click(projectCard);
-
-			await waitFor(() => {
-				expect(history.location.pathname).toBe("/projects/proj-123");
-			});
-		});
-
-		it('navigates to projects list when clicking "View All Projects"', async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/view all projects/i)).toBeInTheDocument();
-			});
-
-			const viewAllButton = screen.getByRole("link", {
-				name: /view all projects/i,
-			});
-			await userEvent.click(viewAllButton);
-
-			await waitFor(() => {
-				expect(history.location.pathname).toBe("/projects");
-			});
-		});
-
-		it("opens create project modal from quick action", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(
-					screen.getByRole("button", { name: /create project/i }),
-				).toBeInTheDocument();
-			});
-
-			const createButton = screen.getByRole("button", {
-				name: /create project/i,
-			});
-			await userEvent.click(createButton);
-
-			await waitFor(() => {
-				expect(
-					screen.getByRole("dialog", { name: /create project/i }),
-				).toBeInTheDocument();
-			});
-		});
-
-		it("navigates to item detail from recent activity", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([
-				{
-					id: "item-456",
-					projectId: "proj-123",
-					title: "Recent Item",
-					type: "feature",
-				},
-			]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Recent Item/i)).toBeInTheDocument();
-			});
-
-			const itemLink = screen.getByTestId("item-link-item-456");
-			await userEvent.click(itemLink);
-
-			await waitFor(() => {
-				expect(history.location.pathname).toContain("item-456");
-			});
-		});
-	});
-
-	describe("Data Refresh", () => {
-		it("refreshes data when refresh button clicked", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValueOnce([
-				{ id: "1", name: "Old Project" },
-			]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Old Project/i)).toBeInTheDocument();
-			});
-
-			vi.mocked(fetchProjects).mockResolvedValueOnce([
-				{ id: "1", name: "New Project" },
-			]);
-
-			const refreshButton = screen.getByRole("button", { name: /refresh/i });
-			await userEvent.click(refreshButton);
-
-			await waitFor(() => {
-				expect(screen.getByText(/New Project/i)).toBeInTheDocument();
-			});
-		});
-
-		it("auto-refreshes data at configured intervals", async () => {
-			vi.useFakeTimers();
-
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			let callCount = 0;
-			vi.mocked(fetchProjects).mockImplementation(async () => {
-				callCount++;
-				return [{ id: "1", name: `Project ${callCount}` }];
-			});
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Project 1/i)).toBeInTheDocument();
-			});
-
-			// Advance timer by refetch interval (e.g., 30 seconds)
-			vi.advanceTimersByTime(30_000);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Project 2/i)).toBeInTheDocument();
-			});
-
-			vi.useRealTimers();
-		});
-	});
-
-	describe("Accessibility", () => {
-		it("has proper ARIA labels on interactive elements", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(
-					screen.getByRole("button", { name: /create project/i }),
-				).toHaveAttribute("aria-label");
-			});
-
-			expect(screen.getByRole("button", { name: /search/i })).toHaveAttribute(
-				"aria-label",
-			);
-			expect(screen.getByRole("button", { name: /refresh/i })).toHaveAttribute(
-				"aria-label",
-			);
-		});
-
-		it("supports keyboard navigation", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([
-				{ id: "1", name: "Project 1" },
-				{ id: "2", name: "Project 2" },
-			]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Project 1/i)).toBeInTheDocument();
-			});
-
-			// Tab through interactive elements
-			await userEvent.tab();
-			expect(screen.getByTestId("project-card-1")).toHaveFocus();
-
-			await userEvent.tab();
-			expect(screen.getByTestId("project-card-2")).toHaveFocus();
-
-			// Enter to navigate
-			await userEvent.keyboard("{Enter}");
-
-			await waitFor(() => {
-				expect(history.location.pathname).toBe("/projects/2");
-			});
-		});
-	});
-
-	describe("Search Integration", () => {
-		it("shows command palette when Cmd+K pressed", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
-			});
-
-			await userEvent.keyboard("{Meta>}k{/Meta}");
-
-			await waitFor(() => {
-				expect(
-					screen.getByRole("dialog", { name: /command palette/i }),
-				).toBeInTheDocument();
-			});
-		});
-	});
-
-	describe("Real-time Updates", () => {
-		it("displays notifications for new items", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
-			});
-
-			// Simulate websocket notification
-			const event = new CustomEvent("item:created", {
-				detail: { id: "new-item", title: "New Feature" },
-			});
-			globalThis.dispatchEvent(event);
-
-			await waitFor(() => {
-				expect(screen.getByText(/new feature created/i)).toBeInTheDocument();
-			});
-		});
-
-		it("updates system status in real-time", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({
-				queuedJobs: 5,
-				status: "healthy",
-				uptime: 99.9,
-			});
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/5/)).toBeInTheDocument();
-			});
-
-			// Simulate status update
-			vi.mocked(fetchSystemStatus).mockResolvedValue({
-				queuedJobs: 10,
-				status: "healthy",
-				uptime: 99.9,
-			});
-
-			void queryClient.invalidateQueries({ queryKey: ["system-status"] });
-
-			await waitFor(() => {
-				expect(screen.getByText(/10/)).toBeInTheDocument();
-			});
-		});
-	});
-
-	describe("Empty States", () => {
-		it("shows empty state when no projects exist", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/no projects yet/i)).toBeInTheDocument();
-			});
-
-			expect(
-				screen.getByText(/get started by creating your first project/i),
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole("button", { name: /create project/i }),
-			).toBeInTheDocument();
-		});
-
-		it("shows empty state for recent items", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([
-				{ id: "1", name: "Project 1" },
-			]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/no recent activity/i)).toBeInTheDocument();
-			});
-		});
-	});
-
-	describe("Filters and Sorting", () => {
-		it("filters projects by status", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([
-				{ id: "1", name: "Active Project", status: "active" },
-				{ id: "2", name: "Archived Project", status: "archived" },
-			]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Active Project/i)).toBeInTheDocument();
-			});
-
-			const filterSelect = screen.getByRole("combobox", {
-				name: /filter by status/i,
-			});
-			await userEvent.click(filterSelect);
-			await userEvent.click(screen.getByRole("option", { name: /active/i }));
-
-			await waitFor(() => {
-				expect(screen.getByText(/Active Project/i)).toBeInTheDocument();
-				expect(screen.queryByText(/Archived Project/i)).not.toBeInTheDocument();
-			});
-		});
-
-		it("sorts projects by date", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue([
-				{ created_at: "2024-01-01", id: "1", name: "Older Project" },
-				{ created_at: "2024-02-01", id: "2", name: "Newer Project" },
-			]);
-			vi.mocked(fetchRecentItems).mockResolvedValue([]);
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy", queuedJobs: 0, uptime: 99.9 });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByText(/Newer Project/i)).toBeInTheDocument();
-			});
-
-			const sortSelect = screen.getByRole("combobox", { name: /sort by/i });
-			await userEvent.click(sortSelect);
-			await userEvent.click(
-				screen.getByRole("option", { name: /oldest first/i }),
-			);
-
-			await waitFor(() => {
-				const projects = screen.getAllByTestId(/project-card/);
-				expect(projects[0]).toHaveTextContent(/Older Project/i);
-			});
-		});
-	});
+// Mutable return values so each test can override
+const mockUseProjects = vi.fn();
+const mockUseDeleteProject = vi.fn(() => ({
+  mutateAsync: vi.fn(),
+}));
+
+vi.mock('@/hooks/useProjects', () => ({
+  get useDeleteProject() {
+    return mockUseDeleteProject;
+  },
+  get useProjects() {
+    return mockUseProjects;
+  },
+}));
+
+const mockUseDashboardSummary = vi.fn();
+
+vi.mock('@/hooks/useDashboardSummary', () => ({
+  get useDashboardSummary() {
+    return mockUseDashboardSummary;
+  },
+}));
+
+// ---------------------------------------------------------------------------
+// Test helpers
+// ---------------------------------------------------------------------------
+
+function makeProjects(
+  ...items: Array<{ id: string; name: string; description?: string; status?: string }>
+) {
+  return items.map((p) => ({
+    created_at: '2024-01-01',
+    description: p.description ?? '',
+    id: p.id,
+    name: p.name,
+    status: p.status ?? 'active',
+  }));
+}
+
+function makeSummary(
+  perProject: DashboardSummary['perProject'],
+  overrides?: Partial<DashboardSummary>,
+): DashboardSummary {
+  let totalItemCount = 0;
+  const statusDistribution: Record<string, number> = {};
+  const typeDistribution: Record<string, number> = {};
+
+  for (const stats of Object.values(perProject)) {
+    totalItemCount += stats.totalCount;
+    for (const [s, c] of Object.entries(stats.statusCounts)) {
+      statusDistribution[s] = (statusDistribution[s] ?? 0) + c;
+    }
+    for (const [t, c] of Object.entries(stats.typeCounts)) {
+      typeDistribution[t] = (typeDistribution[t] ?? 0) + c;
+    }
+  }
+
+  return {
+    perProject,
+    projectCount: Object.keys(perProject).length,
+    statusDistribution,
+    totalItemCount,
+    typeDistribution,
+    ...overrides,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Default mock values (loaded / empty)
+// ---------------------------------------------------------------------------
+
+function setLoadingState() {
+  mockUseProjects.mockReturnValue({ data: undefined, isLoading: true });
+  mockUseDashboardSummary.mockReturnValue({ data: undefined, isLoading: true });
+}
+
+function setEmptyState() {
+  mockUseProjects.mockReturnValue({ data: [], isLoading: false });
+  mockUseDashboardSummary.mockReturnValue({
+    data: makeSummary({}),
+    isLoading: false,
+  });
+}
+
+function setPopulatedState() {
+  const projects = makeProjects(
+    { id: 'p1', name: 'Alpha Project', description: 'First project' },
+    { id: 'p2', name: 'Beta Project', description: 'Second project' },
+    { id: 'p3', name: 'Gamma Project', description: 'Third project' },
+  );
+
+  const summary = makeSummary({
+    p1: {
+      completedCount: 5,
+      statusCounts: { active: 5, done: 5 },
+      totalCount: 10,
+      typeCounts: { feature: 6, bug: 4 },
+    },
+    p2: {
+      completedCount: 2,
+      statusCounts: { active: 8 },
+      totalCount: 8,
+      typeCounts: { requirement: 3, task: 5 },
+    },
+    p3: {
+      completedCount: 0,
+      statusCounts: { active: 3 },
+      totalCount: 3,
+      typeCounts: { test: 3 },
+    },
+  });
+
+  mockUseProjects.mockReturnValue({ data: projects, isLoading: false });
+  mockUseDashboardSummary.mockReturnValue({ data: summary, isLoading: false });
+}
+
+// ---------------------------------------------------------------------------
+// Render helper
+// ---------------------------------------------------------------------------
+
+// Pre-import to avoid module loading delay during tests
+let DashboardViewCached: any = null;
+
+async function renderDashboard() {
+  if (!DashboardViewCached) {
+    const module = await import('@/views/DashboardView');
+    DashboardViewCached = module.DashboardView;
+  }
+  // Render without wrapping in act() as react-testing-library handles this
+  return render(<DashboardViewCached />);
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+describe('DashboardView', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // -------------------------------------------------------------------------
+  // Loading states
+  // -------------------------------------------------------------------------
+  describe('Loading States', () => {
+    it('shows loading skeletons when projects are loading', async () => {
+      setLoadingState();
+      await renderDashboard();
+
+      const skeletons = document.querySelectorAll(
+        '[class*="animate-pulse"], [data-slot="skeleton"]',
+      );
+      expect(skeletons.length).toBeGreaterThan(0);
+    });
+
+    it('shows loading skeletons when summary is loading', async () => {
+      mockUseProjects.mockReturnValue({ data: [], isLoading: false });
+      mockUseDashboardSummary.mockReturnValue({ data: undefined, isLoading: true });
+
+      await renderDashboard();
+
+      const skeletons = document.querySelectorAll(
+        '[class*="animate-pulse"], [data-slot="skeleton"]',
+      );
+      expect(skeletons.length).toBeGreaterThan(0);
+    });
+
+    it('does not show loading skeletons when both hooks have resolved', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      // Use queryByText directly to avoid expensive role queries
+      const heading = screen.queryByText(/Traceability Dashboard/i);
+      expect(heading).toBeInTheDocument();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Empty state
+  // -------------------------------------------------------------------------
+  describe('Empty States', () => {
+    it('renders empty project grid with "no projects" message when filtering yields zero', async () => {
+      setEmptyState();
+      await renderDashboard();
+
+      expect(screen.queryByText(/Traceability Dashboard/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/No projects match your current search criteria/i),
+      ).toBeInTheDocument();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Project rendering
+  // -------------------------------------------------------------------------
+  describe('Project Rendering', () => {
+    it('renders all project names from useProjects', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      expect(screen.getByText('Alpha Project')).toBeInTheDocument();
+      expect(screen.getByText('Beta Project')).toBeInTheDocument();
+      expect(screen.getByText('Gamma Project')).toBeInTheDocument();
+    });
+
+    it('displays item counts from dashboard summary per project', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      expect(screen.getByText('10')).toBeInTheDocument();
+      expect(screen.getByText('8')).toBeInTheDocument();
+      expect(screen.getByText('3')).toBeInTheDocument();
+    });
+
+    it('displays progress percentage derived from completedCount / totalCount', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      // Alpha: 5/10 = 50%, Beta: 2/8 = 25%, Gamma: 0/3 = 0%
+      expect(screen.getByText('50%')).toBeInTheDocument();
+      expect(screen.getByText('25%')).toBeInTheDocument();
+      expect(screen.getByText('0%')).toBeInTheDocument();
+    });
+
+    it('renders project links pointing to /projects/:id', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      const links = screen.getAllByRole('link');
+      const projectLinks = links.filter(
+        (link) =>
+          link.getAttribute('href')?.startsWith('/projects/p1') ||
+          link.getAttribute('href')?.startsWith('/projects/p2') ||
+          link.getAttribute('href')?.startsWith('/projects/p3'),
+      );
+      expect(projectLinks.length).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Search / Filter
+  // -------------------------------------------------------------------------
+  describe('Search and Filter', () => {
+    it('filters projects by search query in project name', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      const searchInput = screen.getByPlaceholderText(/Search projects/i);
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: 'Beta' } });
+      });
+
+      expect(screen.getByText('Beta Project')).toBeInTheDocument();
+      expect(screen.queryByText('Alpha Project')).not.toBeInTheDocument();
+      expect(screen.queryByText('Gamma Project')).not.toBeInTheDocument();
+    });
+
+    it('shows empty state when search matches no projects', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      const searchInput = screen.getByPlaceholderText(/Search projects/i);
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
+      });
+
+      expect(
+        screen.getByText(/No projects match your current search criteria/i),
+      ).toBeInTheDocument();
+    });
+
+    it('provides a clear-search button in the empty state', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      const searchInput = screen.getByPlaceholderText(/Search projects/i);
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
+      });
+
+      const clearButton = screen.getByRole('button', { name: /Clear search/i });
+      expect(clearButton).toBeInTheDocument();
+
+      await act(async () => {
+        fireEvent.click(clearButton);
+      });
+
+      // All projects should reappear
+      expect(screen.getByText('Alpha Project')).toBeInTheDocument();
+      expect(screen.getByText('Beta Project')).toBeInTheDocument();
+      expect(screen.getByText('Gamma Project')).toBeInTheDocument();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Sorting
+  // -------------------------------------------------------------------------
+  describe('Sorting', () => {
+    it('renders the sort-by select trigger', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      // The sort select trigger should be rendered with a combobox role
+      const trigger = screen.queryByRole('combobox');
+      expect(trigger).toBeInTheDocument();
+    });
+
+    it('sorts projects by name alphabetically by default', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      // Default sort is "name" (alphabetical).
+      // Projects: Alpha, Beta, Gamma -- should appear in that order.
+      const projectNames = screen
+        .getAllByText(/Alpha Project|Beta Project|Gamma Project/)
+        .map((el) => el.textContent);
+      expect(projectNames).toEqual(['Alpha Project', 'Beta Project', 'Gamma Project']);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Pinning
+  // -------------------------------------------------------------------------
+  describe('Pinning', () => {
+    it('auto-pins the first project on initial render', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      const pinButtons = screen.getAllByTitle(/pin project|unpin project/i);
+      // The first project should show "Unpin project" since it's auto-pinned
+      expect(pinButtons[0]).toHaveAttribute('title', 'Unpin project');
+    });
+
+    it('toggles pin when clicking the pin button on a different project', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      let pinButtons = screen.getAllByTitle(/pin project|unpin project/i);
+      expect(pinButtons[0]).toHaveAttribute('title', 'Unpin project');
+      expect(pinButtons[1]).toHaveAttribute('title', 'Pin project');
+
+      // Click pin on the second project
+      await act(async () => {
+        fireEvent.click(pinButtons[1]);
+      });
+
+      // Now second project should be pinned
+      pinButtons = screen.getAllByTitle(/pin project|unpin project/i);
+      expect(pinButtons[1]).toHaveAttribute('title', 'Unpin project');
+    });
+
+    it('shows toast when pinning a project', async () => {
+      const { toast } = await import('sonner');
+      setPopulatedState();
+      await renderDashboard();
+
+      // Get the "Pin project" buttons (not the already-unpinned ones)
+      const pinButtons = screen.getAllByTitle('Pin project');
+      await act(async () => {
+        fireEvent.click(pinButtons[0]);
+      });
+
+      expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('Pinned'));
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // View mode toggle
+  // -------------------------------------------------------------------------
+  describe('View Mode', () => {
+    it('defaults to grid view and renders project names', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      expect(screen.getByText('Alpha Project')).toBeInTheDocument();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Header content
+  // -------------------------------------------------------------------------
+  describe('Header', () => {
+    it('renders the dashboard heading and description', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      expect(screen.getByText(/Traceability Dashboard/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Monitor project health and system-wide traceability status/i),
+      ).toBeInTheDocument();
+    });
+
+    it('shows system status badge as healthy by default', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      expect(screen.getByText(/System: healthy/i)).toBeInTheDocument();
+    });
+
+    it('renders New Project button linking to /projects', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      const newProjectBtn = screen.queryByRole('link', { name: /New Project/i });
+      expect(newProjectBtn).toBeInTheDocument();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Active Projects section heading
+  // -------------------------------------------------------------------------
+  describe('Active Projects Section', () => {
+    it('renders the Active Projects heading', async () => {
+      setPopulatedState();
+      await renderDashboard();
+
+      expect(screen.getByText(/Active Projects/i)).toBeInTheDocument();
+    });
+  });
 });

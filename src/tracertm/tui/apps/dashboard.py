@@ -8,7 +8,7 @@ Provides interactive dashboard with:
 - Offline-first operation
 """
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 try:
     from textual.app import App, ComposeResult
@@ -124,7 +124,7 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        BINDINGS: ClassVar[list] = [
+        BINDINGS: ClassVar[list[Binding]] = [
             Binding("q", "quit", "Quit", priority=True),
             Binding("v", "switch_view", "Switch View"),
             Binding("r", "refresh", "Refresh"),
@@ -145,13 +145,16 @@ if TEXTUAL_AVAILABLE:
             self.config_manager = ConfigManager()
             self.project_name: str | None = None
             self.current_view: str = "epic"
+            self.current_project_id: str | None = None
+            self.items_data: list[dict[str, Any]] | None = None
+            self.db: Any | None = None
 
             # Initialize storage adapter
             self.storage_adapter = StorageAdapter(base_dir=base_dir)
 
             # Track sync state
             self._is_syncing = False
-            self._sync_timer = None
+            self._sync_timer: Any | None = None
 
         def compose(self) -> ComposeResult:
             """Create child widgets for the app."""
@@ -221,7 +224,7 @@ if TEXTUAL_AVAILABLE:
 
         def start_sync_status_updates(self) -> None:
             """Start periodic sync status updates."""
-            self.set_interval(5.0, self.update_sync_status)
+            self._sync_timer = self.set_interval(5.0, self.update_sync_status)
 
         def update_sync_status(self) -> None:
             """Update sync status display."""
@@ -248,7 +251,7 @@ if TEXTUAL_AVAILABLE:
             self.refresh_stats(project)
             self.refresh_items(project)
 
-        def refresh_stats(self, project) -> None:
+        def refresh_stats(self, project: Any) -> None:
             """Refresh statistics display."""
             stats = self.storage_adapter.get_project_stats(project)
 
@@ -280,7 +283,7 @@ if TEXTUAL_AVAILABLE:
 
             state_summary.update("\n".join(summary_lines))
 
-        def refresh_items(self, project) -> None:
+        def refresh_items(self, project: Any) -> None:
             """Refresh items table."""
             items = self.storage_adapter.list_items(project, item_type=self.current_view)
 
@@ -305,9 +308,7 @@ if TEXTUAL_AVAILABLE:
             """Handle view tree selection."""
             if event.node.data:
                 self.current_view = event.node.data
-                self.refresh_items(
-                    self.storage_adapter.get_project(self.project_name)  # type: ignore
-                )
+                self.refresh_items(self.storage_adapter.get_project(self.project_name))
                 items_title = self.query_one("#items-title", Static)
                 items_title.update(f"Items - {self.current_view.upper()}")
 
@@ -361,12 +362,12 @@ if TEXTUAL_AVAILABLE:
                 class SearchDialog(Container):
                     """Search dialog for items."""
 
-                    def __init__(self, dashboard):
+                    def __init__(self, dashboard: "DashboardApp") -> None:
                         super().__init__()
                         self.dashboard = dashboard
                         self.border_title = "Search Items"
 
-                    def compose(self):
+                    def compose(self) -> ComposeResult:
                         with Horizontal():
                             yield Input(placeholder="Enter search query...", id="search_input")
                             yield Button("Search", id="search_btn")
@@ -401,17 +402,8 @@ if TEXTUAL_AVAILABLE:
                 query: Search query string (searches name, type, status)
             """
             try:
-                from tracertm.services.search_service import SearchService
-
-                # Use search service if available
-                async def search():
-                    async with self.db.session() as session:
-                        search_service = SearchService(session)
-                        filters = {"project_id": self.current_project_id} if self.current_project_id else None
-                        return await search_service.search(query=query, filters=filters)
-
                 # For now, fall back to simple filtering
-                if hasattr(self, "items_data"):
+                if self.items_data is not None:
                     query_lower = query.lower()
                     matched = [
                         item
@@ -452,7 +444,7 @@ if TEXTUAL_AVAILABLE:
 
         # Callback handlers
 
-        def _on_sync_status_change(self, state) -> None:
+        def _on_sync_status_change(self, state: Any) -> None:
             """Handle sync status changes."""
             # Use call_from_thread for thread-safe updates
             try:
@@ -480,7 +472,7 @@ if TEXTUAL_AVAILABLE:
             except Exception as e:
                 logging.getLogger(__name__).debug("App not running, ignoring sync status callback: %s", e)
 
-        def _on_conflict_detected(self, conflict) -> None:
+        def _on_conflict_detected(self, conflict: Any) -> None:
             """Handle conflict detection."""
             try:
                 self.call_from_thread(

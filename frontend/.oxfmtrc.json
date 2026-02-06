@@ -1,42 +1,42 @@
 {
-	"$schema": "./node_modules/oxfmt/configuration_schema.json",
-	"printWidth": 100,
-	"tabWidth": 2,
-	"useTabs": false,
-	"semi": true,
-	"singleQuote": true,
-	"jsxSingleQuote": true,
-	"trailingComma": "all",
-	"bracketSpacing": true,
-	"bracketSameLine": false,
-	"arrowParens": "always",
-	"endOfLine": "lf",
-	"insertFinalNewline": true,
-	"quoteProps": "as-needed",
-	"proseWrap": "preserve",
-	"htmlWhitespaceSensitivity": "css",
-	"ignorePatterns": [
-		"**/node_modules/**",
-		"**/dist/**",
-		"**/.turbo/**",
-		"**/routeTree.gen.ts",
-		"**/*.gen.ts"
-	],
-	"experimentalSortImports": {
-		"internalPattern": ["~", "@/", "@tracertm/"],
-		"groups": [
-			"type-import",
-			["value-builtin", "value-external"],
-			"type-internal",
-			"value-internal",
-			["type-parent", "type-sibling", "type-index"],
-			["value-parent", "value-sibling", "value-index"],
-			"unknown"
-		],
-		"newlinesBetween": true,
-		"order": "asc",
-		"ignoreCase": true
-	},
-	"experimentalSortPackageJson": true,
-	"experimentalTailwindcss": {}
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "insertFinalNewline": true,
+  "quoteProps": "as-needed",
+  "proseWrap": "preserve",
+  "htmlWhitespaceSensitivity": "css",
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.turbo/**",
+    "**/routeTree.gen.ts",
+    "**/*.gen.ts"
+  ],
+  "experimentalSortImports": {
+    "internalPattern": ["~", "@/", "@tracertm/"],
+    "groups": [
+      "type-import",
+      ["value-builtin", "value-external"],
+      "type-internal",
+      "value-internal",
+      ["type-parent", "type-sibling", "type-index"],
+      ["value-parent", "value-sibling", "value-index"],
+      "unknown"
+    ],
+    "newlinesBetween": true,
+    "order": "asc",
+    "ignoreCase": true
+  },
+  "experimentalSortPackageJson": true,
+  "experimentalTailwindcss": {}
 }

@@ -1,139 +1,133 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
    Animation & transition design tokens (respect prefers-reduced-motion in base)
    --------------------------------------------------------------------------- */
 @layer base {
-	:root {
-		--duration-fast: 150ms;
-		--duration-normal: 200ms;
-		--duration-slow: 300ms;
-		--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-		--ease-out-smooth: cubic-bezier(0.33, 1, 0.68, 1);
-		--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-	}
+  :root {
+    --duration-fast: 150ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-smooth: cubic-bezier(0.33, 1, 0.68, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  }
 }
 
 /* ---------------------------------------------------------------------------
    Keyframes for entrance and micro-interactions
    --------------------------------------------------------------------------- */
 @keyframes fade-in {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-in-up {
-	from {
-		opacity: 0;
-		transform: translateY(8px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-in-down {
-	from {
-		opacity: 0;
-		transform: translateY(-8px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scale-in {
-	from {
-		opacity: 0;
-		transform: scale(0.96);
-	}
-	to {
-		opacity: 1;
-		transform: scale(1);
-	}
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes slide-in-right {
-	from {
-		opacity: 0;
-		transform: translateX(8px);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* ---------------------------------------------------------------------------
    Utility classes for entrance animations (use on page/section wrappers)
    --------------------------------------------------------------------------- */
 .animate-in-fade {
-	animation: fade-in var(--duration-normal, 200ms)
-		var(--ease-out-smooth, ease-out) forwards;
+  animation: fade-in var(--duration-normal, 200ms) var(--ease-out-smooth, ease-out) forwards;
 }
 
 .animate-in-fade-up {
-	animation: fade-in-up var(--duration-slow, 300ms)
-		var(--ease-out-expo, ease-out) forwards;
+  animation: fade-in-up var(--duration-slow, 300ms) var(--ease-out-expo, ease-out) forwards;
 }
 
 .animate-in-fade-down {
-	animation: fade-in-down var(--duration-slow, 300ms)
-		var(--ease-out-expo, ease-out) forwards;
+  animation: fade-in-down var(--duration-slow, 300ms) var(--ease-out-expo, ease-out) forwards;
 }
 
 .animate-in-scale {
-	animation: scale-in var(--duration-normal, 200ms)
-		var(--ease-out-expo, ease-out) forwards;
+  animation: scale-in var(--duration-normal, 200ms) var(--ease-out-expo, ease-out) forwards;
 }
 
 .animate-in-slide-right {
-	animation: slide-in-right var(--duration-normal, 200ms)
-		var(--ease-out-smooth, ease-out) forwards;
+  animation: slide-in-right var(--duration-normal, 200ms) var(--ease-out-smooth, ease-out) forwards;
 }
 
 /* Stagger children (add delay to nth-child) */
 .stagger-children > * {
-	animation: fade-in-up var(--duration-slow, 300ms)
-		var(--ease-out-expo, ease-out) forwards;
-	opacity: 0;
+  animation: fade-in-up var(--duration-slow, 300ms) var(--ease-out-expo, ease-out) forwards;
+  opacity: 0;
 }
 
 .stagger-children > *:nth-child(1) {
-	animation-delay: 0ms;
+  animation-delay: 0ms;
 }
 .stagger-children > *:nth-child(2) {
-	animation-delay: 40ms;
+  animation-delay: 40ms;
 }
 .stagger-children > *:nth-child(3) {
-	animation-delay: 80ms;
+  animation-delay: 80ms;
 }
 .stagger-children > *:nth-child(4) {
-	animation-delay: 120ms;
+  animation-delay: 120ms;
 }
 .stagger-children > *:nth-child(5) {
-	animation-delay: 160ms;
+  animation-delay: 160ms;
 }
 .stagger-children > *:nth-child(6) {
-	animation-delay: 200ms;
+  animation-delay: 200ms;
 }
 .stagger-children > *:nth-child(7) {
-	animation-delay: 240ms;
+  animation-delay: 240ms;
 }
 .stagger-children > *:nth-child(8) {
-	animation-delay: 280ms;
+  animation-delay: 280ms;
 }
 .stagger-children > *:nth-child(9) {
-	animation-delay: 320ms;
+  animation-delay: 320ms;
 }
 .stagger-children > *:nth-child(10) {
-	animation-delay: 360ms;
+  animation-delay: 360ms;
 }
 
 /* Initial state for entrance animations */
@@ -143,206 +137,205 @@
 .animate-in-scale,
 .animate-in-slide-right,
 .section-entrance {
-	opacity: 0;
+  opacity: 0;
 }
 
 /* Section/row wrappers: optional entrance for content blocks */
 .section-entrance {
-	animation: fade-in-up var(--duration-slow, 300ms)
-		var(--ease-out-expo, ease-out) forwards;
-	opacity: 0;
+  animation: fade-in-up var(--duration-slow, 300ms) var(--ease-out-expo, ease-out) forwards;
+  opacity: 0;
 }
 
 /* List/table row hover (use with transition utilities on the row) */
 .row-interactive {
-	transition:
-		background-color var(--duration-fast, 150ms) ease,
-		box-shadow var(--duration-fast, 150ms) ease,
-		transform var(--duration-fast, 150ms) var(--ease-out-expo, ease);
+  transition:
+    background-color var(--duration-fast, 150ms) ease,
+    box-shadow var(--duration-fast, 150ms) ease,
+    transform var(--duration-fast, 150ms) var(--ease-out-expo, ease);
 }
 
 /* ---------------------------------------------------------------------------
    Global interactive element styles & hover/active/focus transitions
    --------------------------------------------------------------------------- */
 button,
-[role="button"],
+[role='button'],
 a[href],
 [onclick],
-[tabindex]:not([tabindex="-1"]) {
-	cursor: pointer;
+[tabindex]:not([tabindex='-1']) {
+  cursor: pointer;
 }
 
 /* Smooth transitions for buttons */
 button:not(:disabled),
-[role="button"]:not(:disabled) {
-	transition:
-		background-color var(--duration-fast, 150ms) ease,
-		color var(--duration-fast, 150ms) ease,
-		transform var(--duration-fast, 150ms) var(--ease-out-expo, ease),
-		box-shadow var(--duration-normal, 200ms) ease,
-		border-color var(--duration-fast, 150ms) ease;
+[role='button']:not(:disabled) {
+  transition:
+    background-color var(--duration-fast, 150ms) ease,
+    color var(--duration-fast, 150ms) ease,
+    transform var(--duration-fast, 150ms) var(--ease-out-expo, ease),
+    box-shadow var(--duration-normal, 200ms) ease,
+    border-color var(--duration-fast, 150ms) ease;
 }
 
 button:not(:disabled):hover,
-[role="button"]:not(:disabled):hover {
-	transition:
-		background-color var(--duration-fast, 150ms) ease,
-		color var(--duration-fast, 150ms) ease,
-		transform var(--duration-fast, 150ms) var(--ease-out-expo, ease),
-		box-shadow var(--duration-normal, 200ms) ease,
-		border-color var(--duration-fast, 150ms) ease;
+[role='button']:not(:disabled):hover {
+  transition:
+    background-color var(--duration-fast, 150ms) ease,
+    color var(--duration-fast, 150ms) ease,
+    transform var(--duration-fast, 150ms) var(--ease-out-expo, ease),
+    box-shadow var(--duration-normal, 200ms) ease,
+    border-color var(--duration-fast, 150ms) ease;
 }
 
 /* Links: hover and focus transitions */
 a[href] {
-	transition:
-		color var(--duration-fast, 150ms) ease,
-		background-color var(--duration-fast, 150ms) ease,
-		opacity var(--duration-fast, 150ms) ease,
-		transform var(--duration-fast, 150ms) ease;
+  transition:
+    color var(--duration-fast, 150ms) ease,
+    background-color var(--duration-fast, 150ms) ease,
+    opacity var(--duration-fast, 150ms) ease,
+    transform var(--duration-fast, 150ms) ease;
 }
 
 a[href]:hover {
-	transition:
-		color var(--duration-fast, 150ms) ease,
-		background-color var(--duration-fast, 150ms) ease,
-		opacity var(--duration-fast, 150ms) ease,
-		transform var(--duration-fast, 150ms) ease;
+  transition:
+    color var(--duration-fast, 150ms) ease,
+    background-color var(--duration-fast, 150ms) ease,
+    opacity var(--duration-fast, 150ms) ease,
+    transform var(--duration-fast, 150ms) ease;
 }
 
 /* Clickable elements: visual feedback */
 [onclick] {
-	transition:
-		background-color var(--duration-fast, 150ms) ease,
-		transform var(--duration-fast, 150ms) ease,
-		box-shadow var(--duration-normal, 200ms) ease;
+  transition:
+    background-color var(--duration-fast, 150ms) ease,
+    transform var(--duration-fast, 150ms) ease,
+    box-shadow var(--duration-normal, 200ms) ease;
 }
 
 @layer base {
-	:root {
-		--background: 0 0% 100%;
-		--foreground: 222.2 84% 4.9%;
-		--card: 0 0% 100%;
-		--card-foreground: 222.2 84% 4.9%;
-		--popover: 0 0% 100%;
-		--popover-foreground: 222.2 84% 4.9%;
-		--primary: 221.2 83.2% 53.3%;
-		--primary-foreground: 210 40% 98%;
-		--secondary: 210 40% 96.1%;
-		--secondary-foreground: 222.2 47.4% 11.2%;
-		--muted: 210 40% 96.1%;
-		--muted-foreground: 215.4 16.3% 46.9%;
-		--accent: 210 40% 96.1%;
-		--accent-foreground: 222.2 47.4% 11.2%;
-		--destructive: 0 84.2% 60.2%;
-		--destructive-foreground: 210 40% 98%;
-		--border: 214.3 31.8% 91.4%;
-		--input: 214.3 31.8% 91.4%;
-		--ring: 221.2 83.2% 53.3%;
-		--radius: 0.5rem;
-	}
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
 
-	.dark {
-		/* Match gradient base (slate-900 #0f172a) so gradient shows, no purple cast */
-		--background: 222 47% 9%;
-		--foreground: 210 40% 98%;
-		--card: 222 47% 9%;
-		--card-foreground: 210 40% 98%;
-		--popover: 222.2 84% 4.9%;
-		--popover-foreground: 210 40% 98%;
-		--primary: 217.2 91.2% 59.8%;
-		--primary-foreground: 222.2 47.4% 11.2%;
-		--secondary: 217.2 32.6% 17.5%;
-		--secondary-foreground: 210 40% 98%;
-		--muted: 217.2 32.6% 17.5%;
-		--muted-foreground: 215 20.2% 65.1%;
-		--accent: 217.2 32.6% 17.5%;
-		--accent-foreground: 210 40% 98%;
-		--destructive: 0 62.8% 30.6%;
-		--destructive-foreground: 210 40% 98%;
-		--border: 217.2 32.6% 17.5%;
-		--input: 217.2 32.6% 17.5%;
-		--ring: 224.3 76.3% 48%;
-	}
+  .dark {
+    /* Match gradient base (slate-900 #0f172a) so gradient shows, no purple cast */
+    --background: 222 47% 9%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
 }
 
 @layer base {
-	* {
-		border-color: hsl(var(--border));
-	}
-	body {
-		background-color: hsl(var(--background));
-		color: hsl(var(--foreground));
-	}
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
 
-	/* Visible focus indicators for WCAG 2.1 AA compliance (2px minimum) */
-	button:focus-visible,
-	a:focus-visible,
-	input:focus-visible,
-	select:focus-visible,
-	textarea:focus-visible,
-	[role="button"]:focus-visible,
-	[role="tab"]:focus-visible,
-	[role="option"]:focus-visible,
-	[role="menuitem"]:focus-visible {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
+  /* Visible focus indicators for WCAG 2.1 AA compliance (2px minimum) */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role='button']:focus-visible,
+  [role='tab']:focus-visible,
+  [role='option']:focus-visible,
+  [role='menuitem']:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 
-	/* Focus visible for interactive divs */
-	div:focus-visible,
-	[tabindex]:not([tabindex="-1"]):focus-visible {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
+  /* Focus visible for interactive divs */
+  div:focus-visible,
+  [tabindex]:not([tabindex='-1']):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 
-	/* Screen reader only text */
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border-width: 0;
-	}
+  /* Screen reader only text */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 
-	/* High contrast mode support */
-	@media (prefers-contrast: more) {
-		button:focus-visible,
-		a:focus-visible,
-		input:focus-visible,
-		select:focus-visible,
-		textarea:focus-visible,
-		[role="button"]:focus-visible {
-			outline-width: 3px;
-		}
-	}
+  /* High contrast mode support */
+  @media (prefers-contrast: more) {
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [role='button']:focus-visible {
+      outline-width: 3px;
+    }
+  }
 
-	/* Reduced motion support */
-	@media (prefers-reduced-motion: reduce) {
-		*,
-		*::before,
-		*::after {
-			animation-duration: 0.01ms !important;
-			animation-iteration-count: 1 !important;
-			animation-delay: 0ms !important;
-			transition-duration: 0.01ms !important;
-		}
-	}
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      animation-delay: 0ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 
-	/* Smooth focus-visible ring transition */
-	button:focus-visible,
-	a:focus-visible,
-	input:focus-visible,
-	select:focus-visible,
-	textarea:focus-visible,
-	[role="button"]:focus-visible,
-	[role="tab"]:focus-visible {
-		transition:
-			outline-offset var(--duration-fast, 150ms) ease,
-			box-shadow var(--duration-fast, 150ms) ease;
-	}
+  /* Smooth focus-visible ring transition */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role='button']:focus-visible,
+  [role='tab']:focus-visible {
+    transition:
+      outline-offset var(--duration-fast, 150ms) ease,
+      box-shadow var(--duration-fast, 150ms) ease;
+  }
 }
