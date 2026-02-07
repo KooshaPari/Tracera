@@ -37,9 +37,9 @@ func TestE2E_Security_RBAC_DeniedAccess(t *testing.T) {
 
 	_ = createTestSession(t, srv, "owner-123")
 	otherToken := createTestSession(t, srv, "other-456")
-	
+
 	projectID := createTestProject(t, srv, "Private Project")
-	
+
 	req, _ := http.NewRequest("GET", srv.URL+"/api/projects/"+projectID, nil)
 	req.AddCookie(&http.Cookie{Name: "session_token", Value: otherToken})
 
@@ -56,7 +56,7 @@ func TestE2E_Security_AuditLog_Creation(t *testing.T) {
 
 	sessionToken := createTestSession(t, srv, "user-123")
 	projectID := createTestProject(t, srv, "Audit Project")
-	
+
 	// Perform action
 	itemPayload := map[string]interface{}{
 		"project_id": projectID,
@@ -69,21 +69,21 @@ func TestE2E_Security_AuditLog_Creation(t *testing.T) {
 	req, _ := http.NewRequest("POST", srv.URL+"/api/items", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(&http.Cookie{Name: "session_token", Value: sessionToken})
-	
+
 	resp, _ := http.DefaultClient.Do(req)
 	resp.Body.Close()
 
 	// Check audit log
 	req2, _ := http.NewRequest("GET", srv.URL+"/api/audit-logs?user_id=user-123", nil)
 	req2.AddCookie(&http.Cookie{Name: "session_token", Value: sessionToken})
-	
+
 	resp2, err := http.DefaultClient.Do(req2)
 	require.NoError(t, err)
 	defer resp2.Body.Close()
 
 	var logs map[string]interface{}
 	require.NoError(t, json.NewDecoder(resp2.Body).Decode(&logs))
-	
+
 	entries := logs["entries"].([]interface{})
 	assert.GreaterOrEqual(t, len(entries), 1)
 }
@@ -93,7 +93,7 @@ func TestE2E_Security_InputSanitization(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "XSS Test Project")
-	
+
 	maliciousPayloads := []string{
 		"<script>alert('xss')</script>",
 		"'; DROP TABLE items; --",
@@ -101,7 +101,7 @@ func TestE2E_Security_InputSanitization(t *testing.T) {
 	}
 
 	for i, payload := range maliciousPayloads {
-		t.Run("malicious_input_" + string(rune(i)), func(t *testing.T) {
+		t.Run("malicious_input_"+string(rune(i)), func(t *testing.T) {
 			itemPayload := map[string]interface{}{
 				"project_id": projectID,
 				"title":      payload,

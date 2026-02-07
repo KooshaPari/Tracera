@@ -311,7 +311,6 @@ func TestFilterByDimension_NumericDimensions(t *testing.T) {
 	assert.Equal(t, "1", filtered[0].ID)
 }
 
-
 // ============================================================================
 // CrossPerspectiveSearchRequest Validation Tests
 // ============================================================================
@@ -693,6 +692,3 @@ func TestCrossPerspectiveSearcher_WhitespaceQuery(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, resp)
 }
-
-
-

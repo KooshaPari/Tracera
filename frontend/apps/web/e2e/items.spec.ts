@@ -349,19 +349,12 @@ test.describe('Item Search and Filter', () => {
       .or(page.getByPlaceholder(/search/i))
       .first();
 
-    if (await searchInput.isVisible({ timeout: 3000 })) {
-      await searchInput.fill('Authentication');
-      await page.waitForTimeout(500);
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
+    await searchInput.fill('Authentication');
+    await page.waitForTimeout(500);
 
-      // Should show matching items or search results
-      await expect(page.getByText('User Authentication'))
-        .toBeVisible({ timeout: 3000 })
-        .catch(() => {
-          console.log('Search results may not show User Authentication');
-        });
-    } else {
-      console.log('Search input not found on items page - may need global search');
-    }
+    // Should show matching items or search results
+    await expect(page.getByText('User Authentication')).toBeVisible({ timeout: 5000 });
   });
 
   test('should filter items by type', async ({ page }) => {
@@ -372,9 +365,7 @@ test.describe('Item Search and Filter', () => {
       .first()
       .or(page.getByLabel(/type/i).first());
 
-    if (await typeFilter.isVisible({ timeout: 2000 })) {
-      console.log('Type filter available');
-    }
+    await expect(typeFilter).toBeVisible({ timeout: 5000 });
   });
 
   test('should filter items by status', async ({ page }) => {
@@ -384,8 +375,6 @@ test.describe('Item Search and Filter', () => {
       .filter({ hasText: /status/i })
       .first();
 
-    if (await statusFilter.isVisible({ timeout: 2000 })) {
-      console.log('Status filter available');
-    }
+    await expect(statusFilter).toBeVisible({ timeout: 5000 });
   });
 });

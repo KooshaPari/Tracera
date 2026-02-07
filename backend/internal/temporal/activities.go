@@ -157,7 +157,7 @@ func (a *SnapshotActivities) CreateSnapshot(ctx context.Context, payload *Snapsh
 	header := &tar.Header{
 		Name: fmt.Sprintf("snapshot-%s.json", payload.SessionID),
 		Size: int64(len(data)),
-		Mode: 0644,
+		Mode: 0o644,
 	}
 	if err := tw.WriteHeader(header); err != nil {
 		return nil, fmt.Errorf("failed to write tar header: %w", err)
@@ -179,7 +179,7 @@ func (a *SnapshotActivities) CreateSnapshot(ctx context.Context, payload *Snapsh
 	header = &tar.Header{
 		Name: "metadata.json",
 		Size: int64(len(metadataData)),
-		Mode: 0644,
+		Mode: 0o644,
 	}
 	if err := tw.WriteHeader(header); err != nil {
 		return nil, fmt.Errorf("failed to write metadata header: %w", err)

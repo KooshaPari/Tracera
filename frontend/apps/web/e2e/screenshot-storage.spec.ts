@@ -18,34 +18,31 @@ test.describe('Screenshot Storage', () => {
     // Given: A project with items
     // Navigate to a project
     const projectLink = page.locator('[data-testid="project-link"]').first();
-    if (await projectLink.isVisible()) {
-      await projectLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(projectLink).toBeVisible({ timeout: 10000 });
+    await projectLink.click();
+    await page.waitForLoadState('networkidle');
 
     // Navigate to an item view
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // When: Taking a screenshot
     const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-    if (await screenshotButton.isVisible()) {
-      await screenshotButton.click();
+    await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+    await screenshotButton.click();
 
-      // Wait for upload progress to appear
-      const progressBar = page.locator('[data-testid="upload-progress"]');
-      await expect(progressBar).toBeVisible();
+    // Wait for upload progress to appear
+    const progressBar = page.locator('[data-testid="upload-progress"]');
+    await expect(progressBar).toBeVisible();
 
-      // Wait for upload to complete
-      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
+    // Wait for upload to complete
+    await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
 
-      // Verify success message
-      const successMessage = page.locator('[data-testid="upload-success"]');
-      await expect(successMessage).toBeVisible({ timeout: 5000 });
-    }
+    // Verify success message
+    const successMessage = page.locator('[data-testid="upload-success"]');
+    await expect(successMessage).toBeVisible({ timeout: 5000 });
 
     // Then: Verify screenshot is saved
     const screenshot = page.locator('[data-testid="item-screenshot"]');
@@ -56,131 +53,122 @@ test.describe('Screenshot Storage', () => {
   test('should show upload progress during screenshot upload', async ({ page }) => {
     // Given: Item page is open
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // When: Starting screenshot upload
     const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-    if (await screenshotButton.isVisible()) {
-      await screenshotButton.click();
+    await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+    await screenshotButton.click();
 
-      // Then: Verify progress bar is shown
-      const progressBar = page.locator('[data-testid="upload-progress"]');
-      await expect(progressBar).toBeVisible();
+    // Then: Verify progress bar is shown
+    const progressBar = page.locator('[data-testid="upload-progress"]');
+    await expect(progressBar).toBeVisible();
 
-      // Verify progress updates
-      const progressPercent = page.locator('[data-testid="upload-percent"]');
-      const initialPercent = await progressPercent.textContent();
-      expect(initialPercent).toMatch(/\d+%/);
+    // Verify progress updates
+    const progressPercent = page.locator('[data-testid="upload-percent"]');
+    const initialPercent = await progressPercent.textContent();
+    expect(initialPercent).toMatch(/\d+%/);
 
-      // Wait for completion
-      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
+    // Wait for completion
+    await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
 
-      // Verify final state
-      const successMessage = page.locator('[data-testid="upload-success"]');
-      await expect(successMessage).toBeVisible();
-    }
+    // Verify final state
+    const successMessage = page.locator('[data-testid="upload-success"]');
+    await expect(successMessage).toBeVisible();
   });
 
   test('should generate and display thumbnail', async ({ page }) => {
     // Given: Item with screenshot
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // When: Uploading screenshot
     const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-    if (await screenshotButton.isVisible()) {
-      await screenshotButton.click();
+    await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+    await screenshotButton.click();
 
-      // Wait for upload
-      const progressBar = page.locator('[data-testid="upload-progress"]');
-      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
+    // Wait for upload
+    const progressBar = page.locator('[data-testid="upload-progress"]');
+    await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
 
-      // Then: Verify thumbnail is generated and visible
-      const thumbnail = page.locator('[data-testid="screenshot-thumbnail"]');
-      await expect(thumbnail).toBeVisible({ timeout: 10_000 });
+    // Then: Verify thumbnail is generated and visible
+    const thumbnail = page.locator('[data-testid="screenshot-thumbnail"]');
+    await expect(thumbnail).toBeVisible({ timeout: 10_000 });
 
-      // Verify thumbnail has correct dimensions
-      const boundingBox = await thumbnail.boundingBox();
-      expect(boundingBox?.width).toBeGreaterThan(0);
-      expect(boundingBox?.height).toBeGreaterThan(0);
-    }
+    // Verify thumbnail has correct dimensions
+    const boundingBox = await thumbnail.boundingBox();
+    expect(boundingBox?.width).toBeGreaterThan(0);
+    expect(boundingBox?.height).toBeGreaterThan(0);
   });
 
   test('should cache screenshots for performance', async ({ page }) => {
     // Given: Item page is open
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // When: Taking first screenshot
     const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-    if (await screenshotButton.isVisible()) {
-      const startTime1 = Date.now();
-      await screenshotButton.click();
+    await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+    const startTime1 = Date.now();
+    await screenshotButton.click();
 
-      const progressBar = page.locator('[data-testid="upload-progress"]');
-      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
-      const duration1 = Date.now() - startTime1;
+    const progressBar = page.locator('[data-testid="upload-progress"]');
+    await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
+    const duration1 = Date.now() - startTime1;
 
-      // When: Taking second screenshot (should be cached)
-      const startTime2 = Date.now();
-      await screenshotButton.click();
+    // When: Taking second screenshot (should be cached)
+    const startTime2 = Date.now();
+    await screenshotButton.click();
 
-      const progressBar2 = page.locator('[data-testid="upload-progress"]');
-      await progressBar2.waitFor({ state: 'hidden', timeout: 30_000 });
-      const duration2 = Date.now() - startTime2;
+    const progressBar2 = page.locator('[data-testid="upload-progress"]');
+    await progressBar2.waitFor({ state: 'hidden', timeout: 30_000 });
+    const duration2 = Date.now() - startTime2;
 
-      // Then: Second should be faster (cached)
-      // Note: This is approximate, caching might not always be faster
-      expect(duration2).toBeLessThanOrEqual(duration1 * 1.5);
-    }
+    // Then: Second should be faster (cached)
+    // Note: This is approximate, caching might not always be faster
+    expect(duration2).toBeLessThanOrEqual(duration1 * 1.5);
   });
 
   test('should delete screenshot', async ({ page }) => {
     // Given: Item with existing screenshot
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // First, upload a screenshot if not exists
     const screenshot = page.locator('[data-testid="item-screenshot"]');
-    if (!(await screenshot.isVisible())) {
+    const isVisible = await screenshot.isVisible();
+    if (!isVisible) {
       const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-      if (await screenshotButton.isVisible()) {
-        await screenshotButton.click();
-        const progressBar = page.locator('[data-testid="upload-progress"]');
-        await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
-      }
+      await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+      await screenshotButton.click();
+      const progressBar = page.locator('[data-testid="upload-progress"]');
+      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
     }
 
     // When: Deleting screenshot
     const deleteButton = page.locator('[data-testid="delete-screenshot"]');
-    if (await deleteButton.isVisible()) {
-      await deleteButton.click();
+    await expect(deleteButton).toBeVisible({ timeout: 10000 });
+    await deleteButton.click();
 
-      // Confirm deletion if dialog appears
-      const confirmButton = page.locator('[data-testid="confirm-delete"]');
-      if (await confirmButton.isVisible()) {
-        await confirmButton.click();
-      }
+    // Confirm deletion if dialog appears
+    const confirmButton = page.locator('[data-testid="confirm-delete"]');
+    await expect(confirmButton).toBeVisible({ timeout: 5000 });
+    await confirmButton.click();
 
-      // Then: Verify screenshot is removed
-      await expect(screenshot).not.toBeVisible({ timeout: 5000 });
+    // Then: Verify screenshot is removed
+    await expect(screenshot).not.toBeVisible({ timeout: 5000 });
 
-      // Verify delete success message
-      const successMessage = page.locator('[data-testid="delete-success"]');
-      await expect(successMessage).toBeVisible({ timeout: 5000 });
-    }
+    // Verify delete success message
+    const successMessage = page.locator('[data-testid="delete-success"]');
+    await expect(successMessage).toBeVisible({ timeout: 5000 });
   });
 
   test('should persist screenshot across page reload', async ({ page }) => {
@@ -188,20 +176,19 @@ test.describe('Screenshot Storage', () => {
     const itemLink = page.locator('[data-testid="item-row"]').first();
     const _itemId = await itemLink.getAttribute('data-item-id');
 
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // Upload screenshot if not exists
     const screenshot = page.locator('[data-testid="item-screenshot"]');
-    if (!(await screenshot.isVisible())) {
+    const isVisible = await screenshot.isVisible();
+    if (!isVisible) {
       const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-      if (await screenshotButton.isVisible()) {
-        await screenshotButton.click();
-        const progressBar = page.locator('[data-testid="upload-progress"]');
-        await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
-      }
+      await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+      await screenshotButton.click();
+      const progressBar = page.locator('[data-testid="upload-progress"]');
+      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
     }
 
     // Get current screenshot URL
@@ -227,55 +214,50 @@ test.describe('Screenshot Storage', () => {
     });
 
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // When: Attempting screenshot upload
     const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-    if (await screenshotButton.isVisible()) {
-      await screenshotButton.click();
+    await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+    await screenshotButton.click();
 
-      // Then: Verify error message is shown
-      const errorMessage = page.locator('[data-testid="upload-error"]');
-      await expect(errorMessage).toBeVisible({ timeout: 10_000 });
+    // Then: Verify error message is shown
+    const errorMessage = page.locator('[data-testid="upload-error"]');
+    await expect(errorMessage).toBeVisible({ timeout: 10_000 });
 
-      // Verify error can be dismissed
-      const dismissButton = page.locator('[data-testid="dismiss-error"]');
-      if (await dismissButton.isVisible()) {
-        await dismissButton.click();
-        await expect(errorMessage).not.toBeVisible({ timeout: 5000 });
-      }
-    }
+    // Verify error can be dismissed
+    const dismissButton = page.locator('[data-testid="dismiss-error"]');
+    await expect(dismissButton).toBeVisible({ timeout: 5000 });
+    await dismissButton.click();
+    await expect(errorMessage).not.toBeVisible({ timeout: 5000 });
   });
 
   test('should support multiple screenshots per item', async ({ page }) => {
     // Given: Item page is open
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // When: Uploading multiple screenshots
     const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-    if (await screenshotButton.isVisible()) {
-      // First screenshot
-      await screenshotButton.click();
-      let progressBar = page.locator('[data-testid="upload-progress"]');
-      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
+    await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+    // First screenshot
+    await screenshotButton.click();
+    let progressBar = page.locator('[data-testid="upload-progress"]');
+    await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
 
-      // Second screenshot
-      await screenshotButton.click();
-      progressBar = page.locator('[data-testid="upload-progress"]');
-      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
+    // Second screenshot
+    await screenshotButton.click();
+    progressBar = page.locator('[data-testid="upload-progress"]');
+    await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
 
-      // Third screenshot
-      await screenshotButton.click();
-      progressBar = page.locator('[data-testid="upload-progress"]');
-      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
-    }
+    // Third screenshot
+    await screenshotButton.click();
+    progressBar = page.locator('[data-testid="upload-progress"]');
+    await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
 
     // Then: Verify all screenshots are stored
     const screenshots = page.locator('[data-testid="item-screenshot"]');
@@ -292,121 +274,109 @@ test.describe('Screenshot Storage', () => {
   test('should display screenshot metadata', async ({ page }) => {
     // Given: Item with screenshot
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // Upload screenshot if needed
     const screenshot = page.locator('[data-testid="item-screenshot"]');
-    if (!(await screenshot.isVisible())) {
+    const isVisible = await screenshot.isVisible();
+    if (!isVisible) {
       const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-      if (await screenshotButton.isVisible()) {
-        await screenshotButton.click();
-        const progressBar = page.locator('[data-testid="upload-progress"]');
-        await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
-      }
+      await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+      await screenshotButton.click();
+      const progressBar = page.locator('[data-testid="upload-progress"]');
+      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
     }
 
     // When: Viewing screenshot metadata
     const metadataButton = page.locator('[data-testid="screenshot-metadata"]');
-    if (await metadataButton.isVisible()) {
-      await metadataButton.click();
+    await expect(metadataButton).toBeVisible({ timeout: 10000 });
+    await metadataButton.click();
 
-      // Then: Verify metadata is displayed
-      const metadata = page.locator('[data-testid="screenshot-metadata-panel"]');
-      await expect(metadata).toBeVisible();
+    // Then: Verify metadata is displayed
+    const metadata = page.locator('[data-testid="screenshot-metadata-panel"]');
+    await expect(metadata).toBeVisible();
 
-      // Verify metadata fields
-      const uploadDate = page.locator('[data-testid="metadata-upload-date"]');
-      const fileSize = page.locator('[data-testid="metadata-file-size"]');
-      const dimensions = page.locator('[data-testid="metadata-dimensions"]');
+    // Verify metadata fields
+    const uploadDate = page.locator('[data-testid="metadata-upload-date"]');
+    const fileSize = page.locator('[data-testid="metadata-file-size"]');
+    const dimensions = page.locator('[data-testid="metadata-dimensions"]');
 
-      if (await uploadDate.isVisible()) {
-        expect(await uploadDate.textContent()).toMatch(/\d{4}-\d{2}-\d{2}/);
-      }
+    await expect(uploadDate).toBeVisible({ timeout: 5000 });
+    expect(await uploadDate.textContent()).toMatch(/\d{4}-\d{2}-\d{2}/);
 
-      if (await fileSize.isVisible()) {
-        expect(await fileSize.textContent()).toMatch(/\d+\s*(KB|MB|bytes)/);
-      }
+    await expect(fileSize).toBeVisible({ timeout: 5000 });
+    expect(await fileSize.textContent()).toMatch(/\d+\s*(KB|MB|bytes)/);
 
-      if (await dimensions.isVisible()) {
-        expect(await dimensions.textContent()).toMatch(/\d+x\d+/);
-      }
-    }
+    await expect(dimensions).toBeVisible({ timeout: 5000 });
+    expect(await dimensions.textContent()).toMatch(/\d+x\d+/);
   });
 
   test('should support screenshot versions', async ({ page }) => {
     // Given: Item page is open
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // When: Uploading screenshot with version
     const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-    if (await screenshotButton.isVisible()) {
-      // Version 1
-      await screenshotButton.click();
-      let progressBar = page.locator('[data-testid="upload-progress"]');
-      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
+    await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+    // Version 1
+    await screenshotButton.click();
+    let progressBar = page.locator('[data-testid="upload-progress"]');
+    await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
 
-      // Verify version is shown
-      const version = page.locator('[data-testid="screenshot-version"]');
-      if (await version.isVisible()) {
-        const versionText = await version.textContent();
-        expect(versionText).toMatch(/v\d+\.\d+\.\d+|version \d+/i);
-      }
+    // Verify version is shown
+    const version = page.locator('[data-testid="screenshot-version"]');
+    await expect(version).toBeVisible({ timeout: 5000 });
+    const versionText = await version.textContent();
+    expect(versionText).toMatch(/v\d+\.\d+\.\d+|version \d+/i);
 
-      // Version 2
-      await screenshotButton.click();
-      progressBar = page.locator('[data-testid="upload-progress"]');
-      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
+    // Version 2
+    await screenshotButton.click();
+    progressBar = page.locator('[data-testid="upload-progress"]');
+    await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
 
-      // Then: Verify version history is available
-      const versionHistory = page.locator('[data-testid="screenshot-version-history"]');
-      if (await versionHistory.isVisible()) {
-        const historyItems = page.locator('[data-testid="version-item"]');
-        expect(await historyItems.count()).toBeGreaterThanOrEqual(1);
-      }
-    }
+    // Then: Verify version history is available
+    const versionHistory = page.locator('[data-testid="screenshot-version-history"]');
+    await expect(versionHistory).toBeVisible({ timeout: 5000 });
+    const historyItems = page.locator('[data-testid="version-item"]');
+    expect(await historyItems.count()).toBeGreaterThanOrEqual(1);
   });
 
   test('should support full-size screenshot view', async ({ page }) => {
     // Given: Item with screenshot
     const itemLink = page.locator('[data-testid="item-row"]').first();
-    if (await itemLink.isVisible()) {
-      await itemLink.click();
-      await page.waitForLoadState('networkidle');
-    }
+    await expect(itemLink).toBeVisible({ timeout: 10000 });
+    await itemLink.click();
+    await page.waitForLoadState('networkidle');
 
     // Upload screenshot if needed
     const screenshot = page.locator('[data-testid="item-screenshot"]');
-    if (!(await screenshot.isVisible())) {
+    const isVisible = await screenshot.isVisible();
+    if (!isVisible) {
       const screenshotButton = page.locator('[data-testid="screenshot-button"]');
-      if (await screenshotButton.isVisible()) {
-        await screenshotButton.click();
-        const progressBar = page.locator('[data-testid="upload-progress"]');
-        await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
-      }
+      await expect(screenshotButton).toBeVisible({ timeout: 10000 });
+      await screenshotButton.click();
+      const progressBar = page.locator('[data-testid="upload-progress"]');
+      await progressBar.waitFor({ state: 'hidden', timeout: 30_000 });
     }
 
     // When: Opening full-size view
     const fullsizeButton = page.locator('[data-testid="view-fullsize"]');
-    if (await fullsizeButton.isVisible()) {
-      await fullsizeButton.click();
+    await expect(fullsizeButton).toBeVisible({ timeout: 10000 });
+    await fullsizeButton.click();
 
-      // Then: Verify fullsize modal/dialog opens
-      const fullsizeView = page.locator('[data-testid="fullsize-screenshot"]');
-      await expect(fullsizeView).toBeVisible({ timeout: 5000 });
+    // Then: Verify fullsize modal/dialog opens
+    const fullsizeView = page.locator('[data-testid="fullsize-screenshot"]');
+    await expect(fullsizeView).toBeVisible({ timeout: 5000 });
 
-      // Verify close button
-      const closeButton = page.locator('[data-testid="close-fullsize"]');
-      if (await closeButton.isVisible()) {
-        await closeButton.click();
-        await expect(fullsizeView).not.toBeVisible({ timeout: 5000 });
-      }
-    }
+    // Verify close button
+    const closeButton = page.locator('[data-testid="close-fullsize"]');
+    await expect(closeButton).toBeVisible({ timeout: 5000 });
+    await closeButton.click();
+    await expect(fullsizeView).not.toBeVisible({ timeout: 5000 });
   });
 });

@@ -21,7 +21,7 @@ func TestLive_GraphEventIntegration(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	
+
 	// Setup NATS Bus
 	bus, err := nats.NewEventBus(nats.DefaultConfig())
 	require.NoError(t, err)
@@ -43,7 +43,7 @@ func TestLive_GraphEventIntegration(t *testing.T) {
 	// 1. Test Item Created
 	projectID := uuid.New().String()
 	itemID := uuid.New().String()
-	
+
 	createEvent := events.NewEvent(projectID, itemID, events.EntityTypeItem, events.EventTypeCreated, map[string]interface{}{
 		"title":  "Test Graph Item",
 		"type":   "requirement",
@@ -80,7 +80,7 @@ func TestLive_GraphEventIntegration(t *testing.T) {
 		"status": "active",
 	})
 	_ = bus.Publish(targetEvent)
-	
+
 	linkID := uuid.New().String()
 	linkEvent := events.NewEvent(projectID, linkID, events.EntityTypeLink, events.EventTypeLinkCreated, map[string]interface{}{
 		"source_id": itemID,

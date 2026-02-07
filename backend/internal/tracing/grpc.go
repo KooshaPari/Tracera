@@ -15,14 +15,14 @@ import (
 )
 
 const (
-	grpcInstrumentationName    = "tracertm-grpc"
-	grpcStatusCodeAttr         = "grpc.status_code"
-	grpcMethodAttr             = "grpc.method"
-	grpcServiceAttr            = "grpc.service"
-	grpcRequestSizeAttr        = "grpc.request_size"
-	grpcResponseSizeAttr       = "grpc.response_size"
-	grpcClientInterceptorName  = "grpc.client"
-	grpcServerInterceptorName  = "grpc.server"
+	grpcInstrumentationName   = "tracertm-grpc"
+	grpcStatusCodeAttr        = "grpc.status_code"
+	grpcMethodAttr            = "grpc.method"
+	grpcServiceAttr           = "grpc.service"
+	grpcRequestSizeAttr       = "grpc.request_size"
+	grpcResponseSizeAttr      = "grpc.response_size"
+	grpcClientInterceptorName = "grpc.client"
+	grpcServerInterceptorName = "grpc.server"
 )
 
 var grpcTracer = otel.Tracer(grpcInstrumentationName)

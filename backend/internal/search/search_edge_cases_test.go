@@ -406,7 +406,6 @@ func TestFilterByDimension_MultipleFilters(t *testing.T) {
 	assert.Equal(t, "1", filtered[0].ID)
 }
 
-
 // ============================================================================
 // Request Validation Edge Cases
 // ============================================================================
@@ -585,12 +584,12 @@ func TestGenerateCacheKey_ConsistentFormatting(t *testing.T) {
 	searcher := &CrossPerspectiveSearcher{}
 
 	req := &CrossPerspectiveSearchRequest{
-		Query:      "test",
-		ProjectID:  "proj1",
-		Limit:      10,
+		Query:        "test",
+		ProjectID:    "proj1",
+		Limit:        10,
 		Perspectives: []string{"a", "b"},
-		Status:     []string{"x", "y"},
-		Types:      []string{"t1", "t2"},
+		Status:       []string{"x", "y"},
+		Types:        []string{"t1", "t2"},
 	}
 
 	key := searcher.generateCacheKey(req)

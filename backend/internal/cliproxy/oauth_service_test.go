@@ -97,9 +97,9 @@ func TestHandleAuthorizeRequest(t *testing.T) {
 func TestBuildAuthorizationURL(t *testing.T) {
 	t.Run("builds correct anthropic url", func(t *testing.T) {
 		provider := &ProviderConfig{
-			Type:         "anthropic",
-			ClientID:     "test-id",
-			RedirectURI:  "http://localhost/callback",
+			Type:        "anthropic",
+			ClientID:    "test-id",
+			RedirectURI: "http://localhost/callback",
 		}
 
 		url := buildAuthorizationURL(provider, "state123")
@@ -111,9 +111,9 @@ func TestBuildAuthorizationURL(t *testing.T) {
 
 	t.Run("builds correct openai url", func(t *testing.T) {
 		provider := &ProviderConfig{
-			Type:         "openai",
-			ClientID:     "test-id",
-			RedirectURI:  "http://localhost/callback",
+			Type:        "openai",
+			ClientID:    "test-id",
+			RedirectURI: "http://localhost/callback",
 		}
 
 		url := buildAuthorizationURL(provider, "state123")
@@ -123,10 +123,10 @@ func TestBuildAuthorizationURL(t *testing.T) {
 
 	t.Run("uses custom base url if provided", func(t *testing.T) {
 		provider := &ProviderConfig{
-			Type:         "custom",
-			BaseURL:      "https://custom.oauth.com",
-			ClientID:     "test-id",
-			RedirectURI:  "http://localhost/callback",
+			Type:        "custom",
+			BaseURL:     "https://custom.oauth.com",
+			ClientID:    "test-id",
+			RedirectURI: "http://localhost/callback",
 		}
 
 		url := buildAuthorizationURL(provider, "state123")

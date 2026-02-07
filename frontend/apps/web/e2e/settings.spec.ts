@@ -67,6 +67,7 @@ test.describe('General Settings Tab', () => {
     if (!(await generalTab.evaluate((el) => el.getAttribute('aria-selected')))) {
       await generalTab.click();
     }
+    await expect(generalTab).toHaveAttribute('aria-selected', 'true');
   });
 
   test('should display general settings form fields', async ({ page }) => {
@@ -104,9 +105,7 @@ test.describe('General Settings Tab', () => {
 
     // Wait for success message
     const successMessage = page.getByText(/success|saved/i);
-    await successMessage.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {
-      // Success message might not appear in mocked environment
-    });
+    await expect(successMessage).toBeVisible({ timeout: 10000 });
   });
 
   test('should update email address', async ({ page }) => {
@@ -692,13 +691,12 @@ test.describe('Settings Error Handling', () => {
 
     // Check if button shows loading state (disabled or loading text)
     const isDisabled = await saveButton.isDisabled();
-    const hasLoadingText = await saveButton
+    const loadingTextVisible = await saveButton
       .getByText(/Saving/i)
-      .isVisible()
-      .catch(() => false);
+      .isVisible();
 
     // Either disabled or shows loading text
-    expect(isDisabled ?? hasLoadingText).toBeTruthy();
+    expect(isDisabled || loadingTextVisible).toBeTruthy();
 
     // Wait for save to complete
     await page.waitForTimeout(500);

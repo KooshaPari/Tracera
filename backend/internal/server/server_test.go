@@ -1214,7 +1214,6 @@ func TestResponseValidation(t *testing.T) {
 	})
 }
 
-
 // ============================================================================
 // Unit Tests: Constants and Values Validation (8 tests - no database required)
 // ============================================================================
@@ -1270,7 +1269,7 @@ func TestConfigCreation(t *testing.T) {
 
 func TestServerPort(t *testing.T) {
 	cfg := createTestConfig()
-	
+
 	t.Run("port is string", func(t *testing.T) {
 		assert.IsType(t, "", cfg.Port)
 	})
@@ -1407,7 +1406,7 @@ func TestConsumerNameSanitization(t *testing.T) {
 		consumerName := "ws-bridge-" + subject
 		consumerName = strings.ReplaceAll(consumerName, "*", "_")
 		consumerName = strings.ReplaceAll(consumerName, ".", "_")
-		
+
 		assert.NotContains(t, consumerName, "*")
 		assert.NotContains(t, consumerName, ".")
 	})
@@ -1456,33 +1455,33 @@ func TestEchoInstanceCreation(t *testing.T) {
 		e.GET("/test", func(c echo.Context) error {
 			return c.String(200, "ok")
 		})
-		
+
 		req := httptest.NewRequest(http.MethodGet, "/test", nil)
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, req)
-		
+
 		assert.Equal(t, 200, rec.Code)
 	})
 
 	t.Run("middleware can be added to echo", func(t *testing.T) {
 		e := echo.New()
 		middlewareCalled := false
-		
+
 		e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 			return func(c echo.Context) error {
 				middlewareCalled = true
 				return next(c)
 			}
 		})
-		
+
 		e.GET("/test", func(c echo.Context) error {
 			return c.String(200, "ok")
 		})
-		
+
 		req := httptest.NewRequest(http.MethodGet, "/test", nil)
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, req)
-		
+
 		assert.True(t, middlewareCalled)
 	})
 
@@ -1491,11 +1490,11 @@ func TestEchoInstanceCreation(t *testing.T) {
 		e.GET("/error", func(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusBadRequest, "test error")
 		})
-		
+
 		req := httptest.NewRequest(http.MethodGet, "/error", nil)
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, req)
-		
+
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 	})
 
@@ -1504,8 +1503,7 @@ func TestEchoInstanceCreation(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/nonexistent", nil)
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, req)
-		
+
 		assert.Equal(t, http.StatusNotFound, rec.Code)
 	})
 }
-

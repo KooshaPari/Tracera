@@ -20,7 +20,7 @@ func TestE2E_Validation_RequiredFields(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "Validation Project")
-	
+
 	invalidPayloads := []map[string]interface{}{
 		{"project_id": projectID, "type": "requirement"},
 		{"project_id": projectID, "title": ""},
@@ -28,7 +28,7 @@ func TestE2E_Validation_RequiredFields(t *testing.T) {
 	}
 
 	for i, payload := range invalidPayloads {
-		t.Run("invalid_payload_" + string(rune(i)), func(t *testing.T) {
+		t.Run("invalid_payload_"+string(rune(i)), func(t *testing.T) {
 			body, _ := json.Marshal(payload)
 			resp, err := http.Post(srv.URL+"/api/items", "application/json", bytes.NewReader(body))
 			require.NoError(t, err)
@@ -44,12 +44,12 @@ func TestE2E_Validation_DataTypes(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "Type Validation Project")
-	
+
 	payload := map[string]interface{}{
-		"project_id":  projectID,
-		"title":       "Test Item",
-		"type":        "invalid_type",
-		"status":      "open",
+		"project_id": projectID,
+		"title":      "Test Item",
+		"type":       "invalid_type",
+		"status":     "open",
 	}
 
 	body, _ := json.Marshal(payload)
@@ -65,12 +65,12 @@ func TestE2E_Validation_LengthConstraints(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "Length Validation Project")
-	
+
 	payload := map[string]interface{}{
-		"project_id":  projectID,
-		"title":       strings.Repeat("a", 1000),
-		"type":        "requirement",
-		"status":      "open",
+		"project_id": projectID,
+		"title":      strings.Repeat("a", 1000),
+		"type":       "requirement",
+		"status":     "open",
 	}
 
 	body, _ := json.Marshal(payload)

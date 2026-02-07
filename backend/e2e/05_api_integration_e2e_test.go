@@ -85,7 +85,7 @@ func TestE2E_Webhook_GitHub_PullRequest(t *testing.T) {
 	defer srv.Cleanup()
 
 	_ = createTestProject(t, srv, "Webhook Test Project")
-	
+
 	webhookPayload := map[string]interface{}{
 		"action": "opened",
 		"pull_request": map[string]interface{}{

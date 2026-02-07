@@ -25,16 +25,16 @@ const (
 
 // Session represents an authenticated user session
 type Session struct {
-	ID                   uuid.UUID
-	UserID               uuid.UUID
-	Provider             string // "claude", "openai", etc
-	AccessTokenHash      string
-	RefreshTokenHash     string
-	TokenType            string
-	ExpiresAt            time.Time
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
-	RevokedAt            *time.Time
+	ID               uuid.UUID
+	UserID           uuid.UUID
+	Provider         string // "claude", "openai", etc
+	AccessTokenHash  string
+	RefreshTokenHash string
+	TokenType        string
+	ExpiresAt        time.Time
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	RevokedAt        *time.Time
 }
 
 // CreateSessionRequest holds the parameters for creating a new session
@@ -59,9 +59,9 @@ type CreateSessionResponse struct {
 
 // SessionService manages user sessions across PostgreSQL and Neo4j
 type SessionService struct {
-	db        *pgxpool.Pool
-	neo4j     *graph.Neo4jClient
-	encKey    []byte // 32-byte AES key for token encryption
+	db     *pgxpool.Pool
+	neo4j  *graph.Neo4jClient
+	encKey []byte // 32-byte AES key for token encryption
 }
 
 // NewSessionService creates a new session service
@@ -146,7 +146,6 @@ func (s *SessionService) CreateSession(ctx context.Context, req *CreateSessionRe
 		 RETURNING id`,
 		sessionID, req.UserID, req.Provider, accessTokenEnc, refreshTokenEnc, req.TokenType, expiresAt, now, now).
 		Scan(&sessionID)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session in postgres: %w", err)
 	}
@@ -198,7 +197,6 @@ func (s *SessionService) GetSession(ctx context.Context, sessionID uuid.UUID) (*
 		sessionID).
 		Scan(&session.ID, &session.UserID, &session.Provider, &session.TokenType,
 			&session.ExpiresAt, &session.CreatedAt, &session.UpdatedAt, &revokedAt)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get session: %w", err)
 	}
@@ -216,7 +214,6 @@ func (s *SessionService) RevokeSession(ctx context.Context, sessionID uuid.UUID)
 	result, err := s.db.Exec(ctx,
 		`UPDATE sessions SET revoked_at = now(), updated_at = now() WHERE id = $1`,
 		sessionID)
-
 	if err != nil {
 		return fmt.Errorf("failed to revoke session: %w", err)
 	}
@@ -250,7 +247,6 @@ func (s *SessionService) GetUserSession(ctx context.Context, userID uuid.UUID, p
 		userID, provider).
 		Scan(&session.ID, &session.UserID, &session.Provider, &session.TokenType,
 			&session.ExpiresAt, &session.CreatedAt, &session.UpdatedAt, &revokedAt)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user session: %w", err)
 	}
@@ -270,7 +266,6 @@ func (s *SessionService) GetAccessToken(ctx context.Context, sessionID uuid.UUID
 		`SELECT access_token_encrypted FROM sessions WHERE id = $1`,
 		sessionID).
 		Scan(&encryptedToken)
-
 	if err != nil {
 		return "", fmt.Errorf("failed to get access token: %w", err)
 	}
@@ -344,7 +339,6 @@ func (s *SessionService) createOrUpdateUserNode(ctx context.Context, userID uuid
 func (s *SessionService) CleanupExpiredSessions(ctx context.Context) (int64, error) {
 	result, err := s.db.Exec(ctx,
 		`DELETE FROM sessions WHERE expires_at < now()`)
-
 	if err != nil {
 		return 0, fmt.Errorf("failed to cleanup expired sessions: %w", err)
 	}

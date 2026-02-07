@@ -291,8 +291,8 @@ func TestDistributedCoordinator_CreateDistributedOperation(t *testing.T) {
 	ctx := context.Background()
 
 	op := &DistributedOperation{
-		ProjectID: "p1",
-		Type:      "batch_update",
+		ProjectID:   "p1",
+		Type:        "batch_update",
 		TargetItems: []string{"i1"},
 	}
 	err := dc.CreateDistributedOperation(ctx, op)
@@ -380,13 +380,13 @@ func TestDistributedCoordinator_AssignOperationToAgents_NotPending(t *testing.T)
 	ctx := context.Background()
 
 	op := &DistributedOperation{
-		ID:         uuid.New().String(),
-		ProjectID:  "p1",
-		Type:       "batch",
+		ID:          uuid.New().String(),
+		ProjectID:   "p1",
+		Type:        "batch",
 		TargetItems: []string{},
-		Status:     statusInProgress,
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
+		Status:      statusInProgress,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 	_ = dc.db.Create(op).Error
 

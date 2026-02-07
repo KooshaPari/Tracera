@@ -14,17 +14,17 @@ import (
 
 // ComponentCheck represents health status of a single component
 type ComponentCheck struct {
-	Status     Status      `json:"status"`
-	LatencyMs  *int64      `json:"latency_ms,omitempty"`
-	Message    *string     `json:"message,omitempty"`
-	Timestamp  string      `json:"timestamp"`
+	Status    Status  `json:"status"`
+	LatencyMs *int64  `json:"latency_ms,omitempty"`
+	Message   *string `json:"message,omitempty"`
+	Timestamp string  `json:"timestamp"`
 }
 
 // HealthResponse represents the overall health status
 type HealthResponse struct {
-	Status    Status                      `json:"status"`
-	Timestamp string                      `json:"timestamp"`
-	Checks    map[string]ComponentCheck   `json:"checks"`
+	Status    Status                    `json:"status"`
+	Timestamp string                    `json:"timestamp"`
+	Checks    map[string]ComponentCheck `json:"checks"`
 }
 
 // Handler manages health checks

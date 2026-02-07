@@ -23,10 +23,7 @@ test.describe('Sigma Graph Visual Regression', () => {
 
     // Try to navigate to a test project or create one
     const createButton = page.locator('button:has-text("Create")').first();
-    if (await createButton.isVisible()) {
-      // If no projects exist, we'll test the empty state
-      await page.goto('/dashboard');
-    }
+    await expect(createButton).toBeVisible({ timeout: 10000 });
   });
 
   test('desktop viewport - container renders correctly', async ({ page }) => {
@@ -71,24 +68,22 @@ test.describe('Sigma Graph Visual Regression', () => {
     await page.waitForLoadState('networkidle');
 
     const header = page.locator('header, [role="banner"]').first();
-    if (await header.isVisible()) {
-      await expect(header).toHaveScreenshot('dashboard-header.png', {
-        maxDiffPixels: 100,
-        threshold: 0.15,
-      });
-    }
+    await expect(header).toBeVisible({ timeout: 5000 });
+    await expect(header).toHaveScreenshot('dashboard-header.png', {
+      maxDiffPixels: 100,
+      threshold: 0.15,
+    });
   });
 
   test('navigation panel - sidebar consistency', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
 
     const sidebar = page.locator('aside, [role="navigation"]').first();
-    if (await sidebar.isVisible()) {
-      await expect(sidebar).toHaveScreenshot('navigation-sidebar.png', {
-        maxDiffPixels: 200,
-        threshold: 0.15,
-      });
-    }
+    await expect(sidebar).toBeVisible({ timeout: 5000 });
+    await expect(sidebar).toHaveScreenshot('navigation-sidebar.png', {
+      maxDiffPixels: 200,
+      threshold: 0.15,
+    });
   });
 
   test('graph container exists and renders', async ({ page }) => {
@@ -106,10 +101,7 @@ test.describe('Sigma Graph Visual Regression', () => {
 
     // Look for rendered nodes (could be canvas or SVG)
     const nodes = page.locator('circle[class*="node"], [data-testid*="node"]').first();
-    const isVisible = await nodes.isVisible({ timeout: 2000 }).catch(() => false);
-
-    // Node visibility check (may not render if no data)
-    expect(isVisible || true).toBeTruthy();
+    await expect(nodes).toBeVisible({ timeout: 10000 });
   });
 
   test('edge rendering - lines between nodes', async ({ page }) => {
@@ -120,10 +112,7 @@ test.describe('Sigma Graph Visual Regression', () => {
     const edges = page
       .locator('line[class*="edge"], path[class*="edge"], [data-testid*="edge"]')
       .first();
-    const isVisible = await edges.isVisible({ timeout: 2000 }).catch(() => false);
-
-    // Edge visibility check (may not render if no data)
-    expect(isVisible || true).toBeTruthy();
+    await expect(edges).toBeVisible({ timeout: 10000 });
   });
 
   test('LOD switching - zoom level affects detail', async ({ page }) => {
@@ -201,22 +190,19 @@ test.describe('Sigma Graph Visual Regression', () => {
 
     // Look for legend or color mapping
     const legend = page.locator('[data-testid*="legend"], .legend, [role="complementary"]').first();
-    const isVisible = await legend.isVisible({ timeout: 1000 }).catch(() => false);
-
-    expect(isVisible || true).toBeTruthy();
+    await expect(legend).toBeVisible({ timeout: 5000 });
   });
 });
 
 test.describe('Sigma Graph Component Tests', () => {
   test('component mounts without errors', async ({ page }) => {
-    await page.goto('/dashboard');
-
     // Check for any JavaScript errors
     const errors: string[] = [];
     page.on('pageerror', (err) => {
       errors.push(err.message);
     });
 
+    await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
     // Filter out known third-party errors
@@ -232,8 +218,6 @@ test.describe('Sigma Graph Component Tests', () => {
 
     // Look for any content indicators
     const content = page.locator('main, [role="main"]');
-    const isLoaded = await content.isVisible({ timeout: 5000 }).catch(() => false);
-
-    expect(isLoaded).toBeTruthy();
+    await expect(content).toBeVisible({ timeout: 10000 });
   });
 });

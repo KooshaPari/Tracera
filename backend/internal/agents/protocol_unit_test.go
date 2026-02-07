@@ -16,10 +16,10 @@ import (
 func TestProtocol_CreateRegisterMessage(t *testing.T) {
 	p := NewProtocol()
 	req := &RegisterRequest{
-		Name:      "agent-1",
-		ProjectID: "proj-1",
+		Name:         "agent-1",
+		ProjectID:    "proj-1",
 		Capabilities: []AgentCapability{{Name: "run", Version: "1.0"}},
-		Metadata:  map[string]interface{}{"env": "test"},
+		Metadata:     map[string]interface{}{"env": "test"},
 	}
 	msg := p.CreateRegisterMessage(req)
 	require.NotNil(t, msg)
@@ -203,11 +203,11 @@ func TestProtocol_ParseTaskResultRequest(t *testing.T) {
 func TestProtocol_ParseTaskErrorRequest(t *testing.T) {
 	p := NewProtocol()
 	payload := map[string]interface{}{
-		"agent_id":       "ag-1",
-		"task_id":        "t1",
-		"error_message":  "err",
-		"retryable":      true,
-		"timestamp":      time.Now(),
+		"agent_id":      "ag-1",
+		"task_id":       "t1",
+		"error_message": "err",
+		"retryable":     true,
+		"timestamp":     time.Now(),
 	}
 	req, err := p.ParseTaskErrorRequest(payload)
 	require.NoError(t, err)

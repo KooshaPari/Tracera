@@ -14,11 +14,11 @@ import (
 type MockOAuthProvider struct {
 	server       *httptest.Server
 	URL          string
-	ValidCodes   map[string]bool    // Track valid authorization codes
-	ValidStates  map[string]bool    // Track valid state parameters
+	ValidCodes   map[string]bool // Track valid authorization codes
+	ValidStates  map[string]bool // Track valid state parameters
 	ClientID     string
 	ClientSecret string
-	mu           sync.Mutex          // Protect maps and counter
+	mu           sync.Mutex // Protect maps and counter
 	codeCounter  int64
 }
 

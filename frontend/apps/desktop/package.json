@@ -15,6 +15,7 @@
     "test:coverage": "vitest --run --coverage",
     "test:watch": "vitest",
     "lint": "oxlint -c .oxlintrc.json .",
+    "lint:fix": "oxlint -c .oxlintrc.json --fix .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

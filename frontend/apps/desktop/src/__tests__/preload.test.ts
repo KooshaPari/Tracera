@@ -19,12 +19,14 @@ vi.mock('electron', () => ({
 // ---------------------------------------------------------------------------
 
 /**
- * preload.ts calls contextBridge.exposeInMainWorld at module scope.
+ * Preload.ts calls contextBridge.exposeInMainWorld at module scope.
  * We capture the exposed API object from the mock and exercise every method.
  */
 function getExposedAPI(): Record<string, unknown> {
   const call = mockExposeInMainWorld.mock.calls.find((c: unknown[]) => c[0] === 'electronAPI');
-  if (!call) throw new Error('electronAPI was not exposed via contextBridge');
+  if (!call) {
+    throw new Error('electronAPI was not exposed via contextBridge');
+  }
   return call[1] as Record<string, unknown>;
 }
 
@@ -40,7 +42,7 @@ describe('preload script', () => {
 
   it('exposes electronAPI on the main world', async () => {
     await importPreload();
-    expect(mockExposeInMainWorld).toHaveBeenCalledTimes(1);
+    expect(mockExposeInMainWorld).toHaveBeenCalledOnce();
     expect(mockExposeInMainWorld).toHaveBeenCalledWith('electronAPI', expect.any(Object));
   });
 
@@ -85,7 +87,7 @@ describe('preload script', () => {
 
       const result = await (api.saveFile as (data: string) => Promise<boolean>)('{"key":"value"}');
       expect(mockInvoke).toHaveBeenCalledWith('dialog:saveFile', '{"key":"value"}');
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
     });
   });
 
@@ -139,7 +141,7 @@ describe('preload script', () => {
     it('exposes exactly the expected keys', async () => {
       await importPreload();
       const api = getExposedAPI();
-      const keys = Object.keys(api).sort();
+      const keys = Object.keys(api).toSorted();
       expect(keys).toEqual([
         'checkUpdates',
         'getVersion',

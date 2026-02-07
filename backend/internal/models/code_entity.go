@@ -22,10 +22,10 @@ type CodeEntity struct {
 	EndLineNumber int            `gorm:"column:end_line" json:"end_line_number"`
 	ColumnNumber  int            `gorm:"column:start_column" json:"column_number"`
 	CodeSnippet   string         `gorm:"-" json:"code_snippet"` // Not in database schema
-	Language      string         `json:"language"`     // go, python, typescript, etc.
-	Signature     string         `json:"signature"`    // Function/method signature
-	ReturnType    string         `gorm:"-" json:"return_type"` // Not in database schema
-	Parameters    datatypes.JSON `gorm:"-" json:"parameters"` // Not in database schema (JSON array of parameters)
+	Language      string         `json:"language"`              // go, python, typescript, etc.
+	Signature     string         `json:"signature"`             // Function/method signature
+	ReturnType    string         `gorm:"-" json:"return_type"`  // Not in database schema
+	Parameters    datatypes.JSON `gorm:"-" json:"parameters"`   // Not in database schema (JSON array of parameters)
 	Metadata      datatypes.JSON `json:"metadata"`
 	IndexedAt     time.Time      `json:"indexed_at"`
 	CreatedAt     time.Time      `json:"created_at"`

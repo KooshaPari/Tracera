@@ -7,23 +7,23 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kooshapari/tracertm-backend/internal/clients"
 	"github.com/nats-io/nats.go"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"github.com/kooshapari/tracertm-backend/internal/clients"
 )
 
 // This test suite verifies connectivity and basic operations against REAL services
 // managed by process-compose. It expects services to be running on standard local ports.
 
 type liveServicesFixture struct {
-	ctx         context.Context
-	pgPool      *pgxpool.Pool
-	redisClient *redis.Client
-	natsConn    *nats.Conn
-	neo4jDriver neo4j.DriverWithContext
+	ctx          context.Context
+	pgPool       *pgxpool.Pool
+	redisClient  *redis.Client
+	natsConn     *nats.Conn
+	neo4jDriver  neo4j.DriverWithContext
 	pythonClient *clients.PythonServiceClient
 }
 
@@ -87,7 +87,7 @@ func setupLiveServices(t *testing.T) *liveServicesFixture {
 	}
 	// Check if python service is up
 	pClient := clients.NewPythonServiceClient(pythonURL, "test-token", nil)
-	
+
 	return &liveServicesFixture{
 		ctx:          ctx,
 		pgPool:       pgPool,
@@ -99,10 +99,18 @@ func setupLiveServices(t *testing.T) *liveServicesFixture {
 }
 
 func (f *liveServicesFixture) cleanup() {
-	if f.pgPool != nil { f.pgPool.Close() }
-	if f.redisClient != nil { f.redisClient.Close() }
-	if f.natsConn != nil { f.natsConn.Close() }
-	if f.neo4jDriver != nil { f.neo4jDriver.Close(f.ctx) }
+	if f.pgPool != nil {
+		f.pgPool.Close()
+	}
+	if f.redisClient != nil {
+		f.redisClient.Close()
+	}
+	if f.natsConn != nil {
+		f.natsConn.Close()
+	}
+	if f.neo4jDriver != nil {
+		f.neo4jDriver.Close(f.ctx)
+	}
 }
 
 func TestLive_PostgresConnectivity(t *testing.T) {
@@ -132,7 +140,7 @@ func TestLive_NATSConnectivity(t *testing.T) {
 
 	sub, err := f.natsConn.SubscribeSync("live.test")
 	require.NoError(t, err)
-	
+
 	err = f.natsConn.Publish("live.test", []byte("hello live"))
 	assert.NoError(t, err)
 

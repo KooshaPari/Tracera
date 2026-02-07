@@ -17,10 +17,10 @@ import (
 )
 
 type externalServicesFixture struct {
-	ctx       context.Context
-	natsConn  *nats.Conn
+	ctx         context.Context
+	natsConn    *nats.Conn
 	redisClient *redis.Client
-	cleanup   func()
+	cleanup     func()
 }
 
 func setupExternalServicesTests(t *testing.T) *externalServicesFixture {
@@ -415,10 +415,10 @@ func TestNATS_StreamRetention(t *testing.T) {
 
 	// Create stream with message limit
 	_, err = js.AddStream(&nats.StreamConfig{
-		Name:       streamName,
-		Subjects:   []string{subject},
-		MaxMsgs:    5,
-		Discard:    nats.DiscardOld,
+		Name:     streamName,
+		Subjects: []string{subject},
+		MaxMsgs:  5,
+		Discard:  nats.DiscardOld,
 	})
 	if err != nil && err != nats.ErrStreamNameAlreadyInUse {
 		t.Fatal("Failed to create stream:", err)

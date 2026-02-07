@@ -214,6 +214,9 @@ class ProjectBackupService:
         Returns:
             New project ID
         """
+        if not backup_data or "project" not in backup_data:
+            raise ValueError("Invalid backup data: missing 'project' section")
+
         project_id = self._get_or_create_project_from_backup(backup_data, project_name)
         item_id_map = self._restore_items_from_backup(project_id, backup_data, preserve_ids)
         self._apply_parent_refs_from_backup(backup_data, item_id_map)

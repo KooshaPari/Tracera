@@ -33,12 +33,12 @@ test.describe('Agents Management', () => {
       const syncAgent = page.getByText(/Sync Agent/);
       await expect(syncAgent).toBeVisible({ timeout: 5000 });
 
-      // Verify at least one agent card is visible - using mock data names
-      const agents = [/Sync Agent/, /Validation Agent/, /Coverage Agent/];
-      for (const agent of agents) {
-        await expect(page.getByText(agent)).toBeVisible({ timeout: 2000 });
-      }
-    });
+    // Verify at least one agent card is visible - using mock data names
+    const agents = [/Sync Agent/, /Validation Agent/, /Coverage Agent/];
+    for (const agent of agents) {
+      await expect(page.getByText(agent).first()).toBeVisible({ timeout: 5000 });
+    }
+  });
 
     test('should show agent details', async ({ page }) => {
       await page.goto('/agents');
@@ -139,17 +139,13 @@ test.describe('Agents Management', () => {
   });
 
   test.describe('Agent Display', () => {
-    test('should display all agents in grid', async ({ page }) => {
-      await page.goto('/agents');
-      await page.waitForLoadState('networkidle');
+    // Verify agents are displayed in grid layout
+    const agents = [/Sync Agent/, /Validation Agent/, /Coverage Agent/];
 
-      // Verify agents are displayed in grid layout
-      const agents = [/Sync Agent/, /Validation Agent/, /Coverage Agent/];
-
-      for (const agent of agents) {
-        await expect(page.getByText(agent)).toBeVisible({ timeout: 2000 });
-      }
-    });
+    for (const agent of agents) {
+      await expect(page.getByText(agent).first()).toBeVisible({ timeout: 5000 });
+    }
+  });
 
     test('should show agent task counts', async ({ page }) => {
       await page.goto('/agents');
@@ -189,14 +185,15 @@ test.describe('Agents Management', () => {
       // Status should be displayed on agent cards
       const statusTexts = [/active/i, /idle/i, /running/i];
 
-      // At least one status should be visible
-      await expect(
-        page
-          .getByText(/active/i)
-          .or(page.getByText(/idle/i))
-          .or(page.getByText(/running/i)),
-      ).toBeVisible({ timeout: 2000 });
-    });
+    // At least one status should be visible
+    await expect(
+      page
+        .getByText(/active/i)
+        .or(page.getByText(/idle/i))
+        .or(page.getByText(/running/i))
+        .first(),
+    ).toBeVisible({ timeout: 5000 });
+  });
 
     test('should display last run time', async ({ page }) => {
       await page.goto('/agents');

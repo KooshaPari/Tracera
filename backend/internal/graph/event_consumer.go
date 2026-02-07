@@ -35,7 +35,6 @@ func (c *GraphEventConsumer) Start(ctx context.Context) error {
 			log.Printf("Error handling graph event: %v", err)
 		}
 	})
-
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to events: %w", err)
 	}

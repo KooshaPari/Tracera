@@ -18,10 +18,10 @@ const (
 	tokenExchangeTimeout = 10 * time.Second
 
 	// Token exchange error codes (RFC 6749)
-	errorInvalidCode      = "invalid_code"
-	errorInvalidState     = "invalid_state"
-	errorUnauthorizedClient = "unauthorized_client"
-	errorServerError      = "server_error"
+	errorInvalidCode          = "invalid_code"
+	errorInvalidState         = "invalid_state"
+	errorUnauthorizedClient   = "unauthorized_client"
+	errorServerError          = "server_error"
 	errorUnsupportedGrantType = "unsupported_grant_type"
 )
 
@@ -46,13 +46,13 @@ type TokenExchangeResponse struct {
 
 // OAuthCallbackResponse is returned to the client after successful token exchange
 type OAuthCallbackResponse struct {
-	AccessToken   string    `json:"access_token"`
-	TokenType     string    `json:"token_type"`
-	ExpiresIn     int       `json:"expires_in"`
-	RefreshToken  string    `json:"refresh_token,omitempty"`
-	Provider      string    `json:"provider"`
-	State         string    `json:"state"`
-	SessionID     string    `json:"session_id,omitempty"`
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	Provider     string `json:"provider"`
+	State        string `json:"state"`
+	SessionID    string `json:"session_id,omitempty"`
 }
 
 // OAuthErrorResponse follows RFC 6749 error format

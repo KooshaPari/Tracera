@@ -254,8 +254,8 @@ func TestAgentModelMatchesSchema(t *testing.T) {
 
 	// Fields that exist in model but have type mismatches or are not in schema
 	optionalFields := map[string]bool{
-		"DeletedAt":      true,       // Not in schema
-		"LastActivityAt": true,       // Exists but is character varying instead of timestamp
+		"DeletedAt":      true, // Not in schema
+		"LastActivityAt": true, // Exists but is character varying instead of timestamp
 	}
 
 	for fieldName, fieldType := range modelFields {

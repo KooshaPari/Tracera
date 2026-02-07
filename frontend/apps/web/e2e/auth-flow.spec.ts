@@ -33,10 +33,10 @@ test.describe('Authentication Flow - Login', () => {
     await page.waitForLoadState('networkidle');
 
     // Then: Login form elements should be visible
-    await expect(page).toHaveURL(/\/auth\/login/);
-    await expect(page.locator('input[name="email"]')).toBeVisible();
-    await expect(page.locator('input[name="password"]')).toBeVisible();
-    await expect(page.locator('button[type="submit"]')).toBeVisible();
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
+    await expect(page.locator('input[name="email"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('input[name="password"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('button[type="submit"]')).toBeVisible({ timeout: 5000 });
   });
 
   test('should successfully login with valid credentials', async ({ page }) => {
@@ -99,7 +99,7 @@ test.describe('Authentication Flow - Login', () => {
 
     // Then: Should display validation error or prevent submission
     // Either stays on login page or shows error
-    await expect(page.locator('[role="alert"]').or(page)).toHaveURL(/\/auth\/login/);
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
   });
 
   test('should require password field', async ({ page }) => {
@@ -115,8 +115,10 @@ test.describe('Authentication Flow - Login', () => {
 
     // Then: Attempting to submit should show error or prevent submission
     const submitButton = page.locator('button[type="submit"]');
-    // Either button is disabled or we stay on login page after click
-    if (await submitButton.isEnabled()) {
+    // If button is enabled, clicking it should stay on login page (due to validation error)
+    // If it's disabled, that's also a valid form validation state
+    const isEnabled = await submitButton.isEnabled();
+    if (isEnabled) {
       await submitButton.click();
       await expect(page).toHaveURL(/\/auth\/login/);
     } else {
@@ -205,11 +207,13 @@ test.describe('Authentication Flow - Session Management', () => {
 
     for (const route of routes) {
       await page.goto(route);
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle');
 
       // Then: Token should remain the same
       const currentToken = await page.evaluate(() => localStorage.getItem('authToken'));
       expect(currentToken).toBe(initialToken);
+      // And: Should be on the correct route (authenticated)
+      await expect(page).toHaveURL(route);
     }
   });
 
@@ -227,8 +231,6 @@ test.describe('Authentication Flow - Session Management', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Then: Should redirect to login page
-    // Note: Depending on implementation, might need explicit navigation check
-    await expect(page).not.toHaveURL('/items');
     await expect(page).toHaveURL(/\/auth\/login/);
   });
 
@@ -239,7 +241,8 @@ test.describe('Authentication Flow - Session Management', () => {
     // When: User performs multiple actions
     for (let i = 0; i < 3; i++) {
       await page.goto('/');
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle');
+      await expect(page).toHaveURL('/');
       await page.waitForTimeout(500);
     }
 
@@ -263,12 +266,10 @@ test.describe('Authentication Flow - Session Management', () => {
 
     // When: User tries to access protected route directly
     await newPage.goto('/items');
-    await newPage.waitForLoadState('domcontentloaded');
+    await newPage.waitForLoadState('networkidle');
 
-    // Then: Should redirect to login or not allow access
-    const isNotOnProtectedRoute =
-      !newPage.url().includes('/items') || newPage.url().includes('/auth');
-    expect(isNotOnProtectedRoute ?? true).toBeTruthy();
+    // Then: Should redirect to login
+    await expect(newPage).toHaveURL(/\/auth\/login/, { timeout: 10000 });
 
     await newPage.close();
   });
@@ -300,9 +301,10 @@ test.describe('Authentication Flow - Logout', () => {
 
     // And: Navigate to protected route
     await page.goto('/items');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
-    // Then: Token should be cleared
+    // Then: Token should be cleared and user redirected
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
     const tokenAfter = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(tokenAfter).toBeNull();
   });
@@ -350,13 +352,8 @@ test.describe('Authentication Flow - Logout', () => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
 
-    // Then: Should either be on login or show auth message
-    const urlIncludesAuth = page.url().includes('/auth');
-    const isOnDashboard = page.url() === 'http://localhost:5173/';
-
-    // If on dashboard but logged out, it should handle gracefully
-    // For this test, we check that the app handles the state correctly
-    expect(urlIncludesAuth ?? isOnDashboard).toBeTruthy();
+    // Then: Should be redirected to login
+    await expect(page).toHaveURL(/\/auth\/login/);
   });
 
   test('should not be able to access protected routes after logout', async ({ page }) => {
@@ -371,10 +368,10 @@ test.describe('Authentication Flow - Logout', () => {
 
     // And: Tries to access protected route
     await page.goto('/items');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
-    // Then: Should not be able to access items route
-    // Either redirected or shows error
+    // Then: Should be redirected to login
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
     const tokenAfterLogout = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(tokenAfterLogout).toBeNull();
   });
@@ -487,9 +484,10 @@ test.describe('Authentication Flow - Token Management', () => {
 
     // And: Navigate to protected route
     await page.goto('/items');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
-    // Then: User should no longer have auth token
+    // Then: User should be redirected to login
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
     const token = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(token).toBeNull();
   });
@@ -779,13 +777,10 @@ test.describe('Authentication Flow - Protected Routes', () => {
     // Given: User is not authenticated
     // When: User tries to access protected route
     await page.goto('/items');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
-    // Then: Should redirect to login or show error
-    const isNotOnProtectedRoute = !page.url().includes('/items');
-    const isOnAuthPage = page.url().includes('/auth');
-
-    expect(isNotOnProtectedRoute || isOnAuthPage).toBeTruthy();
+    // Then: Should redirect to login
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
   });
 
   test('should allow authenticated users to access protected routes', async ({ page }) => {
@@ -799,9 +794,10 @@ test.describe('Authentication Flow - Protected Routes', () => {
 
     // When: User accesses protected route
     await page.goto('/items');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
     // Then: Should be able to access
+    await expect(page).toHaveURL('/items');
     const token = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(token).toBeTruthy();
   });
@@ -812,18 +808,19 @@ test.describe('Authentication Flow - Protected Routes', () => {
     const protectedRoutes = ['/items', '/projects', '/settings'];
 
     for (const route of protectedRoutes) {
-      // Clear auth
-      await page.evaluate(() => {
-        localStorage.removeItem('authToken');
-      });
+    // Clear auth
+    await page.evaluate(() => {
+      localStorage.removeItem('authToken');
+    });
 
-      // Try to access
-      await page.goto(route);
-      await page.waitForLoadState('domcontentloaded');
+    // Try to access
+    await page.goto(route);
+    await page.waitForLoadState('networkidle');
 
-      // Should not be able to access (or be redirected)
-      const token = await page.evaluate(() => localStorage.getItem('authToken'));
-      expect(token).toBeNull();
-    }
-  });
+    // Should not be able to access (redirected to login)
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 5000 });
+    const token = await page.evaluate(() => localStorage.getItem('authToken'));
+    expect(token).toBeNull();
+  }
+});
 });

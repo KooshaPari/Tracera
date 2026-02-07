@@ -1,4 +1,25 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "extends": ["../../.oxlintrc.json"]
+  "extends": ["../../.oxlintrc.json"],
+  "rules": {
+    "import/no-default-export": "off",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-unsafe-assignment": "off",
+    "typescript/no-unsafe-member-access": "off",
+    "typescript/no-unsafe-call": "off",
+    "typescript/no-unsafe-return": "off",
+    "eslint/no-magic-numbers": "off",
+    "eslint/max-lines-per-function": "off",
+    "eslint/max-statements": "off",
+    "eslint/no-console": "off",
+    "eslint/no-void": "off",
+    "unicorn/no-useless-undefined": "off",
+    "unicorn/prefer-top-level-await": "off",
+    "promise/always-return": "off",
+    "promise/prefer-await-to-then": "off",
+    "jest/require-hook": "off",
+    "vitest/require-hook": "off",
+    "boundaries/no-unknown-files": "off",
+    "promise/prefer-await-to-callbacks": "off"
+  }
 }

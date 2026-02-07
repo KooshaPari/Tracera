@@ -7,7 +7,8 @@
     "**/routeTree.gen.ts",
     "**/api/schema.ts",
     "**/*.gen.ts",
-    "**/*.generated.*"
+    "**/*.generated.*",
+    "**/apps/desktop/*.mjs"
   ],
   "plugins": [
     "eslint",
@@ -60,6 +61,10 @@
       "apps/**/workers/**"
     ],
     "boundaries/elements": [
+      {
+        "type": "root",
+        "pattern": "**/apps/desktop/**"
+      },
       {
         "type": "entry",
         "pattern": "apps/web/src/{main,router}.tsx"
@@ -251,6 +256,18 @@
       {
         "type": "workers",
         "pattern": "src/workers/**"
+      },
+      {
+        "type": "shaders",
+        "pattern": "apps/web/src/shaders/**"
+      },
+      {
+        "type": "shaders",
+        "pattern": "frontend/apps/web/src/shaders/**"
+      },
+      {
+        "type": "shaders",
+        "pattern": "src/shaders/**"
       }
     ]
   },
@@ -567,6 +584,10 @@
           {
             "from": "workers",
             "allow": ["api", "lib", "types", "utils"]
+          },
+          {
+            "from": "shaders",
+            "allow": ["types", "utils"]
           }
         ]
       }
@@ -759,6 +780,24 @@
       "rules": {
         "import/no-default-export": "off",
         "eslint/no-magic-numbers": "off"
+      }
+    },
+    {
+      "files": ["**/apps/desktop/**/*.{ts,tsx,js,jsx,mjs}"],
+      "rules": {
+        "import/no-default-export": "off",
+        "typescript/no-explicit-any": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-unsafe-return": "off",
+        "eslint/no-magic-numbers": "off",
+        "eslint/max-lines-per-function": "off",
+        "eslint/max-statements": "off",
+        "eslint/no-console": "off",
+        "jest/require-hook": "off",
+        "vitest/require-hook": "off",
+        "boundaries/no-unknown-files": "off"
       }
     },
     {

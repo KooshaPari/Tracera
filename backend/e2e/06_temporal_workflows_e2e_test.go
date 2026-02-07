@@ -20,7 +20,7 @@ func TestE2E_Temporal_CreateSnapshot(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "Snapshot Project")
-	
+
 	payload := map[string]interface{}{
 		"project_id": projectID,
 		"message":    "Initial snapshot",
@@ -44,7 +44,7 @@ func TestE2E_Temporal_ListVersions(t *testing.T) {
 
 	projectID := createTestProject(t, srv, "Versioning Project")
 	item := createTestItem(t, srv, projectID, "Versioned Item", "requirement")
-	
+
 	// Create multiple versions by updating
 	for i := 1; i <= 3; i++ {
 		updatePayload := map[string]interface{}{
@@ -64,7 +64,7 @@ func TestE2E_Temporal_ListVersions(t *testing.T) {
 
 	var versions map[string]interface{}
 	require.NoError(t, json.NewDecoder(resp.Body).Decode(&versions))
-	
+
 	versionList := versions["versions"].([]interface{})
 	assert.GreaterOrEqual(t, len(versionList), 3)
 }
@@ -74,7 +74,7 @@ func TestE2E_Temporal_RestoreSnapshot(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "Restore Project")
-	
+
 	// Create snapshot
 	snapshotPayload := map[string]interface{}{
 		"project_id": projectID,
@@ -83,13 +83,13 @@ func TestE2E_Temporal_RestoreSnapshot(t *testing.T) {
 	body, _ := json.Marshal(snapshotPayload)
 	resp1, err := http.Post(srv.URL+"/api/snapshots", "application/json", bytes.NewReader(body))
 	require.NoError(t, err)
-	
+
 	var snapshot map[string]interface{}
 	require.NoError(t, json.NewDecoder(resp1.Body).Decode(&snapshot))
 	resp1.Body.Close()
-	
+
 	snapshotID := snapshot["snapshot_id"].(string)
-	
+
 	// Restore snapshot
 	resp2, err := http.Post(srv.URL+"/api/snapshots/"+snapshotID+"/restore", "application/json", nil)
 	require.NoError(t, err)

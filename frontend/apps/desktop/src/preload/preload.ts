@@ -3,18 +3,30 @@ import { contextBridge, ipcRenderer } from 'electron';
 // Expose safe APIs to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
   // App info
-  getVersion: () => ipcRenderer.invoke('app:version'),
-  checkUpdates: () => ipcRenderer.invoke('app:check-updates'),
+  getVersion: (): Promise<string> => ipcRenderer.invoke('app:version'),
+  checkUpdates: (): Promise<unknown> => ipcRenderer.invoke('app:check-updates'),
 
   // File operations
-  openFile: () => ipcRenderer.invoke('dialog:openFile'),
-  saveFile: (data: string) => ipcRenderer.invoke('dialog:saveFile', data),
+  openFile: (): Promise<string | null> => ipcRenderer.invoke('dialog:openFile'),
+  saveFile: (data: string): Promise<boolean> => ipcRenderer.invoke('dialog:saveFile', data),
 
   // Menu events
-  onNewProject: (callback: () => void) => ipcRenderer.on('menu:new-project', callback),
-  onOpenProject: (callback: () => void) => ipcRenderer.on('menu:open-project', callback),
-  onImport: (callback: () => void) => ipcRenderer.on('menu:import', callback),
-  onExport: (callback: () => void) => ipcRenderer.on('menu:export', callback),
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  onNewProject: (callback: () => void): void => {
+    ipcRenderer.on('menu:new-project', callback);
+  },
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  onOpenProject: (callback: () => void): void => {
+    ipcRenderer.on('menu:open-project', callback);
+  },
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  onImport: (callback: () => void): void => {
+    ipcRenderer.on('menu:import', callback);
+  },
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  onExport: (callback: () => void): void => {
+    ipcRenderer.on('menu:export', callback);
+  },
 
   // Platform info
   platform: process.platform,

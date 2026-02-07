@@ -321,59 +321,34 @@ test.describe('Route Navigation - Sidebar Navigation', () => {
   test('should navigate via sidebar to projects', async ({ page }) => {
     // Click projects in sidebar/navigation
     const projectsLink = page.getByRole('link', { name: /projects/i }).first();
-    const isVisible = await projectsLink.isVisible({ timeout: 2000 }).catch(() => false);
-
-    if (isVisible) {
-      await projectsLink.click();
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(/\/projects/);
-    } else {
-      // Fallback to direct navigation
-      await page.goto('/projects');
-      await expect(page).toHaveURL(/\/projects/);
-    }
+    await expect(projectsLink).toBeVisible({ timeout: 5000 });
+    await projectsLink.click();
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(/\/projects/);
   });
 
   test('should navigate via sidebar to items', async ({ page }) => {
     const itemsLink = page.getByRole('link', { name: /items/i }).first();
-    const isVisible = await itemsLink.isVisible({ timeout: 2000 }).catch(() => false);
-
-    if (isVisible) {
-      await itemsLink.click();
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(/\/items/);
-    } else {
-      await page.goto('/items');
-      await expect(page).toHaveURL(/\/items/);
-    }
+    await expect(itemsLink).toBeVisible({ timeout: 5000 });
+    await itemsLink.click();
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(/\/items/);
   });
 
   test('should navigate via sidebar to graph view', async ({ page }) => {
     const graphLink = page.getByRole('link', { name: /graph/i }).first();
-    const isVisible = await graphLink.isVisible({ timeout: 2000 }).catch(() => false);
-
-    if (isVisible) {
-      await graphLink.click();
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(/\/graph/);
-    } else {
-      await page.goto('/graph');
-      await expect(page).toHaveURL(/\/graph/);
-    }
+    await expect(graphLink).toBeVisible({ timeout: 5000 });
+    await graphLink.click();
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(/\/graph/);
   });
 
   test('should navigate via sidebar to settings', async ({ page }) => {
     const settingsLink = page.getByRole('link', { name: /settings/i }).first();
-    const isVisible = await settingsLink.isVisible({ timeout: 2000 }).catch(() => false);
-
-    if (isVisible) {
-      await settingsLink.click();
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(/\/settings/);
-    } else {
-      await page.goto('/settings');
-      await expect(page).toHaveURL(/\/settings/);
-    }
+    await expect(settingsLink).toBeVisible({ timeout: 5000 });
+    await settingsLink.click();
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(/\/settings/);
   });
 
   test('should maintain active state in sidebar', async ({ page }) => {
@@ -381,20 +356,8 @@ test.describe('Route Navigation - Sidebar Navigation', () => {
     await page.waitForLoadState('networkidle');
 
     // Check if projects link is marked as active
-    const projectsLink = page.getByRole('link', { name: /projects/i });
-    const _isActive = await projectsLink
-      .evaluate(
-        (el) =>
-          el.classList.contains('active') ??
-          el.getAttribute('aria-current') === 'page' ??
-          el.parentElement?.classList.contains('active'),
-      )
-      .catch(() => false);
-
-    // Just verify the link exists and is visible
-    await expect(projectsLink.first()).toBeVisible({
-      timeout: 2000,
-    });
+    const projectsLink = page.getByRole('link', { name: /projects/i }).first();
+    await expect(projectsLink).toHaveAttribute('aria-current', 'page', { timeout: 5000 });
   });
 });
 
@@ -559,7 +522,7 @@ test.describe('Route Navigation - Breadcrumb Navigation', () => {
       .locator('nav')
       .filter({ hasText: /projects|home/i })
       .first();
-    const _isVisible = await breadcrumb.isVisible({ timeout: 2000 }).catch(() => false);
+    await expect(breadcrumb).toBeVisible({ timeout: 5000 });
 
     // Breadcrumbs might be optional, but page should load
     await expect(page).toHaveURL(new RegExp(`/projects/${projectId}`));

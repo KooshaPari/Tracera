@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---- Electron mock wiring ------------------------------------------------
-// main.ts registers side-effects at module scope (ipcMain.handle, app.on,
-// app.whenReady).  We capture those callbacks through the mocks below so each
-// test can invoke them in isolation.
+// Main.ts registers side-effects at module scope (ipcMain.handle, app.on,
+// App.whenReady).  We capture those callbacks through the mocks below so each
+// Test can invoke them in isolation.
 
-const whenReadyCallback: Array<() => void> = [];
-const appOnCallbacks: Record<string, Array<(...a: unknown[]) => void>> = {};
+const whenReadyCallback: (() => void)[] = [];
+const appOnCallbacks: Record<string, ((...a: unknown[]) => void)[]> = {};
 const ipcHandlers: Record<string, (...a: unknown[]) => unknown> = {};
 
 const mockLoadURL = vi.fn();
@@ -45,7 +45,7 @@ const mockCheckForUpdatesAndNotify = vi.fn();
 const whenReadyPromise = {
   then: (cb: () => void) => {
     whenReadyCallback.push(cb);
-    return whenReadyPromise; // chainable
+    return whenReadyPromise; // Chainable
   },
 };
 
@@ -88,8 +88,12 @@ describe('main process', () => {
     vi.resetModules();
     // Clear captured state
     whenReadyCallback.length = 0;
-    for (const key of Object.keys(appOnCallbacks)) delete appOnCallbacks[key];
-    for (const key of Object.keys(ipcHandlers)) delete ipcHandlers[key];
+    for (const key of Object.keys(appOnCallbacks)) {
+      delete appOnCallbacks[key];
+    }
+    for (const key of Object.keys(ipcHandlers)) {
+      delete ipcHandlers[key];
+    }
     vi.clearAllMocks();
   });
 
@@ -146,9 +150,11 @@ describe('main process', () => {
     it('creates a BrowserWindow with correct security options', async () => {
       await importMain();
       // Fire whenReady callback
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      expect(MockBrowserWindow).toHaveBeenCalledTimes(1);
+      expect(MockBrowserWindow).toHaveBeenCalledOnce();
       const opts = MockBrowserWindow.mock.calls[0][0];
 
       expect(opts.width).toBe(1400);
@@ -156,15 +162,17 @@ describe('main process', () => {
       expect(opts.minWidth).toBe(800);
       expect(opts.minHeight).toBe(600);
       expect(opts.titleBarStyle).toBe('hiddenInset');
-      expect(opts.webPreferences.contextIsolation).toBe(true);
-      expect(opts.webPreferences.nodeIntegration).toBe(false);
-      expect(opts.webPreferences.sandbox).toBe(true);
+      expect(opts.webPreferences.contextIsolation).toBeTruthy();
+      expect(opts.webPreferences.nodeIntegration).toBeFalsy();
+      expect(opts.webPreferences.sandbox).toBeTruthy();
     });
 
     it('loads the dev server URL when VITE_DEV_SERVER_URL is set', async () => {
       process.env.VITE_DEV_SERVER_URL = 'http://localhost:5173';
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
       expect(mockLoadURL).toHaveBeenCalledWith('http://localhost:5173');
       expect(mockOpenDevTools).toHaveBeenCalled();
@@ -174,9 +182,11 @@ describe('main process', () => {
     it('loads the renderer index.html in production mode', async () => {
       delete process.env.VITE_DEV_SERVER_URL;
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      expect(mockLoadFile).toHaveBeenCalledTimes(1);
+      expect(mockLoadFile).toHaveBeenCalledOnce();
       const filePath: string = mockLoadFile.mock.calls[0][0];
       expect(filePath).toContain('renderer');
       expect(filePath).toContain('index.html');
@@ -186,9 +196,11 @@ describe('main process', () => {
 
     it('sets mainWindow to null when the window is closed', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      // mockOn is called with ('closed', handler)
+      // MockOn is called with ('closed', handler)
       const closedCall = mockOn.mock.calls.find((c: unknown[]) => c[0] === 'closed');
       expect(closedCall).toBeDefined();
 
@@ -203,17 +215,21 @@ describe('main process', () => {
   describe('createMenu', () => {
     it('builds and sets the application menu', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      expect(mockBuildFromTemplate).toHaveBeenCalledTimes(1);
-      expect(mockSetApplicationMenu).toHaveBeenCalledTimes(1);
+      expect(mockBuildFromTemplate).toHaveBeenCalledOnce();
+      expect(mockSetApplicationMenu).toHaveBeenCalledOnce();
     });
 
     it('menu template contains expected top-level labels', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      const template: Array<{ label: string }> = mockBuildFromTemplate.mock.calls[0][0];
+      const template: { label: string }[] = mockBuildFromTemplate.mock.calls[0][0];
       const labels = template.map((item) => item.label);
       expect(labels).toContain('TraceRTM');
       expect(labels).toContain('File');
@@ -225,12 +241,14 @@ describe('main process', () => {
 
     it('File > New Project sends menu:new-project via IPC', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      const template: Array<{
+      const template: {
         label: string;
         submenu?: Array<{ label?: string; click?: () => void }>;
-      }> = mockBuildFromTemplate.mock.calls[0][0];
+      }[] = mockBuildFromTemplate.mock.calls[0][0];
       const fileMenu = template.find((m) => m.label === 'File')!;
       const newProject = fileMenu.submenu!.find((item) => item.label === 'New Project')!;
 
@@ -240,12 +258,14 @@ describe('main process', () => {
 
     it('File > Open Project sends menu:open-project via IPC', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      const template: Array<{
+      const template: {
         label: string;
         submenu?: Array<{ label?: string; click?: () => void }>;
-      }> = mockBuildFromTemplate.mock.calls[0][0];
+      }[] = mockBuildFromTemplate.mock.calls[0][0];
       const fileMenu = template.find((m) => m.label === 'File')!;
       const openProject = fileMenu.submenu!.find((item) => item.label === 'Open Project')!;
 
@@ -255,12 +275,14 @@ describe('main process', () => {
 
     it('File > Import sends menu:import via IPC', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      const template: Array<{
+      const template: {
         label: string;
         submenu?: Array<{ label?: string; click?: () => void }>;
-      }> = mockBuildFromTemplate.mock.calls[0][0];
+      }[] = mockBuildFromTemplate.mock.calls[0][0];
       const fileMenu = template.find((m) => m.label === 'File')!;
       const importItem = fileMenu.submenu!.find((item) => item.label === 'Import...')!;
 
@@ -270,12 +292,14 @@ describe('main process', () => {
 
     it('File > Export sends menu:export via IPC', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      const template: Array<{
+      const template: {
         label: string;
         submenu?: Array<{ label?: string; click?: () => void }>;
-      }> = mockBuildFromTemplate.mock.calls[0][0];
+      }[] = mockBuildFromTemplate.mock.calls[0][0];
       const fileMenu = template.find((m) => m.label === 'File')!;
       const exportItem = fileMenu.submenu!.find((item) => item.label === 'Export...')!;
 
@@ -285,17 +309,19 @@ describe('main process', () => {
 
     it('File menu click handlers are safe when mainWindow is null', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
       // Simulate closing the window so mainWindow becomes null
       const closedCall = mockOn.mock.calls.find((c: unknown[]) => c[0] === 'closed');
       const closedHandler = closedCall![1] as () => void;
       closedHandler();
 
-      const template: Array<{
+      const template: {
         label: string;
         submenu?: Array<{ label?: string; click?: () => void }>;
-      }> = mockBuildFromTemplate.mock.calls[0][0];
+      }[] = mockBuildFromTemplate.mock.calls[0][0];
       const fileMenu = template.find((m) => m.label === 'File')!;
       const clickableItems = fileMenu.submenu!.filter((item) => typeof item.click === 'function');
 
@@ -304,18 +330,20 @@ describe('main process', () => {
       for (const item of clickableItems) {
         expect(() => item.click!()).not.toThrow();
       }
-      // webContents.send should NOT have been called since mainWindow is null
+      // WebContents.send should NOT have been called since mainWindow is null
       expect(mockWebContentsSend).not.toHaveBeenCalled();
     });
 
     it('Help > Documentation opens external docs URL', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      const template: Array<{
+      const template: {
         label: string;
         submenu?: Array<{ label?: string; click?: () => void }>;
-      }> = mockBuildFromTemplate.mock.calls[0][0];
+      }[] = mockBuildFromTemplate.mock.calls[0][0];
       const helpMenu = template.find((m) => m.label === 'Help')!;
       const docsItem = helpMenu.submenu!.find((item) => item.label === 'Documentation')!;
 
@@ -325,12 +353,14 @@ describe('main process', () => {
 
     it('Help > Report Issue opens external issues URL', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      const template: Array<{
+      const template: {
         label: string;
         submenu?: Array<{ label?: string; click?: () => void }>;
-      }> = mockBuildFromTemplate.mock.calls[0][0];
+      }[] = mockBuildFromTemplate.mock.calls[0][0];
       const helpMenu = template.find((m) => m.label === 'Help')!;
       const reportItem = helpMenu.submenu!.find((item) => item.label === 'Report Issue')!;
 
@@ -344,9 +374,11 @@ describe('main process', () => {
   describe('autoUpdater', () => {
     it('calls checkForUpdatesAndNotify on whenReady', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
 
-      expect(mockCheckForUpdatesAndNotify).toHaveBeenCalledTimes(1);
+      expect(mockCheckForUpdatesAndNotify).toHaveBeenCalledOnce();
     });
   });
 
@@ -388,8 +420,10 @@ describe('main process', () => {
 
     it('does not re-create window on activate when mainWindow still exists', async () => {
       await importMain();
-      for (const cb of whenReadyCallback) cb();
-      expect(MockBrowserWindow).toHaveBeenCalledTimes(1);
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
+      expect(MockBrowserWindow).toHaveBeenCalledOnce();
 
       // Do NOT close the window; mainWindow is still set
       const activateCbs = appOnCallbacks['activate'];
@@ -397,19 +431,21 @@ describe('main process', () => {
       activateCbs[0]();
 
       // Should not create a second window
-      expect(MockBrowserWindow).toHaveBeenCalledTimes(1);
+      expect(MockBrowserWindow).toHaveBeenCalledOnce();
     });
 
     it('re-creates window on activate when mainWindow is null', async () => {
       await importMain();
       // Fire whenReady to create the window once
-      for (const cb of whenReadyCallback) cb();
-      expect(MockBrowserWindow).toHaveBeenCalledTimes(1);
+      for (const cb of whenReadyCallback) {
+        cb();
+      }
+      expect(MockBrowserWindow).toHaveBeenCalledOnce();
 
       // Simulate closing the window
       const closedCall = mockOn.mock.calls.find((c: unknown[]) => c[0] === 'closed');
       const closedHandler = closedCall![1] as () => void;
-      closedHandler(); // sets mainWindow = null
+      closedHandler(); // Sets mainWindow = null
 
       // Now fire activate
       const activateCbs = appOnCallbacks['activate'];

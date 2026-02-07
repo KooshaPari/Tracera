@@ -26,14 +26,13 @@ test.describe('Advanced Authentication Flows', () => {
       // Submit form
       await page.click('button[type="submit"]');
 
-      // Should redirect to dashboard
-      await page.waitForURL('/');
-      await expect(page).toHaveURL('/');
+    // Should redirect to dashboard
+    await expect(page).toHaveURL('/', { timeout: 10000 });
 
-      // Verify user is logged in
-      const userMenu = page.locator('[data-testid="user-menu"]');
-      await expect(userMenu).toBeVisible();
-    });
+    // Verify user is logged in
+    const userMenu = page.locator('[data-testid="user-menu"]');
+    await expect(userMenu).toBeVisible({ timeout: 10000 });
+  });
 
     test('should show error for invalid credentials', async ({ page }) => {
       await page.goto('/auth/login');
@@ -132,8 +131,7 @@ test.describe('Advanced Authentication Flows', () => {
       await page.click('[data-testid="logout-button"]');
 
       // Should redirect to login page
-      await page.waitForURL('/auth/login');
-      await expect(page).toHaveURL('/auth/login');
+      await expect(page).toHaveURL('/auth/login', { timeout: 10000 });
 
       // Session should be cleared
       const token = await page.evaluate(() => localStorage.getItem('authToken'));
@@ -166,7 +164,7 @@ test.describe('Advanced Authentication Flows', () => {
       // Logout
       await page.click('[data-testid="user-menu"]');
       await page.click('[data-testid="logout-button"]');
-      await page.waitForURL('/auth/login');
+      await expect(page).toHaveURL('/auth/login', { timeout: 10000 });
 
       // Verify all session data is cleared
       const sessionData = await page.evaluate(() => ({
@@ -201,8 +199,9 @@ test.describe('Advanced Authentication Flows', () => {
       const tokenAfter = await page.evaluate(() => localStorage.getItem('authToken'));
       expect(tokenAfter).toBe(tokenBefore);
 
-      // User menu should still be visible
-      await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+      // Verify user menu is visible
+      const userMenu = page.locator('[data-testid="user-menu"]');
+      await expect(userMenu).toBeVisible({ timeout: 5000 });
     });
 
     test('should handle session timeout', async ({ page }) => {
@@ -211,7 +210,7 @@ test.describe('Advanced Authentication Flows', () => {
       await page.fill('input[name="email"]', 'test@example.com');
       await page.fill('input[name="password"]', 'password123');
       await page.click('button[type="submit"]');
-      await page.waitForURL('/');
+      await expect(page).toHaveURL('/', { timeout: 10000 });
 
       // Simulate session timeout by clearing token
       await page.evaluate(() => {
@@ -222,12 +221,11 @@ test.describe('Advanced Authentication Flows', () => {
       await page.goto('/items');
 
       // Should redirect to login
-      await page.waitForURL('/auth/login');
-      await expect(page).toHaveURL('/auth/login');
+      await expect(page).toHaveURL('/auth/login', { timeout: 10000 });
 
       // Should show timeout message
       const message = page.locator('[role="alert"]');
-      await expect(message).toBeVisible();
+      await expect(message).toBeVisible({ timeout: 5000 });
       await expect(message).toContainText(/session expired/i);
     });
 
@@ -270,8 +268,8 @@ test.describe('Advanced Authentication Flows', () => {
       await page1.goto('/auth/login');
       await page1.fill('input[name="email"]', 'test@example.com');
       await page1.fill('input[name="password"]', 'password123');
-      await page1.click('button[type="submit"]');
-      await page1.waitForURL('/');
+      await page.click('button[type="submit"]');
+      await expect(page1).toHaveURL('/', { timeout: 10000 });
 
       // Create second tab with same session
       const page2 = await context1.newPage();
@@ -285,11 +283,10 @@ test.describe('Advanced Authentication Flows', () => {
       // Logout from first tab
       await page1.click('[data-testid="user-menu"]');
       await page1.click('[data-testid="logout-button"]');
-      await page1.waitForURL('/auth/login');
+      await expect(page1).toHaveURL('/auth/login', { timeout: 10000 });
 
       // Second tab should also be logged out (storage event)
-      await page2.waitForURL('/auth/login', { timeout: 5000 });
-      await expect(page2).toHaveURL('/auth/login');
+      await expect(page2).toHaveURL('/auth/login', { timeout: 10000 });
 
       await context1.close();
     });
@@ -303,8 +300,7 @@ test.describe('Advanced Authentication Flows', () => {
       await page.click('a:has-text("Forgot password")');
 
       // Should navigate to reset page
-      await page.waitForURL('/auth/reset-password');
-      await expect(page).toHaveURL('/auth/reset-password');
+      await expect(page).toHaveURL('/auth/reset-password', { timeout: 10000 });
     });
 
     test('should send password reset email', async ({ page }) => {
@@ -345,11 +341,11 @@ test.describe('Advanced Authentication Flows', () => {
       await page.click('button[type="submit"]');
 
       // Should redirect to login
-      await page.waitForURL('/auth/login');
+      await expect(page).toHaveURL('/auth/login', { timeout: 10000 });
 
       // Should show success message
       const message = page.locator('[role="alert"]');
-      await expect(message).toBeVisible();
+      await expect(message).toBeVisible({ timeout: 5000 });
       await expect(message).toContainText(/password reset successful/i);
     });
 
@@ -403,11 +399,11 @@ test.describe('Advanced Authentication Flows', () => {
       await page.click('button[type="submit"]');
 
       // Should redirect to dashboard or verification page
-      await page.waitForURL(/\/(|auth\/verify)/);
+      await expect(page).toHaveURL(/\/(|auth\/verify)/, { timeout: 10000 });
 
       // Should show success message
       const message = page.locator('[role="alert"]');
-      await expect(message).toBeVisible();
+      await expect(message).toBeVisible({ timeout: 5000 });
     });
 
     test('should validate all required fields', async ({ page }) => {
@@ -555,11 +551,10 @@ test.describe('Advanced Authentication Flows', () => {
       await page.goto('/auth/callback?code=oauth-code&state=valid-state');
 
       // Should process callback and redirect
-      await page.waitForURL('/');
-      await expect(page).toHaveURL('/');
+      await expect(page).toHaveURL('/', { timeout: 10000 });
 
       // User should be authenticated
-      await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+      await expect(page.locator('[data-testid="user-menu"]')).toBeVisible({ timeout: 5000 });
     });
 
     test('should handle OAuth errors', async ({ page }) => {
@@ -567,10 +562,10 @@ test.describe('Advanced Authentication Flows', () => {
       await page.goto('/auth/callback?error=access_denied');
 
       // Should show error and redirect to login
-      await page.waitForURL('/auth/login');
+      await expect(page).toHaveURL('/auth/login', { timeout: 10000 });
 
       const error = page.locator('[role="alert"]');
-      await expect(error).toBeVisible();
+      await expect(error).toBeVisible({ timeout: 5000 });
       await expect(error).toContainText(/authentication failed/i);
     });
   });
@@ -594,7 +589,7 @@ test.describe('Advanced Authentication Flows', () => {
       await page.fill('input[name="password"]', 'password123');
       await page.keyboard.press('Enter');
 
-      await page.waitForURL('/');
+      await expect(page).toHaveURL('/', { timeout: 10000 });
     });
 
     test('should have proper ARIA labels', async ({ page }) => {

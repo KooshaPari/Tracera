@@ -89,6 +89,7 @@ func TestScanItem(t *testing.T) {
 }
 
 // TestScanItems tests scanning of multiple items
+//
 //nolint:funlen
 func TestScanItems(t *testing.T) {
 	t.Run("success with multiple items", func(t *testing.T) {

@@ -16,9 +16,9 @@ import (
 // OAuthService orchestrates OAuth authorization code flow
 // Coordinates: StateTokenManager, OAuthHandler, and SessionService
 type OAuthService struct {
-	stateManager    *auth.StateTokenManager
-	sessionService  *sessions.SessionService
-	eventPublisher  *auth.EventPublisher
+	stateManager   *auth.StateTokenManager
+	sessionService *sessions.SessionService
+	eventPublisher *auth.EventPublisher
 }
 
 // NewOAuthService creates a new OAuth service
@@ -28,9 +28,9 @@ func NewOAuthService(
 	eventPublisher *auth.EventPublisher,
 ) *OAuthService {
 	return &OAuthService{
-		stateManager:    stateManager,
-		sessionService:  sessionService,
-		eventPublisher:  eventPublisher,
+		stateManager:   stateManager,
+		sessionService: sessionService,
+		eventPublisher: eventPublisher,
 	}
 }
 
@@ -179,7 +179,6 @@ type CallbackResponse struct {
 	Provider     string `json:"provider"`
 }
 
-
 // buildAuthorizationURL constructs the OAuth authorization URL with state
 func buildAuthorizationURL(provider *ProviderConfig, state string) string {
 	// Get authorization endpoint for provider
@@ -307,7 +306,7 @@ func (svc *OAuthService) HandleAuthorizeEcho(echoCtx echo.Context) error {
 // HandleCallbackEcho wraps HandleCallbackRequest for Echo framework
 func (svc *OAuthService) HandleCallbackEcho(echoCtx echo.Context) error {
 	code := echoCtx.QueryParam("code")
-	//state := echoCtx.QueryParam("state")
+	// state := echoCtx.QueryParam("state")
 	provider := echoCtx.QueryParam("provider")
 
 	if code == "" {

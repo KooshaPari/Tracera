@@ -2,9 +2,9 @@ import { BrowserWindow, Menu, app, ipcMain, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import path from 'node:path';
 
-let mainWindow: BrowserWindow | null = null;
+let mainWindow: BrowserWindow | undefined = undefined;
 
-function createWindow() {
+function createWindow(): void {
   mainWindow = new BrowserWindow({
     height: 900,
     minHeight: 600,
@@ -21,20 +21,25 @@ function createWindow() {
 
   // Load the web app
   if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL).catch((error: unknown) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load URL:', error);
+    });
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html')).catch((error: unknown) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load file:', error);
+    });
   }
 
   mainWindow.on('closed', () => {
-    mainWindow = null;
+    mainWindow = undefined;
   });
 }
 
-// Create application menu
-function createMenu() {
-  const template: Electron.MenuItemConstructorOptions[] = [
+function getMenuTemplate(): Electron.MenuItemConstructorOptions[] {
+  return [
     {
       label: 'TraceRTM',
       submenu: [
@@ -54,21 +59,29 @@ function createMenu() {
       submenu: [
         {
           accelerator: 'CmdOrCtrl+N',
-          click: () => mainWindow?.webContents.send('menu:new-project'),
+          click: () => {
+            mainWindow?.webContents.send('menu:new-project');
+          },
           label: 'New Project',
         },
         {
           accelerator: 'CmdOrCtrl+O',
-          click: () => mainWindow?.webContents.send('menu:open-project'),
+          click: () => {
+            mainWindow?.webContents.send('menu:open-project');
+          },
           label: 'Open Project',
         },
         { type: 'separator' },
         {
-          click: () => mainWindow?.webContents.send('menu:import'),
+          click: () => {
+            mainWindow?.webContents.send('menu:import');
+          },
           label: 'Import...',
         },
         {
-          click: () => mainWindow?.webContents.send('menu:export'),
+          click: () => {
+            mainWindow?.webContents.send('menu:export');
+          },
           label: 'Export...',
         },
       ],
@@ -107,41 +120,78 @@ function createMenu() {
       label: 'Help',
       submenu: [
         {
-          click: () => shell.openExternal('https://tracertm.dev/docs'),
+          click: () => {
+            shell.openExternal('https://tracertm.dev/docs').catch((error: unknown) => {
+              // eslint-disable-next-line no-console
+              console.error('Failed to open external URL:', error);
+            });
+          },
           label: 'Documentation',
         },
         {
-          click: () => shell.openExternal('https://github.com/tracertm/tracertm/issues'),
+          click: () => {
+            shell
+              .openExternal('https://github.com/tracertm/tracertm/issues')
+              .catch((error: unknown) => {
+                // eslint-disable-next-line no-console
+                console.error('Failed to open external URL:', error);
+              });
+          },
           label: 'Report Issue',
         },
       ],
     },
   ];
+}
 
+// Create application menu
+function createMenu(): void {
+  const template = getMenuTemplate();
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-// IPC handlers
-ipcMain.handle('app:version', () => app.getVersion());
-ipcMain.handle('app:check-updates', async () => {
+function setupIpcHandlers(): void {
+  ipcMain.handle('app:version', () => app.getVersion());
+  ipcMain.handle('app:check-updates', async () => {
+    try {
+      const result = await autoUpdater.checkForUpdates();
+      return result?.updateInfo;
+    } catch {
+      return undefined;
+    }
+  });
+}
+
+async function initApp(): Promise<void> {
+  setupIpcHandlers();
+
   try {
-    const result = await autoUpdater.checkForUpdates();
-    return result?.updateInfo;
-  } catch {
-    return null;
+    await app.whenReady();
+    createWindow();
+    createMenu();
+    autoUpdater.checkForUpdatesAndNotify().catch((error: unknown) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to check for updates:', error);
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize app:', error);
   }
-});
 
-app.whenReady().then(() => {
-  createWindow();
-  createMenu();
-  autoUpdater.checkForUpdatesAndNotify();
-});
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
+  });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
+  app.on('activate', () => {
+    if (mainWindow === undefined) {
+      createWindow();
+    }
+  });
+}
 
-app.on('activate', () => {
-  if (mainWindow === null) createWindow();
+initApp().catch((error: unknown) => {
+  // eslint-disable-next-line no-console
+  console.error('Unhandled error in initApp:', error);
 });

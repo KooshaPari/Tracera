@@ -58,8 +58,8 @@ func setupCodeIndexHandlerTest(t *testing.T) (*CodeIndexHandler, *gorm.DB) {
 			}
 			return &services.CodeEntityWithRelations{
 				Entity: &models.CodeEntity{
-					ID:        entityID,
-					ProjectID: "test-project",
+					ID:         entityID,
+					ProjectID:  "test-project",
 					EntityType: "function",
 					Name:       "testFunc",
 					FilePath:   "test.go",

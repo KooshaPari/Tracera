@@ -76,7 +76,8 @@ class ImpactAnalysisService:
         self,
         item_id: str,
         max_depth: int,
-        link_types: list[str] | None,
+        max_items: int = 1000,
+        link_types: list[str] | None = None,
     ) -> tuple[list[ImpactNode], str]:
         """BFS from item_id along outgoing links; returns (impact_nodes, root_title)."""
         root_item = await self.items.get_by_id(item_id)
@@ -87,7 +88,7 @@ class ImpactAnalysisService:
         impact_nodes: list[ImpactNode] = []
         queue = deque([(item_id, 0, [item_id], None)])
 
-        while queue:
+        while queue and len(impact_nodes) < max_items:
             current_id, depth, path, link_type = queue.popleft()
             if current_id in visited or depth > max_depth:
                 continue
@@ -96,6 +97,8 @@ class ImpactAnalysisService:
             node, next_entries = await self._forward_bfs_step(current_id, depth, path, link_type, link_types)
             if node is not None:
                 impact_nodes.append(node)
+                if len(impact_nodes) >= max_items:
+                    break
             for entry in next_entries:
                 if entry[0] not in visited:
                     queue.append(entry)
@@ -142,6 +145,7 @@ class ImpactAnalysisService:
         self,
         item_id: str,
         max_depth: int = 10,
+        max_items: int = 1000,
         link_types: list[str] | None = None,
     ) -> ImpactAnalysisResult:
         """
@@ -150,14 +154,13 @@ class ImpactAnalysisService:
         Args:
             item_id: ID of the item to analyze
             max_depth: Maximum depth to traverse (default: 10)
+            max_items: Maximum total items to include in analysis (default: 1000)
             link_types: Optional list of link types to follow (default: all)
 
         Returns:
             ImpactAnalysisResult with complete impact analysis
-
-        Complexity: O(V + E) where V = items, E = links
         """
-        impact_nodes, root_title = await self._bfs_impact(item_id, max_depth, link_types)
+        impact_nodes, root_title = await self._bfs_impact(item_id, max_depth, max_items, link_types)
         return self._build_impact_result(item_id, root_title, impact_nodes)
 
     def _find_critical_paths(self, nodes: list[ImpactNode]) -> list[list[str]]:
@@ -188,7 +191,7 @@ class ImpactAnalysisService:
         ]
         return node, next_entries
 
-    async def _bfs_reverse_impact(self, item_id: str, max_depth: int) -> tuple[list[ImpactNode], str]:
+    async def _bfs_reverse_impact(self, item_id: str, max_depth: int, max_items: int = 1000) -> tuple[list[ImpactNode], str]:
         """BFS from item_id along incoming links; returns (impact_nodes, root_title)."""
         root_item = await self.items.get_by_id(item_id)
         if not root_item:
@@ -198,7 +201,7 @@ class ImpactAnalysisService:
         impact_nodes: list[ImpactNode] = []
         queue = deque([(item_id, 0, [item_id], None)])
 
-        while queue:
+        while queue and len(impact_nodes) < max_items:
             current_id, depth, path, link_type = queue.popleft()
             if current_id in visited or depth > max_depth:
                 continue
@@ -207,6 +210,8 @@ class ImpactAnalysisService:
             node, next_entries = await self._reverse_bfs_step(current_id, depth, path, link_type)
             if node is not None:
                 impact_nodes.append(node)
+                if len(impact_nodes) >= max_items:
+                    break
             for entry in next_entries:
                 if entry[0] not in visited:
                     queue.append(entry)
@@ -250,6 +255,7 @@ class ImpactAnalysisService:
         self,
         item_id: str,
         max_depth: int = 10,
+        max_items: int = 1000,
     ) -> ImpactAnalysisResult:
         """
         Analyze reverse impact (what depends on this item).
@@ -258,5 +264,5 @@ class ImpactAnalysisService:
 
         Complexity: O(V + E) where V = items, E = links
         """
-        impact_nodes, root_title = await self._bfs_reverse_impact(item_id, max_depth)
+        impact_nodes, root_title = await self._bfs_reverse_impact(item_id, max_depth, max_items)
         return self._build_reverse_impact_result(item_id, root_title, impact_nodes)

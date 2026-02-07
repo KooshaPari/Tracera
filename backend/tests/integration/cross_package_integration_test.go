@@ -98,7 +98,7 @@ func TestCrossPackage_AgentRetrievesFromStorage(t *testing.T) {
 
 	agentID := uuid.New().String()
 	stateData := map[string]interface{}{
-		"status":  "running",
+		"status":   "running",
 		"progress": 50,
 	}
 

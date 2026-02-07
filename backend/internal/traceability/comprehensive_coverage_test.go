@@ -264,10 +264,10 @@ func TestFinalizeValidationReport_Configurations(t *testing.T) {
 	service := &MatrixService{}
 
 	configs := []struct {
-		name        string
-		totalItems  int
-		failed      int
-		issues      int
+		name       string
+		totalItems int
+		failed     int
+		issues     int
 	}{
 		{"minimal", 1, 0, 0},
 		{"moderate", 50, 10, 15},

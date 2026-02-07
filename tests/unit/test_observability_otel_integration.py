@@ -117,6 +117,7 @@ class TestTraceMethodDecorator:
     @pytest.mark.asyncio
     async def test_trace_method_sync_function(self, reset_tracing_state):
         """Test tracing synchronous functions."""
+
         @trace_method(span_name="test.sync")
         def sync_function(value: int) -> int:
             return value * 2
@@ -127,6 +128,7 @@ class TestTraceMethodDecorator:
     @pytest.mark.asyncio
     async def test_trace_method_async_function(self, reset_tracing_state):
         """Test tracing asynchronous functions."""
+
         @trace_method(span_name="test.async")
         async def async_function(value: int) -> int:
             await asyncio.sleep(0.01)
@@ -138,6 +140,7 @@ class TestTraceMethodDecorator:
     @pytest.mark.asyncio
     async def test_trace_method_with_attributes(self, reset_tracing_state):
         """Test that trace_method includes custom attributes."""
+
         @trace_method(
             span_name="test.attributes",
             attributes={"custom.key": "custom.value"},
@@ -151,6 +154,7 @@ class TestTraceMethodDecorator:
     @pytest.mark.asyncio
     async def test_trace_method_error_handling(self, reset_tracing_state):
         """Test that trace_method records exceptions."""
+
         @trace_method(span_name="test.error")
         async def function_with_error() -> None:
             raise ValueError("Test error")

@@ -127,14 +127,12 @@ test.describe('Settings Visual Regression @visual', () => {
 
       // Fill in fields to capture a "dirty" form state
       const displayName = page.getByLabel(/display name/i);
-      if (await displayName.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await displayName.fill('Visual Test User');
-      }
+      await expect(displayName).toBeVisible({ timeout: 5000 });
+      await displayName.fill('Visual Test User');
 
       const email = page.getByLabel(/email/i);
-      if (await email.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await email.fill('visual-test@example.com');
-      }
+      await expect(email).toBeVisible({ timeout: 5000 });
+      await email.fill('visual-test@example.com');
 
       await disableAnimations(page);
 
@@ -151,16 +149,14 @@ test.describe('Settings Visual Regression @visual', () => {
 
       // Enter invalid email to trigger browser validation styling
       const email = page.getByLabel(/email/i);
-      if (await email.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await email.fill('invalid-email');
+      await expect(email).toBeVisible({ timeout: 5000 });
+      await email.fill('invalid-email');
 
-        // Attempt to save to trigger validation
-        const saveButton = page.getByRole('button', { name: /save changes/i });
-        if (await saveButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-          await saveButton.click();
-          await page.waitForTimeout(500);
-        }
-      }
+      // Attempt to save to trigger validation
+      const saveButton = page.getByRole('button', { name: /save changes/i });
+      await expect(saveButton).toBeVisible({ timeout: 5000 });
+      await saveButton.click();
+      await page.waitForTimeout(500);
 
       await disableAnimations(page);
 
@@ -180,9 +176,7 @@ test.describe('Settings Visual Regression @visual', () => {
         await page.waitForLoadState('networkidle');
 
         const heading = page.getByRole('heading', { name: /settings/i });
-        await heading.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {
-          // Settings may render differently in dark mode
-        });
+        await expect(heading).toBeVisible({ timeout: 10000 });
 
         await page.waitForTimeout(500);
         await disableAnimations(page);

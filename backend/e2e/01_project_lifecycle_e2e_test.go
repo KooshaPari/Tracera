@@ -210,10 +210,10 @@ func TestE2E_AddItems_BulkCreate(t *testing.T) {
 	items := make([]map[string]interface{}, 20)
 	for i := 0; i < 20; i++ {
 		items[i] = map[string]interface{}{
-			"project_id":  projectID,
-			"title":       fmt.Sprintf("Bulk Item %d", i),
-			"type":        "requirement",
-			"status":      "open",
+			"project_id": projectID,
+			"title":      fmt.Sprintf("Bulk Item %d", i),
+			"type":       "requirement",
+			"status":     "open",
 		}
 	}
 
@@ -278,9 +278,9 @@ func TestE2E_BuildGraph_WithFilters(t *testing.T) {
 	createTestItem(t, srv, projectID, "Bug 1", "bug")
 
 	testCases := []struct {
-		name       string
-		filter     string
-		wantNodes  int
+		name      string
+		filter    string
+		wantNodes int
 	}{
 		{"filter_requirements", "type=requirement", 1},
 		{"filter_tests", "type=test_case", 1},

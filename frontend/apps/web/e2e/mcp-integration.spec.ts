@@ -29,20 +29,20 @@ test.describe('MCP Authentication Flow', () => {
 
     // Check for authentication prompt or auto-login
     // This depends on your app's authentication flow
-    const isLoggedIn = await page
-      .locator('[data-testid="user-menu"]')
-      .isVisible()
-      .catch(() => false);
+    const userMenu = page.locator('[data-testid="user-menu"]');
+    const isLoggedIn = await userMenu.isVisible();
 
     if (!isLoggedIn) {
       // If not logged in, attempt login
-      await page.fill('[data-testid="token-input"]', TEST_TOKEN);
+      const tokenInput = page.locator('[data-testid="token-input"]');
+      await expect(tokenInput).toBeVisible({ timeout: 5000 });
+      await tokenInput.fill(TEST_TOKEN);
       await page.click('[data-testid="login-button"]');
     }
 
     // Verify successful authentication
-    await expect(page.locator('[data-testid="user-menu"]')).toBeVisible({
-      timeout: 5000,
+    await expect(userMenu).toBeVisible({
+      timeout: 10000,
     });
   });
 

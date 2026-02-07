@@ -177,7 +177,7 @@ func TestApplyMatrixCoverage_VariousPercentages(t *testing.T) {
 // Test JSON marshaling
 func TestMatrixJSON_Complete(t *testing.T) {
 	matrix := &Matrix{
-		ProjectID: "proj-1",
+		ProjectID:    "proj-1",
 		Requirements: []MatrixItem{{ItemID: "req-1", Title: "Requirement 1"}},
 		TestCases:    []MatrixItem{{ItemID: "test-1", Title: "Test 1"}},
 		Links:        []Link{{SourceID: "req-1", TargetID: "test-1", LinkType: "TRACES_TO"}},

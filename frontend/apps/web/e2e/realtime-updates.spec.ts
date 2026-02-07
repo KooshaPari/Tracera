@@ -238,9 +238,7 @@ test.describe('Real-time Updates', () => {
     // Check for connection indicator (if implemented in UI)
     // This would show as a green dot or "Connected" status
     const statusIndicator = page.getByTestId('websocket-status');
-
-    if (await statusIndicator.isVisible()) {
-      await expect(statusIndicator).toContainText(/connected/i);
-    }
+    await expect(statusIndicator).toBeVisible({ timeout: 10000 });
+    await expect(statusIndicator).toContainText(/connected/i);
   });
 });

@@ -179,9 +179,9 @@ func TestGenerateSessionToken(t *testing.T) {
 func TestSessionDefaults(t *testing.T) {
 	t.Run("sets defaults for optional fields", func(t *testing.T) {
 		req := &CreateSessionRequest{
-			UserID:       uuid.New(),
-			Provider:     "claude",
-			AccessToken:  "token",
+			UserID:      uuid.New(),
+			Provider:    "claude",
+			AccessToken: "token",
 		}
 
 		// Check defaults before service processing

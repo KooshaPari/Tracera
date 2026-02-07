@@ -16,12 +16,11 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
 
     // On mobile, should show card grid, not table
     const cardGrid = page.locator('.grid-cols-1');
-    expect(await cardGrid.isVisible()).toBe(true);
+    await expect(cardGrid.first()).toBeVisible({ timeout: 10000 });
 
     // Table should be hidden
     const table = page.locator('table');
-    const isTableVisible = await table.isVisible().catch(() => false);
-    expect(isTableVisible).toBe(false);
+    await expect(table).not.toBeVisible({ timeout: 5000 });
   });
 
   test('card items are responsive with proper touch targets', async ({ page }) => {
@@ -49,7 +48,7 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
 
     // Hamburger menu button should be visible
     const menuButton = page.locator("button[aria-label='Open menu']");
-    expect(await menuButton.isVisible()).toBe(true);
+    await expect(menuButton).toBeVisible({ timeout: 5000 });
 
     // Check button size (minimum 44x44)
     const boundingBox = await menuButton.boundingBox();
@@ -140,18 +139,18 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
 
     // Check for dialog/modal
     const dialog = page.locator('[role="dialog"]');
-    if (await dialog.isVisible()) {
-      // Get input fields
-      const inputs = dialog.locator('input');
-      const count = await inputs.count();
+    await expect(dialog).toBeVisible({ timeout: 10000 });
 
-      for (let i = 0; i < count; i++) {
-        const input = inputs.nth(i);
-        const boundingBox = await input.boundingBox();
+    // Get input fields
+    const inputs = dialog.locator('input');
+    const count = await inputs.count();
 
-        // Inputs should have minimum height
-        expect(boundingBox?.height).toBeGreaterThanOrEqual(40);
-      }
+    for (let i = 0; i < count; i++) {
+      const input = inputs.nth(i);
+      const boundingBox = await input.boundingBox();
+
+      // Inputs should have minimum height
+      expect(boundingBox?.height).toBeGreaterThanOrEqual(40);
     }
   });
 
@@ -200,7 +199,7 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     const header = page.locator('header');
 
     // Should be visible
-    expect(await header.isVisible()).toBe(true);
+    await expect(header).toBeVisible({ timeout: 5000 });
 
     // Should have reasonable height (at least 64px for mobile)
     const boundingBox = await header.boundingBox();
@@ -208,7 +207,7 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
 
     // Text should be readable
     const title = header.locator('h1, h2');
-    expect(await title.isVisible()).toBe(true);
+    await expect(title).toBeVisible({ timeout: 5000 });
   });
 
   test('can see and interact with card actions on mobile', async ({ page }) => {
@@ -256,7 +255,7 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
 
     // Should still show cards
     const cardGrid = page.locator('.grid');
-    expect(await cardGrid.isVisible()).toBe(true);
+    await expect(cardGrid).toBeVisible({ timeout: 10000 });
 
     // At 640px (sm breakpoint), should show 2 columns
     const hasSmClass = await cardGrid.evaluate(
@@ -353,14 +352,13 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
 
     // Try to close via backdrop
     const menuPanel = page.locator('#mobile-menu');
-    if (await menuPanel.isVisible()) {
-      // Get close button
-      const closeBtn = page.locator("button[aria-label='Close']").first();
-      if (await closeBtn.isVisible()) {
-        await closeBtn.click();
-        await page.waitForTimeout(300);
-      }
-    }
+    await expect(menuPanel).toBeVisible({ timeout: 5000 });
+
+    // Get close button
+    const closeBtn = page.locator("button[aria-label='Close']").first();
+    await expect(closeBtn).toBeVisible({ timeout: 5000 });
+    await closeBtn.click();
+    await page.waitForTimeout(300);
 
     // Menu should close
     await expect(menuPanel).toHaveClass(/-translate-x-full/);

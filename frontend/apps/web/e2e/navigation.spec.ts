@@ -24,25 +24,16 @@ test.describe('Application Navigation', () => {
     const errorHeading = page.getByRole('heading', { name: /system anomaly/i });
 
     // Wait for either dashboard or error to appear
-    const _hasContent = await Promise.race([
-      dashboardHeading.isVisible({ timeout: 8000 }).catch(() => false),
-      errorHeading.isVisible({ timeout: 8000 }).catch(() => false),
-    ]);
+    await expect(dashboardHeading.or(errorHeading)).toBeVisible({ timeout: 10000 });
 
-    if (await errorHeading.isVisible().catch(() => false)) {
+    if (await errorHeading.isVisible()) {
       console.log('Dashboard error state - retrying');
       await page.reload();
       await page.waitForLoadState('networkidle');
     }
 
-    // Final check - accept either dashboard loaded or verify URL is correct
-    const finalCheck = await dashboardHeading.isVisible({ timeout: 3000 }).catch(() => false);
-    if (!finalCheck) {
-      // At minimum, verify we're on the right URL
-      await expect(page).toHaveURL('/');
-    } else {
-      await expect(dashboardHeading).toBeVisible();
-    }
+    // Final check - verify dashboard is visible
+    await expect(dashboardHeading).toBeVisible({ timeout: 5000 });
   });
 
   test('should navigate to projects list', async ({ page }) => {
@@ -52,7 +43,7 @@ test.describe('Application Navigation', () => {
 
     // Handle potential error states
     const errorHeading = page.getByRole('heading', { name: /system anomaly/i });
-    if (await errorHeading.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await errorHeading.isVisible()) {
       await page.reload();
       await page.waitForLoadState('networkidle');
     }
@@ -61,17 +52,11 @@ test.describe('Application Navigation', () => {
     const projectsHeading = page.getByRole('heading', {
       name: /project registry/i,
     });
-    const isVisible = await projectsHeading.isVisible({ timeout: 5000 }).catch(() => false);
+    await expect(projectsHeading).toBeVisible({ timeout: 10000 });
 
-    if (isVisible) {
-      await expect(projectsHeading).toBeVisible();
-      // Wait for project cards to load
-      const projectCards = page.locator('a >> text=/TraceRTM|Pokemon|E-Commerce|Banking/i');
-      await expect(projectCards.first()).toBeVisible({ timeout: 5000 });
-    } else {
-      // Fall back to URL check
-      await expect(page).toHaveURL('/projects');
-    }
+    // Wait for project cards to load
+    const projectCards = page.locator('a >> text=/TraceRTM|Pokemon|E-Commerce|Banking/i');
+    await expect(projectCards.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should navigate to items view', async ({ page }) => {
@@ -81,21 +66,14 @@ test.describe('Application Navigation', () => {
 
     // Handle potential error states
     const errorHeading = page.getByRole('heading', { name: /system anomaly/i });
-    if (await errorHeading.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await errorHeading.isVisible()) {
       await page.reload();
       await page.waitForLoadState('networkidle');
     }
 
     // Items table view should be visible - look for "Node Registry" heading
     const nodeHeading = page.getByRole('heading', { name: /node registry/i });
-    const isVisible = await nodeHeading.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (isVisible) {
-      await expect(nodeHeading).toBeVisible();
-    } else {
-      // Fall back to URL check
-      await expect(page).toHaveURL('/items');
-    }
+    await expect(nodeHeading).toBeVisible({ timeout: 10000 });
   });
 
   test('should navigate to agents view', async ({ page }) => {
@@ -105,21 +83,14 @@ test.describe('Application Navigation', () => {
 
     // Handle potential error states
     const errorHeading = page.getByRole('heading', { name: /system anomaly/i });
-    if (await errorHeading.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await errorHeading.isVisible()) {
       await page.reload();
       await page.waitForLoadState('networkidle');
     }
 
     // Agents heading should be visible - "Agent Cluster"
     const agentsHeading = page.getByRole('heading', { name: /agent cluster/i });
-    const isVisible = await agentsHeading.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (isVisible) {
-      await expect(agentsHeading).toBeVisible();
-    } else {
-      // Fall back to URL check
-      await expect(page).toHaveURL('/agents');
-    }
+    await expect(agentsHeading).toBeVisible({ timeout: 10000 });
   });
 
   test('should navigate to graph view', async ({ page }) => {
@@ -169,12 +140,7 @@ test.describe('Command Palette', () => {
     // Command palette should be visible
     // Look for dialog or modal with search input
     const commandPalette = page.locator('[role="dialog"]').filter({ hasText: /command|search/i });
-    await expect(commandPalette)
-      .toBeVisible({ timeout: 2000 })
-      .catch(() => {
-        // Command palette might not be implemented yet or use different selectors
-        // This is acceptable for initial E2E setup
-      });
+    await expect(commandPalette).toBeVisible({ timeout: 5000 });
   });
 
   test('should close command palette with Escape', async ({ page }) => {
@@ -205,12 +171,7 @@ test.describe('Sidebar Navigation', () => {
 
     for (const item of navItems) {
       const link = page.getByRole('link', { name: item });
-      // Use soft assertion to continue test even if some items are missing
-      await expect(link)
-        .toBeVisible()
-        .catch(() => {
-          console.log(`Navigation item ${item} not found - may be acceptable`);
-        });
+      await expect(link).toBeVisible({ timeout: 5000 });
     }
   });
 
@@ -218,11 +179,10 @@ test.describe('Sidebar Navigation', () => {
     // Click on Projects link if it exists
     const projectsLink = page.getByRole('link', { name: /projects/i }).first();
 
-    if (await projectsLink.isVisible()) {
-      await projectsLink.click();
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(/\/projects/);
-    }
+    await expect(projectsLink).toBeVisible({ timeout: 5000 });
+    await projectsLink.click();
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(/\/projects/);
   });
 });
 
@@ -242,12 +202,7 @@ test.describe('Breadcrumb Navigation', () => {
       'nav[aria-label="breadcrumb"], nav[aria-label="Breadcrumb"], .breadcrumb',
     );
 
-    // This might not exist yet, so use soft assertion
-    await expect(breadcrumb)
-      .toBeVisible()
-      .catch(() => {
-        console.log('Breadcrumbs not implemented yet - acceptable for E2E setup');
-      });
+    await expect(breadcrumb).toBeVisible({ timeout: 10000 });
   });
 });
 

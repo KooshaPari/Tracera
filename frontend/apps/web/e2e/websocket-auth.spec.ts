@@ -29,10 +29,9 @@ test.describe('WebSocket Authentication Security', () => {
     await page.waitForTimeout(1000);
 
     // Verify no token in WebSocket URL
-    if (wsUrlCapture) {
+    await expect(async () => {
       expect(wsUrlCapture).not.toContain('token=');
-      console.log('✓ WebSocket URL does not contain token parameter:', wsUrlCapture);
-    }
+    }).toPass({ timeout: 5000 });
   });
 
   test('should send authentication in message after connection', async ({
@@ -59,9 +58,9 @@ test.describe('WebSocket Authentication Security', () => {
     await page.goto('/');
     await page.waitForTimeout(2000);
 
-    if (wsMessages.length > 0) {
+    await expect(async () => {
       expect(authMessageSent).toBe(true);
-    }
+    }).toPass({ timeout: 5000 });
   });
 
   test('should wait for auth response before processing events', async ({ page }) => {
@@ -90,7 +89,7 @@ test.describe('WebSocket Authentication Security', () => {
     await page.waitForTimeout(2000);
 
     // Auth response should come before events
-    if (messageOrder.length > 0) {
+    await expect(async () => {
       const authIndex = messageOrder.findIndex(
         (msg) => msg === 'auth_success' || msg === 'auth_failed',
       );
@@ -98,11 +97,10 @@ test.describe('WebSocket Authentication Security', () => {
         (msg) => msg === 'event' || msg === 'created' || msg === 'updated',
       );
 
-      if (authIndex !== -1 && eventIndex !== -1) {
-        expect(authIndex).toBeLessThan(eventIndex);
-        console.log('✓ Auth response received before event messages');
-      }
-    }
+      expect(authIndex).not.toBe(-1);
+      expect(eventIndex).not.toBe(-1);
+      expect(authIndex).toBeLessThan(eventIndex);
+    }).toPass({ timeout: 5000 });
   });
 
   test('should handle authentication failure', async ({ page }) => {

@@ -152,14 +152,14 @@ func TestIntegration_ConflictDetector_ResolveConflict(t *testing.T) {
 	ctx := context.Background()
 
 	conflict := &ConflictRecord{
-		ID:                 uuid.New().String(),
-		ItemID:             "item-1",
-		ConflictingAgents:  []string{"agent-2"},
-		ConflictType:       "concurrent_modification",
-		ResolutionStatus:   resolutionStatusPending,
-		ConflictData:       map[string]interface{}{},
-		CreatedAt:          time.Now(),
-		UpdatedAt:          time.Now(),
+		ID:                uuid.New().String(),
+		ItemID:            "item-1",
+		ConflictingAgents: []string{"agent-2"},
+		ConflictType:      "concurrent_modification",
+		ResolutionStatus:  resolutionStatusPending,
+		ConflictData:      map[string]interface{}{},
+		CreatedAt:         time.Now(),
+		UpdatedAt:         time.Now(),
 	}
 	_ = db.Create(conflict).Error
 

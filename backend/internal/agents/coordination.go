@@ -51,28 +51,28 @@ const (
 
 // AgentLock represents a lock on an item by an agent
 type AgentLock struct {
-	ID        string                 `json:"id" gorm:"primaryKey"`
-	ItemID    string                 `json:"item_id" gorm:"index:idx_lock_item"`
-	ItemType  string                 `json:"item_type"`
-	AgentID   string                 `json:"agent_id" gorm:"index:idx_lock_agent"`
-	LockType  LockType               `json:"lock_type"`
-	Version   int64                  `json:"version"`
-	ExpireAt  time.Time              `json:"expire_at" gorm:"index:idx_lock_expire"`
-	Metadata  JSONMap `json:"metadata" gorm:"type:jsonb"`
-	CreatedAt time.Time              `json:"created_at"`
-	UpdatedAt time.Time              `json:"updated_at"`
+	ID        string    `json:"id" gorm:"primaryKey"`
+	ItemID    string    `json:"item_id" gorm:"index:idx_lock_item"`
+	ItemType  string    `json:"item_type"`
+	AgentID   string    `json:"agent_id" gorm:"index:idx_lock_agent"`
+	LockType  LockType  `json:"lock_type"`
+	Version   int64     `json:"version"`
+	ExpireAt  time.Time `json:"expire_at" gorm:"index:idx_lock_expire"`
+	Metadata  JSONMap   `json:"metadata" gorm:"type:jsonb"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // AgentTeam represents a team of agents with role-based access
 type AgentTeam struct {
-	ID          string                 `json:"id" gorm:"primaryKey"`
-	ProjectID   string                 `json:"project_id" gorm:"index:idx_team_project"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
+	ID          string              `json:"id" gorm:"primaryKey"`
+	ProjectID   string              `json:"project_id" gorm:"index:idx_team_project"`
+	Name        string              `json:"name"`
+	Description string              `json:"description"`
 	Roles       map[string]TeamRole `json:"roles" gorm:"serializer:json"`
-	Metadata    JSONMap `json:"metadata" gorm:"type:jsonb"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
+	Metadata    JSONMap             `json:"metadata" gorm:"type:jsonb"`
+	CreatedAt   time.Time           `json:"created_at"`
+	UpdatedAt   time.Time           `json:"updated_at"`
 }
 
 // JSONMap persists map[string]interface{} as JSON for sqlite/mysql/postgres.
@@ -188,14 +188,14 @@ type AgentTeamMembership struct {
 
 // ItemVersion tracks version history for conflict detection
 type ItemVersion struct {
-	ID           string                 `json:"id" gorm:"primaryKey"`
-	ItemID       string                 `json:"item_id" gorm:"index:idx_version_item"`
-	Version      int64                  `json:"version"`
-	AgentID      string                 `json:"agent_id"`
-	Changes      JSONMap `json:"changes" gorm:"type:jsonb"`
-	PreviousHash string                 `json:"previous_hash"`
-	CurrentHash  string                 `json:"current_hash" gorm:"index:idx_version_hash"`
-	CreatedAt    time.Time              `json:"created_at"`
+	ID           string    `json:"id" gorm:"primaryKey"`
+	ItemID       string    `json:"item_id" gorm:"index:idx_version_item"`
+	Version      int64     `json:"version"`
+	AgentID      string    `json:"agent_id"`
+	Changes      JSONMap   `json:"changes" gorm:"type:jsonb"`
+	PreviousHash string    `json:"previous_hash"`
+	CurrentHash  string    `json:"current_hash" gorm:"index:idx_version_hash"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 // ConflictRecord tracks detected conflicts
@@ -207,12 +207,12 @@ type ConflictRecord struct {
 	ConflictType       string                     `json:"conflict_type"`
 	ResolutionStrategy ConflictResolutionStrategy `json:"resolution_strategy"`
 	// pending, resolved, failed
-	ResolutionStatus string                 `json:"resolution_status"`
-	ConflictData     JSONMap `json:"conflict_data" gorm:"type:jsonb"`
-	ResolvedBy       string                 `json:"resolved_by,omitempty"`
-	ResolvedAt       *time.Time             `json:"resolved_at,omitempty"`
-	CreatedAt        time.Time              `json:"created_at"`
-	UpdatedAt        time.Time              `json:"updated_at"`
+	ResolutionStatus string     `json:"resolution_status"`
+	ConflictData     JSONMap    `json:"conflict_data" gorm:"type:jsonb"`
+	ResolvedBy       string     `json:"resolved_by,omitempty"`
+	ResolvedAt       *time.Time `json:"resolved_at,omitempty"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
 }
 
 // LockManager handles lock acquisition and release

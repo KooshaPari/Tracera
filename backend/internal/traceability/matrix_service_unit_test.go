@@ -210,7 +210,7 @@ func TestCoverageConstants(t *testing.T) {
 
 func TestMatrix_JSON(t *testing.T) {
 	m := Matrix{
-		ProjectID:   "p",
+		ProjectID:    "p",
 		Requirements: []MatrixItem{{ItemID: "r1", Title: "R1"}},
 		TestCases:    []MatrixItem{{ItemID: "t1", Title: "T1"}},
 		Links:        []Link{{SourceID: "s", TargetID: "t", LinkType: "TRACES_TO"}},
@@ -231,7 +231,7 @@ func TestGapAnalysis_JSON(t *testing.T) {
 	a := GapAnalysis{
 		ProjectID:      "p",
 		MissingForward: []Gap{{ItemID: "1", Title: "T", Type: "requirement"}},
-		Orphaned:        []string{"o1"},
+		Orphaned:       []string{"o1"},
 	}
 	data, err := json.Marshal(a)
 	require.NoError(t, err)

@@ -21,7 +21,7 @@ func TestE2E_Search_FullTextSearch(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "Search Test Project")
-	
+
 	// Create searchable items
 	createTestItem(t, srv, projectID, "Authentication System", "requirement")
 	createTestItem(t, srv, projectID, "OAuth Integration", "requirement")
@@ -47,7 +47,7 @@ func TestE2E_Search_FullTextSearch(t *testing.T) {
 
 			var result map[string]interface{}
 			require.NoError(t, json.NewDecoder(resp.Body).Decode(&result))
-			
+
 			results := result["results"].([]interface{})
 			assert.Equal(t, tc.want, len(results))
 		})
@@ -59,7 +59,7 @@ func TestE2E_Filter_ByType(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "Filter Test Project")
-	
+
 	createTestItem(t, srv, projectID, "Req 1", "requirement")
 	createTestItem(t, srv, projectID, "Req 2", "requirement")
 	createTestItem(t, srv, projectID, "Test 1", "test_case")
@@ -82,7 +82,7 @@ func TestE2E_Filter_ByType(t *testing.T) {
 
 			var result map[string]interface{}
 			require.NoError(t, json.NewDecoder(resp.Body).Decode(&result))
-			
+
 			items := result["items"].([]interface{})
 			assert.Equal(t, tc.want, len(items))
 		})
@@ -94,10 +94,10 @@ func TestE2E_Filter_ByStatus(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "Status Filter Project")
-	
+
 	_ = createTestItem(t, srv, projectID, "Open Item", "requirement")
 	item2 := createTestItem(t, srv, projectID, "In Progress Item", "requirement")
-	
+
 	// Update statuses
 	updateItemStatus(t, srv, item2, "in_progress")
 
@@ -118,7 +118,7 @@ func TestE2E_Filter_ByStatus(t *testing.T) {
 
 			var result map[string]interface{}
 			require.NoError(t, json.NewDecoder(resp.Body).Decode(&result))
-			
+
 			items := result["items"].([]interface{})
 			assert.Equal(t, tc.want, len(items))
 		})
@@ -130,7 +130,7 @@ func TestE2E_Search_AdvancedFilters(t *testing.T) {
 	defer srv.Cleanup()
 
 	projectID := createTestProject(t, srv, "Advanced Filter Project")
-	
+
 	// Create items with various attributes
 	createTestItem(t, srv, projectID, "High Priority Req", "requirement")
 	createTestItem(t, srv, projectID, "Low Priority Test", "test_case")
@@ -141,7 +141,7 @@ func TestE2E_Search_AdvancedFilters(t *testing.T) {
 
 	var result map[string]interface{}
 	require.NoError(t, json.NewDecoder(resp.Body).Decode(&result))
-	
+
 	items := result["items"].([]interface{})
 	assert.GreaterOrEqual(t, len(items), 1)
 }
@@ -149,10 +149,10 @@ func TestE2E_Search_AdvancedFilters(t *testing.T) {
 func updateItemStatus(t *testing.T, srv *testServer, itemID, status string) {
 	payload := map[string]interface{}{"status": status}
 	body, _ := json.Marshal(payload)
-	
+
 	req, _ := http.NewRequest("PATCH", srv.URL+"/api/items/"+itemID, bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	defer resp.Body.Close()

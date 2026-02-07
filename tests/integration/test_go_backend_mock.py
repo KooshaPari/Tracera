@@ -8,6 +8,7 @@ import respx
 from httpx import Response
 from tracertm.clients.go_client import GoBackendClient, GoBackendError
 
+
 @pytest.mark.asyncio
 async def test_go_backend_mock_get_item():
     """Test mocking the Go backend's GET /api/v1/items/{id} endpoint."""
@@ -17,18 +18,14 @@ async def test_go_backend_mock_get_item():
 
     async with respx.mock(base_url=base_url) as respx_mock:
         # Mock successful response
-        respx_mock.get(f"/api/v1/items/{item_id}").mock(return_value=Response(
-            200,
-            json={
-                "id": item_id,
-                "title": "Mocked Go Item",
-                "status": "active"
-            }
-        ))
+        respx_mock.get(f"/api/v1/items/{item_id}").mock(
+            return_value=Response(200, json={"id": item_id, "title": "Mocked Go Item", "status": "active"})
+        )
 
         item = await client.get_item(item_id)
         assert item["id"] == item_id
         assert item["title"] == "Mocked Go Item"
+
 
 @pytest.mark.asyncio
 async def test_go_backend_mock_error():
@@ -43,8 +40,9 @@ async def test_go_backend_mock_error():
 
         with pytest.raises(GoBackendError) as excinfo:
             await client.get_item(item_id)
-        
+
         assert "404" in str(excinfo.value)
+
 
 @pytest.mark.asyncio
 async def test_go_backend_mock_create_link():
@@ -53,10 +51,7 @@ async def test_go_backend_mock_create_link():
     client = GoBackendClient(base_url=base_url, service_token="test-token")
 
     async with respx.mock(base_url=base_url) as respx_mock:
-        respx_mock.post("/api/v1/links").mock(return_value=Response(
-            201,
-            json={"id": "link-123", "status": "created"}
-        ))
+        respx_mock.post("/api/v1/links").mock(return_value=Response(201, json={"id": "link-123", "status": "created"}))
 
         result = await client.create_link("source-1", "target-1", "depends_on")
         assert result["id"] == "link-123"
