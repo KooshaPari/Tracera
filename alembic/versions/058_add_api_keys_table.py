@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.create_table(
         "api_keys",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
-        sa.Column("account_id", UUID(as_uuid=True), sa.ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("account_id", sa.String(36), sa.ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False),
         sa.Column("project_id", UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=True),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("key_hash", sa.String(255), nullable=False, unique=True, index=True),
@@ -34,11 +34,11 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean, nullable=False, server_default="true"),
         sa.Column("created_at", TIMESTAMP(timezone=True), nullable=False, server_default=sa.text("CURRENT_TIMESTAMP")),
         sa.Column(
-            "created_by_id", UUID(as_uuid=True), sa.ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True
+            "created_by_id", sa.String(36), sa.ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True
         ),
         sa.Column("revoked_at", TIMESTAMP(timezone=True), nullable=True),
         sa.Column(
-            "revoked_by_id", UUID(as_uuid=True), sa.ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True
+            "revoked_by_id", sa.String(36), sa.ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True
         ),
         sa.Column("revoked_reason", sa.Text, nullable=True),
         sa.CheckConstraint("role IN ('read-only', 'read-write', 'admin')", name="api_keys_role_check"),

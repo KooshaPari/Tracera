@@ -27,11 +27,7 @@ test.describe('Dashboard Overview', () => {
     // Look for main dashboard heading - should show "Welcome to TraceRTM"
     const heading = page.getByText(/Welcome to TraceRTM/i);
 
-    await expect(heading)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Dashboard welcome heading not found');
-      });
+    await expect(heading).toBeVisible({ timeout: 5000 });
   });
 
   test('should load dashboard data', async ({ page }) => {
@@ -71,42 +67,26 @@ test.describe('Dashboard Metrics', () => {
   test('should display items count metric', async ({ page }) => {
     // Look for items count stat
     const itemStat = page.getByText('Items').first();
-    await expect(itemStat)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Items count not displayed');
-      });
+    await expect(itemStat).toBeVisible({ timeout: 5000 });
   });
 
   test('should display links count metric', async ({ page }) => {
     // Look for links count
     const linkStat = page.getByText('Links').first();
-    await expect(linkStat)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Links metric not displayed');
-      });
+    await expect(linkStat).toBeVisible({ timeout: 5000 });
   });
 
   test('should display active agents metric', async ({ page }) => {
     // Look for active agents count
     const agentStat = page.getByText(/Active Agents/i);
-    await expect(agentStat)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Active Agents metric not displayed');
-      });
+    await expect(agentStat).toBeVisible({ timeout: 5000 });
   });
 
   test('should display priority metrics', async ({ page }) => {
     // Look for priority breakdown
-    await page
-      .locator('text=/critical|high|medium|low/i')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 })
-      .catch(() => {
-        console.log('Priority metrics not displayed');
-      });
+    await expect(page.locator('text=/critical|high|medium|low/i').first()).toBeVisible({
+      timeout: 5000,
+    });
   });
 });
 
@@ -119,38 +99,22 @@ test.describe('Dashboard Widgets', () => {
   test('should display recent projects section', async ({ page }) => {
     // Look for Recent Projects heading
     const recentProjects = page.getByText(/Recent Projects/i);
-    await expect(recentProjects)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Recent projects section not displayed');
-      });
+    await expect(recentProjects).toBeVisible({ timeout: 5000 });
   });
 
   test('should display project cards with information', async ({ page }) => {
     // Look for project names in the recent projects section
     const traceRTMProject = page.getByText(/TraceRTM Frontend/);
-    await expect(traceRTMProject)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Project cards not displayed');
-      });
+    await expect(traceRTMProject).toBeVisible({ timeout: 5000 });
   });
 
   test('should show items and links counts', async ({ page }) => {
     // Look for item and link counts in project cards
     const itemsCount = page.getByText(/items/i);
-    await expect(itemsCount.first())
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Items count not displayed');
-      });
+    await expect(itemsCount.first()).toBeVisible({ timeout: 5000 });
 
     const linksCount = page.getByText(/links/i);
-    await expect(linksCount.first())
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Links count not displayed');
-      });
+    await expect(linksCount.first()).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -164,36 +128,23 @@ test.describe('Dashboard Navigation', () => {
     // Click on "New Project" button which links to /projects
     const newProjectButton = page.getByRole('link', { name: /new project/i });
 
-    if (await newProjectButton.isVisible({ timeout: 3000 })) {
-      await newProjectButton.click();
-      await page.waitForLoadState('networkidle');
+    await expect(newProjectButton).toBeVisible({ timeout: 3000 });
+    await newProjectButton.click();
+    await page.waitForLoadState('networkidle');
 
-      // Should navigate to projects page
-      await expect(page).toHaveURL(/\/projects/);
-    } else {
-      // Alternative: Click on Active Projects heading which should be a link
-      const projectsHeading = page.getByRole('heading', {
-        name: /active projects/i,
-      });
-      await expect(projectsHeading).toBeVisible({ timeout: 3000 });
-    }
+    // Should navigate to projects page
+    await expect(page).toHaveURL(/\/projects/);
   });
 
   test('should navigate to specific project from dashboard', async ({ page }) => {
     // Look for any project link in the Active Projects section
     const projectLinks = page.locator('a[href*="/projects/"]');
-    const count = await projectLinks.count();
+    await expect(projectLinks.first()).toBeVisible({ timeout: 10000 });
+    await projectLinks.first().click();
+    await page.waitForLoadState('networkidle');
 
-    if (count > 0) {
-      await projectLinks.first().click();
-      await page.waitForLoadState('networkidle');
-
-      // Should navigate to projects page or project detail
-      await expect(page).toHaveURL(/\/projects/);
-    } else {
-      // Dashboard may show no projects with mocked data
-      console.log('No project links found on dashboard - may be acceptable');
-    }
+    // Should navigate to projects page or project detail
+    await expect(page).toHaveURL(/\/projects/);
   });
 });
 
@@ -207,33 +158,19 @@ test.describe('Dashboard Charts', () => {
     // Look for chart or visualization
     const chart = page.locator('canvas, svg').first().or(page.locator('[role="img"]').first());
 
-    await expect(chart)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Charts not displayed on dashboard');
-      });
+    await expect(chart).toBeVisible({ timeout: 5000 });
   });
 
   test('should display items by status chart', async ({ page }) => {
     // Look for status breakdown chart
-    await page
-      .locator('text=/status|completed|in progress/i')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 })
-      .catch(() => {
-        console.log('Status chart not displayed');
-      });
+    await expect(page.locator('text=/status|completed|in progress/i').first()).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('should display trend chart', async ({ page }) => {
     // Look for trend/timeline chart
-    await page
-      .locator('canvas, svg')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 })
-      .catch(() => {
-        console.log('Trend chart not displayed');
-      });
+    await expect(page.locator('canvas, svg').first()).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -246,11 +183,9 @@ test.describe('Dashboard Quick Actions', () => {
   test('should show quick action buttons', async ({ page }) => {
     // Look for quick action buttons (Create Project, Create Item, etc.)
     const quickActions = page.locator('button').filter({ hasText: /create|new|add/i });
-
-    if (await quickActions.first().isVisible({ timeout: 3000 })) {
-      const count = await quickActions.count();
-      expect(count).toBeGreaterThan(0);
-    }
+    await expect(quickActions.first()).toBeVisible({ timeout: 5000 });
+    const count = await quickActions.count();
+    expect(count).toBeGreaterThan(0);
   });
 
   test('should create project from dashboard', async ({ page }) => {
@@ -258,28 +193,21 @@ test.describe('Dashboard Quick Actions', () => {
       .getByRole('button', { name: /create.*project|new project/i })
       .first();
 
-    if (await createProjectButton.isVisible({ timeout: 3000 })) {
-      await createProjectButton.click();
+    await expect(createProjectButton).toBeVisible({ timeout: 5000 });
+    await createProjectButton.click();
 
-      // Should open create project dialog
-      const dialog = page.getByRole('dialog');
-      await expect(dialog)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Create project dialog not opened from dashboard');
-        });
-    }
+    // Should open create project dialog
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 5000 });
   });
 
   test('should create item from dashboard', async ({ page }) => {
     const createItemButton = page.getByRole('button', { name: /create.*item|new item/i }).first();
+    await expect(createItemButton).toBeVisible({ timeout: 5000 });
+    await createItemButton.click();
 
-    if (await createItemButton.isVisible({ timeout: 3000 })) {
-      await createItemButton.click();
-
-      // Should open create item dialog or navigate to create page
-      await page.waitForTimeout(500);
-    }
+    // Should open create item dialog or navigate to create page
+    await page.waitForLoadState('networkidle');
   });
 });
 
@@ -297,25 +225,20 @@ test.describe('Dashboard Filters', () => {
       .first()
       .or(page.getByLabel(/project/i).first());
 
-    if (await projectFilter.isVisible({ timeout: 3000 })) {
-      console.log('Project filter available on dashboard');
-    }
+    await expect(projectFilter).toBeVisible({ timeout: 5000 });
   });
 
   test('should filter dashboard by project', async ({ page }) => {
     const projectFilter = page.locator('select').first();
+    await expect(projectFilter).toBeVisible({ timeout: 5000 });
+    await projectFilter.click();
+    await page.waitForTimeout(300);
 
-    if (await projectFilter.isVisible({ timeout: 3000 })) {
-      await projectFilter.click();
-      await page.waitForTimeout(300);
-
-      // Select a project
-      const projectOption = page.getByText('TraceRTM Core').first();
-      if (await projectOption.isVisible({ timeout: 2000 })) {
-        await projectOption.click();
-        await page.waitForLoadState('networkidle');
-      }
-    }
+    // Select a project
+    const projectOption = page.getByText('TraceRTM Core').first();
+    await expect(projectOption).toBeVisible({ timeout: 5000 });
+    await projectOption.click();
+    await page.waitForLoadState('networkidle');
   });
 
   test('should show time range filter', async ({ page }) => {
@@ -325,9 +248,7 @@ test.describe('Dashboard Filters', () => {
       .filter({ hasText: /today|week|month|year|range/i })
       .first();
 
-    if (await timeFilter.isVisible({ timeout: 3000 })) {
-      console.log('Time range filter available on dashboard');
-    }
+    await expect(timeFilter).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -344,21 +265,17 @@ test.describe('Dashboard Refresh', () => {
       .first()
       .or(page.locator('button[aria-label*="refresh" i]').first());
 
-    if (await refreshButton.isVisible({ timeout: 3000 })) {
-      console.log('Refresh button available on dashboard');
-    }
+    await expect(refreshButton).toBeVisible({ timeout: 5000 });
   });
 
   test('should refresh dashboard data', async ({ page }) => {
     const refreshButton = page.getByRole('button', { name: /refresh|reload/i }).first();
+    await expect(refreshButton).toBeVisible({ timeout: 5000 });
+    await refreshButton.click();
+    await page.waitForLoadState('networkidle');
 
-    if (await refreshButton.isVisible({ timeout: 3000 })) {
-      await refreshButton.click();
-      await page.waitForLoadState('networkidle');
-
-      // Data should be reloaded
-      await page.waitForTimeout(500);
-    }
+    // Data should be reloaded
+    await page.waitForTimeout(500);
   });
 
   test('should auto-refresh on navigation back', async ({ page }) => {

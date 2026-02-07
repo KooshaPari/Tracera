@@ -147,6 +147,11 @@ func (handler *ProjectHandler) CreateProject(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "project service not initialized"})
 	}
 
+	// Validate name is not empty
+	if req.Name == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "project name is required"})
+	}
+
 	// Use ProjectService for creation (service layer path)
 	// Convert request to service model
 	metadata := datatypes.JSON([]byte("{}"))
@@ -342,7 +347,7 @@ func (h *ProjectHandler) DeleteProject(c echo.Context) error {
 		go h.broadcastProjectEvent(c.Request().Context(), "deleted", idStr)
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{"message": "Project deleted"})
+	return c.NoContent(http.StatusNoContent)
 }
 
 // broadcastProjectEvent broadcasts a project event via realtime

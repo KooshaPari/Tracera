@@ -11,6 +11,7 @@ Revises: 056_add_partitioning
 Create Date: 2026-02-01
 """
 
+import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic
@@ -23,42 +24,80 @@ depends_on = None
 def upgrade() -> None:
     """Create materialized views for performance."""
 
+    conn = op.get_bind()
+    has_test_coverage = conn.execute(
+        sa.text("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'test_coverage')")
+    ).scalar()
+
     # =========================================================================
     # MATERIALIZED VIEW: dashboard_metrics
     # =========================================================================
 
-    op.execute("""
-        CREATE MATERIALIZED VIEW IF NOT EXISTS dashboard_metrics AS
-        SELECT
-            p.id as project_id,
-            p.name as project_name,
-            -- Test metrics
-            COUNT(DISTINCT CASE WHEN tr.status = 'passed' THEN tr.id END) as tests_passed,
-            COUNT(DISTINCT CASE WHEN tr.status = 'failed' THEN tr.id END) as tests_failed,
-            COUNT(DISTINCT CASE WHEN tr.status = 'skipped' THEN tr.id END) as tests_skipped,
-            COUNT(DISTINCT tr.id) as total_test_runs,
-            CASE
-                WHEN COUNT(DISTINCT tr.id) > 0 THEN
-                    ROUND(
-                        100.0 * COUNT(DISTINCT CASE WHEN tr.status = 'passed' THEN tr.id END) /
-                        NULLIF(COUNT(DISTINCT tr.id), 0),
-                        2
-                    )
-                ELSE 0
-            END as pass_rate_percentage,
-            -- Coverage metrics (if test_coverage table exists)
-            COALESCE(AVG(tc.line_coverage), 0) as avg_line_coverage,
-            COALESCE(AVG(tc.branch_coverage), 0) as avg_branch_coverage,
-            -- Timestamps
-            MAX(tr.created_at) as last_test_run_at,
-            NOW() as refreshed_at
-        FROM projects p
-        LEFT JOIN test_runs tr ON tr.project_id = p.id
-            AND tr.created_at > NOW() - INTERVAL '30 days'
-        LEFT JOIN test_coverage tc ON tc.project_id = p.id
-        WHERE EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'test_runs')
-        GROUP BY p.id, p.name;
-    """)
+    if has_test_coverage:
+        dashboard_metrics_sql = """
+            CREATE MATERIALIZED VIEW IF NOT EXISTS dashboard_metrics AS
+            SELECT
+                p.id as project_id,
+                p.name as project_name,
+                -- Test metrics
+                COUNT(DISTINCT CASE WHEN tr.status = 'passed' THEN tr.id END) as tests_passed,
+                COUNT(DISTINCT CASE WHEN tr.status = 'failed' THEN tr.id END) as tests_failed,
+                COUNT(DISTINCT tr.id) as total_test_runs,
+                CASE
+                    WHEN COUNT(DISTINCT tr.id) > 0 THEN
+                        ROUND(
+                            100.0 * COUNT(DISTINCT CASE WHEN tr.status = 'passed' THEN tr.id END) /
+                            NULLIF(COUNT(DISTINCT tr.id), 0),
+                            2
+                        )
+                    ELSE 0
+                END as pass_rate_percentage,
+                -- Coverage metrics
+                COALESCE(AVG(tc.line_coverage), 0) as avg_line_coverage,
+                COALESCE(AVG(tc.branch_coverage), 0) as avg_branch_coverage,
+                -- Timestamps
+                MAX(tr.created_at) as last_test_run_at,
+                NOW() as refreshed_at
+            FROM projects p
+            LEFT JOIN test_runs tr ON tr.project_id = p.id
+                AND tr.created_at > NOW() - INTERVAL '30 days'
+            LEFT JOIN test_coverage tc ON tc.project_id = p.id
+            WHERE EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'test_runs')
+            GROUP BY p.id, p.name;
+        """
+    else:
+        dashboard_metrics_sql = """
+            CREATE MATERIALIZED VIEW IF NOT EXISTS dashboard_metrics AS
+            SELECT
+                p.id as project_id,
+                p.name as project_name,
+                -- Test metrics
+                COUNT(DISTINCT CASE WHEN tr.status = 'passed' THEN tr.id END) as tests_passed,
+                COUNT(DISTINCT CASE WHEN tr.status = 'failed' THEN tr.id END) as tests_failed,
+                COUNT(DISTINCT tr.id) as total_test_runs,
+                CASE
+                    WHEN COUNT(DISTINCT tr.id) > 0 THEN
+                        ROUND(
+                            100.0 * COUNT(DISTINCT CASE WHEN tr.status = 'passed' THEN tr.id END) /
+                            NULLIF(COUNT(DISTINCT tr.id), 0),
+                            2
+                        )
+                    ELSE 0
+                END as pass_rate_percentage,
+                -- Coverage metrics (placeholders)
+                0::float as avg_line_coverage,
+                0::float as avg_branch_coverage,
+                -- Timestamps
+                MAX(tr.created_at) as last_test_run_at,
+                NOW() as refreshed_at
+            FROM projects p
+            LEFT JOIN test_runs tr ON tr.project_id = p.id
+                AND tr.created_at > NOW() - INTERVAL '30 days'
+            WHERE EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'test_runs')
+            GROUP BY p.id, p.name;
+        """
+
+    op.execute(dashboard_metrics_sql)
 
     # Create indexes on materialized view
     op.execute("""

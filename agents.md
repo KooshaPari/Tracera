@@ -101,6 +101,13 @@ docs/
 - Update this governance document as the project evolves
 
 
+## Multi-Actor Coordination
+- **Command Debouncing**: High-impact commands (`make lint`, `make test`, `make quality`, `make validate`) MUST use `smart-command.sh` (via Makefile/Taskfile) to prevent conflicts between multiple root/subagents.
+- **Shared Service Awareness**: `process-compose` is the primary orchestrator. Use its CLI/API (e.g., `make dev-status`, `make dev-restart`) instead of raw scripts to ensure global visibility.
+- **Graceful Service Interaction**: Infrastructure and app services use "if-not-running" wrappers to allow multiple actors to share a single set of healthy processes. DO NOT force-kill shared resources.
+- **Lock Files**: Active command locks are stored in `.process-compose/locks/`. Always check for existing locks before running heavy tasks.
+- **Unified Logging**: Read aggregated logs from `.process-compose/process-compose.log`.
+
 ## Opinionated Quality Enforcement
 - We want opinionated rules that enforce opinionated styling to a strict degree.
 - This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.

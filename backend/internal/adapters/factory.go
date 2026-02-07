@@ -92,7 +92,7 @@ func (factory *AdapterFactory) initRealtimeBroadcaster() error {
 		return nil
 
 	case "":
-		return errors.New("realtime provider is required (set REALTIME_PROVIDER=nats)")
+		return errors.New("Realtime provider is required (set REALTIME_PROVIDER=nats)")
 
 	default:
 		return fmt.Errorf(

@@ -402,6 +402,11 @@ func (sc *ServiceContainer) WithTx(
 	ctx context.Context,
 	fn func(*TransactionContext) error,
 ) error {
+	// Validate function is not nil
+	if fn == nil {
+		panic("transaction function cannot be nil")
+	}
+
 	// Begin transaction
 	tx := sc.db.Begin()
 	if err := tx.Error; err != nil {

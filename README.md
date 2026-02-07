@@ -60,20 +60,20 @@ Full steps (deps, env, Go migrations if any, Python migrations, start): **[First
 
 ### Quick Start (Native Process Orchestration)
 
-The new native development environment uses Process Compose to orchestrate all services as native processes, eliminating Docker daemon overhead.
+The new native development environment uses Task and Process Compose to orchestrate all services as native processes, eliminating Docker daemon overhead.
 
 ```bash
 # One-time installation of all dependencies
-make install-native
+task install
 
 # Run Python DB migrations (required for Test Cases, Links, Graphs — avoid 500s)
-./scripts/shell/run_python_migrations.sh
+task db:migrate
 
 # Start all services with interactive dashboard
-make dev-tui
+task dev:tui
 
 # Or start in background
-make dev
+task dev
 
 # Access the application (use the gateway only – do not open port 5173 directly)
 # Gateway:    http://localhost:4000   ← single dev URL (frontend + API + docs)
@@ -150,32 +150,25 @@ Native Services:
 
 ```bash
 # Start all services (detached)
-make dev
+task dev
 
 # Start with interactive TUI dashboard
-make dev-tui
+task dev:tui
 
 # View logs for all services
-make dev-logs
-
-# View logs for specific service
-make dev-logs-follow SERVICE=go-backend
+task dev:logs
 
 # Restart specific service
-make dev-restart SERVICE=postgres
+# (Note: Use process-compose process restart SERVICE --port 18080)
 
 # Show service status
-make dev-status
+task dev:status
 
 # Stop all services
-make dev-down
-
-# Scale a service (run multiple instances)
-make dev-scale SERVICE=worker REPLICAS=3
+task dev:down
 
 # Open monitoring dashboards
-make grafana-dashboard   # Opens Grafana
-make prometheus-ui       # Opens Prometheus
+task grafana-dashboard   # (Note: Not yet in Taskfile, added below)
 ```
 
 ### Port Configuration
@@ -241,7 +234,7 @@ cp .env.example .env
 # Edit .env with USE_VAULT=false
 
 # Local dev with Vault (for testing)
-make dev  # Vault starts automatically
+task dev  # Vault starts automatically
 ./scripts/shell/vault-setup-secrets.sh .env
 # Edit .env with USE_VAULT=true
 
@@ -318,7 +311,7 @@ JAEGER_ENDPOINT=localhost:4317
 TRACING_ENVIRONMENT=development
 
 # 2. Start services
-make dev
+task dev
 
 # 3. View traces
 # - Jaeger UI: http://localhost:16686
@@ -380,22 +373,24 @@ pre-commit run --all-files
 ./scripts/shell/measure-precommit-performance.sh
 
 # Run comprehensive checks (CI-level validation)
+# Quality suite
+task quality
+
 # Type checking
-uv run mypy src/
-uv run basedpyright src/
+poe type-check
 
 # Security scanning
-uv run bandit -r src/
-semgrep --config=p/security-audit src/
+poe bandit
+poe security
 
 # Architecture validation
-uv run tach check
+poe arch-check
 
 # Per language quick checks
-cd backend && golangci-lint run          # Go (lint + fmt)
-cd frontend && bun run check            # Frontend (Biome lint + format)
-cd frontend && bun run typecheck        # Frontend TypeScript
-ruff check src/ && ruff format --check . # Python
+task go:lint          # Go (lint + fmt)
+bun run --cwd frontend check            # Frontend (Biome lint + format)
+bun run --cwd frontend typecheck        # Frontend TypeScript
+poe check             # Python
 ```
 
 **Note**: Pre-commit hooks are optimized for speed (<5s). Comprehensive checks (type checking, security scans, tests) run in CI. See [Pre-commit Optimization Guide](docs/guides/quick-start/PRE_COMMIT_OPTIMIZATION.md) for details.
@@ -453,20 +448,11 @@ overmind restart api
 ### Services won't start
 
 ```bash
-# Check if required tools are installed
-make verify-install
-
 # Check process status
-make dev-status
+task dev:status
 
 # View logs for failing service
-make dev-logs-follow SERVICE=postgres
-
-# Restart specific service
-make dev-restart SERVICE=redis
-
-# Clean logs and restart
-make logs-clean && make dev
+task dev:logs
 ```
 
 ### Hot reload not working
@@ -491,7 +477,7 @@ pg_isready -h localhost -p 5432
 cypher-shell "RETURN 1"
 
 # Reset databases (destructive!)
-make db-reset
+task db:reset
 ```
 
 ### Process Compose issues
@@ -505,9 +491,6 @@ process-compose config
 
 # Check for config errors
 process-compose -f config/process-compose.yaml validate
-
-# Start with debug logging
-PROCESS_COMPOSE_LOG_LEVEL=debug make dev-tui
 
 # Force stop all processes
 pkill -f "process-compose"

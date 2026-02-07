@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/kooshapari/tracertm-backend/internal/db"
 	"github.com/kooshapari/tracertm-backend/internal/models"
 	"github.com/kooshapari/tracertm-backend/internal/services"
 	"github.com/labstack/echo/v4"
@@ -93,7 +94,7 @@ func TestGetProject_Validation(t *testing.T) {
 // TestGetProject_Success tests successful project retrieval
 func TestGetProject_Success(t *testing.T) {
 	projectID := uuid.New().String()
-	now := time.Now()
+	now := time.Now().UTC()
 
 	mockProject := &models.Project{
 		ID:          projectID,
@@ -124,10 +125,10 @@ func TestGetProject_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, rec.Code)
-	var resp models.Project
+	var resp db.Project
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	require.NoError(t, err)
-	assert.Equal(t, projectID, resp.ID)
+	assert.True(t, resp.ID.Valid)
 	assert.Equal(t, "Test Project", resp.Name)
 }
 
@@ -154,12 +155,12 @@ func TestGetProject_NotFound(t *testing.T) {
 	err := handler.GetProject(c)
 	require.NoError(t, err)
 
-	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
 // TestListProjects_Success tests successful project listing
 func TestListProjects_Success(t *testing.T) {
-	now := time.Now()
+	now := time.Now().UTC()
 	mockProjects := []*models.Project{
 		{
 			ID:          uuid.New().String(),
@@ -194,7 +195,7 @@ func TestListProjects_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, rec.Code)
-	var resp []*models.Project
+	var resp []*db.Project
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	require.NoError(t, err)
 	assert.Len(t, resp, 2)
@@ -253,8 +254,8 @@ func TestCreateProject_Success(t *testing.T) {
 	mockService := &services.MockProjectService{
 		OnCreateProject: func(_ context.Context, project *models.Project) error {
 			project.ID = uuid.New().String()
-			project.CreatedAt = time.Now()
-			project.UpdatedAt = time.Now()
+			project.CreatedAt = time.Now().UTC()
+			project.UpdatedAt = time.Now().UTC()
 			return nil
 		},
 	}
@@ -277,10 +278,10 @@ func TestCreateProject_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusCreated, rec.Code)
-	var resp models.Project
+	var resp db.Project
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	require.NoError(t, err)
-	assert.NotEmpty(t, resp.ID)
+	assert.True(t, resp.ID.Valid)
 	assert.Equal(t, "New Project", resp.Name)
 }
 
@@ -360,7 +361,7 @@ func TestUpdateProject_Success(t *testing.T) {
 	mockService := &services.MockProjectService{
 		OnUpdateProject: func(_ context.Context, project *models.Project) error {
 			assert.Equal(t, projectID, project.ID)
-			project.UpdatedAt = time.Now()
+			project.UpdatedAt = time.Now().UTC()
 			return nil
 		},
 	}

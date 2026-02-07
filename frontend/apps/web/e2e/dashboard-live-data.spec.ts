@@ -23,15 +23,14 @@ test.describe('Dashboard - Live Data with 5,686 Items', () => {
 
   test('should load dashboard with real API data', async ({ page }) => {
     // Wait for dashboard API call to complete
-    const dashboardResponse = await page
-      .waitForResponse((response) => response.url().includes('/api/v1/dashboard/summary'), {
-        timeout: 10000,
-      })
-      .catch(() => null);
+    const dashboardResponse = await page.waitForResponse(
+      (response) => response.url().includes('/api/v1/dashboard/summary'),
+      { timeout: 10000 },
+    );
 
     // If running in live mode, we expect real API calls
     if (process.env.VITE_USE_MOCK_DATA === 'false') {
-      expect(dashboardResponse?.status()).toBe(200);
+      expect(dashboardResponse.status()).toBe(200);
       console.log('✓ Real dashboard API endpoint called');
     }
 
@@ -43,11 +42,7 @@ test.describe('Dashboard - Live Data with 5,686 Items', () => {
     const heading = page.getByRole('heading', {
       name: /traceability dashboard|dashboard overview/i,
     });
-    await expect(heading)
-      .toBeVisible()
-      .catch(() => {
-        console.log('Dashboard heading might be nested or use different text');
-      });
+    await expect(heading).toBeVisible();
   });
 
   test('should display SwiftRide project with real data', async ({ page }) => {
@@ -67,11 +62,7 @@ test.describe('Dashboard - Live Data with 5,686 Items', () => {
     // Look for item statistics
     // The real dashboard should show actual counts from database
     const statsContainer = page.locator('[data-testid="dashboard-stats"], [class*="stat"]').first();
-    await expect(statsContainer)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Stats container not found with default selectors');
-      });
+    await expect(statsContainer).toBeVisible({ timeout: 5000 });
   });
 
   test('should respond to user interactions', async ({ page }) => {
@@ -79,14 +70,13 @@ test.describe('Dashboard - Live Data with 5,686 Items', () => {
 
     // Try to navigate to projects
     const projectsLink = page.getByRole('link', { name: /projects/i }).first();
-    if (await projectsLink.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await projectsLink.click();
-      await page.waitForLoadState('networkidle');
+    await expect(projectsLink).toBeVisible({ timeout: 2000 });
+    await projectsLink.click();
+    await page.waitForLoadState('networkidle');
 
-      // Should navigate to projects page
-      expect(page.url()).toContain('/projects');
-      console.log('✓ Navigation to projects works');
-    }
+    // Should navigate to projects page
+    await expect(page).toHaveURL(/\/projects/);
+    console.log('✓ Navigation to projects works');
   });
 });
 
@@ -116,17 +106,15 @@ test.describe('Dashboard - Performance with Large Dataset', () => {
     // Find projects list
     const projectsList = page.locator('[class*="grid"], [class*="list"]').first();
 
-    if (await projectsList.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // Scroll down to check for virtual scrolling or lazy loading
-      await projectsList.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(500);
+    await expect(projectsList).toBeVisible({ timeout: 2000 });
+    // Scroll down to check for virtual scrolling or lazy loading
+    await projectsList.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
 
-      // Should still be interactive after scroll
-      const isStillVisible = await projectsList.isVisible();
-      expect(isStillVisible).toBe(true);
+    // Should still be interactive after scroll
+    await expect(projectsList).toBeVisible();
 
-      console.log('✓ Scrolling performance acceptable');
-    }
+    console.log('✓ Scrolling performance acceptable');
   });
 });
 

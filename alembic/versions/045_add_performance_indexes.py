@@ -33,14 +33,14 @@ def upgrade() -> None:
     op.create_index(
         "ix_links_source_id",
         "links",
-        ["source_id"],
+        ["source_item_id"],
         postgresql_using="btree",
     )
 
     op.create_index(
         "ix_links_target_id",
         "links",
-        ["target_id"],
+        ["target_item_id"],
         postgresql_using="btree",
     )
 
@@ -48,7 +48,7 @@ def upgrade() -> None:
     op.create_index(
         "ix_links_source_target",
         "links",
-        ["source_id", "target_id"],
+        ["source_item_id", "target_item_id"],
         postgresql_using="btree",
     )
 
@@ -56,7 +56,7 @@ def upgrade() -> None:
     op.create_index(
         "ix_links_type",
         "links",
-        ["type"],
+        ["link_type"],
         postgresql_using="btree",
     )
 
@@ -64,7 +64,7 @@ def upgrade() -> None:
     op.create_index(
         "ix_links_source_type",
         "links",
-        ["source_id", "type"],
+        ["source_item_id", "link_type"],
         postgresql_using="btree",
     )
 
@@ -72,37 +72,41 @@ def upgrade() -> None:
     # ITEMS TABLE INDEXES (Critical for Item Queries)
     # =========================================================================
     # Project filtering - most common query pattern
-    op.create_index(
-        "ix_items_project_id",
-        "items",
-        ["project_id"],
-        postgresql_using="btree",
-    )
+    # Already created in 000 as idx_items_project_id
+    # We'll use different names to avoid conflicts if they are needed, 
+    # but usually one index is enough. I'll comment out the redundant ones.
+    
+    # op.create_index(
+    #     "ix_items_project_id",
+    #     "items",
+    #     ["project_id"],
+    #     postgresql_using="btree",
+    # )
 
     # Hierarchy traversal
-    op.create_index(
-        "ix_items_parent_id",
-        "items",
-        ["parent_id"],
-        postgresql_using="btree",
-        postgresql_where=sa.text("parent_id IS NOT NULL"),
-    )
+    # op.create_index(
+    #     "ix_items_parent_id",
+    #     "items",
+    #     ["parent_id"],
+    #     postgresql_using="btree",
+    #     postgresql_where=sa.text("parent_id IS NOT NULL"),
+    # )
 
     # Status filtering
-    op.create_index(
-        "ix_items_status",
-        "items",
-        ["status"],
-        postgresql_using="btree",
-    )
+    # op.create_index(
+    #     "ix_items_status",
+    #     "items",
+    #     ["status"],
+    #     postgresql_using="btree",
+    # )
 
     # Owner/assignee filtering
-    op.create_index(
-        "ix_items_owner",
-        "items",
-        ["owner"],
-        postgresql_using="btree",
-    )
+    # op.create_index(
+    #     "ix_items_owner",
+    #     "items",
+    #     ["owner"],
+    #     postgresql_using="btree",
+    # )
 
     # Timestamp-based queries (recent items, archived items)
     op.create_index(
@@ -123,12 +127,12 @@ def upgrade() -> None:
     # ITEMS TABLE COMPOSITE INDEXES (Covering Indexes)
     # =========================================================================
     # Common query: filter items in project by status
-    op.create_index(
-        "ix_items_project_status",
-        "items",
-        ["project_id", "status"],
-        postgresql_using="btree",
-    )
+    # op.create_index(
+    #     "ix_items_project_status",
+    #     "items",
+    #     ["project_id", "status"],
+    #     postgresql_using="btree",
+    # )
 
     # Common query: filter items in project by owner
     op.create_index(
@@ -162,7 +166,7 @@ def upgrade() -> None:
         """
         CREATE INDEX ix_items_search ON items
         USING gin(to_tsvector('english',
-            coalesce(name, '') || ' ' || coalesce(description, '')))
+            coalesce(title, '') || ' ' || coalesce(description, '')))
     """
     )
 
@@ -191,7 +195,7 @@ def upgrade() -> None:
     op.create_index(
         "ix_links_type_created",
         "links",
-        ["type", "created_at"],
+        ["link_type", "created_at"],
         postgresql_using="btree",
     )
 
@@ -202,17 +206,17 @@ def upgrade() -> None:
     op.create_index(
         "ix_items_type",
         "items",
-        ["type"],
+        ["item_type"],
         postgresql_using="btree",
     )
 
     # Priority sorting and filtering
-    op.create_index(
-        "ix_items_priority",
-        "items",
-        ["priority"],
-        postgresql_using="btree",
-    )
+    # op.create_index(
+    #     "ix_items_priority",
+    #     "items",
+    #     ["priority"],
+    #     postgresql_using="btree",
+    # )
 
     # Combined: common dashboard query
     op.create_index(

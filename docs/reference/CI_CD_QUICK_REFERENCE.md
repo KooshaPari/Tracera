@@ -28,26 +28,23 @@ def test_slow():
     pass
 ```
 
-## Makefile Commands
+## Task Commands
 
 ```bash
 # Unit tests (fast → slow)
-make test-unit
+task test:unit
 
 # Integration tests
-make test-integration
+task test:integration
 
 # E2E tests
-make test-e2e
-
-# All tests in parallel
-make test-python-parallel
+task test:e2e
 
 # All backend tests
-make test
+task test
 
 # Go tests only
-make test-go
+task go:test
 ```
 
 ## Local Test Execution

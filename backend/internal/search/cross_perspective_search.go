@@ -193,6 +193,11 @@ func (cs *CrossPerspectiveSearcher) searchPerspective(
 	req *CrossPerspectiveSearchRequest,
 	perspective string,
 ) ([]Result, int, error) {
+	// Check if engine is available
+	if cs.engine == nil {
+		return nil, 0, errors.New("search engine is not available")
+	}
+
 	// Build search request for this perspective
 	searchReq := &Request{
 		Query:               req.Query,
@@ -347,9 +352,9 @@ func filterByDimension(results []Result, key string, value string) []Result {
 	return filtered
 }
 
-// getCurrentTimestamp returns the current timestamp in ISO format
+// getCurrentTimestamp returns the current timestamp in ISO format with milliseconds
 func getCurrentTimestamp() string {
-	return time.Now().UTC().Format("2006-01-02T15:04:05Z")
+	return time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
 }
 
 // Cache provides caching for search results
@@ -390,21 +395,23 @@ func (sc *Cache) Set(key string, value interface{}, ttl int) {
 // Get retrieves a value from the cache
 func (sc *Cache) Get(key string) (interface{}, bool) {
 	sc.mu.RLock()
-	defer sc.mu.RUnlock()
 
 	entry, found := sc.data[key]
 	if !found {
+		sc.mu.RUnlock()
 		return nil, false
 	}
 
 	// Check if expired
 	if expiration, ok := sc.ttl[key]; ok {
-		if time.Now().Unix() > expiration {
-			go sc.Delete(key)
+		if time.Now().Unix() >= expiration {
+			sc.mu.RUnlock()
+			sc.Delete(key)
 			return nil, false
 		}
 	}
 
+	defer sc.mu.RUnlock()
 	return entry.data, true
 }
 

@@ -6,4 +6,4 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 mkdir -p .quality/logs
 
-exec python3 "$ROOT/scripts/quality-report.py" "$@"
+exec python3 "$ROOT/scripts/python/quality-report.py" "$@"

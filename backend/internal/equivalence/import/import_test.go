@@ -195,13 +195,14 @@ func TestJSONImporterValidation(t *testing.T) {
 
 func TestYAMLImporterParse(t *testing.T) {
 	projectID := uuid.New()
+	conceptID := uuid.New()
 
 	yaml := `
 version: "1.0.0"
 exported_at: 2024-01-01T00:00:00Z
 project_id: ` + projectID.String() + `
 canonical_concepts:
-  - id: ` + uuid.New().String() + `
+  - id: ` + conceptID.String() + `
     project_id: ` + projectID.String() + `
     name: TestConcept
     slug: test-concept

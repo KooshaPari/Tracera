@@ -56,9 +56,9 @@ def upgrade() -> None:
                 partition_name
             );
 
-            IF parent_table = 'test_runs_partitioned' THEN
+            IF parent_table = 'test_runs' THEN
                 EXECUTE format(
-                    'CREATE INDEX IF NOT EXISTS %I ON %I(test_suite_id, created_at DESC)',
+                    'CREATE INDEX IF NOT EXISTS %I ON %I(suite_id, created_at DESC)',
                     partition_name || '_suite_created_idx',
                     partition_name
                 );
@@ -93,61 +93,98 @@ def upgrade() -> None:
     # TEST_RUNS: Implement RANGE partitioning by created_at
     # =========================================================================
 
-    op.execute("""
-        DO $$
-        BEGIN
-            IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'test_runs') THEN
-                -- Check if table is already partitioned
-                IF NOT EXISTS (
-                    SELECT 1 FROM pg_class WHERE relname = 'test_runs' AND relkind = 'p'
-                ) THEN
-                    -- Rename existing table
-                    ALTER TABLE test_runs RENAME TO test_runs_old;
-
-                    -- Create partitioned table
-                    CREATE TABLE test_runs (
-                        id uuid NOT NULL DEFAULT gen_random_uuid(),
-                        test_suite_id uuid NOT NULL,
-                        project_id uuid NOT NULL,
-                        status varchar(50) NOT NULL,
-                        started_at timestamp with time zone,
-                        completed_at timestamp with time zone,
-                        test_run_metadata jsonb DEFAULT '{}'::jsonb,
-                        created_at timestamp with time zone NOT NULL DEFAULT NOW(),
-                        updated_at timestamp with time zone NOT NULL DEFAULT NOW(),
-                        PRIMARY KEY (id, created_at)
-                    ) PARTITION BY RANGE (created_at);
-
-                    -- Create partitions for last 12 months and next 3 months
-                    PERFORM ensure_future_partitions('test_runs', 3);
-
-                    -- Create historical partitions (last 12 months)
-                    FOR i IN 1..12 LOOP
-                        PERFORM create_monthly_partition(
-                            'test_runs',
-                            (CURRENT_DATE - (i || ' months')::interval)::date
-                        );
-                    END LOOP;
-
-                    -- Create default partition for data outside range
-                    CREATE TABLE IF NOT EXISTS test_runs_default PARTITION OF test_runs DEFAULT;
-
-                    -- Copy data from old table
-                    INSERT INTO test_runs SELECT * FROM test_runs_old;
-
-                    -- Drop old table
-                    DROP TABLE test_runs_old;
-
-                    -- Create indexes on partitioned table
-                    CREATE INDEX ix_test_runs_suite_id ON test_runs(test_suite_id);
-                    CREATE INDEX ix_test_runs_project_id ON test_runs(project_id);
-                    CREATE INDEX ix_test_runs_status ON test_runs(status);
-
-                    RAISE NOTICE 'test_runs table partitioned successfully';
-                END IF;
-            END IF;
-        END $$;
-    """)
+    # Skip partitioning test_runs for now as it breaks FKs from test_results, etc.
+    # op.execute("""
+    #     DO $$
+    #     BEGIN
+    #         IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'test_runs') THEN
+    #             -- Check if table is already partitioned
+    #             IF NOT EXISTS (
+    #                 SELECT 1 FROM pg_class WHERE relname = 'test_runs' AND relkind = 'p'
+    #             ) THEN
+    #                 -- Rename existing table
+    #                 ALTER TABLE test_runs RENAME TO test_runs_old;
+    #
+    #                 -- Create partitioned table
+    #                 CREATE TABLE test_runs (
+    #                     id varchar(36) NOT NULL,
+    #                     run_number varchar(50) NOT NULL,
+    #                     project_id uuid NOT NULL,
+    #                     suite_id varchar(36),
+    #                     name varchar(500) NOT NULL,
+    #                     description text,
+    #                     status varchar(50) NOT NULL,
+    #                     run_type varchar(50) NOT NULL,
+    #                     environment varchar(255),
+    #                     build_number varchar(255),
+    #                     build_url varchar(1000),
+    #                     branch varchar(255),
+    #                     commit_sha varchar(64),
+    #                     scheduled_at timestamp with time zone,
+    #                     started_at timestamp with time zone,
+    #                     completed_at timestamp with time zone,
+    #                     duration_seconds integer,
+    #                     initiated_by varchar(255),
+    #                     executed_by varchar(255),
+    #                     total_tests integer NOT NULL DEFAULT 0,
+    #                     passed_count integer NOT NULL DEFAULT 0,
+    #                     failed_count integer NOT NULL DEFAULT 0,
+    #                     skipped_count integer NOT NULL DEFAULT 0,
+    #                     blocked_count integer NOT NULL DEFAULT 0,
+    #                     error_count integer NOT NULL DEFAULT 0,
+    #                     pass_rate double precision,
+    #                     notes text,
+    #                     failure_summary text,
+    #                     tags json,
+    #                     external_run_id varchar(255),
+    #                     webhook_id varchar(36),
+    #                     metadata json,
+    #                     version integer NOT NULL DEFAULT 1,
+    #                     created_at timestamp with time zone NOT NULL DEFAULT NOW(),
+    #                     updated_at timestamp with time zone NOT NULL DEFAULT NOW(),
+    #                     PRIMARY KEY (id, created_at)
+    #                 ) PARTITION BY RANGE (created_at);
+    #
+    #                 -- Create partitions for last 12 months and next 3 months
+    #                 PERFORM ensure_future_partitions('test_runs', 3);
+    #
+    #                 -- Create historical partitions (last 12 months)
+    #                 FOR i IN 1..12 LOOP
+    #                     PERFORM create_monthly_partition(
+    #                         'test_runs',
+    #                         (CURRENT_DATE - (i || ' months')::interval)::date
+    #                     );
+    #                 END LOOP;
+    #
+    #                 -- Create default partition for data outside range
+    #                 CREATE TABLE IF NOT EXISTS test_runs_default PARTITION OF test_runs DEFAULT;
+    #
+    #                 -- Copy data from old table
+    #                 INSERT INTO test_runs SELECT * FROM test_runs_old;
+    #
+    #                 -- Drop old table
+    #                 DROP TABLE test_runs_old CASCADE;
+    #
+    #                 -- Create indexes on partitioned table
+    #                 CREATE INDEX ix_test_runs_suite_id ON test_runs(suite_id);
+    #                 CREATE INDEX ix_test_runs_project_id ON test_runs(project_id);
+    #                 CREATE INDEX ix_test_runs_status ON test_runs(status);
+    #
+    #                 -- Recreate foreign keys
+    #                 ALTER TABLE test_results ADD CONSTRAINT test_results_run_id_fkey
+    #                     FOREIGN KEY (run_id) REFERENCES test_runs(id) ON DELETE CASCADE;
+    #                 ALTER TABLE test_run_activities ADD CONSTRAINT test_run_activities_run_id_fkey
+    #                     FOREIGN KEY (run_id) REFERENCES test_runs(id) ON DELETE CASCADE;
+    #                 IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'executions') THEN
+    #                     ALTER TABLE executions ADD CONSTRAINT executions_test_run_id_fkey
+    #                         FOREIGN KEY (test_run_id) REFERENCES test_runs(id) ON DELETE CASCADE;
+    #                 END IF;
+    #
+    #                 RAISE NOTICE 'test_runs table partitioned successfully';
+    #             END IF;
+    #         END IF;
+    #     END $$;
+    # """)
 
     # =========================================================================
     # ITEMS: Prepare for LIST partitioning by project_id
@@ -282,11 +319,11 @@ def upgrade() -> None:
     # PARTITION PRUNING: Enable constraint exclusion
     # =========================================================================
 
-    op.execute("""
-        -- Enable partition pruning optimization
-        ALTER DATABASE CURRENT SET enable_partition_pruning = on;
-        ALTER DATABASE CURRENT SET constraint_exclusion = partition;
-    """)
+    # op.execute("""
+    #     -- Enable partition pruning optimization
+    #     ALTER DATABASE CURRENT SET enable_partition_pruning = on;
+    #     ALTER DATABASE CURRENT SET constraint_exclusion = partition;
+    # """)
 
     # =========================================================================
     # STATISTICS: Update statistics for partitioned tables

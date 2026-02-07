@@ -37,4 +37,4 @@ echo "   OTLP HTTP: localhost:${OTLP_HTTP_PORT}"
 exec ${JAEGER_CMD} \
   --set=receivers.otlp.protocols.grpc.endpoint=:4317 \
   --set=receivers.otlp.protocols.http.endpoint=:4318 \
-  --set=service.extensions=[healthcheckv2,jaeger_storage,jaeger_query,remote_sampling,expvar]
+  --set=service.extensions='[healthcheckv2,jaeger_storage,jaeger_query,remote_sampling,expvar]'

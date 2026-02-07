@@ -10,7 +10,7 @@ from collections.abc import Sequence
 
 # revision identifiers, used by Alembic.
 revision: str = "d0fa574bb4f6"
-down_revision: str | tuple[str, ...] | None = ("006_add_uuid_constraints", "009_add_test_suites_runs", "047_add_workflow_schedules")
+down_revision: str | tuple[str, ...] | None = ("006_add_uuid_constraints", "047_add_workflow_schedules")
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

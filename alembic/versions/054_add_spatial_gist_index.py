@@ -40,7 +40,7 @@ def upgrade() -> None:
     )
 
     # Enable PostGIS extension if not already enabled (for advanced spatial operations)
-    op.execute("CREATE EXTENSION IF NOT EXISTS postgis")
+    # op.execute("CREATE EXTENSION IF NOT EXISTS postgis")
 
     # Create spatial GIST index for graph viewport queries
     # This index allows efficient rectangular range queries on item positions

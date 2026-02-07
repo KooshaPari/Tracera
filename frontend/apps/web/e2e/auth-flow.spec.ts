@@ -99,13 +99,7 @@ test.describe('Authentication Flow - Login', () => {
 
     // Then: Should display validation error or prevent submission
     // Either stays on login page or shows error
-    const isOnLoginPage = page.url().includes('/auth/login');
-    const hasError = await page
-      .locator('[role="alert"]')
-      .isVisible()
-      .catch(() => false);
-
-    expect(isOnLoginPage ?? hasError).toBeTruthy();
+    await expect(page.locator('[role="alert"]').or(page)).toHaveURL(/\/auth\/login/);
   });
 
   test('should require password field', async ({ page }) => {
@@ -121,10 +115,13 @@ test.describe('Authentication Flow - Login', () => {
 
     // Then: Attempting to submit should show error or prevent submission
     const submitButton = page.locator('button[type="submit"]');
-    const isDisabled = await submitButton.isDisabled().catch(() => false);
-
-    // Either button is disabled or page handles the submission
-    expect(isDisabled ?? true).toBeTruthy();
+    // Either button is disabled or we stay on login page after click
+    if (await submitButton.isEnabled()) {
+      await submitButton.click();
+      await expect(page).toHaveURL(/\/auth\/login/);
+    } else {
+      await expect(submitButton).toBeDisabled();
+    }
   });
 
   test('should handle empty email field', async ({ page }) => {
@@ -137,13 +134,7 @@ test.describe('Authentication Flow - Login', () => {
     await page.click('button[type="submit"]');
 
     // Then: Should either prevent submission or show error
-    const isOnLoginPage = page.url().includes('/auth/login');
-    const hasError = await page
-      .locator('[role="alert"]')
-      .isVisible()
-      .catch(() => false);
-
-    expect(isOnLoginPage ?? hasError).toBeTruthy();
+    await expect(page.locator('[role="alert"]').or(page)).toHaveURL(/\/auth\/login/);
   });
 
   test('should trim whitespace from email and password', async ({ page }) => {
@@ -157,15 +148,12 @@ test.describe('Authentication Flow - Login', () => {
     await page.click('button[type="submit"]');
 
     // Then: Should login successfully (whitespace trimmed)
-    await page.waitForURL('/', { timeout: 5000 }).catch(() => null);
+    await page.waitForURL('/', { timeout: 5000 });
+    await expect(page).toHaveURL('/');
 
     // Verify token was stored (successful login)
     const token = await page.evaluate(() => localStorage.getItem('authToken'));
-
-    // If token exists, login succeeded with trimming
-    if (token != null && token !== '') {
-      expect(token).toBeTruthy();
-    }
+    expect(token).toBeTruthy();
   });
 });
 
@@ -240,13 +228,8 @@ test.describe('Authentication Flow - Session Management', () => {
 
     // Then: Should redirect to login page
     // Note: Depending on implementation, might need explicit navigation check
-    const isLoggedOut = await page
-      .locator('[role="alert"]')
-      .isVisible()
-      .catch(() => false);
-    const isOnLoginPage = page.url().includes('/auth/login');
-
-    expect(isLoggedOut ?? isOnLoginPage ?? !page.url().includes('/items')).toBeTruthy();
+    await expect(page).not.toHaveURL('/items');
+    await expect(page).toHaveURL(/\/auth\/login/);
   });
 
   test('should keep session alive during active use', async ({ page }) => {
@@ -708,15 +691,12 @@ test.describe('Authentication Flow - Error Handling', () => {
     await page.click('button[type="submit"]');
 
     // Then: Should show error message
-    await page.waitForTimeout(1000);
-    const hasErrorMessage = await page
-      .locator('[role="alert"]')
-      .isVisible()
-      .catch(() => false);
+    const alert = page.locator('[role="alert"]');
+    await expect(alert).toBeVisible({ timeout: 5000 });
+    await expect(alert).toContainText(/invalid|incorrect/i);
 
     // Error should be communicated to user
-    const isOnLoginPage = page.url().includes('/auth/login');
-    expect(isOnLoginPage ?? hasErrorMessage ?? true).toBeTruthy();
+    await expect(page).toHaveURL(/\/auth\/login/);
   });
 
   test('should handle session expiration during user activity', async ({ page }) => {

@@ -25,8 +25,33 @@ import (
 // setupLinkHandler creates a test handler for validation tests
 func setupLinkHandler(_ *testing.T, mock pgxmock.PgxPoolIface) *LinkHandler {
 	_ = mock // unused
+
+	// Create a default mock service that returns success for all operations
+	mockService := &services.MockLinkService{
+		CreateLinkFunc: func(_ context.Context, link *models.Link) error {
+			return nil
+		},
+		GetLinkFunc: func(_ context.Context, id string) (*models.Link, error) {
+			return &models.Link{
+				ID:       id,
+				SourceID: "item-1",
+				TargetID: "item-2",
+				Type:     "depends_on",
+			}, nil
+		},
+		ListLinksFunc: func(_ context.Context, _ repository.LinkFilter) ([]*models.Link, error) {
+			return []*models.Link{}, nil
+		},
+		UpdateLinkFunc: func(_ context.Context, link *models.Link) error {
+			return nil
+		},
+		DeleteLinkFunc: func(_ context.Context, id string) error {
+			return nil
+		},
+	}
+
 	return &LinkHandler{
-		linkService: nil,
+		linkService: mockService,
 		itemService: nil,
 		binder:      &TestBinder{},
 	}

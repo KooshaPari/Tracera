@@ -159,19 +159,19 @@ Trace is a **comprehensive requirement traceability and project tracking system*
 
 ```bash
 # Run all tests
-pytest tests/ --cov=src/tracertm
+task test
+
+# Run unit tests
+task test:unit
 
 # Run linting
-ruff check src/ tests/
+task lint
 
-# Type check
-mypy src/tracertm/ --strict
+# Format code
+task format
 
-# Build project
-python -m build
-
-# Run CLI
-python -m tracertm.cli
+# Start dev environment
+task dev:tui
 ```
 
 ## 🎯 What's Next?

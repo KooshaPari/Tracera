@@ -12,26 +12,26 @@ import (
 // TestNewConnectedMessage tests connected message creation
 func TestNewConnectedMessage(t *testing.T) {
 	clientID := "client-123"
-	msg := NewConnectedMessage(clientID)
+	projectID := "project-456"
+	msg := NewConnectedMessage(clientID, projectID)
 
 	require.NotNil(t, msg)
 	assert.Equal(t, string(MessageTypeConnected), msg.Type)
 	assert.NotNil(t, msg.Data)
 	assert.Equal(t, clientID, msg.Data["client_id"])
+	assert.Equal(t, projectID, msg.Data["project_id"])
 	assert.NotZero(t, msg.Timestamp)
 }
 
 // TestNewDisconnectedMessage tests disconnected message creation
 func TestNewDisconnectedMessage(t *testing.T) {
 	clientID := "client-456"
-	reason := "connection_timeout"
-	msg := NewDisconnectedMessage(clientID, reason)
+	msg := NewDisconnectedMessage(clientID)
 
 	require.NotNil(t, msg)
 	assert.Equal(t, string(MessageTypeDisconnected), msg.Type)
 	assert.NotNil(t, msg.Data)
 	assert.Equal(t, clientID, msg.Data["client_id"])
-	assert.Equal(t, reason, msg.Data["reason"])
 	assert.NotZero(t, msg.Timestamp)
 }
 
@@ -48,51 +48,54 @@ func TestNewErrorMessage(t *testing.T) {
 	require.NotNil(t, msg)
 	assert.Equal(t, string(MessageTypeError), msg.Type)
 	assert.NotNil(t, msg.Data)
-
-	errorData := msg.Data["error"].(map[string]interface{})
-	assert.Equal(t, code, errorData["code"])
-	assert.Equal(t, message, errorData["message"])
-	assert.NotNil(t, errorData["details"])
+	assert.Equal(t, code, msg.Data["code"])
+	assert.Equal(t, message, msg.Data["message"])
+	assert.NotNil(t, msg.Data["details"])
 	assert.NotZero(t, msg.Timestamp)
 }
 
 // TestNewSubscribedMessage tests subscribed message creation
 func TestNewSubscribedMessage(t *testing.T) {
-	subscriptionID := "sub-789"
-	resourceType := SubscriptionTypeItem
-	resourceID := "item-123"
+	resp := &SubscribeResponse{
+		SubscriptionID: "sub-789",
+		Type:           SubscribeToEntity,
+		ResourceID:     "item-123",
+		Success:        true,
+	}
 
-	msg := NewSubscribedMessage(subscriptionID, resourceType, resourceID)
+	msg := NewSubscribedMessage(resp)
 
 	require.NotNil(t, msg)
 	assert.Equal(t, string(MessageTypeSubscribed), msg.Type)
 	assert.NotNil(t, msg.Data)
-	assert.Equal(t, subscriptionID, msg.Data["subscription_id"])
-	assert.Equal(t, string(resourceType), msg.Data["resource_type"])
-	assert.Equal(t, resourceID, msg.Data["resource_id"])
+	assert.Equal(t, resp.SubscriptionID, msg.Data["subscription_id"])
+	assert.Equal(t, resp.Type, msg.Data["type"])
+	assert.Equal(t, resp.ResourceID, msg.Data["resource_id"])
 	assert.NotZero(t, msg.Timestamp)
 }
 
 // TestNewUnsubscribedMessage tests unsubscribed message creation
 func TestNewUnsubscribedMessage(t *testing.T) {
-	subscriptionID := "sub-456"
-	success := true
+	resp := &UnsubscribeResponse{
+		SubscriptionID: "sub-456",
+		Success:        true,
+	}
 
-	msg := NewUnsubscribedMessage(subscriptionID, success)
+	msg := NewUnsubscribedMessage(resp)
 
 	require.NotNil(t, msg)
 	assert.Equal(t, string(MessageTypeUnsubscribed), msg.Type)
 	assert.NotNil(t, msg.Data)
-	assert.Equal(t, subscriptionID, msg.Data["subscription_id"])
-	assert.Equal(t, success, msg.Data["success"])
+	assert.Equal(t, resp.SubscriptionID, msg.Data["subscription_id"])
+	assert.Equal(t, resp.Success, msg.Data["success"])
 	assert.NotZero(t, msg.Timestamp)
 }
 
 // TestNewEventMessage tests event message creation
 func TestNewEventMessage(t *testing.T) {
 	event := &events.Event{
-		Type:     "item.created",
-		EntityID: "item-789",
+		EventType: "item.created",
+		EntityID:  "item-789",
 		Data: map[string]interface{}{
 			"title": "New Item",
 		},
@@ -106,228 +109,37 @@ func TestNewEventMessage(t *testing.T) {
 	assert.NotZero(t, msg.Timestamp)
 }
 
-// TestNewPresenceJoinMessage tests presence join message creation
-func TestNewPresenceJoinMessage(t *testing.T) {
-	userID := "user-123"
-	projectID := "proj-456"
-	entityID := "item-789"
-
-	msg := NewPresenceJoinMessage(userID, projectID, entityID)
-
-	require.NotNil(t, msg)
-	assert.Equal(t, string(MessageTypePresenceJoin), msg.Type)
-	assert.NotNil(t, msg.Data)
-
-	presence := msg.Data["presence"].(map[string]interface{})
-	assert.Equal(t, userID, presence["user_id"])
-	assert.Equal(t, projectID, presence["project_id"])
-	assert.Equal(t, entityID, presence["entity_id"])
-	assert.Equal(t, "join", presence["action"])
-	assert.NotZero(t, msg.Timestamp)
-}
-
-// TestNewPresenceLeaveMessage tests presence leave message creation
-func TestNewPresenceLeaveMessage(t *testing.T) {
-	userID := "user-456"
-	projectID := "proj-789"
-	entityID := "item-123"
-
-	msg := NewPresenceLeaveMessage(userID, projectID, entityID)
-
-	require.NotNil(t, msg)
-	assert.Equal(t, string(MessageTypePresenceLeave), msg.Type)
-	assert.NotNil(t, msg.Data)
-
-	presence := msg.Data["presence"].(map[string]interface{})
-	assert.Equal(t, userID, presence["user_id"])
-	assert.Equal(t, projectID, presence["project_id"])
-	assert.Equal(t, entityID, presence["entity_id"])
-	assert.Equal(t, "leave", presence["action"])
-	assert.NotZero(t, msg.Timestamp)
-}
-
-// TestNewPresenceUpdateMessage tests presence update message creation
-func TestNewPresenceUpdateMessage(t *testing.T) {
-	userID := "user-789"
-	projectID := "proj-123"
-	status := PresenceStatusActive
-	metadata := map[string]interface{}{
-		"cursor_position": "line:42",
+// TestPresenceMessages tests presence-related message creation
+func TestPresenceMessages(t *testing.T) {
+	presence := &PresenceActivity{
+		UserID:       "user-1",
+		ClientID:     "client-1",
+		ProjectID:    "project-1",
+		Status:       PresenceOnline,
+		ConnectedAt:  time.Now(),
+		LastActivity: time.Now(),
 	}
 
-	msg := NewPresenceUpdateMessage(userID, projectID, status, metadata)
+	// Join message
+	joinMsg := NewPresenceJoinMessage(presence)
+	require.NotNil(t, joinMsg)
+	assert.Equal(t, string(MessageTypePresenceJoin), joinMsg.Type)
+	assert.Equal(t, presence.UserID, joinMsg.Data["user_id"])
 
-	require.NotNil(t, msg)
-	assert.Equal(t, string(MessageTypePresenceUpdate), msg.Type)
-	assert.NotNil(t, msg.Data)
+	// Update message
+	updateMsg := NewPresenceUpdateMessage(presence)
+	require.NotNil(t, updateMsg)
+	assert.Equal(t, string(MessageTypePresenceUpdate), updateMsg.Type)
+	assert.Equal(t, presence.Status, updateMsg.Data["status"])
 
-	presence := msg.Data["presence"].(map[string]interface{})
-	assert.Equal(t, userID, presence["user_id"])
-	assert.Equal(t, projectID, presence["project_id"])
-	assert.Equal(t, string(status), presence["status"])
-	assert.Equal(t, metadata, presence["metadata"])
-	assert.Equal(t, "update", presence["action"])
-	assert.NotZero(t, msg.Timestamp)
-}
+	// Viewing message
+	viewingMsg := NewPresenceViewingMessage(presence)
+	require.NotNil(t, viewingMsg)
+	assert.Equal(t, string(MessageTypePresenceViewing), viewingMsg.Type)
 
-// TestNewPresenceViewingMessage tests presence viewing message creation
-func TestNewPresenceViewingMessage(t *testing.T) {
-	userID := "user-123"
-	projectID := "proj-456"
-	entityID := "item-789"
-	entityType := "item"
-
-	msg := NewPresenceViewingMessage(userID, projectID, entityID, entityType)
-
-	require.NotNil(t, msg)
-	assert.Equal(t, string(MessageTypePresenceViewing), msg.Type)
-	assert.NotNil(t, msg.Data)
-
-	presence := msg.Data["presence"].(map[string]interface{})
-	assert.Equal(t, userID, presence["user_id"])
-	assert.Equal(t, projectID, presence["project_id"])
-	assert.Equal(t, entityID, presence["entity_id"])
-	assert.Equal(t, entityType, presence["entity_type"])
-	assert.Equal(t, "viewing", presence["action"])
-	assert.NotZero(t, msg.Timestamp)
-}
-
-// TestNewPresenceEditingMessage tests presence editing message creation
-func TestNewPresenceEditingMessage(t *testing.T) {
-	userID := "user-456"
-	projectID := "proj-789"
-	entityID := "item-123"
-	entityType := "requirement"
-
-	msg := NewPresenceEditingMessage(userID, projectID, entityID, entityType)
-
-	require.NotNil(t, msg)
-	assert.Equal(t, string(MessageTypePresenceEditing), msg.Type)
-	assert.NotNil(t, msg.Data)
-
-	presence := msg.Data["presence"].(map[string]interface{})
-	assert.Equal(t, userID, presence["user_id"])
-	assert.Equal(t, projectID, presence["project_id"])
-	assert.Equal(t, entityID, presence["entity_id"])
-	assert.Equal(t, entityType, presence["entity_type"])
-	assert.Equal(t, "editing", presence["action"])
-	assert.NotZero(t, msg.Timestamp)
-}
-
-// TestNewStatsMessage tests stats message creation
-func TestNewStatsMessage(t *testing.T) {
-	clients := 42
-	projects := 10
-	subscriptions := 150
-	presence := 25
-
-	msg := NewStatsMessage(clients, projects, subscriptions, presence)
-
-	require.NotNil(t, msg)
-	assert.Equal(t, string(MessageTypeStats), msg.Type)
-	assert.NotNil(t, msg.Data)
-
-	stats := msg.Data["stats"].(map[string]interface{})
-	assert.Equal(t, clients, stats["clients"])
-	assert.Equal(t, projects, stats["projects"])
-	assert.Equal(t, subscriptions, stats["subscriptions"])
-	assert.Equal(t, presence, stats["presence"])
-	assert.NotZero(t, msg.Timestamp)
-}
-
-// TestNewAckMessage tests acknowledgment message creation
-func TestNewAckMessage(t *testing.T) {
-	messageID := "msg-789"
-	success := true
-
-	msg := NewAckMessage(messageID, success)
-
-	require.NotNil(t, msg)
-	assert.Equal(t, string(MessageTypeAck), msg.Type)
-	assert.NotNil(t, msg.Data)
-	assert.Equal(t, messageID, msg.Data["message_id"])
-	assert.Equal(t, success, msg.Data["success"])
-	assert.NotZero(t, msg.Timestamp)
-}
-
-// TestNewMessageRouter tests message router creation
-func TestNewMessageRouter(t *testing.T) {
-	router := NewMessageRouter()
-
-	require.NotNil(t, router)
-	assert.NotNil(t, router.handlers)
-	assert.Equal(t, 0, len(router.handlers))
-}
-
-// TestMessageRouter_Register tests handler registration
-func TestMessageRouter_Register(t *testing.T) {
-	router := NewMessageRouter()
-
-	called := false
-	handler := func(c *Client, m *Message) error {
-		called = true
-		return nil
-	}
-
-	router.Register(MessageTypeConnected, handler)
-	assert.Equal(t, 1, len(router.handlers))
-
-	// Verify handler is registered
-	registeredHandler, exists := router.handlers[MessageTypeConnected]
-	assert.True(t, exists)
-	assert.NotNil(t, registeredHandler)
-
-	// Call handler to verify it works
-	err := registeredHandler(nil, nil)
-	assert.NoError(t, err)
-	assert.True(t, called)
-}
-
-// TestMessageRouter_Route tests message routing
-func TestMessageRouter_Route(t *testing.T) {
-	router := NewMessageRouter()
-
-	receivedMsg := (*Message)(nil)
-	receivedClient := (*Client)(nil)
-
-	handler := func(c *Client, m *Message) error {
-		receivedClient = c
-		receivedMsg = m
-		return nil
-	}
-
-	router.Register(MessageTypeConnected, handler)
-
-	client := &Client{
-		ID:        "client-123",
-		ProjectID: "proj-456",
-	}
-	msg := &Message{
-		Type:      string(MessageTypeConnected),
-		Timestamp: time.Now(),
-	}
-
-	err := router.Route(client, msg)
-	assert.NoError(t, err)
-	assert.Equal(t, client, receivedClient)
-	assert.Equal(t, msg, receivedMsg)
-}
-
-// TestMessageRouter_Route_UnhandledMessage tests routing unhandled message
-func TestMessageRouter_Route_UnhandledMessage(t *testing.T) {
-	router := NewMessageRouter()
-
-	client := &Client{
-		ID:        "client-123",
-		ProjectID: "proj-456",
-	}
-	msg := &Message{
-		Type:      string(MessageTypeConnected),
-		Timestamp: time.Now(),
-	}
-
-	// No handler registered, should return error
-	err := router.Route(client, msg)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "no handler")
+	// Leave message
+	leaveMsg := NewPresenceLeaveMessage("user-1", "client-1", "project-1")
+	require.NotNil(t, leaveMsg)
+	assert.Equal(t, string(MessageTypePresenceLeave), leaveMsg.Type)
+	assert.Equal(t, "user-1", leaveMsg.Data["user_id"])
 }

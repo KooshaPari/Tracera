@@ -305,11 +305,11 @@ func (h *AuthHandler) Register(c echo.Context) error {
 	ctx := context.Background()
 
 	req, err := h.parseRegisterRequest(c)
-	if err != nil {
+	if err != nil || req == nil {
 		return err
 	}
-	if err := h.validateRegisterPassword(c, req.Password); err != nil {
-		return err
+	if !h.validateRegisterPassword(c, req.Password) {
+		return nil
 	}
 
 	if err := h.ensureRedisConfigured(); err != nil {
@@ -392,10 +392,10 @@ func (h *AuthHandler) parseRegisterRequest(c echo.Context) (*RegisterRequest, er
 	return req, nil
 }
 
-func (h *AuthHandler) validateRegisterPassword(c echo.Context, password string) error {
+func (h *AuthHandler) validateRegisterPassword(c echo.Context, password string) bool {
 	validationErrors := h.passwordValidator.ValidatePassword(password)
 	if len(validationErrors) == 0 {
-		return nil
+		return true
 	}
 
 	errorMessages := make([]string, len(validationErrors))
@@ -403,10 +403,11 @@ func (h *AuthHandler) validateRegisterPassword(c echo.Context, password string) 
 		errorMessages[i] = ve.Message
 	}
 
-	return c.JSON(http.StatusBadRequest, map[string]interface{}{
+	_ = c.JSON(http.StatusBadRequest, map[string]interface{}{
 		"error":    "password does not meet strength requirements",
 		"messages": errorMessages,
 	})
+	return false
 }
 
 func (h *AuthHandler) createRegisterUser(req *RegisterRequest) (*auth.User, string, error) {

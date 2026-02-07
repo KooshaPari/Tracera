@@ -193,11 +193,11 @@ type listItemsPagination struct {
 func parseProjectIDParam(c echo.Context) (*string, error) {
 	projectIDStr := c.QueryParam("project_id")
 	if projectIDStr == "" {
-		return nil, nil
+		return nil, errors.New("project_id is required")
 	}
 
 	if _, err := uuidutil.StringToUUID(projectIDStr); err != nil {
-		return nil, errors.New("invalid project_id")
+		return nil, errors.New("Invalid project_id")
 	}
 
 	return &projectIDStr, nil
@@ -337,7 +337,7 @@ func (h *ItemHandler) UpdateItem(c echo.Context) error {
 
 	item, err := h.buildUpdatedItemFromRequest(c)
 	if err != nil {
-		return err
+		return nil // Response already written by buildUpdatedItemFromRequest
 	}
 
 	// Call service (handles validation, caching, and events)
@@ -365,7 +365,8 @@ type updateItemRequest struct {
 func (h *ItemHandler) buildUpdatedItemFromRequest(c echo.Context) (*models.Item, error) {
 	idStr := c.Param("id")
 	if _, err := uuidutil.StringToUUID(idStr); err != nil {
-		return nil, c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid item ID"})
+		c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid item ID"})
+		return nil, errors.New("invalid item ID")
 	}
 
 	req, err := h.parseUpdateItemRequest(c)
@@ -437,7 +438,8 @@ func (handler *ItemHandler) DeleteItem(c echo.Context) error {
 	idStr := c.Param("id")
 	_, err := uuidutil.StringToUUID(idStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid item ID"})
+		c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid item ID"})
+		return nil
 	}
 
 	// Service layer path ONLY - handles validation, link deletion, caching, and events

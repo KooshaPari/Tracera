@@ -412,7 +412,7 @@ func vectorToString(vec EmbeddingVector) string {
 		if i > 0 {
 			builder.WriteByte(',')
 		}
-		builder.WriteString(strconv.FormatFloat(float64(val), 'f', -1, vectorFloatBits))
+		builder.WriteString(strconv.FormatFloat(float64(val), 'f', 6, vectorFloatBits))
 	}
 	builder.WriteByte(']')
 	return builder.String()

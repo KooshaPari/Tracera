@@ -64,6 +64,10 @@ type CodeRelationshipInput struct {
 
 // IndexCode indexes code entities from a file
 func (h *CodeIndexHandler) IndexCode(c echo.Context) error {
+	if h.service == nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Code index service not initialized"})
+	}
+
 	var req IndexCodeRequest
 	if err := h.binder.Bind(c, &req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
@@ -100,6 +104,10 @@ func (h *CodeIndexHandler) IndexCode(c echo.Context) error {
 
 // ListEntities lists indexed code entities
 func (h *CodeIndexHandler) ListEntities(c echo.Context) error {
+	if h.service == nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Code index service not initialized"})
+	}
+
 	projectID := c.QueryParam("project_id")
 	if projectID == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "project_id is required"})
@@ -137,6 +145,10 @@ func (h *CodeIndexHandler) ListEntities(c echo.Context) error {
 
 // GetEntity retrieves a single code entity by ID
 func (h *CodeIndexHandler) GetEntity(c echo.Context) error {
+	if h.service == nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Code index service not initialized"})
+	}
+
 	entityID := c.Param("id")
 	if entityID == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "id is required"})
@@ -158,6 +170,10 @@ func (h *CodeIndexHandler) GetEntity(c echo.Context) error {
 
 // UpdateEntity updates a code entity
 func (h *CodeIndexHandler) UpdateEntity(c echo.Context) error {
+	if h.service == nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Code index service not initialized"})
+	}
+
 	entityID := c.Param("id")
 	if entityID == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "id is required"})
@@ -183,6 +199,10 @@ func (h *CodeIndexHandler) UpdateEntity(c echo.Context) error {
 
 // DeleteEntity deletes a code entity
 func (h *CodeIndexHandler) DeleteEntity(echoCtx echo.Context) error {
+	if h.service == nil {
+		return echoCtx.JSON(http.StatusInternalServerError, map[string]string{"error": "Code index service not initialized"})
+	}
+
 	entityID := echoCtx.Param("id")
 	if entityID == "" {
 		return echoCtx.JSON(http.StatusBadRequest, map[string]string{"error": "id is required"})
@@ -199,6 +219,10 @@ func (h *CodeIndexHandler) DeleteEntity(echoCtx echo.Context) error {
 
 // Reindex reindexes all code entities for a project (soft reset)
 func (handler *CodeIndexHandler) Reindex(echoCtx echo.Context) error {
+	if handler.service == nil {
+		return echoCtx.JSON(http.StatusInternalServerError, map[string]string{"error": "Code index service not initialized"})
+	}
+
 	var req struct {
 		ProjectID string `json:"project_id"`
 	}
@@ -227,6 +251,10 @@ func (handler *CodeIndexHandler) Reindex(echoCtx echo.Context) error {
 
 // SearchEntities searches code entities
 func (handler *CodeIndexHandler) SearchEntities(c echo.Context) error {
+	if handler.service == nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Code index service not initialized"})
+	}
+
 	params, err := parseSearchEntitiesParams(c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
@@ -304,6 +332,10 @@ func parseSearchOffset(value string) int {
 
 // GetStats retrieves code indexing statistics
 func (handler *CodeIndexHandler) GetStats(c echo.Context) error {
+	if handler.service == nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Code index service not initialized"})
+	}
+
 	projectID := c.QueryParam("project_id")
 	if projectID == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "project_id is required"})
@@ -321,6 +353,10 @@ func (handler *CodeIndexHandler) GetStats(c echo.Context) error {
 
 // BatchIndexCode indexes multiple code entities in batch
 func (h *CodeIndexHandler) BatchIndexCode(c echo.Context) error {
+	if h.service == nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Code index service not initialized"})
+	}
+
 	var req struct {
 		ProjectID string             `json:"project_id"`
 		Batches   []IndexCodeRequest `json:"batches"`

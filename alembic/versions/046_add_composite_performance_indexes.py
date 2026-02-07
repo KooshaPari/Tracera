@@ -37,12 +37,12 @@ def upgrade() -> None:
     # ITEMS TABLE - Complete Item Filtering Optimization
     # =========================================================================
     # Composite index for the most common query pattern:
-    # WHERE project_id = ? AND deleted_at IS NULL AND type = ?
+    # WHERE project_id = ? AND deleted_at IS NULL AND item_type = ?
     # This covers filtering active items by type within a project
     op.create_index(
         "ix_items_project_deleted_type",
         "items",
-        ["project_id", "deleted_at", "type"],
+        ["project_id", "deleted_at", "item_type"],
         unique=False,
         postgresql_using="btree",
     )

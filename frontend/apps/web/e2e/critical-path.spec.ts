@@ -27,12 +27,7 @@ test.describe('CRITICAL PATH: Project Creation Flow', { tag: '@smoke' }, () => {
     const createBtn = page.getByRole('button', { name: /create|new|add.*project/i }).first();
 
     // Check if button is visible
-    const isCreateVisible = await createBtn.isVisible({ timeout: 3000 }).catch(() => false);
-
-    if (!isCreateVisible) {
-      console.log('Create button not found - project creation UI may not be ready');
-      return;
-    }
+    await expect(createBtn).toBeVisible({ timeout: 3000 });
 
     await createBtn.click();
     await page.waitForTimeout(500);
@@ -48,33 +43,26 @@ test.describe('CRITICAL PATH: Project Creation Flow', { tag: '@smoke' }, () => {
       .or(page.getByPlaceholder(/description/i))
       .first();
 
-    if (await nameInput.isVisible({ timeout: 2000 })) {
-      // Generate unique project name with timestamp
-      const projectName = `Critical Path Test ${Date.now()}`;
-      await nameInput.fill(projectName);
+    await expect(nameInput).toBeVisible({ timeout: 2000 });
+    // Generate unique project name with timestamp
+    const projectName = `Critical Path Test ${Date.now()}`;
+    await nameInput.fill(projectName);
 
-      if (await descInput.isVisible({ timeout: 1000 })) {
-        await descInput.fill('Critical path test project created via E2E');
-      }
+    await expect(descInput).toBeVisible({ timeout: 1000 });
+    await descInput.fill('Critical path test project created via E2E');
 
-      // 4. Submit form
-      const submitBtn = page.getByRole('button', {
-        name: /create|save|submit/i,
-      });
+    // 4. Submit form
+    const submitBtn = page.getByRole('button', {
+      name: /create|save|submit/i,
+    });
 
-      if (await submitBtn.isVisible({ timeout: 1000 })) {
-        await submitBtn.click();
-        await page.waitForLoadState('networkidle');
+    await expect(submitBtn).toBeVisible({ timeout: 1000 });
+    await submitBtn.click();
+    await page.waitForLoadState('networkidle');
 
-        // 5. Verify project was created
-        const projectNameText = page.getByText(projectName);
-        await expect(projectNameText)
-          .toBeVisible({ timeout: 5000 })
-          .catch(() => {
-            console.log('Project creation may have succeeded but is not visible yet');
-          });
-      }
-    }
+    // 5. Verify project was created
+    const projectNameText = page.getByText(projectName);
+    await expect(projectNameText).toBeVisible({ timeout: 5000 });
   });
 
   test('should display list of existing projects', async ({ page }) => {
@@ -84,12 +72,9 @@ test.describe('CRITICAL PATH: Project Creation Flow', { tag: '@smoke' }, () => {
     // Look for any project name in the list
     const projectItems = page.locator('text=/TraceRTM Core|Mobile App|project/i');
 
-    const count = await projectItems.count().catch(() => 0);
-    // Soft assertion - may not have visible projects on first load
-    if (count === 0) {
-      console.log('No projects found in list - may be empty or loading');
-    }
-    expect(count).toBeGreaterThanOrEqual(0);
+    const count = await projectItems.count();
+    // Projects should be present
+    expect(count).toBeGreaterThan(0);
   });
 });
 
@@ -106,12 +91,7 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
     // 2. Find create button
     const createBtn = page.getByRole('button', { name: /create|new|add.*item/i }).first();
 
-    const isVisible = await createBtn.isVisible({ timeout: 3000 }).catch(() => false);
-
-    if (!isVisible) {
-      console.log('Create item button not found - item creation may not be ready');
-      return;
-    }
+    await expect(createBtn).toBeVisible({ timeout: 3000 });
 
     await createBtn.click();
     await page.waitForTimeout(500);
@@ -122,50 +102,41 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
       .or(page.getByPlaceholder(/title/i))
       .first();
 
-    if (await titleInput.isVisible({ timeout: 2000 })) {
-      const itemTitle = `Critical Path Item ${Date.now()}`;
-      await titleInput.fill(itemTitle);
+    await expect(titleInput).toBeVisible({ timeout: 2000 });
+    const itemTitle = `Critical Path Item ${Date.now()}`;
+    await titleInput.fill(itemTitle);
 
-      // Try to fill description
-      const descInput = page
-        .getByLabel(/description/i)
-        .or(page.getByPlaceholder(/description/i))
-        .first();
+    // Try to fill description
+    const descInput = page
+      .getByLabel(/description/i)
+      .or(page.getByPlaceholder(/description/i))
+      .first();
 
-      if (await descInput.isVisible({ timeout: 1000 })) {
-        await descInput.fill('Critical path test item - verifies item creation works');
-      }
+    await expect(descInput).toBeVisible({ timeout: 1000 });
+    await descInput.fill('Critical path test item - verifies item creation works');
 
-      // Try to select type
-      const typeSelect = page.getByLabel(/type/i).first();
-      if (await typeSelect.isVisible({ timeout: 1000 })) {
-        await typeSelect.click();
-        await page.waitForTimeout(300);
+    // Try to select type
+    const typeSelect = page.getByLabel(/type/i).first();
+    await expect(typeSelect).toBeVisible({ timeout: 1000 });
+    await typeSelect.click();
+    await page.waitForTimeout(300);
 
-        const requirementOption = page.getByText(/requirement/i).first();
-        if (await requirementOption.isVisible({ timeout: 1000 })) {
-          await requirementOption.click();
-        }
-      }
+    const requirementOption = page.getByText(/requirement/i).first();
+    await expect(requirementOption).toBeVisible({ timeout: 1000 });
+    await requirementOption.click();
 
-      // 4. Submit form
-      const submitBtn = page.getByRole('button', {
-        name: /create|save|submit|add/i,
-      });
+    // 4. Submit form
+    const submitBtn = page.getByRole('button', {
+      name: /create|save|submit|add/i,
+    });
 
-      if (await submitBtn.isVisible({ timeout: 1000 })) {
-        await submitBtn.click();
-        await page.waitForLoadState('networkidle');
+    await expect(submitBtn).toBeVisible({ timeout: 1000 });
+    await submitBtn.click();
+    await page.waitForLoadState('networkidle');
 
-        // 5. Verify item appears in list
-        const itemText = page.getByText(itemTitle);
-        await expect(itemText)
-          .toBeVisible({ timeout: 5000 })
-          .catch(() => {
-            console.log('Item creation may have succeeded but is not visible');
-          });
-      }
-    }
+    // 5. Verify item appears in list
+    const itemText = page.getByText(itemTitle);
+    await expect(itemText).toBeVisible({ timeout: 5000 });
   });
 
   test('should update existing item status', async ({ page }) => {
@@ -179,12 +150,7 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
       })
       .first();
 
-    const itemExists = await itemLink.isVisible({ timeout: 2000 }).catch(() => false);
-
-    if (!itemExists) {
-      console.log('No items found to update - skipping status update test');
-      return;
-    }
+    await expect(itemLink).toBeVisible({ timeout: 2000 });
 
     // 3. Click to navigate to item detail
     await itemLink.click();
@@ -196,21 +162,17 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
       .first()
       .or(page.locator("[role='combobox']").filter({ hasText: /status/i }));
 
-    const hasStatus = await statusField.isVisible({ timeout: 2000 }).catch(() => false);
+    await expect(statusField).toBeVisible({ timeout: 2000 });
 
-    if (hasStatus) {
-      // 5. Change status
-      await statusField.click();
-      await page.waitForTimeout(300);
+    // 5. Change status
+    await statusField.click();
+    await page.waitForTimeout(300);
 
-      const completedOption = page.getByText(/completed|done|finished/i);
-      const optionExists = await completedOption.isVisible({ timeout: 1000 }).catch(() => false);
+    const completedOption = page.getByText(/completed|done|finished/i);
+    await expect(completedOption).toBeVisible({ timeout: 1000 });
 
-      if (optionExists) {
-        await completedOption.click();
-        await page.waitForLoadState('networkidle');
-      }
-    }
+    await completedOption.click();
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display items in table format', async ({ page }) => {
@@ -219,14 +181,15 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
 
     // Look for any table content
     const rows = page.locator('tbody tr').or(page.locator("[role='row']"));
-    const rowCount = await rows.count().catch(() => 0);
+    const rowCount = await rows.count();
 
-    expect(rowCount).toBeGreaterThanOrEqual(0);
+    expect(rowCount).toBeGreaterThan(0);
 
     // Check for common item properties displayed
     const headers = page.locator("thead [role='columnheader']");
-    const headerCount = await headers.count().catch(() => 0);
+    const headerCount = await headers.count();
 
+    expect(headerCount).toBeGreaterThan(0);
     console.log(`Found ${headerCount} table headers and ${rowCount} rows`);
   });
 });
@@ -247,48 +210,32 @@ test.describe('CRITICAL PATH: Link Creation Between Items', { tag: '@smoke' }, (
       name: /add link|create link|new link|link to/i,
     });
 
-    const hasMissingLink = page.getByText(/no links|no relationships/i);
+    await expect(linkButton).toBeVisible({ timeout: 2000 });
 
-    const buttonExists = await linkButton.isVisible({ timeout: 2000 }).catch(() => false);
+    // 3. Click to create link
+    await linkButton.click();
+    await page.waitForTimeout(500);
 
-    const emptyStateExists = await hasMissingLink.isVisible({ timeout: 2000 }).catch(() => false);
+    // 4. Look for link form
+    const targetSelect = page.getByLabel(/target.*item|target/i).first();
 
-    if (buttonExists) {
-      // 3. Click to create link
-      await linkButton.click();
-      await page.waitForTimeout(500);
-
-      // 4. Look for link form
-      const targetSelect = page.getByLabel(/target.*item|target/i).first();
-
-      const _hasForm = await targetSelect.isVisible({ timeout: 2000 }).catch(() => false);
-
-      expect(buttonExists ?? emptyStateExists).toBeTruthy();
-    } else {
-      console.log('Link creation button not found - links feature may not be implemented');
-    }
+    await expect(targetSelect).toBeVisible({ timeout: 2000 });
   });
 
   test('should navigate to graph view showing links', async ({ page }) => {
     // Navigate to graph view
     const graphLink = page.getByRole('link', { name: /graph|visualization/i });
 
-    const graphExists = await graphLink.isVisible({ timeout: 2000 }).catch(() => false);
+    await expect(graphLink).toBeVisible({ timeout: 2000 });
 
-    if (graphExists) {
-      await graphLink.click();
-      await page.waitForLoadState('networkidle');
+    await graphLink.click();
+    await page.waitForLoadState('networkidle');
 
-      await expect(page).toHaveURL(/\/graph/);
+    await expect(page).toHaveURL(/\/graph/);
 
-      // Check for graph container
-      const graphContainer = page.locator("[data-testid='graph-container']");
-      const hasGraph = await graphContainer.isVisible({ timeout: 3000 }).catch(() => false);
-
-      console.log(
-        `Graph view ${hasGraph ? 'loaded' : 'not found'} - may be using different selector`,
-      );
-    }
+    // Check for graph container
+    const graphContainer = page.locator("[data-testid='graph-container']");
+    await expect(graphContainer).toBeVisible({ timeout: 3000 });
   });
 });
 
@@ -300,34 +247,11 @@ test.describe('CRITICAL PATH: Navigation Between Views', { tag: '@smoke' }, () =
 
     // Verify page loaded - check for dashboard content
     // Use first() to handle multiple elements, and increase timeout
-    const hasContent =
-      (await page
-        .locator('main')
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false)) ||
-      (await page
-        .locator("[role='main']")
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false)) ||
-      (await page
-        .locator('h1')
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false)) ||
-      (await page
-        .getByRole('heading', { level: 1 })
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false)) ||
-      (await page
-        .getByText(/dashboard/i)
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false));
+    const main = page.locator('main').first();
+    const h1 = page.locator('h1').first();
+    const dashboardText = page.getByText(/dashboard/i).first();
 
-    expect(hasContent).toBe(true);
+    await expect(main.or(h1).or(dashboardText)).toBeVisible({ timeout: 5000 });
   });
 
   test('should navigate from projects to items to detail', async ({ page }) => {
@@ -344,16 +268,12 @@ test.describe('CRITICAL PATH: Navigation Between Views', { tag: '@smoke' }, () =
     // 3. Navigate to an item detail by clicking on an item
     const firstItem = page.locator("a[href^='/items/']").first();
 
-    if (await firstItem.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await firstItem.click();
-      await page.waitForLoadState('networkidle');
+    await expect(firstItem).toBeVisible({ timeout: 3000 });
+    await firstItem.click();
+    await page.waitForLoadState('networkidle');
 
-      // Should be on detail page
-      await expect(page).toHaveURL(/\/items\/[a-z0-9-]+/);
-    } else {
-      // Items may not be loaded yet, verify we're at least on items page
-      await expect(page).toHaveURL(/\/items/);
-    }
+    // Should be on detail page
+    await expect(page).toHaveURL(/\/items\/[a-z0-9-]+/);
   });
 
   test('should use browser back button to navigate', async ({ page }) => {
@@ -375,14 +295,14 @@ test.describe('CRITICAL PATH: Navigation Between Views', { tag: '@smoke' }, () =
   test('should navigate to graph view', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL('/');
 
     const graphLink = page.getByRole('link', { name: /graph|visualization/i });
 
-    if (await graphLink.isVisible({ timeout: 2000 })) {
-      await graphLink.click();
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(/\/graph/);
-    }
+    await expect(graphLink).toBeVisible({ timeout: 2000 });
+    await graphLink.click();
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(/\/graph/);
   });
 
   test('should navigate to settings', async ({ page }) => {
@@ -391,11 +311,10 @@ test.describe('CRITICAL PATH: Navigation Between Views', { tag: '@smoke' }, () =
 
     const settingsLink = page.getByRole('link', { name: /settings|config/i });
 
-    if (await settingsLink.isVisible({ timeout: 2000 })) {
-      await settingsLink.click();
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(/\/settings/);
-    }
+    await expect(settingsLink).toBeVisible({ timeout: 2000 });
+    await settingsLink.click();
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(/\/settings/);
   });
 });
 
@@ -412,12 +331,7 @@ test.describe('CRITICAL PATH: Search and Filter Functionality', { tag: '@smoke' 
       .or(page.getByPlaceholder(/search/i))
       .first();
 
-    const hasSearch = await searchInput.isVisible({ timeout: 2000 }).catch(() => false);
-
-    if (!hasSearch) {
-      console.log('Search input not found on items page');
-      return;
-    }
+    await expect(searchInput).toBeVisible({ timeout: 2000 });
 
     // 2. Perform search
     await searchInput.fill('authentication');
@@ -425,7 +339,7 @@ test.describe('CRITICAL PATH: Search and Filter Functionality', { tag: '@smoke' 
 
     // 3. Verify results updated
     const results = page.getByText(/authentication/i);
-    const resultCount = await results.count().catch(() => 0);
+    const resultCount = await results.count();
 
     console.log(`Found ${resultCount} results for "authentication" search`);
     expect(resultCount).toBeGreaterThanOrEqual(0);
@@ -438,24 +352,19 @@ test.describe('CRITICAL PATH: Search and Filter Functionality', { tag: '@smoke' 
       .first()
       .or(page.locator('select').filter({ hasText: /type/i }).first());
 
-    const hasFilter = await typeFilter.isVisible({ timeout: 2000 }).catch(() => false);
+    await expect(typeFilter).toBeVisible({ timeout: 2000 });
 
-    if (hasFilter) {
-      // Click to open dropdown
-      await typeFilter.click();
-      await page.waitForTimeout(300);
+    // Click to open dropdown
+    await typeFilter.click();
+    await page.waitForTimeout(300);
 
-      // Try to select a type
-      const typeOption = page.getByText(/requirement|feature|test/i).first();
-      if (await typeOption.isVisible({ timeout: 1000 })) {
-        await typeOption.click();
-        await page.waitForTimeout(500);
+    // Try to select a type
+    const typeOption = page.getByText(/requirement|feature|test/i).first();
+    await expect(typeOption).toBeVisible({ timeout: 1000 });
+    await typeOption.click();
+    await page.waitForTimeout(500);
 
-        console.log('Type filter applied successfully');
-      }
-    } else {
-      console.log('Type filter not available');
-    }
+    console.log('Type filter applied successfully');
   });
 
   test('should filter items by status', async ({ page }) => {
@@ -470,22 +379,17 @@ test.describe('CRITICAL PATH: Search and Filter Functionality', { tag: '@smoke' 
           .first(),
       );
 
-    const hasFilter = await statusFilter.isVisible({ timeout: 2000 }).catch(() => false);
+    await expect(statusFilter).toBeVisible({ timeout: 2000 });
 
-    if (hasFilter) {
-      await statusFilter.click();
-      await page.waitForTimeout(300);
+    await statusFilter.click();
+    await page.waitForTimeout(300);
 
-      const statusOption = page.getByText(/pending|in progress|completed/i);
-      if (await statusOption.isVisible({ timeout: 1000 })) {
-        await statusOption.click();
-        await page.waitForTimeout(500);
+    const statusOption = page.getByText(/pending|in progress|completed/i);
+    await expect(statusOption).toBeVisible({ timeout: 1000 });
+    await statusOption.click();
+    await page.waitForTimeout(500);
 
-        console.log('Status filter applied successfully');
-      }
-    } else {
-      console.log('Status filter not available');
-    }
+    console.log('Status filter applied successfully');
   });
 
   test('should clear search/filters', async ({ page }) => {
@@ -495,21 +399,19 @@ test.describe('CRITICAL PATH: Search and Filter Functionality', { tag: '@smoke' 
       .or(page.getByPlaceholder(/search/i))
       .first();
 
-    if (await searchInput.isVisible({ timeout: 2000 })) {
-      await searchInput.fill('test');
-      await page.waitForTimeout(300);
+    await expect(searchInput).toBeVisible({ timeout: 2000 });
+    await searchInput.fill('test');
+    await page.waitForTimeout(300);
 
-      // Look for clear button
-      const clearBtn = page.getByRole('button', { name: /clear|reset|x/i }).first();
+    // Look for clear button
+    const clearBtn = page.getByRole('button', { name: /clear|reset|x/i }).first();
 
-      if (await clearBtn.isVisible({ timeout: 2000 })) {
-        await clearBtn.click();
-        await page.waitForTimeout(300);
+    await expect(clearBtn).toBeVisible({ timeout: 2000 });
+    await clearBtn.click();
+    await page.waitForTimeout(300);
 
-        // Verify cleared
-        await expect(searchInput).toHaveValue('');
-      }
-    }
+    // Verify cleared
+    await expect(searchInput).toHaveValue('');
   });
 });
 
@@ -523,22 +425,11 @@ test.describe('CRITICAL PATH: Core Data Integrity', { tag: '@smoke' }, () => {
     await page.waitForTimeout(1000);
 
     // Check for any content on the page
-    const hasMainContent =
-      (await page
-        .locator('main')
-        .isVisible({ timeout: 2000 })
-        .catch(() => false)) ??
-      (await page
-        .locator("[role='main']")
-        .isVisible({ timeout: 2000 })
-        .catch(() => false)) ??
-      (await page
-        .locator('body')
-        .isVisible({ timeout: 2000 })
-        .catch(() => false));
+    const mainLocator = page.locator('main').first();
+    const roleMainLocator = page.locator("[role='main']").first();
+    const bodyLocator = page.locator('body').first();
 
-    // The app should have rendered something
-    expect(hasMainContent).toBe(true);
+    await expect(mainLocator.or(roleMainLocator).or(bodyLocator)).toBeVisible({ timeout: 2000 });
   });
 
   test('should handle navigation without losing state', async ({ page }) => {
@@ -552,11 +443,8 @@ test.describe('CRITICAL PATH: Core Data Integrity', { tag: '@smoke' }, () => {
       .or(page.getByPlaceholder(/search/i))
       .first();
 
-    const hasSearch = await searchInput.isVisible({ timeout: 2000 }).catch(() => false);
-
-    if (hasSearch) {
-      await searchInput.fill('test');
-    }
+    await expect(searchInput).toBeVisible({ timeout: 2000 });
+    await searchInput.fill('test');
 
     // 3. Navigate away and back
     await page.goto('/items');
@@ -583,12 +471,6 @@ test.describe('CRITICAL PATH: Core Data Integrity', { tag: '@smoke' }, () => {
     const error = page.getByText(/not found|error|does not exist/i);
     const itemsList = page.locator("table, [role='grid']");
 
-    const hasError = await error.isVisible({ timeout: 2000 }).catch(() => false);
-
-    const hasList = await itemsList.isVisible({ timeout: 2000 }).catch(() => false);
-
-    console.log(`Error handling: error=${hasError}, list=${hasList}, url=${page.url()}`);
-
-    expect(hasError ?? hasList ?? page.url().includes('/items')).toBeTruthy();
+    await expect(error.or(itemsList)).toBeVisible({ timeout: 2000 });
   });
 });

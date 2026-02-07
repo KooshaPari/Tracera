@@ -155,6 +155,7 @@ func (coordinator *Coordinator) UnregisterAgent(agentID string) error {
 		if err := coordinator.TaskQueue.RequeueTask(agent.CurrentTask); err != nil {
 			return err
 		}
+		agent.CurrentTask = nil
 	}
 
 	delete(coordinator.agents, agentID)

@@ -708,9 +708,11 @@ func (h *AgentHandler) GetAgentHistory(c echo.Context) error {
 	limitStr := c.QueryParam("limit")
 	limit := 10
 	if limitStr != "" {
-		if val, err := strconv.Atoi(limitStr); err == nil && val > 0 && val <= 100 {
-			limit = val
+		val, err := strconv.Atoi(limitStr)
+		if err != nil || val <= 0 || val > 100 {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid limit: must be a number between 1 and 100"})
 		}
+		limit = val
 	}
 
 	if h.coordinator == nil {

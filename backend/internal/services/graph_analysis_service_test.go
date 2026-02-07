@@ -232,9 +232,9 @@ func analyzeItemDependenciesBasicCases() []analyzeDependenciesCase {
 			name: "analyzes item with no dependencies",
 			setup: func(ctx context.Context, itemRepo *GraphMockItemRepository, linkRepo *GraphMockLinkRepository, itemID string) {
 				item := createTestItem(itemID, "Feature 1", "feature")
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, itemID string, result *DependencyAnalysis) {
 				assert.NotNil(t, result)
@@ -252,9 +252,9 @@ func analyzeItemDependenciesBasicCases() []analyzeDependenciesCase {
 					createTestLink("link-1", "item-2", itemID, "depends_on"),
 					createTestLink("link-2", "item-3", itemID, "depends_on"),
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return(links, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return(links, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, _ string, result *DependencyAnalysis) {
 				assert.Equal(t, 2, result.DirectDependents)
@@ -272,11 +272,11 @@ func analyzeItemDependenciesBasicCases() []analyzeDependenciesCase {
 				outgoingLinks2 := []*models.Link{
 					createTestLink("link-2", "item-2", "item-3", "depends_on"),
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return(outgoingLinks1, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-2").Return(outgoingLinks2, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-3").Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return(outgoingLinks1, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-2").Return(outgoingLinks2, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-3").Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, _ string, result *DependencyAnalysis) {
 				assert.Equal(t, 0, result.DirectDependents)
@@ -304,12 +304,12 @@ func analyzeItemDependenciesMediumCases() []analyzeDependenciesCase {
 					createTestLink("link-6", itemID, "item-7", "depends_on"),
 					createTestLink("link-7", itemID, "item-8", "depends_on"),
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return(links, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return(outgoingLinks, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-6").Return([]*models.Link{}, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-7").Return([]*models.Link{}, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-8").Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return(links, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return(outgoingLinks, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-6").Return([]*models.Link{}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-7").Return([]*models.Link{}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-8").Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, _ string, result *DependencyAnalysis) {
 				assert.Equal(t, 4, result.DirectDependents)
@@ -344,11 +344,11 @@ func analyzeItemDependenciesHighCases() []analyzeDependenciesCase {
 						"depends_on",
 					)
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return(directLinks, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return(transitiveLinks, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return(directLinks, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return(transitiveLinks, nil)
 				for i := 0; i < 8; i++ {
-					linkRepo.On("GetBySourceID", ctx, fmt.Sprintf("item-dep-%d", i)).Return([]*models.Link{}, nil)
+					linkRepo.On("GetBySourceID", mock.Anything, fmt.Sprintf("item-dep-%d", i)).Return([]*models.Link{}, nil)
 				}
 			},
 			assert: func(t *testing.T, _ string, result *DependencyAnalysis) {
@@ -380,9 +380,9 @@ func analyzeItemDependenciesEdgeCases() []analyzeDependenciesCase {
 					createTestLink("link-3", "item-4", itemID, "tests"),
 					createTestLink("link-4", "item-5", itemID, "blocks"),
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return(links, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return(links, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, _ string, result *DependencyAnalysis) {
 				assert.Equal(t, 2, result.DirectDependents)
@@ -401,11 +401,11 @@ func analyzeItemDependenciesEdgeCases() []analyzeDependenciesCase {
 				links3 := []*models.Link{
 					createTestLink("link-3", "item-3", itemID, "depends_on"),
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return(links1, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-2").Return(links2, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-3").Return(links3, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return(links1, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-2").Return(links2, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-3").Return(links3, nil)
 			},
 			assert: func(t *testing.T, _ string, result *DependencyAnalysis) {
 				assert.NotNil(t, result)
@@ -459,7 +459,7 @@ func TestAnalyzeItemDependencies_Errors(t *testing.T) {
 
 	t.Run("returns error when item not found", func(t *testing.T) {
 		itemID := testNonexistentID
-		itemRepo.On("GetByID", ctx, itemID).Return(nil, errors.New("item not found"))
+		itemRepo.On("GetByID", mock.Anything, itemID).Return(nil, errors.New("item not found"))
 
 		result, err := service.AnalyzeItemDependencies(ctx, itemID)
 		assert.Error(t, err)
@@ -469,7 +469,7 @@ func TestAnalyzeItemDependencies_Errors(t *testing.T) {
 
 	t.Run("returns error when item is nil", func(t *testing.T) {
 		itemID := testItem1ID
-		itemRepo.On("GetByID", ctx, itemID).Return(nil, nil)
+		itemRepo.On("GetByID", mock.Anything, itemID).Return(nil, nil)
 
 		result, err := service.AnalyzeItemDependencies(ctx, itemID)
 		assert.Error(t, err)
@@ -481,13 +481,14 @@ func TestAnalyzeItemDependencies_Errors(t *testing.T) {
 		itemID := testItem1ID
 		item := createTestItem(itemID, "Feature 1", "feature")
 
-		itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-		linkRepo := &GraphMockLinkRepository{}
-		linkRepo.On("GetByTargetID", ctx, itemID).Return(nil, errors.New("database error"))
+		freshItemRepo := &GraphMockItemRepository{}
+		freshItemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+		freshLinkRepo := &GraphMockLinkRepository{}
+		freshLinkRepo.On("GetByTargetID", mock.Anything, itemID).Return(nil, errors.New("database error"))
 
-		service := NewGraphAnalysisServiceImpl(itemRepo, linkRepo, &GraphMockCache{}, nil)
+		freshService := NewGraphAnalysisServiceImpl(freshItemRepo, freshLinkRepo, &GraphMockCache{}, nil)
 
-		result, err := service.AnalyzeItemDependencies(ctx, itemID)
+		result, err := freshService.AnalyzeItemDependencies(ctx, itemID)
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.Contains(t, err.Error(), "failed to get direct dependents")
@@ -510,8 +511,8 @@ func impactAnalysisBasicCases() []impactAnalysisCase {
 			name: "analyzes item with no impact",
 			setup: func(ctx context.Context, itemRepo *GraphMockItemRepository, linkRepo *GraphMockLinkRepository, itemID string) {
 				item := createTestItem(itemID, "Feature 1", "feature")
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, itemID string, result *ImpactAnalysis) {
 				assert.NotNil(t, result)
@@ -529,10 +530,10 @@ func impactAnalysisBasicCases() []impactAnalysisCase {
 					createTestLink("link-1", "item-2", itemID, "depends_on"),
 					createTestLink("link-2", "item-3", itemID, "depends_on"),
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return(links, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-2").Return([]*models.Link{}, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-3").Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return(links, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-2").Return([]*models.Link{}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-3").Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, _ string, result *ImpactAnalysis) {
 				assert.Len(t, result.DirectImpact, 2)
@@ -557,10 +558,10 @@ func impactAnalysisComplexCases() []impactAnalysisCase {
 				links2 := []*models.Link{
 					createTestLink("link-2", "item-3", "item-2", "depends_on"),
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return(links1, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-2").Return(links2, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-3").Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return(links1, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-2").Return(links2, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-3").Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, _ string, result *ImpactAnalysis) {
 				assert.Len(t, result.DirectImpact, 1)
@@ -585,13 +586,13 @@ func impactAnalysisComplexCases() []impactAnalysisCase {
 				indirectLinks2 := []*models.Link{
 					createTestLink("link-5", "item-6", "item-3", "depends_on"),
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return(directLinks, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-2").Return(indirectLinks1, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-3").Return(indirectLinks2, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-4").Return([]*models.Link{}, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-5").Return([]*models.Link{}, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-6").Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return(directLinks, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-2").Return(indirectLinks1, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-3").Return(indirectLinks2, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-4").Return([]*models.Link{}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-5").Return([]*models.Link{}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-6").Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, _ string, result *ImpactAnalysis) {
 				assert.Equal(t, "medium", result.RiskLevel)
@@ -619,8 +620,8 @@ func impactAnalysisEdgeCases() []impactAnalysisCase {
 						"depends_on",
 					)
 				}
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return(directLinks, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return(directLinks, nil)
 				for i := 0; i < 8; i++ {
 					indirectLink := []*models.Link{
 						createTestLink(
@@ -630,8 +631,8 @@ func impactAnalysisEdgeCases() []impactAnalysisCase {
 							"depends_on",
 						),
 					}
-					linkRepo.On("GetByTargetID", ctx, fmt.Sprintf("item-%d", i+2)).Return(indirectLink, nil)
-					linkRepo.On("GetByTargetID", ctx, fmt.Sprintf("item-ind-%d", i)).Return([]*models.Link{}, nil)
+					linkRepo.On("GetByTargetID", mock.Anything, fmt.Sprintf("item-%d", i+2)).Return(indirectLink, nil)
+					linkRepo.On("GetByTargetID", mock.Anything, fmt.Sprintf("item-ind-%d", i)).Return([]*models.Link{}, nil)
 				}
 			},
 			assert: func(t *testing.T, _ string, result *ImpactAnalysis) {
@@ -685,7 +686,7 @@ func TestGetItemImpactAnalysis_Errors(t *testing.T) {
 
 	t.Run("returns error when item not found", func(t *testing.T) {
 		itemID := testNonexistentID
-		itemRepo.On("GetByID", ctx, itemID).Return(nil, errors.New("not found"))
+		itemRepo.On("GetByID", mock.Anything, itemID).Return(nil, errors.New("not found"))
 
 		result, err := service.GetItemImpactAnalysis(ctx, itemID)
 		assert.Error(t, err)
@@ -709,9 +710,9 @@ func visualizeDependencyGraphBasicCases() []visualizeDependencyGraphCase {
 			name: "generates DOT graph for single item",
 			setup: func(ctx context.Context, itemRepo *GraphMockItemRepository, linkRepo *GraphMockLinkRepository, itemID string) {
 				item := createTestItem(itemID, "Feature 1", "feature")
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return([]*models.Link{}, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return([]*models.Link{}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, itemID string, result string) {
 				assert.Contains(t, result, "digraph dependencies")
@@ -726,12 +727,12 @@ func visualizeDependencyGraphBasicCases() []visualizeDependencyGraphCase {
 				item1 := createTestItem(itemID, "Feature 1", "feature")
 				item2 := createTestItem("item-2", "Feature 2", "feature")
 				link := createTestLink("link-1", itemID, "item-2", "depends_on")
-				itemRepo.On("GetByID", ctx, itemID).Return(item1, nil)
-				itemRepo.On("GetByID", ctx, "item-2").Return(item2, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return([]*models.Link{link}, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-2").Return([]*models.Link{}, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-2").Return([]*models.Link{link}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item1, nil)
+				itemRepo.On("GetByID", mock.Anything, "item-2").Return(item2, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return([]*models.Link{link}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-2").Return([]*models.Link{}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-2").Return([]*models.Link{link}, nil)
 			},
 			assert: func(t *testing.T, itemID string, result string) {
 				assert.Contains(t, result, itemID)
@@ -751,12 +752,12 @@ func visualizeDependencyGraphStyleCases() []visualizeDependencyGraphCase {
 				item1 := createTestItem(itemID, "Feature 1", "feature")
 				item2 := createTestItem("item-2", "Task 1", "task")
 				link := createTestLink("link-1", itemID, "item-2", "blocks")
-				itemRepo.On("GetByID", ctx, itemID).Return(item1, nil)
-				itemRepo.On("GetByID", ctx, "item-2").Return(item2, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return([]*models.Link{link}, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-2").Return([]*models.Link{}, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-2").Return([]*models.Link{link}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item1, nil)
+				itemRepo.On("GetByID", mock.Anything, "item-2").Return(item2, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return([]*models.Link{link}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-2").Return([]*models.Link{}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-2").Return([]*models.Link{link}, nil)
 			},
 			assert: func(t *testing.T, _ string, result string) {
 				assert.Contains(t, result, "blocks")
@@ -767,9 +768,9 @@ func visualizeDependencyGraphStyleCases() []visualizeDependencyGraphCase {
 			name: "escapes quotes in item titles",
 			setup: func(ctx context.Context, itemRepo *GraphMockItemRepository, linkRepo *GraphMockLinkRepository, itemID string) {
 				item := createTestItem(itemID, "Feature \"quoted\" 1", "feature")
-				itemRepo.On("GetByID", ctx, itemID).Return(item, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return([]*models.Link{}, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return([]*models.Link{}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
 			},
 			assert: func(t *testing.T, _ string, result string) {
 				assert.Contains(t, result, "Feature \\\"quoted\\\" 1")
@@ -794,18 +795,18 @@ func visualizeDependencyGraphEdgeCases() []visualizeDependencyGraphCase {
 				link1 := createTestLink("link-1", itemID, "item-2", "depends_on")
 				link2 := createTestLink("link-2", "item-2", "item-3", "depends_on")
 				link3 := createTestLink("link-3", "item-3", "item-4", "depends_on")
-				itemRepo.On("GetByID", ctx, itemID).Return(item1, nil)
-				itemRepo.On("GetByID", ctx, "item-2").Return(item2, nil)
-				itemRepo.On("GetByID", ctx, "item-3").Return(item3, nil)
-				itemRepo.On("GetByID", ctx, "item-4").Return(item4, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return([]*models.Link{link1}, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-2").Return([]*models.Link{link2}, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-2").Return([]*models.Link{link1}, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-3").Return([]*models.Link{link3}, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-3").Return([]*models.Link{link2}, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-4").Return([]*models.Link{}, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-4").Return([]*models.Link{link3}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item1, nil)
+				itemRepo.On("GetByID", mock.Anything, "item-2").Return(item2, nil)
+				itemRepo.On("GetByID", mock.Anything, "item-3").Return(item3, nil)
+				itemRepo.On("GetByID", mock.Anything, "item-4").Return(item4, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return([]*models.Link{link1}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-2").Return([]*models.Link{link2}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-2").Return([]*models.Link{link1}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-3").Return([]*models.Link{link3}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-3").Return([]*models.Link{link2}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-4").Return([]*models.Link{}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-4").Return([]*models.Link{link3}, nil)
 			},
 			assert: func(t *testing.T, itemID string, result string) {
 				assert.Contains(t, result, itemID)
@@ -819,15 +820,15 @@ func visualizeDependencyGraphEdgeCases() []visualizeDependencyGraphCase {
 				item1 := createTestItem(itemID, "Feature 1", "feature")
 				item2 := createTestItem("item-2", "Feature 2", "feature")
 				link := createTestLink("link-1", itemID, "item-2", "depends_on")
-				itemRepo.On("GetByID", ctx, itemID).Return(item1, nil)
-				itemRepo.On("GetByID", ctx, "item-2").Return(item2, nil)
-				linkRepo.On("GetBySourceID", ctx, itemID).Return([]*models.Link{link}, nil)
-				linkRepo.On("GetByTargetID", ctx, itemID).Return([]*models.Link{}, nil)
-				linkRepo.On("GetBySourceID", ctx, "item-2").Return([]*models.Link{}, nil)
-				linkRepo.On("GetByTargetID", ctx, "item-2").Return([]*models.Link{link}, nil)
+				itemRepo.On("GetByID", mock.Anything, itemID).Return(item1, nil)
+				itemRepo.On("GetByID", mock.Anything, "item-2").Return(item2, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, itemID).Return([]*models.Link{link}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, itemID).Return([]*models.Link{}, nil)
+				linkRepo.On("GetBySourceID", mock.Anything, "item-2").Return([]*models.Link{}, nil)
+				linkRepo.On("GetByTargetID", mock.Anything, "item-2").Return([]*models.Link{link}, nil)
 			},
-			assert: func(t *testing.T, _ string, result string) {
-				edgeCount := strings.Count(result, "item-1\" -> \"item-2\"")
+			assert: func(t *testing.T, itemID string, result string) {
+				edgeCount := strings.Count(result, fmt.Sprintf("%s\" -> \"item-2\"", itemID))
 				assert.Equal(t, 1, edgeCount, "Edge should appear only once in graph")
 			},
 		},
@@ -878,7 +879,7 @@ func TestVisualizeDependencyGraph_Errors(t *testing.T) {
 
 	t.Run("returns error when item not found", func(t *testing.T) {
 		itemID := testNonexistentID
-		itemRepo.On("GetByID", ctx, itemID).Return(nil, errors.New("not found"))
+		itemRepo.On("GetByID", mock.Anything, itemID).Return(nil, errors.New("not found"))
 
 		result, err := service.VisualizeDependencyGraph(ctx, itemID)
 		assert.Error(t, err)
@@ -887,7 +888,7 @@ func TestVisualizeDependencyGraph_Errors(t *testing.T) {
 
 	t.Run("returns error when item is nil", func(t *testing.T) {
 		itemID := testItem1ID
-		itemRepo.On("GetByID", ctx, itemID).Return(nil, nil)
+		itemRepo.On("GetByID", mock.Anything, itemID).Return(nil, nil)
 
 		result, err := service.VisualizeDependencyGraph(ctx, itemID)
 		assert.Error(t, err)

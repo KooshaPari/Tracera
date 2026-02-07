@@ -30,7 +30,7 @@ type Client struct {
 // NewClient creates a new Storybook client.
 func NewClient(config *Config) (*Client, error) {
 	if config.BaseURL == "" {
-		return nil, errors.New("storybook base URL is required")
+		return nil, errors.New("Storybook base URL is required")
 	}
 
 	timeout := time.Duration(config.TimeoutSeconds) * time.Second

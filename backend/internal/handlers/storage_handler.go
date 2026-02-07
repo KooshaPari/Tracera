@@ -22,11 +22,11 @@ const (
 
 // StorageHandler handles storage-related HTTP requests
 type StorageHandler struct {
-	storageService *storage.S3Storage
+	storageService storage.StorageProvider
 }
 
 // NewStorageHandler creates a new storage handler
-func NewStorageHandler(s *storage.S3Storage) *StorageHandler {
+func NewStorageHandler(s storage.StorageProvider) *StorageHandler {
 	return &StorageHandler{
 		storageService: s,
 	}

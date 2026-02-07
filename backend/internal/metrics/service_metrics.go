@@ -312,7 +312,7 @@ func initAgentMetrics(m *ServiceMetrics, namespace string) {
 			Name:      "tasks_completed_total",
 			Help:      "Total number of tasks completed",
 		},
-		[]string{"agent_type"},
+		[]string{"agent_type", "status"},
 	)
 
 	m.TaskErrors = promauto.NewCounterVec(

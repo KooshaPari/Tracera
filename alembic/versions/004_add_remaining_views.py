@@ -63,10 +63,10 @@ def upgrade() -> None:
             e.event_type,
             e.event_data,
             e.created_at,
-            e.created_by,
+            e.agent_id as created_by,
             LAG(e.created_at) OVER (PARTITION BY e.item_id ORDER BY e.created_at) as previous_event_time,
             LEAD(e.created_at) OVER (PARTITION BY e.item_id ORDER BY e.created_at) as next_event_time
-        FROM events e
+        FROM agent_events e
         JOIN items i ON e.item_id = i.id
         WHERE i.deleted_at IS NULL
         ORDER BY e.created_at DESC;
@@ -120,12 +120,12 @@ def upgrade() -> None:
             i.view,
             i.item_type,
             i.status,
-            i.metadata,
+            i.item_metadata as metadata,
             to_tsvector('english',
                 COALESCE(i.title, '') || ' ' ||
                 COALESCE(i.description, '') || ' ' ||
                 COALESCE(i.item_type, '') || ' ' ||
-                COALESCE(i.metadata::text, '')
+                COALESCE(i.item_metadata::text, '')
             ) as search_vector,
             i.created_at,
             i.updated_at
@@ -149,7 +149,7 @@ def upgrade() -> None:
             i.view,
             i.item_type,
             i.status,
-            i.metadata,
+            i.item_metadata as metadata,
             COUNT(DISTINCT l_out.id) as link_count,
             ARRAY_AGG(DISTINCT l_out.link_type) FILTER (WHERE l_out.id IS NOT NULL) as link_types,
             COUNT(DISTINCT e.id) as event_count,
@@ -164,9 +164,9 @@ def upgrade() -> None:
             END as activity_status
         FROM items i
         LEFT JOIN links l_out ON i.id = l_out.source_item_id
-        LEFT JOIN events e ON i.id = e.item_id
+        LEFT JOIN agent_events e ON i.id = e.item_id
         WHERE i.deleted_at IS NULL
-        GROUP BY i.id, i.project_id, i.title, i.view, i.item_type, i.status, i.metadata, i.created_at, i.updated_at;
+        GROUP BY i.id, i.project_id, i.title, i.view, i.item_type, i.status, i.item_metadata, i.created_at, i.updated_at;
     """)
 
     op.execute("CREATE UNIQUE INDEX idx_agent_unique ON agent_interface(item_id);")

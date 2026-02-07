@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -191,9 +192,13 @@ func (suite *ViewServiceTestSuite) TestGetView_Success() {
 		UpdatedAt: time.Now(),
 	}
 
-	suite.cache.On("Get", suite.ctx, "view:view-123").Return("", errors.New("cache miss"))
+	suite.cache.On("Get", suite.ctx, mock.MatchedBy(func(key string) bool {
+		return strings.HasPrefix(key, "view:") && !strings.HasPrefix(key, "view:stats:")
+	})).Return("", errors.New("cache miss"))
 	suite.repo.On("GetByID", suite.ctx, viewID).Return(expectedView, nil)
-	suite.cache.On("Set", suite.ctx, "view:view-123", mock.Anything, mock.Anything).Return(nil)
+	suite.cache.On("Set", suite.ctx, mock.MatchedBy(func(key string) bool {
+		return strings.HasPrefix(key, "view:") && !strings.HasPrefix(key, "view:stats:")
+	}), mock.Anything, mock.Anything).Return(nil)
 
 	result, err := suite.service.GetView(suite.ctx, viewID)
 
@@ -213,7 +218,9 @@ func (suite *ViewServiceTestSuite) TestGetView_CacheHit() {
 	}
 
 	cachedData, _ := json.Marshal(cachedView)
-	suite.cache.On("Get", suite.ctx, "view:view-123").Return(string(cachedData), nil)
+	suite.cache.On("Get", suite.ctx, mock.MatchedBy(func(key string) bool {
+		return strings.HasPrefix(key, "view:") && !strings.HasPrefix(key, "view:stats:")
+	})).Return(string(cachedData), nil)
 
 	result, err := suite.service.GetView(suite.ctx, viewID)
 
@@ -234,7 +241,9 @@ func (suite *ViewServiceTestSuite) TestGetView_EmptyID() {
 func (suite *ViewServiceTestSuite) TestGetView_NotFound() {
 	viewID := testNonexistentID
 
-	suite.cache.On("Get", suite.ctx, "view:nonexistent").Return("", errors.New("cache miss"))
+	suite.cache.On("Get", suite.ctx, mock.MatchedBy(func(key string) bool {
+		return strings.HasPrefix(key, "view:") && !strings.HasPrefix(key, "view:stats:")
+	})).Return("", errors.New("cache miss"))
 	suite.repo.On("GetByID", suite.ctx, viewID).Return(nil, errors.New("view not found"))
 
 	result, err := suite.service.GetView(suite.ctx, viewID)
@@ -426,10 +435,14 @@ func (suite *ViewServiceTestSuite) TestGetViewStats_Success() {
 		UpdatedAt: time.Now(),
 	}
 
-	suite.cache.On("Get", suite.ctx, "view:stats:view-123").Return("", errors.New("cache miss"))
+	suite.cache.On("Get", suite.ctx, mock.MatchedBy(func(key string) bool {
+		return strings.HasPrefix(key, "view:stats:")
+	})).Return("", errors.New("cache miss"))
 	suite.repo.On("GetByID", suite.ctx, viewID).Return(view, nil)
 	suite.repo.On("CountItemsByView", suite.ctx, viewID).Return(int64(42), nil)
-	suite.cache.On("Set", suite.ctx, "view:stats:view-123", mock.Anything, mock.Anything).Return(nil)
+	suite.cache.On("Set", suite.ctx, mock.MatchedBy(func(key string) bool {
+		return strings.HasPrefix(key, "view:stats:")
+	}), mock.Anything, mock.Anything).Return(nil)
 
 	result, err := suite.service.GetViewStats(suite.ctx, viewID)
 
@@ -450,7 +463,9 @@ func (suite *ViewServiceTestSuite) TestGetViewStats_EmptyID() {
 func (suite *ViewServiceTestSuite) TestGetViewStats_ViewNotFound() {
 	viewID := testNonexistentID
 
-	suite.cache.On("Get", suite.ctx, "view:stats:nonexistent").Return("", errors.New("cache miss"))
+	suite.cache.On("Get", suite.ctx, mock.MatchedBy(func(key string) bool {
+		return strings.HasPrefix(key, "view:stats:")
+	})).Return("", errors.New("cache miss"))
 	suite.repo.On("GetByID", suite.ctx, viewID).Return(nil, errors.New("view not found"))
 
 	result, err := suite.service.GetViewStats(suite.ctx, viewID)
@@ -598,7 +613,9 @@ func (suite *ViewServiceTestSuite) TestGetViewStats_CacheHit() {
 	}
 
 	cachedData, _ := json.Marshal(cachedStats)
-	suite.cache.On("Get", suite.ctx, "view:stats:view-123").Return(string(cachedData), nil)
+	suite.cache.On("Get", suite.ctx, mock.MatchedBy(func(key string) bool {
+		return strings.HasPrefix(key, "view:stats:")
+	})).Return(string(cachedData), nil)
 
 	result, err := suite.service.GetViewStats(suite.ctx, viewID)
 

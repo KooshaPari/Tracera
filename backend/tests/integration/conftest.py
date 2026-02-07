@@ -56,7 +56,7 @@ TEST_CONFIG = {
     # Neo4j
     "neo4j_uri": os.getenv("TEST_NEO4J_URI", "bolt://localhost:7687"),
     "neo4j_user": os.getenv("TEST_NEO4J_USER", "neo4j"),
-    "neo4j_password": os.getenv("TEST_NEO4J_PASSWORD", "password"),
+    "neo4j_password": os.getenv("TEST_NEO4J_PASSWORD", "neo4j_password"),
 
     # Redis
     "redis_url": os.getenv("TEST_REDIS_URL", "redis://localhost:6379/1"),

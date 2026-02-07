@@ -34,17 +34,10 @@ test.describe('Bulk Item Selection', () => {
 
     // Look for checkboxes in table rows or item rows
     const checkboxes = page.locator('input[type="checkbox"]');
+    await expect(checkboxes.first()).toBeVisible({ timeout: 5000 });
     const checkboxCount = await checkboxes.count();
 
-    // If checkboxes exist, verify count > 0
-    // If bulk selection UI not implemented, skip gracefully
-    if (checkboxCount > 0) {
-      expect(checkboxCount).toBeGreaterThan(0);
-    } else {
-      // Feature not yet implemented - test passes with warning
-      console.log('Bulk selection checkboxes not yet implemented');
-      expect(true).toBe(true);
-    }
+    expect(checkboxCount).toBeGreaterThan(0);
   });
 
   test('should select single item when checkbox is clicked', async ({ page }) => {
@@ -54,25 +47,21 @@ test.describe('Bulk Item Selection', () => {
     // Get first item checkbox
     const firstCheckbox = page.locator('input[type="checkbox"]').nth(1); // Skip header if present
 
-    if (await firstCheckbox.isVisible()) {
-      // Click checkbox
-      await firstCheckbox.click();
-      await page.waitForTimeout(300);
+    await expect(firstCheckbox).toBeVisible();
 
-      // Checkbox should be checked
-      await expect(firstCheckbox).toBeChecked();
+    // Click checkbox
+    await firstCheckbox.click();
+    await page.waitForTimeout(300);
 
-      // Bulk action bar should appear
-      const bulkActionBar = page
-        .locator('[data-testid="bulk-action-bar"]')
-        .or(page.locator('text=/selected|delete|archive/i'));
+    // Checkbox should be checked
+    await expect(firstCheckbox).toBeChecked();
 
-      await expect(bulkActionBar)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Bulk action bar not visible - may be in different location');
-        });
-    }
+    // Bulk action bar should appear
+    const bulkActionBar = page
+      .locator('[data-testid="bulk-action-bar"]')
+      .or(page.locator('text=/selected|delete|archive/i'));
+
+    await expect(bulkActionBar).toBeVisible({ timeout: 2000 });
   });
 
   test('should select multiple items with individual checkboxes', async ({ page }) => {
@@ -83,25 +72,22 @@ test.describe('Bulk Item Selection', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      // Click both checkboxes
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      // Both should be checked
-      await expect(checkbox1).toBeChecked();
-      await expect(checkbox2).toBeChecked();
+    // Click both checkboxes
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      // Bulk action bar should show "2 selected"
-      const selectedCount = page.locator(String.raw`text=/2\s+selected|2\s+items/i`);
-      await expect(selectedCount)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Selection count indicator not found');
-        });
-    }
+    // Both should be checked
+    await expect(checkbox1).toBeChecked();
+    await expect(checkbox2).toBeChecked();
+
+    // Bulk action bar should show "2 selected"
+    const selectedCount = page.locator(String.raw`text=/2\s+selected|2\s+items/i`);
+    await expect(selectedCount).toBeVisible({ timeout: 2000 });
   });
 
   test('should support select all functionality', async ({ page }) => {
@@ -112,32 +98,19 @@ test.describe('Bulk Item Selection', () => {
     const selectAllCheckbox = page.locator('input[type="checkbox"]').first();
     const selectAllButton = page.getByRole('button', { name: /select all/i });
 
+    await expect(selectAllCheckbox.or(selectAllButton)).toBeVisible();
+
+    // Prefer clicking checkbox if available, otherwise button
     if (await selectAllCheckbox.isVisible()) {
-      // Click header checkbox to select all
       await selectAllCheckbox.click();
-      await page.waitForTimeout(500);
-
-      // All checkboxes should be checked
-      const allCheckboxes = page.locator('input[type="checkbox"]');
-      const _checkboxCount = await allCheckboxes.count();
-
-      // Wait for all to be checked
-      await page.waitForTimeout(300);
-
-      // Verify bulk action bar shows multiple items selected
-      const selectedIndicator = page.locator('text=/selected|items selected/i');
-      await expect(selectedIndicator)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Selected count indicator not found in select-all test');
-        });
-    } else if (await selectAllButton.isVisible()) {
+    } else {
       await selectAllButton.click();
-      await page.waitForTimeout(500);
-
-      const selectedIndicator = page.locator('text=/selected|items selected/i');
-      await expect(selectedIndicator).toBeVisible({ timeout: 2000 });
     }
+    await page.waitForTimeout(500);
+
+    // Verify bulk action bar shows multiple items selected
+    const selectedIndicator = page.locator('text=/selected|items selected/i');
+    await expect(selectedIndicator).toBeVisible({ timeout: 5000 });
   });
 
   test('should deselect items individually', async ({ page }) => {
@@ -147,29 +120,26 @@ test.describe('Bulk Item Selection', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      // Select both
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      // Deselect first one
-      await checkbox1.click();
-      await page.waitForTimeout(300);
+    // Select both
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      // First should be unchecked, second should still be checked
-      await expect(checkbox1).not.toBeChecked();
-      await expect(checkbox2).toBeChecked();
+    // Deselect first one
+    await checkbox1.click();
+    await page.waitForTimeout(300);
 
-      // Should show "1 selected"
-      const selectedCount = page.locator(String.raw`text=/1\s+selected/i`);
-      await expect(selectedCount)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Selection count not updated after deselection');
-        });
-    }
+    // First should be unchecked, second should still be checked
+    await expect(checkbox1).not.toBeChecked();
+    await expect(checkbox2).toBeChecked();
+
+    // Should show "1 selected"
+    const selectedCount = page.locator(String.raw`text=/1\s+selected/i`);
+    await expect(selectedCount).toBeVisible({ timeout: 2000 });
   });
 
   test('should clear all selections with clear button', async ({ page }) => {
@@ -179,27 +149,25 @@ test.describe('Bulk Item Selection', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      // Select both
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      // Look for "Clear Selection" or "Deselect All" button
-      const clearButton = page
-        .getByRole('button', { name: /clear|deselect all|unselect/i })
-        .first();
+    // Select both
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      if (await clearButton.isVisible()) {
-        await clearButton.click();
-        await page.waitForTimeout(300);
+    // Look for "Clear Selection" or "Deselect All" button
+    const clearButton = page.getByRole('button', { name: /clear|deselect all|unselect/i }).first();
 
-        // All should be unchecked
-        await expect(checkbox1).not.toBeChecked();
-        await expect(checkbox2).not.toBeChecked();
-      }
-    }
+    await expect(clearButton).toBeVisible();
+    await clearButton.click();
+    await page.waitForTimeout(300);
+
+    // All should be unchecked
+    await expect(checkbox1).not.toBeChecked();
+    await expect(checkbox2).not.toBeChecked();
   });
 });
 
@@ -219,21 +187,16 @@ test.describe('Bulk Delete Operations', () => {
 
     // Select an item
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      // Delete button should appear in bulk action bar
-      const deleteButton = page
-        .getByRole('button', { name: /delete|remove/i })
-        .filter({ hasText: /delete|remove/i });
+    // Delete button should appear in bulk action bar
+    const deleteButton = page
+      .getByRole('button', { name: /delete|remove/i })
+      .filter({ hasText: /delete|remove/i });
 
-      await expect(deleteButton)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Delete button not found in bulk action bar');
-        });
-    }
+    await expect(deleteButton).toBeVisible({ timeout: 2000 });
   });
 
   test('should show confirmation dialog when deleting multiple items', async ({ page }) => {
@@ -244,37 +207,29 @@ test.describe('Bulk Delete Operations', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      // Click delete button
-      const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      if (await deleteButton.isVisible()) {
-        await deleteButton.click();
-        await page.waitForTimeout(300);
+    // Click delete button
+    const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
 
-        // Confirmation dialog should appear
-        const confirmDialog = page.getByRole('dialog').or(page.getByRole('alertdialog'));
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+    await page.waitForTimeout(300);
 
-        await expect(confirmDialog)
-          .toBeVisible({ timeout: 2000 })
-          .catch(() => {
-            console.log('Delete confirmation dialog not shown');
-          });
+    // Confirmation dialog should appear
+    const confirmDialog = page.getByRole('dialog').or(page.getByRole('alertdialog'));
 
-        // Dialog should mention items being deleted
-        const dialogText = page.locator("[role='dialog']");
-        await expect(dialogText)
-          .toContainText(/delete|remove|confirm/i, { timeout: 2000 })
-          .catch(() => {
-            console.log('Delete confirmation text not found in dialog');
-          });
-      }
-    }
+    await expect(confirmDialog).toBeVisible({ timeout: 2000 });
+
+    // Dialog should mention items being deleted
+    const dialogText = page.locator("[role='dialog']");
+    await expect(dialogText).toContainText(/delete|remove|confirm/i, { timeout: 2000 });
   });
 
   test('should confirm bulk delete operation', async ({ page }) => {
@@ -283,36 +238,28 @@ test.describe('Bulk Delete Operations', () => {
 
     // Select an item for deletion
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      // Click delete
-      const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
+    // Click delete
+    const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
 
-      if (await deleteButton.isVisible()) {
-        await deleteButton.click();
-        await page.waitForTimeout(300);
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+    await page.waitForTimeout(300);
 
-        // Click confirm button in dialog
-        const confirmButton = page
-          .getByRole('button', { name: /confirm|yes|delete/i })
-          .filter({ hasText: /confirm|yes|delete/i });
+    // Click confirm button in dialog
+    const confirmButton = page
+      .getByRole('button', { name: /confirm|yes|delete/i })
+      .filter({ hasText: /confirm|yes|delete/i });
 
-        if (await confirmButton.isVisible()) {
-          await confirmButton.click();
-          await page.waitForLoadState('networkidle');
+    await expect(confirmButton).toBeVisible({ timeout: 5000 });
+    await confirmButton.click();
+    await page.waitForLoadState('networkidle');
 
-          // Selection should be cleared
-          await expect(checkbox)
-            .not.toBeChecked()
-            .catch(() => {
-              // Item might be removed from DOM
-              console.log('Item removed from DOM after delete');
-            });
-        }
-      }
-    }
+    // Selection should be cleared or item removed
+    await expect(checkbox).not.toBeChecked();
   });
 
   test('should cancel bulk delete operation', async ({ page }) => {
@@ -320,32 +267,29 @@ test.describe('Bulk Delete Operations', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
+    const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
 
-      if (await deleteButton.isVisible()) {
-        await deleteButton.click();
-        await page.waitForTimeout(300);
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+    await page.waitForTimeout(300);
 
-        // Click cancel button
-        const cancelButton = page.getByRole('button', { name: /cancel|close/i }).first();
+    // Click cancel button
+    const cancelButton = page.getByRole('button', { name: /cancel|close/i }).first();
 
-        if (await cancelButton.isVisible()) {
-          await cancelButton.click();
-          await page.waitForTimeout(300);
+    await expect(cancelButton).toBeVisible();
+    await cancelButton.click();
+    await page.waitForTimeout(300);
 
-          // Dialog should be closed
-          const dialog = page.getByRole('dialog');
-          await expect(dialog).not.toBeVisible();
+    // Dialog should be closed
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).not.toBeVisible();
 
-          // Item should still be selected
-          await expect(checkbox).toBeChecked();
-        }
-      }
-    }
+    // Item should still be selected
+    await expect(checkbox).toBeChecked();
   });
 
   test('should show undo option after bulk delete', async ({ page }) => {
@@ -353,38 +297,29 @@ test.describe('Bulk Delete Operations', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
+    const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
 
-      if (await deleteButton.isVisible()) {
-        await deleteButton.click();
-        await page.waitForTimeout(300);
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+    await page.waitForTimeout(300);
 
-        // Confirm delete
-        const confirmButton = page
-          .getByRole('button', { name: /confirm|yes|delete/i })
-          .filter({ hasText: /confirm|yes|delete/i });
+    // Confirm delete
+    const confirmButton = page
+      .getByRole('button', { name: /confirm|yes|delete/i })
+      .filter({ hasText: /confirm|yes|delete/i });
 
-        if (await confirmButton.isVisible()) {
-          await confirmButton.click();
-          await page.waitForLoadState('networkidle');
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
+    await page.waitForLoadState('networkidle');
 
-          // Look for undo toast/button
-          const undoButton = page
-            .getByRole('button', { name: /undo/i })
-            .or(page.locator('text=/undo/i'));
+    // Look for undo toast/button
+    const undoButton = page.getByRole('button', { name: /undo/i }).or(page.locator('text=/undo/i'));
 
-          await expect(undoButton)
-            .toBeVisible({ timeout: 3000 })
-            .catch(() => {
-              console.log('Undo option not visible after delete - may not be implemented');
-            });
-        }
-      }
-    }
+    await expect(undoButton).toBeVisible({ timeout: 3000 });
   });
 });
 
@@ -404,21 +339,16 @@ test.describe('Bulk Status Update Operations', () => {
 
     // Select items
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      // Look for status option in bulk action menu
-      const statusMenu = page
-        .getByRole('button', { name: /status|change status/i })
-        .or(page.locator('[data-testid="bulk-status-menu"]'));
+    // Look for status option in bulk action menu
+    const statusMenu = page
+      .getByRole('button', { name: /status|change status/i })
+      .or(page.locator('[data-testid="bulk-status-menu"]'));
 
-      await expect(statusMenu)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Status update option not found in bulk actions');
-        });
-    }
+    await expect(statusMenu).toBeVisible({ timeout: 2000 });
   });
 
   test('should update status for multiple selected items', async ({ page }) => {
@@ -429,32 +359,27 @@ test.describe('Bulk Status Update Operations', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      // Click status menu
-      const statusButton = page.getByRole('button', { name: /status|change status/i }).first();
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      if (await statusButton.isVisible()) {
-        await statusButton.click();
-        await page.waitForTimeout(300);
+    // Click status menu
+    const statusButton = page.getByRole('button', { name: /status|change status/i }).first();
 
-        // Select a status option (e.g., "Completed")
-        const statusOption = page.getByText(/completed|done|closed/i).first();
+    await expect(statusButton).toBeVisible();
+    await statusButton.click();
+    await page.waitForTimeout(300);
 
-        if (await statusOption.isVisible()) {
-          await statusOption.click();
-          await page.waitForLoadState('networkidle');
+    // Select a status option (e.g., "Completed")
+    const statusOption = page.getByText(/completed|done|closed/i).first();
 
-          // Verify status was updated
-          // (This is soft validation as display may vary)
-          console.log('Bulk status update completed');
-        }
-      }
-    }
+    await expect(statusOption).toBeVisible();
+    await statusOption.click();
+    await page.waitForLoadState('networkidle');
   });
 
   test('should show confirmation for bulk status update', async ({ page }) => {
@@ -462,36 +387,29 @@ test.describe('Bulk Status Update Operations', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      const statusButton = page.getByRole('button', { name: /status|change status/i }).first();
+    const statusButton = page.getByRole('button', { name: /status|change status/i }).first();
 
-      if (await statusButton.isVisible()) {
-        await statusButton.click();
-        await page.waitForTimeout(300);
+    await expect(statusButton).toBeVisible();
+    await statusButton.click();
+    await page.waitForTimeout(300);
 
-        // Select a status
-        const statusOption = page.getByText(/completed|done|closed/i).first();
+    // Select a status
+    const statusOption = page.getByText(/completed|done|closed/i).first();
 
-        if (await statusOption.isVisible()) {
-          await statusOption.click();
-          await page.waitForTimeout(300);
+    await expect(statusOption).toBeVisible();
+    await statusOption.click();
+    await page.waitForTimeout(300);
 
-          // Look for confirmation message
-          const confirmMessage = page
-            .locator('[role="alert"]')
-            .or(page.locator('text=/updated|changed/i'));
+    // Look for confirmation message
+    const confirmMessage = page
+      .locator('[role="alert"]')
+      .or(page.locator('text=/updated|changed/i'));
 
-          await expect(confirmMessage)
-            .toBeVisible({ timeout: 2000 })
-            .catch(() => {
-              console.log('Confirmation message not shown for status update');
-            });
-        }
-      }
-    }
+    await expect(confirmMessage).toBeVisible({ timeout: 2000 });
   });
 });
 
@@ -510,21 +428,16 @@ test.describe('Bulk Move to Project Operations', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      // Look for move/project option
-      const moveButton = page
-        .getByRole('button', { name: /move|project/i })
-        .or(page.locator('[data-testid="bulk-move-menu"]'));
+    // Look for move/project option
+    const moveButton = page
+      .getByRole('button', { name: /move|project/i })
+      .or(page.locator('[data-testid="bulk-move-menu"]'));
 
-      await expect(moveButton)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Move to project option not found in bulk actions');
-        });
-    }
+    await expect(moveButton).toBeVisible({ timeout: 2000 });
   });
 
   test('should move multiple items to different project', async ({ page }) => {
@@ -535,33 +448,30 @@ test.describe('Bulk Move to Project Operations', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      // Click move button
-      const moveButton = page.getByRole('button', { name: /move|project/i }).first();
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      if (await moveButton.isVisible()) {
-        await moveButton.click();
-        await page.waitForTimeout(300);
+    // Click move button
+    const moveButton = page.getByRole('button', { name: /move|project/i }).first();
 
-        // Select a project from dropdown
-        const projectOption = page
-          .locator('[data-testid*="project"]')
-          .or(page.getByText(/project|Mobile|Core/i))
-          .first();
+    await expect(moveButton).toBeVisible();
+    await moveButton.click();
+    await page.waitForTimeout(300);
 
-        if (await projectOption.isVisible()) {
-          await projectOption.click();
-          await page.waitForLoadState('networkidle');
+    // Select a project from dropdown
+    const projectOption = page
+      .locator('[data-testid*="project"]')
+      .or(page.getByText(/project|Mobile|Core/i))
+      .first();
 
-          console.log('Bulk move to project completed');
-        }
-      }
-    }
+    await expect(projectOption).toBeVisible();
+    await projectOption.click();
+    await page.waitForLoadState('networkidle');
   });
 });
 
@@ -580,21 +490,16 @@ test.describe('Bulk Tag Operations', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      // Look for tags/label option
-      const tagsButton = page
-        .getByRole('button', { name: /tag|label|add tag/i })
-        .or(page.locator('[data-testid="bulk-tags-menu"]'));
+    // Look for tags/label option
+    const tagsButton = page
+      .getByRole('button', { name: /tag|label|add tag/i })
+      .or(page.locator('[data-testid="bulk-tags-menu"]'));
 
-      await expect(tagsButton)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Add tags option not found in bulk actions');
-        });
-    }
+    await expect(tagsButton).toBeVisible({ timeout: 2000 });
   });
 
   test('should add tags to multiple selected items', async ({ page }) => {
@@ -604,33 +509,31 @@ test.describe('Bulk Tag Operations', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      const tagsButton = page.getByRole('button', { name: /tag|label|add tag/i }).first();
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      if (await tagsButton.isVisible()) {
-        await tagsButton.click();
-        await page.waitForTimeout(300);
+    const tagsButton = page.getByRole('button', { name: /tag|label|add tag/i }).first();
 
-        // Type a tag name
-        const tagInput = page
-          .locator('[data-testid*="tag-input"]')
-          .or(page.locator('input[placeholder*="tag" i]'));
+    await expect(tagsButton).toBeVisible();
+    await tagsButton.click();
+    await page.waitForTimeout(300);
 
-        if (await tagInput.isVisible()) {
-          await tagInput.click();
-          await tagInput.fill('bulk-test');
-          await page.keyboard.press('Enter');
-          await page.waitForLoadState('networkidle');
+    // Type a tag name
+    const tagInput = page
+      .locator('[data-testid*="tag-input"]')
+      .or(page.locator('input[placeholder*="tag" i]'))
+      .first();
 
-          console.log('Bulk tag addition completed');
-        }
-      }
-    }
+    await expect(tagInput).toBeVisible();
+    await tagInput.click();
+    await tagInput.fill('bulk-test');
+    await page.keyboard.press('Enter');
+    await page.waitForLoadState('networkidle');
   });
 });
 
@@ -649,20 +552,15 @@ test.describe('Bulk Archive Operations', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      const archiveButton = page
-        .getByRole('button', { name: /archive/i })
-        .or(page.locator('[data-testid="bulk-archive-menu"]'));
+    const archiveButton = page
+      .getByRole('button', { name: /archive/i })
+      .or(page.locator('[data-testid="bulk-archive-menu"]'));
 
-      await expect(archiveButton)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Archive option not found in bulk actions');
-        });
-    }
+    await expect(archiveButton).toBeVisible({ timeout: 2000 });
   });
 
   test('should archive multiple items with confirmation', async ({ page }) => {
@@ -672,32 +570,29 @@ test.describe('Bulk Archive Operations', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      const archiveButton = page.getByRole('button', { name: /archive/i }).first();
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      if (await archiveButton.isVisible()) {
-        await archiveButton.click();
-        await page.waitForTimeout(300);
+    const archiveButton = page.getByRole('button', { name: /archive/i }).first();
 
-        // Confirm archive action if dialog appears
-        const confirmButton = page
-          .getByRole('button', { name: /confirm|yes|archive/i })
-          .filter({ hasText: /confirm|yes|archive/i })
-          .first();
+    await expect(archiveButton).toBeVisible({ timeout: 5000 });
+    await archiveButton.click();
+    await page.waitForTimeout(300);
 
-        if (await confirmButton.isVisible()) {
-          await confirmButton.click();
-          await page.waitForLoadState('networkidle');
+    // Confirm archive action if dialog appears
+    const confirmButton = page
+      .getByRole('button', { name: /confirm|yes|archive/i })
+      .filter({ hasText: /confirm|yes|archive/i })
+      .first();
 
-          console.log('Bulk archive completed');
-        }
-      }
-    }
+    await expect(confirmButton).toBeVisible({ timeout: 5000 });
+    await confirmButton.click();
+    await page.waitForLoadState('networkidle');
   });
 });
 
@@ -718,21 +613,18 @@ test.describe('Bulk Operations UI', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      // Look for counter showing "2 selected" or similar
-      const counter = page.locator(String.raw`text=/\d+\s+(selected|items)/i`);
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      await expect(counter)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Selection counter not visible');
-        });
-    }
+    // Look for counter showing "2 selected" or similar
+    const counter = page.locator(String.raw`text=/\d+\s+(selected|items)/i`);
+
+    await expect(counter).toBeVisible({ timeout: 2000 });
   });
 
   test('should show bulk action bar with multiple buttons', async ({ page }) => {
@@ -762,27 +654,22 @@ test.describe('Bulk Operations UI', () => {
     await page.waitForLoadState('networkidle');
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      // Scroll down
-      await page.evaluate(() => {
-        window.scrollBy(0, 500);
-      });
-      await page.waitForTimeout(300);
+    // Scroll down
+    await page.evaluate(() => {
+      window.scrollBy(0, 500);
+    });
+    await page.waitForTimeout(300);
 
-      // Bulk action bar should still be visible
-      const bulkActionBar = page
-        .locator('[data-testid="bulk-action-bar"]')
-        .or(page.locator('text=/selected/i'));
+    // Bulk action bar should still be visible
+    const bulkActionBar = page
+      .locator('[data-testid="bulk-action-bar"]')
+      .or(page.locator('text=/selected/i'));
 
-      await expect(bulkActionBar)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Bulk action bar not visible after scroll - may not be sticky');
-        });
-    }
+    await expect(bulkActionBar).toBeVisible({ timeout: 2000 });
   });
 });
 
@@ -802,43 +689,34 @@ test.describe('Bulk Operations Error Handling', () => {
 
     // Select items
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      // Intercept delete request to simulate error
-      await page.route('**/api/v1/items/**', async (route) => {
-        await route.abort('failed');
-      });
+    // Intercept delete request to simulate error
+    await page.route('**/api/v1/items/**', async (route) => {
+      await route.abort('failed');
+    });
 
-      const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
+    const deleteButton = page.getByRole('button', { name: /delete|remove/i }).first();
 
-      if (await deleteButton.isVisible()) {
-        await deleteButton.click();
-        await page.waitForTimeout(300);
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+    await page.waitForTimeout(300);
 
-        // Confirm delete
-        const confirmButton = page
-          .getByRole('button', { name: /confirm|yes|delete/i })
-          .filter({ hasText: /confirm|yes|delete/i });
+    // Confirm delete
+    const confirmButton = page
+      .getByRole('button', { name: /confirm|yes|delete/i })
+      .filter({ hasText: /confirm|yes|delete/i });
 
-        if (await confirmButton.isVisible()) {
-          await confirmButton.click();
-          await page.waitForTimeout(500);
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
+    await page.waitForTimeout(500);
 
-          // Error message should appear
-          const errorMessage = page
-            .locator('[role="alert"]')
-            .or(page.locator('text=/error|failed/i'));
+    // Error message should appear
+    const errorMessage = page.locator('[role="alert"]').or(page.locator('text=/error|failed/i'));
 
-          await expect(errorMessage)
-            .toBeVisible({ timeout: 2000 })
-            .catch(() => {
-              console.log('Error message not displayed');
-            });
-        }
-      }
-    }
+    await expect(errorMessage).toBeVisible({ timeout: 2000 });
   });
 
   test('should show error when no items are selected for bulk action', async ({ page }) => {
@@ -854,19 +732,7 @@ test.describe('Bulk Operations Error Handling', () => {
       .first();
 
     // Check if delete button exists in bulk action context
-    const isVisible = await deleteButton.isVisible({ timeout: 2000 }).catch(() => false);
-
-    if (isVisible) {
-      // If button is visible and enabled without selection, that's an issue
-      const isEnabled = await deleteButton.isEnabled().catch(() => false);
-      if (isEnabled) {
-        console.log('Warning: Delete button is enabled without any items selected');
-      }
-    } else {
-      // Bulk action bar not visible (normal when nothing selected)
-      console.log('Bulk action bar correctly hidden when no items selected');
-      expect(true).toBe(true);
-    }
+    await expect(deleteButton).not.toBeVisible({ timeout: 2000 });
   });
 
   test('should recover gracefully from partial bulk operation failures', async ({ page }) => {
@@ -877,48 +743,43 @@ test.describe('Bulk Operations Error Handling', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(2);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      await checkbox1.click();
-      await page.waitForTimeout(200);
-      await checkbox2.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      // Intercept to return partial failure
-      let requestCount = 0;
-      await page.route('**/api/v1/items/**', async (route) => {
-        requestCount++;
-        if (requestCount > 1) {
-          await route.abort('failed'); // Fail second request
-        } else {
-          await route.continue();
-        }
-      });
+    await checkbox1.click();
+    await page.waitForTimeout(200);
+    await checkbox2.click();
+    await page.waitForTimeout(300);
 
-      const statusButton = page.getByRole('button', { name: /status|change status/i }).first();
-
-      if (await statusButton.isVisible()) {
-        await statusButton.click();
-        await page.waitForTimeout(300);
-
-        const statusOption = page.getByText(/completed|done/i).first();
-
-        if (await statusOption.isVisible()) {
-          await statusOption.click();
-          await page.waitForTimeout(500);
-
-          // Should show partial success or partial failure message
-          const resultMessage = page
-            .locator('[role="alert"]')
-            .or(page.locator('text=/updated|error|partial/i'));
-
-          await expect(resultMessage)
-            .toBeVisible({ timeout: 2000 })
-            .catch(() => {
-              console.log('Partial failure handling message not displayed');
-            });
-        }
+    // Intercept to return partial failure
+    let requestCount = 0;
+    await page.route('**/api/v1/items/**', async (route) => {
+      requestCount++;
+      if (requestCount > 1) {
+        await route.abort('failed'); // Fail second request
+      } else {
+        await route.continue();
       }
-    }
+    });
+
+    const statusButton = page.getByRole('button', { name: /status|change status/i }).first();
+
+    await expect(statusButton).toBeVisible();
+    await statusButton.click();
+    await page.waitForTimeout(300);
+
+    const statusOption = page.getByText(/completed|done/i).first();
+
+    await expect(statusOption).toBeVisible();
+    await statusOption.click();
+    await page.waitForTimeout(500);
+
+    // Should show partial success or partial failure message
+    const resultMessage = page
+      .locator('[role="alert"]')
+      .or(page.locator('text=/updated|error|partial/i'));
+
+    await expect(resultMessage).toBeVisible({ timeout: 2000 });
   });
 });
 
@@ -937,36 +798,30 @@ test.describe('Bulk Operations Undo', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      const statusButton = page.getByRole('button', { name: /status|change status/i }).first();
+    const statusButton = page.getByRole('button', { name: /status|change status/i }).first();
 
-      if (await statusButton.isVisible()) {
-        await statusButton.click();
-        await page.waitForTimeout(300);
+    await expect(statusButton).toBeVisible();
+    await statusButton.click();
+    await page.waitForTimeout(300);
 
-        const statusOption = page.getByText(/completed|done/i).first();
+    const statusOption = page.getByText(/completed|done/i).first();
 
-        if (await statusOption.isVisible()) {
-          await statusOption.click();
-          await page.waitForLoadState('networkidle');
+    await expect(statusOption).toBeVisible();
+    await statusOption.click();
+    await page.waitForLoadState('networkidle');
 
-          // Look for undo button
-          const undoButton = page
-            .getByRole('button', { name: /undo/i })
-            .or(page.locator('text=/undo/i'));
+    // Look for undo button
+    const undoButton = page.getByRole('button', { name: /undo/i }).or(page.locator('text=/undo/i'));
 
-          if (await undoButton.isVisible({ timeout: 2000 })) {
-            await undoButton.click();
-            await page.waitForLoadState('networkidle');
+    await expect(undoButton).toBeVisible({ timeout: 2000 });
+    await undoButton.click();
+    await page.waitForLoadState('networkidle');
 
-            console.log('Undo bulk status update completed');
-          }
-        }
-      }
-    }
+    console.log('Undo bulk status update completed');
   });
 
   test('should undo bulk tag addition', async ({ page }) => {
@@ -974,41 +829,35 @@ test.describe('Bulk Operations Undo', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      const tagsButton = page.getByRole('button', { name: /tag|label/i }).first();
+    const tagsButton = page.getByRole('button', { name: /tag|label/i }).first();
 
-      if (await tagsButton.isVisible()) {
-        await tagsButton.click();
-        await page.waitForTimeout(300);
+    await expect(tagsButton).toBeVisible();
+    await tagsButton.click();
+    await page.waitForTimeout(300);
 
-        const tagInput = page
-          .locator('[data-testid*="tag-input"]')
-          .or(page.locator('input[placeholder*="tag" i]'))
-          .first();
+    const tagInput = page
+      .locator('[data-testid*="tag-input"]')
+      .or(page.locator('input[placeholder*="tag" i]'))
+      .first();
 
-        if (await tagInput.isVisible()) {
-          await tagInput.click();
-          await tagInput.fill('test-undo-tag');
-          await page.keyboard.press('Enter');
-          await page.waitForLoadState('networkidle');
+    await expect(tagInput).toBeVisible();
+    await tagInput.click();
+    await tagInput.fill('test-undo-tag');
+    await page.keyboard.press('Enter');
+    await page.waitForLoadState('networkidle');
 
-          // Look for undo button
-          const undoButton = page
-            .getByRole('button', { name: /undo/i })
-            .or(page.locator('text=/undo/i'));
+    // Look for undo button
+    const undoButton = page.getByRole('button', { name: /undo/i }).or(page.locator('text=/undo/i'));
 
-          if (await undoButton.isVisible({ timeout: 2000 })) {
-            await undoButton.click();
-            await page.waitForLoadState('networkidle');
+    await expect(undoButton).toBeVisible({ timeout: 2000 });
+    await undoButton.click();
+    await page.waitForLoadState('networkidle');
 
-            console.log('Undo bulk tag addition completed');
-          }
-        }
-      }
-    }
+    console.log('Undo bulk tag addition completed');
   });
 });
 
@@ -1029,22 +878,23 @@ test.describe('Bulk Operations Keyboard Shortcuts', () => {
     const checkbox1 = page.locator('input[type="checkbox"]').nth(1);
     const checkbox2 = page.locator('input[type="checkbox"]').nth(3);
 
-    if ((await checkbox1.isVisible()) && (await checkbox2.isVisible())) {
-      // Click first
-      await checkbox1.click();
-      await page.waitForTimeout(200);
+    await expect(checkbox1).toBeVisible();
+    await expect(checkbox2).toBeVisible();
 
-      // Shift+Click last to select range
-      await checkbox2.click({ modifiers: ['Shift'] });
-      await page.waitForTimeout(300);
+    // Click first
+    await checkbox1.click();
+    await page.waitForTimeout(200);
 
-      // Multiple items should be selected
-      const selectedCheckboxes = page.locator('input[type="checkbox"]:checked');
-      const count = await selectedCheckboxes.count();
+    // Shift+Click last to select range
+    await checkbox2.click({ modifiers: ['Shift'] });
+    await page.waitForTimeout(300);
 
-      // Should have selected range (at least 2)
-      expect(count).toBeGreaterThanOrEqual(2);
-    }
+    // Multiple items should be selected
+    const selectedCheckboxes = page.locator('input[type="checkbox"]:checked');
+    const count = await selectedCheckboxes.count();
+
+    // Should have selected range (at least 2)
+    expect(count).toBeGreaterThanOrEqual(2);
   });
 
   test('should clear selection with Escape key', async ({ page }) => {
@@ -1052,21 +902,17 @@ test.describe('Bulk Operations Keyboard Shortcuts', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      // Press Escape
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
+    // Press Escape
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
 
-      // Selection should be cleared (soft validation)
-      const selectedCheckboxes = page.locator('input[type="checkbox"]:checked');
-      const count = await selectedCheckboxes.count();
-
-      // Should be fewer checked items (if escape clears selection)
-      console.log(`Items selected after Escape: ${count}`);
-    }
+    // Selection should be cleared
+    const selectedCheckboxes = page.locator('input[type="checkbox"]:checked');
+    await expect(selectedCheckboxes).toHaveCount(0);
   });
 
   test('should delete selected items with Delete key', async ({ page }) => {
@@ -1074,21 +920,16 @@ test.describe('Bulk Operations Keyboard Shortcuts', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     const checkbox = page.locator('input[type="checkbox"]').nth(1);
-    if (await checkbox.isVisible()) {
-      await checkbox.click();
-      await page.waitForTimeout(300);
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await page.waitForTimeout(300);
 
-      // Press Delete key
-      await page.keyboard.press('Delete');
-      await page.waitForTimeout(300);
+    // Press Delete key
+    await page.keyboard.press('Delete');
+    await page.waitForTimeout(300);
 
-      // Confirmation dialog may appear, check for it
-      const confirmDialog = page.getByRole('dialog');
-      const isVisible = await confirmDialog.isVisible({ timeout: 1000 }).catch(() => false);
-
-      if (isVisible) {
-        console.log('Delete confirmation dialog appeared after Delete key');
-      }
-    }
+    // Confirmation dialog may appear, check for it
+    const confirmDialog = page.getByRole('dialog');
+    await expect(confirmDialog).toBeVisible({ timeout: 2000 });
   });
 });

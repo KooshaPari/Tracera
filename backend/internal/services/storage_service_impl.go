@@ -169,7 +169,7 @@ func (s *storageServiceImpl) ListFiles(ctx context.Context, bucket string, prefi
 		bucket = s.defaultBucket
 	}
 
-	var files []FileInfo
+	files := make([]FileInfo, 0) // Initialize as empty slice, not nil
 	input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
 		Prefix: aws.String(prefix),

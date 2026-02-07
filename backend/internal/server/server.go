@@ -20,6 +20,7 @@ import (
 	"github.com/kooshapari/tracertm-backend/internal/clients"
 	"github.com/kooshapari/tracertm-backend/internal/config"
 	"github.com/kooshapari/tracertm-backend/internal/equivalence"
+	"github.com/kooshapari/tracertm-backend/internal/graph"
 	"github.com/kooshapari/tracertm-backend/internal/handlers"
 	"github.com/kooshapari/tracertm-backend/internal/infrastructure"
 	"github.com/kooshapari/tracertm-backend/internal/journey"
@@ -71,6 +72,7 @@ type Server struct {
 	wsHub            *websocket.Hub
 	s3Storage        *storage.S3Storage
 	serviceContainer *services.ServiceContainer
+	graphConsumer    *graph.GraphEventConsumer
 }
 
 // NewServer creates a new server with infrastructure and required ServiceContainer.
@@ -327,6 +329,7 @@ func (s *Server) setupRoutes() {
 	s.registerCSRFRoute()
 	s.startWebSocketHub()
 	s.setupNATSToWebSocketBridge()
+	s.setupGraphEventConsumer()
 
 	api := s.echo.Group("/api/v1")
 	api.GET("/health", handlers.HealthCheck)
@@ -1282,4 +1285,29 @@ func (a *mergeRepoAdapter) Update(ctx context.Context, mr interface{}) error {
 
 func (a *mergeRepoAdapter) Delete(ctx context.Context, id string) error {
 	return a.repo.Delete(ctx, id)
+}
+
+func (s *Server) setupGraphEventConsumer() {
+	if s.infra.NATS == nil || s.infra.Neo4j == nil {
+		log.Println("⚠️  NATS or Neo4j not available, skipping Graph Event Consumer")
+		return
+	}
+
+	// Create EventBus for Graph Consumer
+	bus, err := nats.NewEventBus(nats.DefaultConfig())
+	if err != nil {
+		log.Printf("⚠️  Failed to create EventBus for Graph Consumer: %v", err)
+		return
+	}
+
+	// Create Graph Event Consumer
+	s.graphConsumer = graph.NewGraphEventConsumer(bus, s.infra.Neo4j.GetDriver())
+
+	// Start Consumer in background
+	go func() {
+		ctx := context.Background()
+		if err := s.graphConsumer.Start(ctx); err != nil {
+			log.Printf("⚠️  Graph Event Consumer failed: %v", err)
+		}
+	}()
 }
