@@ -412,14 +412,14 @@ schema-check: sqlc-generate validate-schema
 # Run schema validation tests (22 model tests)
 test-schema-validation:
 	@echo "Running schema validation tests..."
-	TEST_DATABASE_URL="postgres://tracertm:tracertm_password@localhost:5432/tracertm?sslmode=disable" \
+	TEST_DATABASE_URL="postgresql://tracertm:tracertm_password@localhost:5432/tracertm_test?sslmode=disable" \
 	go test -v ./internal/models -run "^Test"
 
 # Run schema validation with coverage
 test-schema-validation-coverage:
 	@echo "Running schema validation tests with coverage..."
 	@if [ -z "$$TEST_DATABASE_URL" ]; then \
-		TEST_DATABASE_URL="postgres://tracertm:tracertm_password@localhost:5432/tracertm?sslmode=disable" \
+		TEST_DATABASE_URL="postgresql://tracertm:tracertm_password@localhost:5432/tracertm_test?sslmode=disable" \
 		go test -v -coverprofile=schema-validation-coverage.out ./internal/models -run "^Test"; \
 	else \
 		go test -v -coverprofile=schema-validation-coverage.out ./internal/models -run "^Test"; \
