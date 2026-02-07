@@ -47,7 +47,7 @@ def upgrade():
                 f"""
                 ALTER TABLE {table}
                 ADD CONSTRAINT {constraint_name}
-                CHECK (id ~ '^[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{12}}$')
+                CHECK (id::TEXT ~ '^[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{12}}$')
                 """
             )
             continue
@@ -59,7 +59,7 @@ def upgrade():
                     f"""
                     ALTER TABLE {table}
                     ADD CONSTRAINT {constraint_name}
-                    CHECK (id ~ '^[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{12}}$')
+                    CHECK (id::TEXT ~ '^[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{12}}$')
                     """
                 )
                 print(f"Added UUID constraint to {table}")

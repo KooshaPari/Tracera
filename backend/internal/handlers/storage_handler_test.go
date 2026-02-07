@@ -151,8 +151,8 @@ func (m *MockS3Storage) CopyObject(_ context.Context, sourceKey, destKey string)
 
 func TestStorageHandlerUpload(t *testing.T) {
 	e := echo.New()
-	_ = NewMockS3Storage()                          // Create but don't use
-	handler := &StorageHandler{storageService: nil} // Tests use mock, set to nil
+	mockStorage := NewMockS3Storage()
+	handler := &StorageHandler{storageService: mockStorage}
 
 	t.Run("successful upload", func(t *testing.T) {
 		// Create multipart form
@@ -210,8 +210,8 @@ func TestStorageHandlerUpload(t *testing.T) {
 
 func TestStorageHandlerUploadWithThumbnail(t *testing.T) {
 	e := echo.New()
-	_ = NewMockS3Storage()                          // Create but don't use
-	handler := &StorageHandler{storageService: nil} // Tests use mock, set to nil
+	mockStorage := NewMockS3Storage()
+	handler := &StorageHandler{storageService: mockStorage} // Use mock storage in handler
 
 	t.Run("successful image upload with thumbnail", func(t *testing.T) {
 		// Create multipart form with image
@@ -248,7 +248,7 @@ func TestStorageHandlerUploadWithThumbnail(t *testing.T) {
 func TestStorageHandlerDelete(t *testing.T) {
 	e := echo.New()
 	mockStorage := NewMockS3Storage()
-	handler := &StorageHandler{storageService: nil} // Tests use mock, set to nil
+	handler := &StorageHandler{storageService: mockStorage}
 
 	t.Run("successful delete", func(t *testing.T) {
 		// First upload a file
@@ -287,8 +287,8 @@ func TestStorageHandlerDelete(t *testing.T) {
 
 func TestStorageHandlerGetPresignedURL(t *testing.T) {
 	e := echo.New()
-	_ = NewMockS3Storage()                          // Create but don't use
-	handler := &StorageHandler{storageService: nil} // Tests use mock, set to nil
+	mockStorage := NewMockS3Storage()
+	handler := &StorageHandler{storageService: mockStorage} // Use mock storage in handler
 
 	t.Run("successful presigned URL generation", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/storage/presigned/test/file.txt?expiryHours=2", nil)
@@ -326,8 +326,8 @@ func TestStorageHandlerGetPresignedURL(t *testing.T) {
 
 func TestStorageHandlerGenerateUploadPresignedURL(t *testing.T) {
 	e := echo.New()
-	_ = NewMockS3Storage()                          // Create but don't use
-	handler := &StorageHandler{storageService: nil} // Tests use mock, set to nil
+	mockStorage := NewMockS3Storage()
+	handler := &StorageHandler{storageService: mockStorage} // Use mock storage in handler
 
 	t.Run("successful upload presigned URL generation", func(t *testing.T) {
 		reqBody := `{
@@ -370,7 +370,7 @@ func TestStorageHandlerGenerateUploadPresignedURL(t *testing.T) {
 func TestStorageHandlerGetFileInfo(t *testing.T) {
 	e := echo.New()
 	mockStorage := NewMockS3Storage()
-	handler := &StorageHandler{storageService: nil} // Tests use mock, set to nil
+	handler := &StorageHandler{storageService: mockStorage}
 
 	t.Run("get info for existing file", func(t *testing.T) {
 		// Upload a file first

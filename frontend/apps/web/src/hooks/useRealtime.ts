@@ -71,35 +71,60 @@ export function useRealtimeUpdates(projectId?: string) {
     realtimeClient.connect(token, projectId);
 
     // Subscribe to item events
-    const unsubItem = realtimeClient.on('item.created', (event) => {});
+    const unsubItem = realtimeClient.on('item.created', () => {
+      queryClient.invalidateQueries({ queryKey: ['items', projectId] });
+    });
 
-    const unsubItemUpdate = realtimeClient.on('item.updated', (event) => {});
+    const unsubItemUpdate = realtimeClient.on('item.updated', () => {
+      queryClient.invalidateQueries({ queryKey: ['items', projectId] });
+    });
 
-    const unsubItemDelete = realtimeClient.on('item.deleted', (event) => {});
+    const unsubItemDelete = realtimeClient.on('item.deleted', () => {
+      queryClient.invalidateQueries({ queryKey: ['items', projectId] });
+    });
 
     // Subscribe to link events
-    const unsubLink = realtimeClient.on('link.created', (event) => {});
+    const unsubLink = realtimeClient.on('link.created', () => {
+      queryClient.invalidateQueries({ queryKey: ['links', projectId] });
+    });
 
-    const unsubLinkDelete = realtimeClient.on('link.deleted', (event) => {});
+    const unsubLinkDelete = realtimeClient.on('link.deleted', () => {
+      queryClient.invalidateQueries({ queryKey: ['links', projectId] });
+    });
 
     // Subscribe to spec events (from Python backend)
-    const unsubSpec = realtimeClient.on('spec.created', (event) => {});
+    const unsubSpec = realtimeClient.on('spec.created', () => {
+      queryClient.invalidateQueries({ queryKey: ['specs', projectId] });
+    });
 
-    const unsubSpecUpdate = realtimeClient.on('spec.updated', (event) => {});
+    const unsubSpecUpdate = realtimeClient.on('spec.updated', () => {
+      queryClient.invalidateQueries({ queryKey: ['specs', projectId] });
+    });
 
     // Subscribe to AI analysis events
-    const unsubAI = realtimeClient.on('ai.analysis.complete', (event) => {});
+    const unsubAI = realtimeClient.on('ai.analysis.complete', () => {
+      queryClient.invalidateQueries({ queryKey: ['analysis', projectId] });
+    });
 
     // Subscribe to execution events
-    const unsubExecution = realtimeClient.on('execution.completed', (event) => {});
+    const unsubExecution = realtimeClient.on('execution.completed', () => {
+      queryClient.invalidateQueries({ queryKey: ['executions', projectId] });
+    });
 
-    const unsubExecutionFailed = realtimeClient.on('execution.failed', (event) => {});
+    const unsubExecutionFailed = realtimeClient.on('execution.failed', () => {
+      queryClient.invalidateQueries({ queryKey: ['executions', projectId] });
+    });
 
     // Subscribe to workflow events
-    const unsubWorkflow = realtimeClient.on('workflow.completed', (event) => {});
+    const unsubWorkflow = realtimeClient.on('workflow.completed', () => {
+      queryClient.invalidateQueries({ queryKey: ['workflows', projectId] });
+    });
 
     // Subscribe to project events
-    const unsubProject = realtimeClient.on('project.updated', (event) => {});
+    const unsubProject = realtimeClient.on('project.updated', () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+    });
 
     // Cleanup all subscriptions
     return () => {

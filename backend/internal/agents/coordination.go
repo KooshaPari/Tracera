@@ -122,6 +122,53 @@ func (m *JSONMap) Scan(value interface{}) error {
 	return nil
 }
 
+// JSONStringArray is a custom type for []string that works with SQLite
+type JSONStringArray []string
+
+func (a JSONStringArray) Value() (driver.Value, error) {
+	if a == nil {
+		return []byte("[]"), nil
+	}
+	b, err := json.Marshal([]string(a))
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func (a *JSONStringArray) Scan(value interface{}) error {
+	if a == nil {
+		return errors.New("JSONStringArray: Scan on nil receiver")
+	}
+
+	if value == nil {
+		*a = JSONStringArray{}
+		return nil
+	}
+
+	var data []byte
+	switch v := value.(type) {
+	case []byte:
+		data = v
+	case string:
+		data = []byte(v)
+	default:
+		return fmt.Errorf("JSONStringArray: unsupported Scan type %T", value)
+	}
+
+	if len(data) == 0 {
+		*a = JSONStringArray{}
+		return nil
+	}
+
+	var out []string
+	if err := json.Unmarshal(data, &out); err != nil {
+		return err
+	}
+	*a = JSONStringArray(out)
+	return nil
+}
+
 // TeamRole defines permissions for a role
 type TeamRole struct {
 	Name        string   `json:"name"`

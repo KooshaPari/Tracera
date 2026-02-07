@@ -249,7 +249,16 @@ func (tq *TaskQueue) UpdateTaskStatus(task *Task) error {
 
 	// Remove from queued tasks if status is not pending
 	if task.Status != TaskStatusPending {
-		delete(tq.queuedTasks, task.ID)
+		if tq.queuedTasks[task.ID] {
+			// Remove from priority queue heap
+			for i := 0; i < tq.queue.Len(); i++ {
+				if (*tq.queue)[i].ID == task.ID {
+					heap.Remove(tq.queue, i)
+					break
+				}
+			}
+			delete(tq.queuedTasks, task.ID)
+		}
 	}
 
 	// Persist to database

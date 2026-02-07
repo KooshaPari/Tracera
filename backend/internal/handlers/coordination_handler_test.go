@@ -326,7 +326,7 @@ func TestCoordinationHandler_CompleteCoordinatedUpdate_Validation(t *testing.T) 
 }
 
 func TestCoordinationHandler_Shutdown(t *testing.T) {
-	t.Run("nil lock manager", func(_ *testing.T) {
+	t.Run("nil lock manager", func(t *testing.T) {
 		handler := &CoordinationHandler{
 			lockManager: nil,
 		}
@@ -335,7 +335,7 @@ func TestCoordinationHandler_Shutdown(t *testing.T) {
 		handler.Shutdown()
 	})
 
-	t.Run("with lock manager", func(_ *testing.T) {
+	t.Run("with lock manager", func(t *testing.T) {
 		// Would need real DB for this
 		// Tested in integration tests
 		t.Skip("Requires real database - integration test")

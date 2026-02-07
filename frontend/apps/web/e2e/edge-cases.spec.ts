@@ -304,11 +304,11 @@ test.describe('Edge Cases - Concurrent Operations', () => {
     // Try to submit multiple times rapidly
     const submitButton = page.locator('button:has-text("Save")');
 
-    await Promise.all([submitButton.click(), submitButton.click(), submitButton.click()]).catch(
-      () => {
-        // Expected to fail for some clicks
-      },
-    );
+    try {
+      await Promise.all([submitButton.click(), submitButton.click(), submitButton.click()]);
+    } catch {
+      // Expected to fail for some clicks as some will be disabled or detached
+    }
 
     // Should only create one item
     await page.waitForTimeout(1000);

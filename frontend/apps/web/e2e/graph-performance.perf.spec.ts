@@ -335,23 +335,22 @@ test.describe('Graph Performance - Zoom Operations', () => {
     // Find zoom in button
     const zoomInBtn = page.locator('.react-flow__controls-zoomin');
 
-    if (await zoomInBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // Measure response time for zoom button clicks
-      const clickTimes: number[] = [];
+    await expect(zoomInBtn).toBeVisible({ timeout: 10000 });
+    // Measure response time for zoom button clicks
+    const clickTimes: number[] = [];
 
-      for (let i = 0; i < 5; i++) {
-        const responseTime = await measureInteractionTime(page, async () => {
-          await zoomInBtn.click();
-        });
-        clickTimes.push(responseTime);
-        await page.waitForTimeout(100);
-      }
-
-      const avgResponseTime = clickTimes.reduce((a, b) => a + b, 0) / clickTimes.length;
-
-      // Zoom controls should respond quickly
-      expect(avgResponseTime).toBeLessThan(100);
+    for (let i = 0; i < 5; i++) {
+      const responseTime = await measureInteractionTime(page, async () => {
+        await zoomInBtn.click();
+      });
+      clickTimes.push(responseTime);
+      await page.waitForTimeout(100);
     }
+
+    const avgResponseTime = clickTimes.reduce((a, b) => a + b, 0) / clickTimes.length;
+
+    // Zoom controls should respond quickly
+    expect(avgResponseTime).toBeLessThan(100);
   });
 });
 
@@ -987,18 +986,12 @@ test.describe('Graph Performance - Interaction Responsiveness', () => {
   test('should update layout controls without lag', async ({ page }) => {
     const layoutSelector = page.locator('button').filter({ hasText: /layout/i });
 
-    if (
-      await layoutSelector
-        .first()
-        .isVisible({ timeout: 2000 })
-        .catch(() => false)
-    ) {
-      const responseTime = await measureInteractionTime(page, async () => {
-        await layoutSelector.first().click();
-      });
+    await expect(layoutSelector.first()).toBeVisible({ timeout: 10000 });
+    const responseTime = await measureInteractionTime(page, async () => {
+      await layoutSelector.first().click();
+    });
 
-      expect(responseTime).toBeLessThan(100);
-    }
+    expect(responseTime).toBeLessThan(100);
   });
 });
 

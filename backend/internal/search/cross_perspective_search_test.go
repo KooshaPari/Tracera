@@ -275,15 +275,15 @@ func TestCacheConcurrency(t *testing.T) {
 func TestCacheTTL(t *testing.T) {
 	cache := NewCache()
 
-	// Set with short TTL
+	// Set with short TTL (1 second)
 	cache.Set("short", "value", 1)
 
 	// Should exist
 	_, found := cache.Get("short")
 	assert.True(t, found)
 
-	// Wait for expiration
-	time.Sleep(cacheCleanupSleep)
+	// Wait for expiration (need to wait more than 1 second since Unix time is in seconds)
+	time.Sleep(1500 * time.Millisecond)
 
 	// Should not exist
 	_, found = cache.Get("short")
@@ -505,7 +505,7 @@ func buildAccuracyResultsWithDims() []Result {
 			Title: "Item 1",
 			Metadata: map[string]interface{}{
 				"dimensions": map[string]interface{}{
-					"priority": 3,
+					"priority": "high",
 				},
 			},
 		},
@@ -514,7 +514,7 @@ func buildAccuracyResultsWithDims() []Result {
 			Title: "Item 2",
 			Metadata: map[string]interface{}{
 				"dimensions": map[string]interface{}{
-					"priority": 1,
+					"priority": "low",
 				},
 			},
 		},

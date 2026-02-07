@@ -25,3 +25,4 @@ brew "f1bonacc1/tap/process-compose"
 
 # Development tools
 brew "air"  # Go hot reload
+brew "go-task"

@@ -41,9 +41,7 @@ async function disableAnimations(page: import('@playwright/test').Page): Promise
 async function waitForGraphReady(page: import('@playwright/test').Page): Promise<void> {
   // Wait for the React Flow container to be present in the DOM
   const reactFlow = page.locator('.react-flow');
-  await reactFlow.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {
-    // Graph may not render in all test environments
-  });
+  await expect(reactFlow).toBeVisible({ timeout: 15_000 });
 
   // Give force-directed layout and edge rendering time to settle
   await page.waitForTimeout(2000);
@@ -76,9 +74,7 @@ test.describe('Graph View Visual Regression @visual', () => {
 
         // Verify controls are present before capturing
         const controls = page.locator('.react-flow__controls');
-        await controls.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {
-          // Controls may not render in all configurations
-        });
+        await expect(controls).toBeVisible({ timeout: 5000 });
 
         await expect(page).toHaveScreenshot(`graph-controls-${viewport.name}.png`, {
           fullPage: false,
@@ -101,12 +97,7 @@ test.describe('Graph View Visual Regression @visual', () => {
 
       // Check that some nodes exist
       const nodes = page.locator('.react-flow__nodes > div[data-id]');
-      await nodes
-        .first()
-        .waitFor({ state: 'visible', timeout: 10_000 })
-        .catch(() => {
-          // Nodes may not be available in mocked/empty environment
-        });
+      await expect(nodes.first()).toBeVisible({ timeout: 10_000 });
 
       await expect(page).toHaveScreenshot('graph-nodes-and-edges.png', {
         fullPage: true,
@@ -117,10 +108,9 @@ test.describe('Graph View Visual Regression @visual', () => {
     test('should match graph after fit-to-view', async ({ page }) => {
       // Click fit-to-view button (third control button in React Flow)
       const fitBtn = page.locator('.react-flow__controls button').nth(2);
-      if (await fitBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await fitBtn.click();
-        await page.waitForTimeout(500);
-      }
+      await expect(fitBtn).toBeVisible({ timeout: 5000 });
+      await fitBtn.click();
+      await page.waitForTimeout(500);
 
       await disableAnimations(page);
 
@@ -132,10 +122,9 @@ test.describe('Graph View Visual Regression @visual', () => {
 
     test('should match graph with node selected', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
-      if (await firstNode.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
-      }
+      await expect(firstNode).toBeVisible({ timeout: 5000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
       await disableAnimations(page);
 
@@ -147,13 +136,12 @@ test.describe('Graph View Visual Regression @visual', () => {
 
     test('should match graph minimap', async ({ page }) => {
       const minimap = page.locator('.react-flow__minimap');
-      if (await minimap.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await disableAnimations(page);
+      await expect(minimap).toBeVisible({ timeout: 5000 });
+      await disableAnimations(page);
 
-        await expect(minimap).toHaveScreenshot('graph-minimap.png', {
-          maxDiffPixelRatio: 0.02,
-        });
-      }
+      await expect(minimap).toHaveScreenshot('graph-minimap.png', {
+        maxDiffPixelRatio: 0.02,
+      });
     });
   });
 

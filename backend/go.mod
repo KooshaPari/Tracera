@@ -36,8 +36,8 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/swag v1.16.6
 	github.com/testcontainers/testcontainers-go v0.40.0
+	github.com/testcontainers/testcontainers-go/modules/minio v0.40.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.40.0
-	github.com/testcontainers/testcontainers-go/modules/redis v0.40.0
 	github.com/yuin/goldmark v1.7.16
 	github.com/yuin/goldmark-meta v1.1.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.64.0
@@ -140,7 +140,6 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
-	github.com/mdelapenya/tlscert v0.2.0 // indirect
 	github.com/minio/crc64nvme v1.1.1 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

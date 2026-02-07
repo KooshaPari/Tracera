@@ -1,8 +1,13 @@
 import { Outlet, useParams } from '@tanstack/react-router';
 
+import { useRealtimeUpdates } from '@/hooks/useRealtime';
+
 export const ProjectDetail = () => {
   const params = useParams({ strict: false });
   const projectId = params.projectId as string | undefined;
+
+  // Enable real-time updates for this project
+  useRealtimeUpdates(projectId);
 
   return (
     <div className='space-y-6'>

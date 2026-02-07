@@ -109,10 +109,13 @@ func (qb *QueryBuilder) Build() (string, []interface{}) {
 		query.WriteString(fmt.Sprintf(" LIMIT $%d", qb.argIndex))
 		qb.args = append(qb.args, qb.limitVal)
 		qb.argIndex++
-	}
 
-	// OFFSET
-	if qb.offsetVal > 0 {
+		// If LIMIT is set, always include OFFSET (default to 0 if not set)
+		query.WriteString(fmt.Sprintf(" OFFSET $%d", qb.argIndex))
+		qb.args = append(qb.args, qb.offsetVal)
+		qb.argIndex++
+	} else if qb.offsetVal > 0 {
+		// If only OFFSET is set (no LIMIT), add it
 		query.WriteString(fmt.Sprintf(" OFFSET $%d", qb.argIndex))
 		qb.args = append(qb.args, qb.offsetVal)
 		qb.argIndex++

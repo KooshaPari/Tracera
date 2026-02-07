@@ -31,22 +31,13 @@ test.describe('Agents Management', () => {
       // Look for agent cards - they are displayed as Cards in a grid
       // Check for agent names from mock data
       const syncAgent = page.getByText(/Sync Agent/);
-      await expect(syncAgent)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Sync Agent not found');
-        });
+      await expect(syncAgent).toBeVisible({ timeout: 5000 });
 
       // Verify at least one agent card is visible - using mock data names
       const agents = [/Sync Agent/, /Validation Agent/, /Coverage Agent/];
-      let foundAgent = false;
       for (const agent of agents) {
-        if (await page.getByText(agent).isVisible({ timeout: 2000 })) {
-          foundAgent = true;
-          break;
-        }
+        await expect(page.getByText(agent)).toBeVisible({ timeout: 2000 });
       }
-      expect(foundAgent).toBe(true);
     });
 
     test('should show agent details', async ({ page }) => {
@@ -55,25 +46,13 @@ test.describe('Agents Management', () => {
 
       // Check for agent names from mock data
       const syncAgent = page.getByText(/Sync Agent/);
-      await expect(syncAgent)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Sync Agent not found');
-        });
+      await expect(syncAgent).toBeVisible({ timeout: 5000 });
 
       const validationAgent = page.getByText(/Validation Agent/);
-      await expect(validationAgent)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Validation Agent not found');
-        });
+      await expect(validationAgent).toBeVisible({ timeout: 5000 });
 
       const coverageAgent = page.getByText(/Coverage Agent/);
-      await expect(coverageAgent)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Coverage Agent not found');
-        });
+      await expect(coverageAgent).toBeVisible({ timeout: 5000 });
     });
   });
 
@@ -84,25 +63,13 @@ test.describe('Agents Management', () => {
 
       // Look for status badges - agents have status: active, idle, running
       const activeStatus = page.getByText(/active/i).first();
-      await expect(activeStatus)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Active status not displayed');
-        });
+      await expect(activeStatus).toBeVisible({ timeout: 5000 });
 
       const idleStatus = page.getByText(/idle/i).first();
-      await expect(idleStatus)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Idle status not displayed');
-        });
+      await expect(idleStatus).toBeVisible({ timeout: 5000 });
 
       const runningStatus = page.getByText(/running/i).first();
-      await expect(runningStatus)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Running status not displayed');
-        });
+      await expect(runningStatus).toBeVisible({ timeout: 5000 });
     });
 
     test('should show agent task information', async ({ page }) => {
@@ -111,19 +78,11 @@ test.describe('Agents Management', () => {
 
       // Check for task counts - agents display "X tasks completed"
       const tasksText = page.getByText(/tasks completed/i);
-      await expect(tasksText.first())
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Task information not displayed');
-        });
+      await expect(tasksText.first()).toBeVisible({ timeout: 5000 });
 
       // Look for specific task counts
       const syncAgentTasks = page.getByText(/24 tasks completed/i);
-      await expect(syncAgentTasks)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Sync Agent tasks not displayed');
-        });
+      await expect(syncAgentTasks).toBeVisible({ timeout: 5000 });
     });
 
     test('should show last run information', async ({ page }) => {
@@ -132,11 +91,7 @@ test.describe('Agents Management', () => {
 
       // Look for last run information displayed on agent cards
       const lastRunText = page.getByText(/Last run:/i);
-      await expect(lastRunText.first())
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Last run information not displayed');
-        });
+      await expect(lastRunText.first()).toBeVisible({ timeout: 5000 });
     });
 
     test('should show agent buttons', async ({ page }) => {
@@ -145,18 +100,10 @@ test.describe('Agents Management', () => {
 
       // Look for action buttons on agent cards (View Logs, Configure, etc.)
       const viewLogsBtn = page.getByRole('button', { name: /View Logs/i });
-      await expect(viewLogsBtn.first())
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('View Logs button not displayed');
-        });
+      await expect(viewLogsBtn.first()).toBeVisible({ timeout: 5000 });
 
       const configureBtn = page.getByRole('button', { name: /Configure/i });
-      await expect(configureBtn.first())
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Configure button not displayed');
-        });
+      await expect(configureBtn.first()).toBeVisible({ timeout: 5000 });
     });
   });
 
@@ -167,20 +114,14 @@ test.describe('Agents Management', () => {
 
       // Find an agent with idle status
       const idleAgent = page.getByText(/Validation Agent/).first();
-      if (await idleAgent.isVisible({ timeout: 2000 })) {
-        // Agent is displayed, check for action buttons near it
-        const buttons = page.getByRole('button', {
-          name: /View Logs|Configure/i,
-        });
+      await expect(idleAgent).toBeVisible({ timeout: 2000 });
 
-        await expect(buttons.first())
-          .toBeVisible({ timeout: 5000 })
-          .catch(() => {
-            console.log('Agent action buttons not found');
-          });
-      } else {
-        console.log('No idle agents available');
-      }
+      // Agent is displayed, check for action buttons near it
+      const buttons = page.getByRole('button', {
+        name: /View Logs|Configure/i,
+      });
+
+      await expect(buttons.first()).toBeVisible({ timeout: 5000 });
     });
 
     test('should display running agent', async ({ page }) => {
@@ -189,17 +130,11 @@ test.describe('Agents Management', () => {
 
       // Find a running agent
       const runningAgent = page.getByText(/Coverage Agent/).first();
-      if (await runningAgent.isVisible({ timeout: 2000 })) {
-        // Verify the agent is shown with running status
-        const runningStatus = runningAgent.locator('..').getByText(/running/i);
-        await expect(runningStatus)
-          .toBeVisible({ timeout: 5000 })
-          .catch(() => {
-            console.log('Running status not shown for Coverage Agent');
-          });
-      } else {
-        console.log('Running agent not displayed');
-      }
+      await expect(runningAgent).toBeVisible({ timeout: 2000 });
+
+      // Verify the agent is shown with running status
+      const runningStatus = runningAgent.locator('..').getByText(/running/i);
+      await expect(runningStatus).toBeVisible({ timeout: 5000 });
     });
   });
 
@@ -210,15 +145,10 @@ test.describe('Agents Management', () => {
 
       // Verify agents are displayed in grid layout
       const agents = [/Sync Agent/, /Validation Agent/, /Coverage Agent/];
-      let displayedAgents = 0;
 
       for (const agent of agents) {
-        if (await page.getByText(agent).isVisible({ timeout: 2000 })) {
-          displayedAgents++;
-        }
+        await expect(page.getByText(agent)).toBeVisible({ timeout: 2000 });
       }
-
-      expect(displayedAgents).toBeGreaterThan(0);
     });
 
     test('should show agent task counts', async ({ page }) => {
@@ -227,11 +157,7 @@ test.describe('Agents Management', () => {
 
       // Verify task count information is displayed
       const taskInfo = page.getByText(/tasks completed/i);
-      await expect(taskInfo.first())
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Task counts not displayed');
-        });
+      await expect(taskInfo.first()).toBeVisible({ timeout: 5000 });
     });
   });
 
@@ -242,11 +168,7 @@ test.describe('Agents Management', () => {
 
       // Look for View Logs button on agent cards
       const viewLogsBtn = page.getByRole('button', { name: /View Logs/i });
-      await expect(viewLogsBtn.first())
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('View Logs button not found');
-        });
+      await expect(viewLogsBtn.first()).toBeVisible({ timeout: 5000 });
     });
 
     test('should show Configure button', async ({ page }) => {
@@ -255,11 +177,7 @@ test.describe('Agents Management', () => {
 
       // Look for Configure button on agent cards
       const configureBtn = page.getByRole('button', { name: /Configure/i });
-      await expect(configureBtn.first())
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Configure button not found');
-        });
+      await expect(configureBtn.first()).toBeVisible({ timeout: 5000 });
     });
   });
 
@@ -268,18 +186,16 @@ test.describe('Agents Management', () => {
       await page.goto('/agents');
       await page.waitForLoadState('networkidle');
 
-      // Status should be displayed on each agent card
-      const statusTexts = [/active/, /idle/, /running/];
-      let foundStatus = false;
+      // Status should be displayed on agent cards
+      const statusTexts = [/active/i, /idle/i, /running/i];
 
-      for (const status of statusTexts) {
-        if (await page.getByText(status).isVisible({ timeout: 2000 })) {
-          foundStatus = true;
-          break;
-        }
-      }
-
-      expect(foundStatus).toBe(true);
+      // At least one status should be visible
+      await expect(
+        page
+          .getByText(/active/i)
+          .or(page.getByText(/idle/i))
+          .or(page.getByText(/running/i)),
+      ).toBeVisible({ timeout: 2000 });
     });
 
     test('should display last run time', async ({ page }) => {
@@ -288,11 +204,7 @@ test.describe('Agents Management', () => {
 
       // Look for last run information
       const lastRunText = page.getByText(/Last run:/i);
-      await expect(lastRunText.first())
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Last run time not displayed');
-        });
+      await expect(lastRunText.first()).toBeVisible({ timeout: 5000 });
     });
   });
 
@@ -336,11 +248,7 @@ test.describe('Agents Management', () => {
 
       // Check that it shows tasks completed
       const syncTasks = page.getByText(/24 tasks completed/);
-      await expect(syncTasks)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log('Sync Agent tasks not displayed in expected format');
-        });
+      await expect(syncTasks).toBeVisible({ timeout: 5000 });
     });
 
     test('should show agent action buttons', async ({ page }) => {

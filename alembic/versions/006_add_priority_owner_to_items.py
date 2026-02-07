@@ -20,17 +20,22 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    # Add priority column with default 'medium'
-    op.add_column("items", sa.Column("priority", sa.String(50), nullable=False, server_default="medium"))
+    # Check if columns already exist before adding them
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    columns = [c["name"] for c in inspector.get_columns("items")]
 
-    # Add owner column (nullable)
-    op.add_column("items", sa.Column("owner", sa.String(255), nullable=True))
+    if "priority" not in columns:
+        # Add priority column with default 'medium'
+        op.add_column("items", sa.Column("priority", sa.String(50), nullable=False, server_default="medium"))
+        # Create index on priority for filtering
+        op.create_index("idx_items_priority", "items", ["priority"])
 
-    # Create index on priority for filtering
-    op.create_index("idx_items_priority", "items", ["priority"])
-
-    # Create index on owner for filtering
-    op.create_index("idx_items_owner", "items", ["owner"])
+    if "owner" not in columns:
+        # Add owner column (nullable)
+        op.add_column("items", sa.Column("owner", sa.String(255), nullable=True))
+        # Create index on owner for filtering
+        op.create_index("idx_items_owner", "items", ["owner"])
 
 
 def downgrade() -> None:

@@ -32,18 +32,18 @@ run_one() {
   local log="$LOG_DIR/$step.log"
   local exitf="$LOG_DIR/$step.exit"
   case "$step" in
-    naming)    make quality-naming               > "$log" 2>&1; echo $? > "$exitf" ;;
-    go-lint)   PORT=18080 make quality-go-lint   > "$log" 2>&1; echo $? > "$exitf" ;;
-    go-proto)  make quality-go-proto            > "$log" 2>&1; echo $? > "$exitf" ;;
-    go-build)  make quality-go-build            > "$log" 2>&1; echo $? > "$exitf" ;;
-    go-test)   PORT=18080 make quality-go-test  > "$log" 2>&1; echo $? > "$exitf" ;;
-    py-lint)   make quality-py-lint            > "$log" 2>&1; echo $? > "$exitf" ;;
-    py-type)   make quality-py-type             > "$log" 2>&1; echo $? > "$exitf" ;;
-    py-test)   make quality-py-test             > "$log" 2>&1; echo $? > "$exitf" ;;
-    fe-lint)   make quality-fe-lint             > "$log" 2>&1; echo $? > "$exitf" ;;
-    fe-type)   make quality-fe-type             > "$log" 2>&1; echo $? > "$exitf" ;;
-    fe-build)  make quality-fe-build            > "$log" 2>&1; echo $? > "$exitf" ;;
-    fe-test)   make quality-fe-test             > "$log" 2>&1; echo $? > "$exitf" ;;
+    naming)    task lint:naming               > "$log" 2>&1; echo $? > "$exitf" ;;
+    go-lint)   PORT=18080 task go:lint        > "$log" 2>&1; echo $? > "$exitf" ;;
+    go-proto)  task proto:gen                 > "$log" 2>&1; echo $? > "$exitf" ;;
+    go-build)  task go:build                > "$log" 2>&1; echo $? > "$exitf" ;;
+    go-test)   PORT=18080 task go:test       > "$log" 2>&1; echo $? > "$exitf" ;;
+    py-lint)   poe lint                       > "$log" 2>&1; echo $? > "$exitf" ;;
+    py-type)   poe type-check                 > "$log" 2>&1; echo $? > "$exitf" ;;
+    py-test)   poe test                       > "$log" 2>&1; echo $? > "$exitf" ;;
+    fe-lint)   bun run --cwd frontend lint    > "$log" 2>&1; echo $? > "$exitf" ;;
+    fe-type)   bun run --cwd frontend typecheck > "$log" 2>&1; echo $? > "$exitf" ;;
+    fe-build)  bun run --cwd frontend build   > "$log" 2>&1; echo $? > "$exitf" ;;
+    fe-test)   bun run --cwd frontend test    > "$log" 2>&1; echo $? > "$exitf" ;;
     *) echo "Unknown step: $step" >&2; echo 1 > "$exitf" ;;
   esac
 }

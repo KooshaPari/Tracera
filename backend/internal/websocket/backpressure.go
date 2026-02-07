@@ -69,7 +69,7 @@ func NewBackpressureHandler(client *Client, config *BackpressureConfig) *Backpre
 	return &BackpressureHandler{
 		client:   client,
 		config:   config,
-		lastSent: time.Now(),
+		lastSent: time.Now().Add(-time.Hour), // Initialize to past so first message passes
 	}
 }
 

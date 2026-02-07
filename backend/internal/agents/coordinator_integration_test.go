@@ -353,7 +353,7 @@ func TestOperationParticipantFlow(t *testing.T) {
 	// Complete work
 	participant.Status = "completed"
 	participant.CompletedAt = &now
-	participant.Result = map[string]interface{}{
+	participant.Result = JSONMap{
 		"items_processed": 5,
 	}
 

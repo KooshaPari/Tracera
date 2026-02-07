@@ -23,667 +23,418 @@ depends_on = None
 def upgrade() -> None:
     """Add blockchain/NFT-like fields to all spec tables."""
 
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+
     # =========================================================================
     # REQUIREMENT_SPECS - Content Addressing & Audit Trail
     # =========================================================================
-    op.add_column(
-        "requirement_specs",
-        sa.Column("content_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("content_cid", sa.String(100), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("merkle_root", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("version_chain_head", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("created_by_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("previous_version_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("digital_signature", sa.String(512), nullable=True),
-    )
+    req_columns = [c["name"] for c in inspector.get_columns("requirement_specs")]
+
+    if "content_hash" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("content_hash", sa.String(64), nullable=True))
+    if "content_cid" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("content_cid", sa.String(100), nullable=True))
+    if "merkle_root" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("merkle_root", sa.String(64), nullable=True))
+    if "version_chain_head" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("version_chain_head", sa.String(64), nullable=True))
+    if "created_by_hash" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("created_by_hash", sa.String(64), nullable=True))
+    if "previous_version_hash" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("previous_version_hash", sa.String(64), nullable=True))
+    if "digital_signature" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("digital_signature", sa.String(512), nullable=True))
 
     # EARS Classification
-    op.add_column(
-        "requirement_specs",
-        sa.Column("ears_pattern_type", sa.String(50), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("ears_trigger", sa.Text(), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("ears_precondition", sa.Text(), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("ears_postcondition", sa.Text(), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("ears_system_name", sa.String(255), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("ears_confidence", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("ears_formal_structure", sa.Text(), nullable=True),
-    )
+    if "ears_pattern_type" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("ears_pattern_type", sa.String(50), nullable=True))
+    if "ears_trigger" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("ears_trigger", sa.Text(), nullable=True))
+    if "ears_precondition" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("ears_precondition", sa.Text(), nullable=True))
+    if "ears_postcondition" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("ears_postcondition", sa.Text(), nullable=True))
+    if "ears_system_name" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("ears_system_name", sa.String(255), nullable=True))
+    if "ears_confidence" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("ears_confidence", sa.Float(), nullable=True))
+    if "ears_formal_structure" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("ears_formal_structure", sa.Text(), nullable=True))
 
     # ISO 29148 Quality Dimensions
-    op.add_column(
-        "requirement_specs",
-        sa.Column(
-            "quality_dimensions",
-            postgresql.JSONB(astext_type=sa.Text()),
-            server_default="{}",
-            nullable=False,
-        ),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("quality_grade", sa.String(5), nullable=True),
-    )
+    if "quality_dimensions" not in req_columns:
+        op.add_column(
+            "requirement_specs",
+            sa.Column(
+                "quality_dimensions",
+                postgresql.JSONB(astext_type=sa.Text()),
+                server_default="{}",
+                nullable=False,
+            ),
+        )
+    if "quality_grade" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("quality_grade", sa.String(5), nullable=True))
 
     # Formal Verification
-    op.add_column(
-        "requirement_specs",
-        sa.Column(
-            "formal_constraints",
-            postgresql.JSONB(astext_type=sa.Text()),
-            nullable=True,
-        ),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column(
-            "invariants",
-            postgresql.JSONB(astext_type=sa.Text()),
-            server_default="[]",
-            nullable=False,
-        ),
-    )
+    if "formal_constraints" not in req_columns:
+        op.add_column(
+            "requirement_specs",
+            sa.Column(
+                "formal_constraints",
+                postgresql.JSONB(astext_type=sa.Text()),
+                nullable=True,
+            ),
+        )
+    if "invariants" not in req_columns:
+        op.add_column(
+            "requirement_specs",
+            sa.Column(
+                "invariants",
+                postgresql.JSONB(astext_type=sa.Text()),
+                server_default="[]",
+                nullable=False,
+            ),
+        )
 
     # RICE Prioritization
-    op.add_column(
-        "requirement_specs",
-        sa.Column("rice_score", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("rice_reach", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("rice_impact", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("rice_confidence", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("rice_effort", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "requirement_specs",
-        sa.Column("moscow_priority", sa.String(20), nullable=True),
-    )
+    if "rice_score" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("rice_score", sa.Float(), nullable=True))
+    if "rice_reach" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("rice_reach", sa.Integer(), nullable=True))
+    if "rice_impact" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("rice_impact", sa.Integer(), nullable=True))
+    if "rice_confidence" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("rice_confidence", sa.Float(), nullable=True))
+    if "rice_effort" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("rice_effort", sa.Integer(), nullable=True))
+    if "moscow_priority" not in req_columns:
+        op.add_column("requirement_specs", sa.Column("moscow_priority", sa.String(20), nullable=True))
 
     # Create indexes for content addressing
-    op.create_index(
-        "ix_requirement_specs_content_hash",
-        "requirement_specs",
-        ["content_hash"],
-    )
-    op.create_index(
-        "ix_requirement_specs_content_cid",
-        "requirement_specs",
-        ["content_cid"],
-    )
+    if "ix_requirement_specs_content_hash" not in [i["name"] for i in inspector.get_indexes("requirement_specs")]:
+        op.create_index("ix_requirement_specs_content_hash", "requirement_specs", ["content_hash"])
+    if "ix_requirement_specs_content_cid" not in [i["name"] for i in inspector.get_indexes("requirement_specs")]:
+        op.create_index("ix_requirement_specs_content_cid", "requirement_specs", ["content_cid"])
 
     # =========================================================================
     # TEST_SPECS - Content Addressing, Flakiness, Oracle, Coverage
     # =========================================================================
-    op.add_column(
-        "test_specs",
-        sa.Column("content_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("content_cid", sa.String(100), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("merkle_root", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("version_chain_head", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("created_by_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("previous_version_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("digital_signature", sa.String(512), nullable=True),
-    )
+    test_columns = [c["name"] for c in inspector.get_columns("test_specs")]
+
+    if "content_hash" not in test_columns:
+        op.add_column("test_specs", sa.Column("content_hash", sa.String(64), nullable=True))
+    if "content_cid" not in test_columns:
+        op.add_column("test_specs", sa.Column("content_cid", sa.String(100), nullable=True))
+    if "merkle_root" not in test_columns:
+        op.add_column("test_specs", sa.Column("merkle_root", sa.String(64), nullable=True))
+    if "version_chain_head" not in test_columns:
+        op.add_column("test_specs", sa.Column("version_chain_head", sa.String(64), nullable=True))
+    if "created_by_hash" not in test_columns:
+        op.add_column("test_specs", sa.Column("created_by_hash", sa.String(64), nullable=True))
+    if "previous_version_hash" not in test_columns:
+        op.add_column("test_specs", sa.Column("previous_version_hash", sa.String(64), nullable=True))
+    if "digital_signature" not in test_columns:
+        op.add_column("test_specs", sa.Column("digital_signature", sa.String(512), nullable=True))
 
     # META-style Flakiness Detection
-    op.add_column(
-        "test_specs",
-        sa.Column("flakiness_probability", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("flakiness_entropy", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("flakiness_pattern", sa.String(50), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column(
-            "quarantine_recommended",
-            sa.Boolean(),
-            server_default="false",
-            nullable=False,
-        ),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column(
-            "flakiness_contributing_factors",
-            postgresql.JSONB(astext_type=sa.Text()),
-            server_default="[]",
-            nullable=False,
-        ),
-    )
+    if "flakiness_probability" not in test_columns:
+        op.add_column("test_specs", sa.Column("flakiness_probability", sa.Float(), nullable=True))
+    if "flakiness_entropy" not in test_columns:
+        op.add_column("test_specs", sa.Column("flakiness_entropy", sa.Float(), nullable=True))
+    if "flakiness_pattern" not in test_columns:
+        op.add_column("test_specs", sa.Column("flakiness_pattern", sa.String(50), nullable=True))
+    if "quarantine_recommended" not in test_columns:
+        op.add_column(
+            "test_specs",
+            sa.Column(
+                "quarantine_recommended",
+                sa.Boolean(),
+                server_default="false",
+                nullable=False,
+            ),
+        )
+    if "flakiness_contributing_factors" not in test_columns:
+        op.add_column(
+            "test_specs",
+            sa.Column(
+                "flakiness_contributing_factors",
+                postgresql.JSONB(astext_type=sa.Text()),
+                server_default="[]",
+                nullable=False,
+            ),
+        )
 
     # Test Oracle Patterns
-    op.add_column(
-        "test_specs",
-        sa.Column("oracle_type", sa.String(50), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column(
-            "metamorphic_relations",
-            postgresql.JSONB(astext_type=sa.Text()),
-            nullable=True,
-        ),
-    )
+    if "oracle_type" not in test_columns:
+        op.add_column("test_specs", sa.Column("oracle_type", sa.String(50), nullable=True))
+    if "metamorphic_relations" not in test_columns:
+        op.add_column(
+            "test_specs",
+            sa.Column(
+                "metamorphic_relations",
+                postgresql.JSONB(astext_type=sa.Text()),
+                nullable=True,
+            ),
+        )
 
     # Coverage Classification
-    op.add_column(
-        "test_specs",
-        sa.Column("coverage_type", sa.String(50), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("safety_level", sa.String(10), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("branch_coverage", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("mcdc_coverage", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "test_specs",
-        sa.Column("mutation_score", sa.Float(), nullable=True),
-    )
+    if "coverage_type" not in test_columns:
+        op.add_column("test_specs", sa.Column("coverage_type", sa.String(50), nullable=True))
+    if "safety_level" not in test_columns:
+        op.add_column("test_specs", sa.Column("safety_level", sa.String(10), nullable=True))
+    if "branch_coverage" not in test_columns:
+        op.add_column("test_specs", sa.Column("branch_coverage", sa.Float(), nullable=True))
+    if "mcdc_coverage" not in test_columns:
+        op.add_column("test_specs", sa.Column("mcdc_coverage", sa.Float(), nullable=True))
+    if "mutation_score" not in test_columns:
+        op.add_column("test_specs", sa.Column("mutation_score", sa.Float(), nullable=True))
 
     # Create indexes
-    op.create_index(
-        "ix_test_specs_content_hash",
-        "test_specs",
-        ["content_hash"],
-    )
-    op.create_index(
-        "ix_test_specs_content_cid",
-        "test_specs",
-        ["content_cid"],
-    )
-    op.create_index(
-        "ix_test_specs_flakiness_probability",
-        "test_specs",
-        ["flakiness_probability"],
-    )
+    test_indexes = [i["name"] for i in inspector.get_indexes("test_specs")]
+    if "ix_test_specs_content_hash" not in test_indexes:
+        op.create_index("ix_test_specs_content_hash", "test_specs", ["content_hash"])
+    if "ix_test_specs_content_cid" not in test_indexes:
+        op.create_index("ix_test_specs_content_cid", "test_specs", ["content_cid"])
+    if "ix_test_specs_flakiness_probability" not in test_indexes:
+        op.create_index("ix_test_specs_flakiness_probability", "test_specs", ["flakiness_probability"])
 
     # =========================================================================
     # DEFECT_SPECS - Content Addressing, ODC, CVSS, Root Cause
     # =========================================================================
-    op.add_column(
-        "defect_specs",
-        sa.Column("content_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("content_cid", sa.String(100), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("merkle_root", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("version_chain_head", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("created_by_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("previous_version_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("digital_signature", sa.String(512), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("change_count", sa.Integer(), server_default="0", nullable=False),
-    )
+    defect_columns = [c["name"] for c in inspector.get_columns("defect_specs")]
+
+    if "content_hash" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("content_hash", sa.String(64), nullable=True))
+    if "content_cid" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("content_cid", sa.String(100), nullable=True))
+    if "merkle_root" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("merkle_root", sa.String(64), nullable=True))
+    if "version_chain_head" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("version_chain_head", sa.String(64), nullable=True))
+    if "created_by_hash" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("created_by_hash", sa.String(64), nullable=True))
+    if "previous_version_hash" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("previous_version_hash", sa.String(64), nullable=True))
+    if "digital_signature" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("digital_signature", sa.String(512), nullable=True))
+    if "change_count" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("change_count", sa.Integer(), server_default="0", nullable=False))
 
     # IBM Orthogonal Defect Classification
-    op.add_column(
-        "defect_specs",
-        sa.Column("odc_defect_type", sa.String(50), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("odc_trigger", sa.String(50), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("odc_impact", sa.String(50), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("odc_confidence", sa.Float(), nullable=True),
-    )
+    if "odc_defect_type" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("odc_defect_type", sa.String(50), nullable=True))
+    if "odc_trigger" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("odc_trigger", sa.String(50), nullable=True))
+    if "odc_impact" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("odc_impact", sa.String(50), nullable=True))
+    if "odc_confidence" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("odc_confidence", sa.Float(), nullable=True))
 
     # CVSS Security Scoring
-    op.add_column(
-        "defect_specs",
-        sa.Column("cvss_base_score", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("cvss_vector", sa.String(255), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("cvss_severity", sa.String(20), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column(
-            "cvss_breakdown",
-            postgresql.JSONB(astext_type=sa.Text()),
-            nullable=True,
-        ),
-    )
+    if "cvss_base_score" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("cvss_base_score", sa.Float(), nullable=True))
+    if "cvss_vector" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("cvss_vector", sa.String(255), nullable=True))
+    if "cvss_severity" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("cvss_severity", sa.String(20), nullable=True))
+    if "cvss_breakdown" not in defect_columns:
+        op.add_column(
+            "defect_specs",
+            sa.Column(
+                "cvss_breakdown",
+                postgresql.JSONB(astext_type=sa.Text()),
+                nullable=True,
+            ),
+        )
 
     # Root Cause Analysis
-    op.add_column(
-        "defect_specs",
-        sa.Column("root_cause_category", sa.String(100), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("injection_phase", sa.String(50), nullable=True),
-    )
-    op.add_column(
-        "defect_specs",
-        sa.Column("detection_phase", sa.String(50), nullable=True),
-    )
+    if "root_cause_category" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("root_cause_category", sa.String(100), nullable=True))
+    if "injection_phase" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("injection_phase", sa.String(50), nullable=True))
+    if "detection_phase" not in defect_columns:
+        op.add_column("defect_specs", sa.Column("detection_phase", sa.String(50), nullable=True))
 
     # Create indexes
-    op.create_index(
-        "ix_defect_specs_content_hash",
-        "defect_specs",
-        ["content_hash"],
-    )
-    op.create_index(
-        "ix_defect_specs_content_cid",
-        "defect_specs",
-        ["content_cid"],
-    )
-    op.create_index(
-        "ix_defect_specs_odc_defect_type",
-        "defect_specs",
-        ["odc_defect_type"],
-    )
-    op.create_index(
-        "ix_defect_specs_cvss_severity",
-        "defect_specs",
-        ["cvss_severity"],
-    )
+    defect_indexes = [i["name"] for i in inspector.get_indexes("defect_specs")]
+    if "ix_defect_specs_content_hash" not in defect_indexes:
+        op.create_index("ix_defect_specs_content_hash", "defect_specs", ["content_hash"])
+    if "ix_defect_specs_content_cid" not in defect_indexes:
+        op.create_index("ix_defect_specs_content_cid", "defect_specs", ["content_cid"])
+    if "ix_defect_specs_odc_defect_type" not in defect_indexes:
+        op.create_index("ix_defect_specs_odc_defect_type", "defect_specs", ["odc_defect_type"])
+    if "ix_defect_specs_cvss_severity" not in defect_indexes:
+        op.create_index("ix_defect_specs_cvss_severity", "defect_specs", ["cvss_severity"])
 
     # =========================================================================
     # EPIC_SPECS - Content Addressing & Prioritization
     # =========================================================================
-    op.add_column(
-        "epic_specs",
-        sa.Column("content_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("content_cid", sa.String(100), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("merkle_root", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("version_chain_head", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("created_by_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("previous_version_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("digital_signature", sa.String(512), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("change_count", sa.Integer(), server_default="0", nullable=False),
-    )
+    epic_columns = [c["name"] for c in inspector.get_columns("epic_specs")]
+
+    if "content_hash" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("content_hash", sa.String(64), nullable=True))
+    if "content_cid" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("content_cid", sa.String(100), nullable=True))
+    if "merkle_root" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("merkle_root", sa.String(64), nullable=True))
+    if "version_chain_head" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("version_chain_head", sa.String(64), nullable=True))
+    if "created_by_hash" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("created_by_hash", sa.String(64), nullable=True))
+    if "previous_version_hash" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("previous_version_hash", sa.String(64), nullable=True))
+    if "digital_signature" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("digital_signature", sa.String(512), nullable=True))
+    if "change_count" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("change_count", sa.Integer(), server_default="0", nullable=False))
 
     # WSJF Prioritization
-    op.add_column(
-        "epic_specs",
-        sa.Column("wsjf_score", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("business_value", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("time_criticality", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("risk_reduction", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("job_size", sa.Integer(), nullable=True),
-    )
+    if "wsjf_score" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("wsjf_score", sa.Float(), nullable=True))
+    if "business_value" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("business_value", sa.Integer(), nullable=True))
+    if "time_criticality" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("time_criticality", sa.Integer(), nullable=True))
+    if "risk_reduction" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("risk_reduction", sa.Integer(), nullable=True))
+    if "job_size" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("job_size", sa.Integer(), nullable=True))
 
     # RICE Prioritization
-    op.add_column(
-        "epic_specs",
-        sa.Column("rice_score", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("rice_reach", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("rice_impact", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("rice_confidence", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("rice_effort", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "epic_specs",
-        sa.Column("moscow_priority", sa.String(20), nullable=True),
-    )
+    if "rice_score" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("rice_score", sa.Float(), nullable=True))
+    if "rice_reach" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("rice_reach", sa.Integer(), nullable=True))
+    if "rice_impact" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("rice_impact", sa.Integer(), nullable=True))
+    if "rice_confidence" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("rice_confidence", sa.Float(), nullable=True))
+    if "rice_effort" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("rice_effort", sa.Integer(), nullable=True))
+    if "moscow_priority" not in epic_columns:
+        op.add_column("epic_specs", sa.Column("moscow_priority", sa.String(20), nullable=True))
 
     # Create indexes
-    op.create_index(
-        "ix_epic_specs_content_hash",
-        "epic_specs",
-        ["content_hash"],
-    )
-    op.create_index(
-        "ix_epic_specs_content_cid",
-        "epic_specs",
-        ["content_cid"],
-    )
-    op.create_index(
-        "ix_epic_specs_wsjf_score",
-        "epic_specs",
-        ["wsjf_score"],
-    )
+    epic_indexes = [i["name"] for i in inspector.get_indexes("epic_specs")]
+    if "ix_epic_specs_content_hash" not in epic_indexes:
+        op.create_index("ix_epic_specs_content_hash", "epic_specs", ["content_hash"])
+    if "ix_epic_specs_content_cid" not in epic_indexes:
+        op.create_index("ix_epic_specs_content_cid", "epic_specs", ["content_cid"])
+    if "ix_epic_specs_wsjf_score" not in epic_indexes:
+        op.create_index("ix_epic_specs_wsjf_score", "epic_specs", ["wsjf_score"])
 
     # =========================================================================
     # USER_STORY_SPECS - Content Addressing & Prioritization
     # =========================================================================
-    op.add_column(
-        "user_story_specs",
-        sa.Column("content_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("content_cid", sa.String(100), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("merkle_root", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("version_chain_head", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("created_by_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("previous_version_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("digital_signature", sa.String(512), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("change_count", sa.Integer(), server_default="0", nullable=False),
-    )
+    story_columns = [c["name"] for c in inspector.get_columns("user_story_specs")]
+
+    if "content_hash" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("content_hash", sa.String(64), nullable=True))
+    if "content_cid" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("content_cid", sa.String(100), nullable=True))
+    if "merkle_root" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("merkle_root", sa.String(64), nullable=True))
+    if "version_chain_head" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("version_chain_head", sa.String(64), nullable=True))
+    if "created_by_hash" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("created_by_hash", sa.String(64), nullable=True))
+    if "previous_version_hash" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("previous_version_hash", sa.String(64), nullable=True))
+    if "digital_signature" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("digital_signature", sa.String(512), nullable=True))
+    if "change_count" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("change_count", sa.Integer(), server_default="0", nullable=False))
 
     # WSJF Prioritization
-    op.add_column(
-        "user_story_specs",
-        sa.Column("wsjf_score", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("time_criticality", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("risk_reduction", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("job_size", sa.Integer(), nullable=True),
-    )
+    if "wsjf_score" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("wsjf_score", sa.Float(), nullable=True))
+    if "time_criticality" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("time_criticality", sa.Integer(), nullable=True))
+    if "risk_reduction" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("risk_reduction", sa.Integer(), nullable=True))
+    if "job_size" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("job_size", sa.Integer(), nullable=True))
 
     # RICE Prioritization
-    op.add_column(
-        "user_story_specs",
-        sa.Column("rice_score", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("rice_reach", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("rice_impact", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("rice_confidence", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("rice_effort", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "user_story_specs",
-        sa.Column("moscow_priority", sa.String(20), nullable=True),
-    )
+    if "rice_score" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("rice_score", sa.Float(), nullable=True))
+    if "rice_reach" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("rice_reach", sa.Integer(), nullable=True))
+    if "rice_impact" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("rice_impact", sa.Integer(), nullable=True))
+    if "rice_confidence" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("rice_confidence", sa.Float(), nullable=True))
+    if "rice_effort" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("rice_effort", sa.Integer(), nullable=True))
+    if "moscow_priority" not in story_columns:
+        op.add_column("user_story_specs", sa.Column("moscow_priority", sa.String(20), nullable=True))
 
     # Create indexes
-    op.create_index(
-        "ix_user_story_specs_content_hash",
-        "user_story_specs",
-        ["content_hash"],
-    )
-    op.create_index(
-        "ix_user_story_specs_content_cid",
-        "user_story_specs",
-        ["content_cid"],
-    )
-    op.create_index(
-        "ix_user_story_specs_wsjf_score",
-        "user_story_specs",
-        ["wsjf_score"],
-    )
+    story_indexes = [i["name"] for i in inspector.get_indexes("user_story_specs")]
+    if "ix_user_story_specs_content_hash" not in story_indexes:
+        op.create_index("ix_user_story_specs_content_hash", "user_story_specs", ["content_hash"])
+    if "ix_user_story_specs_content_cid" not in story_indexes:
+        op.create_index("ix_user_story_specs_content_cid", "user_story_specs", ["content_cid"])
+    if "ix_user_story_specs_wsjf_score" not in story_indexes:
+        op.create_index("ix_user_story_specs_wsjf_score", "user_story_specs", ["wsjf_score"])
 
     # =========================================================================
     # TASK_SPECS - Content Addressing & Prioritization
     # =========================================================================
-    op.add_column(
-        "task_specs",
-        sa.Column("content_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("content_cid", sa.String(100), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("merkle_root", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("version_chain_head", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("created_by_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("previous_version_hash", sa.String(64), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("digital_signature", sa.String(512), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("change_count", sa.Integer(), server_default="0", nullable=False),
-    )
+    task_columns = [c["name"] for c in inspector.get_columns("task_specs")]
+
+    if "content_hash" not in task_columns:
+        op.add_column("task_specs", sa.Column("content_hash", sa.String(64), nullable=True))
+    if "content_cid" not in task_columns:
+        op.add_column("task_specs", sa.Column("content_cid", sa.String(100), nullable=True))
+    if "merkle_root" not in task_columns:
+        op.add_column("task_specs", sa.Column("merkle_root", sa.String(64), nullable=True))
+    if "version_chain_head" not in task_columns:
+        op.add_column("task_specs", sa.Column("version_chain_head", sa.String(64), nullable=True))
+    if "created_by_hash" not in task_columns:
+        op.add_column("task_specs", sa.Column("created_by_hash", sa.String(64), nullable=True))
+    if "previous_version_hash" not in task_columns:
+        op.add_column("task_specs", sa.Column("previous_version_hash", sa.String(64), nullable=True))
+    if "digital_signature" not in task_columns:
+        op.add_column("task_specs", sa.Column("digital_signature", sa.String(512), nullable=True))
+    if "change_count" not in task_columns:
+        op.add_column("task_specs", sa.Column("change_count", sa.Integer(), server_default="0", nullable=False))
 
     # WSJF Prioritization
-    op.add_column(
-        "task_specs",
-        sa.Column("wsjf_score", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("business_value", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("time_criticality", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("risk_reduction", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("job_size", sa.Integer(), nullable=True),
-    )
+    if "wsjf_score" not in task_columns:
+        op.add_column("task_specs", sa.Column("wsjf_score", sa.Float(), nullable=True))
+    if "business_value" not in task_columns:
+        op.add_column("task_specs", sa.Column("business_value", sa.Integer(), nullable=True))
+    if "time_criticality" not in task_columns:
+        op.add_column("task_specs", sa.Column("time_criticality", sa.Integer(), nullable=True))
+    if "risk_reduction" not in task_columns:
+        op.add_column("task_specs", sa.Column("risk_reduction", sa.Integer(), nullable=True))
+    if "job_size" not in task_columns:
+        op.add_column("task_specs", sa.Column("job_size", sa.Integer(), nullable=True))
 
     # RICE Prioritization
-    op.add_column(
-        "task_specs",
-        sa.Column("rice_score", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("rice_reach", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("rice_impact", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("rice_confidence", sa.Float(), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("rice_effort", sa.Integer(), nullable=True),
-    )
-    op.add_column(
-        "task_specs",
-        sa.Column("moscow_priority", sa.String(20), nullable=True),
-    )
+    if "rice_score" not in task_columns:
+        op.add_column("task_specs", sa.Column("rice_score", sa.Float(), nullable=True))
+    if "rice_reach" not in task_columns:
+        op.add_column("task_specs", sa.Column("rice_reach", sa.Integer(), nullable=True))
+    if "rice_impact" not in task_columns:
+        op.add_column("task_specs", sa.Column("rice_impact", sa.Integer(), nullable=True))
+    if "rice_confidence" not in task_columns:
+        op.add_column("task_specs", sa.Column("rice_confidence", sa.Float(), nullable=True))
+    if "rice_effort" not in task_columns:
+        op.add_column("task_specs", sa.Column("rice_effort", sa.Integer(), nullable=True))
+    if "moscow_priority" not in task_columns:
+        op.add_column("task_specs", sa.Column("moscow_priority", sa.String(20), nullable=True))
 
     # Create indexes
-    op.create_index(
-        "ix_task_specs_content_hash",
-        "task_specs",
-        ["content_hash"],
-    )
-    op.create_index(
-        "ix_task_specs_content_cid",
-        "task_specs",
-        ["content_cid"],
-    )
-    op.create_index(
-        "ix_task_specs_wsjf_score",
-        "task_specs",
-        ["wsjf_score"],
-    )
+    task_indexes = [i["name"] for i in inspector.get_indexes("task_specs")]
+    if "ix_task_specs_content_hash" not in task_indexes:
+        op.create_index("ix_task_specs_content_hash", "task_specs", ["content_hash"])
+    if "ix_task_specs_content_cid" not in task_indexes:
+        op.create_index("ix_task_specs_content_cid", "task_specs", ["content_cid"])
+    if "ix_task_specs_wsjf_score" not in task_indexes:
+        op.create_index("ix_task_specs_wsjf_score", "task_specs", ["wsjf_score"])
 
 
 def downgrade() -> None:

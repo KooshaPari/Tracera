@@ -36,7 +36,7 @@ def upgrade() -> None:
             i2.item_type as target_type,
             l.link_type,
             l.created_at,
-            l.metadata
+            l.link_metadata as metadata
         FROM links l
         JOIN items i1 ON l.source_item_id = i1.id
         JOIN items i2 ON l.target_item_id = i2.id

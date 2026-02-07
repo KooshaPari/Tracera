@@ -313,3 +313,10 @@ docs/
 - We want opinionated rules that enforce opinionated styling to a strict degree.
 - This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
 - Rather than disables or ignores, fix code properly.
+
+## Multi-Actor Coordination
+- **Debounce Commands**: Use `make lint`, `make test`, `make quality`, `make validate`. They are wrapped in `smart-command.sh` to prevent concurrent execution conflicts between multiple agents.
+- **Shared Service Management**: `process-compose` is the source of truth. Use `make dev-status` to check health and `make dev-restart SERVICE=X` for graceful restarts.
+- **Hold-if-Running Logic**: App services and infrastructure use wrappers that allow multiple actors to share processes without force-killing.
+- **Lock Directory**: Active command locks are stored in `.process-compose/locks/`.
+- **Naming Explosion Consolidation**: Prefer consolidated Makefile/Taskfile targets over a multitude of specialized ones.

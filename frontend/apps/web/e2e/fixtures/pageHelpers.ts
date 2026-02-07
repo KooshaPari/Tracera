@@ -3,7 +3,7 @@
  * Reusable functions for common page interactions
  */
 
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 /**
  * Navigation Helpers
@@ -174,10 +174,9 @@ export async function clearFilters(page: Page): Promise<void> {
   const clearBtn = page.getByRole('button', {
     name: /clear.*filter|reset.*filter/i,
   });
-  if (await clearBtn.isVisible({ timeout: 1000 })) {
-    await clearBtn.click();
-    await page.waitForLoadState('networkidle');
-  }
+  await expect(clearBtn).toBeVisible({ timeout: 5000 });
+  await clearBtn.click();
+  await page.waitForLoadState('networkidle');
 }
 
 /**

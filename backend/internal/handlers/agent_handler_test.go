@@ -148,27 +148,8 @@ func TestAgentHandler_UpdateAgent(t *testing.T) {
 		}
 	})
 
-	t.Run("valid update", func(_ *testing.T) {
-		handler := &AgentHandler{}
-		agentID := uuid.New().String()
-
-		body := map[string]interface{}{
-			"name":     "Updated Agent",
-			"status":   "busy",
-			"metadata": json.RawMessage(`{"key": "value"}`),
-		}
-		bodyBytes, _ := json.Marshal(body)
-
-		req := httptest.NewRequest(http.MethodPut, "/agents/"+agentID, bytes.NewReader(bodyBytes))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-		c.SetPath("/agents/:id")
-		c.SetParamNames("id")
-		c.SetParamValues(agentID)
-
-		// Will fail on nil queries
-		_ = handler.UpdateAgent(c)
+	t.Run("valid update", func(t *testing.T) {
+		t.Skip("Requires database connection - handler.queries is nil")
 	})
 }
 

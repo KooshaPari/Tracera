@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -110,6 +111,11 @@ func parseLinkFilterParams(c echo.Context) (repository.LinkFilter, error) {
 	projectIDStr := c.QueryParam("project_id")
 	linkType := c.QueryParam("type")
 
+	// At least one of source_id or target_id is required
+	if sourceIDStr == "" && targetIDStr == "" {
+		return repository.LinkFilter{}, errors.New("source_id or target_id is required")
+	}
+
 	if err := validateLinkUUID(sourceIDStr, "source_id"); err != nil {
 		return repository.LinkFilter{}, err
 	}
@@ -142,7 +148,7 @@ func validateLinkUUID(value, fieldName string) error {
 		return nil
 	}
 	if _, err := uuidutil.StringToUUID(value); err != nil {
-		return fmt.Errorf("invalid %s", fieldName)
+		return fmt.Errorf("Invalid %s", fieldName)
 	}
 	return nil
 }

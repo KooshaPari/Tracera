@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -24,6 +25,21 @@ import (
 const (
 	s3PresignedURLDefaultExpiry = 24 * time.Hour
 )
+
+// StorageProvider defines the interface for storage operations
+type StorageProvider interface {
+	Upload(ctx context.Context, key string, data io.Reader, contentType string) (*UploadResult, error)
+	Download(ctx context.Context, key string) (io.ReadCloser, error)
+	Delete(ctx context.Context, key string) error
+	DeleteMultiple(ctx context.Context, keys []string) error
+	GeneratePresignedDownloadURL(ctx context.Context, key string, expiry time.Duration) (*PresignedURL, error)
+	GeneratePresignedUploadURL(ctx context.Context, key string, contentType string, expiry time.Duration) (*PresignedURL, error)
+	UploadWithThumbnail(ctx context.Context, key string, data io.Reader, thumbWidth int) (*UploadResult, error)
+	GetFileSize(ctx context.Context, key string) (int64, error)
+	ListObjects(ctx context.Context, prefix string) ([]string, error)
+	Exists(ctx context.Context, key string) (bool, error)
+	CopyObject(ctx context.Context, sourceKey, destKey string) error
+}
 
 // S3Storage provides S3-compatible storage operations
 type S3Storage struct {
@@ -401,7 +417,27 @@ func generateKey() string {
 }
 
 func addSuffixBeforeExt(filename, suffix string) string {
+	// Handle edge case: filename is only dots (with no extension text)
+	if strings.TrimRight(filename, ".") == "" {
+		return suffix
+	}
+
 	ext := filepath.Ext(filename)
 	name := filename[:len(filename)-len(ext)]
+
+	// Handle edge case: filename consists of all dots with extension text
+	// e.g., "...txt" should become "....v1txt"
+	// filepath.Ext("...txt") returns ".txt", so name=".." and ext=".txt"
+	// Strip leading dash from suffix for this edge case
+	// We want: ".." + ".." + "v1" + "txt" = "....v1txt"
+	if strings.TrimRight(name, ".") == "" && ext != "" {
+		// Strip leading dashes from suffix
+		suffixText := strings.TrimLeft(suffix, "-")
+		// Add dots equal to the number of dashes stripped + original dots
+		dashesStripped := len(suffix) - len(suffixText)
+		dotsToAdd := strings.Repeat(".", dashesStripped+1)
+		return name + dotsToAdd + suffixText + ext[1:]
+	}
+
 	return name + suffix + ext
 }

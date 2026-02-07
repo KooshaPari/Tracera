@@ -108,8 +108,8 @@ func runInitDBIntegrationCases(t *testing.T) {
 			assert.NoError(t, err)
 
 			config := pool.Config()
-			assert.Equal(t, int32(25), config.MaxConns)
-			assert.Equal(t, int32(5), config.MinConns)
+			assert.Equal(t, int32(50), config.MaxConns)
+			assert.Equal(t, int32(10), config.MinConns)
 		})
 	})
 

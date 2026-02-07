@@ -34,11 +34,7 @@ test.describe('Items Table View', () => {
       const headerCell = page.getByRole('columnheader', {
         name: new RegExp(header, 'i'),
       });
-      await expect(headerCell)
-        .toBeVisible({ timeout: 5000 })
-        .catch(() => {
-          console.log(`Column ${header} not found - may use different name`);
-        });
+      await expect(headerCell).toBeVisible({ timeout: 5000 });
     }
   });
 
@@ -60,10 +56,7 @@ test.describe('Items Table View', () => {
     // Look for project filter
     const filterSelect = page.getByRole('combobox').or(page.locator('select')).first();
 
-    if (await filterSelect.isVisible()) {
-      // This is a soft test - filtering might not be implemented
-      console.log('Project filter found');
-    }
+    await expect(filterSelect).toBeVisible({ timeout: 5000 });
   });
 
   test('should sort items by column', async ({ page }) => {
@@ -72,15 +65,14 @@ test.describe('Items Table View', () => {
 
     // Try to click on a sortable column header
     const titleHeader = page.getByRole('columnheader', { name: /title/i });
-    if (await titleHeader.isVisible()) {
-      // Click header to sort
-      await titleHeader.click();
-      await page.waitForTimeout(500);
+    await expect(titleHeader).toBeVisible({ timeout: 5000 });
+    // Click header to sort
+    await titleHeader.click();
+    await page.waitForTimeout(500);
 
-      // Verify table is still visible after sort
-      const table = page.locator('table');
-      await expect(table).toBeVisible();
-    }
+    // Verify table is still visible after sort
+    const table = page.locator('table');
+    await expect(table).toBeVisible();
   });
 });
 
@@ -97,11 +89,7 @@ test.describe('Items Kanban View', () => {
     // Look for kanban columns based on actual item statuses
     // Check for status badge containers or column headers
     const statusText = page.getByText(/todo|in_progress|done|blocked/i);
-    await expect(statusText.first())
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Kanban status columns not found');
-      });
+    await expect(statusText.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should display items in kanban columns', async ({ page }) => {
@@ -124,9 +112,7 @@ test.describe('Items Kanban View', () => {
     // Look for draggable items
     const draggableItems = page.locator('[draggable="true"]').or(page.locator('[data-draggable]'));
 
-    if (await draggableItems.first().isVisible({ timeout: 2000 })) {
-      console.log('Draggable items found - drag/drop functionality present');
-    }
+    await expect(draggableItems.first()).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -155,18 +141,14 @@ test.describe('Items Tree View', () => {
     const expandAllBtn = page.getByRole('button', { name: /expand all/i });
     const collapseAllBtn = page.getByRole('button', { name: /collapse all/i });
 
-    if (await expandAllBtn.isVisible({ timeout: 2000 })) {
-      await expandAllBtn.click();
-      await page.waitForTimeout(300);
+    await expect(expandAllBtn).toBeVisible({ timeout: 5000 });
+    await expandAllBtn.click();
+    await page.waitForTimeout(300);
 
-      // Look for collapse button after expanding
-      if (await collapseAllBtn.isVisible({ timeout: 2000 })) {
-        await collapseAllBtn.click();
-        await page.waitForTimeout(300);
-      }
-    } else {
-      console.log('Expand/Collapse tree buttons not found - tree may use different controls');
-    }
+    // Look for collapse button after expanding
+    await expect(collapseAllBtn).toBeVisible({ timeout: 5000 });
+    await collapseAllBtn.click();
+    await page.waitForTimeout(300);
   });
 
   test('should show parent-child relationships', async ({ page }) => {
@@ -188,72 +170,55 @@ test.describe('Item Creation', () => {
   test('should show create item button', async ({ page }) => {
     const createButton = page.getByRole('button', { name: /create|new|add item/i }).first();
 
-    await expect(createButton)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Create item button not found');
-      });
+    await expect(createButton).toBeVisible({ timeout: 5000 });
   });
 
   test('should open create item dialog', async ({ page }) => {
     const createButton = page.getByRole('button', { name: /create|new|add item/i }).first();
 
-    if (await createButton.isVisible({ timeout: 3000 })) {
-      await createButton.click();
+    await expect(createButton).toBeVisible({ timeout: 5000 });
+    await createButton.click();
 
-      // Dialog should open - or check for form elements
-      const dialog = page.getByRole('dialog');
-      await expect(dialog)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Create item dialog not opened - may not be implemented');
-        });
-    } else {
-      console.log('Create item button not found - items page may need different navigation');
-    }
+    // Dialog should open - or check for form elements
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 5000 });
   });
 
   test('should create a new item', async ({ page }) => {
     const createButton = page.getByRole('button', { name: /create|new|add item/i }).first();
 
-    if (await createButton.isVisible()) {
-      await createButton.click();
-      await page.waitForTimeout(500);
+    await expect(createButton).toBeVisible({ timeout: 5000 });
+    await createButton.click();
+    await page.waitForTimeout(500);
 
-      // Fill in item details
-      const titleInput = page.getByLabel(/title/i).or(page.getByPlaceholder(/title/i));
-      if (await titleInput.isVisible()) {
-        await titleInput.fill('E2E Test Item');
+    // Fill in item details
+    const titleInput = page.getByLabel(/title/i).or(page.getByPlaceholder(/title/i));
+    await expect(titleInput).toBeVisible({ timeout: 5000 });
+    await titleInput.fill('E2E Test Item');
 
-        // Select type
-        const typeSelect = page.getByLabel(/type/i).first();
-        if (await typeSelect.isVisible()) {
-          await typeSelect.click();
-          await page.waitForTimeout(300);
+    // Select type
+    const typeSelect = page.getByLabel(/type/i).first();
+    await expect(typeSelect).toBeVisible({ timeout: 5000 });
+    await typeSelect.click();
+    await page.waitForTimeout(300);
 
-          // Select "Requirement" type
-          const requirementOption = page.getByText('Requirement').first();
-          if (await requirementOption.isVisible()) {
-            await requirementOption.click();
-          }
-        }
+    // Select "Requirement" type
+    const requirementOption = page.getByText('Requirement').first();
+    await expect(requirementOption).toBeVisible({ timeout: 5000 });
+    await requirementOption.click();
 
-        // Fill description
-        const descInput = page.getByLabel(/description/i).or(page.getByPlaceholder(/description/i));
-        if (await descInput.isVisible()) {
-          await descInput.fill('Created via E2E test');
-        }
+    // Fill description
+    const descInput = page.getByLabel(/description/i).or(page.getByPlaceholder(/description/i));
+    await expect(descInput).toBeVisible({ timeout: 5000 });
+    await descInput.fill('Created via E2E test');
 
-        // Submit
-        const submitButton = page.getByRole('button', {
-          name: /create|save|submit/i,
-        });
-        if (await submitButton.isVisible()) {
-          await submitButton.click();
-          await page.waitForLoadState('networkidle');
-        }
-      }
-    }
+    // Submit
+    const submitButton = page.getByRole('button', {
+      name: /create|save|submit/i,
+    });
+    await expect(submitButton).toBeVisible({ timeout: 5000 });
+    await submitButton.click();
+    await page.waitForLoadState('networkidle');
   });
 });
 
@@ -287,12 +252,9 @@ test.describe('Item Detail', () => {
     await page.waitForSelector('text=/User Authentication/', { timeout: 5000 });
 
     // Should show description
-    await page
-      .getByText(/Implement secure user authentication/i)
-      .waitFor({ state: 'visible', timeout: 5000 })
-      .catch(() => {
-        console.log('Description not displayed');
-      });
+    await expect(page.getByText(/Implement secure user authentication/i)).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('should show related items', async ({ page }) => {
@@ -300,13 +262,9 @@ test.describe('Item Detail', () => {
     await page.waitForLoadState('networkidle');
 
     // Look for links/relationships section
-    await page
-      .locator('text=/related|links|dependencies|children/i')
-      .first()
-      .waitFor({ state: 'visible', timeout: 5000 })
-      .catch(() => {
-        console.log('Related items not displayed on detail page');
-      });
+    await expect(page.locator('text=/related|links|dependencies|children/i').first()).toBeVisible({
+      timeout: 5000,
+    });
   });
 });
 
@@ -319,11 +277,7 @@ test.describe('Item Update', () => {
   test('should show edit item button', async ({ page }) => {
     const editButton = page.getByRole('button', { name: /edit/i }).first();
 
-    await expect(editButton)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Edit button not found');
-      });
+    await expect(editButton).toBeVisible({ timeout: 5000 });
   });
 
   test('should update item status', async ({ page }) => {
@@ -338,27 +292,24 @@ test.describe('Item Update', () => {
           .first(),
       );
 
-    if (await statusSelect.isVisible({ timeout: 2000 })) {
-      await statusSelect.click();
-      await page.waitForTimeout(300);
+    await expect(statusSelect).toBeVisible({ timeout: 5000 });
+    await statusSelect.click();
+    await page.waitForTimeout(300);
 
-      // Select a different status
-      const completedOption = page.getByText('Completed').first();
-      if (await completedOption.isVisible()) {
-        await completedOption.click();
-        await page.waitForLoadState('networkidle');
-      }
-    }
+    // Select a different status
+    const completedOption = page.getByText('Completed').first();
+    await expect(completedOption).toBeVisible({ timeout: 5000 });
+    await completedOption.click();
+    await page.waitForLoadState('networkidle');
   });
 
   test('should update item priority', async ({ page }) => {
     // Look for priority selector
     const prioritySelect = page.getByLabel(/priority/i).first();
 
-    if (await prioritySelect.isVisible({ timeout: 2000 })) {
-      await prioritySelect.click();
-      await page.waitForTimeout(300);
-    }
+    await expect(prioritySelect).toBeVisible({ timeout: 5000 });
+    await prioritySelect.click();
+    await page.waitForTimeout(300);
   });
 });
 
@@ -371,27 +322,18 @@ test.describe('Item Deletion', () => {
   test('should show delete item button', async ({ page }) => {
     const deleteButton = page.getByRole('button', { name: /delete/i }).first();
 
-    await expect(deleteButton)
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        console.log('Delete button not found');
-      });
+    await expect(deleteButton).toBeVisible({ timeout: 5000 });
   });
 
   test('should show confirmation for delete', async ({ page }) => {
     const deleteButton = page.getByRole('button', { name: /delete/i }).first();
 
-    if (await deleteButton.isVisible()) {
-      await deleteButton.click();
+    await expect(deleteButton).toBeVisible({ timeout: 5000 });
+    await deleteButton.click();
 
-      // Should show confirmation
-      const confirmDialog = page.getByRole('dialog').or(page.getByRole('alertdialog'));
-      await expect(confirmDialog)
-        .toBeVisible({ timeout: 2000 })
-        .catch(() => {
-          console.log('Delete confirmation not shown');
-        });
-    }
+    // Should show confirmation
+    const confirmDialog = page.getByRole('dialog').or(page.getByRole('alertdialog'));
+    await expect(confirmDialog).toBeVisible({ timeout: 5000 });
   });
 });
 

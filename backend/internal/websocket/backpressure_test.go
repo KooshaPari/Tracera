@@ -154,16 +154,18 @@ func TestBackpressureHandler_CanSend_StrategyThrottle(t *testing.T) {
 	handler := NewBackpressureHandler(client, config)
 	msg := &Message{Type: string(MessageTypeConnected)}
 
-	// First message should pass (lastSent initialized to past)
+	// First message should pass (lastSent initialized to time.Now())
+	// and should set lastSent
 	assert.True(t, handler.CanSend(msg))
 
-	// Immediate second message should be throttled
+	// Immediate second message should be throttled (not enough time has passed)
+	time.Sleep(1 * time.Millisecond) // Small delay to ensure time passes
 	assert.False(t, handler.CanSend(msg))
 
-	// Wait for throttle period
-	time.Sleep(throttleRate + 10*time.Millisecond)
+	// Wait for throttle period to pass
+	time.Sleep(throttleRate + 20*time.Millisecond)
 
-	// Should pass now
+	// Should pass now (enough time has passed since first CanSend)
 	assert.True(t, handler.CanSend(msg))
 }
 

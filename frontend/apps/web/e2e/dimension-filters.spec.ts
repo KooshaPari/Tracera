@@ -33,43 +33,27 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity|draft|review|approved/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        console.log('Maturity filter found');
-      } else {
-        console.log('Maturity filter not visible');
-      }
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
     });
 
     test('should apply maturity filter - Draft', async ({ page }) => {
-      // Get initial node count
-      const initialNodeCount = await page
-        .locator('.react-flow__nodes > div[data-id]')
-        .count()
-        .catch(() => 0);
-
       const maturityFilter = page
         .locator('button, select')
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const draftOption = page.getByText(/draft/i);
-        if (await draftOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await draftOption.click();
-          await page.waitForTimeout(1000);
+      const draftOption = page.getByText(/draft/i);
+      await expect(draftOption.first()).toBeVisible({ timeout: 1000 });
+      await draftOption.first().click();
+      await page.waitForTimeout(1000);
 
-          // Verify filter applied
-          const filteredNodeCount = await page
-            .locator('.react-flow__nodes > div[data-id]')
-            .count()
-            .catch(() => 0);
-
-          console.log(`Draft filter applied: ${initialNodeCount} -> ${filteredNodeCount} nodes`);
-        }
-      }
+      // Verify filter applied
+      const graphContainer = page.locator('.react-flow');
+      await expect(graphContainer).toBeVisible();
     });
 
     test('should apply maturity filter - Approved', async ({ page }) => {
@@ -78,21 +62,17 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const approvedOption = page.getByText(/approved/i);
-        if (await approvedOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await approvedOption.click();
-          await page.waitForTimeout(1000);
+      const approvedOption = page.getByText(/approved/i);
+      await expect(approvedOption.first()).toBeVisible({ timeout: 1000 });
+      await approvedOption.first().click();
+      await page.waitForTimeout(1000);
 
-          const graphContainer = page.locator('.react-flow');
-          await expect(graphContainer).toBeVisible();
-
-          console.log('Approved maturity filter applied');
-        }
-      }
+      const graphContainer = page.locator('.react-flow');
+      await expect(graphContainer).toBeVisible();
     });
 
     test('should apply multiple maturity filters', async ({ page }) => {
@@ -101,28 +81,15 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        // Apply first filter
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      // Apply first filter
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const draftOption = page.getByText(/draft/i);
-        if (await draftOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await draftOption.click();
-          await page.waitForTimeout(300);
-
-          // Check if multi-select is available
-          const checkboxes = page.locator('input[type="checkbox"][aria-label*="draft" i]');
-          if (
-            await checkboxes
-              .first()
-              .isVisible({ timeout: 1000 })
-              .catch(() => false)
-          ) {
-            console.log('Multi-select maturity filter available');
-          }
-        }
-      }
+      const draftOption = page.getByText(/draft/i);
+      await expect(draftOption.first()).toBeVisible({ timeout: 1000 });
+      await draftOption.first().click();
+      await page.waitForTimeout(300);
     });
   });
 
@@ -133,18 +100,14 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /complexity|complex/i })
         .first();
 
-      if (await complexityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await complexityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(complexityFilter).toBeVisible({ timeout: 2000 });
+      await complexityFilter.click();
+      await page.waitForTimeout(300);
 
-        const highOption = page.getByText(/high/i);
-        if (await highOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await highOption.click();
-          await page.waitForTimeout(1000);
-
-          console.log('High complexity filter applied');
-        }
-      }
+      const highOption = page.getByText(/high/i).first();
+      await expect(highOption).toBeVisible({ timeout: 1000 });
+      await highOption.click();
+      await page.waitForTimeout(1000);
     });
 
     test('should apply complexity filter - Low', async ({ page }) => {
@@ -153,21 +116,17 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /complexity|complex/i })
         .first();
 
-      if (await complexityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await complexityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(complexityFilter).toBeVisible({ timeout: 2000 });
+      await complexityFilter.click();
+      await page.waitForTimeout(300);
 
-        const lowOption = page.getByText(/low/i);
-        if (await lowOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await lowOption.click();
-          await page.waitForTimeout(1000);
+      const lowOption = page.getByText(/low/i).first();
+      await expect(lowOption).toBeVisible({ timeout: 1000 });
+      await lowOption.click();
+      await page.waitForTimeout(1000);
 
-          const graphContainer = page.locator('.react-flow');
-          await expect(graphContainer).toBeVisible();
-
-          console.log('Low complexity filter applied');
-        }
-      }
+      const graphContainer = page.locator('.react-flow');
+      await expect(graphContainer).toBeVisible();
     });
 
     test('should apply complexity filter - Critical', async ({ page }) => {
@@ -176,18 +135,14 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /complexity|complex/i })
         .first();
 
-      if (await complexityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await complexityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(complexityFilter).toBeVisible({ timeout: 2000 });
+      await complexityFilter.click();
+      await page.waitForTimeout(300);
 
-        const criticalOption = page.getByText(/critical/i);
-        if (await criticalOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await criticalOption.click();
-          await page.waitForTimeout(1000);
-
-          console.log('Critical complexity filter applied');
-        }
-      }
+      const criticalOption = page.getByText(/critical/i).first();
+      await expect(criticalOption).toBeVisible({ timeout: 1000 });
+      await criticalOption.click();
+      await page.waitForTimeout(1000);
     });
   });
 
@@ -198,18 +153,14 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /coverage|cover/i })
         .first();
 
-      if (await coverageFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await coverageFilter.click();
-        await page.waitForTimeout(300);
+      await expect(coverageFilter).toBeVisible({ timeout: 2000 });
+      await coverageFilter.click();
+      await page.waitForTimeout(300);
 
-        const completeOption = page.getByText(/complete/i);
-        if (await completeOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await completeOption.click();
-          await page.waitForTimeout(1000);
-
-          console.log('Complete coverage filter applied');
-        }
-      }
+      const completeOption = page.getByText(/complete/i).first();
+      await expect(completeOption).toBeVisible({ timeout: 1000 });
+      await completeOption.click();
+      await page.waitForTimeout(1000);
     });
 
     test('should apply coverage filter - Partial', async ({ page }) => {
@@ -218,21 +169,17 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /coverage|cover/i })
         .first();
 
-      if (await coverageFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await coverageFilter.click();
-        await page.waitForTimeout(300);
+      await expect(coverageFilter).toBeVisible({ timeout: 2000 });
+      await coverageFilter.click();
+      await page.waitForTimeout(300);
 
-        const partialOption = page.getByText(/partial/i);
-        if (await partialOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await partialOption.click();
-          await page.waitForTimeout(1000);
+      const partialOption = page.getByText(/partial/i).first();
+      await expect(partialOption).toBeVisible({ timeout: 1000 });
+      await partialOption.click();
+      await page.waitForTimeout(1000);
 
-          const graphContainer = page.locator('.react-flow');
-          await expect(graphContainer).toBeVisible();
-
-          console.log('Partial coverage filter applied');
-        }
-      }
+      const graphContainer = page.locator('.react-flow');
+      await expect(graphContainer).toBeVisible();
     });
 
     test('should apply coverage filter - Not Covered', async ({ page }) => {
@@ -241,18 +188,14 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /coverage|cover/i })
         .first();
 
-      if (await coverageFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await coverageFilter.click();
-        await page.waitForTimeout(300);
+      await expect(coverageFilter).toBeVisible({ timeout: 2000 });
+      await coverageFilter.click();
+      await page.waitForTimeout(300);
 
-        const notCoveredOption = page.getByText(/not.*cover|uncovered/i);
-        if (await notCoveredOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await notCoveredOption.click();
-          await page.waitForTimeout(1000);
-
-          console.log('Not Covered filter applied');
-        }
-      }
+      const notCoveredOption = page.getByText(/not.*cover|uncovered/i).first();
+      await expect(notCoveredOption).toBeVisible({ timeout: 1000 });
+      await notCoveredOption.click();
+      await page.waitForTimeout(1000);
     });
   });
 
@@ -260,55 +203,43 @@ test.describe('Dimension Filters', () => {
     test('should apply risk filter - High', async ({ page }) => {
       const riskFilter = page.locator('button, select').filter({ hasText: /risk/i }).first();
 
-      if (await riskFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await riskFilter.click();
-        await page.waitForTimeout(300);
+      await expect(riskFilter).toBeVisible({ timeout: 2000 });
+      await riskFilter.click();
+      await page.waitForTimeout(300);
 
-        const highOption = page.getByText(/high/i);
-        if (await highOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await highOption.click();
-          await page.waitForTimeout(1000);
-
-          console.log('High risk filter applied');
-        }
-      }
+      const highOption = page.getByText(/high/i).first();
+      await expect(highOption).toBeVisible({ timeout: 1000 });
+      await highOption.click();
+      await page.waitForTimeout(1000);
     });
 
     test('should apply risk filter - Critical', async ({ page }) => {
       const riskFilter = page.locator('button, select').filter({ hasText: /risk/i }).first();
 
-      if (await riskFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await riskFilter.click();
-        await page.waitForTimeout(300);
+      await expect(riskFilter).toBeVisible({ timeout: 2000 });
+      await riskFilter.click();
+      await page.waitForTimeout(300);
 
-        const criticalOption = page.getByText(/critical/i);
-        if (await criticalOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await criticalOption.click();
-          await page.waitForTimeout(1000);
+      const criticalOption = page.getByText(/critical/i).first();
+      await expect(criticalOption).toBeVisible({ timeout: 1000 });
+      await criticalOption.click();
+      await page.waitForTimeout(1000);
 
-          const graphContainer = page.locator('.react-flow');
-          await expect(graphContainer).toBeVisible();
-
-          console.log('Critical risk filter applied');
-        }
-      }
+      const graphContainer = page.locator('.react-flow');
+      await expect(graphContainer).toBeVisible();
     });
 
     test('should apply risk filter - Low', async ({ page }) => {
       const riskFilter = page.locator('button, select').filter({ hasText: /risk/i }).first();
 
-      if (await riskFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await riskFilter.click();
-        await page.waitForTimeout(300);
+      await expect(riskFilter).toBeVisible({ timeout: 2000 });
+      await riskFilter.click();
+      await page.waitForTimeout(300);
 
-        const lowOption = page.getByText(/low/i);
-        if (await lowOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await lowOption.click();
-          await page.waitForTimeout(1000);
-
-          console.log('Low risk filter applied');
-        }
-      }
+      const lowOption = page.getByText(/low/i).first();
+      await expect(lowOption).toBeVisible({ timeout: 1000 });
+      await lowOption.click();
+      await page.waitForTimeout(1000);
     });
   });
 
@@ -320,35 +251,29 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const draftOption = page.getByText(/draft/i);
-        if (await draftOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await draftOption.click();
-          await page.waitForTimeout(500);
+      const draftOption = page.getByText(/draft/i).first();
+      await expect(draftOption).toBeVisible({ timeout: 1000 });
+      await draftOption.click();
+      await page.waitForTimeout(500);
 
-          // Now look for filter display mode selector
-          const displayModeSelector = page
-            .locator('button')
-            .filter({ hasText: /display|mode|filter|highlight|color|size/i })
-            .first();
+      // Now look for filter display mode selector
+      const displayModeSelector = page
+        .locator('button')
+        .filter({ hasText: /display|mode|filter|highlight|color|size/i })
+        .first();
 
-          if (await displayModeSelector.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await displayModeSelector.click();
-            await page.waitForTimeout(300);
+      await expect(displayModeSelector).toBeVisible({ timeout: 2000 });
+      await displayModeSelector.click();
+      await page.waitForTimeout(300);
 
-            const filterMode = page.getByText(/filter|hide.*non|show.*only/i);
-            if (await filterMode.isVisible({ timeout: 1000 }).catch(() => false)) {
-              await filterMode.click();
-              await page.waitForTimeout(1000);
-
-              console.log('Filter display mode activated');
-            }
-          }
-        }
-      }
+      const filterMode = page.getByText(/filter|hide.*non|show.*only/i).first();
+      await expect(filterMode).toBeVisible({ timeout: 1000 });
+      await filterMode.click();
+      await page.waitForTimeout(1000);
     });
 
     test('should switch to highlight display mode', async ({ page }) => {
@@ -357,35 +282,29 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const draftOption = page.getByText(/draft/i);
-        if (await draftOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await draftOption.click();
-          await page.waitForTimeout(500);
+      const draftOption = page.getByText(/draft/i).first();
+      await expect(draftOption).toBeVisible({ timeout: 1000 });
+      await draftOption.click();
+      await page.waitForTimeout(500);
 
-          // Look for highlight mode selector
-          const displayModeSelector = page
-            .locator('button')
-            .filter({ hasText: /display|mode|highlight/i })
-            .first();
+      // Look for highlight mode selector
+      const displayModeSelector = page
+        .locator('button')
+        .filter({ hasText: /display|mode|highlight/i })
+        .first();
 
-          if (await displayModeSelector.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await displayModeSelector.click();
-            await page.waitForTimeout(300);
+      await expect(displayModeSelector).toBeVisible({ timeout: 2000 });
+      await displayModeSelector.click();
+      await page.waitForTimeout(300);
 
-            const highlightMode = page.getByText(/highlight|emphasize|bold/i);
-            if (await highlightMode.isVisible({ timeout: 1000 }).catch(() => false)) {
-              await highlightMode.click();
-              await page.waitForTimeout(1000);
-
-              console.log('Highlight display mode activated');
-            }
-          }
-        }
-      }
+      const highlightMode = page.getByText(/highlight|emphasize|bold/i).first();
+      await expect(highlightMode).toBeVisible({ timeout: 1000 });
+      await highlightMode.click();
+      await page.waitForTimeout(1000);
     });
 
     test('should switch to color display mode', async ({ page }) => {
@@ -394,42 +313,28 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const draftOption = page.getByText(/draft/i);
-        if (await draftOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await draftOption.click();
-          await page.waitForTimeout(500);
+      const draftOption = page.getByText(/draft/i).first();
+      await expect(draftOption).toBeVisible({ timeout: 1000 });
+      await draftOption.click();
+      await page.waitForTimeout(500);
 
-          const displayModeSelector = page
-            .locator('button')
-            .filter({ hasText: /display|mode|color/i })
-            .first();
+      const displayModeSelector = page
+        .locator('button')
+        .filter({ hasText: /display|mode|color/i })
+        .first();
 
-          if (await displayModeSelector.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await displayModeSelector.click();
-            await page.waitForTimeout(300);
+      await expect(displayModeSelector).toBeVisible({ timeout: 2000 });
+      await displayModeSelector.click();
+      await page.waitForTimeout(300);
 
-            const colorMode = page.getByText(/color|colored|gradient/i);
-            if (await colorMode.isVisible({ timeout: 1000 }).catch(() => false)) {
-              await colorMode.click();
-              await page.waitForTimeout(1000);
-
-              // Verify color coding is applied
-              const coloredNodes = page.locator("[style*='color'], [style*='background']");
-              const colorCount = await coloredNodes.count().catch(() => 0);
-
-              if (colorCount > 0) {
-                console.log(`Color mode activated with ${colorCount} colored nodes`);
-              } else {
-                console.log('Color display mode activated');
-              }
-            }
-          }
-        }
-      }
+      const colorMode = page.getByText(/color|colored|gradient/i).first();
+      await expect(colorMode).toBeVisible({ timeout: 1000 });
+      await colorMode.click();
+      await page.waitForTimeout(1000);
     });
 
     test('should switch to size display mode', async ({ page }) => {
@@ -438,38 +343,32 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity|complexity|risk|coverage/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const filterOption = page
-          .locator("button, [role='option']")
-          .filter({ hasText: /draft|high|low|complete|critical/i })
-          .first();
+      const filterOption = page
+        .locator("button, [role='option']")
+        .filter({ hasText: /draft|high|low|complete|critical/i })
+        .first();
 
-        if (await filterOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await filterOption.click();
-          await page.waitForTimeout(500);
+      await expect(filterOption).toBeVisible({ timeout: 1000 });
+      await filterOption.click();
+      await page.waitForTimeout(500);
 
-          const displayModeSelector = page
-            .locator('button')
-            .filter({ hasText: /display|mode|size/i })
-            .first();
+      const displayModeSelector = page
+        .locator('button')
+        .filter({ hasText: /display|mode|size/i })
+        .first();
 
-          if (await displayModeSelector.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await displayModeSelector.click();
-            await page.waitForTimeout(300);
+      await expect(displayModeSelector).toBeVisible({ timeout: 2000 });
+      await displayModeSelector.click();
+      await page.waitForTimeout(300);
 
-            const sizeMode = page.getByText(/size|scale|proportional/i);
-            if (await sizeMode.isVisible({ timeout: 1000 }).catch(() => false)) {
-              await sizeMode.click();
-              await page.waitForTimeout(1000);
-
-              console.log('Size display mode activated');
-            }
-          }
-        }
-      }
+      const sizeMode = page.getByText(/size|scale|proportional/i).first();
+      await expect(sizeMode).toBeVisible({ timeout: 1000 });
+      await sizeMode.click();
+      await page.waitForTimeout(1000);
     });
   });
 
@@ -481,45 +380,24 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const draftOption = page.getByText(/draft/i);
-        if (await draftOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await draftOption.click();
-          await page.waitForTimeout(500);
+      const draftOption = page.getByText(/draft/i).first();
+      await expect(draftOption).toBeVisible({ timeout: 1000 });
+      await draftOption.click();
+      await page.waitForTimeout(500);
 
-          // Get node count with filter applied
-          const filteredCount = await page
-            .locator('.react-flow__nodes > div[data-id]')
-            .count()
-            .catch(() => 0);
+      // Look for clear/reset button
+      const clearBtn = page
+        .locator('button')
+        .filter({ hasText: /clear|reset|all|none/i })
+        .first();
 
-          // Look for clear/reset button
-          const clearBtn = page
-            .locator('button')
-            .filter({ hasText: /clear|reset|all|none/i })
-            .first();
-
-          if (await clearBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await clearBtn.click();
-            await page.waitForTimeout(1000);
-
-            // Get node count after clear
-            const clearedCount = await page
-              .locator('.react-flow__nodes > div[data-id]')
-              .count()
-              .catch(() => 0);
-
-            if (clearedCount > filteredCount) {
-              console.log(`Filters cleared: ${filteredCount} -> ${clearedCount} nodes`);
-            } else {
-              console.log('Clear filters triggered');
-            }
-          }
-        }
-      }
+      await expect(clearBtn).toBeVisible({ timeout: 2000 });
+      await clearBtn.click();
+      await page.waitForTimeout(1000);
     });
 
     test('should reset individual filter', async ({ page }) => {
@@ -528,84 +406,59 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const draftOption = page.getByText(/draft/i);
-        if (await draftOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await draftOption.click();
-          await page.waitForTimeout(500);
+      const draftOption = page.getByText(/draft/i).first();
+      await expect(draftOption).toBeVisible({ timeout: 1000 });
+      await draftOption.click();
+      await page.waitForTimeout(500);
 
-          // Look for filter tag/chip with X button to remove
-          const filterChip = page
-            .locator("[class*='filter'], [class*='tag'], [class*='chip']")
-            .filter({ hasText: /draft/i });
+      // Look for filter tag/chip with X button to remove
+      const filterChip = page
+        .locator("[class*='filter'], [class*='tag'], [class*='chip']")
+        .filter({ hasText: /draft/i })
+        .first();
 
-          if (await filterChip.isVisible({ timeout: 2000 }).catch(() => false)) {
-            // Find close button within the chip
-            const closeBtn = filterChip.locator('button, svg');
-            if (await closeBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-              await closeBtn.click();
-              await page.waitForTimeout(500);
-
-              console.log('Individual filter removed');
-            }
-          } else {
-            console.log('Filter chip not found');
-          }
-        }
-      }
+      await expect(filterChip).toBeVisible({ timeout: 2000 });
+      // Find close button within the chip
+      const closeBtn = filterChip.locator('button, svg').first();
+      await expect(closeBtn).toBeVisible({ timeout: 1000 });
+      await closeBtn.click();
+      await page.waitForTimeout(500);
     });
 
     test('should combine multiple filters', async ({ page }) => {
-      const initialNodeCount = await page
-        .locator('.react-flow__nodes > div[data-id]')
-        .count()
-        .catch(() => 0);
-
       // Apply maturity filter
       const maturityFilter = page
         .locator('button, select')
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const draftOption = page.getByText(/draft/i);
-        if (await draftOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await draftOption.click();
-          await page.waitForTimeout(500);
+      const draftOption = page.getByText(/draft/i).first();
+      await expect(draftOption).toBeVisible({ timeout: 1000 });
+      await draftOption.click();
+      await page.waitForTimeout(500);
 
-          // Apply complexity filter
-          const complexityFilter = page
-            .locator('button, select')
-            .filter({ hasText: /complexity/i })
-            .first();
+      // Apply complexity filter
+      const complexityFilter = page
+        .locator('button, select')
+        .filter({ hasText: /complexity/i })
+        .first();
 
-          if (await complexityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await complexityFilter.click();
-            await page.waitForTimeout(300);
+      await expect(complexityFilter).toBeVisible({ timeout: 2000 });
+      await complexityFilter.click();
+      await page.waitForTimeout(300);
 
-            const highOption = page.getByText(/high/i);
-            if (await highOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-              await highOption.click();
-              await page.waitForTimeout(1000);
-
-              const combinedCount = await page
-                .locator('.react-flow__nodes > div[data-id]')
-                .count()
-                .catch(() => 0);
-
-              console.log(
-                `Combined filters applied: ${initialNodeCount} -> ${combinedCount} nodes`,
-              );
-            }
-          }
-        }
-      }
+      const highOption = page.getByText(/high/i).first();
+      await expect(highOption).toBeVisible({ timeout: 1000 });
+      await highOption.click();
+      await page.waitForTimeout(1000);
     });
   });
 
@@ -617,38 +470,20 @@ test.describe('Dimension Filters', () => {
         .filter({ hasText: /maturity/i })
         .first();
 
-      if (await maturityFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await maturityFilter.click();
-        await page.waitForTimeout(300);
+      await expect(maturityFilter).toBeVisible({ timeout: 2000 });
+      await maturityFilter.click();
+      await page.waitForTimeout(300);
 
-        const draftOption = page.getByText(/draft/i);
-        if (await draftOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await draftOption.click();
-          await page.waitForTimeout(500);
+      const draftOption = page.getByText(/draft/i).first();
+      await expect(draftOption).toBeVisible({ timeout: 1000 });
+      await draftOption.click();
+      await page.waitForTimeout(500);
 
-          const filteredCount = await page
-            .locator('.react-flow__nodes > div[data-id]')
-            .count()
-            .catch(() => 0);
-
-          // Perform graph interaction - zoom in
-          const zoomInBtn = page.locator('.react-flow__controls button').nth(0);
-          if (await zoomInBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await zoomInBtn.click();
-            await page.waitForTimeout(500);
-          }
-
-          // Check if filter is still applied
-          const postInteractionCount = await page
-            .locator('.react-flow__nodes > div[data-id]')
-            .count()
-            .catch(() => 0);
-
-          if (postInteractionCount === filteredCount) {
-            console.log('Filter preserved across zoom interaction');
-          }
-        }
-      }
+      // Perform graph interaction - zoom in
+      const zoomInBtn = page.locator('.react-flow__controls button').nth(0);
+      await expect(zoomInBtn).toBeVisible({ timeout: 2000 });
+      await zoomInBtn.click();
+      await page.waitForTimeout(500);
     });
   });
 });

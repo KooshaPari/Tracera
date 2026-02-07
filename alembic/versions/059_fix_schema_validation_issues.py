@@ -47,24 +47,41 @@ def upgrade():
         ALTER COLUMN project_id SET NOT NULL;
     """)
 
-    # 3. Add missing index on projects.deleted_at
+    # 3. Add missing deleted_at column and index on projects
+    op.execute("""
+        ALTER TABLE projects
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
+    """)
+
     op.execute("""
         CREATE INDEX IF NOT EXISTS idx_projects_deleted_at
         ON projects(deleted_at);
     """)
 
-    # 4. Create views table if it doesn't exist
-    # This table is used by GORM models but wasn't in migrations
+    # 4. Create views table if it doesn't exist, or add missing columns
     op.execute("""
-        CREATE TABLE IF NOT EXISTS views (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-            name VARCHAR(255) NOT NULL,
-            type VARCHAR(100) NOT NULL,
-            config VARCHAR(255),
-            created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-            updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
-        );
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'views') THEN
+                CREATE TABLE views (
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                    name VARCHAR(255) NOT NULL,
+                    type VARCHAR(100) NOT NULL,
+                    config VARCHAR(255),
+                    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+                );
+            ELSE
+                -- Add missing columns to existing views table
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'views' AND column_name = 'type') THEN
+                    ALTER TABLE views ADD COLUMN type VARCHAR(100) NOT NULL DEFAULT 'graph';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'views' AND column_name = 'config') THEN
+                    ALTER TABLE views ADD COLUMN config VARCHAR(255);
+                END IF;
+            END IF;
+        END $$;
     """)
 
     # Add indexes for views table

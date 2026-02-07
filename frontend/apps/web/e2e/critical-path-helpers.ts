@@ -106,10 +106,7 @@ export async function navigateToProjectDetail(page: Page, projectId: string): Pr
 export async function createProject(page: Page, project: TestProject): Promise<boolean> {
   // Find and click create button
   const createBtn = page.getByRole('button', { name: /create|new|add.*project/i }).first();
-
-  if (!(await createBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(createBtn).toBeVisible({ timeout: 2000 });
 
   await createBtn.click();
   await page.waitForTimeout(500);
@@ -120,9 +117,7 @@ export async function createProject(page: Page, project: TestProject): Promise<b
     .or(page.getByPlaceholder(/name/i))
     .first();
 
-  if (!(await nameInput.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(nameInput).toBeVisible({ timeout: 2000 });
 
   await nameInput.fill(project.name);
 
@@ -132,9 +127,8 @@ export async function createProject(page: Page, project: TestProject): Promise<b
       .or(page.getByPlaceholder(/description/i))
       .first();
 
-    if (await descInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await descInput.fill(project.description);
-    }
+    await expect(descInput).toBeVisible({ timeout: 1000 });
+    await descInput.fill(project.description);
   }
 
   // Submit
@@ -142,16 +136,15 @@ export async function createProject(page: Page, project: TestProject): Promise<b
     name: /create|save|submit/i,
   });
 
-  if (!(await submitBtn.isVisible({ timeout: 1000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(submitBtn).toBeVisible({ timeout: 1000 });
 
   await submitBtn.click();
   await page.waitForLoadState('networkidle');
 
   // Verify creation
   const projectText = page.getByText(project.name);
-  return projectText.isVisible({ timeout: 5000 }).catch(() => false);
+  await expect(projectText).toBeVisible({ timeout: 5000 });
+  return true;
 }
 
 /**
@@ -160,10 +153,7 @@ export async function createProject(page: Page, project: TestProject): Promise<b
 
 export async function createItem(page: Page, item: TestItem): Promise<boolean> {
   const createBtn = page.getByRole('button', { name: /create|new|add.*item/i }).first();
-
-  if (!(await createBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(createBtn).toBeVisible({ timeout: 2000 });
 
   await createBtn.click();
   await page.waitForTimeout(500);
@@ -174,9 +164,7 @@ export async function createItem(page: Page, item: TestItem): Promise<boolean> {
     .or(page.getByPlaceholder(/title/i))
     .first();
 
-  if (!(await titleInput.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(titleInput).toBeVisible({ timeout: 2000 });
 
   await titleInput.fill(item.title);
 
@@ -187,22 +175,19 @@ export async function createItem(page: Page, item: TestItem): Promise<boolean> {
       .or(page.getByPlaceholder(/description/i))
       .first();
 
-    if (await descInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await descInput.fill(item.description);
-    }
+    await expect(descInput).toBeVisible({ timeout: 1000 });
+    await descInput.fill(item.description);
   }
 
   if (item.type != null && item.type !== '') {
     const typeSelect = page.getByLabel(/type/i).first();
-    if (await typeSelect.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await typeSelect.click();
-      await page.waitForTimeout(300);
+    await expect(typeSelect).toBeVisible({ timeout: 1000 });
+    await typeSelect.click();
+    await page.waitForTimeout(300);
 
-      const option = page.getByText(new RegExp(item.type, 'i'));
-      if (await option.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await option.click();
-      }
-    }
+    const option = page.getByText(new RegExp(item.type, 'i'));
+    await expect(option).toBeVisible({ timeout: 1000 });
+    await option.click();
   }
 
   // Submit
@@ -210,16 +195,15 @@ export async function createItem(page: Page, item: TestItem): Promise<boolean> {
     name: /create|save|submit|add/i,
   });
 
-  if (!(await submitBtn.isVisible({ timeout: 1000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(submitBtn).toBeVisible({ timeout: 1000 });
 
   await submitBtn.click();
   await page.waitForLoadState('networkidle');
 
   // Verify
   const itemText = page.getByText(item.title);
-  return itemText.isVisible({ timeout: 5000 }).catch(() => false);
+  await expect(itemText).toBeVisible({ timeout: 5000 });
+  return true;
 }
 
 export async function updateItemStatus(page: Page, newStatus: string): Promise<boolean> {
@@ -228,17 +212,13 @@ export async function updateItemStatus(page: Page, newStatus: string): Promise<b
     .first()
     .or(page.locator("[role='combobox']").filter({ hasText: /status/i }));
 
-  if (!(await statusField.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(statusField).toBeVisible({ timeout: 2000 });
 
   await statusField.click();
   await page.waitForTimeout(300);
 
   const option = page.getByText(new RegExp(newStatus, 'i'));
-  if (!(await option.isVisible({ timeout: 1000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(option).toBeVisible({ timeout: 1000 });
 
   await option.click();
   await page.waitForLoadState('networkidle');
@@ -249,9 +229,7 @@ export async function updateItemStatus(page: Page, newStatus: string): Promise<b
 export async function deleteItem(page: Page): Promise<boolean> {
   const deleteBtn = page.getByRole('button', { name: /delete/i }).first();
 
-  if (!(await deleteBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(deleteBtn).toBeVisible({ timeout: 2000 });
 
   await deleteBtn.click();
   await page.waitForTimeout(500);
@@ -261,11 +239,7 @@ export async function deleteItem(page: Page): Promise<boolean> {
     name: /confirm|yes|delete/i,
   });
 
-  if (!(await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
-    // Might delete without confirmation
-    await page.waitForLoadState('networkidle');
-    return true;
-  }
+  await expect(confirmBtn).toBeVisible({ timeout: 2000 });
 
   await confirmBtn.click();
   await page.waitForLoadState('networkidle');
@@ -282,18 +256,14 @@ export async function createLink(page: Page, link: TestLink): Promise<boolean> {
     name: /add link|create link|new link/i,
   });
 
-  if (!(await createLinkBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(createLinkBtn).toBeVisible({ timeout: 2000 });
 
   await createLinkBtn.click();
   await page.waitForTimeout(500);
 
   // Select target item
   const targetSelect = page.getByLabel(/target.*item|target/i).first();
-  if (!(await targetSelect.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(targetSelect).toBeVisible({ timeout: 2000 });
 
   await targetSelect.click();
   await page.waitForTimeout(300);
@@ -301,35 +271,27 @@ export async function createLink(page: Page, link: TestLink): Promise<boolean> {
   // Type target item ID and select from dropdown
   // This would depend on the actual UI implementation
   const targetOption = page.locator(`text=${link.targetId}`).first();
-  if (!(await targetOption.isVisible({ timeout: 1000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(targetOption).toBeVisible({ timeout: 1000 });
 
   await targetOption.click();
   await page.waitForTimeout(300);
 
   // Select link type
   const typeSelect = page.getByLabel(/link type|type/i).first();
-  if (!(await typeSelect.isVisible({ timeout: 1000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(typeSelect).toBeVisible({ timeout: 1000 });
 
   await typeSelect.click();
   await page.waitForTimeout(300);
 
   const typeOption = page.getByText(new RegExp(link.type, 'i'));
-  if (!(await typeOption.isVisible({ timeout: 1000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(typeOption).toBeVisible({ timeout: 1000 });
 
   await typeOption.click();
   await page.waitForTimeout(300);
 
   // Submit
   const submitBtn = page.getByRole('button', { name: /create|save/i });
-  if (!(await submitBtn.isVisible({ timeout: 1000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(submitBtn).toBeVisible({ timeout: 1000 });
 
   await submitBtn.click();
   await page.waitForLoadState('networkidle');
@@ -347,15 +309,13 @@ export async function searchItems(page: Page, query: string): Promise<number> {
     .or(page.getByPlaceholder(/search/i))
     .first();
 
-  if (!(await searchInput.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return 0;
-  }
+  await expect(searchInput).toBeVisible({ timeout: 2000 });
 
   await searchInput.fill(query);
   await page.waitForTimeout(500);
 
   const results = page.getByText(new RegExp(query, 'i'));
-  return results.count().catch(() => 0);
+  return results.count();
 }
 
 export async function filterByType(page: Page, type: string): Promise<boolean> {
@@ -364,17 +324,13 @@ export async function filterByType(page: Page, type: string): Promise<boolean> {
     .first()
     .or(page.locator('select').filter({ hasText: /type/i }).first());
 
-  if (!(await typeFilter.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(typeFilter).toBeVisible({ timeout: 2000 });
 
   await typeFilter.click();
   await page.waitForTimeout(300);
 
   const option = page.getByText(new RegExp(type, 'i')).first();
-  if (!(await option.isVisible({ timeout: 1000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(option).toBeVisible({ timeout: 1000 });
 
   await option.click();
   await page.waitForTimeout(500);
@@ -393,17 +349,13 @@ export async function filterByStatus(page: Page, status: string): Promise<boolea
         .first(),
     );
 
-  if (!(await statusFilter.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(statusFilter).toBeVisible({ timeout: 2000 });
 
   await statusFilter.click();
   await page.waitForTimeout(300);
 
   const option = page.getByText(new RegExp(status, 'i'));
-  if (!(await option.isVisible({ timeout: 1000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(option).toBeVisible({ timeout: 1000 });
 
   await option.click();
   await page.waitForTimeout(500);
@@ -414,9 +366,7 @@ export async function filterByStatus(page: Page, status: string): Promise<boolea
 export async function clearSearchAndFilters(page: Page): Promise<boolean> {
   const clearBtn = page.getByRole('button', { name: /clear|reset/i }).first();
 
-  if (!(await clearBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(clearBtn).toBeVisible({ timeout: 2000 });
 
   await clearBtn.click();
   await page.waitForTimeout(300);
@@ -484,20 +434,18 @@ export function generateItem(overrides?: Partial<TestItem>): TestItem {
 
 export async function getTableRowCount(page: Page): Promise<number> {
   const rows = page.locator('tbody tr').or(page.locator("[role='row']"));
-  return rows.count().catch(() => 0);
+  return rows.count();
 }
 
 export async function getTableHeaderCount(page: Page): Promise<number> {
   const headers = page.locator("thead [role='columnheader']");
-  return headers.count().catch(() => 0);
+  return headers.count();
 }
 
 export async function clickTableRowByText(page: Page, text: string): Promise<boolean> {
   const row = page.getByText(text).first();
 
-  if (!(await row.isVisible({ timeout: 2000 }).catch(() => false))) {
-    return false;
-  }
+  await expect(row).toBeVisible({ timeout: 2000 });
 
   await row.click();
   await page.waitForLoadState('networkidle');
@@ -511,7 +459,8 @@ export async function clickTableRowByText(page: Page, text: string): Promise<boo
 
 export async function expectDialogOpen(page: Page): Promise<boolean> {
   const dialog = page.getByRole('dialog').first();
-  return dialog.isVisible({ timeout: 2000 }).catch(() => false);
+  await expect(dialog).toBeVisible({ timeout: 2000 });
+  return true;
 }
 
 export async function closeDialog(page: Page): Promise<boolean> {
@@ -521,7 +470,8 @@ export async function closeDialog(page: Page): Promise<boolean> {
 
   // Check if dialog is closed
   const dialog = page.getByRole('dialog').first();
-  return !(await dialog.isVisible({ timeout: 1000 }).catch(() => false));
+  await expect(dialog).not.toBeVisible({ timeout: 1000 });
+  return true;
 }
 
 /**

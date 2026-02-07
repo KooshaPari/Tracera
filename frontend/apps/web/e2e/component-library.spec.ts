@@ -33,11 +33,7 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        console.log('Component library button found');
-      } else {
-        console.log('Component library not visible on graph page');
-      }
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
     });
 
     test('should open component library panel', async ({ page }) => {
@@ -48,19 +44,16 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Look for library panel
-        const libraryPanel = page.locator("aside, [class*='library'], [class*='panel'], .w-96");
+      // Look for library panel
+      const libraryPanel = page
+        .locator("aside, [class*='library'], [class*='panel'], .w-96")
+        .first();
 
-        if (await libraryPanel.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Component library panel opened');
-        } else {
-          console.log('Library panel may open as modal or separate view');
-        }
-      }
+      await expect(libraryPanel).toBeVisible({ timeout: 2000 });
     });
 
     test('should display component categories', async ({ page }) => {
@@ -71,26 +64,17 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Look for category tabs or list
-        const categories = page.locator("[role='tab'], button[class*='category'], nav");
-        const categoryCount = await categories.count().catch(() => 0);
+      // Look for category tabs or list
+      const categories = page.locator("[role='tab'], button[class*='category'], nav").first();
+      await expect(categories).toBeVisible();
 
-        if (categoryCount > 0) {
-          console.log(`Found ${categoryCount} component categories`);
-        }
-
-        // Look for category text
-        const categoryLabels = page.getByText(/requirement|feature|code|test|architecture|ui|api/i);
-        const labelCount = await categoryLabels.count().catch(() => 0);
-
-        if (labelCount > 0) {
-          console.log(`${labelCount} category labels displayed`);
-        }
-      }
+      // Look for category text
+      const categoryLabels = page.getByText(/requirement|feature|code|test|architecture|ui|api/i);
+      await expect(categoryLabels.first()).toBeVisible();
     });
   });
 
@@ -103,20 +87,13 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Count components in list
-        const componentItems = page.locator("[role='listitem'], li, [class*='component-item']");
-        const componentCount = await componentItems.count().catch(() => 0);
-
-        if (componentCount > 0) {
-          console.log(`Found ${componentCount} components in library`);
-        } else {
-          console.log('Component list may load dynamically');
-        }
-      }
+      // Count components in list
+      const componentItems = page.locator("[role='listitem'], li, [class*='component-item']");
+      await expect(componentItems.first()).toBeVisible();
     });
 
     test('should display component names and types', async ({ page }) => {
@@ -127,21 +104,16 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Look for component items with name and type
-        const componentItems = page.locator("[role='listitem'], li").first();
+      // Look for component items with name and type
+      const componentItems = page.locator("[role='listitem'], li").first();
 
-        if (await componentItems.isVisible({ timeout: 2000 }).catch(() => false)) {
-          const text = await componentItems.textContent().catch(() => '');
-
-          if (text != null && text !== '') {
-            console.log('Component items display name and metadata');
-          }
-        }
-      }
+      await expect(componentItems).toBeVisible({ timeout: 2000 });
+      const text = await componentItems.textContent();
+      expect(text).not.toBe('');
     });
 
     test('should allow browsing components by scrolling', async ({ page }) => {
@@ -152,26 +124,22 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Find scrollable container
-        const libraryPanel = page.locator("aside, [class*='library'], [class*='panel']").first();
+      // Find scrollable container
+      const libraryPanel = page.locator("aside, [class*='library'], [class*='panel']").first();
 
-        if (await libraryPanel.isVisible({ timeout: 2000 }).catch(() => false)) {
-          // Scroll in the panel
-          await libraryPanel.evaluate((el) => {
-            if (el.scrollHeight > el.clientHeight) {
-              el.scrollTop = el.scrollHeight / 2;
-            }
-          });
-
-          await page.waitForTimeout(300);
-
-          console.log('Library components scrollable');
+      await expect(libraryPanel).toBeVisible({ timeout: 2000 });
+      // Scroll in the panel
+      await libraryPanel.evaluate((el) => {
+        if (el.scrollHeight > el.clientHeight) {
+          el.scrollTop = el.scrollHeight / 2;
         }
-      }
+      });
+
+      await page.waitForTimeout(300);
     });
 
     test('should show component count', async ({ page }) => {
@@ -182,17 +150,14 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Look for count indicator
-        const countLabel = page.getByText(/\(\d+\)|\d+\s*(items?|components?)/i);
+      // Look for count indicator
+      const countLabel = page.getByText(/\(\d+\)|\d+\s*(items?|components?)/i);
 
-        if (await countLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Component count displayed');
-        }
-      }
+      await expect(countLabel.first()).toBeVisible({ timeout: 2000 });
     });
   });
 
@@ -205,17 +170,14 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Look for search input
-        const searchInput = page.getByPlaceholder(/search/i).first();
+      // Look for search input
+      const searchInput = page.getByPlaceholder(/search/i).first();
 
-        if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Search input found in component library');
-        }
-      }
+      await expect(searchInput).toBeVisible({ timeout: 2000 });
     });
 
     test('should search components by name', async ({ page }) => {
@@ -226,32 +188,24 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const searchInput = page.getByPlaceholder(/search/i).first();
+      const searchInput = page.getByPlaceholder(/search/i).first();
 
-        if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-          // Type search query
-          await searchInput.fill('authentication');
-          await page.waitForTimeout(500);
+      await expect(searchInput).toBeVisible({ timeout: 2000 });
+      // Type search query
+      await searchInput.fill('authentication');
+      await page.waitForTimeout(500);
 
-          // Check if results are filtered
-          const resultItems = page.locator("[role='listitem'], li");
-          const resultCount = await resultItems.count().catch(() => 0);
+      // Check if results are filtered
+      const resultItems = page.locator("[role='listitem'], li");
+      await expect(resultItems.first()).toBeVisible();
 
-          if (resultCount > 0) {
-            console.log(`Search returned ${resultCount} results`);
-          }
-
-          // Clear search
-          await searchInput.clear();
-          await page.waitForTimeout(300);
-
-          console.log('Component search functional');
-        }
-      }
+      // Clear search
+      await searchInput.clear();
+      await page.waitForTimeout(300);
     });
 
     test('should search components by type', async ({ page }) => {
@@ -262,25 +216,21 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const searchInput = page.getByPlaceholder(/search/i).first();
+      const searchInput = page.getByPlaceholder(/search/i).first();
 
-        if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-          // Search by type keyword
-          await searchInput.fill('test');
-          await page.waitForTimeout(500);
+      await expect(searchInput).toBeVisible({ timeout: 2000 });
+      // Search by type keyword
+      await searchInput.fill('test');
+      await page.waitForTimeout(500);
 
-          const resultItems = page.locator("[role='listitem'], li");
-          const resultCount = await resultItems.count().catch(() => 0);
+      const resultItems = page.locator("[role='listitem'], li");
+      await expect(resultItems.first()).toBeVisible();
 
-          console.log(`Type search returned ${resultCount} results`);
-
-          await searchInput.clear();
-        }
-      }
+      await searchInput.clear();
     });
 
     test('should show no results message when search returns nothing', async ({ page }) => {
@@ -291,26 +241,22 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const searchInput = page.getByPlaceholder(/search/i).first();
+      const searchInput = page.getByPlaceholder(/search/i).first();
 
-        if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-          // Search with unlikely term
-          await searchInput.fill('xyznotfound123');
-          await page.waitForTimeout(500);
+      await expect(searchInput).toBeVisible({ timeout: 2000 });
+      // Search with unlikely term
+      await searchInput.fill('xyznotfound123');
+      await page.waitForTimeout(500);
 
-          const noResultsMsg = page.getByText(/no.*result|not.*found|no.*match/i);
+      const noResultsMsg = page.getByText(/no.*result|not.*found|no.*match/i);
 
-          if (await noResultsMsg.isVisible({ timeout: 2000 }).catch(() => false)) {
-            console.log('No results message displayed');
-          }
+      await expect(noResultsMsg.first()).toBeVisible({ timeout: 2000 });
 
-          await searchInput.clear();
-        }
-      }
+      await searchInput.clear();
     });
   });
 
@@ -323,22 +269,17 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Look for category filter/tabs
-        const categoryFilters = page.locator("[role='tab'], button[class*='category']");
-        const filterCount = await categoryFilters.count().catch(() => 0);
+      // Look for category filter/tabs
+      const categoryFilters = page.locator("[role='tab'], button[class*='category']");
+      await expect(categoryFilters.first()).toBeVisible();
 
-        if (filterCount > 0) {
-          // Click first category
-          await categoryFilters.first().click();
-          await page.waitForTimeout(500);
-
-          console.log(`Category filter applied, found ${filterCount} categories`);
-        }
-      }
+      // Click first category
+      await categoryFilters.first().click();
+      await page.waitForTimeout(500);
     });
 
     test('should filter components by status', async ({ page }) => {
@@ -349,33 +290,28 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Look for status filter
-        const statusFilter = page
-          .locator('button, select')
-          .filter({ hasText: /status|state|active/i })
-          .first();
+      // Look for status filter
+      const statusFilter = page
+        .locator('button, select')
+        .filter({ hasText: /status|state|active/i })
+        .first();
 
-        if (await statusFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await statusFilter.click();
-          await page.waitForTimeout(300);
+      await expect(statusFilter).toBeVisible({ timeout: 2000 });
+      await statusFilter.click();
+      await page.waitForTimeout(300);
 
-          const statusOption = page
-            .locator("[role='option'], button")
-            .filter({ hasText: /[a-z]/i })
-            .first();
+      const statusOption = page
+        .locator("[role='option'], button")
+        .filter({ hasText: /[a-z]/i })
+        .first();
 
-          if (await statusOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-            await statusOption.click();
-            await page.waitForTimeout(500);
-
-            console.log('Component status filter applied');
-          }
-        }
-      }
+      await expect(statusOption).toBeVisible({ timeout: 1000 });
+      await statusOption.click();
+      await page.waitForTimeout(500);
     });
   });
 
@@ -388,25 +324,21 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Click first component
-        const componentItem = page.locator("[role='listitem'], li").first();
+      // Click first component
+      const componentItem = page.locator("[role='listitem'], li").first();
 
-        if (await componentItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await componentItem.click();
-          await page.waitForTimeout(500);
+      await expect(componentItem).toBeVisible({ timeout: 2000 });
+      await componentItem.click();
+      await page.waitForTimeout(500);
 
-          // Look for detail panel
-          const detailPanel = page.locator("[class*='detail'], [class*='panel']");
+      // Look for detail panel
+      const detailPanel = page.locator("[class*='detail'], [class*='panel']").first();
 
-          if (await detailPanel.isVisible({ timeout: 2000 }).catch(() => false)) {
-            console.log('Component details panel displayed');
-          }
-        }
-      }
+      await expect(detailPanel).toBeVisible({ timeout: 2000 });
     });
 
     test('should display component metadata', async ({ page }) => {
@@ -417,25 +349,19 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const componentItem = page.locator("[role='listitem'], li").first();
+      const componentItem = page.locator("[role='listitem'], li").first();
 
-        if (await componentItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await componentItem.click();
-          await page.waitForTimeout(500);
+      await expect(componentItem).toBeVisible({ timeout: 2000 });
+      await componentItem.click();
+      await page.waitForTimeout(500);
 
-          // Look for metadata fields
-          const metadata = page.getByText(/type|status|version|author|created|modified/i);
-          const metadataCount = await metadata.count().catch(() => 0);
-
-          if (metadataCount > 0) {
-            console.log(`Found ${metadataCount} metadata fields`);
-          }
-        }
-      }
+      // Look for metadata fields
+      const metadata = page.getByText(/type|status|version|author|created|modified/i);
+      await expect(metadata.first()).toBeVisible();
     });
 
     test('should show component description', async ({ page }) => {
@@ -446,29 +372,20 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const componentItem = page.locator("[role='listitem'], li").first();
+      const componentItem = page.locator("[role='listitem'], li").first();
 
-        if (await componentItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await componentItem.click();
-          await page.waitForTimeout(500);
+      await expect(componentItem).toBeVisible({ timeout: 2000 });
+      await componentItem.click();
+      await page.waitForTimeout(500);
 
-          // Look for description text
-          const description = page.locator("p, [class*='description']");
+      // Look for description text
+      const description = page.locator("p, [class*='description']").first();
 
-          if (
-            await description
-              .first()
-              .isVisible({ timeout: 2000 })
-              .catch(() => false)
-          ) {
-            console.log('Component description displayed');
-          }
-        }
-      }
+      await expect(description).toBeVisible({ timeout: 2000 });
     });
 
     test('should show component relationships', async ({ page }) => {
@@ -479,25 +396,19 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const componentItem = page.locator("[role='listitem'], li").first();
+      const componentItem = page.locator("[role='listitem'], li").first();
 
-        if (await componentItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await componentItem.click();
-          await page.waitForTimeout(500);
+      await expect(componentItem).toBeVisible({ timeout: 2000 });
+      await componentItem.click();
+      await page.waitForTimeout(500);
 
-          // Look for relationships section
-          const relationships = page.getByText(/related|depends|link|reference|parent|child/i);
-          const relationCount = await relationships.count().catch(() => 0);
-
-          if (relationCount > 0) {
-            console.log(`Found ${relationCount} relationship indicators`);
-          }
-        }
-      }
+      // Look for relationships section
+      const relationships = page.getByText(/related|depends|link|reference|parent|child/i);
+      await expect(relationships.first()).toBeVisible();
     });
   });
 
@@ -510,34 +421,29 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const componentItem = page.locator("[role='listitem'], li").first();
+      const componentItem = page.locator("[role='listitem'], li").first();
 
-        if (await componentItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await componentItem.click();
-          await page.waitForTimeout(500);
+      await expect(componentItem).toBeVisible({ timeout: 2000 });
+      await componentItem.click();
+      await page.waitForTimeout(500);
 
-          // Look for visualization button
-          const visualizeBtn = page
-            .locator('button')
-            .filter({ hasText: /visualize|show|view.*graph/i })
-            .first();
+      // Look for visualization button
+      const visualizeBtn = page
+        .locator('button')
+        .filter({ hasText: /visualize|show|view.*graph/i })
+        .first();
 
-          if (await visualizeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await visualizeBtn.click();
-            await page.waitForTimeout(1000);
+      await expect(visualizeBtn).toBeVisible({ timeout: 2000 });
+      await visualizeBtn.click();
+      await page.waitForTimeout(1000);
 
-            // Check if graph updated
-            const graphContainer = page.locator('.react-flow');
-            if (await graphContainer.isVisible({ timeout: 2000 }).catch(() => false)) {
-              console.log('Component visualized in graph');
-            }
-          }
-        }
-      }
+      // Check if graph updated
+      const graphContainer = page.locator('.react-flow');
+      await expect(graphContainer).toBeVisible({ timeout: 2000 });
     });
 
     test('should highlight component in graph when selected', async ({ page }) => {
@@ -548,27 +454,21 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const componentItem = page.locator("[role='listitem'], li").first();
+      const componentItem = page.locator("[role='listitem'], li").first();
 
-        if (await componentItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await componentItem.click();
-          await page.waitForTimeout(500);
+      await expect(componentItem).toBeVisible({ timeout: 2000 });
+      await componentItem.click();
+      await page.waitForTimeout(500);
 
-          // Look for highlighted node in graph
-          const highlightedNodes = page.locator(
-            ".react-flow__nodes [class*='highlighted'], [class*='selected']",
-          );
-          const highlightCount = await highlightedNodes.count().catch(() => 0);
-
-          if (highlightCount > 0) {
-            console.log(`${highlightCount} component nodes highlighted`);
-          }
-        }
-      }
+      // Look for highlighted node in graph
+      const highlightedNodes = page
+        .locator(".react-flow__nodes [class*='highlighted'], [class*='selected']")
+        .first();
+      await expect(highlightedNodes).toBeVisible();
     });
   });
 
@@ -581,19 +481,16 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const addBtn = page
-          .locator('button')
-          .filter({ hasText: /add|import|insert|use/i })
-          .first();
+      const addBtn = page
+        .locator('button')
+        .filter({ hasText: /add|import|insert|use/i })
+        .first();
 
-        if (await addBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Add component button found');
-        }
-      }
+      await expect(addBtn).toBeVisible({ timeout: 2000 });
     });
 
     test('should add component to graph', async ({ page }) => {
@@ -604,38 +501,23 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        // Get initial node count
-        const initialCount = await page
-          .locator('.react-flow__nodes > div[data-id]')
-          .count()
-          .catch(() => 0);
+      const componentItem = page.locator("[role='listitem'], li").first();
 
-        const componentItem = page.locator("[role='listitem'], li").first();
+      await expect(componentItem).toBeVisible({ timeout: 2000 });
+      // Look for add button in component item
+      const addBtn = componentItem.locator('button').filter({ hasText: /add|import|insert/i });
 
-        if (await componentItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-          // Look for add button in component item
-          const addBtn = componentItem.locator('button').filter({ hasText: /add|import|insert/i });
+      await expect(addBtn).toBeVisible({ timeout: 2000 });
+      await addBtn.click();
+      await page.waitForTimeout(1000);
 
-          if (await addBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await addBtn.click();
-            await page.waitForTimeout(1000);
-
-            // Check if node count increased
-            const finalCount = await page
-              .locator('.react-flow__nodes > div[data-id]')
-              .count()
-              .catch(() => 0);
-
-            if (finalCount > initialCount) {
-              console.log(`Component added to graph: ${initialCount} -> ${finalCount} nodes`);
-            }
-          }
-        }
-      }
+      // Check if node count increased
+      const finalCount = await page.locator('.react-flow__nodes > div[data-id]').count();
+      expect(finalCount).toBeGreaterThan(0);
     });
 
     test('should show add confirmation feedback', async ({ page }) => {
@@ -646,28 +528,23 @@ test.describe('Component Library', () => {
         })
         .first();
 
-      if (await libraryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await libraryBtn.click();
-        await page.waitForTimeout(500);
+      await expect(libraryBtn).toBeVisible({ timeout: 2000 });
+      await libraryBtn.click();
+      await page.waitForTimeout(500);
 
-        const componentItem = page.locator("[role='listitem'], li").first();
+      const componentItem = page.locator("[role='listitem'], li").first();
 
-        if (await componentItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-          const addBtn = componentItem.locator('button').filter({ hasText: /add|import|insert/i });
+      await expect(componentItem).toBeVisible({ timeout: 2000 });
+      const addBtn = componentItem.locator('button').filter({ hasText: /add|import|insert/i });
 
-          if (await addBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await addBtn.click();
-            await page.waitForTimeout(500);
+      await expect(addBtn).toBeVisible({ timeout: 2000 });
+      await addBtn.click();
+      await page.waitForTimeout(500);
 
-            // Look for confirmation message
-            const confirmation = page.getByText(/added|imported|success|created/i);
+      // Look for confirmation message
+      const confirmation = page.getByText(/added|imported|success|created/i);
 
-            if (await confirmation.isVisible({ timeout: 2000 }).catch(() => false)) {
-              console.log('Add component confirmation displayed');
-            }
-          }
-        }
-      }
+      await expect(confirmation.first()).toBeVisible({ timeout: 2000 });
     });
   });
 });

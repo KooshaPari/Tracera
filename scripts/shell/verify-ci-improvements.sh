@@ -30,13 +30,13 @@ else
     echo "  ❌ ci.yml not found"
 fi
 
-# Check Makefile targets
-echo -e "\n${YELLOW}2. Checking Makefile targets...${NC}"
-for target in test-unit test-e2e test-integration test-python-parallel; do
-    if grep -q "^$target:" Makefile 2>/dev/null; then
-        echo "  ✅ make $target exists"
+# Check Taskfile targets
+echo -e "\n${YELLOW}2. Checking Taskfile targets...${NC}"
+for target in test:unit test:e2e test:integration; do
+    if grep -q "  $target:" Taskfile.yml 2>/dev/null; then
+        echo "  ✅ task $target exists"
     else
-        echo "  ❌ make $target not found"
+        echo "  ❌ task $target not found"
     fi
 done
 
@@ -183,6 +183,6 @@ echo -e "\n${GREEN}✅ CI/CD improvements verification complete!${NC}"
 echo -e "\nNext steps:"
 echo "  1. Review the verification results above"
 echo "  2. Fix any warnings or errors"
-echo "  3. Run 'make test-unit' to test locally"
+echo "  3. Run 'task test:unit' to test locally"
 echo "  4. Push changes to trigger CI/CD workflows"
 echo "  5. Check GitHub Actions for test matrix execution"

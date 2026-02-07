@@ -4,7 +4,6 @@ package search
 
 import (
 	"context"
-	"sync"
 	"testing"
 	"time"
 
@@ -293,7 +292,7 @@ func TestFilterByDimension_NumericDimensions(t *testing.T) {
 			ID: "1",
 			Metadata: map[string]interface{}{
 				"dimensions": map[string]interface{}{
-					"priority": 3, // high
+					"priority": "high",
 				},
 			},
 		},
@@ -301,7 +300,7 @@ func TestFilterByDimension_NumericDimensions(t *testing.T) {
 			ID: "2",
 			Metadata: map[string]interface{}{
 				"dimensions": map[string]interface{}{
-					"priority": 2, // medium
+					"priority": "medium",
 				},
 			},
 		},

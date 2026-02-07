@@ -13,19 +13,19 @@ import (
 type CodeEntity struct {
 	ID            string         `gorm:"primaryKey" json:"id"`
 	ProjectID     string         `json:"project_id"`
-	EntityType    string         `json:"entity_type"` // class, function, method, module, interface, etc.
-	Name          string         `json:"name"`
-	FullName      string         `json:"full_name"` // Fully qualified name
-	Description   string         `json:"description"`
-	FilePath      string         `json:"file_path"`
-	LineNumber    int            `json:"line_number"`
-	EndLineNumber int            `json:"end_line_number"`
-	ColumnNumber  int            `json:"column_number"`
-	CodeSnippet   string         `json:"code_snippet"` // First few lines of code
+	EntityType    string         `gorm:"column:symbol_type" json:"entity_type"` // class, function, method, module, interface, etc.
+	Name          string         `gorm:"column:symbol_name" json:"name"`
+	FullName      string         `gorm:"column:qualified_name" json:"full_name"` // Fully qualified name
+	Description   string         `gorm:"column:docstring" json:"description"`
+	FilePath      string         `gorm:"column:file_path" json:"file_path"`
+	LineNumber    int            `gorm:"column:start_line" json:"line_number"`
+	EndLineNumber int            `gorm:"column:end_line" json:"end_line_number"`
+	ColumnNumber  int            `gorm:"column:start_column" json:"column_number"`
+	CodeSnippet   string         `gorm:"-" json:"code_snippet"` // Not in database schema
 	Language      string         `json:"language"`     // go, python, typescript, etc.
 	Signature     string         `json:"signature"`    // Function/method signature
-	ReturnType    string         `json:"return_type"`
-	Parameters    datatypes.JSON `json:"parameters"` // JSON array of parameters
+	ReturnType    string         `gorm:"-" json:"return_type"` // Not in database schema
+	Parameters    datatypes.JSON `gorm:"-" json:"parameters"` // Not in database schema (JSON array of parameters)
 	Metadata      datatypes.JSON `json:"metadata"`
 	IndexedAt     time.Time      `json:"indexed_at"`
 	CreatedAt     time.Time      `json:"created_at"`

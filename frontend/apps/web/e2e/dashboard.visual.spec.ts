@@ -47,9 +47,7 @@ test.describe('Dashboard Visual Regression @visual', () => {
 
         // Wait for dashboard heading to confirm content has rendered
         const heading = page.getByRole('heading', { name: /traceability dashboard/i });
-        await heading.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {
-          // Fall back to waiting for any main content
-        });
+        await heading.waitFor({ state: 'visible', timeout: 10_000 });
 
         // Allow charts and widgets to finish rendering
         await page.waitForTimeout(1000);
@@ -67,9 +65,7 @@ test.describe('Dashboard Visual Regression @visual', () => {
 
         // Wait for stats/metrics to render
         const activeProjects = page.getByRole('heading', { name: /active projects/i });
-        await activeProjects.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {
-          // Metrics section may not be present in all environments
-        });
+        await expect(activeProjects).toBeVisible({ timeout: 10_000 });
 
         await page.waitForTimeout(500);
         await disableAnimations(page);
@@ -86,9 +82,7 @@ test.describe('Dashboard Visual Regression @visual', () => {
         await page.waitForLoadState('networkidle');
 
         const heading = page.getByRole('heading', { name: /traceability dashboard/i });
-        await heading.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {
-          // Fall back gracefully
-        });
+        await expect(heading).toBeVisible({ timeout: 10_000 });
 
         await page.waitForTimeout(1000);
         await disableAnimations(page);
@@ -112,9 +106,7 @@ test.describe('Dashboard Visual Regression @visual', () => {
 
       // Wait for project cards or content sections to appear
       const content = page.locator('[class*="space-y"]').first();
-      await content.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {
-        // Content container may differ
-      });
+      await expect(content).toBeVisible({ timeout: 10_000 });
 
       await page.waitForTimeout(1000);
       await disableAnimations(page);
@@ -130,9 +122,7 @@ test.describe('Dashboard Visual Regression @visual', () => {
       await page.waitForLoadState('networkidle');
 
       const recentProjects = page.getByText(/recent projects/i);
-      await recentProjects.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {
-        // Section may not be present
-      });
+      await expect(recentProjects).toBeVisible({ timeout: 10_000 });
 
       await page.waitForTimeout(500);
       await disableAnimations(page);

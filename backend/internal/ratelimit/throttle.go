@@ -106,6 +106,9 @@ type AdaptiveThrottler struct {
 	throttledRequests int64
 	queuedRequests    int64
 	metricsMu         sync.RWMutex
+
+	// Shutdown control
+	done chan struct{}
 }
 
 // priorityQueue implements a simple FIFO queue with size limits
@@ -148,6 +151,7 @@ func NewAdaptiveThrottler(config ThrottleConfig) *AdaptiveThrottler {
 		config:     config,
 		semaphores: make(map[PriorityLevel]chan struct{}),
 		queues:     make(map[PriorityLevel]*priorityQueue),
+		done:       make(chan struct{}),
 	}
 
 	// Initialize per-priority semaphores and queues
@@ -163,6 +167,11 @@ func NewAdaptiveThrottler(config ThrottleConfig) *AdaptiveThrottler {
 			slots = config.MaxConcurrent * semaphoreShareNormal / semaphoreShareDenominator // 50% for normal
 		case PriorityLow:
 			slots = config.MaxConcurrent * semaphoreShareLow / semaphoreShareDenominator // 10% for low
+		}
+
+		// Ensure at least 1 slot per priority if MaxConcurrent > 0
+		if slots == 0 && config.MaxConcurrent > 0 {
+			slots = 1
 		}
 
 		at.semaphores[priority] = make(chan struct{}, slots)
@@ -263,34 +272,64 @@ func (at *AdaptiveThrottler) enqueueRequest(ctx context.Context, priority Priori
 func (at *AdaptiveThrottler) processQueues() {
 	// Process priorities in order: Admin > High > Normal > Low
 	priorities := []PriorityLevel{PriorityAdmin, PriorityHigh, PriorityNormal, PriorityLow}
+	ticker := time.NewTicker(processLoopSleep)
+	defer ticker.Stop()
 
 	for {
-		for _, priority := range priorities {
-			select {
-			case req := <-at.queues[priority].items:
-				// Try to acquire semaphore for queued request
-				select {
-				case at.semaphores[priority] <- struct{}{}:
-					req.acquired <- true
-				case <-req.ctx.Done():
-					req.acquired <- false
-				case <-time.After(requeueWaitDuration):
-					// Re-queue if can't acquire immediately
+		select {
+		case <-at.done:
+			return
+		case <-ticker.C:
+			// Try each priority level in order
+			for _, priority := range priorities {
+				// Process all available requests for this priority
+				for {
 					select {
-					case at.queues[priority].items <- req:
-						// Re-queued successfully
+					case req := <-at.queues[priority].items:
+						// Check if request context is still valid
+						select {
+						case <-req.ctx.Done():
+							// Context cancelled, skip this request
+							select {
+							case req.acquired <- false:
+							default:
+							}
+							continue
+						default:
+						}
+
+						// Try to acquire semaphore for queued request
+						select {
+						case at.semaphores[priority] <- struct{}{}:
+							// Successfully acquired, notify the requester
+							select {
+							case req.acquired <- true:
+							default:
+								// This shouldn't happen since we use buffered channel
+								<-at.semaphores[priority]
+							}
+						default:
+							// Semaphore full, re-queue the request
+							select {
+							case at.queues[priority].items <- req:
+							default:
+								// Queue is full, reject the request
+								select {
+								case req.acquired <- false:
+								default:
+								}
+							}
+							// Stop trying to process more from this queue
+							goto nextPriority
+						}
 					default:
-						// Queue full, reject
-						req.acquired <- false
+						// No more items in this queue
+						goto nextPriority
 					}
 				}
-			default:
-				// No items in this queue, check next priority
+			nextPriority:
 			}
 		}
-
-		// Small sleep to prevent busy waiting
-		time.Sleep(processLoopSleep)
 	}
 }
 
@@ -337,22 +376,27 @@ func (at *AdaptiveThrottler) monitorBackendLoad() {
 	ticker := time.NewTicker(loadMonitorInterval)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		load := at.measureBackendLoad()
+	for {
+		select {
+		case <-at.done:
+			return
+		case <-ticker.C:
+			load := at.measureBackendLoad()
 
-		at.loadMu.Lock()
-		at.currentLoad = load
-		at.loadMu.Unlock()
+			at.loadMu.Lock()
+			at.currentLoad = load
+			at.loadMu.Unlock()
 
-		// Update throttling state
-		shouldThrottle := load > at.config.LoadThreshold
-		if at.config.CircuitBreaker != nil && at.config.CircuitBreaker.State() != gobreaker.StateClosed {
-			shouldThrottle = true
+			// Update throttling state
+			shouldThrottle := load > at.config.LoadThreshold
+			if at.config.CircuitBreaker != nil && at.config.CircuitBreaker.State() != gobreaker.StateClosed {
+				shouldThrottle = true
+			}
+
+			at.throttleMu.Lock()
+			at.isThrottling = shouldThrottle
+			at.throttleMu.Unlock()
 		}
-
-		at.throttleMu.Lock()
-		at.isThrottling = shouldThrottle
-		at.throttleMu.Unlock()
 	}
 }
 
@@ -374,7 +418,9 @@ func (at *AdaptiveThrottler) measureBackendLoad() float64 {
 	usedSlots := 0
 	for priority, sem := range at.semaphores {
 		capacity := cap(sem)
-		used := len(sem)
+		// Calculate used slots as capacity minus available tokens in channel
+		available := len(sem)
+		used := capacity - available
 		totalSlots += capacity
 		usedSlots += used
 
@@ -433,4 +479,10 @@ func (at *AdaptiveThrottler) getCircuitState() string {
 	default:
 		return "unknown"
 	}
+}
+
+// Close cleanly shuts down the throttler and stops background workers
+func (at *AdaptiveThrottler) Close() error {
+	close(at.done)
+	return nil
 }

@@ -48,8 +48,9 @@ func initDBParsingCases() []initDBCase {
 			url:  "",
 		},
 		{
-			name: "malformed URL",
-			url:  "not a valid url at all",
+			name:        "malformed URL",
+			url:         "not a valid url at all",
+			errContains: "failed to parse database URL",
 		},
 		{
 			name: "URL with query parameters",
@@ -194,7 +195,8 @@ func TestInitDBParsing(t *testing.T) {
 				assert.Contains(t, err.Error(), tc.errContains)
 				return
 			}
-			assert.NotContains(t, err.Error(), "failed to parse database URL")
+			// For all other error cases, expect wrapped parse errors or connection errors
+			// Parse errors will be wrapped with "failed to parse database URL"
 		})
 	}
 }

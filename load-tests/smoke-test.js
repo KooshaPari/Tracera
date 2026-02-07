@@ -10,6 +10,7 @@ import { check, group, sleep } from 'k6';
 
 const GO_URL = __ENV.GO_BACKEND_URL || 'http://localhost:8080';
 const PYTHON_URL = __ENV.PYTHON_BACKEND_URL || 'http://localhost:4000';
+const API_KEY = __ENV.TRACE_API_KEY || 'trace_smoke_test_key';
 
 export const options = {
   vus: 10,
@@ -21,6 +22,11 @@ export const options = {
 };
 
 export default function() {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${API_KEY}`,
+  };
+
   group('Go Backend Health', () => {
     const res = http.get(`${GO_URL}/health`);
     check(res, {
@@ -40,7 +46,7 @@ export default function() {
     let res = http.post(`${GO_URL}/api/v1/projects`, JSON.stringify({
       name: `Smoke Test Project ${Date.now()}`,
     }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
     });
 
     check(res, {
@@ -56,7 +62,7 @@ export default function() {
         project_id: projectId,
         type: 'requirement',
       }), {
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
       });
 
       check(res, {
@@ -67,7 +73,9 @@ export default function() {
         const itemId = JSON.parse(res.body).id;
 
         // Get item
-        res = http.get(`${GO_URL}/api/v1/items/${itemId}`);
+        res = http.get(`${GO_URL}/api/v1/items/${itemId}`, {
+          headers: headers,
+        });
         check(res, {
           'item retrieved': (r) => r.status === 200,
         });

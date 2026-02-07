@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/labstack/echo/v4"
 )
 
@@ -85,28 +86,30 @@ func (m *MockRealtimeBroadcaster) Publish(_ interface{}, _ interface{}) error {
 	return nil
 }
 
-// Miniredis is a simple in-memory Redis implementation for testing
+// Miniredis wraps the real miniredis for testing
 type Miniredis struct {
-	addr string
-	data map[string]interface{}
-	ttls map[string]int64
+	server *miniredis.Miniredis
 }
 
-// NewMiniredis creates a new in-memory Redis for testing
+// NewMiniredis creates a new in-memory Redis for testing using the real miniredis library
 func NewMiniredis() (*Miniredis, error) {
+	mr, err := miniredis.Run()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Miniredis{
-		addr: "localhost:6379",
-		data: make(map[string]interface{}),
-		ttls: make(map[string]int64),
+		server: mr,
 	}, nil
 }
 
 // Addr returns the address of the miniredis server
 func (m *Miniredis) Addr() string {
-	return m.addr
+	return m.server.Addr()
 }
 
-// Close closes the miniredis (no-op for in-memory implementation)
+// Close closes the miniredis server
 func (m *Miniredis) Close() error {
+	m.server.Close()
 	return nil
 }

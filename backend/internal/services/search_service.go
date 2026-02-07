@@ -347,6 +347,10 @@ func (s *searchService) convertExtensionStatus(ext *search.ExtensionStatus) map[
 
 // SearchItems searches for items with the given query and filters
 func (s *searchService) SearchItems(ctx context.Context, query string, filters SearchFilters) ([]search.Result, error) {
+	if query == "" {
+		return nil, errors.New("search query cannot be empty")
+	}
+
 	var statusSlice []string
 	if filters.Status != "" {
 		statusSlice = []string{filters.Status}
@@ -357,19 +361,24 @@ func (s *searchService) SearchItems(ctx context.Context, query string, filters S
 		itemTypes = []string{filters.Type}
 	}
 
+	limit := filters.Limit
+	if limit == 0 {
+		limit = 20 // Default limit
+	}
+
 	req := &search.Request{
 		Query:     query,
 		Type:      search.TypeFullText,
 		ProjectID: filters.ProjectID,
 		ItemTypes: itemTypes,
 		Status:    statusSlice,
-		Limit:     filters.Limit,
+		Limit:     limit,
 		Offset:    filters.Offset,
 	}
 
 	results, err := s.engine.Search(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("search failed: %w", err)
 	}
 
 	return results.Results, nil

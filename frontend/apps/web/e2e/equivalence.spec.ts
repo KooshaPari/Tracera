@@ -27,104 +27,74 @@ test.describe('Equivalence Panel', () => {
       // Click on a node to select it
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Look for equivalence panel
-        const equivalencePanel = page
-          .locator("[class*='equivalence'], [class*='equivalent'], aside, .w-96")
-          .filter({ hasText: /equivalent|maps to|corresponds|related/i });
+      // Look for equivalence panel
+      const equivalencePanel = page
+        .locator("[class*='equivalence'], [class*='equivalent'], aside, .w-96")
+        .filter({ hasText: /equivalent|maps to|corresponds|related/i })
+        .first();
 
-        if (await equivalencePanel.isVisible({ timeout: 3000 }).catch(() => false)) {
-          console.log('Equivalence panel displayed for selected node');
-        } else {
-          // Try alternative panel location
-          const detailPanel = page.locator('.w-96');
-          if (await detailPanel.isVisible({ timeout: 2000 }).catch(() => false)) {
-            console.log('Detail panel visible - equivalence may be a tab');
-          }
-        }
-      }
+      await expect(equivalencePanel).toBeVisible({ timeout: 3000 });
     });
 
     test('should show equivalence list for selected item', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Look for equivalence section or tab
-        const equivalenceTab = page.getByRole('tab', {
+      // Look for equivalence section or tab
+      const equivalenceTab = page
+        .getByRole('tab', {
           name: /equivalent|equivalence/i,
-        });
+        })
+        .first();
 
-        if (await equivalenceTab.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await equivalenceTab.click();
-          await page.waitForTimeout(500);
+      await expect(equivalenceTab).toBeVisible({ timeout: 5000 });
+      await equivalenceTab.click();
+      await page.waitForTimeout(500);
 
-          console.log('Equivalence tab selected');
-        }
+      // Look for list of equivalent items
+      const equivalentList = page
+        .locator("ul, [role='list']")
+        .filter({ hasText: /equivalent|maps to/i })
+        .first();
 
-        // Look for list of equivalent items
-        const equivalentList = page
-          .locator("ul, [role='list']")
-          .filter({ hasText: /equivalent|maps to/i });
-
-        if (await equivalentList.isVisible({ timeout: 2000 }).catch(() => false)) {
-          const itemCount = await equivalentList
-            .locator("li, [role='listitem']")
-            .count()
-            .catch(() => 0);
-
-          console.log(`Found ${itemCount} equivalent items`);
-        }
-      }
+      await expect(equivalentList).toBeVisible({ timeout: 5000 });
     });
 
     test('should display equivalence strength/confidence', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Look for confidence/strength indicator
-        const confidenceIndicators = page.getByText(/confidence|strength|match|score|%/i);
-        const indicatorCount = await confidenceIndicators.count().catch(() => 0);
+      // Look for confidence/strength indicator
+      const confidenceIndicators = page.getByText(/confidence|strength|match|score|%/i).first();
+      await expect(confidenceIndicators).toBeVisible();
 
-        if (indicatorCount > 0) {
-          console.log(`Found ${indicatorCount} confidence indicators`);
-        }
-
-        // Look for progress bars or rating indicators
-        const progressBars = page.locator(
-          "[role='progressbar'], [class*='progress'], [class*='strength']",
-        );
-        const barCount = await progressBars.count().catch(() => 0);
-
-        if (barCount > 0) {
-          console.log(`${barCount} strength/confidence bars found`);
-        }
-      }
+      // Look for progress bars or rating indicators
+      const progressBars = page
+        .locator("[role='progressbar'], [class*='progress'], [class*='strength']")
+        .first();
+      await expect(progressBars).toBeVisible();
     });
 
     test('should show equivalence metadata', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Look for equivalence metadata section
-        const metadata = page.getByText(/dimension|view|perspective|type|status|version/i);
-        const metadataCount = await metadata.count().catch(() => 0);
-
-        if (metadataCount > 0) {
-          console.log(`Found ${metadataCount} metadata fields`);
-        }
-      }
+      // Look for equivalence metadata section
+      const metadata = page.getByText(/dimension|view|perspective|type|status|version/i).first();
+      await expect(metadata).toBeVisible();
     });
   });
 
@@ -132,54 +102,42 @@ test.describe('Equivalence Panel', () => {
     test('should display suggested equivalences', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Look for suggested equivalences section
-        const suggestedSection = page.getByText(/suggested|recommended|potential|candidate/i);
+      // Look for suggested equivalences section
+      const suggestedSection = page.getByText(/suggested|recommended|potential|candidate/i).first();
 
-        if (await suggestedSection.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Suggested equivalences section found');
-        }
+      await expect(suggestedSection).toBeVisible({ timeout: 2000 });
 
-        // Look for equivalence items marked as suggested
-        const suggestedItems = page.locator("[class*='suggested'], [class*='recommended']");
-        const suggestedCount = await suggestedItems.count().catch(() => 0);
-
-        if (suggestedCount > 0) {
-          console.log(`${suggestedCount} suggested equivalences`);
-        }
-      }
+      // Look for equivalence items marked as suggested
+      const suggestedItems = page.locator("[class*='suggested'], [class*='recommended']").first();
+      await expect(suggestedItems).toBeVisible();
     });
 
     test('should show confirmation actions for suggested equivalences', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Look for confirm/approve buttons
-        const confirmBtn = page
-          .locator('button')
-          .filter({ hasText: /confirm|approve|accept|yes/i })
-          .first();
+      // Look for confirm/approve buttons
+      const confirmBtn = page
+        .locator('button')
+        .filter({ hasText: /confirm|approve|accept|yes/i })
+        .first();
 
-        if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Confirmation button found for equivalence');
-        }
+      await expect(confirmBtn).toBeVisible({ timeout: 2000 });
 
-        // Look for reject/deny buttons
-        const rejectBtn = page
-          .locator('button')
-          .filter({ hasText: /reject|deny|no|dismiss/i })
-          .first();
+      // Look for reject/deny buttons
+      const rejectBtn = page
+        .locator('button')
+        .filter({ hasText: /reject|deny|no|dismiss/i })
+        .first();
 
-        if (await rejectBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Reject button found for equivalence');
-        }
-      }
+      await expect(rejectBtn).toBeVisible({ timeout: 2000 });
     });
   });
 
@@ -187,114 +145,85 @@ test.describe('Equivalence Panel', () => {
     test('should confirm suggested equivalence', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Find a suggested equivalence item with confirm button
-        const suggestedItems = page.locator("[class*='suggested'], [class*='recommended']");
-        const itemCount = await suggestedItems.count().catch(() => 0);
+      // Find a suggested equivalence item with confirm button
+      const firstSuggested = page.locator("[class*='suggested'], [class*='recommended']").first();
+      await expect(firstSuggested).toBeVisible();
 
-        if (itemCount > 0) {
-          // Get the first suggested item
-          const firstSuggested = suggestedItems.first();
+      // Look for confirm button within or near the item
+      const confirmBtn = firstSuggested
+        .locator('button')
+        .filter({ hasText: /confirm|approve|accept/i })
+        .first();
 
-          // Look for confirm button within or near the item
-          const confirmBtn = firstSuggested
-            .locator('button')
-            .filter({ hasText: /confirm|approve|accept/i });
+      await expect(confirmBtn).toBeVisible({ timeout: 2000 });
+      await confirmBtn.click();
+      await page.waitForTimeout(1000);
 
-          if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await confirmBtn.click();
-            await page.waitForTimeout(1000);
-
-            console.log('Equivalence confirmed');
-
-            // Verify equivalence is now in confirmed list
-            const confirmedItems = page.locator("[class*='confirmed'], [class*='approved']");
-            const confirmedCount = await confirmedItems.count().catch(() => 0);
-
-            if (confirmedCount > 0) {
-              console.log('Equivalence moved to confirmed list');
-            }
-          } else {
-            console.log('Confirm button not found');
-          }
-        }
-      }
+      // Verify equivalence is now in confirmed list
+      const confirmedItems = page.locator("[class*='confirmed'], [class*='approved']").first();
+      await expect(confirmedItems).toBeVisible();
     });
 
     test('should confirm multiple equivalences', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Find suggested items with confirm buttons
-        const suggestedItems = page.locator("[class*='suggested'], [class*='recommended']");
-        const itemCount = await suggestedItems.count().catch(() => 0);
+      // Find suggested items with confirm buttons
+      const suggestedItems = page.locator("[class*='suggested'], [class*='recommended']");
+      await expect(suggestedItems.nth(1)).toBeVisible();
 
-        if (itemCount >= 2) {
-          // Confirm first item
-          const firstConfirmBtn = suggestedItems
-            .nth(0)
-            .locator('button')
-            .filter({ hasText: /confirm|approve|accept/i });
+      // Confirm first item
+      const firstConfirmBtn = suggestedItems
+        .nth(0)
+        .locator('button')
+        .filter({ hasText: /confirm|approve|accept/i })
+        .first();
 
-          if (await firstConfirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await firstConfirmBtn.click();
-            await page.waitForTimeout(500);
+      await expect(firstConfirmBtn).toBeVisible({ timeout: 2000 });
+      await firstConfirmBtn.click();
+      await page.waitForTimeout(500);
 
-            // Confirm second item
-            const secondConfirmBtn = suggestedItems
-              .nth(1)
-              .locator('button')
-              .filter({ hasText: /confirm|approve|accept/i });
+      // Confirm second item
+      const secondConfirmBtn = suggestedItems
+        .nth(1)
+        .locator('button')
+        .filter({ hasText: /confirm|approve|accept/i })
+        .first();
 
-            if (await secondConfirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-              await secondConfirmBtn.click();
-              await page.waitForTimeout(500);
-
-              console.log('Multiple equivalences confirmed');
-            }
-          }
-        }
-      }
+      await expect(secondConfirmBtn).toBeVisible({ timeout: 2000 });
+      await secondConfirmBtn.click();
+      await page.waitForTimeout(500);
     });
 
     test('should show confirmation feedback', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        const suggestedItems = page.locator("[class*='suggested'], [class*='recommended']");
+      const firstSuggested = page.locator("[class*='suggested'], [class*='recommended']").first();
+      await expect(firstSuggested).toBeVisible({ timeout: 2000 });
 
-        if (
-          await suggestedItems
-            .first()
-            .isVisible({ timeout: 2000 })
-            .catch(() => false)
-        ) {
-          const confirmBtn = suggestedItems
-            .first()
-            .locator('button')
-            .filter({ hasText: /confirm|approve|accept/i });
+      const confirmBtn = firstSuggested
+        .locator('button')
+        .filter({ hasText: /confirm|approve|accept/i })
+        .first();
 
-          if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await confirmBtn.click();
-            await page.waitForTimeout(500);
+      await expect(confirmBtn).toBeVisible({ timeout: 2000 });
+      await confirmBtn.click();
+      await page.waitForTimeout(500);
 
-            // Look for feedback message/toast
-            const feedback = page.getByText(/confirmed|approved|success|added/i);
-            if (await feedback.isVisible({ timeout: 2000 }).catch(() => false)) {
-              console.log('Confirmation feedback displayed');
-            }
-          }
-        }
-      }
+      // Look for feedback message/toast
+      const feedback = page.getByText(/confirmed|approved|success|added/i).first();
+      await expect(feedback).toBeVisible({ timeout: 2000 });
     });
   });
 
@@ -302,70 +231,54 @@ test.describe('Equivalence Panel', () => {
     test('should reject suggested equivalence', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        const suggestedItems = page.locator("[class*='suggested'], [class*='recommended']");
-        const itemCount = await suggestedItems.count().catch(() => 0);
+      const firstSuggested = page.locator("[class*='suggested'], [class*='recommended']").first();
+      await expect(firstSuggested).toBeVisible();
 
-        if (itemCount > 0) {
-          const firstSuggested = suggestedItems.first();
+      const rejectBtn = firstSuggested
+        .locator('button')
+        .filter({ hasText: /reject|deny|no|dismiss/i })
+        .first();
 
-          const rejectBtn = firstSuggested
-            .locator('button')
-            .filter({ hasText: /reject|deny|no|dismiss/i });
+      await expect(rejectBtn).toBeVisible({ timeout: 2000 });
+      const initialCount = await page
+        .locator("[class*='suggested'], [class*='recommended']")
+        .count();
+      await rejectBtn.click();
+      await page.waitForTimeout(1000);
 
-          if (await rejectBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await rejectBtn.click();
-            await page.waitForTimeout(1000);
-
-            console.log('Equivalence rejected');
-
-            // Verify item is removed from suggested list
-            const remainingSuggested = page.locator("[class*='suggested'], [class*='recommended']");
-            const remainingCount = await remainingSuggested.count().catch(() => 0);
-
-            if (remainingCount < itemCount) {
-              console.log('Rejected equivalence removed from list');
-            }
-          }
-        }
-      }
+      // Verify item is removed from suggested list
+      const remainingCount = await page
+        .locator("[class*='suggested'], [class*='recommended']")
+        .count();
+      expect(remainingCount).toBeLessThan(initialCount);
     });
 
     test('should show rejection feedback', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        const suggestedItems = page.locator("[class*='suggested'], [class*='recommended']");
+      const firstSuggested = page.locator("[class*='suggested'], [class*='recommended']").first();
+      await expect(firstSuggested).toBeVisible({ timeout: 2000 });
 
-        if (
-          await suggestedItems
-            .first()
-            .isVisible({ timeout: 2000 })
-            .catch(() => false)
-        ) {
-          const rejectBtn = suggestedItems
-            .first()
-            .locator('button')
-            .filter({ hasText: /reject|deny|dismiss/i });
+      const rejectBtn = firstSuggested
+        .locator('button')
+        .filter({ hasText: /reject|deny|dismiss/i })
+        .first();
 
-          if (await rejectBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await rejectBtn.click();
-            await page.waitForTimeout(500);
+      await expect(rejectBtn).toBeVisible({ timeout: 2000 });
+      await rejectBtn.click();
+      await page.waitForTimeout(500);
 
-            // Look for feedback message
-            const feedback = page.getByText(/rejected|dismissed|removed/i);
-            if (await feedback.isVisible({ timeout: 2000 }).catch(() => false)) {
-              console.log('Rejection feedback displayed');
-            }
-          }
-        }
-      }
+      // Look for feedback message
+      const feedback = page.getByText(/rejected|dismissed|removed/i).first();
+      await expect(feedback).toBeVisible({ timeout: 2000 });
     });
   });
 
@@ -373,135 +286,94 @@ test.describe('Equivalence Panel', () => {
     test('should navigate to equivalent item', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Look for equivalence list
-        const equivalentItems = page
-          .locator("[class*='equivalent'], li")
-          .filter({ hasText: /equivalent|maps to|corresponds/i });
+      // Look for equivalence list
+      const firstEquivalent = page
+        .locator("[class*='equivalent'], li")
+        .filter({ hasText: /equivalent|maps to|corresponds/i })
+        .first();
 
-        const itemCount = await equivalentItems.count().catch(() => 0);
+      await expect(firstEquivalent).toBeVisible({ timeout: 5000 });
 
-        if (itemCount > 0) {
-          // Click first equivalent item
-          const firstEquivalent = equivalentItems.first();
+      const navLink = firstEquivalent.locator("a, button[class*='link']").first();
 
-          const navLink = firstEquivalent.locator("a, button[class*='link']");
+      await expect(navLink).toBeVisible({ timeout: 5000 });
+      await navLink.click();
+      await page.waitForTimeout(500);
 
-          if (await navLink.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await navLink.click();
-            await page.waitForTimeout(500);
-
-            // Verify navigation occurred
-            const graphContainer = page.locator('.react-flow');
-            if (await graphContainer.isVisible({ timeout: 2000 }).catch(() => false)) {
-              console.log('Navigated to equivalent item');
-            }
-          } else {
-            // Try clicking the item directly
-            await firstEquivalent.click();
-            await page.waitForTimeout(500);
-
-            console.log('Equivalent item selected');
-          }
-        }
-      }
+      // Verify navigation occurred
+      const graphContainer = page.locator('.react-flow');
+      await expect(graphContainer).toBeVisible({ timeout: 5000 });
     });
 
     test('should highlight selected equivalent in graph', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        const equivalentItems = page
-          .locator("[class*='equivalent'], li")
-          .filter({ hasText: /equivalent|maps to/i });
+      const firstEquivalent = page
+        .locator("[class*='equivalent'], li")
+        .filter({ hasText: /equivalent|maps to/i })
+        .first();
 
-        if (
-          await equivalentItems
-            .first()
-            .isVisible({ timeout: 2000 })
-            .catch(() => false)
-        ) {
-          // Click first equivalent
-          await equivalentItems.first().click();
-          await page.waitForTimeout(500);
+      await expect(firstEquivalent).toBeVisible({ timeout: 2000 });
+      // Click first equivalent
+      await firstEquivalent.click();
+      await page.waitForTimeout(500);
 
-          // Look for highlighted node in graph
-          const highlightedNodes = page.locator(
-            "[class*='selected'], [class*='highlighted'], [class*='active']",
-          );
-          const highlightCount = await highlightedNodes.count().catch(() => 0);
-
-          if (highlightCount > 0) {
-            console.log(`${highlightCount} equivalent nodes highlighted in graph`);
-          }
-        }
-      }
+      // Look for highlighted node in graph
+      const highlightedNodes = page
+        .locator("[class*='selected'], [class*='highlighted'], [class*='active']")
+        .first();
+      await expect(highlightedNodes).toBeVisible();
     });
 
     test('should show pivot path to equivalent', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Look for equivalence with path information
-        const pathInfo = page.getByText(/via|through|path|route|connection/i);
+      // Look for equivalence with path information
+      const pathInfo = page.getByText(/via|through|path|route|connection/i).first();
+      await expect(pathInfo).toBeVisible({ timeout: 2000 });
 
-        if (await pathInfo.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Pivot path information displayed');
-        }
-
-        // Look for breadcrumb or path visualization
-        const breadcrumb = page.locator("nav, [role='navigation'], [class*='breadcrumb']");
-
-        if (await breadcrumb.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Pivot path breadcrumb shown');
-        }
-      }
+      // Look for breadcrumb or path visualization
+      const breadcrumb = page.locator("nav, [role='navigation'], [class*='breadcrumb']").first();
+      await expect(breadcrumb).toBeVisible({ timeout: 2000 });
     });
 
     test('should navigate to pivot target and update panel', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Get initial panel content
-        const initialPanel = page.locator("aside, [class*='panel'], .w-96");
-        const initialText = await initialPanel.textContent().catch(() => '');
+      // Get initial panel content
+      const detailPanel = page.locator("aside, [class*='panel'], .w-96").first();
+      await expect(detailPanel).toBeVisible();
+      const initialText = await detailPanel.textContent();
 
-        const equivalentItems = page
-          .locator("[class*='equivalent'], li")
-          .filter({ hasText: /equivalent|maps to/i });
+      const firstEquivalent = page
+        .locator("[class*='equivalent'], li")
+        .filter({ hasText: /equivalent|maps to/i })
+        .first();
 
-        if (
-          await equivalentItems
-            .first()
-            .isVisible({ timeout: 2000 })
-            .catch(() => false)
-        ) {
-          // Click to navigate to equivalent
-          await equivalentItems.first().click();
-          await page.waitForTimeout(500);
+      await expect(firstEquivalent).toBeVisible({ timeout: 2000 });
+      // Click to navigate to equivalent
+      await firstEquivalent.click();
+      await page.waitForTimeout(500);
 
-          // Check if panel updated
-          const updatedText = await initialPanel.textContent().catch(() => '');
-
-          if (updatedText !== initialText) {
-            console.log('Panel updated after pivot navigation');
-          } else {
-            console.log('Pivot navigation completed');
-          }
-        }
-      }
+      // Check if panel updated
+      const updatedText = await detailPanel.textContent();
+      expect(updatedText).not.toBe(initialText);
     });
   });
 
@@ -509,56 +381,39 @@ test.describe('Equivalence Panel', () => {
     test('should show equivalence edges in graph', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        // Look for equivalence edges marked with special styling
-        const equivalenceEdges = page.locator(
-          ".react-flow__edges [class*='equivalent'], [class*='maps-to']",
-        );
-        const edgeCount = await equivalenceEdges.count().catch(() => 0);
-
-        if (edgeCount > 0) {
-          console.log(`${edgeCount} equivalence edges displayed`);
-        } else {
-          // Alternative: check all edges for equivalence styling
-          const _allEdges = page.locator('.react-flow__edges g, svg path');
-          console.log('Checking for equivalence edge visualization');
-        }
-      }
+      // Look for equivalence edges marked with special styling
+      const equivalenceEdges = page
+        .locator(".react-flow__edges [class*='equivalent'], [class*='maps-to']")
+        .first();
+      await expect(equivalenceEdges).toBeVisible();
     });
 
     test('should highlight equivalence relationships when hovering', async ({ page }) => {
       const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
 
-      if (await firstNode.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstNode.click();
-        await page.waitForTimeout(500);
+      await expect(firstNode).toBeVisible({ timeout: 2000 });
+      await firstNode.click();
+      await page.waitForTimeout(500);
 
-        const equivalentItems = page
-          .locator("[class*='equivalent'], li")
-          .filter({ hasText: /equivalent|maps to/i });
+      const firstEquivalent = page
+        .locator("[class*='equivalent'], li")
+        .filter({ hasText: /equivalent|maps to/i })
+        .first();
 
-        if (
-          await equivalentItems
-            .first()
-            .isVisible({ timeout: 2000 })
-            .catch(() => false)
-        ) {
-          // Hover over equivalent item
-          await equivalentItems.first().hover();
-          await page.waitForTimeout(300);
+      await expect(firstEquivalent).toBeVisible({ timeout: 2000 });
+      // Hover over equivalent item
+      await firstEquivalent.hover();
+      await page.waitForTimeout(300);
 
-          // Look for highlighted edges or nodes
-          const highlightedElements = page.locator("[class*='highlighted'], [style*='highlight']");
-          const highlightCount = await highlightedElements.count().catch(() => 0);
-
-          if (highlightCount > 0) {
-            console.log(`${highlightCount} elements highlighted on hover`);
-          }
-        }
-      }
+      // Look for highlighted edges or nodes
+      const highlightedElements = page
+        .locator("[class*='highlighted'], [style*='highlight']")
+        .first();
+      await expect(highlightedElements).toBeVisible();
     });
   });
 });

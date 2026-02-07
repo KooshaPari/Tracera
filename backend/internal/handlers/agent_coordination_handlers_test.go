@@ -40,7 +40,8 @@ func TestCoordinationHandlers_GetCoordinatorStatus(t *testing.T) {
 
 		err := handler.GetCoordinatorStatus(c)
 
-		assert.Error(t, err)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
 		assert.Contains(t, rec.Body.String(), "coordinator not initialized")
 	})
 
@@ -124,7 +125,8 @@ func TestCoordinationHandlers_QueueOperations(t *testing.T) {
 
 		err := handler.ListQueuedTasks(c)
 
-		assert.Error(t, err)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		assert.Contains(t, rec.Body.String(), "project_id is required")
 	})
 
@@ -163,7 +165,8 @@ func TestCoordinationHandlers_TaskOperations(t *testing.T) {
 
 		err := handler.CancelTask(c)
 
-		assert.Error(t, err)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		assert.Contains(t, rec.Body.String(), "task_id is required")
 	})
 
@@ -180,7 +183,8 @@ func TestCoordinationHandlers_TaskOperations(t *testing.T) {
 
 		err := handler.GetTaskDetails(c)
 
-		assert.Error(t, err)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		assert.Contains(t, rec.Body.String(), "task_id is required")
 	})
 }
@@ -197,7 +201,8 @@ func TestCoordinationHandlers_RebalanceTasks(t *testing.T) {
 
 		err := handler.RebalanceTasks(c)
 
-		assert.Error(t, err)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		assert.Contains(t, rec.Body.String(), "project_id is required")
 	})
 
@@ -220,7 +225,10 @@ func TestCoordinationHandlers_RebalanceTasks(t *testing.T) {
 			var response map[string]interface{}
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			assert.Equal(t, "success", response["status"])
+			// Rebalance returns "success" or "no_agents" depending on whether agents exist
+			status, ok := response["status"].(string)
+			assert.True(t, ok)
+			assert.True(t, status == "success" || status == "no_agents")
 		}
 	})
 }
@@ -249,7 +257,8 @@ func TestCoordinationHandlers_HealthCheck(t *testing.T) {
 
 		err := handler.CoordinatorHealthCheck(c)
 
-		assert.Error(t, err)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusServiceUnavailable, rec.Code)
 		assert.Contains(t, rec.Body.String(), "unavailable")
 	})
 
@@ -313,7 +322,8 @@ func runUnregisterExistingAgent(t *testing.T) {
 	c.SetParamValues("test-agent-1")
 
 	err := handler.UnregisterAgent(c)
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
 func runUnregisterNonexistentAgent(t *testing.T) {
@@ -332,7 +342,8 @@ func runUnregisterNonexistentAgent(t *testing.T) {
 	c.SetParamValues("nonexistent")
 
 	err := handler.UnregisterAgent(c)
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
 func runUnregisterMissingID(t *testing.T) {
@@ -347,7 +358,8 @@ func runUnregisterMissingID(t *testing.T) {
 	c.SetParamValues("")
 
 	err := handler.UnregisterAgent(c)
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 	assert.Contains(t, rec.Body.String(), "agent ID is required")
 }
 
@@ -363,7 +375,8 @@ func runAgentHistoryMissingID(t *testing.T) {
 	c.SetParamValues("")
 
 	err := handler.GetAgentHistory(c)
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 	assert.Contains(t, rec.Body.String(), "agent ID is required")
 }
 
@@ -383,7 +396,9 @@ func runAgentHistoryValidID(t *testing.T) {
 	c.SetParamValues("agent-1")
 
 	err := handler.GetAgentHistory(c)
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	// Should return 404 because agent doesn't exist
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
 func runAgentHistoryWithLimit(t *testing.T) {
@@ -402,7 +417,9 @@ func runAgentHistoryWithLimit(t *testing.T) {
 	c.SetParamValues("agent-1")
 
 	err := handler.GetAgentHistory(c)
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	// Should return 404 because agent doesn't exist (limit is valid)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
 func runAgentHistoryInvalidLimit(t *testing.T) {
@@ -421,5 +438,6 @@ func runAgentHistoryInvalidLimit(t *testing.T) {
 	c.SetParamValues("agent-1")
 
 	err := handler.GetAgentHistory(c)
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }

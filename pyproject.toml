@@ -86,6 +86,9 @@ dependencies = [
     # Workflow orchestration (API + temporal_worker)
     "temporalio>=1.7.0",
     "brotli-asgi>=1.6.0",
+    "neo4j>=6.1.0",
+    "minio>=7.2.20",
+    "respx>=0.22.0",
 ]
 
 [project.optional-dependencies]
@@ -111,6 +114,8 @@ dev = [
     "openapi-python-client>=0.22.1",  # For generating Python API clients
     "bandit[toml]>=1.7.10",
     "pip-audit>=2.7.4",
+    "vulture>=2.14",
+    "radon>=6.0.1",
 ]
 tui = [
     "textual>=0.47.0",
@@ -209,6 +214,8 @@ all = [
     "anthropic>=0.77.0",
     "sentence-transformers>=5.2.2",
     "numpy>=2.4.1",
+    "vulture>=2.14",
+    "radon>=6.0.1",
 ]
 
 [project.scripts]
@@ -330,27 +337,11 @@ exclude = [
     "frontend/disable",
     "scripts",
     "scripts/**",
-    "src/tracertm/tui",
-    "src/tracertm/tui/**",
     "src/tracertm/vault",
     "src/tracertm/vault/**",
-    "tests/unit/tui/widgets",
     "tests/unit/validation/test_dataframe_schema_validation.py",
 ]
 respect-ignore-files = true
-
-# TUI tests: optional textual, conditional apps, mocks → relax type rules (single override for all tests/unit/tui/**).
-[[tool.ty.overrides]]
-include = ["tests/unit/tui/**"]
-[tool.ty.overrides.rules]
-unresolved-import = "ignore"
-possibly-missing-import = "ignore"
-possibly-missing-attribute = "ignore"
-unresolved-attribute = "ignore"
-invalid-assignment = "ignore"
-invalid-argument-type = "ignore"
-no-matching-overload = "ignore"
-redundant-cast = "ignore"
 
 # Component storage: SyncEngine/SyncQueue/SyncStateManager use mocks (MockDBConnection, SimpleNamespace); method shadowing in test_sync_queue.
 [[tool.ty.overrides]]
@@ -446,20 +437,6 @@ include = ["src/tracertm/proto/**"]
 [tool.ty.overrides.rules]
 unresolved-attribute = "ignore"
 no-matching-overload = "ignore"
-
-# TUI: optional textual (textual.app, textual.binding, textual.containers, textual.widgets, textual.geometry, textual.message, textual.reactive); conditional apps/widgets (ConflictPanel, SyncStatusWidget); SearchService.search(project_id) / unknown-argument.
-[[tool.ty.overrides]]
-include = ["src/tracertm/tui/**", "tracertm/tui/**"]
-[tool.ty.overrides.rules]
-unresolved-import = "ignore"
-possibly-missing-import = "ignore"
-possibly-missing-attribute = "ignore"
-unresolved-attribute = "ignore"
-unknown-argument = "ignore"
-too-many-positional-arguments = "ignore"
-no-matching-overload = "ignore"
-invalid-assignment = "ignore"
-invalid-argument-type = "ignore"
 
 # Vault: optional hvac.
 [[tool.ty.overrides]]
@@ -673,8 +650,6 @@ include = [
     "tests/unit/test_gap_coverage_import_services.py",
     "tests/unit/test_gap_coverage_models.py",
     "tests/unit/test_gap_coverage_more_services.py",
-    "tests/unit/test_gap_coverage_tui_apps.py",
-    "tests/unit/test_gap_coverage_tui_widgets.py",
     "tests/unit/test_phase5_advanced_coverage.py",
     "tests/unit/test_phase6_api_endpoints.py",
     "tests/unit/test_phase6_complex_services.py",
@@ -883,17 +858,6 @@ non-subscriptable = "ignore"
 not-iterable = "ignore"
 unsupported-operator = "ignore"
 
-# Integration TUI tests: textual (unresolved-import), App subclasses (run_test, query_one, storage_adapter, compose), EnhancedDashboardApp (MagicMock assign, current_view, _is_syncing, assert_called), SyncStatusWidget/ConflictPanel/BrowserApp/DashboardApp.
-[[tool.ty.overrides]]
-include = ["tests/integration/tui/**", "tests/integration/tui/*.py"]
-[tool.ty.overrides.rules]
-unresolved-import = "ignore"
-possibly-missing-import = "ignore"
-possibly-missing-attribute = "ignore"
-unresolved-attribute = "ignore"
-invalid-argument-type = "ignore"
-invalid-assignment = "ignore"
-
 # Schema tests: **data from dict literals; intentional missing args for ValidationError tests.
 [[tool.ty.overrides]]
 include = ["tests/unit/schemas/**"]
@@ -1004,7 +968,6 @@ max-statements = 50
 # Async/path in tests: avoid blocking in async (ASYNC230/240), pathlib vs os (PTH)
 "tests/unit/services/test_ai_tools.py" = ["ASYNC230", "ASYNC240", "PTH118"]
 "tests/unit/test_error_path_api_sync.py" = ["ASYNC230"]
-"tests/unit/test_error_path_cli_tui.py" = ["ASYNC240"]
 "tests/unit/test_error_path_coverage.py" = ["ASYNC240"]
 "src/tracertm/agent/test_events.py" = ["S101", "S108"]
 "src/tracertm/services/agents/codex_service.py" = ["C901", "S404"]  # subprocess for tool execution; controlled
@@ -1134,9 +1097,6 @@ max-statements = 50
 "src/tracertm/repositories/workflow_schedule_repository.py" = ["PLR0913"]
 "src/tracertm/storage/sync_engine.py" = ["PLR0913"]
 "src/tracertm/testing_factories.py" = ["PLR0913"]
-"src/tracertm/tui/adapters/storage_adapter.py" = ["PLR0913"]
-"src/tracertm/tui/apps/dashboard.py" = ["C901"]
-"src/tracertm/tui/widgets/sync_status.py" = ["C901", "PLR2004"]
 "src/tracertm/utils/figma.py" = ["C901", "PLR2004"]
 "src/tracertm/preflight.py" = ["C901", "PLR0911", "PLR0912"]
 "src/tracertm/observability/tracing.py" = ["C901"]
@@ -1204,6 +1164,8 @@ dev = [
     "factory-boy>=3.3.3",
     "ruff>=0.14.14",
     "ty>=0.0.2",
+    "vulture>=2.14",
+    "radon>=6.0.1",
 ]
 
 [tool.uv]
@@ -1223,7 +1185,13 @@ include = [
 
 [tool.poe.tasks]
 # Format code
-format = "ruff format ."
+format = { shell = "ruff format . && ruff check --fix . && ty check src/" }
+
+# Check code
+check = { shell = "ruff check . && ty check src/" }
+
+# Code metrics
+metrics = { shell = "vulture src/ && radon cc src/ -a -s && radon mi src/ -s" }
 
 # Lint with auto-fix
 lint = "ruff check --fix ."
@@ -1248,12 +1216,13 @@ pip-audit = "pip-audit"
 
 # Run all quality checks
 quality = [
-    { cmd = "ruff format ." },
-    { cmd = "ruff check --fix ." },
-    { cmd = "ty check src/" },
-    { cmd = "tach check" },
-    { cmd = "bandit -r src/" },
-    { cmd = "pip-audit" },
+    { ref = "format" },
+    { ref = "metrics" },
+    { ref = "arch-check" },
+    { ref = "bandit" },
+    { ref = "pip-audit" },
+    { ref = "security" },
+    { ref = "test" },
 ]
 
 # Run tests
@@ -1271,12 +1240,6 @@ test-integration = "pytest -m integration"
 
 # Full pipeline
 all = [
-    { cmd = "ruff format ." },
-    { cmd = "ruff check --fix ." },
-    { cmd = "ty check src/" },
-    { cmd = "tach check" },
-    { cmd = "bandit -r src/" },
-    { cmd = "pip-audit" },
-    { cmd = "semgrep --config=p/security-audit src/" },
-    { cmd = "pytest --cov=src/tracertm --cov-report=html" },
+    { ref = "quality" },
+    { ref = "test-cov" },
 ]
