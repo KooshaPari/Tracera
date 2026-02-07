@@ -109,7 +109,7 @@ func (r *codeEntityRepository) List(ctx context.Context, filter CodeEntityFilter
 	query := r.db.WithContext(ctx).Where("project_id = ? AND deleted_at IS NULL", filter.ProjectID)
 
 	if filter.EntityType != "" {
-		query = query.Where("entity_type = ?", filter.EntityType)
+		query = query.Where("symbol_type = ?", filter.EntityType)
 	}
 	if filter.Language != "" {
 		query = query.Where("language = ?", filter.Language)
@@ -125,7 +125,7 @@ func (r *codeEntityRepository) List(ctx context.Context, filter CodeEntityFilter
 		query = query.Offset(filter.Offset)
 	}
 
-	err := query.Order("file_path, line_number").Find(&entities).Error
+	err := query.Order("file_path, start_line").Find(&entities).Error
 	return entities, err
 }
 
@@ -151,7 +151,7 @@ func (r *codeEntityRepository) Search(ctx context.Context, projectID string, que
 	// Use LIKE for case-insensitive search (works in both PostgreSQL and SQLite)
 	// Note: GORM will use ILIKE automatically for PostgreSQL when using LIKE
 	q := r.db.WithContext(ctx).Where("project_id = ? AND deleted_at IS NULL", projectID).
-		Where("name LIKE ? OR full_name LIKE ? OR description LIKE ?",
+		Where("symbol_name LIKE ? OR qualified_name LIKE ? OR docstring LIKE ?",
 			"%"+query+"%", "%"+query+"%", "%"+query+"%")
 
 	if limit > 0 {
@@ -168,8 +168,8 @@ func (r *codeEntityRepository) Search(ctx context.Context, projectID string, que
 func (r *codeEntityRepository) GetByType(ctx context.Context, projectID string, entityType string) ([]*models.CodeEntity, error) {
 	var entities []*models.CodeEntity
 	err := r.db.WithContext(ctx).
-		Where("project_id = ? AND entity_type = ? AND deleted_at IS NULL", projectID, entityType).
-		Order("file_path, line_number").
+		Where("project_id = ? AND symbol_type = ? AND deleted_at IS NULL", projectID, entityType).
+		Order("file_path, start_line").
 		Find(&entities).Error
 	return entities, err
 }
@@ -178,7 +178,7 @@ func (r *codeEntityRepository) GetByFilePath(ctx context.Context, projectID, fil
 	var entities []*models.CodeEntity
 	err := r.db.WithContext(ctx).
 		Where("project_id = ? AND file_path = ? AND deleted_at IS NULL", projectID, filePath).
-		Order("line_number").
+		Order("start_line").
 		Find(&entities).Error
 	return entities, err
 }
@@ -243,8 +243,8 @@ func (r *codeEntityRepository) fillEntitiesByType(ctx context.Context, projectID
 	var results []codeEntityTypeCount
 	if err := r.db.WithContext(ctx).Model(&models.CodeEntity{}).
 		Where("project_id = ? AND deleted_at IS NULL", projectID).
-		Group("entity_type").
-		Select("entity_type, COUNT(*) as count").
+		Group("symbol_type").
+		Select("symbol_type, COUNT(*) as count").
 		Scan(&results).Error; err != nil {
 		return err
 	}
