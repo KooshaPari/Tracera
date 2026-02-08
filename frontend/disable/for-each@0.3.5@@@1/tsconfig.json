@@ -1,5 +1,0 @@
-{
-	"extends": "@ljharb/tsconfig",
-	"compilerOptions": {},
-	"exclude": ["coverage"]
-}

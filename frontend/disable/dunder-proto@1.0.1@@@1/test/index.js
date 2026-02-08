@@ -1,2 +1,0 @@
-require("./get");
-require("./set");

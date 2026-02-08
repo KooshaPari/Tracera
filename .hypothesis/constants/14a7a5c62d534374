@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/view.py
-# hypothesis_version: 6.148.7
-
-['API', 'Available Views', 'CODE', 'Current View', 'DATABASE', 'Description', 'FEATURE', 'Items', 'PROGRESS', 'ROADMAP', 'TEST', 'View', 'View Statistics', 'WIREFRAME', 'count', 'current', 'current_project_id', 'current_view', 'cyan', 'dim', 'green', 'list', 'right', 'show', 'stats', 'switch']

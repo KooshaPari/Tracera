@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/schemas/specification.py
-# hypothesis_version: 6.151.4
-
-[0.0, 1.0, 255, 500, 'accepted', 'active', 'and', 'api', 'approved', 'archived', 'automated', 'but', 'class', 'csharp', 'deprecated', 'draft', 'function', 'gherkin', 'given', 'in_development', 'in_test', 'java', 'javascript', 'module', 'other', 'proposed', 'python', 'ready_for_release', 'ready_for_test', 'regex', 'rejected', 'released', 'review', 'service', 'sql', 'superseded', 'then', 'typescript', 'when', 'workflow']
