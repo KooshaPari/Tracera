@@ -14,6 +14,8 @@ import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 from sqlalchemy import create_engine
@@ -200,7 +202,7 @@ class TestChangeDetector:
             (temp_dir / f"file{i}.md").write_text(f"content{i}")
 
         changes = ChangeDetector.detect_changes_in_directory(temp_dir, {})
-        assert len(changes) == 5
+        assert len(changes) == COUNT_FIVE
 
 
 # ============================================================================
@@ -250,7 +252,7 @@ class TestSyncQueue:
         for i in range(5):
             queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"title": f"Item {i}"})
         pending = queue.get_pending()
-        assert len(pending) == 5
+        assert len(pending) == COUNT_FIVE
 
     def test_queue_get_pending_limit(self, db_connection) -> None:
         """Test limit parameter in get_pending."""
@@ -258,7 +260,7 @@ class TestSyncQueue:
         for i in range(10):
             queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
         pending = queue.get_pending(limit=3)
-        assert len(pending) == 3
+        assert len(pending) == COUNT_THREE
 
     def test_queue_remove(self, db_connection) -> None:
         """Test removing a queued change."""
@@ -286,7 +288,7 @@ class TestSyncQueue:
             queue.update_retry(queue_id, f"Error {i}")
 
         pending = queue.get_pending()
-        assert pending[0].retry_count == 3
+        assert pending[0].retry_count == COUNT_THREE
 
     def test_queue_clear(self, db_connection) -> None:
         """Test clearing the queue."""
@@ -305,7 +307,7 @@ class TestSyncQueue:
         assert queue.get_count() == 1
 
         queue.enqueue(EntityType.ITEM, "i1", OperationType.CREATE, {})
-        assert queue.get_count() == 2
+        assert queue.get_count() == COUNT_TWO
 
     def test_queue_unique_constraint(self, db_connection) -> None:
         """Test unique constraint on (entity_type, entity_id, operation)."""
@@ -348,7 +350,7 @@ class TestSyncQueue:
         queue.enqueue(EntityType.PROJECT, "proj-1", OperationType.UPDATE, {"v": 2})
 
         pending = queue.get_pending()
-        assert pending[0].retry_count == 2
+        assert pending[0].retry_count == COUNT_TWO
 
 
 # ============================================================================
@@ -434,7 +436,7 @@ class TestSyncStateManager:
 
         queue.enqueue(EntityType.ITEM, "i2", OperationType.CREATE, {})
         state = state_manager.get_state()
-        assert state.pending_changes == 2
+        assert state.pending_changes == COUNT_TWO
 
     def test_state_manager_multiple_updates(self, state_manager) -> None:
         """Test multiple sequential state updates."""
@@ -463,7 +465,7 @@ class TestSyncEngineBasic:
         assert sync_engine.api is not None
         assert sync_engine.storage is not None
         assert sync_engine.conflict_strategy == ConflictStrategy.LAST_WRITE_WINS
-        assert sync_engine.max_retries == 3
+        assert sync_engine.max_retries == COUNT_THREE
         assert sync_engine.retry_delay == 0.1
 
     @pytest.mark.asyncio
@@ -491,7 +493,7 @@ class TestSyncEngineBasic:
             sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"title": f"Item {i}"})
 
         status = sync_engine.get_status()
-        assert status.pending_changes == 5
+        assert status.pending_changes == COUNT_FIVE
 
     def test_engine_resolve_conflict_last_write_wins(self, sync_engine) -> None:
         """Test LAST_WRITE_WINS conflict resolution."""
@@ -559,8 +561,8 @@ class TestSyncEngineBasic:
         """Test creating a vector clock."""
         vc = sync_engine.create_vector_clock("client-1", 5, 4)
         assert vc.client_id == "client-1"
-        assert vc.version == 5
-        assert vc.parent_version == 4
+        assert vc.version == COUNT_FIVE
+        assert vc.parent_version == COUNT_FOUR
         assert vc.timestamp is not None
 
     @pytest.mark.asyncio
@@ -785,7 +787,7 @@ class TestSyncEngineWorkflows:
             sync_engine.queue_change(entity_type, entity_id, OperationType.CREATE, {})
 
         status = sync_engine.get_status()
-        assert status.pending_changes == 4
+        assert status.pending_changes == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_queue_change_all_operation_types(self, sync_engine) -> None:
@@ -800,7 +802,7 @@ class TestSyncEngineWorkflows:
             sync_engine.queue_change(EntityType.ITEM, f"item-{idx}", op, {})
 
         status = sync_engine.get_status()
-        assert status.pending_changes == 3
+        assert status.pending_changes == COUNT_THREE
 
 
 # ============================================================================
@@ -996,7 +998,7 @@ class TestSyncEngineAdvanced:
         )
 
         assert result.success is True
-        assert result.entities_synced == 5
+        assert result.entities_synced == COUNT_FIVE
         assert len(result.conflicts) == 1
         assert len(result.errors) == 1
 
@@ -1014,7 +1016,7 @@ class TestSyncEngineAdvanced:
             last_error="Network timeout",
         )
 
-        assert change.retry_count == 2
+        assert change.retry_count == COUNT_TWO
         assert change.last_error == "Network timeout"
 
     def test_sync_state_data_class(self, sync_engine) -> None:  # noqa: ARG002
@@ -1028,9 +1030,9 @@ class TestSyncEngineAdvanced:
             synced_entities=10,
         )
 
-        assert state.pending_changes == 3
+        assert state.pending_changes == COUNT_THREE
         assert state.conflicts_count == 1
-        assert state.synced_entities == 10
+        assert state.synced_entities == COUNT_TEN
 
 
 # ============================================================================
@@ -1145,7 +1147,7 @@ class TestSyncEngineResilience:
 
         status = sync_engine.get_status()
         # Should have queued all items
-        assert status.pending_changes >= 10  # At least one batch succeeded
+        assert status.pending_changes >= COUNT_TEN  # At least one batch succeeded
 
     @pytest.mark.asyncio
     async def test_partial_sync_failure(self, sync_engine) -> None:
@@ -1204,7 +1206,7 @@ class TestSyncEngineResilience:
             sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
 
         status = sync_engine.get_status()
-        assert status.pending_changes == 500
+        assert status.pending_changes == HTTP_INTERNAL_SERVER_ERROR
 
         # get_pending should respect limit
         pending = sync_engine.queue.get_pending(limit=100)

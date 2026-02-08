@@ -17,6 +17,8 @@ import logging
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine, text
@@ -256,7 +258,7 @@ class TestChangeDetectorComprehensive:
         (tmp_path / "file2.md").write_text("content2")
 
         changes = detector.detect_changes_in_directory(tmp_path, {})
-        assert len(changes) == 2
+        assert len(changes) == COUNT_TWO
 
     def test_detect_changes_in_directory_no_changes(self, tmp_markdown_dir) -> None:
         """Test directory detection with no changes."""
@@ -311,7 +313,7 @@ class TestChangeDetectorComprehensive:
 
         detector = ChangeDetector()
         changes = detector.detect_changes_in_directory(tmp_path, {})
-        assert len(changes) == 2
+        assert len(changes) == COUNT_TWO
 
     def test_detect_changes_nonexistent_directory(self) -> None:
         """Test detection in non-existent directory."""
@@ -412,7 +414,7 @@ class TestSyncQueueComprehensive:
         for i in range(5):
             queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
         pending = queue.get_pending()
-        assert len(pending) == 5
+        assert len(pending) == COUNT_FIVE
 
     def test_get_pending_limit(self, mock_db_connection) -> None:
         """Test get_pending with limit."""
@@ -420,7 +422,7 @@ class TestSyncQueueComprehensive:
         for i in range(10):
             queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
         pending = queue.get_pending(limit=3)
-        assert len(pending) == 3
+        assert len(pending) == COUNT_THREE
 
     def test_get_pending_order(self, mock_db_connection) -> None:
         """Test that get_pending returns items in creation order."""
@@ -459,7 +461,7 @@ class TestSyncQueueComprehensive:
         for i in range(3):
             queue.update_retry(queue_id, f"Error {i}")
         pending = queue.get_pending()
-        assert pending[0].retry_count == 3
+        assert pending[0].retry_count == COUNT_THREE
 
     def test_clear_queue(self, mock_db_connection) -> None:
         """Test clearing the entire queue."""
@@ -480,7 +482,7 @@ class TestSyncQueueComprehensive:
         queue = SyncQueue(mock_db_connection)
         for i in range(5):
             queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
-        assert queue.get_count() == 5
+        assert queue.get_count() == COUNT_FIVE
 
     def test_get_count_after_remove(self, mock_db_connection) -> None:
         """Test count after removing items."""
@@ -518,7 +520,7 @@ class TestSyncQueueComprehensive:
             retry_count=2,
             last_error="Network error",
         )
-        assert change.retry_count == 2
+        assert change.retry_count == COUNT_TWO
         assert change.last_error is not None
 
     def test_enqueue_update_replaces_previous(self, mock_db_connection) -> None:
@@ -645,11 +647,11 @@ class TestSyncStateManagerComprehensive:
             synced_entities=10,
         )
         assert state.last_sync == now
-        assert state.pending_changes == 5
+        assert state.pending_changes == COUNT_FIVE
         assert state.status == SyncStatus.SYNCING
         assert state.last_error == "Test error"
         assert state.conflicts_count == 1
-        assert state.synced_entities == 10
+        assert state.synced_entities == COUNT_TEN
 
     def test_sync_state_default_values(self) -> None:
         """Test SyncState with default values."""
@@ -687,10 +689,10 @@ class TestSyncStateManagerComprehensive:
             success=True, entities_synced=10, conflicts=[{"entity_id": "1"}], errors=["Error 1"], duration_seconds=5.5,
         )
         assert result.success is True
-        assert result.entities_synced == 10
+        assert result.entities_synced == COUNT_TEN
         assert len(result.conflicts) == 1
         assert len(result.errors) == 1
-        assert result.duration_seconds == 5.5
+        assert result.duration_seconds == COUNT_FIVE.5
 
     def test_sync_result_defaults(self) -> None:
         """Test SyncResult with defaults."""
@@ -748,7 +750,7 @@ class TestSyncEngineLifecycleComprehensive:
         assert sync_engine.db is not None
         assert sync_engine.api is not None
         assert sync_engine.storage is not None
-        assert sync_engine.max_retries == 3
+        assert sync_engine.max_retries == COUNT_THREE
         assert sync_engine.retry_delay == 0.1
         assert not sync_engine._syncing
 
@@ -823,7 +825,7 @@ class TestSyncEngineLifecycleComprehensive:
                 entity_type=EntityType.ITEM, entity_id=f"item-{i}", operation=OperationType.CREATE, payload={},
             )
             ids.append(queue_id)
-        assert len(set(ids)) == 10  # All unique
+        assert len(set(ids)) == COUNT_TEN  # All unique
 
     @pytest.mark.asyncio
     async def test_sync_empty_queue(self, sync_engine) -> None:
@@ -921,8 +923,8 @@ class TestSyncEngineLifecycleComprehensive:
             max_retries=5,
             retry_delay=2.0,
         )
-        assert engine.max_retries == 5
-        assert engine.retry_delay == 2.0
+        assert engine.max_retries == COUNT_FIVE
+        assert engine.retry_delay == COUNT_TWO.0
 
     def test_vector_clock_creation(self, sync_engine) -> None:
         """Test creating a vector clock."""
@@ -1008,7 +1010,7 @@ class TestSyncEngineBatchOperations:
         for i in range(10):
             sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"title": f"Item {i}"})
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 10
+        assert len(pending) == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_batch_link_sync(self, sync_engine) -> None:
@@ -1018,7 +1020,7 @@ class TestSyncEngineBatchOperations:
                 EntityType.LINK, f"link-{i}", OperationType.CREATE, {"from": f"item-{i}", "to": f"item-{i + 1}"},
             )
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 5
+        assert len(pending) == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_batch_mixed_operations(self, sync_engine) -> None:
@@ -1032,7 +1034,7 @@ class TestSyncEngineBatchOperations:
         for entity_type, entity_id, operation in changes:
             sync_engine.queue_change(entity_type, entity_id, operation, {})
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 4
+        assert len(pending) == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_large_batch_1000_items(self, sync_engine) -> None:
@@ -1063,7 +1065,7 @@ class TestSyncEngineBatchOperations:
             large_payload = {"title": f"Item {i}", "description": "x" * 10000, "data": list(range(1000))}
             sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, large_payload)
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 10
+        assert len(pending) == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_concurrent_queue_access(self, sync_engine) -> None:
@@ -1324,7 +1326,7 @@ class TestSyncEngineEdgeCases:
         for i in range(10):
             sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
         pending = sync_engine.queue.get_pending(limit=1000000)
-        assert len(pending) == 10
+        assert len(pending) == COUNT_TEN
 
     def test_payload_with_null_values(self, sync_engine) -> None:
         """Test payload with None values."""
@@ -1613,7 +1615,7 @@ class TestSyncEngineIntegration:
             sync_engine.queue_change(entity_type, entity_id, OperationType.CREATE, {})
 
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 4
+        assert len(pending) == COUNT_FOUR
 
     def test_change_compaction(self, sync_engine) -> None:
         """Test change queue handles multiple changes for same entity."""

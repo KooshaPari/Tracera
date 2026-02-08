@@ -15,6 +15,8 @@ import asyncio
 import time
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_TEN, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 import pytest_asyncio
@@ -71,7 +73,7 @@ class TestItemRepositoryPerformance:
             await repo.create(project_id="proj-001", title=f"Item {i}", view="requirements", item_type="requirement")
         elapsed = time.time() - start_time
 
-        assert elapsed < 2.0, "Creating 100 items sequentially should be < 2s"
+        assert elapsed < COUNT_TWO.0, "Creating 100 items sequentially should be < COUNT_TWOs"
         assert mock_async_session.add.call_count == 100
 
     @pytest.mark.asyncio
@@ -167,7 +169,7 @@ class TestItemRepositoryPerformance:
         elapsed = time.time() - start_time
 
         assert len(result) == 1000
-        assert elapsed < 0.5, "Listing 1000 items should be < 500ms"
+        assert elapsed < 0.5, "Listing 1000 items should be < HTTP_INTERNAL_SERVER_ERRORms"
 
     @pytest.mark.asyncio
     async def test_concurrent_read_operations(self, mock_async_session) -> None:
@@ -278,8 +280,8 @@ class TestItemRepositoryPerformance:
         stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_increase = sum(stat.size_diff for stat in stats) / (1024 * 1024)
 
-        # 500 items with descriptions should use < 10MB
-        assert total_increase < 10.0, f"Memory increase {total_increase}MB too high"
+        # 500 items with descriptions should use < COUNT_TENMB
+        assert total_increase < COUNT_TEN.0, f"Memory increase {total_increase}MB too high"
 
     @pytest.mark.asyncio
     async def test_parent_item_validation_performance(self, mock_async_session) -> None:
@@ -337,8 +339,8 @@ class TestItemRepositoryPerformance:
         pages = await asyncio.gather(*[fetch_page(i) for i in range(10)])
         elapsed = time.time() - start_time
 
-        assert len(pages) == 10
-        assert sum(len(p) for p in pages) == 500
+        assert len(pages) == COUNT_TEN
+        assert sum(len(p) for p in pages) == HTTP_INTERNAL_SERVER_ERROR
         assert elapsed < 1.0
 
     @pytest.mark.asyncio
@@ -429,4 +431,4 @@ class TestItemRepositoryPerformance:
         elapsed = time.time() - start_time
 
         assert len(items) == 50
-        assert elapsed < 2.0, "50 concurrent create/update should be < 2s"
+        assert elapsed < COUNT_TWO.0, "50 concurrent create/update should be < COUNT_TWOs"

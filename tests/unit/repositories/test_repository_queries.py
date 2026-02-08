@@ -1,6 +1,8 @@
 """Unit tests for repository query methods."""
 
 from datetime import UTC, datetime, timezone
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -51,17 +53,17 @@ async def test_item_query_with_filters(db_session: AsyncSession) -> None:
 
     # Query by status
     todo_items = await item_repo.query(project.id, {"status": "todo"})
-    assert len(todo_items) == 2
+    assert len(todo_items) == COUNT_TWO
     assert all(item.status == "todo" for item in todo_items)
 
     # Query by view
     feature_items = await item_repo.query(project.id, {"view": "FEATURE"})
-    assert len(feature_items) == 2
+    assert len(feature_items) == COUNT_TWO
     assert all(item.view == "FEATURE" for item in feature_items)
 
     # Query by multiple filters
     high_todo = await item_repo.query(project.id, {"status": "todo", "priority": "high"})
-    assert len(high_todo) == 2
+    assert len(high_todo) == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -84,11 +86,11 @@ async def test_item_get_by_view_with_pagination(db_session: AsyncSession) -> Non
 
     # Get first page (5 items)
     page1 = await item_repo.get_by_view(project.id, "FEATURE", limit=5, offset=0)
-    assert len(page1) == 5
+    assert len(page1) == COUNT_FIVE
 
     # Get second page
     page2 = await item_repo.get_by_view(project.id, "FEATURE", limit=5, offset=5)
-    assert len(page2) == 5
+    assert len(page2) == COUNT_FIVE
 
     # Ensure no overlap
     page1_ids = {item.id for item in page1}
@@ -135,9 +137,9 @@ async def test_item_count_by_status(db_session: AsyncSession) -> None:
 
     # Count by status
     counts = await item_repo.count_by_status(project.id)
-    assert counts["todo"] == 3
-    assert counts["in_progress"] == 5
-    assert counts["done"] == 2
+    assert counts["todo"] == COUNT_THREE
+    assert counts["in_progress"] == COUNT_FIVE
+    assert counts["done"] == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -176,7 +178,7 @@ async def test_item_get_children(db_session: AsyncSession) -> None:
 
     # Get children
     children = await item_repo.get_children(parent.id)
-    assert len(children) == 2
+    assert len(children) == COUNT_TWO
     child_ids = {c.id for c in children}
     assert child1.id in child_ids
     assert child2.id in child_ids
@@ -217,7 +219,7 @@ async def test_item_get_descendants_recursive(db_session: AsyncSession) -> None:
 
     # Get all descendants of grandparent
     descendants = await item_repo.get_descendants(grandparent.id)
-    assert len(descendants) == 2
+    assert len(descendants) == COUNT_TWO
 
     descendant_ids = {d.id for d in descendants}
     assert parent.id in descendant_ids
@@ -259,7 +261,7 @@ async def test_item_get_ancestors_recursive(db_session: AsyncSession) -> None:
 
     # Get all ancestors of child
     ancestors = await item_repo.get_ancestors(child.id)
-    assert len(ancestors) == 2
+    assert len(ancestors) == COUNT_TWO
 
     ancestor_ids = {a.id for a in ancestors}
     assert parent.id in ancestor_ids
@@ -314,7 +316,7 @@ async def test_link_get_by_source_and_target(db_session: AsyncSession) -> None:
 
     # Get by source
     source_links = await link_repo.get_by_source(item1.id)
-    assert len(source_links) == 2
+    assert len(source_links) == COUNT_TWO
     assert all(link.source_item_id == item1.id for link in source_links)
 
     # Get by target
@@ -360,7 +362,7 @@ async def test_event_get_by_entity(db_session: AsyncSession) -> None:
 
     # Get events for specific entity
     events = await event_repo.get_by_entity(entity_id)
-    assert len(events) == 2
+    assert len(events) == COUNT_TWO
     assert all(e.entity_id == entity_id for e in events)
 
 

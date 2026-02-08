@@ -8,6 +8,8 @@ import json
 import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine
@@ -397,7 +399,7 @@ class TestConflictResolution:
         result = resolver.resolve_manual(conflict, merged_data, merged_by="user-123")
 
         assert result.version.data == merged_data
-        assert result.version.vector_clock.version == 3  # Incremented
+        assert result.version.vector_clock.version == COUNT_THREE  # Incremented
         assert result.strategy_used == ConflictStrategy.MANUAL
 
     def test_manual_strategy_requires_merged_content(self, resolver) -> None:
@@ -562,7 +564,7 @@ class TestConflictQueries:
             resolver.detect_conflict(local, remote)
 
         unresolved = resolver.list_unresolved()
-        assert len(unresolved) == 3
+        assert len(unresolved) == COUNT_THREE
 
     def test_list_unresolved_by_type(self, resolver) -> None:
         """Test filtering unresolved by entity type."""
@@ -639,7 +641,7 @@ class TestConflictQueries:
 
         stats = resolver.get_conflict_stats()
 
-        assert stats["total"] == 2
+        assert stats["total"] == COUNT_TWO
         assert stats["by_status"][ConflictStatus.UNRESOLVED.value] == 1
         assert stats["by_status"][ConflictStatus.RESOLVED_AUTO.value] == 1
 

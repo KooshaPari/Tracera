@@ -5,6 +5,8 @@ Comprehensive tests covering GitHub Project link CRUD operations.
 
 import asyncio
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -74,7 +76,7 @@ class TestCreate:
         assert github_project.github_repo_owner == "my-org"
         assert github_project.github_repo_name == "my-repo"
         assert github_project.github_project_id == "PVT_kwDOBx123"
-        assert github_project.github_project_number == 5
+        assert github_project.github_project_number == COUNT_FIVE
         assert github_project.auto_sync is True  # Default value
         assert github_project.sync_config == {}  # Default empty dict
 
@@ -118,7 +120,7 @@ class TestCreate:
 
         assert github_project is not None
         assert len(github_project.id) == 36  # Valid UUID format
-        assert github_project.id.count("-") == 4
+        assert github_project.id.count("-") == COUNT_FOUR
         assert github_project.auto_sync is True  # Default
         assert github_project.sync_config == {}  # Default empty dict
 
@@ -136,7 +138,7 @@ class TestCreate:
 
         # Verify it's a valid UUID format
         assert len(github_project.id) == 36
-        assert github_project.id.count("-") == 4
+        assert github_project.id.count("-") == COUNT_FOUR
 
 
 # ==================== Get By ID Tests ====================
@@ -209,7 +211,7 @@ class TestGetByProjectId:
 
         result = await github_project_repo.get_by_project_id(project.id)
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
         for gp in result:
             assert gp.project_id == project.id
 
@@ -275,7 +277,7 @@ class TestGetByRepo:
 
         result = await github_project_repo.get_by_repo(github_repo_id)
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         for gp in result:
             assert gp.github_repo_id == github_repo_id
 

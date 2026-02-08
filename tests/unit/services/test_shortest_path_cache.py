@@ -1,6 +1,8 @@
 """Unit tests for shortest path service caching."""
 
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -163,11 +165,11 @@ async def test_all_paths_cache_hit(service, mock_cache) -> None:
     results = await service.find_all_shortest_paths(project_id, source_id)
 
     # Verify
-    assert len(results) == 2
+    assert len(results) == COUNT_TWO
     assert "item-2" in results
     assert "item-3" in results
     assert results["item-2"].distance == 1
-    assert results["item-3"].distance == 2
+    assert results["item-3"].distance == COUNT_TWO
 
     # Verify repositories were NOT called
     service.items.get_by_project.assert_not_called()

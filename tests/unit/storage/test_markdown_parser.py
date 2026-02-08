@@ -5,6 +5,8 @@ for various item types (epics, stories, tests, tasks).
 """
 
 from datetime import UTC, datetime
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import yaml
@@ -182,7 +184,7 @@ class TestMarkdownParserFrontmatter:
 
         # Act
         parts = content.split("---", 2)
-        assert len(parts) == 3
+        assert len(parts) == COUNT_THREE
         frontmatter_text = parts[1].strip()
         frontmatter = yaml.safe_load(frontmatter_text)
 
@@ -193,9 +195,9 @@ class TestMarkdownParserFrontmatter:
         assert frontmatter["status"] == "in_progress"
         assert frontmatter["priority"] == "high"
         assert frontmatter["owner"] == "@team-lead"
-        assert frontmatter["version"] == 3
-        assert len(frontmatter["tags"]) == 3
-        assert len(frontmatter["links"]) == 2
+        assert frontmatter["version"] == COUNT_THREE
+        assert len(frontmatter["tags"]) == COUNT_THREE
+        assert len(frontmatter["links"]) == COUNT_TWO
 
     @pytest.mark.unit
     def test_parse_story_frontmatter(self, sample_story_markdown) -> None:
@@ -384,7 +386,7 @@ class TestMarkdownParserWriting:
         # Assert
         assert file_path.exists()
         parts = file_path.read_text().split("---", 2)
-        assert len(parts) == 3
+        assert len(parts) == COUNT_THREE
         parsed_metadata = yaml.safe_load(parts[1])
         assert parsed_metadata["parent"] == "EPIC-001"
 
@@ -420,7 +422,7 @@ class TestMarkdownParserWriting:
         updated_parts = updated_content.split("---", 2)
         updated_frontmatter = yaml.safe_load(updated_parts[1])
 
-        assert updated_frontmatter["version"] == 4
+        assert updated_frontmatter["version"] == COUNT_FOUR
         assert updated_frontmatter["status"] == "done"
 
     @pytest.mark.unit
@@ -496,7 +498,7 @@ class TestMarkdownParserLinks:
         links = frontmatter.get("links", [])
 
         # Assert
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
         assert links[0]["type"] == "implements"
         assert links[0]["target"] == "STORY-001"
         assert links[1]["target"] == "STORY-002"
@@ -592,7 +594,7 @@ class TestMarkdownParserTags:
         tags = frontmatter.get("tags", [])
 
         # Assert
-        assert len(tags) == 3
+        assert len(tags) == COUNT_THREE
         assert "authentication" in tags
         assert "security" in tags
         assert "mvp" in tags
@@ -752,7 +754,7 @@ id: test-001
 
         # Assert
         # Should not have proper frontmatter structure
-        assert len(parts) < 3
+        assert len(parts) < COUNT_THREE
 
     @pytest.mark.unit
     def test_invalid_yaml_syntax(self) -> None:

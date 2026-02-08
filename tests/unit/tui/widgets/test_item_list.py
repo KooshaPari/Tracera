@@ -10,6 +10,8 @@ Tests cover:
 """
 
 import pytest
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 try:
     from textual.widgets import DataTable  # type: ignore[import-untyped]
@@ -119,7 +121,7 @@ class TestItemListWidgetDataManipulation:
             widget.add_row("id-2", "Item 2", "bug", "in_progress")
             widget.add_row("id-3", "Item 3", "task", "done")
             if hasattr(widget, "row_count"):
-                assert widget.row_count == 3
+                assert widget.row_count == COUNT_THREE
 
     def test_clear_widget(self) -> None:
         """Test clearing all rows."""
@@ -351,7 +353,7 @@ class TestItemListWidgetPerformance:
                 widget.add_row(f"id-{i}", f"Item {i}", "feature", "todo")
 
             if hasattr(widget, "row_count"):
-                assert widget.row_count == 10
+                assert widget.row_count == COUNT_TEN
 
     def test_medium_dataset(self) -> None:
         """Test widget with medium dataset (100 items)."""
@@ -420,7 +422,7 @@ class TestItemListWidgetRowOperations:
             assert widget.row_count == 1
 
             widget.add_row("id-2", "Item 2", "bug", "todo")
-            assert widget.row_count == 2
+            assert widget.row_count == COUNT_TWO
 
             if hasattr(widget, "clear"):
                 widget.clear()

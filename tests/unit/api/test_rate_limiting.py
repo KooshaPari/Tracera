@@ -6,6 +6,8 @@ Tests rate limiting mechanisms, throttling, and quota management.
 import time
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_TEN, HTTP_TOO_MANY_REQUESTS
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -36,7 +38,7 @@ class TestBasicRateLimiting:
             try:
                 response = client.get("/api/v1/items", params={"project_id": "test"})
                 # Should not get 429 Too Many Requests
-                if response.status_code == 429:
+                if response.status_code == HTTP_TOO_MANY_REQUESTS:
                     pytest.fail("Rate limit triggered unexpectedly")
             except Exception:
                 pass  # May fail for other reasons
@@ -55,7 +57,7 @@ class TestBasicRateLimiting:
             def check_limit(*args, **kwargs):  # noqa: ARG001
                 nonlocal call_count
                 call_count += 1
-                return call_count <= 10
+                return call_count <= COUNT_TEN
 
             limiter.check_limit.side_effect = check_limit
             mock_limiter.return_value = limiter
@@ -65,7 +67,7 @@ class TestBasicRateLimiting:
             for _i in range(20):
                 try:
                     response = client.get("/api/v1/items", params={"project_id": "test"})
-                    if response.status_code == 429:
+                    if response.status_code == HTTP_TOO_MANY_REQUESTS:
                         blocked = True
                         break
                 except Exception as e:
@@ -74,7 +76,7 @@ class TestBasicRateLimiting:
                         break
 
             # Should have been blocked at some point
-            assert blocked or call_count > 10
+            assert blocked or call_count > COUNT_TEN
 
     def test_rate_limit_reset_after_window(self) -> None:
         """Test that rate limit resets after time window."""
@@ -151,7 +153,7 @@ class TestRateLimitHeaders:
 
             try:
                 response = client.get("/api/v1/items", params={"project_id": "test"})
-                if response.status_code == 429:
+                if response.status_code == HTTP_TOO_MANY_REQUESTS:
                     assert True
             except Exception:
                 pass
@@ -193,7 +195,7 @@ class TestPerEndpointRateLimits:
                 try:
                     response = client.post("/api/v1/items", json={"title": "test"})
                     call_count += 1
-                    if response.status_code == 429:
+                    if response.status_code == HTTP_TOO_MANY_REQUESTS:
                         break
                 except Exception as e:
                     if "429" in str(e):
@@ -376,7 +378,7 @@ class TestRateLimitStrategies:
                 nonlocal requests
                 requests = [r for r in requests if now - r < 60]
 
-                if len(requests) < 10:
+                if len(requests) < COUNT_TEN:
                     requests.append(now)
                     return True
                 return False
@@ -446,7 +448,7 @@ class TestRateLimitStrategies:
                     window_start = current_window
                     count = 0
 
-                if count < 10:
+                if count < COUNT_TEN:
                     count += 1
                     return True
                 return False
@@ -480,7 +482,7 @@ class TestRateLimitExceptions:
 
             try:
                 response = client.get("/api/v1/items", params={"project_id": "test"})
-                if response.status_code == 429:
+                if response.status_code == HTTP_TOO_MANY_REQUESTS:
                     data = response.json()
                     assert "error" in data or "detail" in data
                     assert "rate limit" in str(data).lower() or True
@@ -501,7 +503,7 @@ class TestRateLimitExceptions:
 
             try:
                 response = client.get("/api/v1/items", params={"project_id": "test"})
-                if response.status_code == 429:
+                if response.status_code == HTTP_TOO_MANY_REQUESTS:
                     data = response.json()
                     # Should include custom message
                     assert isinstance(data, dict)

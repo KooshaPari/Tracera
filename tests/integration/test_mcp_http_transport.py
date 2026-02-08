@@ -9,6 +9,8 @@ Tests the FastMCP 3.0 HTTP/SSE transport implementation including:
 """
 
 from __future__ import annotations
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, HTTP_OK
+
 
 import asyncio
 import contextlib
@@ -51,7 +53,7 @@ async def open_mcp_session(client: AsyncClient) -> str:
             },
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     session_id = response.headers.get(MCP_SESSION_ID_HEADER)
     assert session_id
     return session_id
@@ -133,7 +135,7 @@ class TestFastAPIIntegration:
             },
         )
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
     async def test_fastapi_middleware_integration(self, fastapi_app) -> None:
         """Test that FastAPI middleware can be applied."""
@@ -186,7 +188,7 @@ class TestSSEProgressStreaming:
 
         # Verify progress events
         progress_events = [e for e in events if e["event"] == "progress"]
-        assert len(progress_events) == 5
+        assert len(progress_events) == COUNT_FIVE
         for i, event in enumerate(progress_events):
             assert event["data"]["task_id"] == "task-123"
             assert event["data"]["progress"] == i
@@ -308,7 +310,7 @@ class TestConcurrentRequests:
 
         # Verify all succeeded
         for i, response in enumerate(responses):
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == i
 
@@ -383,7 +385,7 @@ class TestPerformance:
         throughput = num_requests / elapsed
 
         # Reasonable throughput threshold (adjust based on requirements)
-        assert throughput > 10  # At least 10 req/s
+        assert throughput > COUNT_TEN  # At least 10 req/s
 
     async def test_response_time(self, fastapi_client) -> None:
         """Test average response time."""

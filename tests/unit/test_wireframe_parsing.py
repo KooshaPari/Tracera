@@ -2,6 +2,8 @@
 
 from datetime import datetime
 from pathlib import Path
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -106,7 +108,7 @@ class TestFigmaProtocol:
         """
         matches = extract_figma_protocol_url(text)
 
-        assert len(matches) == 2
+        assert len(matches) == COUNT_TWO
         assert matches[0] == ("abc123", "1:42")
         assert matches[1] == ("abc123", "2:10")
 
@@ -192,9 +194,9 @@ class TestWireframeItemData:
         assert item.item_type == "wireframe"
         assert item.figma_file_key == "abc123"
         assert item.figma_node_id == "1:42"
-        assert len(item.components) == 2
-        assert len(item.screens) == 2
-        assert len(item.implements) == 2
+        assert len(item.components) == COUNT_TWO
+        assert len(item.screens) == COUNT_TWO
+        assert len(item.implements) == COUNT_TWO
 
     def test_wireframe_to_frontmatter(self) -> None:
         """Test converting wireframe to frontmatter dict."""

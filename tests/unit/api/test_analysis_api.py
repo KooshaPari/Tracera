@@ -4,6 +4,8 @@ Tests impact analysis, cycle detection, and shortest path finding.
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -37,12 +39,12 @@ class TestImpactAnalysis:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/impact/item1?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["root_item_id"] == "item1"
-            assert data["total_affected"] == 3
-            assert data["max_depth"] == 2
-            assert len(data["affected_items"]) == 3
+            assert data["total_affected"] == COUNT_THREE
+            assert data["max_depth"] == COUNT_TWO
+            assert len(data["affected_items"]) == COUNT_THREE
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -66,7 +68,7 @@ class TestImpactAnalysis:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/impact/item1?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["total_affected"] == 100
             assert len(data["affected_items"]) == 100
@@ -92,7 +94,7 @@ class TestImpactAnalysis:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/impact/item1?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["total_affected"] == 0
             assert data["affected_items"] == []
@@ -158,7 +160,7 @@ class TestImpactAnalysis:
             mock_service_class.return_value = mock_service
 
             response = client.get(f"/api/v1/analysis/impact/{special_id}?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["root_item_id"] == special_id
 
@@ -187,12 +189,12 @@ class TestCycleDetection:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/cycles/proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["has_cycles"] is True
-            assert data["total_cycles"] == 2
+            assert data["total_cycles"] == COUNT_TWO
             assert data["severity"] == "high"
-            assert len(data["affected_items"]) == 4
+            assert len(data["affected_items"]) == COUNT_FOUR
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -215,7 +217,7 @@ class TestCycleDetection:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/cycles/proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["has_cycles"] is False
             assert data["total_cycles"] == 0
@@ -242,10 +244,10 @@ class TestCycleDetection:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/cycles/proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["has_cycles"] is True
-            assert data["total_cycles"] == 5
+            assert data["total_cycles"] == COUNT_FIVE
             assert data["severity"] == "critical"
 
     @patch("tracertm.api.main.get_db")
@@ -272,7 +274,7 @@ class TestCycleDetection:
                 mock_service_class.return_value = mock_service
 
                 response = client.get("/api/v1/analysis/cycles/proj1")
-                assert response.status_code == 200
+                assert response.status_code == HTTP_OK
                 data = response.json()
                 assert data["severity"] == severity
 
@@ -312,12 +314,12 @@ class TestShortestPath:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item3")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is True
-            assert data["distance"] == 2
-            assert len(data["path"]) == 3
-            assert len(data["link_types"]) == 2
+            assert data["distance"] == COUNT_TWO
+            assert len(data["path"]) == COUNT_THREE
+            assert len(data["link_types"]) == COUNT_TWO
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -343,7 +345,7 @@ class TestShortestPath:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item10")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["distance"] == 9
 
@@ -368,7 +370,7 @@ class TestShortestPath:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item999")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is False
             assert data["distance"] is None
@@ -395,11 +397,11 @@ class TestShortestPath:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item2")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is True
             assert data["distance"] == 1
-            assert len(data["path"]) == 2
+            assert len(data["path"]) == COUNT_TWO
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -455,7 +457,7 @@ class TestShortestPath:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item4")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["link_types"] == ["depends_on", "related_to", "blocks"]
 
@@ -480,7 +482,7 @@ class TestShortestPath:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["distance"] == 0
 

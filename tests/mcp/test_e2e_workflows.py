@@ -8,6 +8,8 @@ These tests validate complete workflows:
 """
 
 from __future__ import annotations
+from tests.test_constants import COUNT_TEN
+
 
 import os
 
@@ -454,7 +456,7 @@ class TestToolDescriptionQuality:
         for tool in mcp_server._tools.values():
             desc = tool.description
             # Should have meaningful length
-            assert len(desc) >= 10, f"Tool {tool.name} has too short description"
+            assert len(desc) >= COUNT_TEN, f"Tool {tool.name} has too short description"
 
 
 if __name__ == "__main__":

@@ -14,6 +14,8 @@ Timeline: Week 7-9
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -154,7 +156,7 @@ async def test_project_get_all(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     all_projects = await repo.get_all()
-    assert len(all_projects) >= 3
+    assert len(all_projects) >= COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -357,7 +359,7 @@ async def test_item_list_by_view(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     features = await item_repo.list_by_view(str(project.id), "FEATURE")
-    assert len(features) == 2
+    assert len(features) == COUNT_TWO
     assert all(item.view == "FEATURE" for item in features)
 
 
@@ -375,7 +377,7 @@ async def test_item_update_optimistic_locking(db_session_wp34: AsyncSession) -> 
 
     updated = await item_repo.update(str(item.id), expected_version=1, title="Updated")
 
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
     assert updated.title == "Updated"
 
 
@@ -495,12 +497,12 @@ async def test_item_get_by_project(db_session_wp34: AsyncSession) -> None:
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo" if i < 2 else "done",
+            status="todo" if i < COUNT_TWO else "done",
         )
     await db_session_wp34.commit()
 
     all_items = await item_repo.get_by_project(str(project.id))
-    assert len(all_items) == 3
+    assert len(all_items) == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -517,12 +519,12 @@ async def test_item_get_by_project_with_status(db_session_wp34: AsyncSession) ->
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo" if i < 2 else "done",
+            status="todo" if i < COUNT_TWO else "done",
         )
     await db_session_wp34.commit()
 
     todo_items = await item_repo.get_by_project(str(project.id), status="todo")
-    assert len(todo_items) == 2
+    assert len(todo_items) == COUNT_TWO
     assert all(item.status == "todo" for item in todo_items)
 
 
@@ -541,8 +543,8 @@ async def test_item_pagination(db_session_wp34: AsyncSession) -> None:
     page1 = await item_repo.get_by_project(str(project.id), limit=5, offset=0)
     page2 = await item_repo.get_by_project(str(project.id), limit=5, offset=5)
 
-    assert len(page1) == 5
-    assert len(page2) == 5
+    assert len(page1) == COUNT_FIVE
+    assert len(page2) == COUNT_FIVE
 
 
 @pytest.mark.asyncio
@@ -560,7 +562,7 @@ async def test_item_get_by_view(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     features = await item_repo.get_by_view(str(project.id), "FEATURE", status="todo")
-    assert len(features) == 2
+    assert len(features) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -604,7 +606,7 @@ async def test_item_get_children(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     children = await item_repo.get_children(str(parent.id))
-    assert len(children) == 3
+    assert len(children) == COUNT_THREE
     assert all(child.parent_id == parent.id for child in children)
 
 
@@ -626,7 +628,7 @@ async def test_item_get_ancestors(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     ancestors = await item_repo.get_ancestors(str(level2.id))
-    assert len(ancestors) == 2
+    assert len(ancestors) == COUNT_TWO
     assert ancestors[0].id == root.id
     assert ancestors[1].id == level1.id
 
@@ -677,8 +679,8 @@ async def test_item_count_by_status(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     counts = await item_repo.count_by_status(str(project.id))
-    assert counts["todo"] == 3
-    assert counts["done"] == 2
+    assert counts["todo"] == COUNT_THREE
+    assert counts["done"] == COUNT_TWO
 
 
 # ============================================================================
@@ -776,7 +778,7 @@ async def test_link_get_by_project(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     links = await link_repo.get_by_project(str(project.id))
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -801,7 +803,7 @@ async def test_link_get_by_source(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     outgoing = await link_repo.get_by_source(str(item1.id))
-    assert len(outgoing) == 2
+    assert len(outgoing) == COUNT_TWO
     assert all(link.source_item_id == item1.id for link in outgoing)
 
 
@@ -827,7 +829,7 @@ async def test_link_get_by_target(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     incoming = await link_repo.get_by_target(item3.id)
-    assert len(incoming) == 2
+    assert len(incoming) == COUNT_TWO
     assert all(link.target_item_id == item3.id for link in incoming)
 
 
@@ -853,7 +855,7 @@ async def test_link_get_by_item(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     connected = await link_repo.get_by_item(item1.id)
-    assert len(connected) == 2
+    assert len(connected) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -913,7 +915,7 @@ async def test_link_delete_by_item(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     deleted_count = await link_repo.delete_by_item(item1.id)
-    assert deleted_count == 3
+    assert deleted_count == COUNT_THREE
 
 
 # ============================================================================
@@ -981,7 +983,7 @@ async def test_event_get_by_entity(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     events = await event_repo.get_by_entity(entity_id)
-    assert len(events) == 3
+    assert len(events) == COUNT_THREE
     assert all(e.entity_id == entity_id for e in events)
 
 
@@ -1001,7 +1003,7 @@ async def test_event_get_by_project(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     events = await event_repo.get_by_project(str(project.id))
-    assert len(events) == 5
+    assert len(events) == COUNT_FIVE
 
 
 @pytest.mark.asyncio
@@ -1026,7 +1028,7 @@ async def test_event_get_by_agent(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     events = await event_repo.get_by_agent(agent_id)
-    assert len(events) == 3
+    assert len(events) == COUNT_THREE
     assert all(e.agent_id == agent_id for e in events)
 
 
@@ -1099,7 +1101,7 @@ async def test_agent_get_by_project(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     agents = await agent_repo.get_by_project(str(project.id))
-    assert len(agents) == 3
+    assert len(agents) == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -1253,7 +1255,7 @@ async def test_multiple_operations_transaction(db_session_wp34: AsyncSession) ->
     await db_session_wp34.commit()
 
     all_items = await item_repo.list_all(project.id)
-    assert len(all_items) == 2
+    assert len(all_items) == COUNT_TWO
 
 
 # ============================================================================
@@ -1298,7 +1300,7 @@ async def test_item_query_multiple_filters(db_session_wp34: AsyncSession) -> Non
 
     # Query with multiple filters
     high_priority_todos = await item_repo.query(str(project.id), filters={"priority": "high", "status": "todo"})
-    assert len(high_priority_todos) == 2
+    assert len(high_priority_todos) == COUNT_TWO
     assert all(item.priority == "high" for item in high_priority_todos)
     assert all(item.status == "todo" for item in high_priority_todos)
 
@@ -1326,7 +1328,7 @@ async def test_item_query_by_owner(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     alice_owned = await item_repo.query(str(project.id), filters={"owner": "alice"})
-    assert len(alice_owned) == 3
+    assert len(alice_owned) == COUNT_THREE
     assert all(item.owner == "alice" for item in alice_owned)
 
 
@@ -1395,15 +1397,15 @@ async def test_item_get_by_view_pagination(db_session_wp34: AsyncSession) -> Non
 
     # Get first page
     page1 = await item_repo.get_by_view(str(project.id), "FEATURE", limit=5, offset=0)
-    assert len(page1) == 5
+    assert len(page1) == COUNT_FIVE
 
     # Get second page
     page2 = await item_repo.get_by_view(str(project.id), "FEATURE", limit=5, offset=5)
-    assert len(page2) == 5
+    assert len(page2) == COUNT_FIVE
 
     # Get third page (partial)
     page3 = await item_repo.get_by_view(str(project.id), "FEATURE", limit=5, offset=10)
-    assert len(page3) == 5
+    assert len(page3) == COUNT_FIVE
 
     # Verify no duplicates
     all_ids = {item.id for item in page1 + page2 + page3}
@@ -1577,13 +1579,13 @@ async def test_item_hierarchy_deep_nesting(db_session_wp34: AsyncSession) -> Non
     # Verify ancestors of deepest item
     deepest = level_items[-1]
     ancestors = await item_repo.get_ancestors(deepest.id)
-    assert len(ancestors) == 4  # All except self
+    assert len(ancestors) == COUNT_FOUR  # All except self
     assert ancestors[0].id == level_items[0].id  # Root first
 
     # Verify descendants of root
     root = level_items[0]
     descendants = await item_repo.get_descendants(str(root.id))
-    assert len(descendants) == 4  # All except root
+    assert len(descendants) == COUNT_FOUR  # All except root
 
 
 @pytest.mark.asyncio
@@ -1621,7 +1623,7 @@ async def test_item_get_children_with_multiple_levels(db_session_wp34: AsyncSess
 
     # get_children should return only 3 direct children
     direct_children = await item_repo.get_children(str(parent.id))
-    assert len(direct_children) == 3
+    assert len(direct_children) == COUNT_THREE
     assert all(child.parent_id == parent.id for child in direct_children)
 
 
@@ -1745,7 +1747,7 @@ async def test_item_list_all_respects_soft_delete(db_session_wp34: AsyncSession)
 
     # Verify both exist
     all_items = await item_repo.list_all(project.id)
-    assert len(all_items) == 2
+    assert len(all_items) == COUNT_TWO
 
     # Delete one
     await item_repo.delete(str(item1.id), soft=True)
@@ -1774,7 +1776,7 @@ async def test_item_list_all_include_deleted_flag(db_session_wp34: AsyncSession)
 
     # With include_deleted=True should see both
     all_items = await item_repo.list_all(str(project.id), include_deleted=True)
-    assert len(all_items) == 2
+    assert len(all_items) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -1798,7 +1800,7 @@ async def test_item_list_by_view_include_deleted(db_session_wp34: AsyncSession) 
 
     # With flag should include
     items = await item_repo.list_by_view(str(project.id), "FEATURE", include_deleted=True)
-    assert len(items) == 2
+    assert len(items) == COUNT_TWO
 
 
 # ============================================================================
@@ -1829,8 +1831,8 @@ async def test_item_count_by_status_with_owner_distribution(db_session_wp34: Asy
     await db_session_wp34.commit()
 
     counts = await item_repo.count_by_status(str(project.id))
-    assert counts["todo"] == 4
-    assert counts["done"] == 4
+    assert counts["todo"] == COUNT_FOUR
+    assert counts["done"] == COUNT_FOUR
 
 
 @pytest.mark.asyncio
@@ -1867,7 +1869,7 @@ async def test_item_query_returns_limited_results(db_session_wp34: AsyncSession)
     await db_session_wp34.commit()
 
     result = await item_repo.query(str(project.id), filters={}, limit=10)
-    assert len(result) <= 10
+    assert len(result) <= COUNT_TEN
 
 
 # ============================================================================
@@ -2016,7 +2018,7 @@ async def test_item_pagination_with_limit_greater_than_total(db_session_wp34: As
     await db_session_wp34.commit()
 
     result = await item_repo.get_by_project(str(project.id), limit=100)
-    assert len(result) == 3
+    assert len(result) == COUNT_THREE
 
 
 # ============================================================================
@@ -2142,13 +2144,13 @@ async def test_full_workflow(db_session_wp34: AsyncSession) -> None:
     assert found_project is not None
 
     items = await item_repo.list_all(project.id)
-    assert len(items) == 2
+    assert len(items) == COUNT_TWO
 
     links = await link_repo.get_by_project(str(project.id))
     assert len(links) == 1
 
     events = await event_repo.get_by_project(str(project.id))
-    assert len(events) == 2
+    assert len(events) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -2178,7 +2180,7 @@ async def test_hierarchy_with_links(db_session_wp34: AsyncSession) -> None:
 
     # Verify
     descendants = await item_repo.get_descendants(epic.id)
-    assert len(descendants) == 2
+    assert len(descendants) == COUNT_TWO
 
     links = await link_repo.get_by_item(task.id)
     assert len(links) == 1
@@ -2356,7 +2358,7 @@ async def test_link_type_duplicates_allowed(db_session_wp34: AsyncSession) -> No
     await db_session_wp34.commit()
 
     by_type = await link_repo.get_by_type("implements")
-    assert len(by_type) >= 2
+    assert len(by_type) >= COUNT_TWO
 
 
 # ============================================================================
@@ -2388,8 +2390,8 @@ async def test_bidirectional_link_manual_creation(db_session_wp34: AsyncSession)
 
     links_1 = await link_repo.get_by_item(item1.id)
     links_2 = await link_repo.get_by_item(item2.id)
-    assert len(links_1) == 2
-    assert len(links_2) == 2
+    assert len(links_1) == COUNT_TWO
+    assert len(links_2) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -2419,7 +2421,7 @@ async def test_bidirectional_navigation_outgoing(db_session_wp34: AsyncSession) 
     await db_session_wp34.commit()
 
     outgoing = await link_repo.get_by_source(source.id)
-    assert len(outgoing) == 3
+    assert len(outgoing) == COUNT_THREE
     assert all(link.source_item_id == source.id for link in outgoing)
 
 
@@ -2450,7 +2452,7 @@ async def test_bidirectional_navigation_incoming(db_session_wp34: AsyncSession) 
     await db_session_wp34.commit()
 
     incoming = await link_repo.get_by_target(target.id)
-    assert len(incoming) == 3
+    assert len(incoming) == COUNT_THREE
     assert all(link.target_item_id == target.id for link in incoming)
 
 
@@ -2487,7 +2489,7 @@ async def test_bidirectional_mixed_operations(db_session_wp34: AsyncSession) -> 
 
     # Get all links for middle item
     all_links = await link_repo.get_by_item(middle.id)
-    assert len(all_links) == 2
+    assert len(all_links) == COUNT_TWO
 
     # Verify incoming
     incoming = await link_repo.get_by_target(middle.id)
@@ -2565,7 +2567,7 @@ async def test_transitive_dependency_chain_branching(db_session_wp34: AsyncSessi
     await db_session_wp34.commit()
 
     outgoing = await link_repo.get_by_source(parent.id)
-    assert len(outgoing) == 3
+    assert len(outgoing) == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -2600,8 +2602,8 @@ async def test_transitive_dependency_chain_diamond(db_session_wp34: AsyncSession
     # Verify diamond structure
     top_out = await link_repo.get_by_source(top.id)
     bottom_in = await link_repo.get_by_target(bottom.id)
-    assert len(top_out) == 2
-    assert len(bottom_in) == 2
+    assert len(top_out) == COUNT_TWO
+    assert len(bottom_in) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -2629,7 +2631,7 @@ async def test_multiple_link_types_same_items(db_session_wp34: AsyncSession) -> 
 
     # Both should exist
     by_source = await link_repo.get_by_source(req.id)
-    assert len(by_source) == 2
+    assert len(by_source) == COUNT_TWO
 
 
 # ============================================================================
@@ -2669,7 +2671,7 @@ async def test_cycle_detection_two_item_cycle(db_session_wp34: AsyncSession) -> 
     item2 = await item_repo.create(project_id=str(project.id), title="Item 2", view="FEATURE", item_type="feature")
     await db_session_wp34.commit()
 
-    # Create cycle: 1 -> 2 -> 1
+    # Create cycle: 1 -> COUNT_TWO -> 1
     await link_repo.create(
         project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
@@ -2701,7 +2703,7 @@ async def test_cycle_detection_three_item_cycle(db_session_wp34: AsyncSession) -
         items.append(item)
     await db_session_wp34.commit()
 
-    # Create cycle: 0 -> 1 -> 2 -> 0
+    # Create cycle: 0 -> 1 -> COUNT_TWO -> 0
     await link_repo.create(
         project_id=str(project.id),
         source_item_id=str(items[0].id),
@@ -2826,8 +2828,8 @@ async def test_link_filtering_by_type_multiple_types(db_session_wp34: AsyncSessi
 
     implements = await link_repo.get_by_type("implements")
     tests = await link_repo.get_by_type("tests")
-    assert len(implements) >= 3
-    assert len(tests) >= 3
+    assert len(implements) >= COUNT_THREE
+    assert len(tests) >= COUNT_THREE
 
 
 # ============================================================================
@@ -2969,7 +2971,7 @@ async def test_link_query_all_links_in_project(db_session_wp34: AsyncSession) ->
     await db_session_wp34.commit()
 
     all_links = await link_repo.get_by_project(str(project.id))
-    assert len(all_links) == 4
+    assert len(all_links) == COUNT_FOUR
 
 
 @pytest.mark.asyncio
@@ -3053,7 +3055,7 @@ async def test_graph_operations_connected_component(db_session_wp34: AsyncSessio
     await db_session_wp34.commit()
 
     all_links = await link_repo.get_by_project(str(project.id))
-    assert len(all_links) == 2
+    assert len(all_links) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -3224,7 +3226,7 @@ async def test_traversal_depth_first_ordering(db_session_wp34: AsyncSession) -> 
         items.append(item)
     await db_session_wp34.commit()
 
-    # Create linear chain: 0 -> 1 -> 2 -> 3 -> 4
+    # Create linear chain: 0 -> 1 -> COUNT_TWO -> COUNT_THREE -> COUNT_FOUR
     for i in range(4):
         await link_repo.create(
             project_id=str(project.id),
@@ -3264,7 +3266,7 @@ async def test_traversal_breadth_first_ordering(db_session_wp34: AsyncSession) -
     await db_session_wp34.commit()
 
     root_links = await link_repo.get_by_source(root.id)
-    assert len(root_links) == 3
+    assert len(root_links) == COUNT_THREE
     for link in root_links:
         assert link.source_item_id == root.id
 
@@ -3299,8 +3301,8 @@ async def test_complex_graph_all_paths(db_session_wp34: AsyncSession) -> None:
     # Verify paths
     a_out = await link_repo.get_by_source(items["a"].id)
     d_in = await link_repo.get_by_target(items["d"].id)
-    assert len(a_out) == 2
-    assert len(d_in) == 2
+    assert len(a_out) == COUNT_TWO
+    assert len(d_in) == COUNT_TWO
 
 
 # ============================================================================
@@ -3392,7 +3394,7 @@ async def test_duplicate_links_same_type_allowed(db_session_wp34: AsyncSession) 
     # Both should exist with different IDs
     assert link1.id != link2.id
     all_links = await link_repo.get_by_project(str(project.id))
-    assert len(all_links) == 2
+    assert len(all_links) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -3462,8 +3464,8 @@ async def test_link_count_by_type(db_session_wp34: AsyncSession) -> None:
 
     depends = await link_repo.get_by_type(custom_type)
     tests = await link_repo.get_by_type(custom_type2)
-    assert len(depends) == 3
-    assert len(tests) == 2
+    assert len(depends) == COUNT_THREE
+    assert len(tests) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -3490,7 +3492,7 @@ async def test_link_count_by_item_hub(db_session_wp34: AsyncSession) -> None:
     await db_session_wp34.commit()
 
     hub_links = await link_repo.get_by_source(hub.id)
-    assert len(hub_links) == 10
+    assert len(hub_links) == COUNT_TEN
 
 
 @pytest.mark.asyncio

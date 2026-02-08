@@ -20,6 +20,8 @@ Coverage areas:
 """
 
 import time
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -216,7 +218,7 @@ class TestExtendedLinkCreation:
             .all()
         )
 
-        assert len(retrieved) == 5
+        assert len(retrieved) == COUNT_FIVE
         types = {link.link_type for link in retrieved}
         assert types == set(link_types)
 
@@ -298,8 +300,8 @@ class TestExtendedLinkRetrieval:
 
         impl_links = db_session.query(Link).filter_by(project_id=sample_project.id, link_type="implements").all()
 
-        assert len(depends_links) == 3
-        assert len(impl_links) == 2
+        assert len(depends_links) == COUNT_THREE
+        assert len(impl_links) == COUNT_TWO
 
     def test_get_links_with_pagination(self, db_session, sample_project, sample_items_10) -> None:
         """Test link retrieval with pagination."""
@@ -324,8 +326,8 @@ class TestExtendedLinkRetrieval:
             db_session.query(Link).filter_by(project_id=sample_project.id).limit(page_size).offset(page_size).all()
         )
 
-        assert len(links_page1) == 3
-        assert len(links_page2) == 3
+        assert len(links_page1) == COUNT_THREE
+        assert len(links_page2) == COUNT_THREE
         assert len({l.id for l in links_page1} & {l.id for l in links_page2}) == 0
 
     def test_get_links_for_item_both_directions(self, db_session, sample_project, sample_items_10) -> None:
@@ -365,8 +367,8 @@ class TestExtendedLinkRetrieval:
         incoming = [l for l in all_links if l.target_item_id == center_item.id]
         outgoing = [l for l in all_links if l.source_item_id == center_item.id]
 
-        assert len(incoming) == 3
-        assert len(outgoing) == 3
+        assert len(incoming) == COUNT_THREE
+        assert len(outgoing) == COUNT_THREE
         assert len(all_links) == 6
 
     def test_get_links_with_complex_filters(self, db_session, sample_project, sample_items_10) -> None:
@@ -437,8 +439,8 @@ class TestExtendedLinkRetrieval:
         high_priority = [l for l in all_links if l.link_metadata.get("priority") == "high"]
         active = [l for l in all_links if l.link_metadata.get("status") == "active"]
 
-        assert len(high_priority) == 2
-        assert len(active) == 2
+        assert len(high_priority) == COUNT_TWO
+        assert len(active) == COUNT_TWO
 
 
 # ============================================================
@@ -466,7 +468,7 @@ class TestBatchLinkOperations:
 
         retrieved = db_session.query(Link).filter_by(source_item_id=source.id).all()
 
-        assert len(retrieved) == 5
+        assert len(retrieved) == COUNT_FIVE
         assert all(l.source_item_id == source.id for l in retrieved)
 
     def test_bulk_create_links_with_different_types(self, db_session, sample_project, sample_items_10) -> None:
@@ -488,7 +490,7 @@ class TestBatchLinkOperations:
         db_session.commit()
 
         retrieved = db_session.query(Link).filter_by(project_id=sample_project.id).all()
-        assert len(retrieved) == 5
+        assert len(retrieved) == COUNT_FIVE
 
         types = {l.link_type for l in retrieved}
         assert types == {"depends_on", "implements", "tests", "blocks", "related_to"}
@@ -512,7 +514,7 @@ class TestBatchLinkOperations:
         deleted_count = db_session.query(Link).filter_by(source_item_id=source.id).delete()
         db_session.commit()
 
-        assert deleted_count == 5
+        assert deleted_count == COUNT_FIVE
 
         remaining = db_session.query(Link).filter_by(source_item_id=source.id).all()
         assert len(remaining) == 0
@@ -544,10 +546,10 @@ class TestBatchLinkOperations:
         deleted = db_session.query(Link).filter_by(project_id=sample_project.id, link_type="depends_on").delete()
         db_session.commit()
 
-        assert deleted == 5
+        assert deleted == COUNT_FIVE
 
         remaining = db_session.query(Link).filter_by(project_id=sample_project.id).all()
-        assert len(remaining) == 3
+        assert len(remaining) == COUNT_THREE
         assert all(l.link_type == "implements" for l in remaining)
 
     def test_bulk_update_link_metadata(self, db_session, sample_project, sample_items_10) -> None:
@@ -595,14 +597,14 @@ class TestBatchLinkOperations:
 
         # Verify topology
         hub_outgoing = db_session.query(Link).filter_by(source_item_id=hub.id).all()
-        assert len(hub_outgoing) == 5
+        assert len(hub_outgoing) == COUNT_FIVE
         assert all(l.target_item_id in {s.id for s in spokes} for l in hub_outgoing)
 
     def test_bulk_create_chain_topology(self, db_session, sample_project, sample_items_10) -> None:
         """Test creating linear chain topology."""
         items = sample_items_10[:6]
 
-        # Create chain: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+        # Create chain: 1 -> COUNT_TWO -> COUNT_THREE -> COUNT_FOUR -> COUNT_FIVE -> 6
         for i in range(len(items) - 1):
             link = Link(
                 project_id=sample_project.id,
@@ -615,7 +617,7 @@ class TestBatchLinkOperations:
         db_session.commit()
 
         # Verify chain
-        assert db_session.query(Link).filter_by(project_id=sample_project.id).count() == 5
+        assert db_session.query(Link).filter_by(project_id=sample_project.id).count() == COUNT_FIVE
 
 
 # ============================================================
@@ -640,7 +642,7 @@ class TestGraphOperations:
 
     def test_get_transitive_closure_linear(self, db_session, sample_project, sample_items_10) -> None:
         """Test finding transitive closure in linear dependency chain."""
-        # Create chain: 1 -> 2 -> 3 -> 4 -> 5
+        # Create chain: 1 -> COUNT_TWO -> COUNT_THREE -> COUNT_FOUR -> COUNT_FIVE
         for i in range(4):
             link = Link(
                 project_id=sample_project.id,
@@ -672,12 +674,12 @@ class TestGraphOperations:
 
     def test_get_transitive_closure_branching(self, db_session, sample_project, sample_items_10) -> None:
         """Test transitive closure with branching topology."""
-        # Create: 1 -> 2 -> 4, 1 -> 3 -> 5
+        # Create: 1 -> COUNT_TWO -> COUNT_FOUR, 1 -> COUNT_THREE -> COUNT_FIVE
         links_config = [
-            (0, 1),  # 1 -> 2
-            (1, 3),  # 2 -> 4
-            (0, 2),  # 1 -> 3
-            (2, 4),  # 3 -> 5
+            (0, 1),  # 1 -> COUNT_TWO
+            (1, 3),  # 2 -> COUNT_FOUR
+            (0, 2),  # 1 -> COUNT_THREE
+            (2, 4),  # 3 -> COUNT_FIVE
         ]
 
         for source_idx, target_idx in links_config:
@@ -710,7 +712,7 @@ class TestGraphOperations:
 
     def test_find_shortest_path_exists(self, db_session, sample_project, sample_items_10) -> None:
         """Test finding shortest path between connected nodes."""
-        # Create: 1 -> 2 -> 3 -> 4
+        # Create: 1 -> COUNT_TWO -> COUNT_THREE -> COUNT_FOUR
         for i in range(3):
             link = Link(
                 project_id=sample_project.id,
@@ -745,13 +747,13 @@ class TestGraphOperations:
 
         path = find_shortest_path(sample_items_10[0].id, sample_items_10[3].id, graph)
         assert path is not None
-        assert len(path) == 4
+        assert len(path) == COUNT_FOUR
         assert path[0] == sample_items_10[0].id
         assert path[-1] == sample_items_10[3].id
 
     def test_find_shortest_path_no_path(self, db_session, sample_project, sample_items_10) -> None:
         """Test finding path between unconnected nodes."""
-        # Create: 1 -> 2 and 5 -> 6 (two disconnected chains)
+        # Create: 1 -> COUNT_TWO and 5 -> 6 (two disconnected chains)
         link1 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
@@ -794,10 +796,10 @@ class TestGraphOperations:
 
     def test_detect_all_cycles(self, db_session, sample_project, sample_items_10) -> None:
         """Test detecting all cycles in graph."""
-        # Create a cycle: 1 -> 2 -> 3 -> 1
+        # Create a cycle: 1 -> COUNT_TWO -> COUNT_THREE -> 1
         links_config = [
-            (0, 1),  # 1 -> 2
-            (1, 2),  # 2 -> 3
+            (0, 1),  # 1 -> COUNT_TWO
+            (1, 2),  # 2 -> COUNT_THREE
             (2, 0),  # 3 -> 1 (creates cycle)
         ]
 
@@ -869,7 +871,7 @@ class TestCircularDependencyValidation:
 
     def test_detect_two_node_cycle(self, db_session, sample_project, sample_items_10) -> None:
         """Test detecting two-node cycle (mutual dependency)."""
-        # 1 <-> 2
+        # 1 <-> COUNT_TWO
         link1 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
@@ -905,7 +907,7 @@ class TestCircularDependencyValidation:
 
     def test_complex_cycle_detection(self, db_session, sample_project, sample_items_10) -> None:
         """Test detecting complex cycle patterns."""
-        # Create: 1 -> 2 -> 3 -> 4, with 4 -> 1 (creates cycle)
+        # Create: 1 -> COUNT_TWO -> COUNT_THREE -> COUNT_FOUR, with 4 -> 1 (creates cycle)
         links_config = [
             (0, 1),
             (1, 2),
@@ -930,7 +932,7 @@ class TestCircularDependencyValidation:
 
     def test_no_cycle_in_dag(self, db_session, sample_project, sample_items_10) -> None:
         """Test that DAG (directed acyclic graph) has no cycles."""
-        # Create: 1 -> 2, 1 -> 3, 2 -> 4, 3 -> 4 (diamond DAG)
+        # Create: 1 -> COUNT_TWO, 1 -> COUNT_THREE, 2 -> COUNT_FOUR, 3 -> COUNT_FOUR (diamond DAG)
         links_config = [
             (0, 1),
             (0, 2),
@@ -1037,7 +1039,7 @@ class TestDeletionCascades:
         db_session.commit()
 
         initial_count = db_session.query(Link).filter_by(project_id=project.id).count()
-        assert initial_count == 2
+        assert initial_count == COUNT_TWO
 
         # Delete links first due to FK constraints (then items, then project)
         db_session.query(Link).filter_by(project_id=project.id).delete()
@@ -1235,7 +1237,7 @@ class TestLinkPerformance:
         # Should complete in reasonable time
         count = db_session.query(Link).filter_by(project_id=sample_project.id).count()
         assert count == 49
-        assert elapsed < 5.0  # Should be fast
+        assert elapsed < COUNT_FIVE.0  # Should be fast
 
     def test_query_large_link_set_performance(self, db_session, sample_project, sample_items_50) -> None:
         """Test querying large link sets efficiently."""
@@ -1435,13 +1437,13 @@ class TestLinkItemIntegration:
             .all()
         )
 
-        assert len(all_links) == 5
+        assert len(all_links) == COUNT_FIVE
         types = {l.link_type for l in all_links}
         assert types == set(link_types)
 
     def test_item_deletion_preserves_other_items(self, db_session, sample_project, sample_items_10) -> None:
         """Test links when an item in chain is deleted."""
-        # Create chain: 1 -> 2 -> 3 -> 4
+        # Create chain: 1 -> COUNT_TWO -> COUNT_THREE -> COUNT_FOUR
         for i in range(3):
             link = Link(
                 project_id=sample_project.id,
@@ -1454,7 +1456,7 @@ class TestLinkItemIntegration:
         db_session.commit()
 
         initial_count = db_session.query(Link).count()
-        assert initial_count == 3
+        assert initial_count == COUNT_THREE
 
         # Delete links connected to middle item (index 1)
         middle_item = sample_items_10[1]
@@ -1517,7 +1519,7 @@ class TestLinkIndexing:
         # Query by source
         links = db_session.query(Link).filter_by(source_item_id=sample_items_10[0].id).all()
 
-        assert len(links) == 5
+        assert len(links) == COUNT_FIVE
 
     def test_query_by_type_uses_index(self, db_session, sample_project, sample_items_10) -> None:
         """Test that type queries are efficient."""
@@ -1545,7 +1547,7 @@ class TestLinkIndexing:
         # Query by type
         links = db_session.query(Link).filter_by(project_id=sample_project.id, link_type="depends_on").all()
 
-        assert len(links) == 3
+        assert len(links) == COUNT_THREE
 
     def test_query_by_source_target_combination(self, db_session, sample_project, sample_items_10) -> None:
         """Test compound queries using source and target."""

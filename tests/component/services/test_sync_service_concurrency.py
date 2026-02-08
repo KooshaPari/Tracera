@@ -13,6 +13,8 @@ Target: 90%+ coverage for sync_service.py
 
 import asyncio
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE
+
 
 import pytest
 
@@ -44,7 +46,7 @@ class TestSyncServiceConcurrency:
         results = await asyncio.gather(*tasks)
 
         # Verify all complete successfully
-        assert len(results) == 5
+        assert len(results) == COUNT_FIVE
         assert all(isinstance(r, dict) for r in results)
         assert all(r.get("synced") is True for r in results)
 
@@ -56,7 +58,7 @@ class TestSyncServiceConcurrency:
             result = await service.sync()
             results.append(result)
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(r["synced"] is True for r in results)
 
     async def test_concurrent_sync_different_targets(self, service) -> None:
@@ -78,7 +80,7 @@ class TestSyncServiceConcurrency:
         duration = time.time() - start
 
         # Should complete quickly
-        assert duration < 3.0, f"50 syncs took {duration}s, expected < 3s"
+        assert duration < COUNT_THREE.0, f"50 syncs took {duration}s, expected < COUNT_THREEs"
 
 
 @pytest.mark.asyncio
@@ -272,7 +274,7 @@ class TestSyncServiceValidation:
         tasks = [s.sync() for s in services]
         results = await asyncio.gather(*tasks)
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(r["synced"] is True for r in results)
 
     async def test_service_reuse_stability(self) -> None:
@@ -314,7 +316,7 @@ class TestSyncServicePerformance:
         duration = time.time() - start
 
         # 20 concurrent syncs
-        assert duration < 3.0, f"20 syncs took {duration}s, expected < 3s"
+        assert duration < COUNT_THREE.0, f"20 syncs took {duration}s, expected < COUNT_THREEs"
 
     async def test_sync_memory_efficiency(self, service) -> None:
         """Test sync doesn't accumulate memory."""

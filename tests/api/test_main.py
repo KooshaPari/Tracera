@@ -2,6 +2,8 @@ from datetime import UTC, datetime, timezone
 from types import SimpleNamespace
 from typing import cast
 from uuid import uuid4
+from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK
+
 
 import pytest
 import pytest_asyncio
@@ -118,7 +120,7 @@ async def client():
 @pytest.mark.asyncio
 async def test_health_check(client: AsyncClient) -> None:
     response = await client.get("/health")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     payload = response.json()
     assert payload["status"] == "healthy"
     assert payload["service"] == "TraceRTM API"
@@ -127,9 +129,9 @@ async def test_health_check(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_list_items_returns_paginated_subset(client: AsyncClient) -> None:
     response = await client.get("/api/v1/items", params={"project_id": "p1", "skip": 1, "limit": 1})
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     payload = response.json()
-    assert payload["total"] == 3
+    assert payload["total"] == COUNT_THREE
     assert len(payload["items"]) == 1
     assert {"id", "title", "view", "status"}.issubset(payload["items"][0].keys())
 
@@ -138,7 +140,7 @@ async def test_list_items_returns_paginated_subset(client: AsyncClient) -> None:
 async def test_get_item_returns_data(client: AsyncClient) -> None:
     target_id = _FakeItemRepository._seeded_ids[0]
     response = await client.get(f"/api/v1/items/{target_id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     payload = response.json()
     assert payload["id"] == target_id
     assert payload["title"]
@@ -148,34 +150,34 @@ async def test_get_item_returns_data(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_get_item_not_found_returns_404(client: AsyncClient) -> None:
     response = await client.get("/api/v1/items/missing-id")
-    assert response.status_code == 404
+    assert response.status_code == HTTP_NOT_FOUND
 
 
 @pytest.mark.asyncio
 async def test_list_links(client: AsyncClient) -> None:
     response = await client.get("/api/v1/links", params={"project_id": "p1"})
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     payload = response.json()
-    assert payload["total"] == 2
-    assert len(payload["links"]) == 2
+    assert payload["total"] == COUNT_TWO
+    assert len(payload["links"]) == COUNT_TWO
     assert {"id", "source_id", "target_id", "type"}.issubset(payload["links"][0].keys())
 
 
 @pytest.mark.asyncio
 async def test_get_impact_analysis(client: AsyncClient) -> None:
     response = await client.get("/api/v1/analysis/impact/item-1", params={"project_id": "p1"})
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     payload = response.json()
     assert payload["root_item_id"] == "item-1"
-    assert payload["total_affected"] == 2
-    assert payload["max_depth"] == 3
+    assert payload["total_affected"] == COUNT_TWO
+    assert payload["max_depth"] == COUNT_THREE
     assert payload["affected_items"] == ["a1", "a2"]
 
 
 @pytest.mark.asyncio
 async def test_detect_cycles(client: AsyncClient) -> None:
     response = await client.get("/api/v1/analysis/cycles/p1")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     payload = response.json()
     assert payload["has_cycles"] is True
     assert payload["total_cycles"] == 1
@@ -189,10 +191,10 @@ async def test_find_shortest_path(client: AsyncClient) -> None:
         "/api/v1/analysis/shortest-path",
         params={"project_id": "p1", "source_id": "a", "target_id": "b"},
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     payload = response.json()
     assert payload["exists"] is True
-    assert payload["distance"] == 2
+    assert payload["distance"] == COUNT_TWO
     assert payload["path"] == ["a", "mid", "b"]
     assert payload["link_types"] == ["DEPENDS_ON"]
 
@@ -203,4 +205,4 @@ async def test_get_db_raises_when_missing_database_url(monkeypatch) -> None:
     with pytest.raises(HTTPException) as exc_info:
         await anext(main.get_db())
     exc = cast("HTTPException", exc_info.value)
-    assert exc.status_code == 500
+    assert exc.status_code == HTTP_INTERNAL_SERVER_ERROR

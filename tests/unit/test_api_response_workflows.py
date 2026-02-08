@@ -11,6 +11,8 @@ Complete coverage of:
 import json
 from datetime import datetime, timedelta
 from typing import Never
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO, HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND
+
 
 
 class TestAPIResponsePaths:
@@ -35,8 +37,8 @@ class TestAPIResponsePaths:
             "skip": 0,
             "limit": 10,
         }
-        assert len(response["items"]) == 2
-        assert response["total"] == 2
+        assert len(response["items"]) == COUNT_TWO
+        assert response["total"] == COUNT_TWO
 
     def test_item_update_response(self) -> None:
         """Test item update response."""
@@ -66,17 +68,17 @@ class TestAPIResponsePaths:
     def test_error_response_400(self) -> None:
         """Test 400 error response."""
         response: dict[str, str | int] = {"error": "Bad Request", "code": 400, "details": "Invalid field"}
-        assert response["code"] == 400
+        assert response["code"] == HTTP_BAD_REQUEST
 
     def test_error_response_404(self) -> None:
         """Test 404 error response."""
         response: dict[str, str | int] = {"error": "Not Found", "code": 404}
-        assert response["code"] == 404
+        assert response["code"] == HTTP_NOT_FOUND
 
     def test_error_response_500(self) -> None:
         """Test 500 error response."""
         response: dict[str, str | int] = {"error": "Server Error", "code": 500}
-        assert response["code"] >= 500
+        assert response["code"] >= HTTP_INTERNAL_SERVER_ERROR
 
 
 class TestComplexServiceImplementations:
@@ -97,7 +99,7 @@ class TestComplexServiceImplementations:
 
         graph = {1: [2, 3], 2: [4], 3: [4], 4: []}
         result = analyze_impact(1, graph)
-        assert len(result) == 4
+        assert len(result) == COUNT_FOUR
 
     def test_shortest_path_full_flow(self) -> None:
         """Test shortest path full flow."""
@@ -179,7 +181,7 @@ class TestAdvancedWorkflows:
         item2 = create_item("Item 2")
         create_link(item1["id"], item2["id"])
 
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
         assert len(links) == 1
 
     def test_backup_and_restore_workflow(self) -> None:
@@ -326,7 +328,7 @@ class TestErrorRecovery:
         def operation() -> str:
             nonlocal attempts
             attempts += 1
-            if attempts < 3:
+            if attempts < COUNT_THREE:
                 msg = "Temporary failure"
                 raise Exception(msg)
             return "success"
@@ -403,7 +405,7 @@ class TestDataConsistency:
         def transfer(amount) -> bool:
             # Simulate transaction
             data["balance"] -= amount
-            if amount > 500:  # Rollback condition
+            if amount > HTTP_INTERNAL_SERVER_ERROR:  # Rollback condition
                 data["balance"] += amount
                 return False
             return True
@@ -470,7 +472,7 @@ class TestMonitoring:
         log("INFO", "Application started")
         log("ERROR", "Connection failed")
 
-        assert len(logs) == 2
+        assert len(logs) == COUNT_TWO
         assert logs[1]["level"] == "ERROR"
 
     def test_health_check(self) -> None:
@@ -497,4 +499,4 @@ class TestMonitoring:
         trigger_alert("CRITICAL", "High error rate detected")
         trigger_alert("WARNING", "Slow response time")
 
-        assert len(alerts) == 2
+        assert len(alerts) == COUNT_TWO

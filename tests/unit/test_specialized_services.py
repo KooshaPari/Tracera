@@ -1,4 +1,6 @@
 """Phase 7: Specialized Services & Advanced Features (Recreated)."""
+from tests.test_constants import COUNT_TWO
+
 
 
 class TestTraceabilityMatrix:
@@ -33,7 +35,7 @@ class TestTraceabilityMatrix:
             return coverage
 
         result = analyze(matrix)
-        assert result[1] == 2 / 3
+        assert result[1] == COUNT_TWO / 3
         assert result[3] == 1 / 3
 
     def test_gap_identification(self) -> None:
@@ -126,7 +128,7 @@ class TestAdvancedFiltering:
 
         filters = {"status": {"eq": "active"}, "priority": {"min": 5}}
         result = apply_filters(items, filters)
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     def test_range_filtering(self) -> None:
         """Test range filtering."""
@@ -155,7 +157,7 @@ class TestPerformanceTuning:
             return [q for q in queries if q["duration_ms"] > threshold_ms]
 
         result = find_slow(queries)
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     def test_cache_effectiveness(self) -> None:
         """Test cache effectiveness."""
@@ -207,7 +209,7 @@ class TestAuditTrail:
         log_action("create", "user1")
         log_action("update", "user2")
 
-        assert len(audit_log) == 2
+        assert len(audit_log) == COUNT_TWO
         assert audit_log[0]["action"] == "create"
 
     def test_lineage_tracking(self) -> None:

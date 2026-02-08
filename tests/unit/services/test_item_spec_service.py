@@ -1,6 +1,8 @@
 """Tests for item_spec_service module."""
 
 import pytest
+from tests.test_constants import COUNT_TWO
+
 
 from tracertm.services.item_spec_service import (
     RequirementQualityAnalyzer,
@@ -49,9 +51,9 @@ class TestRequirementQualityAnalyzer:
 
         result = analyzer.analyze(text)
 
-        assert len(result["ambiguous_terms"]) >= 2
+        assert len(result["ambiguous_terms"]) >= COUNT_TWO
         ambiguity_issues = [i for i in result["issues"] if i["dimension"] == "unambiguity"]
-        assert len(ambiguity_issues) >= 2
+        assert len(ambiguity_issues) >= COUNT_TWO
 
     def test_completeness_detection(self, analyzer) -> None:
         """Test detection of incomplete requirements."""

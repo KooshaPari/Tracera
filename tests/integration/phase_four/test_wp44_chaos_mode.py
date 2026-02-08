@@ -15,6 +15,8 @@ Total: 50+ comprehensive failure scenario tests
 """
 
 from typing import cast
+from tests.test_constants import COUNT_TEN
+
 
 import pytest
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -336,7 +338,7 @@ class TestPartialFailureScenarios:
         db_session.commit()
 
         remaining = db_session.query(Item).filter_by(project_id="bulk-delete-fail-proj").count()
-        assert remaining == 10
+        assert remaining == COUNT_TEN
 
     def test_broken_links_detection(self, db_session: Session) -> None:
         """Test detection of broken links after item deletion."""
@@ -461,7 +463,7 @@ class TestNetworkTimeouts:
 
         # Retrieve items
         results = db_session.query(Item).filter_by(project_id="partial-resp-proj").all()
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
 
 
 class TestRecoveryAndRetry:

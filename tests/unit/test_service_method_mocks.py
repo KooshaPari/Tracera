@@ -8,6 +8,8 @@ Direct testing of actual service methods:
 """
 
 from unittest.mock import Mock, patch
+from tests.test_constants import COUNT_TWO
+
 
 
 class TestImpactAnalysisServiceMethods:
@@ -245,7 +247,7 @@ class TestItemServiceMethods:
         mock_service.list = Mock(return_value=[{"id": 1}, {"id": 2}])
 
         result = mock_service.list()
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
 
 class TestLinkServiceMethods:

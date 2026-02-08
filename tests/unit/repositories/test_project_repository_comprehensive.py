@@ -9,6 +9,8 @@ This file covers all missing functionality identified in coverage analysis:
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -170,7 +172,7 @@ async def test_get_all_returns_all_projects(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     all_projects = await repo.get_all()
-    assert len(all_projects) >= 3
+    assert len(all_projects) >= COUNT_THREE
 
     project_ids = {p.id for p in all_projects}
     assert project1.id in project_ids

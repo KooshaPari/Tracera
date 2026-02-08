@@ -2,6 +2,8 @@
 
 import asyncio
 from unittest.mock import AsyncMock, patch
+from tests.test_constants import COUNT_TEN, COUNT_THREE
+
 
 import httpx
 import pytest
@@ -43,7 +45,7 @@ async def mock_go_server(aiohttp_server, aiohttp_client):  # noqa: ARG001
 
     async def retry_handler(request):  # noqa: ARG001
         request_count["count"] += 1
-        if request_count["count"] < 3:
+        if request_count["count"] < COUNT_THREE:
             return web.Response(status=503, text="Service Unavailable")
         return web.json_response({"status": "success", "attempt": request_count["count"]})
 
@@ -115,7 +117,7 @@ async def test_go_client_retry_logic(mock_go_server) -> None:
         # This endpoint fails twice then succeeds
         result = await client._request("GET", "/test/retry")
         assert result["status"] == "success"
-        assert result["attempt"] >= 3  # Should have retried at least 3 times
+        assert result["attempt"] >= COUNT_THREE  # Should have retried at least 3 times
 
 
 @pytest.mark.asyncio
@@ -232,9 +234,9 @@ async def test_go_client_concurrent_requests() -> None:
             tasks = [client._request("GET", f"/test/{i}") for i in range(10)]
             results = await asyncio.gather(*tasks)
 
-            assert len(results) == 10
+            assert len(results) == COUNT_TEN
             assert all(r["status"] == "ok" for r in results)
-            assert mock_client.request.call_count == 10
+            assert mock_client.request.call_count == COUNT_TEN
 
 
 @pytest.mark.asyncio

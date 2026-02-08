@@ -5,6 +5,8 @@ unhandled exception) and that validators enforce documented constraints.
 """
 
 import string
+from tests.test_constants import COUNT_FOUR
+
 
 import pytest
 from hypothesis import assume, given, settings
@@ -179,7 +181,7 @@ class TestUUIDValidator:
     def test_random_text_not_valid_uuid(self, text: str) -> None:
         """Random alphanumeric strings that aren't UUIDs should fail validation."""
         # Filter out strings that happen to be valid UUIDs
-        assume(len(text) != 36 or text.count("-") != 4)
+        assume(len(text) != 36 or text.count("-") != COUNT_FOUR)
         assert not is_valid_uuid(text)
 
     @given(uuid_str=st.uuids().map(str), padding=st.sampled_from(["", " ", "  ", "\t", "\n"]))

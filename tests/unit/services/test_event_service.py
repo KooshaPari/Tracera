@@ -3,6 +3,8 @@
 from datetime import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -145,7 +147,7 @@ class TestEventServiceGetItemHistory:
         result = await event_service.get_item_history(test_data["item_id"])
 
         assert isinstance(result, list)
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         event_service.events.get_by_entity.assert_called_once_with(test_data["item_id"])
 
     @pytest.mark.asyncio

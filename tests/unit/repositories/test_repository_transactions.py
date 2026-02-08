@@ -2,6 +2,8 @@
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
@@ -155,15 +157,15 @@ async def test_multiple_updates_increment_version(db_session: AsyncSession) -> N
 
     # First update
     updated1 = await item_repo.update(item.id, expected_version=1, title="Update 1")
-    assert updated1.version == 2
+    assert updated1.version == COUNT_TWO
 
     # Second update
     updated2 = await item_repo.update(item.id, expected_version=2, title="Update 2")
-    assert updated2.version == 3
+    assert updated2.version == COUNT_THREE
 
     # Third update
     updated3 = await item_repo.update(item.id, expected_version=3, title="Update 3")
-    assert updated3.version == 4
+    assert updated3.version == COUNT_FOUR
 
 
 @pytest.mark.unit
@@ -216,7 +218,7 @@ async def test_delete_item_by_links_count(db_session: AsyncSession) -> None:
 
     # Delete all links for item1
     count = await link_repo.delete_by_item(item1.id)
-    assert count == 3
+    assert count == COUNT_THREE
 
     # Verify links are deleted
     await db_session.commit()

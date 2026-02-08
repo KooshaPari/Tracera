@@ -1,6 +1,8 @@
 """Unit tests for specification services."""
 
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -117,8 +119,8 @@ class TestADRService:
         results, total = await service.list_by_project("proj-1", status="proposed")
 
         # Assert
-        assert total == 2
-        assert len(results) == 2
+        assert total == COUNT_TWO
+        assert len(results) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_adr(self, service, mock_session) -> None:
@@ -143,7 +145,7 @@ class TestADRService:
         # Assert
         assert updated.title == "New title"
         assert updated.status == "accepted"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
         mock_session.add.assert_called()
 
     @pytest.mark.asyncio
@@ -183,7 +185,7 @@ class TestADRService:
 
         # Assert
         assert result.compliance_score == 0.85
-        assert result.version == 2
+        assert result.version == COUNT_TWO
         assert result.last_verified_at is not None
 
     @pytest.mark.asyncio
@@ -297,7 +299,7 @@ class TestContractService:
         # Assert
         assert result.verification_result == verification_result
         assert result.last_verified_at is not None
-        assert result.version == 2
+        assert result.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_execute_transition(self, service, mock_session) -> None:  # noqa: ARG002
@@ -491,7 +493,7 @@ class TestScenarioService:
 
         # Assert
         assert result.pass_rate == 0.85
-        assert result.version == 2
+        assert result.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_link_test_cases(self, service, mock_session) -> None:  # noqa: ARG002

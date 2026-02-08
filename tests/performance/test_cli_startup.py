@@ -2,7 +2,7 @@
 
 Tests startup time, memory usage, and initialization performance
 to ensure CLI meets performance targets:
-- Startup time < 500ms
+- Startup time < HTTP_INTERNAL_SERVER_ERRORms
 - Memory usage < 50MB
 - Common commands < 100ms
 """
@@ -12,6 +12,8 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from tests.test_constants import COUNT_TEN, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 
@@ -99,7 +101,7 @@ def memory_tracker():
 def test_cli_startup_time_cold(cli_path, perf_tracker) -> None:
     """Test cold startup time (no cache).
 
-    Requirement: Startup time < 500ms
+    Requirement: Startup time < HTTP_INTERNAL_SERVER_ERRORms
     """
     # Clear any caches
     cache_dir = Path.home() / ".cache" / "tracertm"
@@ -242,7 +244,7 @@ def test_cli_memory_no_leaks(cli_path) -> None:
     max_growth = max(memory_samples)
 
     # Memory should not grow significantly across runs
-    assert max_growth < 10, f"Memory leak detected: {max_growth:.2f}MB growth"
+    assert max_growth < COUNT_TEN, f"Memory leak detected: {max_growth:.2f}MB growth"
 
 
 # ============================================================

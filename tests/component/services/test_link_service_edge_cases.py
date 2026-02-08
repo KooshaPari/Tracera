@@ -13,6 +13,8 @@ Target: 90%+ coverage for link_service.py
 
 import asyncio
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_TEN, COUNT_TWO
+
 
 import pytest
 
@@ -114,7 +116,7 @@ class TestLinkServiceConcurrency:
         duration = time.time() - start
 
         # Should complete quickly
-        assert duration < 2.0, f"100 operations took {duration}s, expected < 2s"
+        assert duration < COUNT_TWO.0, f"100 operations took {duration}s, expected < COUNT_TWOs"
 
     async def test_link_operation_timeout(self, service) -> None:
         """Test link operations with timeout."""
@@ -230,7 +232,7 @@ class TestLinkServiceDataIntegrity:
         tasks = [s.list_links(source=f"item_{i}") for i, s in enumerate(services)]
         results = await asyncio.gather(*tasks)
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(isinstance(r, list) for r in results)
 
     async def test_service_reuse_stability(self) -> None:

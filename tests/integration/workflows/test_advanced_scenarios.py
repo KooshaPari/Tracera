@@ -27,6 +27,8 @@ Total: 50+ advanced integration scenario tests
 
 from datetime import datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import select
@@ -93,7 +95,7 @@ class TestComplexDependencyWorkflows:
 
         # Verify cycle exists (detection would be in service layer)
         all_links = sync_db_session.execute(select(Link).where(Link.project_id == str(project.id))).scalars().all()
-        assert len(all_links) == 3
+        assert len(all_links) == COUNT_THREE
 
     def test_transitive_dependency_updates(self, sync_db_session: Session) -> None:
         """Scenario: A depends on B, B depends on C. Update C → propagate to A.
@@ -253,11 +255,11 @@ class TestComplexDependencyWorkflows:
 
         # Verify diamond structure
         all_links = sync_db_session.execute(select(Link).where(Link.project_id == str(project.id))).scalars().all()
-        assert len(all_links) == 4
+        assert len(all_links) == COUNT_FOUR
 
         # Verify node D has 2 incoming
         d_incoming = sync_db_session.execute(select(Link).where(Link.target_item_id == items["D"].id)).scalars().all()
-        assert len(d_incoming) == 2
+        assert len(d_incoming) == COUNT_TWO
 
 
 # ============================================================================
@@ -310,7 +312,7 @@ class TestConcurrentAccessAndLocking:
         # Verify merged state
         final_item = sync_db_session.get(Item, item.id)
         assert final_item is not None
-        assert final_item.item_metadata["version"] == 3
+        assert final_item.item_metadata["version"] == COUNT_THREE
         assert final_item.item_metadata["edited_by"] == "user_b"
         assert final_item.item_metadata["description"] == "Added by User B"
         assert final_item.title == "Modified by User A"
@@ -539,7 +541,7 @@ class TestDataMigrationAndTransformation:
 
         # Verify conversion
         imported_items = sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
-        assert len(imported_items) == 2
+        assert len(imported_items) == COUNT_TWO
 
         item1 = sync_db_session.get(Item, "LEGACY-001")
         assert item1 is not None and item1.title == "Legacy Item 1"
@@ -584,7 +586,7 @@ class TestDataMigrationAndTransformation:
         # Verify all reconciled
         all_items = sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
         reconciled_count = sum(1 for i in all_items if i.item_metadata.get("reconciled", False))
-        assert reconciled_count == 5
+        assert reconciled_count == COUNT_FIVE
 
 
 # ============================================================================
@@ -735,7 +737,7 @@ class TestExportImportCycles:
 
         # Verify export
         exported_links = sync_db_session.execute(select(Link).where(Link.project_id == str(project.id))).scalars().all()
-        assert len(exported_links) == 2
+        assert len(exported_links) == COUNT_TWO
 
         # Verify link types
         dep_links = [l for l in exported_links if l.link_type == "depends_on"]

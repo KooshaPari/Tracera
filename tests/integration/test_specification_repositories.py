@@ -15,6 +15,8 @@ Target Coverage: 90%+ for specification repositories
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.models.item import Item
@@ -116,7 +118,7 @@ async def test_adr_create_with_full_metadata(db_session: AsyncSession, test_proj
     await db_session.commit()
 
     assert adr.decision_drivers == ["performance", "scalability"]
-    assert len(adr.considered_options or []) == 2
+    assert len(adr.considered_options or []) == COUNT_TWO
     assert adr.compliance_score == 0.95
     assert adr.version == 1
 
@@ -178,7 +180,7 @@ async def test_adr_list_by_project(db_session: AsyncSession, test_project: Proje
     await db_session.commit()
 
     adrs = await repo.list_by_project(str(test_project.id))
-    assert len(adrs) == 3
+    assert len(adrs) == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -222,7 +224,7 @@ async def test_adr_update_with_locking(db_session: AsyncSession, test_project: P
     # Update with correct version
     updated = await repo.update(adr.id, adr.version, title="Updated")
     assert updated.title == "Updated"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -309,7 +311,7 @@ async def test_adr_count_by_status(db_session: AsyncSession, test_project: Proje
     await db_session.commit()
 
     counts = await repo.count_by_status(str(test_project.id))
-    assert counts.get("proposed") == 2
+    assert counts.get("proposed") == COUNT_TWO
     assert counts.get("accepted") == 1
 
 
@@ -368,9 +370,9 @@ async def test_contract_create_with_specification(db_session: AsyncSession, test
     )
     await db_session.commit()
 
-    assert len(contract.preconditions or []) == 2
-    assert len(contract.postconditions or []) == 2
-    assert len(contract.states or []) == 4
+    assert len(contract.preconditions or []) == COUNT_TWO
+    assert len(contract.postconditions or []) == COUNT_TWO
+    assert len(contract.states or []) == COUNT_FOUR
     assert contract.spec_language == "javascript"
 
 
@@ -386,7 +388,7 @@ async def test_contract_list_by_item(db_session: AsyncSession, test_project: Pro
     await db_session.commit()
 
     contracts = await repo.list_by_item(str(test_item.id))
-    assert len(contracts) == 3
+    assert len(contracts) == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -486,7 +488,7 @@ async def test_feature_list_by_project(db_session: AsyncSession, test_project: P
     await db_session.commit()
 
     features = await repo.list_by_project(str(test_project.id))
-    assert len(features) == 3
+    assert len(features) == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -562,9 +564,9 @@ async def test_scenario_create_with_steps(db_session: AsyncSession, test_project
     )
     await db_session.commit()
 
-    assert len(scenario.given_steps or []) == 2
+    assert len(scenario.given_steps or []) == COUNT_TWO
     assert len(scenario.when_steps or []) == 1
-    assert len(scenario.then_steps or []) == 2
+    assert len(scenario.then_steps or []) == COUNT_TWO
     assert scenario.pass_rate == 0.0
 
 
@@ -591,7 +593,7 @@ async def test_scenario_create_outline(db_session: AsyncSession, test_project: P
 
     assert scenario.is_outline
     assert scenario.examples is not None and isinstance(scenario.examples, dict)
-    assert len((scenario.examples or {}).get("rows", [])) == 3
+    assert len((scenario.examples or {}).get("rows", [])) == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -608,7 +610,7 @@ async def test_scenario_list_by_feature(db_session: AsyncSession, test_project: 
     await db_session.commit()
 
     scenarios = await repo_scenario.list_by_feature(feature.id)
-    assert len(scenarios) == 3
+    assert len(scenarios) == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -663,7 +665,7 @@ async def test_scenario_count_by_status(db_session: AsyncSession, test_project: 
     await db_session.commit()
 
     counts = await repo_scenario.count_by_status(feature.id)
-    assert counts.get("draft") == 2
+    assert counts.get("draft") == COUNT_TWO
     assert counts.get("ready") == 1
 
 
@@ -701,7 +703,7 @@ async def test_scenario_version_locking(db_session: AsyncSession, test_project: 
     # Update with correct version
     updated = await repo_scenario.update(scenario.id, scenario.version, title="Updated")
     assert updated.title == "Updated"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
     # Try with wrong version
     with pytest.raises(ConcurrencyError):

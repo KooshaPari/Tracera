@@ -14,6 +14,8 @@ import tempfile
 import uuid
 from datetime import datetime
 from pathlib import Path
+from tests.test_constants import COUNT_FIVE
+
 
 import pytest
 import yaml
@@ -511,7 +513,7 @@ class TestSyncQueueOperations:
             storage_manager.queue_sync("item", f"item-{i}", "create", {"title": f"Item {i}"})
 
         queue = storage_manager.get_sync_queue(limit=5)
-        assert len(queue) == 5
+        assert len(queue) == COUNT_FIVE
 
     def test_clear_sync_queue_entry(self, storage_manager) -> None:
         """Test removing queue entry."""

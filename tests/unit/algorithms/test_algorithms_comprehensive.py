@@ -18,6 +18,8 @@ Target: 100+ tests for comprehensive algorithm coverage
 import asyncio
 import time
 from unittest.mock import AsyncMock, Mock
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from hypothesis import assume, given, settings
@@ -230,7 +232,7 @@ class TestCycleDetectionAlgorithms:
         result = service.detect_cycles("proj1", link_type="depends_on")
 
         assert result.has_cycles is True
-        assert result.cycle_count >= 3  # At least 3 cycles in K3
+        assert result.cycle_count >= COUNT_THREE  # At least 3 cycles in K3
 
     def test_complete_graph_4_nodes_has_many_cycles(self, service, mock_session) -> None:
         """Test complete graph K4 has many cycles."""
@@ -248,7 +250,7 @@ class TestCycleDetectionAlgorithms:
         result = service.detect_cycles("proj1", link_type="depends_on")
 
         assert result.has_cycles is True
-        assert result.cycle_count >= 4  # Many cycles in K4
+        assert result.cycle_count >= COUNT_FOUR  # Many cycles in K4
 
     # Linear Chain Tests
     def test_linear_chain_short_no_cycle(self, service, mock_session) -> None:
@@ -324,7 +326,7 @@ class TestCycleDetectionAlgorithms:
         result = service.detect_cycles("proj1", link_type="depends_on")
 
         assert result.has_cycles is True
-        assert result.cycle_count >= 2
+        assert result.cycle_count >= COUNT_TWO
 
     def test_nested_cycles(self, service, mock_session) -> None:
         """Test nested cycles sharing nodes."""
@@ -342,7 +344,7 @@ class TestCycleDetectionAlgorithms:
         result = service.detect_cycles("proj1", link_type="depends_on")
 
         assert result.has_cycles is True
-        assert result.cycle_count >= 2
+        assert result.cycle_count >= COUNT_TWO
 
     # Large Cycle Tests
     def test_large_cycle_10_nodes(self, service, mock_session) -> None:
@@ -549,7 +551,7 @@ class TestShortestPathAlgorithms:
         result = await service.find_shortest_path("proj1", "N0", "N4")
 
         assert result.exists is True
-        assert result.distance == 4
+        assert result.distance == COUNT_FOUR
         assert result.path == ["N0", "N1", "N2", "N3", "N4"]
 
     # Multiple Paths Tests
@@ -649,7 +651,7 @@ class TestShortestPathAlgorithms:
         assert "C" in results
         assert "D" in results
         assert results["B"].distance == 1
-        assert results["D"].distance == 2
+        assert results["D"].distance == COUNT_TWO
 
 
 # ============================================================================
@@ -715,9 +717,9 @@ class TestImpactAnalysisAlgorithms:
 
         result = await service.analyze_impact("A", max_depth=10)
 
-        assert result.total_affected == 2
+        assert result.total_affected == COUNT_TWO
         assert result.max_depth_reached == 1
-        assert result.affected_by_depth[1] == 2
+        assert result.affected_by_depth[1] == COUNT_TWO
 
     # Multi-Level Impact
     @pytest.mark.asyncio
@@ -745,8 +747,8 @@ class TestImpactAnalysisAlgorithms:
 
         result = await service.analyze_impact("A", max_depth=10)
 
-        assert result.total_affected == 2
-        assert result.max_depth_reached == 2
+        assert result.total_affected == COUNT_TWO
+        assert result.max_depth_reached == COUNT_TWO
         assert result.affected_by_depth[1] == 1
         assert result.affected_by_depth[2] == 1
 
@@ -781,8 +783,8 @@ class TestImpactAnalysisAlgorithms:
         # Limit depth to 2
         result = await service.analyze_impact("N0", max_depth=2)
 
-        assert result.max_depth_reached <= 2
-        assert result.total_affected <= 2  # Only N1 and N2
+        assert result.max_depth_reached <= COUNT_TWO
+        assert result.total_affected <= COUNT_TWO  # Only N1 and N2
 
     # Reverse Impact Tests
     @pytest.mark.asyncio
@@ -810,8 +812,8 @@ class TestImpactAnalysisAlgorithms:
 
         result = await service.analyze_reverse_impact("A", max_depth=10)
 
-        assert result.total_affected == 2  # B and C
-        assert result.max_depth_reached == 2
+        assert result.total_affected == COUNT_TWO  # B and C
+        assert result.max_depth_reached == COUNT_TWO
 
     # Critical Paths
     @pytest.mark.asyncio
@@ -889,7 +891,7 @@ class TestCriticalPathAlgorithms:
         result = await service.calculate_critical_path("proj1")
 
         # All nodes in linear chain are critical
-        assert len(result.critical_items) == 4
+        assert len(result.critical_items) == COUNT_FOUR
         assert all(result.slack_times[f"N{i}"] == 0 for i in range(4))
 
     # Parallel Paths Test
@@ -982,8 +984,8 @@ class TestAdvancedAnalyticsAlgorithms:
 
         metrics = await service.project_metrics("proj1")
 
-        assert metrics["total_items"] == 4
-        assert metrics["by_status"]["done"] == 2
+        assert metrics["total_items"] == COUNT_FOUR
+        assert metrics["by_status"]["done"] == COUNT_TWO
         assert metrics["completion_rate"] == 50.0  # 2/4 done
 
     # Completion Rate Tests
@@ -1034,10 +1036,10 @@ class TestAdvancedAnalyticsAlgorithms:
 
         metrics = await service.dependency_metrics("proj1")
 
-        assert metrics["total_items"] == 2
-        assert metrics["total_links"] == 3
+        assert metrics["total_items"] == COUNT_TWO
+        assert metrics["total_links"] == COUNT_THREE
         assert metrics["average_links_per_item"] == 1.5
-        assert metrics["link_types"]["depends_on"] == 2
+        assert metrics["link_types"]["depends_on"] == COUNT_TWO
         assert metrics["link_types"]["references"] == 1
 
     # Quality Metrics Tests
@@ -1069,7 +1071,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
         metrics = await service.quality_metrics("proj1")
 
-        assert metrics["total_items"] == 4
+        assert metrics["total_items"] == COUNT_FOUR
         assert metrics["description_coverage"] == 50.0  # 2/4 have descriptions
         assert metrics["link_coverage"] == 50.0  # 2/4 have links (items 0 and 3)
 
@@ -1105,7 +1107,7 @@ class TestAlgorithmPerformance:
         elapsed = time.time() - start_time
 
         assert result.has_cycles is False
-        assert elapsed < 2.0  # Should complete in under 2 seconds
+        assert elapsed < COUNT_TWO.0  # Should complete in under 2 seconds
 
     def test_cycle_detection_dense_graph_performance(self, mock_session) -> None:
         """Test cycle detection on dense graph (100 nodes, high connectivity)."""
@@ -1127,7 +1129,7 @@ class TestAlgorithmPerformance:
         result = service.detect_cycles("proj1", link_type="depends_on")
         elapsed = time.time() - start_time
 
-        assert elapsed < 2.0  # Should complete in under 2 seconds
+        assert elapsed < COUNT_TWO.0  # Should complete in under 2 seconds
 
     @pytest.mark.asyncio
     async def test_shortest_path_large_graph_performance(self) -> None:
@@ -1368,7 +1370,7 @@ class TestAlgorithmEdgeCases:
         result = service.detect_orphans("proj1")
 
         assert result["has_orphans"] is True
-        assert result["orphan_count"] == 2
+        assert result["orphan_count"] == COUNT_TWO
 
     def test_orphan_detection_no_orphans(self, mock_session) -> None:
         """Test orphan detection when no orphans exist."""
@@ -1422,7 +1424,7 @@ class TestAlgorithmEdgeCases:
         result = service.detect_cycles("proj1", link_type="depends_on")
 
         assert result.has_cycles is True
-        assert result.cycle_count >= 3  # At least 3 self-loop cycles
+        assert result.cycle_count >= COUNT_THREE  # At least 3 self-loop cycles
 
     # Very Large Cycle
     def test_very_large_cycle_500_nodes(self, mock_session) -> None:

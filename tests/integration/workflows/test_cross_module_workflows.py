@@ -33,6 +33,8 @@ Total: 70-90 comprehensive cross-module workflow tests
 import asyncio
 from datetime import datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.orm import Session
@@ -110,7 +112,7 @@ class TestItemCreationLinkingSyncExport:
 
         # Verify workflow state (repos are async; run coroutines)
         retrieved_items = asyncio.run(item_repo.get_by_project(str(project.id)))
-        assert len(retrieved_items) == 2
+        assert len(retrieved_items) == COUNT_TWO
 
         retrieved_links = asyncio.run(link_repo.get_by_source(str(item1.id)))
         assert len(retrieved_links) > 0
@@ -240,10 +242,10 @@ class TestItemCreationLinkingSyncExport:
 
         # Verify chain structure
         all_items = asyncio.run(item_repo.get_by_project(str(project.id)))
-        assert len(all_items) == 5
+        assert len(all_items) == COUNT_FIVE
 
         all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
-        assert len(all_links) == 4  # 5 items = 4 links in chain
+        assert len(all_links) == COUNT_FOUR  # 5 items = 4 links in chain
 
     def test_item_export_after_modifications(self, sync_db_session: Session) -> None:
         """Workflow: Create items → Modify → Link → Export.
@@ -325,7 +327,7 @@ class TestProjectSetupItemManagementWorkflow:
 
         # Verify project structure
         project_items = asyncio.run(item_repo.get_by_project(str(project.id)))
-        assert len(project_items) == 4
+        assert len(project_items) == COUNT_FOUR
 
     def test_project_item_bulk_update_workflow(self, sync_db_session: Session) -> None:
         """Workflow: Create items → Bulk update statuses → Verify consistency.
@@ -371,9 +373,9 @@ class TestProjectSetupItemManagementWorkflow:
         in_progress_count = sum(1 for i in all_items if i.status == "in_progress")
         done_count = sum(1 for i in all_items if i.status == "done")
 
-        assert in_progress_count == 5
-        assert done_count == 5
-        assert len(all_items) == 10
+        assert in_progress_count == COUNT_FIVE
+        assert done_count == COUNT_FIVE
+        assert len(all_items) == COUNT_TEN
 
     def test_project_milestone_with_cascading_item_updates(self, sync_db_session: Session) -> None:
         """Workflow: Create project → Create milestone items → Update parent → Cascade.
@@ -507,7 +509,7 @@ class TestSyncAndConflictWorkflows:
 
         # Verify final state
         sync_db_session.refresh(item)
-        assert item.item_metadata["version"] == 3
+        assert item.item_metadata["version"] == COUNT_THREE
         assert item.title == "Modified by User B"
 
     def test_sync_with_rollback_on_error(self, sync_db_session: Session) -> None:
@@ -589,7 +591,7 @@ class TestSyncAndConflictWorkflows:
         sync_db_session.commit()
 
         sync_db_session.refresh(item)
-        assert item.item_metadata["version"] == 3
+        assert item.item_metadata["version"] == COUNT_THREE
         assert item.item_metadata["change_b"] == "Applied"
 
 
@@ -849,7 +851,7 @@ class TestAdvancedIntegrationPatterns:
 
         # Verify graph structure
         links = asyncio.run(link_repo.get_by_project(str(project.id)))
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
         # Remove a link
         sync_db_session.delete(link1)
@@ -925,7 +927,7 @@ class TestAdvancedIntegrationPatterns:
 
         # Get all dependents
         all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
-        assert len(all_links) == 2
+        assert len(all_links) == COUNT_TWO
 
     def test_cross_view_item_reference_workflow(self, sync_db_session: Session) -> None:
         """Workflow: Create items across views → Link them → Query cross-view.
@@ -973,7 +975,7 @@ class TestAdvancedIntegrationPatterns:
 
         # Verify cross-view links
         all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
-        assert len(all_links) == 3
+        assert len(all_links) == COUNT_THREE
 
     def test_multi_project_cross_reference_workflow(self, sync_db_session: Session) -> None:
         """Workflow: Create items in multiple projects → Link across projects.
@@ -1074,8 +1076,8 @@ class TestStateConsistencyAndRecovery:
         sync_db_session.refresh(item1)
         sync_db_session.refresh(item2)
 
-        assert item1.item_metadata["update_version"] == 2
-        assert item2.item_metadata["update_version"] == 2
+        assert item1.item_metadata["update_version"] == COUNT_TWO
+        assert item2.item_metadata["update_version"] == COUNT_TWO
 
     def test_recovery_from_orphaned_links(self, sync_db_session: Session) -> None:
         """Workflow: Create link → Delete source item → Detect orphan → Cleanup.

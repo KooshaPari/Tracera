@@ -11,6 +11,8 @@ Focus areas:
 
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, Mock
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -220,7 +222,7 @@ class TestItemRepositoryCRUD:
 
         result = await item_repo.bulk_create("proj-1", [{"title": f"Item {i}"} for i in range(5)])
 
-        assert len(result) == 5
+        assert len(result) == COUNT_FIVE
 
 
 # ==============================================================================
@@ -239,7 +241,7 @@ class TestItemRepositoryQueries:
 
         result = await item_repo.list("proj-1")
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_list_with_pagination(self, item_repo, async_session) -> None:
@@ -249,7 +251,7 @@ class TestItemRepositoryQueries:
 
         result = await item_repo.list("proj-1", limit=2, offset=0)
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_list_by_status(self, item_repo, async_session) -> None:
@@ -353,7 +355,7 @@ class TestProjectRepository:
 
         result = await project_repo.list()
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_update_project(self, project_repo, async_session) -> None:
@@ -431,7 +433,7 @@ class TestLinkRepository:
 
         result = await link_repo.get_outgoing("proj-1", "item-1")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_get_links_by_target(self, link_repo, async_session) -> None:
@@ -441,7 +443,7 @@ class TestLinkRepository:
 
         result = await link_repo.get_incoming("proj-1", "item-1")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_bulk_create_links(self, link_repo, async_session) -> None:
@@ -458,7 +460,7 @@ class TestLinkRepository:
             ],
         )
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
 
 # ==============================================================================

@@ -6,6 +6,8 @@ requiring a running Redis instance.
 
 import hashlib
 from typing import Any
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 from hypothesis import assume, given, settings
@@ -84,7 +86,7 @@ class TestCacheKeyDeterminism:
         svc = _make_service()
         key = svc._generate_key(cache_type, **kwargs)
         parts = key.split(":")
-        assert len(parts) == 3, f"Expected 3 colon-separated segments, got {len(parts)}: {key}"
+        assert len(parts) == COUNT_THREE, f"Expected 3 colon-separated segments, got {len(parts)}: {key}"
 
     @given(cache_type=cache_type_st, kwargs=kwargs_st)
     @settings(max_examples=100)

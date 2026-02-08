@@ -14,6 +14,8 @@ Test count: 50+
 """
 
 import time
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine
@@ -612,7 +614,7 @@ class TestLargeGraphPerformance:
         elapsed = time.time() - start
 
         assert result.get("cycles_detected") is False
-        assert elapsed < 2.0  # Should complete in < 2 seconds
+        assert elapsed < COUNT_TWO.0  # Should complete in < COUNT_TWO seconds
 
     def test_performance_500_items_with_cycle(self, db_session, sample_project, sample_items_xlarge) -> None:  # noqa: ARG002
         """Test performance with 500 items and a cycle."""
@@ -645,7 +647,7 @@ class TestLargeGraphPerformance:
         elapsed = time.time() - start
 
         assert result.get("cycles_detected") is True
-        assert elapsed < 5.0  # Should complete in < 5 seconds
+        assert elapsed < COUNT_FIVE.0  # Should complete in < COUNT_FIVE seconds
 
     def test_performance_wide_dependency_graph(self, db_session, sample_project, sample_items_large) -> None:  # noqa: ARG002
         """Test performance with wide dependency graph."""
@@ -774,7 +776,7 @@ class TestImpactAnalysis:
         service = ImpactAnalysisService(async_session)
         result = await service.analyze_impact("item-1", max_depth=3)
 
-        assert result.max_depth_reached <= 3
+        assert result.max_depth_reached <= COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_impact_with_link_type_filter(self, async_session) -> None:

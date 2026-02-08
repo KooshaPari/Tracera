@@ -15,6 +15,8 @@ Coverage Areas:
 
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -143,7 +145,7 @@ class TestCreateItemComprehensive:
             link_type="blocks",
         )
 
-        assert item_service.links.create.call_count == 3
+        assert item_service.links.create.call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_create_item_with_empty_links_list(self, item_service) -> None:
@@ -321,7 +323,7 @@ class TestUpdateItemComprehensive:
 
         # Verify version was passed
         call_kwargs = item_service.items.update.call_args[1]
-        assert call_kwargs["expected_version"] == 5
+        assert call_kwargs["expected_version"] == COUNT_FIVE
 
 
 class TestDeleteItemComprehensive:
@@ -414,7 +416,7 @@ class TestListItemsComprehensive:
 
         result = await item_service.list_items(project_id="proj-1")
 
-        assert len(result) == 5
+        assert len(result) == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_list_items_with_view_filter(self, item_service) -> None:
@@ -430,7 +432,7 @@ class TestListItemsComprehensive:
             view="REQUIREMENTS",
         )
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         item_service.items.get_by_view.assert_called_once()
 
     @pytest.mark.asyncio
@@ -447,7 +449,7 @@ class TestListItemsComprehensive:
             status="todo",
         )
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_list_items_with_pagination(self, item_service) -> None:
@@ -461,7 +463,7 @@ class TestListItemsComprehensive:
             offset=0,
         )
 
-        assert len(result) == 10
+        assert len(result) == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_list_items_empty_result(self, item_service) -> None:
@@ -527,7 +529,7 @@ class TestBulkUpdateComprehensive:
         )
 
         assert result["success"] is True
-        assert result["updated"] == 5
+        assert result["updated"] == COUNT_FIVE
         assert result["failed"] == 0
 
     @pytest.mark.asyncio
@@ -553,8 +555,8 @@ class TestBulkUpdateComprehensive:
         )
 
         assert result["success"] is False
-        assert result["updated"] == 3
-        assert result["failed"] == 2
+        assert result["updated"] == COUNT_THREE
+        assert result["failed"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_bulk_update_no_matches(self, item_service) -> None:
@@ -599,9 +601,9 @@ class TestBulkUpdateComprehensive:
             project_id="proj-1",
         )
 
-        assert result["total_items"] == 3
+        assert result["total_items"] == COUNT_THREE
         assert result["updates"]["status"] == "done"
-        assert len(result["affected_items"]) == 3
+        assert len(result["affected_items"]) == COUNT_THREE
 
 
 class TestBulkDeleteComprehensive:
@@ -622,7 +624,7 @@ class TestBulkDeleteComprehensive:
         )
 
         assert result["success"] is True
-        assert result["deleted"] == 4
+        assert result["deleted"] == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_bulk_delete_hard_all_success(self, item_service) -> None:
@@ -639,7 +641,7 @@ class TestBulkDeleteComprehensive:
         )
 
         assert result["success"] is True
-        assert result["deleted"] == 3
+        assert result["deleted"] == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_bulk_delete_with_failures(self, item_service) -> None:
@@ -662,8 +664,8 @@ class TestBulkDeleteComprehensive:
         )
 
         assert result["success"] is False
-        assert result["deleted"] == 3
-        assert result["failed"] == 2
+        assert result["deleted"] == COUNT_THREE
+        assert result["failed"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_bulk_delete_empty_result(self, item_service) -> None:
@@ -696,7 +698,7 @@ class TestHierarchyComprehensive:
 
         result = await item_service.get_children("parent-1")
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_get_children_none(self, item_service) -> None:
@@ -728,7 +730,7 @@ class TestHierarchyComprehensive:
 
         result = await item_service.get_ancestors("child-1")
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_get_ancestors_root_node(self, item_service) -> None:
@@ -747,7 +749,7 @@ class TestHierarchyComprehensive:
 
         result = await item_service.get_descendants("root-1")
 
-        assert len(result) == 10
+        assert len(result) == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_get_descendants_leaf(self, item_service) -> None:
@@ -770,7 +772,7 @@ class TestHierarchyComprehensive:
         result = await item_service.get_item_with_links("item-1")
 
         assert result["item"].id == "item-1"
-        assert len(result["links"]) == 2
+        assert len(result["links"]) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_get_item_with_links_not_found(self, item_service) -> None:
@@ -1103,7 +1105,7 @@ class TestProgressCalculationComprehensive:
             project_id="proj-1",
         )
 
-        assert result["done"] == 3
+        assert result["done"] == COUNT_THREE
         assert result["percentage"] == 100
 
     @pytest.mark.asyncio
@@ -1125,7 +1127,7 @@ class TestProgressCalculationComprehensive:
             project_id="proj-1",
         )
 
-        assert result["total"] == 4
+        assert result["total"] == COUNT_FOUR
         assert result["done"] == 1
         assert result["in_progress"] == 1
         assert result["todo"] == 1
@@ -1307,7 +1309,7 @@ class TestIntegrationScenarios:
 
         # Get children
         result = await item_service.get_children("parent-1")
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
         # Get ancestors
         result = await item_service.get_ancestors("child-0")
@@ -1341,7 +1343,7 @@ class TestIntegrationScenarios:
             project_id="proj-1",
         )
 
-        assert result["updated"] == 5
+        assert result["updated"] == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_metadata_versioning_workflow(self, item_service) -> None:
@@ -1360,7 +1362,7 @@ class TestIntegrationScenarios:
             merge=True,
         )
 
-        assert result.version == 2
+        assert result.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_item_with_links_workflow(self, item_service) -> None:
@@ -1385,7 +1387,7 @@ class TestIntegrationScenarios:
 
         # Retrieve with links
         result = await item_service.get_item_with_links("item-1")
-        assert len(result["links"]) == 2
+        assert len(result["links"]) == COUNT_TWO
 
 
 # ==============================================================================
@@ -1514,7 +1516,7 @@ class TestEdgeCasesAndBoundaries:
 
         assert result["total"] == 50
         assert result["done"] == 1
-        assert result["percentage"] == 2
+        assert result["percentage"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_create_item_with_unicode_title(self, item_service) -> None:
@@ -1576,7 +1578,7 @@ class TestEdgeCasesAndBoundaries:
 
         assert result["success"] is False
         assert result["deleted"] == 0
-        assert result["failed"] == 5
+        assert result["failed"] == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_update_metadata_overwrite_existing_key(self, item_service) -> None:
@@ -1722,4 +1724,4 @@ class TestEdgeCasesAndBoundaries:
         )
 
         # Each update should trigger one event log
-        assert item_service.events.log.call_count == 3
+        assert item_service.events.log.call_count == COUNT_THREE

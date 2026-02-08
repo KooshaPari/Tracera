@@ -21,6 +21,8 @@ from datetime import UTC, datetime, timedelta, timezone
 from typing import Never
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -86,9 +88,9 @@ class TestStatelessIngestionServiceGapCoverage:
             result = service.ingest_markdown(tmp.name, dry_run=True)
 
             assert result["dry_run"] is True
-            assert result["headers_found"] == 2
+            assert result["headers_found"] == COUNT_TWO
             assert result["links_found"] == 1
-            assert result["would_create_items"] == 2
+            assert result["would_create_items"] == COUNT_TWO
             assert result["would_create_links"] == 1
             service.session.add.assert_not_called()
 
@@ -462,8 +464,8 @@ Content
             result = service.ingest_yaml(tmp.name, validate=False)
 
             assert result["format"] == "openapi"
-            assert result["schemas_created"] == 2
-            assert result["endpoints_created"] >= 2
+            assert result["schemas_created"] == COUNT_TWO
+            assert result["endpoints_created"] >= COUNT_TWO
 
     def test_ingest_openapi_dry_run_counts(self, service) -> None:
         """Test OpenAPI dry run calculates correct counts."""
@@ -480,9 +482,9 @@ Content
             result = service.ingest_yaml(tmp.name, dry_run=True)
 
             assert result["format"] == "openapi"
-            assert result["schemas_found"] == 3
+            assert result["schemas_found"] == COUNT_THREE
             # x-custom should be excluded
-            assert result["endpoints_found"] == 4
+            assert result["endpoints_found"] == COUNT_FOUR
 
     def test_ingest_openapi_skip_extension_fields(self, service, mock_session) -> None:
         """Test OpenAPI ingestion skips x- extension fields."""
@@ -567,7 +569,7 @@ Content
             result = service.ingest_yaml(tmp.name, validate=False)
 
             assert result["format"] == "bmad"
-            assert result["requirements_created"] == 2
+            assert result["requirements_created"] == COUNT_TWO
             assert result["links_created"] >= 1
 
     def test_ingest_bmad_alternative_structure(self, service, mock_session) -> None:
@@ -603,7 +605,7 @@ Content
 
             result = service.ingest_yaml(tmp.name, validate=False)
 
-            assert result["requirements_created"] == 5
+            assert result["requirements_created"] == COUNT_FIVE
 
     def test_ingest_bmad_dependency_linking(self, service, mock_session) -> None:
         """Test BMad depends_on creates proper links."""
@@ -622,7 +624,7 @@ Content
 
             result = service.ingest_yaml(tmp.name, validate=False)
 
-            assert result["links_created"] >= 3  # depends_on links
+            assert result["links_created"] >= COUNT_THREE  # depends_on links
 
     def test_ingest_bmad_parent_child_linking(self, service, mock_session) -> None:
         """Test BMad parent_id creates child_of links."""
@@ -681,7 +683,7 @@ Content
 
             result = service.ingest_yaml(tmp.name, validate=False)
 
-            assert result["items_created"] >= 3
+            assert result["items_created"] >= COUNT_THREE
 
     def test_ingest_generic_yaml_dry_run_recursive_count(self, service) -> None:
         """Test generic YAML dry run counts nested items."""
@@ -1084,7 +1086,7 @@ class TestProgressServiceGapCoverage:
                 elif query_side_effect.call_count == 1:
                     filter_mock.first.return_value = child1
                     filter_mock.all.return_value = []
-                elif query_side_effect.call_count == 2:
+                elif query_side_effect.call_count == COUNT_TWO:
                     filter_mock.first.return_value = child2
                     filter_mock.all.return_value = []
 
@@ -1163,7 +1165,7 @@ class TestProgressServiceGapCoverage:
                 mock_result.filter.return_value.first.return_value = blocked_item
             elif query_filter_first.item_call == 1:
                 mock_result.filter.return_value.first.return_value = blocker1
-            elif query_filter_first.item_call == 2:
+            elif query_filter_first.item_call == COUNT_TWO:
                 mock_result.filter.return_value.first.return_value = blocker2
             else:
                 mock_result.filter.return_value.first.return_value = None
@@ -1230,7 +1232,7 @@ class TestProgressServiceGapCoverage:
 
         assert len(stalled) == 1
         assert stalled[0]["item_id"] == "stalled-1"
-        assert stalled[0]["days_stalled"] == 10
+        assert stalled[0]["days_stalled"] == COUNT_TEN
 
     def test_get_stalled_items_custom_threshold(self, service, mock_session) -> None:
         """Test get_stalled_items with custom threshold."""
@@ -1282,10 +1284,10 @@ class TestProgressServiceGapCoverage:
         velocity = service.calculate_velocity("project-1")
 
         assert velocity["period_days"] == 7
-        assert velocity["items_completed"] == 5
-        assert velocity["items_created"] == 10
-        assert velocity["completion_rate"] == 5 / 7
-        assert velocity["net_change"] == 5
+        assert velocity["items_completed"] == COUNT_FIVE
+        assert velocity["items_created"] == COUNT_TEN
+        assert velocity["completion_rate"] == COUNT_FIVE / 7
+        assert velocity["net_change"] == COUNT_FIVE
 
     def test_calculate_velocity_custom_period(self, service, mock_session) -> None:
         """Test velocity with custom period."""
@@ -1332,7 +1334,7 @@ class TestProgressServiceGapCoverage:
 
         report = service.generate_progress_report("project-1")
 
-        assert report["summary"]["total_items"] == 3
+        assert report["summary"]["total_items"] == COUNT_THREE
         assert report["summary"]["completed"] == 1
         assert "completion_percentage" in report["summary"]
         assert "by_status" in report
@@ -1368,7 +1370,7 @@ class TestProgressServiceGapCoverage:
         report = service.generate_progress_report("project-1")
 
         assert "velocity" in report
-        assert report["velocity"]["items_completed"] == 5
+        assert report["velocity"]["items_completed"] == COUNT_FIVE
 
     def test_generate_progress_report_limits_blocked_stalled(self, service, mock_session) -> None:
         """Test progress report limits blocked and stalled lists."""
@@ -1380,8 +1382,8 @@ class TestProgressServiceGapCoverage:
         report = service.generate_progress_report("project-1")
 
         # Should limit to 10 items
-        assert len(report["blocked"]) <= 10
-        assert len(report["stalled"]) <= 10
+        assert len(report["blocked"]) <= COUNT_TEN
+        assert len(report["stalled"]) <= COUNT_TEN
 
 
 # ============================================================================
@@ -1558,7 +1560,7 @@ class TestExportImportServiceGapCoverage:
         assert "# Test Project" in result["content"]
         assert "## FEATURE" in result["content"]
         assert "## TEST" in result["content"]
-        assert result["item_count"] == 2
+        assert result["item_count"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_export_to_markdown_groups_by_view(self, service) -> None:
@@ -1637,7 +1639,7 @@ class TestExportImportServiceGapCoverage:
         result = await service.import_from_json("proj-1", json_data)
 
         assert result["success"] is True
-        assert result["imported_count"] == 2
+        assert result["imported_count"] == COUNT_TWO
         assert result["error_count"] == 0
 
     @pytest.mark.asyncio
@@ -1703,7 +1705,7 @@ Item 2,TEST,test,in_progress"""
         result = await service.import_from_csv("proj-1", csv_data)
 
         assert result["success"] is True
-        assert result["imported_count"] == 2
+        assert result["imported_count"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_import_from_csv_empty_file(self, service) -> None:
@@ -1727,7 +1729,7 @@ Item 2,TEST,test,in_progress"""
 
         result = await service.import_from_csv("proj-1", csv_data)
 
-        assert result["imported_count"] == 2
+        assert result["imported_count"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_import_from_csv_with_errors(self, service) -> None:
@@ -1847,7 +1849,7 @@ class TestTUIServiceGapCoverage:
 
         components = service.list_components()
 
-        assert len(components) == 3
+        assert len(components) == COUNT_THREE
 
     def test_list_components_filtered_by_type(self, service) -> None:
         """Test listing components filtered by type."""
@@ -1857,7 +1859,7 @@ class TestTUIServiceGapCoverage:
 
         dashboards = service.list_components(component_type=UIComponentType.DASHBOARD)
 
-        assert len(dashboards) == 2
+        assert len(dashboards) == COUNT_TWO
         assert all(c.component_type == UIComponentType.DASHBOARD for c in dashboards)
 
     def test_list_components_empty(self, service) -> None:
@@ -1878,8 +1880,8 @@ class TestTUIServiceGapCoverage:
 
         assert updated is not None
         assert updated.data["x"] == 1  # Original preserved
-        assert updated.data["y"] == 2  # New added
-        assert updated.data["z"] == 3
+        assert updated.data["y"] == COUNT_TWO  # New added
+        assert updated.data["z"] == COUNT_THREE
 
     def test_update_component_data_overwrites_existing(self, service) -> None:
         """Test updating data overwrites existing keys."""
@@ -1963,7 +1965,7 @@ class TestTUIServiceGapCoverage:
         service.register_event_handler("event", handler1)
         service.register_event_handler("event", handler2)
 
-        assert len(service.event_handlers["event"]) == 2
+        assert len(service.event_handlers["event"]) == COUNT_TWO
 
     def test_trigger_event_calls_handlers(self, service) -> None:
         """Test triggering event calls all handlers."""
@@ -2013,7 +2015,7 @@ class TestTUIServiceGapCoverage:
 
         results = service.trigger_event("event")
 
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
         assert results[0] == "success"
         assert "error" in results[1]
 
@@ -2105,11 +2107,11 @@ class TestTUIServiceGapCoverage:
 
         stats = service.get_ui_stats()
 
-        assert stats["total_components"] == 3
-        assert stats["by_type"]["dashboard"] == 2
+        assert stats["total_components"] == COUNT_THREE
+        assert stats["by_type"]["dashboard"] == COUNT_TWO
         assert stats["by_type"]["table"] == 1
         assert stats["current_view"] == "d1"
-        assert stats["total_event_handlers"] == 2
+        assert stats["total_event_handlers"] == COUNT_TWO
 
     # ========================================================================
     # DASHBOARD CREATION

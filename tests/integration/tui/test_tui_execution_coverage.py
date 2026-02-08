@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 from unittest.mock import AsyncMock, Mock, PropertyMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -289,7 +291,7 @@ class TestGraphApp:
         app.load_graph_data()
 
         # Should have nodes and links
-        assert len(app.nodes) == 3
+        assert len(app.nodes) == COUNT_THREE
         assert len(app.links) > 0
 
     @patch("tracertm.tui.apps.graph.Session")
@@ -385,7 +387,7 @@ class TestGraphApp:
 
         app.action_zoom_in()
 
-        assert app.zoom == 5.0  # Capped at 5.0
+        assert app.zoom == COUNT_FIVE.0  # Capped at 5.0
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     def test_graph_app_action_zoom_out(self, mock_cm) -> None:
@@ -573,7 +575,7 @@ class TestBrowserApp:
 
         app._add_children(mock_session, mock_parent_node, parent_item.id)
 
-        assert mock_parent_node.add.call_count == 2
+        assert mock_parent_node.add.call_count == COUNT_TWO
 
     @patch("tracertm.tui.apps.browser.Session")
     @patch("tracertm.tui.apps.browser.ConfigManager")
@@ -909,7 +911,7 @@ class TestEnhancedDashboardApp:
         app.setup_view_tree()
 
         # Should add 4 views (epic, story, test, task)
-        assert mock_tree.root.add.call_count == 4
+        assert mock_tree.root.add.call_count == COUNT_FOUR
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
@@ -1033,7 +1035,7 @@ class TestEnhancedDashboardApp:
         await app.action_sync()
 
         assert app._is_syncing is False
-        assert app.notify.call_count >= 2  # Starting and complete
+        assert app.notify.call_count >= COUNT_TWO  # Starting and complete
 
     @pytest.mark.asyncio
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
@@ -1722,7 +1724,7 @@ class TestSyncStatusWidget:
 
         widget.set_pending_changes(10)
 
-        assert widget.pending_changes == 10
+        assert widget.pending_changes == COUNT_TEN
 
     def test_sync_status_widget_set_last_sync(self) -> None:
         """Test SyncStatusWidget.set_last_sync execution."""
@@ -1739,7 +1741,7 @@ class TestSyncStatusWidget:
 
         widget.set_conflicts(5)
 
-        assert widget.conflicts_count == 5
+        assert widget.conflicts_count == COUNT_FIVE
 
     def test_sync_status_widget_set_error(self) -> None:
         """Test SyncStatusWidget.set_error execution."""
@@ -1831,10 +1833,10 @@ class TestCompactSyncStatus:
         assert widget.is_syncing is True
 
         widget.set_pending_changes(10)
-        assert widget.pending_changes == 10
+        assert widget.pending_changes == COUNT_TEN
 
         widget.set_conflicts(5)
-        assert widget.conflicts_count == 5
+        assert widget.conflicts_count == COUNT_FIVE
 
 
 # ============================================================================
@@ -2046,7 +2048,7 @@ class TestStorageAdapter:
         adapter = StorageAdapter()
         result = adapter.get_sync_status()
 
-        assert result.pending_changes == 3
+        assert result.pending_changes == COUNT_THREE
         assert result.status == SyncStatus.IDLE
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
@@ -2098,8 +2100,8 @@ class TestStorageAdapter:
         with patch.object(adapter, "_notify_sync_status", Mock()) as mock_notify_sync:
             result = await adapter.trigger_sync()
             assert result["success"] is True
-            assert result["entities_synced"] == 10
-            assert mock_notify_sync.call_count >= 2
+            assert result["entities_synced"] == COUNT_TEN
+            assert mock_notify_sync.call_count >= COUNT_TWO
 
     @pytest.mark.asyncio
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
@@ -2124,7 +2126,7 @@ class TestStorageAdapter:
         adapter = StorageAdapter()
         result = adapter.get_pending_changes_count()
 
-        assert result == 3
+        assert result == COUNT_THREE
 
     @patch("tracertm.storage.conflict_resolver.ConflictResolver")
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
@@ -2162,7 +2164,7 @@ class TestStorageAdapter:
         adapter = StorageAdapter()
         with patch.object(adapter, "get_unresolved_conflicts", return_value=[1, 2, 3]):
             result = adapter.get_conflict_count()
-            assert result == 3
+            assert result == COUNT_THREE
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
     def test_storage_adapter_get_project_stats(self, mock_storage_class, sample_project) -> None:

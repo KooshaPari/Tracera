@@ -11,6 +11,8 @@ Tests MCP server optimizations including:
 """
 
 from __future__ import annotations
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
+
 
 import asyncio
 import json
@@ -545,7 +547,7 @@ class TestEndToEndPerformance:
         summary = perf_tracker.get_summary()
         report = perf_tracker.report()
 
-        assert summary["total_measurements"] == 5
+        assert summary["total_measurements"] == COUNT_FIVE
         assert "Performance Summary" in report
 
 
@@ -591,5 +593,5 @@ def test_save_performance_baselines(tmp_path, perf_tracker) -> None:  # noqa: AR
     with pathlib.Path(baselines_file).open(encoding="utf-8") as f:
         loaded = json.load(f)
 
-    assert len(loaded) == 2
+    assert len(loaded) == COUNT_TWO
     assert loaded[0]["operation"] == "tool_registration"

@@ -2,6 +2,8 @@
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.item_repository import ItemRepository
@@ -90,7 +92,7 @@ async def test_update_item(db_session: AsyncSession) -> None:
 
     assert updated.title == "Updated Title"
     assert updated.status == "in_progress"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -189,7 +191,7 @@ async def test_list_by_project(db_session: AsyncSession) -> None:
 
     # List items in project 1 using get_by_view
     items = await repo.get_by_view(project1.id, "FEATURE")
-    assert len(items) == 2
+    assert len(items) == COUNT_TWO
     assert all(item.project_id == project1.id for item in items)
 
 
@@ -223,8 +225,8 @@ async def test_count_by_status(db_session: AsyncSession) -> None:
 
     counts = await item_repo.count_by_status(project.id)
 
-    assert counts.get("todo") == 3
-    assert counts.get("done") == 2
+    assert counts.get("todo") == COUNT_THREE
+    assert counts.get("done") == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -243,7 +245,7 @@ async def test_query_items(db_session: AsyncSession) -> None:
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo" if i < 3 else "done",
+            status="todo" if i < COUNT_THREE else "done",
         )
 
     # Query with filter
@@ -252,7 +254,7 @@ async def test_query_items(db_session: AsyncSession) -> None:
         filters={"status": "todo"},
     )
 
-    assert len(items) == 3
+    assert len(items) == COUNT_THREE
 
 
 @pytest.mark.unit
@@ -403,8 +405,8 @@ async def test_get_by_view_with_limit_and_offset(db_session: AsyncSession) -> No
 
     # Get first 2
     items = await item_repo.get_by_view(project.id, "FEATURE", limit=2, offset=0)
-    assert len(items) == 2
+    assert len(items) == COUNT_TWO
 
     # Get next 2
     items = await item_repo.get_by_view(project.id, "FEATURE", limit=2, offset=2)
-    assert len(items) == 2
+    assert len(items) == COUNT_TWO

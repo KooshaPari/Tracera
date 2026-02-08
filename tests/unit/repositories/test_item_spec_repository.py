@@ -22,6 +22,8 @@ Key tested functionality:
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_OK
+
 
 import pytest
 import pytest_asyncio
@@ -284,7 +286,7 @@ class TestBaseSpecRepository:
         updated = await repo.batch_update(updates)
         await db_session.commit()
 
-        assert len(updated) == 3
+        assert len(updated) == COUNT_THREE
         risk_levels = {spec.risk_level for spec in updated}
         assert RiskLevel.HIGH.value in risk_levels
         assert RiskLevel.MEDIUM.value in risk_levels
@@ -307,7 +309,7 @@ class TestBaseSpecRepository:
         count = await repo.batch_delete(spec_ids)
         await db_session.commit()
 
-        assert count == 3
+        assert count == COUNT_THREE
 
         # Verify all are soft deleted
         for spec_id in spec_ids:
@@ -352,7 +354,7 @@ class TestBaseSpecRepository:
         await db_session.commit()
 
         count = await repo.get_active_count_by_project(setup["project"].id)
-        assert count == 2
+        assert count == COUNT_TWO
 
 
 # ============================================================================
@@ -414,7 +416,7 @@ class TestRequirementSpecRepository:
         await db_session.commit()
 
         specs = await repo.list_by_project(setup["project"].id)
-        assert len(specs) == 3
+        assert len(specs) == COUNT_THREE
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -444,7 +446,7 @@ class TestRequirementSpecRepository:
             setup["project"].id,
             requirement_type=RequirementType.FUNCTIONAL.value,
         )
-        assert len(specs) == 2
+        assert len(specs) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -528,8 +530,8 @@ class TestRequirementSpecRepository:
         page1 = await repo.list_by_project(setup["project"].id, limit=2, offset=0)
         page2 = await repo.list_by_project(setup["project"].id, limit=2, offset=2)
 
-        assert len(page1) == 2
-        assert len(page2) == 2
+        assert len(page1) == COUNT_TWO
+        assert len(page2) == COUNT_TWO
 
         page1_ids = {spec.id for spec in page1}
         page2_ids = {spec.id for spec in page2}
@@ -576,7 +578,7 @@ class TestRequirementSpecRepository:
         await db_session.commit()
 
         assert updated.volatility_index == 0.75
-        assert updated.change_count == 5
+        assert updated.change_count == COUNT_FIVE
         assert updated.last_changed_at is not None
 
     @pytest.mark.unit
@@ -658,7 +660,7 @@ class TestRequirementSpecRepository:
         await db_session.commit()
 
         high_risk = await repo.get_high_risk_by_project(setup["project"].id)
-        assert len(high_risk) == 2
+        assert len(high_risk) == COUNT_TWO
 
         risk_levels = {spec.risk_level for spec in high_risk}
         assert RiskLevel.CRITICAL.value in risk_levels
@@ -713,7 +715,7 @@ class TestRequirementSpecRepository:
 
         wsjf = await repo.calculate_wsjf(spec.id)
         # WSJF = (10 + 8 + 6) / 8 = 3.0
-        assert wsjf == 3.0
+        assert wsjf == COUNT_THREE.0
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -848,7 +850,7 @@ class TestSpecRepoForTestsTests:
             setup["project"].id,
             test_type=SpecTestType.UNIT.value,
         )
-        assert len(specs) == 2
+        assert len(specs) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1125,7 +1127,7 @@ class TestSpecRepoForTestsTests:
         await db_session.commit()
 
         slowest = await repo.get_slowest_tests(setup["project"].id, limit=2)
-        assert len(slowest) == 2
+        assert len(slowest) == COUNT_TWO
         # Should be ordered by avg_duration_ms descending
         assert slowest[0].avg_duration_ms >= slowest[1].avg_duration_ms
 
@@ -1171,7 +1173,7 @@ class TestEpicSpecRepository:
 
         assert spec.epic_type == EpicType.CAPABILITY.value
         assert spec.team_id == "team-123"
-        assert len(spec.objectives) == 2
+        assert len(spec.objectives) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1242,9 +1244,9 @@ class TestEpicSpecRepository:
         )
         await db_session.commit()
 
-        assert updated.user_story_count == 10
-        assert updated.completed_story_count == 4
-        assert updated.defect_count == 2
+        assert updated.user_story_count == COUNT_TEN
+        assert updated.completed_story_count == COUNT_FOUR
+        assert updated.defect_count == COUNT_TWO
         assert updated.progress_percentage == 40.0
 
     @pytest.mark.unit
@@ -1272,7 +1274,7 @@ class TestEpicSpecRepository:
         await db_session.commit()
 
         team_a_epics = await repo.get_by_team(setup["project"].id, "team-A")
-        assert len(team_a_epics) == 2
+        assert len(team_a_epics) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1299,7 +1301,7 @@ class TestEpicSpecRepository:
         await db_session.commit()
 
         in_progress = await repo.get_in_progress(setup["project"].id)
-        assert len(in_progress) == 2
+        assert len(in_progress) == COUNT_TWO
 
 
 # ============================================================================
@@ -1344,7 +1346,7 @@ class TestUserStorySpecRepository:
         assert spec.as_a == "developer"
         assert spec.i_want == "to write tests"
         assert spec.so_that == "I can ensure code quality"
-        assert spec.story_points == 5
+        assert spec.story_points == COUNT_FIVE
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1386,7 +1388,7 @@ class TestUserStorySpecRepository:
         updated = await repo.update_acceptance_criteria(spec.id, criteria)
         await db_session.commit()
 
-        assert len(updated.acceptance_criteria) == 3
+        assert len(updated.acceptance_criteria) == COUNT_THREE
         assert updated.acceptance_criteria[0] == "Given X, when Y, then Z"
 
     @pytest.mark.unit
@@ -1416,7 +1418,7 @@ class TestUserStorySpecRepository:
         await db_session.commit()
 
         stories = await repo.get_by_epic(epic_item_id)
-        assert len(stories) == 2
+        assert len(stories) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1443,7 +1445,7 @@ class TestUserStorySpecRepository:
         await db_session.commit()
 
         stories = await repo.get_by_assignee(setup["project"].id, "user-123")
-        assert len(stories) == 2
+        assert len(stories) == COUNT_TWO
 
 
 # ============================================================================
@@ -1487,7 +1489,7 @@ class TestTaskSpecRepository:
         await db_session.commit()
 
         assert spec.parent_story_item_id == story_item_id
-        assert spec.estimated_hours == 4.0
+        assert spec.estimated_hours == COUNT_FOUR.0
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1514,7 +1516,7 @@ class TestTaskSpecRepository:
         await db_session.commit()
 
         specs = await repo.list_by_project(setup["project"].id, status="todo")
-        assert len(specs) == 2
+        assert len(specs) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1538,7 +1540,7 @@ class TestTaskSpecRepository:
         await db_session.commit()
 
         assert updated.progress_percentage == 66.7
-        assert updated.completed_checklist_items == 2
+        assert updated.completed_checklist_items == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1567,7 +1569,7 @@ class TestTaskSpecRepository:
         await db_session.commit()
 
         tasks = await repo.get_by_parent_story(story_item_id)
-        assert len(tasks) == 2
+        assert len(tasks) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1596,7 +1598,7 @@ class TestTaskSpecRepository:
         await db_session.commit()
 
         blocked = await repo.get_blocked_tasks(setup["project"].id)
-        assert len(blocked) == 2
+        assert len(blocked) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1661,7 +1663,7 @@ class TestDefectSpecRepository:
 
         assert spec.severity == DefectSeverity.BLOCKER.value
         assert spec.component == "Authentication"
-        assert len(spec.steps_to_reproduce) == 3
+        assert len(spec.steps_to_reproduce) == COUNT_THREE
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1874,7 +1876,7 @@ class TestDefectSpecRepository:
             setup["project"].id,
             component="Authentication",
         )
-        assert len(auth_defects) == 2
+        assert len(auth_defects) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1959,7 +1961,7 @@ class TestItemSpecBatchRepository:
 
         summary = await batch_repo.get_project_summary(setup["project"].id)
 
-        assert summary["total_requirements"] == 2
+        assert summary["total_requirements"] == COUNT_TWO
         assert summary["total_tests"] == 1
         assert summary["total_epics"] == 1
         assert summary["total_stories"] == 0
@@ -2000,7 +2002,7 @@ class TestItemSpecBatchRepository:
         count = await batch_repo.delete_all_specs_for_item(setup["item"].id)
         await db_session.commit()
 
-        assert count == 3
+        assert count == COUNT_THREE
 
         # Verify all are soft deleted
         await batch_repo.get_all_specs_for_item(setup["item"].id)
@@ -2142,7 +2144,7 @@ class TestTestSpecRepositoryFlakinessPerformance:
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_recalculate_flakiness_insufficient_data(self, db_session: AsyncSession, setup_project_and_item) -> None:
-        """Test flakiness calculation with insufficient data (< 5 runs)."""
+        """Test flakiness calculation with insufficient data (< COUNT_FIVE runs)."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
@@ -2152,7 +2154,7 @@ class TestTestSpecRepositoryFlakinessPerformance:
         )
         await db_session.commit()
 
-        # Record only 3 runs (< 5 required for flakiness calculation)
+        # Record only 3 runs (< COUNT_FIVE required for flakiness calculation)
         for status in ["passed", "failed", "passed"]:
             spec = await repo.record_run(spec.id, status=status, duration_ms=100)
             await db_session.commit()
@@ -2279,7 +2281,7 @@ class TestTestSpecRepositoryFilterCombinations:
         await db_session.commit()
 
         specs = await repo.list_by_project(setup["project"].id)
-        assert len(specs) == 3
+        assert len(specs) == COUNT_THREE
 
 
 class TestEpicSpecRepositoryBranchCoverage:
@@ -2307,8 +2309,8 @@ class TestEpicSpecRepositoryBranchCoverage:
         )
         await db_session.commit()
 
-        assert updated.user_story_count == 10
-        assert updated.completed_story_count == 2  # Unchanged
+        assert updated.user_story_count == COUNT_TEN
+        assert updated.completed_story_count == COUNT_TWO  # Unchanged
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -2380,7 +2382,7 @@ class TestEpicSpecRepositoryBranchCoverage:
         await db_session.commit()
 
         specs = await repo.list_by_project(setup["project"].id)
-        assert len(specs) == 3
+        assert len(specs) == COUNT_THREE
 
 
 class TestUserStorySpecRepositoryBranchCoverage:
@@ -2407,7 +2409,7 @@ class TestUserStorySpecRepositoryBranchCoverage:
 
         # No status filter - should return all
         specs = await repo.list_by_project(setup["project"].id)
-        assert len(specs) == 2
+        assert len(specs) == COUNT_TWO
 
 
 class TestTaskSpecRepositoryBranchCoverage:
@@ -2434,7 +2436,7 @@ class TestTaskSpecRepositoryBranchCoverage:
 
         # No status filter - should return all
         specs = await repo.list_by_project(setup["project"].id)
-        assert len(specs) == 2
+        assert len(specs) == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -2513,7 +2515,7 @@ class TestDefectSpecRepositoryBranchCoverage:
         await db_session.commit()
 
         specs = await repo.list_by_project(setup["project"].id)
-        assert len(specs) == 3
+        assert len(specs) == COUNT_THREE
 
 
 class TestRequirementSpecRepositoryBranchCoverage:
@@ -2573,7 +2575,7 @@ class TestRequirementSpecRepositoryBranchCoverage:
         await db_session.commit()
 
         specs = await repo.list_by_project(setup["project"].id)
-        assert len(specs) == 3
+        assert len(specs) == COUNT_THREE
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -2868,7 +2870,7 @@ class TestTestSpecRepositoryPerformanceTrend:
 
         found = await repo.get_by_id(spec.id)
         assert found is not None
-        assert found.total_runs == 10
+        assert found.total_runs == COUNT_TEN
         # The duration_trend should be calculated (may be 'increasing' or 'stable')
 
     @pytest.mark.unit
@@ -2896,7 +2898,7 @@ class TestTestSpecRepositoryPerformanceTrend:
 
         found = await repo.get_by_id(spec.id)
         assert found is not None
-        assert found.total_runs == 10
+        assert found.total_runs == COUNT_TEN
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -2921,7 +2923,7 @@ class TestTestSpecRepositoryPerformanceTrend:
 
         found = await repo.get_by_id(spec.id)
         assert found is not None
-        assert found.total_runs == 10
+        assert found.total_runs == COUNT_TEN
         # Duration trend should be 'stable'
 
     @pytest.mark.unit
@@ -2966,7 +2968,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
     @pytest.mark.unit
     @pytest.mark.asyncio
     async def test_recalculate_flakiness_with_sufficient_data(self, db_session: AsyncSession, setup_project_and_item) -> None:
-        """Test _recalculate_flakiness with >= 5 entries (covers lines 567-579)."""
+        """Test _recalculate_flakiness with >= COUNT_FIVE entries (covers lines 567-579)."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
@@ -3117,7 +3119,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
         await repo._recalculate_performance(spec)
 
         # recent_avg = 100, older_avg = 200
-        # 100 < 200 * 0.9 = 180, so trend = "decreasing"
+        # 100 < HTTP_OK * 0.9 = 180, so trend = "decreasing"
         assert spec.duration_trend == "decreasing"
 
     @pytest.mark.unit

@@ -2,6 +2,8 @@
 
 from unittest.mock import AsyncMock
 from uuid import uuid4
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 
@@ -216,7 +218,7 @@ class TestItemServiceListItems:
         result = await item_service.list_items(test_data["project_id"])
 
         assert isinstance(result, list)
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
         item_service.items.get_by_project.assert_called_once()
 
     @pytest.mark.asyncio

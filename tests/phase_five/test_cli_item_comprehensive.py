@@ -10,6 +10,8 @@ import tempfile
 from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import patch
+from tests.test_constants import COUNT_FIVE
+
 
 import pytest
 from sqlalchemy.orm import Session
@@ -384,7 +386,7 @@ class TestBasicCRUDOperations:
                 result = cli_runner.invoke(item_app, ["list", "--limit", "5"])
                 assert result.exit_code == 0
                 # Should only show 5 items
-                assert result.stdout.count("Test Item") <= 5
+                assert result.stdout.count("Test Item") <= COUNT_FIVE
 
     def test_list_items_with_offset(
         self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,

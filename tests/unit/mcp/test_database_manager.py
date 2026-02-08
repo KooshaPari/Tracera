@@ -1,6 +1,8 @@
 """Tests for DatabaseManager (Phase 3)."""
 
 import asyncio
+from tests.test_constants import COUNT_TWO, HTTP_OK
+
 
 import pytest
 from sqlalchemy import text
@@ -106,8 +108,8 @@ class TestQueryMetrics:
         metrics.record_query("SELECT * FROM projects", 150.0)
 
         stats = metrics.get_stats()
-        assert stats["total_queries"] == 2
-        assert stats["total_duration_ms"] == 200.0
+        assert stats["total_queries"] == COUNT_TWO
+        assert stats["total_duration_ms"] == HTTP_OK.0
         assert stats["avg_duration_ms"] == 100.0
         assert stats["slow_queries_count"] == 1  # Only 150ms is slow (>100ms)
 
@@ -132,7 +134,7 @@ class TestQueryMetrics:
         metrics.record_query("SELECT 1", 50.0)
         metrics.record_query("SELECT 2", 150.0)
 
-        assert metrics.query_count == 2
+        assert metrics.query_count == COUNT_TWO
         assert len(metrics.slow_queries) == 1
 
         metrics.reset()

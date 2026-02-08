@@ -1,4 +1,6 @@
 from datetime import UTC, datetime, timedelta, timezone
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -77,7 +79,7 @@ async def test_get_agent_workload_classifies_levels(async_session) -> None:
     workload = await svc.get_agent_workload("agent-1")
 
     assert workload["workload"] in {"Idle", "Light"}
-    assert workload["total_events_24h"] == 2
+    assert workload["total_events_24h"] == COUNT_TWO
 
 
 @pytest.mark.asyncio

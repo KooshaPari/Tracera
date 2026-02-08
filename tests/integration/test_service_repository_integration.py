@@ -12,6 +12,8 @@ Target Coverage: 85%+ for service-repository interactions
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
@@ -50,7 +52,7 @@ async def test_items(db_session: AsyncSession, test_project):
             item_type="feature" if i % 2 == 0 else "requirement",
             description=f"Description for item {i + 1}",
             status="todo" if i % 3 == 0 else ("in_progress" if i % 3 == 1 else "done"),
-            priority="high" if i == 0 else ("medium" if i < 3 else "low"),
+            priority="high" if i == 0 else ("medium" if i < COUNT_THREE else "low"),
             owner=f"user{i}@example.com" if i % 2 == 0 else None,
         )
         items.append(item)
@@ -104,11 +106,11 @@ async def test_bulk_item_operations(db_session: AsyncSession, test_project) -> N
 
     # Query all
     all_items = await item_repo.get_by_project(test_project.id)
-    assert len(all_items) >= 10
+    assert len(all_items) >= COUNT_TEN
 
     # Filter by status
     todos = await item_repo.get_by_project(test_project.id, status="todo")
-    assert len(todos) >= 10
+    assert len(todos) >= COUNT_TEN
     assert all(item.status == "todo" for item in todos)
 
 
@@ -147,13 +149,13 @@ async def test_item_hierarchy_with_repository(db_session: AsyncSession, test_pro
 
     # Test hierarchy queries
     retrieved_children = await item_repo.get_children(parent.id)
-    assert len(retrieved_children) == 3
+    assert len(retrieved_children) == COUNT_THREE
 
     descendants = await item_repo.get_descendants(parent.id)
-    assert len(descendants) >= 4
+    assert len(descendants) >= COUNT_FOUR
 
     ancestors = await item_repo.get_ancestors(grandchild.id)
-    assert len(ancestors) >= 2
+    assert len(ancestors) >= COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -248,10 +250,10 @@ async def test_link_graph_construction(db_session: AsyncSession, test_items) -> 
 
     # Verify graph
     from_item0 = await link_repo.get_by_source(test_items[0].id)
-    assert len(from_item0) >= 2  # Direct dependency + cross-link
+    assert len(from_item0) >= COUNT_TWO  # Direct dependency + cross-link
 
     to_item3 = await link_repo.get_by_target(test_items[3].id)
-    assert len(to_item3) >= 2  # From item2 in chain + from item0
+    assert len(to_item3) >= COUNT_TWO  # From item2 in chain + from item0
 
 
 @pytest.mark.asyncio
@@ -281,7 +283,7 @@ async def test_link_navigation_patterns(db_session: AsyncSession, test_items) ->
 
     # All links connected to item1
     connected = await link_repo.get_by_item(test_items[1].id)
-    assert len(connected) >= 2  # One incoming, one outgoing
+    assert len(connected) >= COUNT_TWO  # One incoming, one outgoing
 
 
 @pytest.mark.asyncio
@@ -354,11 +356,11 @@ async def test_project_items_links_integration(db_session: AsyncSession, test_pr
     assert project is not None
 
     items = await item_repo.get_by_project(test_project.id)
-    assert len(items) >= 3
+    assert len(items) >= COUNT_THREE
 
     # Feature 1 has both incoming and outgoing links
     all_links_feat1 = await link_repo.get_by_item(feat1.id)
-    assert len(all_links_feat1) >= 2
+    assert len(all_links_feat1) >= COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -424,7 +426,7 @@ async def test_complex_query_patterns(db_session: AsyncSession, test_project) ->
 
     high_priority = await item_repo.get_by_project(test_project.id)
     high_items = [item for item in high_priority if item.priority == "high"]
-    assert len(high_items) >= 3
+    assert len(high_items) >= COUNT_THREE
 
     todo_items = await item_repo.get_by_project(test_project.id, status="todo")
     assert all(item.status == "todo" for item in todo_items)

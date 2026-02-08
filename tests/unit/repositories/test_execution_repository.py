@@ -5,6 +5,8 @@ Comprehensive tests covering execution tracking, artifacts, and environment conf
 
 from datetime import UTC, datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -189,7 +191,7 @@ class TestExecutionListByProject:
 
         executions = await repo.list_by_project(project.id)
 
-        assert len(executions) == 5
+        assert len(executions) == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_list_by_project_filter_status(self, project_setup) -> None:
@@ -223,7 +225,7 @@ class TestExecutionListByProject:
 
         executions = await repo.list_by_project(project.id, execution_type="vhs")
 
-        assert len(executions) == 2
+        assert len(executions) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_list_by_project_pagination(self, project_setup) -> None:
@@ -238,11 +240,11 @@ class TestExecutionListByProject:
 
         # Get first page
         page1 = await repo.list_by_project(project.id, limit=3, offset=0)
-        assert len(page1) == 3
+        assert len(page1) == COUNT_THREE
 
         # Get second page
         page2 = await repo.list_by_project(project.id, limit=3, offset=3)
-        assert len(page2) == 3
+        assert len(page2) == COUNT_THREE
 
         # Ensure different results
         page1_ids = {e.id for e in page1}
@@ -485,7 +487,7 @@ class TestArtifactListByExecution:
 
         artifacts = await repo.list_by_execution(execution.id)
 
-        assert len(artifacts) == 5
+        assert len(artifacts) == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_list_by_execution_filter_type(self, execution_setup) -> None:
@@ -516,7 +518,7 @@ class TestArtifactListByExecution:
 
         artifacts = await repo.list_by_execution(execution.id, artifact_type="screenshot")
 
-        assert len(artifacts) == 2
+        assert len(artifacts) == COUNT_TWO
 
 
 # ==================== ExecutionEnvironmentConfigRepository Tests ====================
@@ -591,7 +593,7 @@ class TestConfigCreateOrUpdate:
         assert config.docker_image == "python:3.12"
         assert config.vhs_enabled is False
         assert config.playwright_headless is False
-        assert config.max_concurrent_executions == 5
+        assert config.max_concurrent_executions == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_update_existing_config(self, project_setup) -> None:
@@ -681,7 +683,7 @@ class TestConfigCreateOrUpdate:
         assert config.playwright_browser == "webkit"
         assert config.codex_sandbox_mode == "workspace-read"
         assert config.artifact_retention_days == 60
-        assert config.max_concurrent_executions == 10
+        assert config.max_concurrent_executions == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_create_with_invalid_kwargs_ignored(self, project_setup) -> None:

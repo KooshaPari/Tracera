@@ -9,6 +9,8 @@ Complete coverage of complex service algorithms:
 """
 
 from datetime import datetime, timedelta
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 
 class TestImpactAnalysisServiceInternals:
@@ -94,7 +96,7 @@ class TestImpactAnalysisServiceInternals:
             return paths
 
         result = find_paths_dfs(1, 4, graph)
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert [1, 2, 4] in result
         assert [1, 3, 4] in result
 
@@ -203,7 +205,7 @@ class TestShortestPathServiceInternals:
             return dist[end]
 
         result = dijkstra_detailed(1, 4, graph)
-        assert result == 4  # 1→2→3→4 = 1+2+1
+        assert result == COUNT_FOUR  # 1→2→3→4 = 1+2+1
 
     def test_bfs_vs_dijkstra_comparison(self) -> None:
         """Test BFS vs Dijkstra on unweighted graph."""
@@ -224,7 +226,7 @@ class TestShortestPathServiceInternals:
             return dist
 
         result = bfs_distance(1, graph)
-        assert result[4] == 2
+        assert result[4] == COUNT_TWO
 
     def test_bidirectional_search(self) -> None:
         """Test bidirectional shortest path search."""
@@ -280,7 +282,7 @@ class TestShortestPathServiceInternals:
             return sorted(paths, key=len)[:k]
 
         result = k_shortest(1, 3, 2, graph)
-        assert len(result) <= 2
+        assert len(result) <= COUNT_TWO
 
 
 class TestCacheServiceInternals:
@@ -358,7 +360,7 @@ class TestCacheServiceInternals:
             return len(keys_to_delete)
 
         deleted = invalidate_pattern("user:")
-        assert deleted == 2
+        assert deleted == COUNT_TWO
         assert "user:1" not in cache
         assert "post:1" in cache
 
@@ -378,7 +380,7 @@ class TestCacheServiceInternals:
         access("missing")
         access("key")
 
-        assert stats["hits"] == 2
+        assert stats["hits"] == COUNT_TWO
         assert stats["misses"] == 1
 
     def test_cache_warm_preload(self) -> None:
@@ -463,7 +465,7 @@ class TestTracingAndAuditing:
         log_action("update", "user2")
         log_action("delete", "user1")
 
-        assert len(audit_log) == 3
+        assert len(audit_log) == COUNT_THREE
         assert audit_log[0]["action"] == "create"
 
     def test_lineage_tracking(self) -> None:
@@ -493,7 +495,7 @@ class TestTracingAndAuditing:
         track_change(1, "status", "active", "inactive")
         track_change(1, "priority", "low", "high")
 
-        assert len(changes) == 2
+        assert len(changes) == COUNT_TWO
         assert changes[0]["field"] == "status"
 
 

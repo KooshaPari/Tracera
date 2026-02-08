@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 from typing import Never
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -55,7 +57,7 @@ def test_bulk_update_items_commits_and_logs(sync_session) -> None:
     # Events logged
     from tracertm.models.event import Event
 
-    assert sync_session.query(Event).count() == 2
+    assert sync_session.query(Event).count() == COUNT_TWO
 
 
 def test_bulk_update_items_rollback_on_failure(sync_session, monkeypatch) -> None:
@@ -85,5 +87,5 @@ def test_bulk_delete_items_marks_deleted(sync_session) -> None:
     svc = BulkOperationService(sync_session)
 
     result = svc.bulk_delete_items("proj-1", {"status": "todo"})
-    assert result["items_deleted"] == 3
+    assert result["items_deleted"] == COUNT_THREE
     assert all(item.deleted_at is not None for item in items)

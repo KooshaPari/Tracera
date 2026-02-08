@@ -8,6 +8,8 @@ Coverage target: 80%+ (229 lines total)
 from typing import Any, cast
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -200,13 +202,13 @@ class TestGraphAppDataLoading:
         app.load_graph_data()
 
         # Should have 3 nodes
-        assert len(app.nodes) == 3
+        assert len(app.nodes) == COUNT_THREE
         assert item1_id in app.nodes
         assert item2_id in app.nodes
         assert item3_id in app.nodes
 
         # Should have 2 links
-        assert len(app.links) == 2
+        assert len(app.links) == COUNT_TWO
         assert (item1_id, item2_id) in app.links
         assert (item2_id, item3_id) in app.links
 
@@ -399,7 +401,7 @@ class TestGraphAppZoomControls:
 
         app.action_zoom_in()
 
-        assert app.zoom == 5.0  # Should not exceed max
+        assert app.zoom == COUNT_FIVE.0  # Should not exceed max
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")

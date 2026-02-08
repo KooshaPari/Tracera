@@ -6,6 +6,8 @@ otherwise remain unexecuted in integration flows.
 import asyncio
 from datetime import datetime
 from typing import Never
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_TOO_MANY_REQUESTS
+
 
 import pytest
 from fastapi import HTTPException
@@ -134,7 +136,7 @@ def test_enforce_rate_limit(monkeypatch) -> None:
     main.enforce_rate_limit(req, {"sub": "user1"})
     with pytest.raises(HTTPException) as exc:
         main.enforce_rate_limit(req, {"sub": "user1"})
-    assert isinstance(exc.value, HTTPException) and exc.value.status_code == 429
+    assert isinstance(exc.value, HTTPException) and exc.value.status_code == HTTP_TOO_MANY_REQUESTS
 
 
 def test_enforce_rate_limit_whitelist(monkeypatch) -> None:
@@ -321,8 +323,8 @@ async def test_list_items_slicing(monkeypatch) -> None:
 
     monkeypatch.setattr(main.item_repository, "ItemRepository", Repo)
     resp = await main.list_items(project_id="p1", skip=1, limit=2, claims={}, db=None, request=_req())
-    assert resp["total"] == 5
-    assert len(resp["items"]) == 2
+    assert resp["total"] == COUNT_FIVE
+    assert len(resp["items"]) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -343,8 +345,8 @@ async def test_list_links_success(monkeypatch) -> None:
 
     monkeypatch.setattr(main.link_repository, "LinkRepository", Repo)
     resp = await main.list_links(project_id="p1", skip=0, limit=2, claims={}, db=None, request=_req())
-    assert resp["total"] == 3
-    assert len(resp["links"]) == 2
+    assert resp["total"] == COUNT_THREE
+    assert len(resp["links"]) == COUNT_TWO
 
 
 def test_ensure_project_access_no_project() -> None:
@@ -537,7 +539,7 @@ async def test_impact_analysis_success(monkeypatch) -> None:
     monkeypatch.setattr(main.impact_analysis_service, "ImpactAnalysisService", lambda *_: Service())
     resp = await main.get_impact_analysis("i1", "p1", claims={}, db=None, request=_req())
     assert resp["root_item_id"] == "root1"
-    assert resp["total_affected"] == 2
+    assert resp["total_affected"] == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -666,7 +668,7 @@ async def test_project_endpoints_success_and_errors(monkeypatch) -> None:
     monkeypatch.setattr("tracertm.repositories.project_repository.ProjectRepository", Repo)
 
     list_resp = await main.list_projects(db=None)
-    assert list_resp["total"] == 2
+    assert list_resp["total"] == COUNT_TWO
 
     with pytest.raises(HTTPException):
         await main.get_project("missing", db=None)
@@ -785,7 +787,7 @@ async def test_get_graph_neighbors_success(monkeypatch) -> None:
 
     monkeypatch.setattr("tracertm.repositories.link_repository.LinkRepository", Repo)
     resp = await main.get_graph_neighbors("proj", "item", direction="both", db=None)
-    assert resp["total"] == 2
+    assert resp["total"] == COUNT_TWO
 
 
 @pytest.mark.asyncio

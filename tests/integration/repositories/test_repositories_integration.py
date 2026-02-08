@@ -12,6 +12,8 @@ Target Coverage: 80%+ for all repository modules
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.agent_repository import AgentRepository
@@ -83,7 +85,7 @@ async def test_project_repository_get_all(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     all_projects = await repo.get_all()
-    assert len(all_projects) >= 3
+    assert len(all_projects) >= COUNT_THREE
     project_names = {p.name for p in all_projects}
     assert "Project A" in project_names
     assert "Project B" in project_names
@@ -358,7 +360,7 @@ async def test_item_repository_list_by_view(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     features = await item_repo.list_by_view(str(project.id), "FEATURE")
-    assert len(features) == 2
+    assert len(features) == COUNT_TWO
     assert all(item.view == "FEATURE" for item in features)
 
     stories = await item_repo.list_by_view(str(project.id), "STORY")
@@ -393,7 +395,7 @@ async def test_item_repository_list_by_view_include_deleted(db_session: AsyncSes
 
     # With deleted
     all_items = await item_repo.list_by_view(str(project.id), "FEATURE", include_deleted=True)
-    assert len(all_items) == 2
+    assert len(all_items) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -414,7 +416,7 @@ async def test_item_repository_list_all(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     all_items = await item_repo.list_all(str(project.id))
-    assert len(all_items) == 5
+    assert len(all_items) == COUNT_FIVE
 
     # Should be ordered by created_at desc
     # (most recent first due to order_by in list_all)
@@ -442,7 +444,7 @@ async def test_item_repository_update_basic(db_session: AsyncSession) -> None:
 
     assert updated.title == "Updated Title"
     assert updated.status == "in_progress"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
     await db_session.commit()
 
@@ -651,10 +653,10 @@ async def test_item_repository_get_by_project(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     p1_items = await item_repo.get_by_project(str(project1.id))
-    assert len(p1_items) == 3
+    assert len(p1_items) == COUNT_THREE
 
     p2_items = await item_repo.get_by_project(str(project2.id))
-    assert len(p2_items) == 2
+    assert len(p2_items) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -681,7 +683,7 @@ async def test_item_repository_get_by_project_with_status(db_session: AsyncSessi
     await db_session.commit()
 
     todo_items = await item_repo.get_by_project(str(project.id), status="todo")
-    assert len(todo_items) == 2
+    assert len(todo_items) == COUNT_TWO
     assert all(item.status == "todo" for item in todo_items)
 
     done_items = await item_repo.get_by_project(str(project.id), status="done")
@@ -706,15 +708,15 @@ async def test_item_repository_get_by_project_pagination(db_session: AsyncSessio
 
     # First page
     page1 = await item_repo.get_by_project(str(project.id), limit=5, offset=0)
-    assert len(page1) == 5
+    assert len(page1) == COUNT_FIVE
 
     # Second page
     page2 = await item_repo.get_by_project(str(project.id), limit=5, offset=5)
-    assert len(page2) == 5
+    assert len(page2) == COUNT_FIVE
 
     # Third page
     page3 = await item_repo.get_by_project(str(project.id), limit=5, offset=10)
-    assert len(page3) == 5
+    assert len(page3) == COUNT_FIVE
 
 
 @pytest.mark.asyncio
@@ -759,10 +761,10 @@ async def test_item_repository_get_by_view_pagination(db_session: AsyncSession) 
     await db_session.commit()
 
     page1 = await item_repo.get_by_view(str(project.id), "FEATURE", limit=3, offset=0)
-    assert len(page1) == 3
+    assert len(page1) == COUNT_THREE
 
     page2 = await item_repo.get_by_view(str(project.id), "FEATURE", limit=3, offset=3)
-    assert len(page2) == 3
+    assert len(page2) == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -836,7 +838,7 @@ async def test_item_repository_get_children(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     children = await item_repo.get_children(str(parent.id))
-    assert len(children) == 2
+    assert len(children) == COUNT_TWO
     child_ids = {c.id for c in children}
     assert child1.id in child_ids
     assert child2.id in child_ids
@@ -869,7 +871,7 @@ async def test_item_repository_get_ancestors(db_session: AsyncSession) -> None:
 
     # Get ancestors of grandchild
     ancestors = await item_repo.get_ancestors(str(grandchild.id))
-    assert len(ancestors) == 3
+    assert len(ancestors) == COUNT_THREE
 
     # Should be ordered root first
     ancestor_titles = [a.title for a in ancestors]
@@ -904,7 +906,7 @@ async def test_item_repository_get_descendants(db_session: AsyncSession) -> None
     await db_session.commit()
 
     descendants = await item_repo.get_descendants(str(root.id))
-    assert len(descendants) == 3
+    assert len(descendants) == COUNT_THREE
 
     descendant_titles = {d.title for d in descendants}
     assert "Child 1" in descendant_titles
@@ -941,8 +943,8 @@ async def test_item_repository_count_by_status(db_session: AsyncSession) -> None
     await db_session.commit()
 
     counts = await item_repo.count_by_status(str(project.id))
-    assert counts["todo"] == 3
-    assert counts["in_progress"] == 2
+    assert counts["todo"] == COUNT_THREE
+    assert counts["in_progress"] == COUNT_TWO
     assert counts["done"] == 1
 
 
@@ -1092,7 +1094,7 @@ async def test_link_repository_get_by_source(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     links = await link_repo.get_by_source(str(source.id))
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
     assert all(link.source_item_id == source.id for link in links)
 
 
@@ -1128,7 +1130,7 @@ async def test_link_repository_get_by_target(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     links = await link_repo.get_by_target(str(target.id))
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
     assert all(link.target_item_id == target.id for link in links)
 
 
@@ -1160,7 +1162,7 @@ async def test_link_repository_get_by_item(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     links = await link_repo.get_by_item(str(item2.id))
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -1232,7 +1234,7 @@ async def test_link_repository_delete_by_item(db_session: AsyncSession) -> None:
 
     # Delete all links for item2
     deleted_count = await link_repo.delete_by_item(str(item2.id))
-    assert deleted_count == 2
+    assert deleted_count == COUNT_TWO
     await db_session.commit()
 
     # Verify all links for item2 are gone
@@ -1311,7 +1313,7 @@ async def test_agent_repository_get_by_project(db_session: AsyncSession) -> None
     await db_session.commit()
 
     p1_agents = await agent_repo.get_by_project(str(project1.id))
-    assert len(p1_agents) == 2
+    assert len(p1_agents) == COUNT_TWO
 
     p2_agents = await agent_repo.get_by_project(str(project2.id))
     assert len(p2_agents) == 1
@@ -1568,7 +1570,7 @@ async def test_complex_query_items_with_links(db_session: AsyncSession) -> None:
 
     # Traverse graph
     api_links = await link_repo.get_by_item(str(api.id))
-    assert len(api_links) == 2
+    assert len(api_links) == COUNT_TWO
 
     # Get implementers
     implementers = await link_repo.get_by_target(str(api.id))
@@ -1607,12 +1609,12 @@ async def test_complex_hierarchy_operations(db_session: AsyncSession) -> None:
 
     # Get children of epic
     epic_children = await item_repo.get_children(str(epic.id))
-    assert len(epic_children) == 2
+    assert len(epic_children) == COUNT_TWO
 
     # Get descendants of epic (should include stories and tasks)
     epic_descendants = await item_repo.get_descendants(str(epic.id))
-    assert len(epic_descendants) == 4  # 2 stories + 2 tasks
+    assert len(epic_descendants) == COUNT_FOUR  # 2 stories + 2 tasks
 
     # Get ancestors of task1
     task1_ancestors = await item_repo.get_ancestors(str(task1.id))
-    assert len(task1_ancestors) == 2  # story1 + epic
+    assert len(task1_ancestors) == COUNT_TWO  # story1 + epic

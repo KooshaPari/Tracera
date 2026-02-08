@@ -7,6 +7,8 @@ Tests for:
 """
 
 import pytest
+from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 pd = pytest.importorskip("pandas")
 
@@ -49,7 +51,7 @@ class TestRequirementSchemaValidation:
             "updated_at": pd.date_range("2024-01-01", periods=3),
         })
         result = validate_requirements(df)
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     def test_requirement_id_positive_constraint(self) -> None:
         """Test that requirement IDs must be positive (gt=0)."""
@@ -162,7 +164,7 @@ class TestRequirementSchemaValidation:
             "updated_at": pd.date_range("2024-01-01", periods=2),
         })
         result = validate_requirements(df)
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
 
 # ============================================================================
@@ -184,7 +186,7 @@ class TestTraceabilityLinkSchemaValidation:
             "strength": [0.8, 0.9, 0.7],
         })
         result = validate_traceability_links(df)
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     def test_link_id_positive_constraint(self) -> None:
         """Test that link IDs must be positive."""
@@ -281,7 +283,7 @@ class TestTraceabilityLinkSchemaValidation:
             "strength": [0.0, 1.0],  # Boundaries
         })
         result = validate_traceability_links(df)
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
 
 # ============================================================================
@@ -304,7 +306,7 @@ class TestProjectMetricsSchemaValidation:
             "timestamp": pd.date_range("2024-01-01", periods=3),
         })
         result = validate_project_metrics(df)
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     def test_metrics_project_id_positive_constraint(self) -> None:
         """Test that project_id must be positive."""
@@ -395,7 +397,7 @@ class TestProjectMetricsSchemaValidation:
             "timestamp": pd.date_range("2024-01-01", periods=2),
         })
         result = validate_project_metrics(df)
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     def test_metrics_coverage_zero_percent(self) -> None:
         """Test coverage at zero percent."""
@@ -532,7 +534,7 @@ class TestDataFrameScale:
             "strength": [0.8] * 500,
         })
         result = validate_traceability_links(df)
-        assert len(result) == 500
+        assert len(result) == HTTP_INTERNAL_SERVER_ERROR
 
     def test_metrics_large_dataframe(self) -> None:
         """Test validation of large metrics dataset."""

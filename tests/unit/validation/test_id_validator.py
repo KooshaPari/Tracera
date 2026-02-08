@@ -1,6 +1,8 @@
 """Tests for UUID validation utilities."""
 
 import pytest
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR
+
 
 from tracertm.validation.id_validator import (
     generate_uuid,
@@ -109,11 +111,11 @@ class TestGenerateUUID:
         """Should generate UUID in proper format."""
         generated = generate_uuid()
         parts = generated.split("-")
-        assert len(parts) == 5
+        assert len(parts) == COUNT_FIVE
         assert len(parts[0]) == 8
-        assert len(parts[1]) == 4
-        assert len(parts[2]) == 4
-        assert len(parts[3]) == 4
+        assert len(parts[1]) == COUNT_FOUR
+        assert len(parts[2]) == COUNT_FOUR
+        assert len(parts[3]) == COUNT_FOUR
         assert len(parts[4]) == 12
 
 

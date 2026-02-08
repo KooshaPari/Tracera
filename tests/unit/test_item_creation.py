@@ -1,4 +1,6 @@
 import pytest
+from tests.test_constants import COUNT_TEN
+
 
 # Remove direct import of models that might trigger table re-definition issues if not handled carefully in tests
 # from src.tracertm.models.item import Item, ItemStatus, ItemType, ItemView
@@ -19,7 +21,7 @@ class TestItemCreation:
     def test_item_type_enum(self) -> None:
         """Verify all item types are valid."""
         valid_types = ["epic", "feature", "story", "task", "bug", "file", "endpoint", "test", "table", "milestone"]
-        assert len(valid_types) == 10
+        assert len(valid_types) == COUNT_TEN
         # In a real scenario, we'd import the Enum definition
 
     def test_item_view_enum(self) -> None:

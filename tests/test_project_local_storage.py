@@ -2,6 +2,8 @@
 
 import tempfile
 from pathlib import Path
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 import yaml
@@ -165,7 +167,7 @@ class TestProjectLocalStorage:
         # Increment again
         counter_value2, external_id2 = storage.increment_project_counter(project_dir, "epic")
 
-        assert counter_value2 == 2
+        assert counter_value2 == COUNT_TWO
         assert external_id2 == "EPIC-002"
 
     def test_get_current_project_path(self, temp_dir, storage, monkeypatch) -> None:

@@ -18,6 +18,8 @@ import time
 from datetime import UTC, datetime, timedelta, timezone
 from typing import Never
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_CREATED, HTTP_INTERNAL_SERVER_ERROR, HTTP_NO_CONTENT, HTTP_OK, HTTP_TOO_MANY_REQUESTS, HTTP_UNAUTHORIZED
+
 
 import httpx
 import pytest
@@ -101,14 +103,14 @@ class TestApiConfig:
         assert config.base_url == "https://api.example.com"
         assert config.token == "test-token"
         assert config.timeout == 30.0
-        assert config.max_retries == 3
-        assert config.retry_backoff_base == 2.0
+        assert config.max_retries == COUNT_THREE
+        assert config.retry_backoff_base == COUNT_TWO.0
 
     def test_api_config_defaults(self) -> None:
         """Test ApiConfig default values."""
         config = ApiConfig(base_url="https://api.test.com")
         assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert config.max_retries == COUNT_THREE
         assert config.verify_ssl is True
         assert config.token is None
 
@@ -126,7 +128,7 @@ class TestApiConfig:
         assert config.base_url == "https://api.test.com"
         assert config.token == "test-token"
         assert config.timeout == 60.0
-        assert config.max_retries == 5
+        assert config.max_retries == COUNT_FIVE
 
     def test_api_config_from_config_manager_defaults(self) -> None:
         """Test creating ApiConfig with defaults from ConfigManager."""
@@ -136,7 +138,7 @@ class TestApiConfig:
         config = ApiConfig.from_config_manager(mock_config_manager)
         assert config.base_url == "https://api.tracertm.io"
         assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert config.max_retries == COUNT_THREE
 
     def test_api_config_url_trailing_slash_removed(self) -> None:
         """Test that trailing slashes are removed from base_url via from_config_manager."""
@@ -219,7 +221,7 @@ class TestChangeDataclass:
         assert result["entity_id"] == "item-123"
         assert result["operation"] == "update"
         assert result["data"] == {"title": "Updated"}
-        assert result["version"] == 2
+        assert result["version"] == COUNT_TWO
         assert "timestamp" in result
         assert "client_id" in result
 
@@ -265,7 +267,7 @@ class TestConflictDataclass:
         )
         assert conflict.conflict_id == "conflict-123"
         assert conflict.entity_type == "item"
-        assert conflict.local_version == 2
+        assert conflict.local_version == COUNT_TWO
         assert conflict.remote_version == 1
 
     def test_conflict_from_dict(self) -> None:
@@ -325,13 +327,13 @@ class TestExceptions:
         """Test ApiError initialization."""
         error = ApiError("Test error", status_code=500, response_data={"error": "server error"})
         assert str(error) == "Test error"
-        assert error.status_code == 500
+        assert error.status_code == HTTP_INTERNAL_SERVER_ERROR
         assert error.response_data == {"error": "server error"}
 
     def test_authentication_error(self) -> None:
         """Test AuthenticationError."""
         error = AuthenticationError("Invalid token", status_code=401)
-        assert error.status_code == 401
+        assert error.status_code == HTTP_UNAUTHORIZED
         assert isinstance(error, ApiError)
 
     def test_network_error(self) -> None:
@@ -344,7 +346,7 @@ class TestExceptions:
         """Test RateLimitError."""
         error = RateLimitError("Rate limited", retry_after=60, status_code=429)
         assert error.retry_after == 60
-        assert error.status_code == 429
+        assert error.status_code == HTTP_TOO_MANY_REQUESTS
         assert isinstance(error, ApiError)
 
     def test_conflict_error(self) -> None:
@@ -627,7 +629,7 @@ class TestApiClientRequests:
             mock_request.return_value = mock_response
 
             result = await api_client.get_sync_status()
-            assert result.pending_changes == 5
+            assert result.pending_changes == COUNT_FIVE
             assert result.online is True
 
 
@@ -654,7 +656,7 @@ class TestApiClientErrorHandling:
 
             err = exc_info.value
             assert isinstance(err, AuthenticationError)
-            assert err.status_code == 401
+            assert err.status_code == HTTP_UNAUTHORIZED
 
     @pytest.mark.asyncio
     async def test_rate_limit_error_429(self, api_client) -> None:
@@ -672,7 +674,7 @@ class TestApiClientErrorHandling:
 
             err = exc_info.value
             assert isinstance(err, RateLimitError)
-            assert err.status_code == 429
+            assert err.status_code == HTTP_TOO_MANY_REQUESTS
             assert err.retry_after == 60
 
     @pytest.mark.asyncio
@@ -748,7 +750,7 @@ class TestApiClientRetryLogic:
         async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
-            if call_count < 2:
+            if call_count < COUNT_TWO:
                 msg = "Connection failed"
                 raise httpx.NetworkError(msg)
             mock_response = MagicMock()
@@ -758,7 +760,7 @@ class TestApiClientRetryLogic:
         with patch.object(api_client.client, "request", side_effect=mock_request):
             with patch("asyncio.sleep"):  # Speed up test
                 await api_client._retry_request("GET", "/api/items")
-                assert call_count == 2
+                assert call_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_max_retries_exceeded(self, api_client) -> None:
@@ -815,7 +817,7 @@ class TestApiClientRetryLogic:
         with patch.object(api_client.client, "request", side_effect=mock_request):
             with patch("asyncio.sleep"):  # Speed up test
                 await api_client._retry_request("GET", "/api/items")
-                assert call_count == 2
+                assert call_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_exponential_backoff(self, api_client) -> None:
@@ -826,7 +828,7 @@ class TestApiClientRetryLogic:
         async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "Connection failed"
                 raise httpx.NetworkError(msg)
             mock_response = MagicMock()
@@ -841,7 +843,7 @@ class TestApiClientRetryLogic:
                 await api_client._retry_request("GET", "/api/items")
 
                 # Should have slept twice with exponential backoff
-                assert len(sleep_times) == 2
+                assert len(sleep_times) == COUNT_TWO
                 assert sleep_times[1] > sleep_times[0]
 
 
@@ -1156,7 +1158,7 @@ class TestTraceRTMClientBatchOperations:
             {"title": "Item 2", "view": "CODE", "type": "design"},
         ]
         result = tracertm_client.batch_create_items(items)
-        assert result["items_created"] == 2
+        assert result["items_created"] == COUNT_TWO
 
     def test_batch_create_items_empty(self, tracertm_client) -> None:
         """Test batch create with empty list."""
@@ -1189,7 +1191,7 @@ class TestTraceRTMClientBatchOperations:
             {"item_id": item2.id, "status": "in_progress"},
         ]
         result = tracertm_client.batch_update_items(updates)
-        assert result["items_updated"] == 2
+        assert result["items_updated"] == COUNT_TWO
 
     def test_batch_delete_items(self, tracertm_client) -> None:
         """Test batch deleting items."""
@@ -1213,7 +1215,7 @@ class TestTraceRTMClientBatchOperations:
 
         # Delete items
         result = tracertm_client.batch_delete_items([item1.id, item2.id])
-        assert result["items_deleted"] == 2
+        assert result["items_deleted"] == COUNT_TWO
 
 
 class TestTraceRTMClientAgentOperations:
@@ -1256,7 +1258,7 @@ class TestTraceRTMClientAgentOperations:
 
         # Verify assignment
         projects = tracertm_client.get_agent_projects(agent.id)
-        assert len(projects) >= 3
+        assert len(projects) >= COUNT_THREE
 
     def test_get_agent_projects(self, tracertm_client) -> None:
         """Test getting agent's assigned projects."""
@@ -1324,7 +1326,7 @@ class TestTraceRTMClientExportImport:
             "links": [],
         }
         result = tracertm_client.import_data(data)
-        assert result["items_created"] == 2
+        assert result["items_created"] == COUNT_TWO
         assert result["links_created"] == 0
 
     def test_import_data_with_links(self, tracertm_client) -> None:
@@ -1507,7 +1509,7 @@ class TestApiClientIntegration:
             requests.extend(api_client._retry_request("GET", f"/api/test/{i}") for i in range(5))
 
             responses = await asyncio.gather(*requests)
-            assert len(responses) == 5
+            assert len(responses) == COUNT_FIVE
 
 
 # ============================================================================
@@ -1698,7 +1700,7 @@ class TestApiClientPerformance:
             async def mock_request_impl(*args, **kwargs):  # noqa: ARG001
                 nonlocal call_count
                 call_count += 1
-                if call_count < 3:
+                if call_count < COUNT_THREE:
                     msg = "Failed"
                     raise httpx.NetworkError(msg)
                 mock_response = MagicMock()
@@ -1713,7 +1715,7 @@ class TestApiClientPerformance:
         elapsed = time.time() - start_time
         # Should complete quickly with mocked sleep
         assert elapsed < 1.0
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
 
 # ============================================================================
@@ -1739,7 +1741,7 @@ class TestApiFinal:
         assert "api.test.com" in config.base_url
         assert config.token == "secret-token"
         assert config.timeout == 60.0
-        assert config.max_retries == 5
+        assert config.max_retries == COUNT_FIVE
         assert config.retry_backoff_base == 1.5
         assert config.retry_backoff_max == 120.0
         assert config.verify_ssl is False
@@ -1749,7 +1751,7 @@ class TestApiFinal:
         """Test that multiple clients generate unique IDs."""
         clients = [ApiClient(mock_config) for _ in range(10)]
         ids = [client._client_id for client in clients]
-        assert len(set(ids)) == 10  # All unique
+        assert len(set(ids)) == COUNT_TEN  # All unique
 
         for client in clients:
             await client.close()
@@ -1768,7 +1770,7 @@ class TestApiFinal:
         )
 
         dict_repr = change.to_dict()
-        assert dict_repr["version"] == 5
+        assert dict_repr["version"] == COUNT_FIVE
         assert dict_repr["client_id"] == "client-789"
         assert dict_repr["entity_type"] == "project"
 
@@ -1855,7 +1857,7 @@ class TestWebhookHandling:
             async def mock_webhook_request(*args, **kwargs):  # noqa: ARG001
                 nonlocal call_count
                 call_count += 1
-                if call_count < 2:
+                if call_count < COUNT_TWO:
                     # First call fails with HTTPStatusError
                     mock_response = MagicMock()
                     mock_response.status_code = 500
@@ -1876,10 +1878,10 @@ class TestWebhookHandling:
                         await api_client.client.request("POST", "/webhook", json={})
                         break
                     except httpx.HTTPStatusError:
-                        if attempt < 2:
+                        if attempt < COUNT_TWO:
                             await asyncio.sleep(0.1)
 
-            assert call_count >= 2
+            assert call_count >= COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_webhook_event_types(self) -> None:
@@ -1909,7 +1911,7 @@ class TestWebhookHandling:
         ]
 
         filtered = [e for e in events if e["event_type"] == "item_created"]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_webhook_filter_by_entity_type(self) -> None:
@@ -1922,7 +1924,7 @@ class TestWebhookHandling:
         ]
 
         filtered = [e for e in events if e["entity_type"] == "item"]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
 
 # ============================================================================
@@ -2076,7 +2078,7 @@ class TestResponseStatusCodes:
             mock_request.return_value = mock_response
 
             response = await api_client._retry_request("GET", "/api/items")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
     @pytest.mark.asyncio
     async def test_status_201_created(self, api_client) -> None:
@@ -2087,7 +2089,7 @@ class TestResponseStatusCodes:
             mock_request.return_value = mock_response
 
             response = await api_client._retry_request("POST", "/api/items")
-            assert response.status_code == 201
+            assert response.status_code == HTTP_CREATED
 
     @pytest.mark.asyncio
     async def test_status_204_no_content(self, api_client) -> None:
@@ -2098,7 +2100,7 @@ class TestResponseStatusCodes:
             mock_request.return_value = mock_response
 
             response = await api_client._retry_request("DELETE", "/api/items/1")
-            assert response.status_code == 204
+            assert response.status_code == HTTP_NO_CONTENT
 
     @pytest.mark.asyncio
     async def test_status_400_bad_request(self, api_client) -> None:
@@ -2183,7 +2185,7 @@ class TestClientIDManagement:
         """Test that different instances have unique client IDs."""
         clients = [ApiClient(mock_config) for _ in range(5)]
         ids = [c._client_id for c in clients]
-        assert len(set(ids)) == 5
+        assert len(set(ids)) == COUNT_FIVE
 
         for client in clients:
             await client.close()
@@ -2317,7 +2319,7 @@ class TestMultiProjectSupport:
         tracertm_client._session.commit()
 
         projects = tracertm_client.get_agent_projects(agent.id)
-        assert len(projects) >= 3
+        assert len(projects) >= COUNT_THREE
 
     def test_change_includes_project_context(self) -> None:
         """Test changes can include project context."""
@@ -2375,8 +2377,8 @@ class TestErrorRecovery:
 
         with patch.object(api_client.client, "request", side_effect=mock_request), patch("asyncio.sleep"):
             response = await api_client._retry_request("GET", "/api/items")
-            assert response.status_code == 200
-            assert call_count == 2
+            assert response.status_code == HTTP_OK
+            assert call_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_graceful_degradation_on_failure(self, api_client) -> None:
@@ -2423,7 +2425,7 @@ class TestConcurrentOperations:
 
         with patch.object(api_client, "upload_changes", side_effect=mock_upload):
             results = await asyncio.gather(*[api_client.upload_changes(changes) for changes in changes_list])
-            assert len(results) == 5
+            assert len(results) == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_concurrent_downloads(self, api_client) -> None:
@@ -2435,7 +2437,7 @@ class TestConcurrentOperations:
 
         with patch.object(api_client, "download_changes", side_effect=mock_download):
             results = await asyncio.gather(*[api_client.download_changes(since) for _ in range(5)])
-            assert len(results) == 5
+            assert len(results) == COUNT_FIVE
 
 
 # ============================================================================
@@ -2516,7 +2518,7 @@ class TestAdvancedQueryOperations:
         tracertm_client._session.commit()
 
         results = tracertm_client.query_items(options={"limit": 5})
-        assert len(results) == 5
+        assert len(results) == COUNT_FIVE
 
     def test_query_items_no_results(self, tracertm_client) -> None:
         """Test querying items returns empty when no matches."""
@@ -2832,7 +2834,7 @@ class TestConflictResolutionAdvanced:
                         conflict_strategy=ConflictStrategy.LOCAL_WINS,
                     )
 
-                    assert mock_resolve.call_count == 3  # Called for each conflict
+                    assert mock_resolve.call_count == COUNT_THREE  # Called for each conflict
 
 
 # ============================================================================
@@ -2865,7 +2867,7 @@ class TestMultiProjectOperations:
         )
 
         projects = tracertm_client.get_agent_projects(agent_id)
-        assert len(projects) >= 3
+        assert len(projects) >= COUNT_THREE
         assert "proj-1" in projects
         assert "proj-2" in projects
         assert "proj-3" in projects
@@ -2904,7 +2906,7 @@ class TestAdvancedErrorHandlingRetries:
         async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
-            if call_count < 2:
+            if call_count < COUNT_TWO:
                 mock_response = MagicMock()
                 mock_response.status_code = 503
                 mock_response.text = "Service unavailable"
@@ -2916,8 +2918,8 @@ class TestAdvancedErrorHandlingRetries:
 
         with patch.object(api_client.client, "request", side_effect=mock_request), patch("asyncio.sleep"):
             response = await api_client._retry_request("GET", "/api/items")
-            assert response.status_code == 200
-            assert call_count == 2
+            assert response.status_code == HTTP_OK
+            assert call_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_retry_on_502_bad_gateway(self, api_client) -> None:
@@ -2927,7 +2929,7 @@ class TestAdvancedErrorHandlingRetries:
         async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
-            if call_count < 2:
+            if call_count < COUNT_TWO:
                 mock_response = MagicMock()
                 mock_response.status_code = 502
                 msg = "Error"
@@ -2938,7 +2940,7 @@ class TestAdvancedErrorHandlingRetries:
 
         with patch.object(api_client.client, "request", side_effect=mock_request), patch("asyncio.sleep"):
             response = await api_client._retry_request("GET", "/api/items")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
     @pytest.mark.asyncio
     async def test_rate_limit_with_custom_retry_after(self, api_client) -> None:
@@ -2992,7 +2994,7 @@ class TestAdvancedErrorHandlingRetries:
         async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "Connection failed"
                 raise httpx.NetworkError(msg)
             mock_response = MagicMock()
@@ -3114,7 +3116,7 @@ class TestSyncStatusMetadata:
 
             status = await api_client.get_sync_status()
             assert status.online is False
-            assert status.conflicts_pending == 2
+            assert status.conflicts_pending == COUNT_TWO
 
     def test_export_project_with_empty_items(self, tracertm_client) -> None:
         """Test exporting project with no items."""
@@ -3134,7 +3136,7 @@ class TestSyncStatusMetadata:
             "links": [],
         }
         result = tracertm_client.import_data(data)
-        assert result["items_created"] == 2
+        assert result["items_created"] == COUNT_TWO
 
 
 # ============================================================================
@@ -3178,7 +3180,7 @@ class TestActivityTrackingLogging:
         tracertm_client._session.commit()
 
         activity = tracertm_client.get_agent_activity(agent.id, limit=5)
-        assert len(activity) == 5
+        assert len(activity) == COUNT_FIVE
 
     def test_get_all_agents_activity_multi_agent(self, tracertm_client) -> None:
         """Test getting activity for multiple agents."""
@@ -3201,7 +3203,7 @@ class TestActivityTrackingLogging:
 
         activity = tracertm_client.get_all_agents_activity()
         assert isinstance(activity, dict)
-        assert len(activity) >= 2
+        assert len(activity) >= COUNT_TWO
 
 
 # ============================================================================

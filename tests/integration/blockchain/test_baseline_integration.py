@@ -10,6 +10,8 @@ Tests full workflow including:
 
 import pytest
 import pytest_asyncio
+from tests.test_constants import COUNT_FIVE, COUNT_THREE
+
 
 from tracertm.models.blockchain import (
     BaselineItem,
@@ -68,7 +70,7 @@ class TestBaselineCreation:
 
         assert baseline is not None
         assert baseline.name == "v1.0.0"
-        assert baseline.items_count == 5
+        assert baseline.items_count == COUNT_FIVE
         assert baseline.merkle_root != ""
         assert len(baseline.merkle_root) == 64
 
@@ -97,7 +99,7 @@ class TestBaselineCreation:
         result = await db_session.execute(select(BaselineItem).where(BaselineItem.baseline_id == baseline.id))
         persisted_items = list(result.scalars().all())
 
-        assert len(persisted_items) == 5
+        assert len(persisted_items) == COUNT_FIVE
         item_ids = {item.item_id for item in persisted_items}
         expected_ids = {f"SPEC-{i:03d}" for i in range(5)}
         assert item_ids == expected_ids
@@ -128,7 +130,7 @@ class TestBaselineCreation:
         cached_proofs = list(result.scalars().all())
 
         # Should have one proof per item
-        assert len(cached_proofs) == 5
+        assert len(cached_proofs) == COUNT_FIVE
 
         # Each proof should have valid structure
         for proof_cache in cached_proofs:
@@ -174,7 +176,7 @@ class TestBaselineRetrieval:
         assert retrieved is not None
         assert retrieved.id == baseline.id
         assert retrieved.name == "M1"
-        assert retrieved.items_count == 3
+        assert retrieved.items_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_get_baseline_by_merkle_root(self, db_session, baseline_with_items) -> None:

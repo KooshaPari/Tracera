@@ -7,6 +7,8 @@ from tracertm.models.agent import Agent
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
+from tests.test_constants import COUNT_TWO
+
 
 
 class TestItemModelComprehensive:
@@ -43,7 +45,7 @@ class TestItemModelComprehensive:
         """Test item with explicit version."""
         item = Item(project_id="p1", title="Test", view="FEATURE", item_type="feature")
         item.version = 2
-        assert item.version == 2
+        assert item.version == COUNT_TWO
 
     def test_item_with_metadata(self) -> None:
         """Test item with metadata."""

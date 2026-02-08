@@ -5,6 +5,8 @@ Target: 35+ tests with 95%+ coverage.
 """
 
 import pytest
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 from tracertm.models.event import Event
 from tracertm.models.item import Item
@@ -297,7 +299,7 @@ class TestStatusHistory:
 
         history = workflow_service.get_status_history(test_item.id)
 
-        assert len(history) >= 3
+        assert len(history) >= COUNT_THREE
         new_statuses = [h["new_status"] for h in history]
         assert "in_progress" in new_statuses
         assert "done" in new_statuses
@@ -311,7 +313,7 @@ class TestStatusHistory:
         history = workflow_service.get_status_history(test_item.id)
 
         # History should be ordered by created_at DESC (most recent first)
-        assert len(history) >= 2
+        assert len(history) >= COUNT_TWO
         assert history[0]["new_status"] in {"done", "in_progress"}
 
     def test_history_with_agent_id(self, workflow_service, test_item) -> None:
@@ -607,7 +609,7 @@ class TestConcurrentTransitions:
             result = workflow_service.update_item_status(item_id, "in_progress")
             results.append(result)
 
-        assert len(results) == 3
+        assert len(results) == COUNT_THREE
         assert all(r["new_status"] == "in_progress" for r in results)
 
 
@@ -838,7 +840,7 @@ class TestPerformanceAndScalability:
         elapsed_time = time.time() - start_time
 
         # Should handle 10 items in reasonable time
-        assert elapsed_time < 5.0
+        assert elapsed_time < COUNT_FIVE.0
 
 
 # ==================== Coverage Tests ====================

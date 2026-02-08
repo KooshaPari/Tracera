@@ -14,6 +14,8 @@ import pathlib
 from datetime import UTC, datetime
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -59,7 +61,7 @@ class TestAPIClientErrors:
             mock_get.return_value = mock_response
 
             # Test behavior when encountering 500
-            assert mock_response.status_code == 500
+            assert mock_response.status_code == HTTP_INTERNAL_SERVER_ERROR
 
     def test_api_malformed_json_response(self) -> None:
         """Test handling of malformed JSON in response."""
@@ -655,7 +657,7 @@ class TestRecoveryAndResilience:
             nonlocal attempt_count
             await asyncio.sleep(0)  # ensure async
             attempt_count += 1
-            if attempt_count < 2:
+            if attempt_count < COUNT_TWO:
                 msg = "Temporary failure"
                 raise RuntimeError(msg)
             return "success"
@@ -667,7 +669,7 @@ class TestRecoveryAndResilience:
                 assert result == "success"
                 break
             except RuntimeError:
-                if attempt == 2:
+                if attempt == COUNT_TWO:
                     raise
 
     async def test_circuit_breaker_pattern(self) -> None:

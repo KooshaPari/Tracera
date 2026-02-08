@@ -5,6 +5,8 @@ Target: +1% coverage on schema validation paths
 
 import pytest
 from pydantic import ValidationError
+from tests.test_constants import COUNT_TEN, COUNT_THREE, HTTP_INTERNAL_SERVER_ERROR
+
 
 from tracertm.config.schema import Config
 
@@ -28,7 +30,7 @@ class TestConfigSchemaDefaults:
         assert config.api_url == "https://api.tracertm.io"
         assert config.api_token is None
         assert config.api_timeout == 30.0
-        assert config.api_max_retries == 3
+        assert config.api_max_retries == COUNT_THREE
         assert config.sync_enabled is True
         assert config.sync_interval_seconds == 300
         assert config.sync_conflict_strategy == "last_write_wins"
@@ -50,7 +52,7 @@ class TestConfigSchemaDefaults:
         assert config.current_project_name == "Test Project"
         assert config.default_view == "CODE"
         assert config.output_format == "json"
-        assert config.max_agents == 500
+        assert config.max_agents == HTTP_INTERNAL_SERVER_ERROR
 
 
 class TestConfigDatabaseUrlValidation:
@@ -253,7 +255,7 @@ class TestConfigApiRetriesValidation:
         assert config.api_max_retries == 1
 
         config = Config(api_max_retries=10)
-        assert config.api_max_retries == 10
+        assert config.api_max_retries == COUNT_TEN
 
     @pytest.mark.unit
     def test_api_max_retries_invalid_below_min(self) -> None:
@@ -275,7 +277,7 @@ class TestConfigSyncIntervalValidation:
     def test_sync_interval_valid(self) -> None:
         """Test valid sync interval values."""
         config = Config(sync_interval_seconds=10)
-        assert config.sync_interval_seconds == 10
+        assert config.sync_interval_seconds == COUNT_TEN
 
         config = Config(sync_interval_seconds=60)
         assert config.sync_interval_seconds == 60

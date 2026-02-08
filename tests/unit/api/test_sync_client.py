@@ -2,6 +2,8 @@
 
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, Mock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_UNAUTHORIZED
+
 
 import httpx
 import pytest
@@ -71,7 +73,7 @@ class TestApiConfig:
         assert config.base_url == "https://api.example.com"
         assert config.token is None
         assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert config.max_retries == COUNT_THREE
         assert config.verify_ssl is True
 
     def test_custom_config(self) -> None:
@@ -86,8 +88,8 @@ class TestApiConfig:
 
         assert config.base_url == "http://localhost:8000"
         assert config.token == "test-token"
-        assert config.timeout == 10.0
-        assert config.max_retries == 5
+        assert config.timeout == COUNT_TEN.0
+        assert config.max_retries == COUNT_FIVE
         assert config.verify_ssl is False
 
     @patch("tracertm.api.sync_client.ConfigManager")
@@ -108,7 +110,7 @@ class TestApiConfig:
         assert config.base_url == "https://custom.api.com"
         assert config.token == "custom-token"
         assert config.timeout == 15.0
-        assert config.max_retries == 5
+        assert config.max_retries == COUNT_FIVE
 
 
 class TestChange:
@@ -149,7 +151,7 @@ class TestChange:
         assert result["entity_id"] == "item-001"
         assert result["operation"] == "update"
         assert result["data"] == {"title": "Test"}
-        assert result["version"] == 2
+        assert result["version"] == COUNT_TWO
         assert result["timestamp"] == timestamp.isoformat()
         assert result["client_id"] == "client-123"
 
@@ -175,7 +177,7 @@ class TestConflict:
         assert conflict.conflict_id == "conflict-001"
         assert conflict.entity_type == "item"
         assert conflict.entity_id == "item-001"
-        assert conflict.local_version == 5
+        assert conflict.local_version == COUNT_FIVE
         assert conflict.remote_version == 6
         assert conflict.local_data == {"title": "Local"}
         assert conflict.remote_data == {"title": "Remote"}
@@ -227,10 +229,10 @@ class TestSyncStatus:
         status = SyncStatus.from_dict(data)
 
         assert status.last_sync == datetime.fromisoformat("2024-01-01T12:00:00")
-        assert status.pending_changes == 5
+        assert status.pending_changes == COUNT_FIVE
         assert status.online is True
         assert status.server_time == datetime.fromisoformat("2024-01-01T12:30:00")
-        assert status.conflicts_pending == 2
+        assert status.conflicts_pending == COUNT_TWO
 
 
 class TestApiClient:
@@ -305,7 +307,7 @@ class TestApiClient:
             result = await api_client.upload_changes(sample_changes)
 
             assert isinstance(result, UploadResult)
-            assert len(result.applied) == 2
+            assert len(result.applied) == COUNT_TWO
             assert len(result.conflicts) == 0
 
     @pytest.mark.asyncio
@@ -402,7 +404,7 @@ class TestApiClient:
             status = await api_client.get_sync_status()
 
             assert isinstance(status, SyncStatus)
-            assert status.pending_changes == 10
+            assert status.pending_changes == COUNT_TEN
             assert status.online is True
             assert status.conflicts_pending == 0
 
@@ -423,7 +425,7 @@ class TestApiClient:
             result = await api_client._retry_request("GET", "/api/health")
 
             assert result == mock_response
-            assert mock_request.call_count == 3
+            assert mock_request.call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_retry_exhausted(self, api_client: ApiClient) -> None:
@@ -435,7 +437,7 @@ class TestApiClient:
                 await api_client._retry_request("GET", "/api/health")
 
             assert "after 3 retries" in str(exc_info.value)
-            assert mock_request.call_count == 3
+            assert mock_request.call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_authentication_error_no_retry(self, api_client: ApiClient) -> None:
@@ -449,7 +451,7 @@ class TestApiClient:
             with pytest.raises(AuthenticationError) as exc_info:
                 await api_client._retry_request("GET", "/api/test")
 
-            assert exc_info.value.status_code == 401
+            assert exc_info.value.status_code == HTTP_UNAUTHORIZED
             # Should only attempt once, no retries for auth errors
             assert mock_request.call_count == 1
 
@@ -522,6 +524,6 @@ class TestFullSync:
                 conflict_strategy=ConflictStrategy.LAST_WRITE_WINS,
             )
 
-            assert len(upload_result.applied) == 2
+            assert len(upload_result.applied) == COUNT_TWO
             assert len(remote_changes) == 1
             assert remote_changes[0].entity_id == "item-003"

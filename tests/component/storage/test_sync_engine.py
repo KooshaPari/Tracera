@@ -2,6 +2,8 @@ import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from types import SimpleNamespace
 from typing import Never
+from tests.test_constants import COUNT_FIVE
+
 
 import pytest
 
@@ -175,7 +177,7 @@ async def test_sync_happy_path_aggregates_counts(tmp_path, monkeypatch) -> None:
     result = await engine.sync()
 
     assert result.success is True
-    assert result.entities_synced == 5
+    assert result.entities_synced == COUNT_FIVE
     assert len(result.conflicts) == 1
     # state manager was updated to success
     assert engine.state_manager.status_updates[-1] == SyncStatus.SUCCESS

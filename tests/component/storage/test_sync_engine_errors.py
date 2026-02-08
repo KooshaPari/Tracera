@@ -14,6 +14,8 @@ Tests cover:
 import asyncio
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TWO
+
 
 import pytest
 
@@ -391,7 +393,7 @@ class TestSyncEngineErrorScenarios:
         changes = ChangeDetector.detect_changes_in_directory(dir_path, stored_hashes)
 
         # All files should be detected as new
-        assert len(changes) == 2
+        assert len(changes) == COUNT_TWO
 
         # Store hashes
         for path, hash_val in changes:
@@ -548,7 +550,7 @@ class TestSyncEngineErrorScenarios:
 
             # Clear error
             manager.update_error(None)
-            assert mock_conn.execute.call_count >= 2
+            assert mock_conn.execute.call_count >= COUNT_TWO
 
     async def test_upload_change_operations(self) -> None:
         """Test upload operations for different operation types."""
@@ -591,6 +593,6 @@ class TestSyncEngineErrorScenarios:
         clock = engine.create_vector_clock("client-1", 5, 4)
 
         assert clock.client_id == "client-1"
-        assert clock.version == 5
-        assert clock.parent_version == 4
+        assert clock.version == COUNT_FIVE
+        assert clock.parent_version == COUNT_FOUR
         assert isinstance(clock.timestamp, datetime)

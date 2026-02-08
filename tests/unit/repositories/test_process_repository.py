@@ -23,6 +23,8 @@ Tests for:
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -401,7 +403,7 @@ async def test_list_all_basic(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     processes = await repo.list_all(project_id=project.id)
-    assert len(processes) == 3
+    assert len(processes) == COUNT_THREE
 
 
 @pytest.mark.unit
@@ -441,7 +443,7 @@ async def test_list_all_include_deleted(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     processes = await repo.list_all(project_id=project.id, include_deleted=True)
-    assert len(processes) == 2
+    assert len(processes) == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -526,8 +528,8 @@ async def test_list_all_filter_active_only(db_session: AsyncSession) -> None:
     # Only active versions
     active_only = await repo.list_all(project_id=project.id, active_only=True)
 
-    assert len(all_processes) == 3
-    assert len(active_only) == 2
+    assert len(all_processes) == COUNT_THREE
+    assert len(active_only) == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -546,8 +548,8 @@ async def test_list_all_pagination(db_session: AsyncSession) -> None:
     page1 = await repo.list_all(project_id=project.id, limit=5, offset=0)
     page2 = await repo.list_all(project_id=project.id, limit=5, offset=5)
 
-    assert len(page1) == 5
-    assert len(page2) == 5
+    assert len(page1) == COUNT_FIVE
+    assert len(page2) == COUNT_FIVE
 
 
 # ============================================================================
@@ -576,7 +578,7 @@ async def test_update_basic_fields(db_session: AsyncSession) -> None:
 
     assert updated.name == "Updated Name"
     assert updated.description == "Updated Description"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -637,7 +639,7 @@ async def test_create_version(db_session: AsyncSession) -> None:
     )
 
     assert new_version.id != original.id
-    assert new_version.version_number == 2
+    assert new_version.version_number == COUNT_TWO
     assert new_version.is_active_version is False  # New versions start inactive
     assert new_version.parent_version_id == original.id
     assert new_version.version_notes == "Minor improvements"
@@ -832,7 +834,7 @@ async def test_count_by_status(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     counts = await repo.count_by_status(project.id)
-    assert counts.get("draft") == 2
+    assert counts.get("draft") == COUNT_TWO
     assert counts.get("active") == 1
 
 
@@ -851,7 +853,7 @@ async def test_count_by_category(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     counts = await repo.count_by_category(project.id)
-    assert counts.get("operational") == 2
+    assert counts.get("operational") == COUNT_TWO
     assert counts.get("support") == 1
 
 
@@ -935,7 +937,7 @@ async def test_list_executions(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     executions = await repo.list_executions(process.id)
-    assert len(executions) == 3
+    assert len(executions) == COUNT_THREE
 
 
 @pytest.mark.unit

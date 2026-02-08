@@ -1,5 +1,7 @@
 """Comprehensive test suite for ExportImportService covering JSON/YAML export,
 import with conflicts, data validation, and large dataset handling.
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE
+
 
 Target: 40+ tests with 90%+ code coverage.
 
@@ -201,8 +203,8 @@ async def test_export_to_json_with_items(export_import_service, sample_project, 
     """Test JSON export includes all items."""
     result = await export_import_service.export_to_json(sample_project.id)
 
-    assert result["item_count"] == 4
-    assert len(result["items"]) == 4
+    assert result["item_count"] == COUNT_FOUR
+    assert len(result["items"]) == COUNT_FOUR
 
 
 @pytest.mark.asyncio
@@ -258,7 +260,7 @@ async def test_export_to_json_preserves_item_details(export_service, sample_proj
     json_str = await export_service.export_to_json(sample_project.id)
     data = json.loads(json_str)
 
-    assert len(data["items"]) == 4
+    assert len(data["items"]) == COUNT_FOUR
     for item in data["items"]:
         assert "title" in item
         assert "view" in item
@@ -331,7 +333,7 @@ async def test_export_to_csv_parseable(export_service, sample_project, sample_it
     reader = csv.DictReader(StringIO(csv_str))
     rows = list(reader)
 
-    assert len(rows) == 4
+    assert len(rows) == COUNT_FOUR
 
 
 @pytest.mark.asyncio
@@ -342,7 +344,7 @@ async def test_export_to_csv_data_integrity(export_service, sample_project, samp
     reader = csv.DictReader(StringIO(csv_str))
     rows = list(reader)
 
-    assert len(rows) == 4
+    assert len(rows) == COUNT_FOUR
     for row in rows:
         assert "Title" in row or "title" in row
 
@@ -381,7 +383,7 @@ async def test_export_to_markdown_grouped_by_view(export_service, sample_project
     md = await export_service.export_to_markdown(sample_project.id)
 
     assert isinstance(md, str)
-    assert len(md) > 10
+    assert len(md) > COUNT_TEN
 
 
 # JSON Import Tests
@@ -449,7 +451,7 @@ async def test_import_from_json_multiple_items(db_session) -> None:
 
     result = await service.import_from_json(project_id, json_data)
 
-    assert result["imported_count"] == 3
+    assert result["imported_count"] == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -508,7 +510,7 @@ Item 3,TEST,test,done,Third item"""
 
     result = await service.import_from_csv(project_id, csv_data)
 
-    assert result["imported_count"] == 3
+    assert result["imported_count"] == COUNT_THREE
 
 
 @pytest.mark.asyncio
@@ -664,7 +666,7 @@ async def test_export_import_roundtrip_json(db_session, sample_project, sample_i
     json_str = await export_svc.export_to_json(sample_project.id)
 
     data = json.loads(json_str)
-    assert len(data["items"]) == 4
+    assert len(data["items"]) == COUNT_FOUR
 
 
 @pytest.mark.asyncio
@@ -676,7 +678,7 @@ async def test_export_import_roundtrip_csv(db_session, sample_project, sample_it
 
     reader = csv.DictReader(StringIO(csv_str))
     rows = list(reader)
-    assert len(rows) == 4
+    assert len(rows) == COUNT_FOUR
 
 
 # Edge Case Tests

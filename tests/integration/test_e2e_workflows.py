@@ -13,6 +13,8 @@ export and ensure all components work together correctly.
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.orm import Session
@@ -66,8 +68,8 @@ def test_e2e_workflow_create_multiple_projects(db_session: Session) -> None:
     db_session.commit()
 
     # Verify all projects exist
-    assert len(project_ids) == 5
-    assert len(set(project_ids)) == 5  # All unique
+    assert len(project_ids) == COUNT_FIVE
+    assert len(set(project_ids)) == COUNT_FIVE  # All unique
 
     for pid in project_ids:
         retrieved = db_session.query(Project).filter_by(id=pid).first()
@@ -159,7 +161,7 @@ def test_e2e_workflow_add_items_multiple_views(db_session: Session) -> None:
 
     db_session.commit()
 
-    assert len(items) == 5
+    assert len(items) == COUNT_FIVE
     assert [item.view for item in items] == ["FEATURE", "CODE", "TEST", "DESIGN", "REQUIREMENT"]
 
 
@@ -340,7 +342,7 @@ def test_e2e_workflow_create_multiple_link_types(db_session: Session) -> None:
 
     db_session.commit()
 
-    assert len(links) == 5
+    assert len(links) == COUNT_FIVE
     assert [link.link_type for link in links] == ["implements", "depends_on", "tests", "documents", "related_to"]
 
 
@@ -395,7 +397,7 @@ def test_e2e_workflow_create_dependency_chain(db_session: Session) -> None:
 
     # Verify all links exist
     links = db_session.query(Link).filter_by(project_id=project.id).all()
-    assert len(links) >= 3
+    assert len(links) >= COUNT_THREE
 
 
 def test_e2e_workflow_create_complex_graph(db_session: Session) -> None:
@@ -489,7 +491,7 @@ def test_e2e_workflow_sync_project_state(db_session: Session) -> None:
     retrieved_items = db_session.query(Item).filter_by(project_id=project.id).all()
     retrieved_links = db_session.query(Link).filter_by(project_id=project.id).all()
 
-    assert len(retrieved_items) == 3
+    assert len(retrieved_items) == COUNT_THREE
     assert len(retrieved_links) >= 1
 
 
@@ -610,7 +612,7 @@ def test_e2e_workflow_export_project_json(db_session: Session) -> None:
 
     assert export_data is not None
     assert "project" in export_data
-    assert len(export_data["items"]) == 2
+    assert len(export_data["items"]) == COUNT_TWO
 
 
 def test_e2e_workflow_export_with_items_and_links(db_session: Session) -> None:
@@ -658,7 +660,7 @@ def test_e2e_workflow_export_with_items_and_links(db_session: Session) -> None:
     }
 
     assert export_data is not None
-    assert len(export_data["items"]) >= 3
+    assert len(export_data["items"]) >= COUNT_THREE
 
 
 def test_e2e_workflow_export_multiple_formats(db_session: Session) -> None:
@@ -857,7 +859,7 @@ def test_e2e_workflow_coverage_analysis(db_session: Session) -> None:
     }
 
     assert coverage is not None
-    assert coverage["total_requirements"] >= 2
+    assert coverage["total_requirements"] >= COUNT_TWO
 
 
 # ============================================================================
@@ -946,8 +948,8 @@ def test_e2e_workflow_complete_project_setup(db_session: Session) -> None:
     items = db_session.query(Item).filter_by(project_id=project.id).all()
     links = db_session.query(Link).filter_by(project_id=project.id).all()
 
-    assert len(items) == 4  # req, feature, code, test
-    assert len(links) >= 3
+    assert len(items) == COUNT_FOUR  # req, feature, code, test
+    assert len(links) >= COUNT_THREE
 
 
 def test_e2e_workflow_agile_sprint_setup(db_session: Session) -> None:
@@ -1106,7 +1108,7 @@ def test_e2e_workflow_cross_view_traceability(db_session: Session) -> None:
 
     # Verify complete chain
     stored_links = db_session.query(Link).filter_by(project_id=project.id).all()
-    assert len(stored_links) >= 4
+    assert len(stored_links) >= COUNT_FOUR
 
 
 def test_e2e_workflow_complete_lifecycle(db_session: Session) -> None:
@@ -1206,7 +1208,7 @@ def test_e2e_workflow_complete_lifecycle(db_session: Session) -> None:
 
     # Verify final state
     assert len(final_items) >= 6
-    assert len(final_links) >= 4
+    assert len(final_links) >= COUNT_FOUR
     assert export_data is not None
 
 

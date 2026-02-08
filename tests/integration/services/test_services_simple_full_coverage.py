@@ -14,6 +14,8 @@ in a single test module, organized by functional category.
 """
 
 from typing import TYPE_CHECKING
+from tests.test_constants import COUNT_TEN
+
 
 import pytest
 from sqlalchemy import create_engine
@@ -1160,7 +1162,7 @@ class TestPerformance:
         elapsed = time.time() - start
 
         # Should complete reasonably quickly (within 10 seconds)
-        assert elapsed < 10.0
+        assert elapsed < COUNT_TEN.0
 
     def test_cache_hit_rate(self) -> None:
         """Test cache hit rate calculation."""

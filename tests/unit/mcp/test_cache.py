@@ -1,6 +1,8 @@
 """Tests for QueryCache (Phase 3)."""
 
 import asyncio
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -137,10 +139,10 @@ class TestQueryCache:
 
         stats = cache.get_stats()
 
-        assert stats["hits"] == 2
+        assert stats["hits"] == COUNT_TWO
         assert stats["misses"] == 1
-        assert stats["total_requests"] == 3
-        assert stats["hit_rate"] == 2 / 3
+        assert stats["total_requests"] == COUNT_THREE
+        assert stats["hit_rate"] == COUNT_TWO / 3
         assert stats["size"] == 1  # One entry
 
     @pytest.mark.asyncio

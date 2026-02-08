@@ -2,6 +2,8 @@
 
 import asyncio
 from collections.abc import AsyncGenerator
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import httpx
 import pytest
@@ -137,7 +139,7 @@ async def test_go_client_retry(go_client: GoBackendClient, mock_backend: MockGoB
     item = await go_client.get_item("test-item-id")
 
     assert item is not None
-    assert mock_backend.request_count == 3  # Initial + 2 retries
+    assert mock_backend.request_count == COUNT_THREE  # Initial + 2 retries
 
 
 @pytest.mark.asyncio
@@ -220,8 +222,8 @@ async def test_go_client_search_items(go_client: GoBackendClient, mock_backend: 
     results = await go_client.search_items("test query", filters={"project_id": "proj-123"})
 
     assert "items" in results
-    assert len(results["items"]) == 2
-    assert results["total"] == 2
+    assert len(results["items"]) == COUNT_TWO
+    assert results["total"] == COUNT_TWO
 
 
 @pytest.mark.asyncio

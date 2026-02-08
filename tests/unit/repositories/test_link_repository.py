@@ -2,6 +2,8 @@
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_TWO
+
 
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
@@ -111,7 +113,7 @@ async def test_get_links_for_item(db_session: AsyncSession) -> None:
     )
 
     links = await link_repo.get_by_item(str(feature.id))
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -176,7 +178,7 @@ async def test_get_by_source(db_session: AsyncSession) -> None:
     )
 
     links = await link_repo.get_by_source(str(source.id))
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -212,7 +214,7 @@ async def test_get_by_target(db_session: AsyncSession) -> None:
     )
 
     links = await link_repo.get_by_target(str(target.id))
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -497,7 +499,7 @@ async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession) -> 
 
     # Test: get_by_project without filter returns all links
     all_links = await link_repo.get_by_project(str(project.id))
-    assert len(all_links) == 2
+    assert len(all_links) == COUNT_TWO
 
     # Test: get_by_project with graph_id filter returns only matching links
     graph1_links = await link_repo.get_by_project(str(project.id), graph_id=str(graph1.id))
@@ -568,7 +570,7 @@ async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession) -> N
 
     # Test: get_by_source without filter returns all links from source
     all_links = await link_repo.get_by_source(str(source.id))
-    assert len(all_links) == 2
+    assert len(all_links) == COUNT_TWO
 
     # Test: get_by_source with graph_id filter
     graph1_links = await link_repo.get_by_source(str(source.id), graph_id=str(graph1.id))
@@ -639,7 +641,7 @@ async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession) -> N
 
     # Test: get_by_target without filter returns all links to target
     all_links = await link_repo.get_by_target(str(target.id))
-    assert len(all_links) == 2
+    assert len(all_links) == COUNT_TWO
 
     # Test: get_by_target with graph_id filter
     graph1_links = await link_repo.get_by_target(str(target.id), graph_id=str(graph1.id))
@@ -710,7 +712,7 @@ async def test_get_by_item_with_graph_id_filter(db_session: AsyncSession) -> Non
 
     # Test: get_by_item without filter returns all links connected to item
     all_links = await link_repo.get_by_item(str(item.id))
-    assert len(all_links) == 2
+    assert len(all_links) == COUNT_TWO
 
     # Test: get_by_item with graph_id filter
     graph1_links = await link_repo.get_by_item(str(item.id), graph_id=str(graph1.id))
@@ -875,11 +877,11 @@ async def test_delete_by_item(db_session: AsyncSession) -> None:
 
     # Verify links exist
     links_before = await link_repo.get_by_item(str(item.id))
-    assert len(links_before) == 2
+    assert len(links_before) == COUNT_TWO
 
     # Delete all links connected to item
     deleted_count = await link_repo.delete_by_item(str(item.id))
-    assert deleted_count == 2
+    assert deleted_count == COUNT_TWO
 
     # Verify links are deleted
     links_after = await link_repo.get_by_item(str(item.id))
@@ -919,7 +921,7 @@ async def test_get_all(db_session: AsyncSession) -> None:
     )
 
     all_links = await link_repo.get_all()
-    assert len(all_links) == 2
+    assert len(all_links) == COUNT_TWO
 
 
 @pytest.mark.unit

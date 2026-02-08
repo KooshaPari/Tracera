@@ -5,6 +5,8 @@ for all repositories.
 """
 
 from datetime import UTC, datetime
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -141,7 +143,7 @@ class TestItemRepository:
         )
 
         features = await item_repo.list_by_view(project.id, "FEATURE")
-        assert len(features) == 2
+        assert len(features) == COUNT_TWO
 
         tests = await item_repo.list_by_view(project.id, "TEST")
         assert len(tests) == 1
@@ -182,11 +184,11 @@ class TestItemRepository:
 
         # Get first 5
         items = await item_repo.get_by_project(project.id, limit=5, offset=0)
-        assert len(items) <= 5
+        assert len(items) <= COUNT_FIVE
 
         # Get next 5
         items = await item_repo.get_by_project(project.id, limit=5, offset=5)
-        assert len(items) <= 5
+        assert len(items) <= COUNT_FIVE
 
     async def test_get_by_project_with_status_filter(self, db_session: AsyncSession) -> None:
         """Test get_by_project with status filter."""
@@ -253,7 +255,7 @@ class TestItemRepository:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo" if i < 3 else "done",
+                status="todo" if i < COUNT_THREE else "done",
             )
 
         # Query with status filter
@@ -261,7 +263,7 @@ class TestItemRepository:
             project_id=project.id,
             filters={"status": "todo"},
         )
-        assert len(items) == 3
+        assert len(items) == COUNT_THREE
 
     async def test_count_by_status(self, db_session: AsyncSession) -> None:
         """Test counting items by status."""
@@ -289,8 +291,8 @@ class TestItemRepository:
             )
 
         counts = await item_repo.count_by_status(project.id)
-        assert counts.get("todo") == 3
-        assert counts.get("done") == 2
+        assert counts.get("todo") == COUNT_THREE
+        assert counts.get("done") == COUNT_TWO
 
     async def test_get_children_of_parent_item(self, db_session: AsyncSession) -> None:
         """Test retrieving direct children of a parent item."""
@@ -316,7 +318,7 @@ class TestItemRepository:
             )
 
         children = await item_repo.get_children(parent.id)
-        assert len(children) == 3
+        assert len(children) == COUNT_THREE
 
     async def test_get_ancestors(self, db_session: AsyncSession) -> None:
         """Test retrieving all ancestors of an item."""
@@ -349,7 +351,7 @@ class TestItemRepository:
         )
 
         ancestors = await item_repo.get_ancestors(child.id)
-        assert len(ancestors) == 2
+        assert len(ancestors) == COUNT_TWO
 
     async def test_get_descendants(self, db_session: AsyncSession) -> None:
         """Test retrieving all descendants of an item."""
@@ -383,7 +385,7 @@ class TestItemRepository:
             )
 
         descendants = await item_repo.get_descendants(parent.id)
-        assert len(descendants) >= 4
+        assert len(descendants) >= COUNT_FOUR
 
     async def test_soft_delete_item(self, db_session: AsyncSession) -> None:
         """Test soft deleting an item."""
@@ -560,7 +562,7 @@ class TestItemRepository:
 
         # Include deleted items
         items = await item_repo.list_by_view(project.id, "FEATURE", include_deleted=True)
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
 
 # ============================================================
@@ -627,7 +629,7 @@ class TestProjectRepository:
             await repo.create(name=f"Project {i}")
 
         projects = await repo.get_all()
-        assert len(projects) == 3
+        assert len(projects) == COUNT_THREE
 
 
 # ============================================================
@@ -736,7 +738,7 @@ class TestLinkRepository:
             )
 
         links = await link_repo.get_by_source(source.id)
-        assert len(links) == 3
+        assert len(links) == COUNT_THREE
 
     async def test_get_links_by_target(self, db_session: AsyncSession) -> None:
         """Test retrieving links by target item."""
@@ -771,7 +773,7 @@ class TestLinkRepository:
             )
 
         links = await link_repo.get_by_target(target.id)
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
     async def test_get_links_by_item(self, db_session: AsyncSession) -> None:
         """Test retrieving all links connected to an item."""
@@ -815,7 +817,7 @@ class TestLinkRepository:
         )
 
         links = await link_repo.get_by_item(item1.id)
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
     async def test_delete_link(self, db_session: AsyncSession) -> None:
         """Test deleting a link."""
@@ -885,7 +887,7 @@ class TestLinkRepository:
         )
 
         count = await link_repo.delete_by_item(item1.id)
-        assert count == 2
+        assert count == COUNT_TWO
 
     async def test_get_all_links(self, db_session: AsyncSession) -> None:
         """Test retrieving all links."""
@@ -917,7 +919,7 @@ class TestLinkRepository:
             )
 
         links = await link_repo.get_all()
-        assert len(links) >= 3
+        assert len(links) >= COUNT_THREE
 
     async def test_get_links_by_type(self, db_session: AsyncSession) -> None:
         """Test retrieving links by type."""
@@ -1030,7 +1032,7 @@ class TestEventRepository:
             )
 
         events = await event_repo.get_by_entity(entity_id)
-        assert len(events) >= 3
+        assert len(events) >= COUNT_THREE
 
     async def test_get_events_by_project(self, db_session: AsyncSession) -> None:
         """Test retrieving events by project."""
@@ -1049,7 +1051,7 @@ class TestEventRepository:
             )
 
         events = await event_repo.get_by_project(project.id)
-        assert len(events) >= 5
+        assert len(events) >= COUNT_FIVE
 
     async def test_get_events_by_agent(self, db_session: AsyncSession) -> None:
         """Test retrieving events by agent."""
@@ -1070,7 +1072,7 @@ class TestEventRepository:
             )
 
         events = await event_repo.get_by_agent(agent_id)
-        assert len(events) >= 3
+        assert len(events) >= COUNT_THREE
 
     async def test_event_replay_simple(self, db_session: AsyncSession) -> None:
         """Test simple event replay."""
@@ -1224,7 +1226,7 @@ class TestAgentRepository:
             )
 
         agents = await agent_repo.get_by_project(project.id)
-        assert len(agents) >= 3
+        assert len(agents) >= COUNT_THREE
 
     async def test_get_agents_by_status(self, db_session: AsyncSession) -> None:
         """Test retrieving agents by status."""
@@ -1241,7 +1243,7 @@ class TestAgentRepository:
             )
 
         agents = await agent_repo.get_by_project(project.id, status="active")
-        assert len(agents) >= 2
+        assert len(agents) >= COUNT_TWO
 
     async def test_update_agent_status(self, db_session: AsyncSession) -> None:
         """Test updating agent status."""

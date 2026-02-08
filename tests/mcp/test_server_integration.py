@@ -9,6 +9,8 @@ Tests cover:
 """
 
 from __future__ import annotations
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import os
 
@@ -210,7 +212,7 @@ class TestAuthentication:
         from fastmcp.utilities.auth import parse_scopes
 
         scopes_list: list[str] = parse_scopes("read:projects,write:items,analyze:*") or []
-        assert len(scopes_list) == 3
+        assert len(scopes_list) == COUNT_THREE
         assert "read:projects" in scopes_list
         assert "write:items" in scopes_list
 
@@ -444,7 +446,7 @@ class TestConfiguration:
         from fastmcp.utilities.auth import parse_scopes
 
         scopes_list: list[str] = parse_scopes(os.getenv("TRACERTM_MCP_REQUIRED_SCOPES")) or []
-        assert len(scopes_list) == 2
+        assert len(scopes_list) == COUNT_TWO
 
     def test_auth_mode_case_insensitive(self) -> None:
         """Test that auth mode is case insensitive."""

@@ -10,6 +10,8 @@ from collections.abc import Generator
 from pathlib import Path
 from typing import cast
 from unittest.mock import patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.orm import Session
@@ -383,7 +385,7 @@ class TestBasicLinkOperations:
                 result = cli_runner.invoke(link_app, ["list", "--limit", "5"])
                 assert result.exit_code == 0
                 # Should only show 5 links
-                assert result.stdout.count("implements") <= 5
+                assert result.stdout.count("implements") <= COUNT_FIVE
 
     def test_show_link_success(
         self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
@@ -1014,7 +1016,7 @@ class TestGraphAnalysisOperations:
             )
             db_session.add(node)
             db_session.commit()
-            if i < 2:  # Only need 2 for short path
+            if i < COUNT_TWO:  # Only need 2 for short path
                 path1_nodes.append(node)
 
         for i in range(5):
@@ -1029,7 +1031,7 @@ class TestGraphAnalysisOperations:
             )
             db_session.add(node)
             db_session.commit()
-            if i < 4:  # Need 4 for long path
+            if i < COUNT_FOUR:  # Need 4 for long path
                 path2_nodes.append(node)
 
         # Create short path links: start -> A -> end

@@ -5,6 +5,8 @@ resource ownership, and permission validation.
 """
 
 from unittest.mock import patch
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 
@@ -428,7 +430,7 @@ class TestBulkPermissionOperations:
             resource_id="project_1", users=["user_1", "user_2", "user_3"], permission="editor",
         )
 
-        assert result["granted"] == 3
+        assert result["granted"] == COUNT_THREE
 
     def test_revoke_permissions_from_multiple_users(self, mock_permission_manager) -> None:
         """Test revoking permissions from multiple users."""
@@ -440,7 +442,7 @@ class TestBulkPermissionOperations:
             resource_id="project_1", users=["user_1", "user_2", "user_3"],
         )
 
-        assert result["revoked"] == 3
+        assert result["revoked"] == COUNT_THREE
 
 
 class TestPermissionExplanation:

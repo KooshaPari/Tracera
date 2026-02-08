@@ -11,6 +11,8 @@ Tests all schemas in tracertm.schemas:
 """
 
 from datetime import datetime
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 from pydantic import ValidationError
@@ -76,7 +78,7 @@ class TestItemCreateSchema:
         """Test that title accepts exactly 500 characters."""
         title = "x" * 500
         item = ItemCreate(title=title, view="FEATURE", item_type="requirement")
-        assert len(item.title) == 500
+        assert len(item.title) == HTTP_INTERNAL_SERVER_ERROR
 
     def test_create_item_view_required(self) -> None:
         """Test that view is required."""

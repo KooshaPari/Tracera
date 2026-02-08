@@ -7,6 +7,8 @@ import os
 import pathlib
 import tempfile
 from unittest.mock import AsyncMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
+
 
 import pytest
 
@@ -199,7 +201,7 @@ class TestReadFileTool:
         assert "result" in result
         assert temp_file in result["result"]["path"]
         assert "Line 1" in result["result"]["content"]
-        assert result["result"]["total_lines"] == 5
+        assert result["result"]["total_lines"] == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_read_file_with_offset(self, temp_file, temp_dir) -> None:
@@ -225,7 +227,7 @@ class TestReadFileTool:
         )
 
         assert result["success"] is True
-        assert result["result"]["total_lines"] == 2
+        assert result["result"]["total_lines"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_read_file_not_found(self, temp_dir) -> None:
@@ -557,7 +559,7 @@ class TestSearchFilesTool:
         )
 
         assert result["success"] is True
-        assert len(result["result"]["matches"]) <= 5
+        assert len(result["result"]["matches"]) <= COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_search_files_invalid_regex(self, temp_dir) -> None:

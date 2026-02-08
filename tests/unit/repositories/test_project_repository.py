@@ -2,6 +2,8 @@
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_THREE
+
 
 from tracertm.repositories.project_repository import ProjectRepository
 
@@ -77,7 +79,7 @@ async def test_get_all_projects(db_session: AsyncSession) -> None:
     await repo.create(name="Project 3", description="Test 3")
 
     projects = await repo.get_all()
-    assert len(projects) == 3
+    assert len(projects) == COUNT_THREE
 
 
 @pytest.mark.unit

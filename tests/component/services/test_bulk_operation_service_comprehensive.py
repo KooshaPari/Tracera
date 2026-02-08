@@ -14,6 +14,8 @@ Test coverage targets 95%+ line coverage of BulkOperationService.
 import csv
 import io
 import json
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+
 
 import pytest
 
@@ -135,8 +137,8 @@ class TestBulkCreateBasic:
         csv_data = _create_test_csv(items)
 
         result = svc.bulk_create_items("proj-1", csv_data)
-        assert result["items_created"] == 10
-        assert sync_session.query(Item).count() == 10
+        assert result["items_created"] == COUNT_TEN
+        assert sync_session.query(Item).count() == COUNT_TEN
 
     def test_bulk_create_with_metadata(self, sync_session) -> None:
         """Test creating items with JSON metadata."""
@@ -275,8 +277,8 @@ class TestBulkCreateLargeScale:
         csv_data = _create_test_csv(items)
 
         result = svc.bulk_create_items("proj-1", csv_data)
-        assert result["items_created"] == 500
-        assert sync_session.query(Item).count() == 500
+        assert result["items_created"] == HTTP_INTERNAL_SERVER_ERROR
+        assert sync_session.query(Item).count() == HTTP_INTERNAL_SERVER_ERROR
 
     def test_bulk_create_1000_items(self, sync_session) -> None:
         """Test creating 1000 items."""
@@ -326,7 +328,7 @@ class TestBulkCreateLargeScale:
         csv_data = _create_test_csv(items)
 
         result = svc.bulk_create_items("proj-1", csv_data)
-        assert result["items_created"] == 200
+        assert result["items_created"] == HTTP_OK
 
         # Verify status distribution
         for status in statuses:
@@ -388,8 +390,8 @@ class TestBulkCreatePreview:
         csv_data = _create_test_csv(items)
 
         preview = svc.bulk_create_preview("proj-1", csv_data)
-        assert preview["total_count"] == 10
-        assert len(preview["sample_items"]) == 5  # default limit
+        assert preview["total_count"] == COUNT_TEN
+        assert len(preview["sample_items"]) == COUNT_FIVE  # default limit
         assert preview["invalid_rows_count"] == 0
 
     def test_preview_empty_csv(self, sync_session) -> None:
@@ -477,7 +479,7 @@ class TestBulkUpdate:
         svc = BulkOperationService(sync_session)
 
         result = svc.bulk_update_items("proj-1", {"status": "todo"}, {"status": "in_progress"})
-        assert result["items_updated"] == 5
+        assert result["items_updated"] == COUNT_FIVE
         assert all(item.status == "in_progress" for item in sync_session.query(Item).all())
 
     def test_bulk_update_multiple_fields(self, sync_session) -> None:
@@ -489,7 +491,7 @@ class TestBulkUpdate:
         result = svc.bulk_update_items(
             "proj-1", {"status": "todo"}, {"status": "done", "priority": "high", "owner": "alice"},
         )
-        assert result["items_updated"] == 3
+        assert result["items_updated"] == COUNT_THREE
         for item in sync_session.query(Item).all():
             assert item.status == "done"
             assert item.priority == "high"
@@ -503,7 +505,7 @@ class TestBulkUpdate:
         svc = BulkOperationService(sync_session)
 
         result = svc.bulk_update_items("proj-1", {"view": "FEATURE", "status": "todo"}, {"status": "in_progress"})
-        assert result["items_updated"] == 3
+        assert result["items_updated"] == COUNT_THREE
 
     def test_bulk_update_preview(self, sync_session) -> None:
         """Test bulk update preview."""
@@ -512,8 +514,8 @@ class TestBulkUpdate:
         svc = BulkOperationService(sync_session)
 
         preview = svc.bulk_update_preview("proj-1", {"status": "todo"}, {"status": "done"}, limit=3)
-        assert preview["total_count"] == 10
-        assert len(preview["sample_items"]) == 3
+        assert preview["total_count"] == COUNT_TEN
+        assert len(preview["sample_items"]) == COUNT_THREE
         assert preview["estimated_duration_ms"] == 100  # 10 items * 10ms
 
     def test_bulk_update_events_logged(self, sync_session) -> None:
@@ -524,7 +526,7 @@ class TestBulkUpdate:
 
         svc.bulk_update_items("proj-1", {"status": "todo"}, {"status": "done"}, agent_id="agent-1")
         events = sync_session.query(Event).all()
-        assert len(events) == 2
+        assert len(events) == COUNT_TWO
         assert all(e.event_type == "item_bulk_updated" for e in events)
 
 
@@ -543,7 +545,7 @@ class TestBulkDelete:
         svc = BulkOperationService(sync_session)
 
         result = svc.bulk_delete_items("proj-1", {})
-        assert result["items_deleted"] == 5
+        assert result["items_deleted"] == COUNT_FIVE
         assert all(item.deleted_at is not None for item in sync_session.query(Item).all())
 
     def test_bulk_delete_with_filters(self, sync_session) -> None:
@@ -554,11 +556,11 @@ class TestBulkDelete:
         svc = BulkOperationService(sync_session)
 
         result = svc.bulk_delete_items("proj-1", {"status": "todo"})
-        assert result["items_deleted"] == 3
+        assert result["items_deleted"] == COUNT_THREE
 
         # Verify deleted items
         deleted = sync_session.query(Item).filter(Item.deleted_at.isnot(None)).all()
-        assert len(deleted) == 3
+        assert len(deleted) == COUNT_THREE
 
     def test_bulk_delete_large_batch(self, sync_session) -> None:
         """Test bulk delete with large batch."""
@@ -577,7 +579,7 @@ class TestBulkDelete:
 
         svc.bulk_delete_items("proj-1", {}, agent_id="agent-1")
         events = sync_session.query(Event).all()
-        assert len(events) == 2
+        assert len(events) == COUNT_TWO
         assert all(e.event_type == "item_bulk_deleted" for e in events)
 
 
@@ -690,7 +692,7 @@ class TestErrorHandlingAndRollback:
 
         result = svc.bulk_create_items("proj-1", csv_data)
         # Should create 2 valid items (invalid row is skipped)
-        assert result["items_created"] == 2
+        assert result["items_created"] == COUNT_TWO
 
     def test_bulk_create_handles_exception_during_iteration(self, sync_session, monkeypatch) -> None:
         """Test that exceptions during iteration are handled properly."""
@@ -804,7 +806,7 @@ class TestTransactionIsolation:
         ]
         csv_data1 = _create_test_csv(items1)
         result1 = svc.bulk_create_items("proj-1", csv_data1)
-        assert result1["items_created"] == 10
+        assert result1["items_created"] == COUNT_TEN
 
         # Create batch 2
         items2 = [
@@ -844,7 +846,7 @@ class TestFilteringAndQueries:
         svc = BulkOperationService(sync_session)
 
         result = svc.bulk_update_items("proj-1", {"view": "FEATURE"}, {"status": "done"})
-        assert result["items_updated"] == 5
+        assert result["items_updated"] == COUNT_FIVE
 
     def test_bulk_update_by_item_type_filter(self, sync_session) -> None:
         """Test filtering by item type."""
@@ -854,7 +856,7 @@ class TestFilteringAndQueries:
         svc = BulkOperationService(sync_session)
 
         result = svc.bulk_update_items("proj-1", {"item_type": "feature"}, {"status": "done"})
-        assert result["items_updated"] == 5
+        assert result["items_updated"] == COUNT_FIVE
 
     def test_bulk_update_by_priority_filter(self, sync_session) -> None:
         """Test filtering by priority."""
@@ -885,7 +887,7 @@ class TestFilteringAndQueries:
 
         svc = BulkOperationService(sync_session)
         result = svc.bulk_update_items("proj-1", {"priority": "high"}, {"status": "in_progress"})
-        assert result["items_updated"] == 5
+        assert result["items_updated"] == COUNT_FIVE
 
     def test_bulk_delete_by_owner_filter(self, sync_session) -> None:
         """Test delete filtering by owner."""
@@ -916,7 +918,7 @@ class TestFilteringAndQueries:
 
         svc = BulkOperationService(sync_session)
         result = svc.bulk_delete_items("proj-1", {"owner": "alice"})
-        assert result["items_deleted"] == 5
+        assert result["items_deleted"] == COUNT_FIVE
 
     def test_bulk_update_multiple_filters_combined(self, sync_session) -> None:
         """Test combining multiple filters."""
@@ -937,7 +939,7 @@ class TestFilteringAndQueries:
 
         svc = BulkOperationService(sync_session)
         result = svc.bulk_update_items("proj-1", {"view": "FEATURE", "status": "todo"}, {"status": "in_progress"})
-        assert result["items_updated"] == 2
+        assert result["items_updated"] == COUNT_TWO
 
 
 # ============================================================
@@ -1003,7 +1005,7 @@ class TestEdgeCasesAndSpecialScenarios:
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data)
-        assert result["items_created"] == 2
+        assert result["items_created"] == COUNT_TWO
 
     def test_bulk_create_with_very_long_descriptions(self, sync_session) -> None:
         """Test bulk create with very long descriptions."""

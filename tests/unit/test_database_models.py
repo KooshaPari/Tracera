@@ -4,6 +4,8 @@ Tests: Model creation, persistence, retrieval
 """
 
 import logging
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.orm import Session
@@ -77,7 +79,7 @@ class TestItemPersistence:
         with Session(test_db.engine) as session:
             item = session.query(Item).filter(Item.id == item_id).first()
             assert item.title == "Updated"
-            assert item.version == 2
+            assert item.version == COUNT_TWO
 
     def test_item_metadata_persistence(self, test_db) -> None:
         """Test item metadata persistence."""
@@ -176,8 +178,8 @@ class TestModelQueries:
             features = session.query(Item).filter(Item.view == "FEATURE").all()
             codes = session.query(Item).filter(Item.view == "CODE").all()
 
-            assert len(features) == 3
-            assert len(codes) == 2
+            assert len(features) == COUNT_THREE
+            assert len(codes) == COUNT_TWO
 
     def test_query_links_by_type(self, test_db) -> None:
         """Test querying links by type."""
@@ -200,5 +202,5 @@ class TestModelQueries:
             depends = session.query(Link).filter(Link.link_type == "depends_on").all()
             blocks = session.query(Link).filter(Link.link_type == "blocks").all()
 
-            assert len(depends) == 2
+            assert len(depends) == COUNT_TWO
             assert len(blocks) == 1

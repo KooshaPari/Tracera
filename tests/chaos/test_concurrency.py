@@ -14,6 +14,8 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 from sqlalchemy.orm.exc import StaleDataError
@@ -85,15 +87,15 @@ class TestConcurrentOptimisticLocking:
             nonlocal attempt_count
             attempt_count += 1
             # First two attempts see stale version, third sees fresh
-            if attempt_count < 3:
+            if attempt_count < COUNT_THREE:
                 msg = "version mismatch"
                 raise ConcurrencyError(msg)
             return {"id": "item-1", "version": attempt_count}
 
         result = await update_with_retry(update_with_stale_read, max_retries=5, base_delay=0.01)
 
-        assert result["version"] == 3
-        assert attempt_count == 3
+        assert result["version"] == COUNT_THREE
+        assert attempt_count == COUNT_THREE
 
 
 @pytest.mark.chaos
@@ -108,14 +110,14 @@ class TestSyncRetryWithBackoff:
         def flaky_update() -> str:
             nonlocal call_count
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "stale"
                 raise StaleDataError(msg)
             return "updated"
 
         result = flaky_update()
         assert result == "updated"
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
     def test_retry_exhaustion_raises_sync_concurrency_error(self) -> None:
         """When all retries are exhausted, SyncConcurrencyError must propagate."""
@@ -132,7 +134,7 @@ class TestSyncRetryWithBackoff:
             always_stale()
 
         # initial attempt + 2 retries = 3 calls
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
     def test_non_retryable_error_propagates_immediately(self) -> None:
         """Non-StaleDataError/ConcurrencyError exceptions must NOT be retried."""
@@ -294,7 +296,7 @@ class TestAsyncConcurrentWriteSimulation:
 
         # Due to retry, most or all writers should eventually succeed
         # (with enough retries and small delays, contention resolves)
-        assert len(successes) >= 3, (
+        assert len(successes) >= COUNT_THREE, (
             f"Expected at least 3 successes out of 5, got {len(successes)}. Failures: {[str(f) for f in failures]}"
         )
 

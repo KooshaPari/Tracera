@@ -8,6 +8,8 @@ Focused tests to push coverage beyond 70% to 75-80%:
 """
 
 from unittest.mock import Mock
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_BAD_REQUEST
+
 
 
 class TestAPIEndpointValidation:
@@ -95,7 +97,7 @@ class TestAPIEndpointValidation:
             "details": "Missing required field: name",
         }
         assert "error" in error_response
-        assert error_response["code"] >= 400
+        assert error_response["code"] >= HTTP_BAD_REQUEST
 
     def test_validation_error_array(self) -> None:
         """Test validation error array."""
@@ -121,7 +123,7 @@ class TestServiceMethodCoverage:
         mock_service.list = Mock(return_value=[{"id": 1}, {"id": 2}])
 
         result = mock_service.list()
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     def test_item_service_create_method(self) -> None:
         """Test item service create method."""
@@ -205,7 +207,7 @@ class TestServiceMethodCoverage:
 
         qb = QueryBuilder().filter("status", "=", "active").filter("name", "like", "%test%")
         result = qb.build()
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     def test_pagination_pattern(self) -> None:
         """Test pagination pattern."""
@@ -215,8 +217,8 @@ class TestServiceMethodCoverage:
         skip = (page - 1) * limit
 
         result = data[skip : skip + limit]
-        assert len(result) == 10
-        assert result[0] == 10
+        assert len(result) == COUNT_TEN
+        assert result[0] == COUNT_TEN
 
 
 class TestWorkflowIntegration:
@@ -427,7 +429,7 @@ class TestErrorHandlingPatterns:
 
         def failing_func() -> str:
             counter["count"] += 1
-            if counter["count"] < 3:
+            if counter["count"] < COUNT_THREE:
                 msg = "Fail"
                 raise Exception(msg)
             return "success"

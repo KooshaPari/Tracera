@@ -10,6 +10,8 @@ Tests that all MCP optimizations work correctly together:
 """
 
 from __future__ import annotations
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
+
 
 import asyncio
 import gzip
@@ -170,7 +172,7 @@ class TestStreamingIntegration:
         # Stream 1000 items
         chunks = [chunk async for chunk in stream_large_dataset(1000)]
 
-        assert len(chunks) == 10  # 1000 items / 100 per chunk
+        assert len(chunks) == COUNT_TEN  # 1000 items / 100 per chunk
 
     @pytest.mark.asyncio
     async def test_streaming_with_error_handling(self, mcp_optimized_env) -> None:  # noqa: ARG002
@@ -193,7 +195,7 @@ class TestStreamingIntegration:
             error_caught = True
             assert "Simulated streaming error" in str(e)
 
-        assert len(chunks_received) == 2
+        assert len(chunks_received) == COUNT_TWO
         assert error_caught
 
 
@@ -321,9 +323,9 @@ class TestConnectionPoolingIntegration:
         await asyncio.gather(*[make_request(i) for i in range(20)])
 
         # Verify pooling efficiency
-        assert pool.stats["creates"] == 5  # Only 5 connections created
+        assert pool.stats["creates"] == COUNT_FIVE  # Only 5 connections created
         assert pool.stats["acquires"] == 20  # 20 requests
-        assert pool.stats["reuses"] > 10  # Most requests reused connections
+        assert pool.stats["reuses"] > COUNT_TEN  # Most requests reused connections
 
         reuse_rate = (pool.stats["reuses"] / pool.stats["acquires"]) * 100
 
@@ -338,7 +340,7 @@ class TestConnectionPoolingIntegration:
 
             async def acquire(self):
                 # Simulate occasional connection error
-                if len(self.connections) == 2:
+                if len(self.connections) == COUNT_TWO:
                     self.error_count += 1
                     msg = "Simulated connection error"
                     raise ConnectionError(msg)

@@ -23,6 +23,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 from unittest.mock import MagicMock, Mock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -248,7 +250,7 @@ class TestConflictPanelRendering:
         """Test panel has bindings."""
         panel = ConflictPanel()
         assert hasattr(panel, "BINDINGS")
-        assert len(panel.BINDINGS) == 4
+        assert len(panel.BINDINGS) == COUNT_FOUR
 
     def test_css_defined(self) -> None:
         """Test CSS is defined."""
@@ -304,7 +306,7 @@ class TestSyncStatusWidgetEventHandling:
         """Test set_pending_changes method."""
         widget = SyncStatusWidget()
         widget.set_pending_changes(5)
-        assert widget.pending_changes == 5
+        assert widget.pending_changes == COUNT_FIVE
 
     def test_set_last_sync(self) -> None:
         """Test set_last_sync method."""
@@ -317,7 +319,7 @@ class TestSyncStatusWidgetEventHandling:
         """Test set_conflicts method."""
         widget = SyncStatusWidget()
         widget.set_conflicts(3)
-        assert widget.conflicts_count == 3
+        assert widget.conflicts_count == COUNT_THREE
 
     def test_set_error(self) -> None:
         """Test set_error method."""
@@ -388,13 +390,13 @@ class TestCompactSyncStatusEventHandling:
         """Test set_pending_changes method."""
         widget = CompactSyncStatus()
         widget.set_pending_changes(4)
-        assert widget.pending_changes == 4
+        assert widget.pending_changes == COUNT_FOUR
 
     def test_set_conflicts(self) -> None:
         """Test set_conflicts method."""
         widget = CompactSyncStatus()
         widget.set_conflicts(2)
-        assert widget.conflicts_count == 2
+        assert widget.conflicts_count == COUNT_TWO
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
@@ -523,10 +525,10 @@ class TestSyncStatusWidgetStateManagement:
         """Test state with conflicts."""
         widget = SyncStatusWidget()
         widget.set_conflicts(3)
-        assert widget.conflicts_count == 3
+        assert widget.conflicts_count == COUNT_THREE
         widget.set_online(True)
         assert widget.is_online is True
-        assert widget.conflicts_count == 3
+        assert widget.conflicts_count == COUNT_THREE
 
     def test_state_error_supersedes_online(self) -> None:
         """Test error state takes precedence."""
@@ -622,7 +624,7 @@ class TestBrowserAppInitialization:
         """Test BrowserApp bindings."""
         app = BrowserApp()
         assert hasattr(app, "BINDINGS")
-        assert len(app.BINDINGS) >= 4
+        assert len(app.BINDINGS) >= COUNT_FOUR
 
     def test_compose_structure(self) -> None:
         """Test BrowserApp compose."""
@@ -655,7 +657,7 @@ class TestDashboardAppInitialization:
     def test_app_bindings(self) -> None:
         """Test DashboardApp bindings."""
         app = DashboardApp()
-        assert len(app.BINDINGS) >= 5
+        assert len(app.BINDINGS) >= COUNT_FIVE
 
     def test_compose_includes_header(self) -> None:
         """Test compose includes header."""
@@ -786,7 +788,7 @@ class TestSyncStatusWidgetDisplay:
         widget.set_conflicts(1)
         widget.set_last_sync(datetime.now())
         assert widget.is_online is True
-        assert widget.pending_changes == 2
+        assert widget.pending_changes == COUNT_TWO
         assert widget.conflicts_count == 1
         assert widget.last_sync is not None
 
@@ -968,7 +970,7 @@ class TestSyncStatusWidgetCompoundStates:
         widget.set_online(True)
         widget.set_conflicts(2)
         assert widget.is_online is True
-        assert widget.conflicts_count == 2
+        assert widget.conflicts_count == COUNT_TWO
 
     def test_syncing_with_pending(self) -> None:
         """Test syncing with pending changes."""
@@ -976,7 +978,7 @@ class TestSyncStatusWidgetCompoundStates:
         widget.set_syncing(True)
         widget.set_pending_changes(5)
         assert widget.is_syncing is True
-        assert widget.pending_changes == 5
+        assert widget.pending_changes == COUNT_FIVE
 
     def test_all_positive_states(self) -> None:
         """Test all positive states together."""
@@ -988,7 +990,7 @@ class TestSyncStatusWidgetCompoundStates:
         widget.set_last_sync(datetime.now())
         assert widget.is_online is True
         assert widget.is_syncing is False
-        assert widget.pending_changes == 3
+        assert widget.pending_changes == COUNT_THREE
         assert widget.conflicts_count == 1
 
     def test_error_overrides_online(self) -> None:
@@ -1046,7 +1048,7 @@ class TestBindings:
     def test_dashboard_app_multiple_bindings(self) -> None:
         """Test DashboardApp has multiple bindings."""
         app = DashboardApp()
-        assert len(app.BINDINGS) >= 5
+        assert len(app.BINDINGS) >= COUNT_FIVE
 
     def test_graph_app_zoom_bindings(self) -> None:
         """Test GraphApp has zoom bindings."""
@@ -1086,7 +1088,7 @@ class TestTUIIntegration:
             GraphApp(),
             EnhancedDashboardApp(),
         ]
-        assert len(apps) == 4
+        assert len(apps) == COUNT_FOUR
         for app in apps:
             assert app is not None
 
@@ -1126,7 +1128,7 @@ class TestTUIEdgeCases:
     def test_multiple_conflict_panel_instances(self) -> None:
         """Test multiple conflict panels."""
         panels = [ConflictPanel() for _ in range(5)]
-        assert len(panels) == 5
+        assert len(panels) == COUNT_FIVE
         for panel in panels:
             assert panel is not None
 
@@ -1279,7 +1281,7 @@ class TestConflictPanelStateManagement:
 
         new_conflicts = [Mock(id=f"conf_{i}") for i in range(3)]
         panel.conflicts = new_conflicts
-        assert len(panel.conflicts) == 3
+        assert len(panel.conflicts) == COUNT_THREE
 
     def test_on_mount_calls_refresh(self) -> None:
         """Test on_mount calls refresh_conflict_list."""
@@ -1441,7 +1443,7 @@ class TestDashboardAppBehavior:
     def test_dashboard_app_bindings_count(self) -> None:
         """Test DashboardApp has sufficient bindings."""
         app = DashboardApp()
-        assert len(app.BINDINGS) >= 5
+        assert len(app.BINDINGS) >= COUNT_FIVE
 
     def test_dashboard_app_config_manager(self) -> None:
         """Test DashboardApp has config manager."""
@@ -1465,7 +1467,7 @@ class TestGraphAppZoomBehavior:
         assert app.zoom == 0.5
 
         app.zoom = 2.0
-        assert app.zoom == 2.0
+        assert app.zoom == COUNT_TWO.0
 
     def test_graph_app_nodes_initialization(self) -> None:
         """Test GraphApp initializes nodes dict."""
@@ -1531,7 +1533,7 @@ class TestSyncStatusReactiveChaining:
                 widget.is_syncing = (i % 3) == 0
                 widget.pending_changes = i
             # Multiple updates should be called
-            assert mock_update.call_count >= 10
+            assert mock_update.call_count >= COUNT_TEN
 
     def test_reactive_state_isolation(self) -> None:
         """Test reactive states don't interfere."""
@@ -1577,7 +1579,7 @@ class TestSyncStatusReactiveChaining:
             widget.set_pending_changes(3)
             widget.set_conflicts(1)
 
-        assert len(calls) >= 4
+        assert len(calls) >= COUNT_FOUR
 
 
 # ============================================================================

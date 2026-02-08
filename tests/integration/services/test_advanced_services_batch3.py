@@ -16,6 +16,8 @@ import json
 import logging
 from datetime import datetime
 from io import StringIO
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -381,7 +383,7 @@ class TestGitHubImportService:
         )
 
         assert result["success"] is True
-        assert result["items_imported"] == 2
+        assert result["items_imported"] == COUNT_TWO
         assert result["links_imported"] == 0
         assert "project_id" in result
 
@@ -395,7 +397,7 @@ class TestGitHubImportService:
         # Verify items created
         items_repo = ItemRepository(db_session)
         items = await items_repo.get_by_project(str(project.id))
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
         # Check first item
         item1 = next(i for i in items if i.title == "Add user authentication")
@@ -467,7 +469,7 @@ class TestGitHubImportService:
         )
 
         assert result["success"] is True
-        assert result["items_imported"] == 2
+        assert result["items_imported"] == COUNT_TWO
         assert result["links_imported"] == 1
 
         # Verify link created
@@ -683,7 +685,7 @@ class TestImpactAnalysisService:
         assert result.root_item_id == str(root.id)
         assert result.root_item_title == "Root Feature"
         assert result.total_affected == 7  # All children and grandchildren
-        assert result.max_depth_reached == 2
+        assert result.max_depth_reached == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_analyze_impact_depth_distribution(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
@@ -695,10 +697,10 @@ class TestImpactAnalysisService:
         result = await service.analyze_impact(str(root.id))
 
         # Depth 1: child1, child2, child3 (3 items)
-        assert result.affected_by_depth[1] == 3
+        assert result.affected_by_depth[1] == COUNT_THREE
 
         # Depth 2: grandchild1, grandchild2, grandchild3, grandchild4 (4 items)
-        assert result.affected_by_depth[2] == 4
+        assert result.affected_by_depth[2] == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_analyze_impact_view_distribution(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
@@ -709,9 +711,9 @@ class TestImpactAnalysisService:
 
         result = await service.analyze_impact(str(root.id))
 
-        assert result.affected_by_view["CODE"] == 2  # child1, child2
-        assert result.affected_by_view["API"] == 2  # child3, grandchild3
-        assert result.affected_by_view["TEST"] == 2  # grandchild1, grandchild2
+        assert result.affected_by_view["CODE"] == COUNT_TWO  # child1, child2
+        assert result.affected_by_view["API"] == COUNT_TWO  # child3, grandchild3
+        assert result.affected_by_view["TEST"] == COUNT_TWO  # grandchild1, grandchild2
         assert result.affected_by_view["DOC"] == 1  # grandchild4
 
     @pytest.mark.asyncio
@@ -724,7 +726,7 @@ class TestImpactAnalysisService:
         result = await service.analyze_impact(str(root.id), max_depth=1)
 
         # Should only get depth 1 items (children)
-        assert result.total_affected == 3
+        assert result.total_affected == COUNT_THREE
         assert result.max_depth_reached == 1
         assert 2 not in result.affected_by_depth
 
@@ -755,11 +757,11 @@ class TestImpactAnalysisService:
         result = await service.analyze_impact(str(root.id))
 
         # Should have 4 critical paths (to each grandchild)
-        assert len(result.critical_paths) == 4
+        assert len(result.critical_paths) == COUNT_FOUR
 
         # Each path should have 3 items (root -> child -> grandchild)
         for path in result.critical_paths:
-            assert len(path) == 3
+            assert len(path) == COUNT_THREE
             assert path[0] == str(root.id)
 
     @pytest.mark.asyncio
@@ -796,8 +798,8 @@ class TestImpactAnalysisService:
         result = await service.analyze_reverse_impact(str(grandchild1.id))
 
         # Should find child1 and root
-        assert result.total_affected == 2
-        assert result.max_depth_reached == 2
+        assert result.total_affected == COUNT_TWO
+        assert result.max_depth_reached == COUNT_TWO
 
         affected_titles = {item["title"] for item in result.affected_items}
         assert "Child1 Implementation" in affected_titles
@@ -860,7 +862,7 @@ class TestImpactAnalysisService:
 
         # Should have 1 critical path: grandchild2 -> child1 -> root
         assert len(result.critical_paths) == 1
-        assert len(result.critical_paths[0]) == 3
+        assert len(result.critical_paths[0]) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_analyze_impact_affected_items_structure(
@@ -921,7 +923,7 @@ class TestTraceabilityMatrixService:
         assert matrix.project_id == str(project_id)
         assert len(matrix.rows) == 7  # 3 sources + 4 targets (all items)
         assert len(matrix.columns) == 7
-        assert matrix.total_links == 3
+        assert matrix.total_links == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_generate_matrix_with_source_view_filter(
@@ -936,7 +938,7 @@ class TestTraceabilityMatrixService:
         matrix = await service.generate_matrix(project_id, source_view="FEATURE")
 
         # Only FEATURE items as rows
-        assert len(matrix.rows) == 3
+        assert len(matrix.rows) == COUNT_THREE
         assert all(row["view"] == "FEATURE" for row in matrix.rows)
 
     @pytest.mark.asyncio
@@ -952,7 +954,7 @@ class TestTraceabilityMatrixService:
         matrix = await service.generate_matrix(project_id, target_view="CODE")
 
         # Only CODE items as columns
-        assert len(matrix.columns) == 4
+        assert len(matrix.columns) == COUNT_FOUR
         assert all(col["view"] == "CODE" for col in matrix.columns)
 
     @pytest.mark.asyncio
@@ -971,10 +973,10 @@ class TestTraceabilityMatrixService:
             target_view="CODE",
         )
 
-        assert len(matrix.rows) == 3  # 3 FEATURE items
-        assert len(matrix.columns) == 4  # 4 CODE items
-        assert len(matrix.matrix) == 3
-        assert len(matrix.matrix[0]) == 4
+        assert len(matrix.rows) == COUNT_THREE  # 3 FEATURE items
+        assert len(matrix.columns) == COUNT_FOUR  # 4 CODE items
+        assert len(matrix.matrix) == COUNT_THREE
+        assert len(matrix.matrix[0]) == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_generate_matrix_with_link_type_filter(self, db_session: AsyncSession, traceability_test_items: dict) -> None:
@@ -992,7 +994,7 @@ class TestTraceabilityMatrixService:
         )
 
         # All 3 links are "implements" type
-        assert matrix.total_links == 3
+        assert matrix.total_links == COUNT_THREE
 
         # Verify link types in matrix
         for row in matrix.matrix:
@@ -1083,7 +1085,7 @@ class TestTraceabilityMatrixService:
         reader = csv.reader(StringIO(csv_output))
         header = next(reader)
         assert header[0] == "Source"
-        assert len(header) == 5  # Source + 4 code classes
+        assert len(header) == COUNT_FIVE  # Source + 4 code classes
 
     # ========== HTML Export Tests ==========
 
@@ -1129,8 +1131,8 @@ class TestTraceabilityMatrixService:
         html_output = await service.export_matrix_html(matrix)
 
         # Should have header row and data rows
-        assert html_output.count("<tr>") == 4  # 1 header + 3 data rows
-        assert html_output.count("<th>") == 5  # Source + 4 columns
+        assert html_output.count("<tr>") == COUNT_FOUR  # 1 header + 3 data rows
+        assert html_output.count("<th>") == COUNT_FIVE  # Source + 4 columns
 
         # Check for highlighted cells (linked items)
         assert "background-color: #90EE90" in html_output
@@ -1256,7 +1258,7 @@ class TestQueryOptimizationService:
         assert "performance_rating" in result
         assert "optimization_suggestions" in result
 
-        assert result["items_returned"] == 10
+        assert result["items_returned"] == COUNT_TEN
         assert isinstance(result["execution_time_seconds"], float)
         assert result["performance_rating"] in {"Excellent", "Good", "Fair", "Poor"}
 
@@ -1272,7 +1274,7 @@ class TestQueryOptimizationService:
                 {"view": "FEATURE"},
             )
 
-        assert len(service.query_stats) == 3
+        assert len(service.query_stats) == COUNT_THREE
 
         # Check stats structure
         for stat in service.query_stats:
@@ -1352,7 +1354,7 @@ class TestQueryOptimizationService:
 
         count = service.clear_cache()
 
-        assert count == 3
+        assert count == COUNT_THREE
         assert len(service.query_cache) == 0
 
     @pytest.mark.asyncio
@@ -1369,7 +1371,7 @@ class TestQueryOptimizationService:
 
         stats = service.get_cache_stats()
 
-        assert stats["cached_queries"] == 2
+        assert stats["cached_queries"] == COUNT_TWO
         assert stats["total_queries_executed"] == 1
         assert "query1" in stats["cache_keys"]
         assert "query2" in stats["cache_keys"]
@@ -1397,7 +1399,7 @@ class TestQueryOptimizationService:
 
         stats = service.get_query_statistics()
 
-        assert stats["total_queries"] == 3
+        assert stats["total_queries"] == COUNT_THREE
         assert stats["average_execution_time"] > 0
         assert stats["min_execution_time"] > 0
         assert stats["max_execution_time"] > 0
@@ -1440,7 +1442,7 @@ class TestQueryOptimizationService:
 
         recommendations = service.recommend_indexes(str(test_project.id))
 
-        # Should return empty with < 10 queries
+        # Should return empty with < COUNT_TEN queries
         assert recommendations == []
 
     @pytest.mark.asyncio
@@ -1580,7 +1582,7 @@ class TestSecurityComplianceService:
         # Filter by user1
         log = service.get_audit_log(user_id="user1")
 
-        assert len(log) == 2
+        assert len(log) == COUNT_TWO
         assert all(e["user_id"] == "user1" for e in log)
 
     @pytest.mark.asyncio
@@ -1596,7 +1598,7 @@ class TestSecurityComplianceService:
         # Filter by login events
         log = service.get_audit_log(event_type="login")
 
-        assert len(log) == 2
+        assert len(log) == COUNT_TWO
         assert all(e["event_type"] == "login" for e in log)
 
     @pytest.mark.asyncio
@@ -1631,10 +1633,10 @@ class TestSecurityComplianceService:
 
         stats = service.get_audit_stats()
 
-        assert stats["total_events"] == 5
-        assert stats["unique_users"] == 2
-        assert stats["event_types"]["login"] == 2
-        assert stats["event_types"]["access"] == 2
+        assert stats["total_events"] == COUNT_FIVE
+        assert stats["unique_users"] == COUNT_TWO
+        assert stats["event_types"]["login"] == COUNT_TWO
+        assert stats["event_types"]["access"] == COUNT_TWO
         assert stats["event_types"]["delete"] == 1
 
     @pytest.mark.asyncio
@@ -1649,7 +1651,7 @@ class TestSecurityComplianceService:
 
         result = service.clear_audit_log()
 
-        assert result["cleared_count"] == 3
+        assert result["cleared_count"] == COUNT_THREE
         assert result["status"] == "Audit log cleared successfully"
         assert len(service.audit_log) == 0
 
@@ -1766,5 +1768,5 @@ class TestSecurityComplianceService:
 
         report = service.generate_compliance_report()
 
-        assert report["audit_stats"]["total_events"] == 2
-        assert report["audit_stats"]["unique_users"] == 2
+        assert report["audit_stats"]["total_events"] == COUNT_TWO
+        assert report["audit_stats"]["unique_users"] == COUNT_TWO

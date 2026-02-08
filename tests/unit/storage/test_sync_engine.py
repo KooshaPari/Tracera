@@ -8,6 +8,8 @@ import json
 import sqlite3
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -158,7 +160,7 @@ class TestSyncEngineQueueManagement:
         conn.close()
 
         # Assert
-        assert len(results) == 3
+        assert len(results) == COUNT_THREE
         assert results[0][2] == "item-000"
         assert results[2][2] == "item-002"
 
@@ -285,7 +287,7 @@ class TestSyncEngineQueueManagement:
         conn.close()
 
         # Assert
-        assert len(results) == 4  # Only items with retry_count <= 3
+        assert len(results) == COUNT_FOUR  # Only items with retry_count <= COUNT_THREE
 
 
 # ============================================================================
@@ -639,8 +641,8 @@ class TestSyncEngineErrorHandling:
 
         # Assert
         assert delays[0] == 1.0  # 2^0 = 1
-        assert delays[1] == 2.0  # 2^1 = 2
-        assert delays[2] == 4.0  # 2^2 = 4
+        assert delays[1] == COUNT_TWO.0  # 2^1 = 2
+        assert delays[2] == COUNT_FOUR.0  # 2^2 = 4
         assert delays[3] == 8.0  # 2^3 = 8
         assert delays[4] == 16.0  # 2^4 = 16
 

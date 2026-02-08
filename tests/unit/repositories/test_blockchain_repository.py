@@ -7,6 +7,8 @@ Tests:
 """
 
 from datetime import UTC, datetime
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -100,8 +102,8 @@ class TestMerkleTreeOperations:
         assert root != ""
         assert len(root) == 64
         assert "levels" in structure
-        assert len(structure["levels"]) == 2  # Leaves + root
-        assert len(structure["levels"][0]) == 2  # 2 leaves
+        assert len(structure["levels"]) == COUNT_TWO  # Leaves + root
+        assert len(structure["levels"][0]) == COUNT_TWO  # 2 leaves
         assert len(structure["levels"][1]) == 1  # 1 root
 
     def test_build_merkle_tree_multiple_items(self, baseline_repo) -> None:
@@ -116,9 +118,9 @@ class TestMerkleTreeOperations:
         root, structure = baseline_repo.build_merkle_tree(items)
 
         assert root != ""
-        assert len(structure["leaves"]) == 4
+        assert len(structure["leaves"]) == COUNT_FOUR
         # For 4 items: level 0 = 4 leaves, level 1 = 2 nodes, level 2 = 1 root
-        assert len(structure["levels"]) == 3
+        assert len(structure["levels"]) == COUNT_THREE
 
     def test_build_merkle_tree_odd_items(self, baseline_repo) -> None:
         """Test building tree with odd number of items."""
@@ -131,7 +133,7 @@ class TestMerkleTreeOperations:
         root, structure = baseline_repo.build_merkle_tree(items)
 
         assert root != ""
-        assert len(structure["leaves"]) == 3
+        assert len(structure["leaves"]) == COUNT_THREE
 
     def test_build_merkle_tree_sorting(self, baseline_repo) -> None:
         """Test that items are sorted by ID for consistency."""
@@ -181,7 +183,7 @@ class TestMerkleTreeOperations:
         proof = baseline_repo.generate_proof("item1", "hash1", structure)
 
         assert proof is not None
-        assert len(proof) == 2  # log2(4) = 2 levels
+        assert len(proof) == COUNT_TWO  # log2(4) = 2 levels
 
     def test_generate_proof_nonexistent_item(self, baseline_repo) -> None:
         """Test proof generation for item not in tree."""
@@ -717,7 +719,7 @@ class TestVersionBlockRepositoryDB:
         )
 
         assert block2 is not None
-        assert block2.version_number == 2
+        assert block2.version_number == COUNT_TWO
         assert block2.previous_block_id == genesis.block_id
         assert block2.change_type == "update"
         assert block2.author_id == "user-002"
@@ -818,10 +820,10 @@ class TestVersionBlockRepositoryDB:
 
         chain = await version_repo.get_version_chain(db_session, spec_id, "requirement")
 
-        assert len(chain) == 3
+        assert len(chain) == COUNT_THREE
         # Chain is returned newest first
-        assert chain[0].version_number == 3
-        assert chain[1].version_number == 2
+        assert chain[0].version_number == COUNT_THREE
+        assert chain[1].version_number == COUNT_TWO
         assert chain[2].version_number == 1
 
     @pytest.mark.asyncio
@@ -844,9 +846,9 @@ class TestVersionBlockRepositoryDB:
 
         chain = await version_repo.get_version_chain(db_session, spec_id, "requirement", limit=2)
 
-        assert len(chain) == 2
-        assert chain[0].version_number == 5
-        assert chain[1].version_number == 4
+        assert len(chain) == COUNT_TWO
+        assert chain[0].version_number == COUNT_FIVE
+        assert chain[1].version_number == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_get_version_chain_empty(self, db_session, version_repo) -> None:
@@ -951,7 +953,7 @@ class TestBaselineRepositoryDB:
         )
 
         assert baseline is not None
-        assert baseline.items_count == 3
+        assert baseline.items_count == COUNT_THREE
         assert baseline.baseline_type == "snapshot"
         assert baseline.name == "Release 1.0"
         assert baseline.created_by == "user-001"
@@ -977,7 +979,7 @@ class TestBaselineRepositoryDB:
         assert baseline.merkle_tree_json is not None
         assert "levels" in baseline.merkle_tree_json
         assert "leaves" in baseline.merkle_tree_json
-        assert len(baseline.merkle_tree_json["leaves"]) == 2
+        assert len(baseline.merkle_tree_json["leaves"]) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_create_baseline_caches_proofs(self, db_session, baseline_repo) -> None:
@@ -1279,7 +1281,7 @@ class TestSpecEmbeddingRepositoryDB:
         assert embedding is not None
         assert embedding.spec_id == "spec-001"
         assert embedding.spec_type == "requirement"
-        assert embedding.embedding_dimension == 4
+        assert embedding.embedding_dimension == COUNT_FOUR
         assert embedding.embedding_model == "test-model"
         assert embedding.content_hash == "abc123"
 
@@ -1391,7 +1393,7 @@ class TestSpecEmbeddingRepositoryDB:
 
         embeddings = await embedding_repo.get_embeddings_for_project(db_session, "project-001", "test-model")
 
-        assert len(embeddings) == 3
+        assert len(embeddings) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_get_embeddings_for_project_with_spec_type(self, db_session, embedding_repo, sample_embedding) -> None:
@@ -1468,7 +1470,7 @@ class TestSpecEmbeddingRepositoryDB:
             current_content_hash="new_hash",
         )
 
-        assert deleted_count == 2
+        assert deleted_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_delete_stale_embeddings_keeps_current(self, db_session, embedding_repo, sample_embedding) -> None:
@@ -1642,7 +1644,7 @@ class TestBlockchainEdgeCases:
 
         chain2 = await version_repo.get_chain_index(db_session, spec_id, "requirement")
         assert chain2.chain_head_id == block2.block_id
-        assert chain2.chain_length == 2
+        assert chain2.chain_length == COUNT_TWO
 
 
 # =============================================================================
@@ -1777,7 +1779,7 @@ async def test_create_baseline_with_item_without_proof(db_session) -> None:
 
     # All proofs should be created (line 428-438 covered)
     assert baseline is not None
-    assert baseline.items_count == 2
+    assert baseline.items_count == COUNT_TWO
 
 
 @pytest.mark.asyncio

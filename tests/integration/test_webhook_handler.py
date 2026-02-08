@@ -5,6 +5,8 @@ import hmac
 import json
 import pathlib
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR, HTTP_UNAUTHORIZED
+
 
 import pytest
 from fastapi import Request
@@ -109,7 +111,7 @@ class TestWebhookHandlers:
             with pytest.raises(Exception) as exc_info:
                 await verify_webhook_signature(mock_request)
 
-            assert exc_info.value.status_code == 401
+            assert exc_info.value.status_code == HTTP_UNAUTHORIZED
 
     @pytest.mark.asyncio
     async def test_handle_installation_created(self, webhook_payload, mock_installation_repo, mock_db) -> None:
@@ -264,4 +266,4 @@ class TestComplexityReduction:
         with pathlib.Path(file_path).open(encoding="utf-8") as f:
             lines = len(f.readlines())
 
-        assert lines < 500, f"File has {lines} lines, should be < 500"
+        assert lines < HTTP_INTERNAL_SERVER_ERROR, f"File has {lines} lines, should be < HTTP_INTERNAL_SERVER_ERROR"

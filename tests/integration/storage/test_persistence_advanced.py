@@ -19,6 +19,8 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine
@@ -287,7 +289,7 @@ class TestSyncEngineStatePersistence:
             session.commit()
 
             result = session.execute("SELECT COUNT(*) FROM sync_queue")
-            assert result.scalar() == 3
+            assert result.scalar() == COUNT_THREE
 
     def test_sync_queue_clearing(self, storage_manager) -> None:
         """Test clearing sync queue after successful sync."""
@@ -325,7 +327,7 @@ class TestSyncEngineStatePersistence:
             session.commit()
 
             result = session.execute("SELECT retry_count FROM sync_queue WHERE entity_id = 'item-1'")
-            assert result.scalar() == 2
+            assert result.scalar() == COUNT_TWO
 
     def test_sync_queue_failure_tracking(self, storage_manager) -> None:
         """Test tracking failed sync operations."""
@@ -342,8 +344,8 @@ class TestSyncEngineStatePersistence:
             session.commit()
 
             # Retrieve failed operation
-            result = session.execute("SELECT retry_count FROM sync_queue WHERE retry_count >= 5")
-            assert result.scalar() >= 5
+            result = session.execute("SELECT retry_count FROM sync_queue WHERE retry_count >= COUNT_FIVE")
+            assert result.scalar() >= COUNT_FIVE
 
 
 # ============================================================
@@ -401,7 +403,7 @@ class TestDataSerializationDeserialization:
 
         serialized = json.dumps(complex_data)
         deserialized = json.loads(serialized)
-        assert len(deserialized["items"]) == 2
+        assert len(deserialized["items"]) == COUNT_TWO
         assert deserialized["links"][0]["type"] == "depends_on"
 
     def test_round_trip_serialization(self) -> None:
@@ -550,7 +552,7 @@ class TestConcurrentAccessPatterns:
         for _ in range(3):
             with storage_manager.SessionLocal() as session:
                 result = session.execute("SELECT COUNT(*) FROM sync_queue")
-                assert result.scalar() == 5
+                assert result.scalar() == COUNT_FIVE
 
     def test_concurrent_read_write_mixed(self, storage_manager) -> None:
         """Test mixed concurrent reads and writes."""
@@ -741,7 +743,7 @@ class TestRecoveryMechanisms:
 
             # Retrieve all items
             result = session.execute("SELECT COUNT(*) FROM sync_queue")
-            assert result.scalar() == 3
+            assert result.scalar() == COUNT_THREE
 
 
 # ============================================================
@@ -817,7 +819,7 @@ class TestConflictResolutionPersistence:
             session.commit()
 
             result = session.execute("SELECT COUNT(*) FROM conflicts WHERE item_id = 'item-1'")
-            assert result.scalar() == 5
+            assert result.scalar() == COUNT_FIVE
 
     def test_conflict_resolution_idempotency(self, storage_manager) -> None:
         """Test that conflict resolution is idempotent."""
@@ -962,7 +964,7 @@ class TestStoragePersistenceIntegration:
         elapsed = time.time() - start
 
         # Should complete in reasonable time
-        assert elapsed < 5.0
+        assert elapsed < COUNT_FIVE.0
 
         # Verify all inserted
         with storage_manager.SessionLocal() as session:

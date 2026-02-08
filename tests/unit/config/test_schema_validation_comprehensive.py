@@ -13,6 +13,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 from pydantic import ValidationError
+from tests.test_constants import COUNT_TEN, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 from tracertm.config.schema import Config
 
@@ -24,7 +26,7 @@ class TestConfigTypeCoercion:
     def test_max_agents_string_to_int_coercion(self) -> None:
         """Test that max_agents coerces string to int."""
         config = Config(max_agents="500")
-        assert config.max_agents == 500
+        assert config.max_agents == HTTP_INTERNAL_SERVER_ERROR
         assert isinstance(config.max_agents, int)
 
     @pytest.mark.unit
@@ -261,14 +263,14 @@ class TestConfigEdgeCases:
 
         # Maximum
         config = Config(api_max_retries=10)
-        assert config.api_max_retries == 10
+        assert config.api_max_retries == COUNT_TEN
 
     @pytest.mark.unit
     def test_sync_interval_boundary_values(self) -> None:
         """Test sync_interval_seconds at boundary values."""
         # Minimum
         config = Config(sync_interval_seconds=10)
-        assert config.sync_interval_seconds == 10
+        assert config.sync_interval_seconds == COUNT_TEN
 
         # Very large value
         config = Config(sync_interval_seconds=86400)  # 24 hours
@@ -382,7 +384,7 @@ class TestConfigValidateAssignment:
 
         # Valid assignment
         config.max_agents = 500
-        assert config.max_agents == 500
+        assert config.max_agents == HTTP_INTERNAL_SERVER_ERROR
 
         # Invalid assignment
         with pytest.raises(ValidationError):
@@ -469,7 +471,7 @@ class TestConfigPropertyBasedHypothesis:
     def test_api_max_retries_valid_range(self, api_max_retries) -> None:
         """Test api_max_retries accepts all valid values."""
         config = Config(api_max_retries=api_max_retries)
-        assert 1 <= config.api_max_retries <= 10
+        assert 1 <= config.api_max_retries <= COUNT_TEN
 
     @pytest.mark.unit
     @pytest.mark.property
@@ -477,7 +479,7 @@ class TestConfigPropertyBasedHypothesis:
     def test_sync_interval_valid_range(self, sync_interval) -> None:
         """Test sync_interval_seconds accepts all valid values."""
         config = Config(sync_interval_seconds=sync_interval)
-        assert config.sync_interval_seconds >= 10
+        assert config.sync_interval_seconds >= COUNT_TEN
 
     @pytest.mark.unit
     @pytest.mark.property
@@ -557,7 +559,7 @@ class TestConfigComplexScenarios:
 
         error = exc_info.value
         errors_dict = error.errors()
-        assert len(errors_dict) >= 2  # At least 2 errors
+        assert len(errors_dict) >= COUNT_TWO  # At least 2 errors
 
     @pytest.mark.unit
     def test_config_immutability_extra_forbid(self) -> None:
@@ -628,5 +630,5 @@ class TestConfigComplexScenarios:
         config_dict.update(updates)
 
         new_config = Config(**config_dict)
-        assert new_config.max_agents == 500
+        assert new_config.max_agents == HTTP_INTERNAL_SERVER_ERROR
         assert new_config.default_view == "CODE"

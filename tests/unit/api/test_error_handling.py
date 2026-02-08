@@ -4,6 +4,8 @@ Tests error responses, exception handling, and error recovery.
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_THREE, HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK, HTTP_UNPROCESSABLE_ENTITY
+
 
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -32,7 +34,7 @@ class TestHTTPErrorResponses:
 
                 try:
                     response = client.get("/api/v1/items/nonexistent_id")
-                    if response.status_code == 404:
+                    if response.status_code == HTTP_NOT_FOUND:
                         data = response.json()
                         assert "detail" in data
                         assert "not found" in data["detail"].lower()
@@ -65,7 +67,7 @@ class TestHTTPErrorResponses:
 
             try:
                 response = client.get("/api/v1/items", params={"project_id": "test"})
-                if response.status_code == 500:
+                if response.status_code == HTTP_INTERNAL_SERVER_ERROR:
                     data = response.json()
                     assert "detail" in data or "error" in data
             except Exception:
@@ -83,7 +85,7 @@ class TestHTTPErrorResponses:
                 "/api/v1/items",
                 json={"title": 123, "view": "FEATURE"},  # title should be string
             )
-            if response.status_code == 422:
+            if response.status_code == HTTP_UNPROCESSABLE_ENTITY:
                 data = response.json()
                 assert "detail" in data
                 assert isinstance(data["detail"], list)
@@ -107,7 +109,7 @@ class TestDatabaseErrors:
 
             try:
                 response = client.get("/api/v1/items", params={"project_id": "test"})
-                assert response.status_code == 500
+                assert response.status_code == HTTP_INTERNAL_SERVER_ERROR
                 data = response.json()
                 assert "database" in str(data).lower()
             except Exception:
@@ -174,7 +176,7 @@ class TestValidationErrors:
         # Missing title
         try:
             response = client.post("/api/v1/items", json={"view": "FEATURE"})
-            assert response.status_code == 422
+            assert response.status_code == HTTP_UNPROCESSABLE_ENTITY
         except Exception:
             pass
 
@@ -257,7 +259,7 @@ class TestBusinessLogicErrors:
                 try:
                     response = client.get("/api/v1/analysis/cycles/test_project")
                     # Should return cycle information
-                    if response.status_code == 200:
+                    if response.status_code == HTTP_OK:
                         data = response.json()
                         assert data["has_cycles"] is True
                 except Exception:
@@ -316,7 +318,7 @@ class TestBusinessLogicErrors:
                         params={"project_id": "test", "source_id": "item1", "target_id": "item2"},
                     )
                     # Should return result with exists=False
-                    if response.status_code == 200:
+                    if response.status_code == HTTP_OK:
                         data = response.json()
                         assert data["exists"] is False
                 except Exception:
@@ -403,7 +405,7 @@ class TestErrorRecovery:
                 try:
                     response = client.get("/api/v1/analysis/impact/test_item", params={"project_id": "test"})
                     # Should return error but not crash
-                    assert response.status_code >= 400
+                    assert response.status_code >= HTTP_BAD_REQUEST
                 except Exception:
                     pass
 
@@ -430,7 +432,7 @@ class TestErrorRecovery:
 
                 try:
                     response = client.get("/api/v1/items", params={"project_id": "test"})
-                    if response.status_code == 200:
+                    if response.status_code == HTTP_OK:
                         data = response.json()
                         # Should return what it could get
                         assert "items" in data
@@ -449,7 +451,7 @@ class TestErrorRecovery:
             def connect_with_retry():
                 nonlocal call_count
                 call_count += 1
-                if call_count < 3:
+                if call_count < COUNT_THREE:
                     msg = ""
                     raise OperationalError(msg, "", Exception("Connection lost"))
                 connection = MagicMock()
@@ -540,7 +542,7 @@ class TestCustomExceptions:
 
                 try:
                     response = client.get("/api/v1/items/nonexistent")
-                    assert response.status_code == 404
+                    assert response.status_code == HTTP_NOT_FOUND
                     data = response.json()
                     assert "not found" in data["detail"].lower()
                 except Exception:

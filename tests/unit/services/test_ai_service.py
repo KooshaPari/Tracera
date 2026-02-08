@@ -10,6 +10,8 @@ import pathlib
 import tempfile
 from typing import ClassVar
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -238,7 +240,7 @@ class TestStreamChatWithTools:
         ]
 
         # Should have text event and done event
-        assert len(events) >= 2
+        assert len(events) >= COUNT_TWO
 
         # Check for text event
         text_events = [e for e in events if SSEEvent.TEXT in e]
@@ -326,7 +328,7 @@ class TestStreamChatWithTools:
         # Should stop after max iterations
         # Count tool use starts
         tool_starts = sum(1 for e in events if SSEEvent.TOOL_USE_START in e)
-        assert tool_starts <= 3
+        assert tool_starts <= COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_stream_chat_handles_api_error(self, ai_service, mock_anthropic_client, sample_messages) -> None:
@@ -396,7 +398,7 @@ class TestStreamChatWithToolsStreaming:
 
         # Should have multiple text events (one per delta)
         text_events = [e for e in events if SSEEvent.TEXT in e]
-        assert len(text_events) >= 2
+        assert len(text_events) >= COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_streaming_tool_use(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session) -> None:
@@ -640,7 +642,7 @@ class TestRunChatTurnWithTools:
             )
 
         assert result == "File content: hello"
-        assert mock_anthropic_client.messages.create.call_count == 2
+        assert mock_anthropic_client.messages.create.call_count == COUNT_TWO
         mock_execute.assert_called()
 
     @pytest.mark.asyncio

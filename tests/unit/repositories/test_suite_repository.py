@@ -17,6 +17,8 @@ Tests for:
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -312,8 +314,8 @@ async def test_list_by_project_basic(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     suites, total = await repo.list_by_project(project_id=str(project.id))
-    assert len(suites) == 3
-    assert total == 3
+    assert len(suites) == COUNT_THREE
+    assert total == COUNT_THREE
 
 
 @pytest.mark.unit
@@ -377,11 +379,11 @@ async def test_list_by_project_filter_by_parent_id(db_session: AsyncSession) -> 
 
     # Get children
     children, _ = await repo.list_by_project(project_id=str(project.id), parent_id=parent.id)
-    assert len(children) == 2
+    assert len(children) == COUNT_TWO
 
     # Get root suites (no parent)
     roots, _ = await repo.list_by_project(project_id=str(project.id), parent_id="")
-    assert len(roots) == 2  # Parent and Root Suite
+    assert len(roots) == COUNT_TWO  # Parent and Root Suite
 
 
 @pytest.mark.unit
@@ -417,7 +419,7 @@ async def test_list_by_project_search(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     auth_suites, _ = await repo.list_by_project(project_id=str(project.id), search="Auth")
-    assert len(auth_suites) == 2
+    assert len(auth_suites) == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -436,9 +438,9 @@ async def test_list_by_project_pagination(db_session: AsyncSession) -> None:
     page1, total = await repo.list_by_project(project_id=str(project.id), skip=0, limit=5)
     page2, _ = await repo.list_by_project(project_id=str(project.id), skip=5, limit=5)
 
-    assert len(page1) == 5
-    assert len(page2) == 5
-    assert total == 10
+    assert len(page1) == COUNT_FIVE
+    assert len(page2) == COUNT_FIVE
+    assert total == COUNT_TEN
 
 
 # ============================================================================
@@ -467,7 +469,7 @@ async def test_update_basic_fields(db_session: AsyncSession) -> None:
     assert updated is not None
     assert updated.name == "Updated Name"
     assert updated.description == "Updated Description"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -709,7 +711,7 @@ async def test_get_test_cases(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     test_cases = await repo.get_test_cases(suite.id)
-    assert len(test_cases) == 2
+    assert len(test_cases) == COUNT_TWO
     assert test_cases[0].order_index == 0
     assert test_cases[1].order_index == 1
 
@@ -813,7 +815,7 @@ async def test_get_activities(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     activities = await repo.get_activities(suite.id)
-    assert len(activities) >= 2  # created + status_changed
+    assert len(activities) >= COUNT_TWO  # created + status_changed
 
 
 # ============================================================================
@@ -840,10 +842,10 @@ async def test_get_stats(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     stats = await repo.get_stats(str(project.id))
-    assert stats["total"] == 3
-    assert stats["by_status"]["draft"] == 2
+    assert stats["total"] == COUNT_THREE
+    assert stats["by_status"]["draft"] == COUNT_TWO
     assert stats["by_status"]["active"] == 1
-    assert stats["by_category"]["unit"] == 2
+    assert stats["by_category"]["unit"] == COUNT_TWO
     assert stats["by_category"]["integration"] == 1
 
 

@@ -15,6 +15,8 @@ Timeline: Week 4-6 (parallel with Phase 1)
 """
 
 from datetime import UTC, datetime, timezone
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 import pytest_asyncio
@@ -496,7 +498,7 @@ class TestItemServiceCreate:
 
         # Verify links were created
         links = await service.links.get_by_item(new_item.id)
-        assert len(links) == 3
+        assert len(links) == COUNT_THREE
 
     async def test_create_item_with_different_link_types(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test creating items with different link types."""
@@ -634,7 +636,7 @@ class TestItemServiceRead:
         service = ItemService(async_db_session)
 
         items = await service.list_items(async_project.id)
-        assert len(items) == 4
+        assert len(items) == COUNT_FOUR
 
     async def test_list_items_with_view_filter(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test listing items filtered by view."""
@@ -642,7 +644,7 @@ class TestItemServiceRead:
 
         items = await service.list_items(async_project.id, view="FEATURE")
         assert all(item.view == "FEATURE" for item in items)
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
     async def test_list_items_with_status_filter(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test listing items filtered by status."""
@@ -679,11 +681,11 @@ class TestItemServiceRead:
 
         # Test first page
         items_page1 = await service.list_items(async_project.id, limit=5, offset=0)
-        assert len(items_page1) == 5
+        assert len(items_page1) == COUNT_FIVE
 
         # Test second page
         items_page2 = await service.list_items(async_project.id, limit=5, offset=5)
-        assert len(items_page2) == 5
+        assert len(items_page2) == COUNT_FIVE
 
         # Ensure pages don't overlap
         ids_page1 = {item.id for item in items_page1}
@@ -764,7 +766,7 @@ class TestItemServiceRead:
         await async_db_session.commit()
 
         children = await service.get_children(str(parent.id))
-        assert len(children) == 3
+        assert len(children) == COUNT_THREE
 
     async def test_get_children_no_children(self, async_db_session, async_project) -> None:
         """Test getting children for item with none."""
@@ -860,7 +862,7 @@ class TestItemServiceRead:
         await async_db_session.commit()
 
         descendants = await service.get_descendants("root-item")
-        assert len(descendants) >= 2
+        assert len(descendants) >= COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -1122,7 +1124,7 @@ class TestItemServiceUpdate:
 
         assert updated.item_metadata["existing"] == "value"
         assert updated.item_metadata["new"] == "field"
-        assert updated.item_metadata["count"] == 2
+        assert updated.item_metadata["count"] == COUNT_TWO
 
     async def test_update_metadata_replace(self, async_db_session, async_project) -> None:
         """Test metadata update with replace."""
@@ -1343,7 +1345,7 @@ class TestBulkOperationService:
             updates={"status": "in_progress"},
         )
 
-        assert preview["total_count"] == 2
+        assert preview["total_count"] == COUNT_TWO
         assert len(preview.get("sample_items", preview.get("samples", []))) > 0
         assert preview["estimated_duration_ms"] > 0
 
@@ -1971,7 +1973,7 @@ class TestImpactAnalysisService:
         service = ImpactAnalysisService(async_db_session)
         result = await service.analyze_impact("chain-item-0", max_depth=2)
 
-        assert result.max_depth_reached <= 2
+        assert result.max_depth_reached <= COUNT_TWO
 
     async def test_analyze_reverse_impact(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test reverse impact analysis."""
@@ -2126,7 +2128,7 @@ class TestCrossServiceIntegration:
             updates={"status": "in_progress"},
         )
 
-        assert preview["total_count"] == 3
+        assert preview["total_count"] == COUNT_THREE
 
     def test_backup_restore_roundtrip(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test backup and restore roundtrip."""
@@ -2202,5 +2204,5 @@ class TestPerformance:
         )
         elapsed = time.time() - start
 
-        assert preview["total_count"] == 500
-        assert elapsed < 5  # Should complete in under 5 seconds
+        assert preview["total_count"] == HTTP_INTERNAL_SERVER_ERROR
+        assert elapsed < COUNT_FIVE  # Should complete in under 5 seconds

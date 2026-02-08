@@ -12,6 +12,8 @@ and edge cases to achieve 100% coverage.
 """
 
 from datetime import UTC, datetime, timedelta, timezone
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -88,7 +90,7 @@ class TestAPIWebhooksServiceIntegration:
         key2 = webhooks_service.create_api_key(name="test", permissions=["read"])
 
         assert key1["key"] != key2["key"]
-        assert len(webhooks_service.api_keys) == 2
+        assert len(webhooks_service.api_keys) == COUNT_TWO
 
     def test_validate_api_key_valid_active_key(self, webhooks_service) -> None:
         """Test validating a valid and active API key.
@@ -256,7 +258,7 @@ class TestAPIWebhooksServiceIntegration:
         )
 
         assert result["event_type"] == "item.created"
-        assert result["webhooks_triggered"] == 2
+        assert result["webhooks_triggered"] == COUNT_TWO
         assert "event_id" in result
 
     def test_trigger_webhook_event_no_matching_webhooks(self, webhooks_service) -> None:
@@ -323,7 +325,7 @@ class TestAPIWebhooksServiceIntegration:
         )
 
         webhook_data = webhooks_service.webhooks[webhook["id"]]
-        assert webhook_data["delivery_count"] == 2
+        assert webhook_data["delivery_count"] == COUNT_TWO
         assert webhook_data["last_triggered"] is not None
 
     def test_get_webhook_events_all(self, webhooks_service) -> None:
@@ -339,7 +341,7 @@ class TestAPIWebhooksServiceIntegration:
 
         events = webhooks_service.get_webhook_events()
 
-        assert len(events) == 3
+        assert len(events) == COUNT_THREE
         assert events[0]["event_type"] == "item.created"
         assert events[1]["event_type"] == "item.updated"
         assert events[2]["event_type"] == "item.deleted"
@@ -357,7 +359,7 @@ class TestAPIWebhooksServiceIntegration:
 
         events = webhooks_service.get_webhook_events(event_type="item.created")
 
-        assert len(events) == 2
+        assert len(events) == COUNT_TWO
         assert all(e["event_type"] == "item.created" for e in events)
 
     def test_get_webhook_events_with_limit(self, webhooks_service) -> None:
@@ -372,7 +374,7 @@ class TestAPIWebhooksServiceIntegration:
 
         events = webhooks_service.get_webhook_events(limit=3)
 
-        assert len(events) == 3
+        assert len(events) == COUNT_THREE
         # Should get the last 3 events
         assert events[0]["resource_id"] == "item-7"
         assert events[1]["resource_id"] == "item-8"
@@ -499,11 +501,11 @@ class TestAPIWebhooksServiceIntegration:
 
         stats = webhooks_service.get_api_stats()
 
-        assert stats["total_api_keys"] == 2
+        assert stats["total_api_keys"] == COUNT_TWO
         assert stats["active_api_keys"] == 1
-        assert stats["total_webhooks"] == 2
+        assert stats["total_webhooks"] == COUNT_TWO
         assert stats["active_webhooks"] == 1
-        assert stats["total_webhook_events"] == 2
+        assert stats["total_webhook_events"] == COUNT_TWO
 
 
 # ============================================================
@@ -833,7 +835,7 @@ class TestDocumentationServiceIntegration:
         assert result["path"] == "/api/items"
         assert result["method"] == "POST"
         assert result["description"] == "Create a new item"
-        assert len(result["parameters"]) == 2
+        assert len(result["parameters"]) == COUNT_TWO
         assert "registered_at" in result
 
     def test_get_endpoint_exists(self, doc_service) -> None:
@@ -881,7 +883,7 @@ class TestDocumentationServiceIntegration:
 
         result = doc_service.list_endpoints()
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     def test_list_endpoints_filtered_by_method(self, doc_service) -> None:
         """Test listing endpoints filtered by method.
@@ -896,7 +898,7 @@ class TestDocumentationServiceIntegration:
 
         result = doc_service.list_endpoints(method="GET")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(e["method"] == "GET" for e in result)
 
     # Schema Registration Tests (Lines 52-76)
@@ -962,7 +964,7 @@ class TestDocumentationServiceIntegration:
 
         result = doc_service.list_schemas()
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     # Example Management Tests (Lines 77-104)
 
@@ -997,7 +999,7 @@ class TestDocumentationServiceIntegration:
 
         examples = doc_service.get_examples("/api/items", "POST")
 
-        assert len(examples) == 2
+        assert len(examples) == COUNT_TWO
 
     def test_get_examples_for_endpoint(self, doc_service) -> None:
         """Test getting examples for a specific endpoint.
@@ -1178,9 +1180,9 @@ class TestDocumentationServiceIntegration:
 
         stats = doc_service.get_documentation_stats()
 
-        assert stats["total_endpoints"] == 3
-        assert stats["total_schemas"] == 2
-        assert stats["total_examples"] == 3
+        assert stats["total_endpoints"] == COUNT_THREE
+        assert stats["total_schemas"] == COUNT_TWO
+        assert stats["total_examples"] == COUNT_THREE
         assert set(stats["methods"]) == {"GET", "POST"}
 
 
@@ -1241,7 +1243,7 @@ class TestEventSourcingServiceIntegration:
         """
         trail = await event_service.get_audit_trail(project_id=test_project.id)
 
-        assert len(trail) >= 3
+        assert len(trail) >= COUNT_THREE
         assert all(isinstance(entry, AuditTrailEntry) for entry in trail)
         assert all(entry.entity_type in {"item", "project"} for entry in trail)
 
@@ -1255,7 +1257,7 @@ class TestEventSourcingServiceIntegration:
         """
         trail = await event_service.get_audit_trail(project_id=test_project.id, entity_id=test_item.id)
 
-        assert len(trail) >= 3
+        assert len(trail) >= COUNT_THREE
         assert all(entry.entity_id == test_item.id for entry in trail)
 
     @pytest.mark.asyncio
@@ -1268,7 +1270,7 @@ class TestEventSourcingServiceIntegration:
         """
         trail = await event_service.get_audit_trail(project_id=test_project.id, limit=2)
 
-        assert len(trail) <= 2
+        assert len(trail) <= COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_audit_trail_entry_structure(self, event_service, test_project, create_test_events) -> None:  # noqa: ARG002
@@ -1378,7 +1380,7 @@ class TestEventSourcingServiceIntegration:
 
         assert new_state["title"] == "New Title"
         assert new_state["status"] == "in_progress"
-        assert new_state["version"] == 2
+        assert new_state["version"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_apply_event_item_deleted(self, event_service) -> None:
@@ -1446,7 +1448,7 @@ class TestEventSourcingServiceIntegration:
         """
         events = await event_service.get_event_history(entity_id=test_item.id)
 
-        assert len(events) >= 3
+        assert len(events) >= COUNT_THREE
         assert all(e.entity_id == test_item.id for e in events)
 
     @pytest.mark.asyncio
@@ -1572,7 +1574,7 @@ class TestExternalIntegrationServiceIntegration:
         integration_service.register_integration("github-1", IntegrationType.GITHUB, {"repo": "repo1"})
         integration_service.register_integration("github-2", IntegrationType.GITHUB, {"repo": "repo2"})
 
-        assert len(integration_service.integrations) == 2
+        assert len(integration_service.integrations) == COUNT_TWO
         assert "github-1" in integration_service.integrations
         assert "github-2" in integration_service.integrations
 
@@ -1616,7 +1618,7 @@ class TestExternalIntegrationServiceIntegration:
 
         result = integration_service.list_integrations()
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     def test_list_integrations_filtered_by_type(self, integration_service) -> None:
         """Test listing integrations filtered by type.
@@ -1631,7 +1633,7 @@ class TestExternalIntegrationServiceIntegration:
 
         result = integration_service.list_integrations(integration_type=IntegrationType.GITHUB)
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(i.integration_type == IntegrationType.GITHUB for i in result)
 
     def test_list_integrations_empty(self, integration_service) -> None:
@@ -1807,7 +1809,7 @@ class TestExternalIntegrationServiceIntegration:
 
         history = integration_service.get_sync_history()
 
-        assert len(history) == 3
+        assert len(history) == COUNT_THREE
 
     def test_get_sync_history_filtered(self, integration_service) -> None:
         """Test getting sync history filtered by integration.
@@ -1825,7 +1827,7 @@ class TestExternalIntegrationServiceIntegration:
 
         history = integration_service.get_sync_history(name="github")
 
-        assert len(history) == 2
+        assert len(history) == COUNT_TWO
         assert all(h["integration"] == "github" for h in history)
 
     def test_get_sync_history_empty(self, integration_service) -> None:
@@ -1983,12 +1985,12 @@ class TestExternalIntegrationServiceIntegration:
 
         stats = integration_service.get_integration_stats()
 
-        assert stats["total_integrations"] == 3
-        assert stats["enabled"] == 2
+        assert stats["total_integrations"] == COUNT_THREE
+        assert stats["enabled"] == COUNT_TWO
         assert stats["disabled"] == 1
-        assert stats["by_type"]["github"] == 2
+        assert stats["by_type"]["github"] == COUNT_TWO
         assert stats["by_type"]["slack"] == 1
-        assert stats["total_syncs"] == 2
+        assert stats["total_syncs"] == COUNT_TWO
 
     # Test Integration Connection Tests (Lines 177-191)
 

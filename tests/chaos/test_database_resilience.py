@@ -8,6 +8,8 @@ Uses unittest.mock to simulate failures without requiring live infrastructure.
 
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 from sqlalchemy import text
@@ -169,7 +171,7 @@ class TestOptimisticLockingUnderFailure:
             await update_with_retry(always_conflict, max_retries=3, base_delay=0.01)
 
         # Must have been called exactly max_retries times
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_retry_succeeds_after_transient_conflict(self) -> None:
@@ -179,7 +181,7 @@ class TestOptimisticLockingUnderFailure:
         async def transient_conflict() -> str:
             nonlocal call_count
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "version mismatch"
                 raise ConcurrencyError(msg)
             return "success"
@@ -187,7 +189,7 @@ class TestOptimisticLockingUnderFailure:
         result = await update_with_retry(transient_conflict, max_retries=5, base_delay=0.01)
 
         assert result == "success"
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_non_concurrency_error_not_retried(self) -> None:

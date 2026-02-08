@@ -6,6 +6,8 @@ Tests system behavior under resource constraints.
 
 import logging
 import time
+from tests.test_constants import HTTP_OK
+
 
 import httpx
 import pytest
@@ -180,7 +182,7 @@ async def test_timeout_injection(
     # Verify normal operation
     async with httpx.AsyncClient(timeout=5.0) as client:
         response = await client.get(f"{go_backend_proxy}/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         logger.info("Backend recovered to normal operation")
 
 

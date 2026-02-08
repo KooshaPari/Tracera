@@ -2,6 +2,8 @@
 
 import uuid
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -65,7 +67,7 @@ class TestItemRetrieval:
         result = await item_service.list_items(project_id, view=view)
 
         # Verify
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(i.view == view for i in result)
         # Updated assertion to match new signature
         item_service.items.get_by_view.assert_called_once()
@@ -90,7 +92,7 @@ class TestItemRetrieval:
         result = await item_service.list_items(project_id, status=status)
 
         # Verify
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(i.status == status for i in result)
         item_service.items.get_by_project.assert_called_once()
         # Verify status was passed

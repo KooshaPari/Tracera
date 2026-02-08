@@ -2,6 +2,8 @@
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
+
 
 from tracertm.repositories.agent_repository import AgentRepository
 from tracertm.repositories.event_repository import EventRepository
@@ -87,7 +89,7 @@ async def test_complete_project_workflow(db_session: AsyncSession) -> None:
     )
 
     assert updated_feature.status == "in_progress"
-    assert updated_feature.version == 2
+    assert updated_feature.version == COUNT_TWO
 
 
 @pytest.mark.e2e
@@ -116,7 +118,7 @@ async def test_bulk_operation_workflow(db_session: AsyncSession) -> None:
         updates={"status": "in_progress"},
     )
 
-    assert preview.total_count == 5
+    assert preview.total_count == COUNT_FIVE
     assert preview.is_safe()
 
     # 3. Execute bulk update
@@ -128,7 +130,7 @@ async def test_bulk_operation_workflow(db_session: AsyncSession) -> None:
         skip_preview=True,
     )
 
-    assert len(updated) == 5
+    assert len(updated) == COUNT_FIVE
     assert all(item.status == "in_progress" for item in updated)
 
 
@@ -192,11 +194,11 @@ async def test_event_sourcing_workflow(db_session: AsyncSession) -> None:
     # 3. Get audit trail
     sourcing = EventSourcingService(db_session)
     trail = await sourcing.get_audit_trail(str(project.id))
-    assert len(trail) == 2
+    assert len(trail) == COUNT_TWO
 
     # 4. Replay events
     result = await sourcing.replay_events(str(project.id), "item-1")
-    assert result.replayed_events == 2
+    assert result.replayed_events == COUNT_TWO
     assert result.final_state["status"] == "in_progress"
 
 

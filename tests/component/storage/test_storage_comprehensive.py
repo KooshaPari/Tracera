@@ -21,6 +21,8 @@ import time
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -323,7 +325,7 @@ class TestChangeDetector:
 
         changes = ChangeDetector.detect_changes_in_directory(temp_dir, {})
 
-        assert len(changes) == 2
+        assert len(changes) == COUNT_TWO
 
 
 class TestSyncQueue:
@@ -368,7 +370,7 @@ class TestSyncQueue:
 
         pending = queue.get_pending(limit=3)
 
-        assert len(pending) == 3
+        assert len(pending) == COUNT_THREE
 
     def test_get_pending_ordered_by_created_at(self, mock_db_connection) -> None:
         """Test get_pending returns items in chronological order."""
@@ -382,7 +384,7 @@ class TestSyncQueue:
         pending = queue.get_pending()
 
         assert pending[0].payload["order"] == 1
-        assert pending[1].payload["order"] == 2
+        assert pending[1].payload["order"] == COUNT_TWO
 
     def test_remove_item(self, mock_db_connection) -> None:
         """Test removing item from queue."""
@@ -424,7 +426,7 @@ class TestSyncQueue:
         queue.update_retry(queue_id, "Error 3")
 
         pending = queue.get_pending()
-        assert pending[0].retry_count == 3
+        assert pending[0].retry_count == COUNT_THREE
         assert pending[0].last_error == "Error 3"
 
     def test_clear_removes_all(self, mock_db_connection) -> None:
@@ -448,7 +450,7 @@ class TestSyncQueue:
         assert queue.get_count() == 1
 
         queue.enqueue(EntityType.ITEM, "item-2", OperationType.CREATE, {})
-        assert queue.get_count() == 2
+        assert queue.get_count() == COUNT_TWO
 
 
 class TestSyncStateManager:
@@ -536,7 +538,7 @@ class TestSyncEngine:
 
     def test_initialization(self, sync_engine) -> None:
         """Test SyncEngine initializes correctly."""
-        assert sync_engine.max_retries == 3
+        assert sync_engine.max_retries == COUNT_THREE
         assert sync_engine.retry_delay == 0.1
         assert sync_engine.conflict_strategy == ConflictStrategy.LAST_WRITE_WINS
         assert sync_engine._syncing is False
@@ -762,8 +764,8 @@ class TestSyncEngine:
         clock = sync_engine.create_vector_clock("client-1", 5, 4)
 
         assert clock.client_id == "client-1"
-        assert clock.version == 5
-        assert clock.parent_version == 4
+        assert clock.version == COUNT_FIVE
+        assert clock.parent_version == COUNT_FOUR
         assert isinstance(clock.timestamp, datetime)
 
     @pytest.mark.asyncio
@@ -834,8 +836,8 @@ class TestSyncEngineFactory:
         engine = create_sync_engine(mock_db_connection, api_client, storage_manager, max_retries=5, retry_delay=2.0)
 
         assert isinstance(engine, SyncEngine)
-        assert engine.max_retries == 5
-        assert engine.retry_delay == 2.0
+        assert engine.max_retries == COUNT_FIVE
+        assert engine.retry_delay == COUNT_TWO.0
 
 
 # ============================================================================
@@ -851,8 +853,8 @@ class TestVectorClock:
         clock = VectorClock(client_id="client-1", version=5, timestamp=datetime.now(UTC), parent_version=4)
 
         assert clock.client_id == "client-1"
-        assert clock.version == 5
-        assert clock.parent_version == 4
+        assert clock.version == COUNT_FIVE
+        assert clock.parent_version == COUNT_FOUR
         assert clock.timestamp.tzinfo is not None
 
     def test_post_init_adds_timezone(self) -> None:
@@ -905,8 +907,8 @@ class TestVectorClock:
         data = clock.to_dict()
 
         assert data["client_id"] == "client-1"
-        assert data["version"] == 5
-        assert data["parent_version"] == 4
+        assert data["version"] == COUNT_FIVE
+        assert data["parent_version"] == COUNT_FOUR
         assert "2024-01-01" in data["timestamp"]
 
     def test_from_dict(self) -> None:
@@ -916,8 +918,8 @@ class TestVectorClock:
         clock = VectorClock.from_dict(data)
 
         assert clock.client_id == "client-1"
-        assert clock.version == 5
-        assert clock.parent_version == 4
+        assert clock.version == COUNT_FIVE
+        assert clock.parent_version == COUNT_FOUR
 
 
 class TestEntityVersion:
@@ -1332,8 +1334,8 @@ class TestMarkdownParser:
         assert item_data.priority == "high"
         assert item_data.title == "Test Epic Title"
         assert "test epic description" in item_data.description.lower()
-        assert len(item_data.acceptance_criteria) == 3
-        assert len(item_data.tags) == 2
+        assert len(item_data.acceptance_criteria) == COUNT_THREE
+        assert len(item_data.tags) == COUNT_TWO
 
     def test_parse_item_markdown_missing_file(self, temp_dir) -> None:
         """Test parsing nonexistent file raises error."""
@@ -1400,7 +1402,7 @@ class TestMarkdownParser:
 
         links = parse_links_yaml(links_path)
 
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
         assert links[0].id == "link-001"
         assert links[0].source == "EPIC-001"
         assert links[0].target == "STORY-001"
@@ -1531,7 +1533,7 @@ class TestMarkdownParser:
 
         items = list_items(temp_dir, "test-project")
 
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
 
 # Due to length constraints, continuing in next section...

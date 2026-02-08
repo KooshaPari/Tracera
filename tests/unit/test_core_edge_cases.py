@@ -9,6 +9,8 @@ import asyncio
 from pathlib import Path
 from typing import Never
 from unittest.mock import Mock, mock_open, patch
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 from sqlalchemy import create_engine
@@ -76,7 +78,7 @@ class TestDatabaseConfigEdgeCases:
         assert config.username == "tracertm"
         assert config.password == "tracertm"
         assert config.pool_size == 20
-        assert config.max_overflow == 10
+        assert config.max_overflow == COUNT_TEN
 
     def test_database_config_url_generation(self) -> None:
         """Test database URL is correctly generated."""
@@ -119,7 +121,7 @@ class TestDatabaseConfigEdgeCases:
         """Test large pool size values."""
         config = DatabaseConfig(pool_size=1000, max_overflow=500)
         assert config.pool_size == 1000
-        assert config.max_overflow == 500
+        assert config.max_overflow == HTTP_INTERNAL_SERVER_ERROR
 
 
 class TestUIConfigEdgeCases:
@@ -306,14 +308,14 @@ class TestConcurrencyEdgeCases:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "Retry needed"
                 raise ConcurrencyError(msg)
             return "success"
 
         result = await update_with_retry(update_fn, max_retries=5)
         assert result == "success"
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_update_with_retry_fails_all_retries(self) -> None:
@@ -331,7 +333,7 @@ class TestConcurrencyEdgeCases:
             await update_with_retry(update_fn, max_retries=3)
 
         assert "Failed after 3 retries" in str(exc_info.value)
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_update_with_retry_custom_max_retries(self) -> None:
@@ -382,8 +384,8 @@ class TestConcurrencyEdgeCases:
             await update_with_retry(update_fn, max_retries=3, base_delay=0.05)
 
         # Verify increasing delays between retries
-        assert len(call_times) == 3
-        if len(call_times) >= 2:
+        assert len(call_times) == COUNT_THREE
+        if len(call_times) >= COUNT_TWO:
             delay1 = call_times[1] - call_times[0]
             assert delay1 > 0.04  # Base delay with jitter
 
@@ -476,7 +478,7 @@ class TestConcurrencyEdgeCases:
         )
 
         # All should succeed
-        assert len(results) == 3
+        assert len(results) == COUNT_THREE
         assert all(r > 0 for r in results)
 
 
@@ -526,7 +528,7 @@ class TestCoreIntegration:
             await asyncio.sleep(0)
             nonlocal attempt
             attempt += 1
-            if attempt < 2:
+            if attempt < COUNT_TWO:
                 msg = "Config locked"
                 raise ConcurrencyError(msg)
             config.current_project = f"project-{attempt}"
@@ -534,4 +536,4 @@ class TestCoreIntegration:
 
         result = await update_with_retry(update_config, max_retries=3)
         assert result.current_project == "project-2"
-        assert attempt == 2
+        assert attempt == COUNT_TWO

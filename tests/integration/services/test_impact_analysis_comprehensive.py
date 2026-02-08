@@ -15,6 +15,8 @@ Tests: 35+
 
 import time
 from unittest.mock import AsyncMock, Mock
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -83,9 +85,9 @@ class TestImpactNodeDataclass:
             link_type="implements",
         )
 
-        assert node.depth == 2
+        assert node.depth == COUNT_TWO
         assert node.link_type == "implements"
-        assert len(node.path) == 3
+        assert len(node.path) == COUNT_THREE
 
     def test_impact_node_deep_path(self) -> None:
         """Test ImpactNode with deep path."""
@@ -100,7 +102,7 @@ class TestImpactNodeDataclass:
         )
 
         assert node.depth == 9
-        assert len(node.path) == 10
+        assert len(node.path) == COUNT_TEN
         assert node.path[0] == "item-0"
         assert node.path[-1] == "item-9"
 
@@ -134,10 +136,10 @@ class TestImpactAnalysisResultDataclass:
 
         assert result.root_item_id == "root-1"
         assert result.root_item_title == "Root Item"
-        assert result.total_affected == 5
-        assert result.max_depth_reached == 3
-        assert result.affected_by_depth[1] == 2
-        assert result.affected_by_view["REQ"] == 3
+        assert result.total_affected == COUNT_FIVE
+        assert result.max_depth_reached == COUNT_THREE
+        assert result.affected_by_depth[1] == COUNT_TWO
+        assert result.affected_by_view["REQ"] == COUNT_THREE
         assert len(result.affected_items) == 1
         assert len(result.critical_paths) == 1
 
@@ -176,8 +178,8 @@ class TestImpactAnalysisResultDataclass:
             critical_paths=[],
         )
 
-        assert sum(result.affected_by_view.values()) == 10
-        assert sum(result.affected_by_depth.values()) == 10
+        assert sum(result.affected_by_view.values()) == COUNT_TEN
+        assert sum(result.affected_by_depth.values()) == COUNT_TEN
 
 
 class TestFindCriticalPaths:
@@ -227,7 +229,7 @@ class TestFindCriticalPaths:
         paths = service._find_critical_paths(nodes)
 
         # Items 2 and 3 are leaf nodes
-        assert len(paths) == 2
+        assert len(paths) == COUNT_TWO
         assert ["root", "item-1", "item-2"] in paths
         assert ["root", "item-1", "item-3"] in paths
 
@@ -379,11 +381,11 @@ class TestAnalyzeImpactBasic:
 
         result = await service.analyze_impact("root")
 
-        assert result.total_affected == 2
-        assert result.max_depth_reached == 2
+        assert result.total_affected == COUNT_TWO
+        assert result.max_depth_reached == COUNT_TWO
         assert result.affected_by_depth == {1: 1, 2: 1}
         assert result.affected_by_view == {"REQ": 1, "DESIGN": 1}
-        assert len(result.affected_items) == 2
+        assert len(result.affected_items) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_branching_impact(self, service) -> None:
@@ -433,10 +435,10 @@ class TestAnalyzeImpactBasic:
 
         result = await service.analyze_impact("root")
 
-        assert result.total_affected == 2
+        assert result.total_affected == COUNT_TWO
         assert result.max_depth_reached == 1
         assert result.affected_by_depth == {1: 2}
-        assert len(result.critical_paths) == 2
+        assert len(result.critical_paths) == COUNT_TWO
 
 
 class TestAnalyzeImpactDepth:
@@ -478,13 +480,13 @@ class TestAnalyzeImpactDepth:
 
         # Test with max_depth=2
         result = await service.analyze_impact("root", max_depth=2)
-        assert result.total_affected == 2
-        assert result.max_depth_reached == 2
+        assert result.total_affected == COUNT_TWO
+        assert result.max_depth_reached == COUNT_TWO
 
         # Test with max_depth=3
         result = await service.analyze_impact("root", max_depth=3)
-        assert result.total_affected == 3
-        assert result.max_depth_reached == 3
+        assert result.total_affected == COUNT_THREE
+        assert result.max_depth_reached == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_deep_chain_5_levels(self, service) -> None:
@@ -507,9 +509,9 @@ class TestAnalyzeImpactDepth:
 
         result = await service.analyze_impact("item0", max_depth=10)
 
-        assert result.total_affected == 5
-        assert result.max_depth_reached == 5
-        assert len(result.affected_by_depth) == 5
+        assert result.total_affected == COUNT_FIVE
+        assert result.max_depth_reached == COUNT_FIVE
+        assert len(result.affected_by_depth) == COUNT_FIVE
 
 
 class TestAnalyzeImpactFiltering:
@@ -588,7 +590,7 @@ class TestAnalyzeImpactFiltering:
 
         result = await service.analyze_impact("root", link_types=["traces_to", "depends_on"])
 
-        assert result.total_affected == 2
+        assert result.total_affected == COUNT_TWO
         assert {item["id"] for item in result.affected_items} == {"item1", "item2"}
 
     @pytest.mark.asyncio
@@ -681,7 +683,7 @@ class TestAnalyzeReverseImpact:
 
         result = await service.analyze_reverse_impact("child")
 
-        assert result.total_affected == 2
+        assert result.total_affected == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_reverse_impact_chain(self, service) -> None:
@@ -711,7 +713,7 @@ class TestAnalyzeReverseImpact:
 
         result = await service.analyze_reverse_impact("item3", max_depth=10)
 
-        assert result.total_affected == 2
+        assert result.total_affected == COUNT_TWO
 
 
 class TestAnalyzeImpactAccuracy:
@@ -759,8 +761,8 @@ class TestAnalyzeImpactAccuracy:
         assert depth_sum == result.total_affected
 
         # Verify specific depth counts
-        assert result.affected_by_depth.get(1, 0) == 2  # item1, item2
-        assert result.affected_by_depth.get(2, 0) == 2  # item3, item4
+        assert result.affected_by_depth.get(1, 0) == COUNT_TWO  # item1, item2
+        assert result.affected_by_depth.get(2, 0) == COUNT_TWO  # item3, item4
 
     @pytest.mark.asyncio
     async def test_view_count_accuracy(self, service) -> None:
@@ -795,7 +797,7 @@ class TestAnalyzeImpactAccuracy:
 
         view_sum = sum(result.affected_by_view.values())
         assert view_sum == result.total_affected
-        assert result.affected_by_view.get("REQ", 0) == 2
+        assert result.affected_by_view.get("REQ", 0) == COUNT_TWO
         assert result.affected_by_view.get("DESIGN", 0) == 1
 
     @pytest.mark.asyncio
@@ -884,8 +886,8 @@ class TestAnalyzeImpactPerformance:
         elapsed = time.time() - start_time
 
         # With default max_depth=10, should get 10 items (depth 1-10)
-        assert result.total_affected == 10
-        assert result.max_depth_reached == 10
+        assert result.total_affected == COUNT_TEN
+        assert result.max_depth_reached == COUNT_TEN
         assert elapsed < 1.0  # Should complete in less than 1 second
 
         # Test with extended depth
@@ -922,7 +924,7 @@ class TestAnalyzeImpactPerformance:
         elapsed = time.time() - start_time
 
         assert result.total_affected == num_children
-        assert elapsed < 2.0  # Should complete in less than 2 seconds
+        assert elapsed < COUNT_TWO.0  # Should complete in less than 2 seconds
 
     @pytest.mark.asyncio
     async def test_performance_multi_level_tree(self, service) -> None:
@@ -1101,7 +1103,7 @@ class TestComplexScenarios:
 
         result = await service.analyze_impact("root")
 
-        assert result.total_affected == 4
+        assert result.total_affected == COUNT_FOUR
         assert set(result.affected_by_view.keys()) == {"REQ", "DESIGN", "CODE", "TEST"}
 
     @pytest.mark.asyncio
@@ -1134,7 +1136,7 @@ class TestComplexScenarios:
 
         result = await service.analyze_impact("root")
 
-        assert result.total_affected == 3
+        assert result.total_affected == COUNT_THREE
         link_types = {item["link_type"] for item in result.affected_items}
         assert link_types == {"implements", "depends_on", "tests"}
 
@@ -1179,8 +1181,8 @@ async def test_comprehensive_scenario() -> None:
 
     assert result.root_item_id == "REQ-1"
     assert result.root_item_title == "User Login"
-    assert result.total_affected == 2
-    assert result.max_depth_reached == 2
+    assert result.total_affected == COUNT_TWO
+    assert result.max_depth_reached == COUNT_TWO
 
 
 if __name__ == "__main__":

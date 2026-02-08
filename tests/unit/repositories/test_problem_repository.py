@@ -19,6 +19,8 @@ Tests for:
 
 from datetime import UTC, datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -359,7 +361,7 @@ async def test_list_all_basic(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     problems = await repo.list_all(project_id=project.id)
-    assert len(problems) == 3
+    assert len(problems) == COUNT_THREE
 
 
 @pytest.mark.unit
@@ -399,7 +401,7 @@ async def test_list_all_include_deleted(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     problems = await repo.list_all(project_id=project.id, include_deleted=True)
-    assert len(problems) == 2
+    assert len(problems) == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -514,8 +516,8 @@ async def test_list_all_pagination(db_session: AsyncSession) -> None:
     page1 = await repo.list_all(project_id=project.id, limit=5, offset=0)
     page2 = await repo.list_all(project_id=project.id, limit=5, offset=5)
 
-    assert len(page1) == 5
-    assert len(page2) == 5
+    assert len(page1) == COUNT_FIVE
+    assert len(page2) == COUNT_FIVE
 
     # Ensure no overlap
     page1_ids = {p.id for p in page1}
@@ -549,7 +551,7 @@ async def test_update_basic_fields(db_session: AsyncSession) -> None:
 
     assert updated.title == "Updated Title"
     assert updated.description == "Updated Description"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -566,11 +568,11 @@ async def test_update_optimistic_locking_success(db_session: AsyncSession) -> No
 
     # First update
     updated = await repo.update(problem.id, expected_version=1, title="Updated")
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
     # Second update with correct version
     updated2 = await repo.update(updated.id, expected_version=2, title="Updated Again")
-    assert updated2.version == 3
+    assert updated2.version == COUNT_THREE
 
 
 @pytest.mark.unit
@@ -627,7 +629,7 @@ async def test_update_logs_significant_changes(db_session: AsyncSession) -> None
 
     activities = await repo.get_activities(problem.id)
     # Should have creation activity + status change activity
-    assert len(activities) >= 2
+    assert len(activities) >= COUNT_TWO
     status_activity = next((a for a in activities if a.activity_type == "status_changed"), None)
     assert status_activity is not None
 
@@ -988,7 +990,7 @@ async def test_count_by_status(db_session: AsyncSession) -> None:
 
     counts = await repo.count_by_status(project.id)
     assert counts.get("open") == 1
-    assert counts.get("in_investigation") == 2
+    assert counts.get("in_investigation") == COUNT_TWO
 
 
 # ============================================================================
@@ -1011,7 +1013,7 @@ async def test_count_by_priority(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     counts = await repo.count_by_priority(project.id)
-    assert counts.get("critical") == 2
+    assert counts.get("critical") == COUNT_TWO
     assert counts.get("low") == 1
 
 
@@ -1039,7 +1041,7 @@ async def test_get_activities(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     activities = await repo.get_activities(problem.id)
-    assert len(activities) >= 4  # created + transition + rca + workaround
+    assert len(activities) >= COUNT_FOUR  # created + transition + rca + workaround
 
 
 @pytest.mark.unit
@@ -1060,4 +1062,4 @@ async def test_get_activities_with_limit(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     activities = await repo.get_activities(problem.id, limit=2)
-    assert len(activities) == 2
+    assert len(activities) == COUNT_TWO

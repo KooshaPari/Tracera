@@ -7,6 +7,8 @@ Coverage target: 80%+ of 127 statements
 
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, Mock
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE
+
 
 import pytest
 
@@ -76,7 +78,7 @@ class TestSyncStatusWidgetSetters:
         widget.update_display = Mock()
 
         widget.set_pending_changes(5)
-        assert widget.pending_changes == 5
+        assert widget.pending_changes == COUNT_FIVE
 
         widget.set_pending_changes(0)
         assert widget.pending_changes == 0
@@ -99,7 +101,7 @@ class TestSyncStatusWidgetSetters:
         widget.update_display = Mock()
 
         widget.set_conflicts(3)
-        assert widget.conflicts_count == 3
+        assert widget.conflicts_count == COUNT_THREE
 
         widget.set_conflicts(0)
         assert widget.conflicts_count == 0
@@ -485,11 +487,11 @@ class TestCompactSyncStatus:
         widget = CompactSyncStatus()
 
         widget.set_pending_changes(10)
-        assert widget.pending_changes == 10
+        assert widget.pending_changes == COUNT_TEN
 
     def test_set_conflicts(self) -> None:
         """Test setting conflicts on compact widget."""
         widget = CompactSyncStatus()
 
         widget.set_conflicts(5)
-        assert widget.conflicts_count == 5
+        assert widget.conflicts_count == COUNT_FIVE

@@ -7,6 +7,8 @@ for the hybrid local storage architecture.
 import json
 import sqlite3
 from datetime import UTC, datetime
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import yaml
@@ -508,7 +510,7 @@ class TestLocalStorageItemOperations:
         conn.close()
 
         # Assert
-        assert len(results) == 3
+        assert len(results) == COUNT_THREE
 
     @pytest.mark.unit
     def test_filter_items_by_status(self, init_db, sample_project_data) -> None:
@@ -577,7 +579,7 @@ class TestLocalStorageItemOperations:
         conn.close()
 
         # Assert
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
 
 
 # ============================================================================
@@ -763,7 +765,7 @@ class TestLocalStorageSyncQueue:
         conn.close()
 
         # Assert
-        assert len(results) == 3
+        assert len(results) == COUNT_THREE
         assert results[0][2] == "item-000"
         assert results[2][2] == "item-002"
 

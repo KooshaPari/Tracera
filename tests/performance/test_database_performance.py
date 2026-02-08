@@ -9,6 +9,8 @@ Tests measure performance of:
 """
 
 from typing import Any
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 from sqlalchemy import and_, func, or_
@@ -259,7 +261,7 @@ def test_aggregation_group_by_status(benchmark, db_session: Session, seed_items_
         return db_session.query(Item.status, func.count(Item.id)).group_by(Item.status).all()
 
     result = benchmark(query)
-    assert len(result) == 3  # 3 different statuses
+    assert len(result) == COUNT_THREE  # 3 different statuses
 
 
 def test_aggregation_multiple_grouping(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001

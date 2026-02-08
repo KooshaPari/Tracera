@@ -11,6 +11,8 @@ This file covers all missing functionality identified in coverage analysis:
 
 import asyncio
 from uuid import uuid4
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -136,7 +138,7 @@ async def test_get_by_project_all_agents(db_session: AsyncSession) -> None:
 
     # Get all agents
     all_agents = await agent_repo.get_by_project(str(project.id))
-    assert len(all_agents) == 2
+    assert len(all_agents) == COUNT_TWO
     agent_ids = {agent.id for agent in all_agents}
     assert agent1.id in agent_ids
     assert agent2.id in agent_ids

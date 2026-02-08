@@ -7,6 +7,8 @@ over time and identify regressions.
 import json
 import time
 from pathlib import Path
+from tests.test_constants import COUNT_TEN
+
 
 import pytest
 
@@ -311,7 +313,7 @@ class TestPerformanceMonitorBenchmarks:
             return monitor.get_timings()
 
         result = benchmark(get_timings)
-        assert len(result) == 10
+        assert len(result) == COUNT_TEN
 
 
 # ============================================================

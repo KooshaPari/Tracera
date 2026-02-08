@@ -2,6 +2,8 @@
 
 import asyncio
 from datetime import UTC, datetime, timezone
+from tests.test_constants import COUNT_FIVE, COUNT_TEN
+
 
 import pytest
 
@@ -254,7 +256,7 @@ async def test_multiple_events_in_sequence(event_bus) -> None:
     except TimeoutError:
         pytest.fail(f"Only received {len(collector.events)}/5 events within timeout")
 
-    assert len(collector.events) == 5
+    assert len(collector.events) == COUNT_FIVE
     for i, event in enumerate(collector.events):
         assert event["entity_id"] == f"spec-{i}"
 
@@ -350,4 +352,4 @@ async def test_workflow_completed_event(event_bus) -> None:
     assert len(collector.events) == 1
     event = collector.events[0]
     assert event["type"] == "workflow.completed"
-    assert event["data"]["steps_completed"] == 10
+    assert event["data"]["steps_completed"] == COUNT_TEN

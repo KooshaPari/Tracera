@@ -15,6 +15,8 @@ from tracertm.cli.errors import (
     format_validation_error,
     handle_error,
 )
+from tests.test_constants import COUNT_TEN
+
 
 
 class TestErrorHandling:
@@ -139,7 +141,7 @@ class TestErrorHandling:
 
             # Suggestions should be actionable (contain action words or be helpful)
             # Just verify suggestion is not empty and meaningful
-            assert len(error.suggestion) > 10  # More than just a few words
+            assert len(error.suggestion) > COUNT_TEN  # More than just a few words
 
     def test_validation_error_formatting(self) -> None:
         """Test validation error message formatting."""

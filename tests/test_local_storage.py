@@ -2,6 +2,8 @@
 
 import tempfile
 from pathlib import Path
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import yaml
@@ -286,16 +288,16 @@ class TestItemStorage:
 
         # List all items
         all_items = item_storage.list_items()
-        assert len(all_items) == 3
+        assert len(all_items) == COUNT_THREE
 
         # List epics only
         epics = item_storage.list_items(item_type="epic")
-        assert len(epics) == 2
+        assert len(epics) == COUNT_TWO
         assert all(item.item_type == "epic" for item in epics)
 
         # List in_progress items
         in_progress = item_storage.list_items(status="in_progress")
-        assert len(in_progress) == 2
+        assert len(in_progress) == COUNT_TWO
         assert all(item.status == "in_progress" for item in in_progress)
 
     def test_create_link(self, item_storage, temp_storage_dir) -> None:
@@ -402,15 +404,15 @@ class TestItemStorage:
 
         # List all links
         all_links = item_storage.list_links()
-        assert len(all_links) == 3
+        assert len(all_links) == COUNT_THREE
 
         # List by source
         epic_links = item_storage.list_links(source_id=epic.id)
-        assert len(epic_links) == 2
+        assert len(epic_links) == COUNT_TWO
 
         # List by link type
         implements_links = item_storage.list_links(link_type="implements")
-        assert len(implements_links) == 2
+        assert len(implements_links) == COUNT_TWO
 
 
 class TestFullTextSearch:
@@ -445,7 +447,7 @@ class TestFullTextSearch:
 
         # Search for "password"
         results = storage_manager.search_items("password")
-        assert len(results) >= 2
+        assert len(results) >= COUNT_TWO
 
 
 class TestMarkdownGeneration:

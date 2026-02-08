@@ -16,6 +16,8 @@ Coverage Strategy: Happy paths, edge cases, error scenarios, concurrent operatio
 """
 
 from datetime import UTC, datetime, timedelta
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -219,14 +221,14 @@ class TestAdvancedAnalyticsServiceIntegration:
         result = await service.project_metrics(str(test_project.id))
 
         assert result["project_id"] == str(test_project.id)
-        assert result["total_items"] == 10
+        assert result["total_items"] == COUNT_TEN
         assert "by_status" in result
         assert "by_view" in result
         assert "completion_rate" in result
         # Verify status counts
-        assert result["by_status"]["done"] == 4  # 3 done + 1 complete
-        assert result["by_status"]["todo"] == 3
-        assert result["by_status"]["in_progress"] == 2
+        assert result["by_status"]["done"] == COUNT_FOUR  # 3 done + 1 complete
+        assert result["by_status"]["todo"] == COUNT_THREE
+        assert result["by_status"]["in_progress"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_project_metrics_empty_project(self, db_session: AsyncSession, test_project: Project) -> None:
@@ -299,10 +301,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         result = await service.team_analytics(str(test_project.id))
 
         assert result["project_id"] == str(test_project.id)
-        assert result["total_agents"] == 4  # alpha, beta, gamma, delta
+        assert result["total_agents"] == COUNT_FOUR  # alpha, beta, gamma, delta
         assert result["total_events"] == 50
         assert "agent_activity" in result
-        assert len(result["agent_activity"]) == 4
+        assert len(result["agent_activity"]) == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_team_analytics_no_events(self, db_session: AsyncSession, test_project: Project) -> None:
@@ -376,7 +378,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         result = await service.dependency_metrics(str(test_project.id))
 
         assert result["project_id"] == str(test_project.id)
-        assert result["total_items"] == 10
+        assert result["total_items"] == COUNT_TEN
         assert result["total_links"] > 0
         assert "average_links_per_item" in result
         assert "link_types" in result
@@ -413,7 +415,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         result = await service.quality_metrics(str(test_project.id))
 
         assert result["project_id"] == str(test_project.id)
-        assert result["total_items"] == 10
+        assert result["total_items"] == COUNT_TEN
         assert "items_with_description" in result
         assert "description_coverage" in result
         # 6 items have descriptions
@@ -464,7 +466,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert "dependency_metrics" in result
         assert "quality_metrics" in result
         # Verify all sections have data
-        assert result["project_metrics"]["total_items"] == 10
+        assert result["project_metrics"]["total_items"] == COUNT_TEN
         assert result["team_analytics"]["total_events"] == 50
         assert result["dependency_metrics"]["total_links"] > 0
 
@@ -518,7 +520,7 @@ class TestAdvancedTraceabilityServiceIntegration:
         assert len(paths) >= 1
         multi_hop_path = next((p for p in paths if p.distance > 1), None)
         assert multi_hop_path is not None
-        assert len(multi_hop_path.path) >= 3
+        assert len(multi_hop_path.path) >= COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_find_all_paths_no_connection(
@@ -574,7 +576,7 @@ class TestAdvancedTraceabilityServiceIntegration:
 
         closure = await service.transitive_closure(str(test_project.id))
 
-        assert len(closure) == 10  # All items
+        assert len(closure) == COUNT_TEN  # All items
         # Feature A should reach Story 1, Code A, Test 1 (transitively); closure keys are str
         assert str(sample_items[3].id) in closure[str(sample_items[0].id)]
 
@@ -1067,7 +1069,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert result["item_id"] == str(sample_items[0].id)
         assert "total_impacted" in result
         assert "impact_levels" in result
-        assert result["max_depth_reached"] <= 2
+        assert result["max_depth_reached"] <= COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_impact_propagation_analysis_item_not_found(self, db_session: AsyncSession, test_project: Project) -> None:
@@ -1338,7 +1340,7 @@ class TestAgentCoordinationServiceIntegration:
 
         activity = await service.get_agent_activity("agent-alpha", limit=5)
 
-        assert len(activity) <= 5
+        assert len(activity) <= COUNT_FIVE
 
 
 # ============================================================

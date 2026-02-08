@@ -1,6 +1,8 @@
 """Unit tests for event handlers in main.py."""
 
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_FIVE
+
 
 import pytest
 
@@ -74,7 +76,7 @@ async def test_handle_link_created_invalidates_graph_caches() -> None:
     mock_cache.clear_prefix.assert_any_call("ancestors:test-project-456")
     mock_cache.clear_prefix.assert_any_call("descendants:test-project-456")
     mock_cache.clear_prefix.assert_any_call("impact:test-project-456")
-    assert mock_cache.clear_prefix.call_count == 5
+    assert mock_cache.clear_prefix.call_count == COUNT_FIVE
 
 
 @pytest.mark.asyncio

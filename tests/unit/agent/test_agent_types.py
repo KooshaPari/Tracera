@@ -1,6 +1,8 @@
 """Unit tests for tracertm.agent.types."""
 
 from datetime import UTC, datetime, timezone
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE
+
 
 import pytest
 
@@ -33,10 +35,10 @@ class TestSandboxConfig:
 
     def test_defaults(self) -> None:
         cfg = SandboxConfig()
-        assert cfg.vcpus == 4
+        assert cfg.vcpus == COUNT_FOUR
         assert cfg.memory_mb == 8192
         assert cfg.timeout_seconds == 600
-        assert cfg.max_turns == 10
+        assert cfg.max_turns == COUNT_TEN
         assert cfg.environment == {}
         assert cfg.dependencies == []
         assert cfg.sandbox_root is None
@@ -81,7 +83,7 @@ class TestSandboxMetadata:
             status=SandboxStatus.READY,
             created_at=now,
         )
-        assert meta.vcpus == 4
+        assert meta.vcpus == COUNT_FOUR
         assert meta.memory_mb == 8192
         assert meta.timeout_seconds == 600
 
@@ -93,7 +95,7 @@ class TestExecutionRequest:
         req = ExecutionRequest(prompt="Hello")
         assert req.prompt == "Hello"
         assert req.tools == []
-        assert req.max_retries == 3
+        assert req.max_retries == COUNT_THREE
         assert req.context == {}
 
     def test_with_tools_and_config(self) -> None:

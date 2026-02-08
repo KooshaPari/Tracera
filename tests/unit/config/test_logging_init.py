@@ -5,6 +5,8 @@ Target: +1% coverage on logging initialization paths
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 
@@ -131,7 +133,7 @@ class TestLoggingConfiguration:
         setup_logging()
 
         # Verify multiple handlers are added
-        assert mock_logger.add.call_count >= 3
+        assert mock_logger.add.call_count >= COUNT_THREE
 
 
 class TestLoggingIntegration:

@@ -15,6 +15,8 @@ This file covers all missing functionality identified in coverage analysis:
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -199,7 +201,7 @@ async def test_list_by_view_includes_deleted_when_requested(db_session: AsyncSes
 
     # List with deleted
     items = await item_repo.list_by_view(project.id, "FEATURE", include_deleted=True)
-    assert len(items) == 2
+    assert len(items) == COUNT_TWO
     item_ids = {item.id for item in items}
     assert item1.id in item_ids
     assert item2.id in item_ids
@@ -254,7 +256,7 @@ async def test_list_all_includes_deleted_when_requested(db_session: AsyncSession
 
     # List with deleted
     items = await item_repo.list_all(project.id, include_deleted=True)
-    assert len(items) == 2
+    assert len(items) == COUNT_TWO
     item_ids = {item.id for item in items}
     assert item1.id in item_ids
     assert item2.id in item_ids
@@ -371,7 +373,7 @@ async def test_soft_delete_cascades_to_children(db_session: AsyncSession) -> Non
     # Verify children have deleted_at set (by querying with include_deleted)
     all_items = await item_repo.list_all(project.id, include_deleted=True)
     deleted_items = [item for item in all_items if item.deleted_at is not None]
-    assert len(deleted_items) == 3  # parent + 2 children
+    assert len(deleted_items) == COUNT_THREE  # parent + 2 children
 
 
 @pytest.mark.unit
@@ -543,7 +545,7 @@ async def test_get_by_project_with_status_filter(db_session: AsyncSession) -> No
 
     # Get only todo items
     todo_items = await item_repo.get_by_project(project.id, status="todo")
-    assert len(todo_items) == 2
+    assert len(todo_items) == COUNT_TWO
     assert all(item.status == "todo" for item in todo_items)
 
     # Get only done items
@@ -569,11 +571,11 @@ async def test_get_by_project_with_pagination(db_session: AsyncSession) -> None:
 
     # Get first page (limit=2)
     page1 = await item_repo.get_by_project(project.id, limit=2, offset=0)
-    assert len(page1) == 2
+    assert len(page1) == COUNT_TWO
 
     # Get second page
     page2 = await item_repo.get_by_project(project.id, limit=2, offset=2)
-    assert len(page2) == 2
+    assert len(page2) == COUNT_TWO
 
     # Get third page
     page3 = await item_repo.get_by_project(project.id, limit=2, offset=4)
@@ -608,7 +610,7 @@ async def test_get_by_project_without_status_filter(db_session: AsyncSession) ->
 
     # Get all items
     all_items = await item_repo.get_by_project(project.id)
-    assert len(all_items) == 2
+    assert len(all_items) == COUNT_TWO
     statuses = {item.status for item in all_items}
     assert "todo" in statuses
     assert "done" in statuses
@@ -668,11 +670,11 @@ async def test_get_by_view_with_pagination(db_session: AsyncSession) -> None:
 
     # Get first page
     page1 = await item_repo.get_by_view(project.id, "FEATURE", limit=2, offset=0)
-    assert len(page1) == 2
+    assert len(page1) == COUNT_TWO
 
     # Get second page
     page2 = await item_repo.get_by_view(project.id, "FEATURE", limit=2, offset=2)
-    assert len(page2) == 2
+    assert len(page2) == COUNT_TWO
 
     # Verify no overlap
     page1_ids = {item.id for item in page1}
@@ -766,7 +768,7 @@ async def test_query_with_limit(db_session: AsyncSession) -> None:
 
     # Query with limit
     results = await item_repo.query(project_id=str(project.id), filters={}, limit=3)
-    assert len(results) <= 3
+    assert len(results) <= COUNT_THREE
 
 
 @pytest.mark.unit
@@ -824,7 +826,7 @@ async def test_get_children_returns_direct_children(db_session: AsyncSession) ->
 
     # Get children
     children = await item_repo.get_children(str(parent.id))
-    assert len(children) == 2
+    assert len(children) == COUNT_TWO
     child_ids = {child.id for child in children}
     assert child1.id in child_ids
     assert child2.id in child_ids
@@ -914,7 +916,7 @@ async def test_get_ancestors_returns_all_parents(db_session: AsyncSession) -> No
 
     # Get ancestors of child
     ancestors = await item_repo.get_ancestors(str(child.id))
-    assert len(ancestors) == 2
+    assert len(ancestors) == COUNT_TWO
     ancestor_ids = {ancestor.id for ancestor in ancestors}
     assert root.id in ancestor_ids
     assert parent.id in ancestor_ids
@@ -952,7 +954,7 @@ async def test_get_ancestors_handles_deep_hierarchy(db_session: AsyncSession) ->
 
     # Get ancestors of level4
     ancestors = await item_repo.get_ancestors(str(level4.id))
-    assert len(ancestors) == 3
+    assert len(ancestors) == COUNT_THREE
     ancestor_ids = {ancestor.id for ancestor in ancestors}
     assert level1.id in ancestor_ids
     assert level2.id in ancestor_ids
@@ -1010,7 +1012,7 @@ async def test_get_descendants_returns_all_children(db_session: AsyncSession) ->
 
     # Get descendants of parent
     descendants = await item_repo.get_descendants(str(parent.id))
-    assert len(descendants) == 3
+    assert len(descendants) == COUNT_THREE
     descendant_ids = {descendant.id for descendant in descendants}
     assert child1.id in descendant_ids
     assert child2.id in descendant_ids
@@ -1048,7 +1050,7 @@ async def test_get_descendants_handles_deep_hierarchy(db_session: AsyncSession) 
 
     # Get descendants of root
     descendants = await item_repo.get_descendants(str(root.id))
-    assert len(descendants) == 3
+    assert len(descendants) == COUNT_THREE
     descendant_ids = {descendant.id for descendant in descendants}
     assert level2.id in descendant_ids
     assert level3.id in descendant_ids
@@ -1105,8 +1107,8 @@ async def test_count_by_status_counts_correctly(db_session: AsyncSession) -> Non
 
     # Count by status
     counts = await item_repo.count_by_status(str(project.id))
-    assert counts.get("todo") == 3
-    assert counts.get("done") == 2
+    assert counts.get("todo") == COUNT_THREE
+    assert counts.get("done") == COUNT_TWO
     assert counts.get("in_progress") == 1
 
 

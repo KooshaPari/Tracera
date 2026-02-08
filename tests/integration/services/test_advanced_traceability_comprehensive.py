@@ -14,6 +14,8 @@ Features:
 """
 
 import asyncio
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -241,7 +243,7 @@ class TestPathFinding:
 
         assert len(paths) >= 1
         # Path should be: req-1 -> design-1 -> api-1 -> test-1
-        assert paths[0].distance == 3
+        assert paths[0].distance == COUNT_THREE
         assert paths[0].path[0] == "req-1"
         assert paths[0].path[-1] == "test-1"
 
@@ -288,7 +290,7 @@ class TestPathFinding:
         paths = await service.find_all_paths("design-1", "test-1", max_depth=5)
 
         # Should find at least 2 paths
-        assert len(paths) >= 2
+        assert len(paths) >= COUNT_TWO
 
 
 class TestTransitiveClosure:
@@ -378,7 +380,7 @@ class TestBidirectionalImpact:
         impact = await service.bidirectional_impact("api-1")
 
         # api-1 has 1 backward (design-1) + 2 forward (test-1, doc-1) = 3
-        assert impact["total_impact"] == 3
+        assert impact["total_impact"] == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_bidirectional_impact_leaf_node(self, service, populated_db) -> None:  # noqa: ARG002
@@ -718,7 +720,7 @@ class TestComplexScenarios:
 
         # Should find paths A -> B -> D and A -> C -> D
         paths = await service.find_all_paths("node-A", "node-D")
-        assert len(paths) >= 2
+        assert len(paths) >= COUNT_TWO
 
         # Transitive closure
         closure = await service.transitive_closure("diamond-proj")
@@ -795,8 +797,8 @@ class TestComplexScenarios:
 
         # Hub should reach all 5 destinations
         impact = await service.bidirectional_impact("hub")
-        assert len(impact["forward_impact"]) == 5
-        assert len(impact["backward_impact"]) == 5
+        assert len(impact["forward_impact"]) == COUNT_FIVE
+        assert len(impact["backward_impact"]) == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_deep_chain(self, service, async_db_session) -> None:
@@ -967,7 +969,7 @@ class TestMetricsCalculation:
         gaps = await service.coverage_gaps("coverage", "REQ", "TEST")
 
         # 3 requirements should have gaps (7 covered, 3 not covered)
-        assert len(gaps) == 3
+        assert len(gaps) == COUNT_THREE
         # Coverage is 70%
         coverage_percent = ((10 - len(gaps)) / 10) * 100
         assert coverage_percent == 70.0

@@ -5,6 +5,8 @@ Comprehensive tests covering Linear App installation CRUD operations.
 
 from datetime import datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_FOUR, COUNT_THREE
+
 
 import pytest
 import pytest_asyncio
@@ -88,7 +90,7 @@ class TestCreate:
         )
 
         assert installation.scopes == scopes
-        assert len(installation.scopes) == 4
+        assert len(installation.scopes) == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_create_minimal_fields(self, linear_repo: LinearAppInstallationRepository, account_for_linear) -> None:
@@ -117,7 +119,7 @@ class TestCreate:
 
         # Verify it's a valid UUID format
         assert len(installation.id) == 36
-        assert installation.id.count("-") == 4
+        assert installation.id.count("-") == COUNT_FOUR
 
 
 # ==================== Get By ID Tests ====================
@@ -197,7 +199,7 @@ class TestListByAccount:
         result = await repo.list_by_account(account.id)
 
         # 1 from setup + 2 created here = 3 total
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
         assert all(isinstance(item, LinearAppInstallation) for item in result)
         assert all(item.account_id == account.id for item in result)
 

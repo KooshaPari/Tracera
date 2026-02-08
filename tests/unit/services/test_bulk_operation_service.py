@@ -2,6 +2,8 @@
 
 from unittest.mock import AsyncMock
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_THREE
+
 
 import pytest
 
@@ -117,8 +119,8 @@ class TestBulkOperationServicePreview:
         )
 
         assert isinstance(preview, BulkPreview)
-        assert preview.total_count == 5
-        assert len(preview.sample_items) <= 5
+        assert preview.total_count == COUNT_FIVE
+        assert len(preview.sample_items) <= COUNT_FIVE
         bulk_service.items.query.assert_called_once()
 
     @pytest.mark.asyncio
@@ -183,7 +185,7 @@ class TestBulkOperationServicePreview:
 
         preview = await bulk_service.preview_bulk_update(test_data["project_id"], {}, {"status": "in_progress"})
 
-        assert len(preview.sample_items) <= 5
+        assert len(preview.sample_items) <= COUNT_FIVE
         for sample in preview.sample_items:
             assert "id" in sample
             assert "title" in sample
@@ -249,7 +251,7 @@ class TestBulkOperationServiceExecute:
         )
 
         assert isinstance(result, list)
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
         bulk_service.events.log.assert_called_once()
 
     @pytest.mark.asyncio

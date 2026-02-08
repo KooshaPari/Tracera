@@ -17,6 +17,8 @@ Test count: 35+
 
 import time
 from datetime import UTC, datetime, timezone
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 from sqlalchemy import create_engine
@@ -342,7 +344,7 @@ class TestDetectCyclesFull:
         result = service.detect_cycles(sample_project.id, link_type="depends_on")
 
         assert result.has_cycles is True
-        assert result.cycle_count >= 2
+        assert result.cycle_count >= COUNT_TWO
 
     def test_detect_cycles_with_link_types_filter(self, db_session, sample_project, sample_items_basic) -> None:
         """Test detection with link_types filter parameter."""
@@ -451,7 +453,7 @@ class TestMissingDependenciesAndOrphans:
 
         # items 2, 3, 4 should be orphaned (3 total)
         assert result["has_orphans"] is True
-        assert result["orphan_count"] == 3
+        assert result["orphan_count"] == COUNT_THREE
 
     def test_detect_orphans_all(self, db_session, sample_project, sample_items_basic) -> None:  # noqa: ARG002
         """Test when all items are orphaned (no links)."""
@@ -459,8 +461,8 @@ class TestMissingDependenciesAndOrphans:
         result = service.detect_orphans(sample_project.id)
 
         assert result["has_orphans"] is True
-        assert result["orphan_count"] == 5
-        assert len(result["orphans"]) == 5
+        assert result["orphan_count"] == COUNT_FIVE
+        assert len(result["orphans"]) == COUNT_FIVE
 
     def test_detect_orphans_with_link_type_filter(self, db_session, sample_project, sample_items_basic) -> None:
         """Test orphan detection with link type filter."""
@@ -478,7 +480,7 @@ class TestMissingDependenciesAndOrphans:
 
         # Check for orphans by blocks type (should find all)
         result = service.detect_orphans(sample_project.id, link_type="blocks")
-        assert result["orphan_count"] == 5
+        assert result["orphan_count"] == COUNT_FIVE
 
 
 # ============================================================
@@ -515,7 +517,7 @@ class TestImpactAnalysis:
         result = service.analyze_impact(sample_project.id, sample_items_basic[0].id)
 
         assert result["root_item_id"] == sample_items_basic[0].id
-        assert result["total_affected"] == 4
+        assert result["total_affected"] == COUNT_FOUR
 
     def test_analyze_impact_tree_structure(self, db_session, sample_project, sample_items_basic) -> None:
         """Test impact analysis with tree-like dependency structure."""
@@ -547,7 +549,7 @@ class TestImpactAnalysis:
         result = service.analyze_impact(sample_project.id, sample_items_basic[0].id)
 
         assert result["root_item_id"] == sample_items_basic[0].id
-        assert result["total_affected"] >= 2
+        assert result["total_affected"] >= COUNT_TWO
 
     def test_analyze_impact_max_depth_limit(self, db_session, sample_project, sample_items_large) -> None:
         """Test impact analysis respects max_depth parameter."""
@@ -567,7 +569,7 @@ class TestImpactAnalysis:
         # With max_depth=3, should not traverse full chain
         result = service.analyze_impact(sample_project.id, sample_items_large[0].id, max_depth=3)
 
-        assert result["max_depth_reached"] <= 3
+        assert result["max_depth_reached"] <= COUNT_THREE
 
 
 # ============================================================
@@ -632,7 +634,7 @@ class TestPerformanceLargeGraphs:
         result = service.detect_cycles(sample_project.id, link_type="depends_on")
         elapsed = time.time() - start_time
 
-        assert elapsed < 2.0  # Should complete in < 2 seconds
+        assert elapsed < COUNT_TWO.0  # Should complete in < COUNT_TWO seconds
         assert result.has_cycles is False
 
     def test_performance_1000_nodes_chain(self, db_session, sample_project, sample_items_xlarge) -> None:
@@ -662,7 +664,7 @@ class TestPerformanceLargeGraphs:
         elapsed = time.time() - start_time
 
         assert result is True
-        assert elapsed < 5.0  # Should complete in < 5 seconds
+        assert elapsed < COUNT_FIVE.0  # Should complete in < COUNT_FIVE seconds
 
     def test_performance_1000_nodes_detect_all_cycles(self, db_session, sample_project, sample_items_xlarge) -> None:
         """Test detect_cycles performance on 1000-node graph (with branching to avoid deep recursion)."""
@@ -700,7 +702,7 @@ class TestPerformanceLargeGraphs:
         try:
             result = service.detect_cycles(sample_project.id, link_type="depends_on")
             elapsed = time.time() - start_time
-            assert elapsed < 5.0  # Should complete in < 5 seconds
+            assert elapsed < COUNT_FIVE.0  # Should complete in < COUNT_FIVE seconds
             assert result.has_cycles is False
         except RecursionError:
             # Python's default recursion limit may be hit on very deep chains
@@ -754,7 +756,7 @@ class TestMemoryEfficiencyNestedDependencies:
         # Items that depend on item-0 (directly or indirectly) are affected
         assert result["total_affected"] > 0
         assert "affected_by_depth" in result
-        assert result["max_depth_reached"] <= 10
+        assert result["max_depth_reached"] <= COUNT_TEN
 
     def test_memory_large_graph_cycle_detection(self, db_session, sample_project, sample_items_xlarge) -> None:
         """Test memory usage with large graph - should not consume excessive memory."""
@@ -799,7 +801,7 @@ class TestMemoryEfficiencyNestedDependencies:
             end_mem = tracemalloc.get_traced_memory()[0]
             mem_used = (end_mem - start_mem) / 1024 / 1024  # Convert to MB
             # Should use less than 500MB
-            assert mem_used < 500
+            assert mem_used < HTTP_INTERNAL_SERVER_ERROR
         except:
             pass  # Skip memory check if tracemalloc unavailable
 
@@ -1005,7 +1007,7 @@ class TestBuildGraphFunctions:
 
         assert len(cycles) > 0
         # Cycle should contain all three nodes
-        assert any(len(cycle) >= 3 for cycle in cycles)
+        assert any(len(cycle) >= COUNT_THREE for cycle in cycles)
 
     def test_build_graph_with_mixed_link_types(self, db_session, sample_project, sample_items_basic) -> None:
         """Test that graph building only includes specified link type."""

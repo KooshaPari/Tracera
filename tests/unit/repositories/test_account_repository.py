@@ -5,6 +5,8 @@ Comprehensive tests covering account CRUD and user management operations.
 
 import asyncio
 from uuid import uuid4
+from tests.test_constants import COUNT_FOUR, COUNT_THREE
+
 
 import pytest
 import pytest_asyncio
@@ -80,7 +82,7 @@ class TestAccountCreate:
 
         # Verify it's a valid UUID format
         assert len(account.id) == 36
-        assert account.id.count("-") == 4
+        assert account.id.count("-") == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_create_different_types(self, account_repo: AccountRepository) -> None:
@@ -423,7 +425,7 @@ class TestAccountListByUser:
 
             accounts = await account_repo.list_by_user(user_id)
 
-            assert len(accounts) == 3
+            assert len(accounts) == COUNT_THREE
         except Exception as e:
             if "now()" in str(e):
                 pytest.skip("AccountUser model uses server_default='now()' incompatible with SQLite")

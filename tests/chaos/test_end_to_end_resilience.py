@@ -7,6 +7,8 @@ Validates that the entire application stack recovers from cascading failures.
 import asyncio
 import logging
 import time
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+
 
 import httpx
 import pytest
@@ -55,7 +57,7 @@ async def test_cascading_failure_recovery(
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.get(f"{go_backend_proxy}/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
     logger.info("All services healthy at baseline")
 
@@ -135,7 +137,7 @@ async def test_cascading_failure_recovery(
         for attempt in range(max_retries):
             try:
                 response = await client.get(f"{go_backend_proxy}/health")
-                if response.status_code == 200:
+                if response.status_code == HTTP_OK:
                     logger.info(f"Backend recovered (attempt {attempt + 1})")
                     break
             except Exception as e:
@@ -163,7 +165,7 @@ async def test_gradual_degradation_under_load(
 
     Scenario:
     1. Start with low latency (100ms)
-    2. Gradually increase latency (100ms -> 500ms -> 1000ms)
+    2. Gradually increase latency (100ms -> HTTP_INTERNAL_SERVER_ERRORms -> 1000ms)
     3. Execute queries at each level
     4. Gradually decrease latency back to normal
     5. Verify system handles gradual changes

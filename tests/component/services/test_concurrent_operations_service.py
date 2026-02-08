@@ -1,5 +1,7 @@
 import time
 from typing import Never
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.orm.exc import StaleDataError
@@ -24,7 +26,7 @@ def test_retry_with_backoff_retries_then_raises(monkeypatch) -> None:
 
     with pytest.raises(ConcurrencyError):
         wrapped()
-    assert calls["count"] == 3  # initial + 2 retries
+    assert calls["count"] == COUNT_THREE  # initial + 2 retries
 
 
 def test_execute_with_retry_success_after_conflict(monkeypatch) -> None:
@@ -41,7 +43,7 @@ def test_execute_with_retry_success_after_conflict(monkeypatch) -> None:
     result = svc.execute_with_retry(op, max_retries=2, initial_delay=0.01)
 
     assert result == "ok"
-    assert calls["count"] == 2
+    assert calls["count"] == COUNT_TWO
 
 
 def test_execute_with_retry_exhausts_and_raises(monkeypatch) -> None:

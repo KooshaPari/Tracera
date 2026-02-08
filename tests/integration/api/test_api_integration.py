@@ -14,6 +14,8 @@ import tempfile
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK
+
 
 import httpx
 import pytest
@@ -371,7 +373,7 @@ class TestTraceRTMClientAgentOperations:
         assigned_projects = client.get_agent_projects(agent_id)
 
         # Should include primary project + assigned projects
-        assert len(assigned_projects) >= 2
+        assert len(assigned_projects) >= COUNT_TWO
         assert "proj-1" in assigned_projects
         assert "proj-2" in assigned_projects
         client.close()
@@ -451,7 +453,7 @@ class TestTraceRTMClientItemOperations:
         client.create_item("Code 1", "CODE", "file")
 
         items = client.query_items()
-        assert len(items) == 3
+        assert len(items) == COUNT_THREE
         client.close()
 
     def test_query_items_by_view(self, api_client_setup) -> None:  # noqa: ARG002
@@ -464,7 +466,7 @@ class TestTraceRTMClientItemOperations:
         client.create_item("Code 1", "CODE", "file")
 
         features = client.query_items(view="FEATURE")
-        assert len(features) == 2
+        assert len(features) == COUNT_TWO
         assert all(item["view"] == "FEATURE" for item in features)
         client.close()
 
@@ -478,7 +480,7 @@ class TestTraceRTMClientItemOperations:
         client.create_item("Todo 2", "FEATURE", "feature", status="todo")
 
         todos = client.query_items(status="todo")
-        assert len(todos) == 2
+        assert len(todos) == COUNT_TWO
         assert all(item["status"] == "todo" for item in todos)
         client.close()
 
@@ -521,7 +523,7 @@ class TestTraceRTMClientItemOperations:
             client.create_item(f"Item {i}", "FEATURE", "feature")
 
         items = client.query_items(limit=5)
-        assert len(items) == 5
+        assert len(items) == COUNT_FIVE
         client.close()
 
     def test_get_item_success(self, api_client_setup) -> None:  # noqa: ARG002
@@ -649,11 +651,11 @@ class TestTraceRTMClientBatchOperations:
 
         result = client.batch_create_items(items_data)
         assert isinstance(result, BatchResult)
-        assert result["items_created"] == 3
+        assert result["items_created"] == COUNT_THREE
 
         # Verify items exist
         items = client.query_items()
-        assert len(items) == 3
+        assert len(items) == COUNT_THREE
         client.close()
 
     def test_batch_create_items_with_fields(self, api_client_setup) -> None:  # noqa: ARG002
@@ -699,7 +701,7 @@ class TestTraceRTMClientBatchOperations:
 
         result = client.batch_update_items(updates)
         assert isinstance(result, BatchResult)
-        assert result["items_updated"] == 2
+        assert result["items_updated"] == COUNT_TWO
 
         # Verify updates
         updated1 = client.get_item(item1["id"])
@@ -740,7 +742,7 @@ class TestTraceRTMClientBatchOperations:
 
         result = client.batch_delete_items([item1["id"], item2["id"]])
         assert isinstance(result, BatchResult)
-        assert result["items_deleted"] == 2
+        assert result["items_deleted"] == COUNT_TWO
 
         # Verify deletions
         items = client.query_items()
@@ -805,7 +807,7 @@ class TestTraceRTMClientExportImport:
         }
 
         result = client.import_data(data)
-        assert result["items_created"] == 2
+        assert result["items_created"] == COUNT_TWO
         assert result["links_created"] == 0
 
         items = client.query_items()
@@ -847,7 +849,7 @@ class TestTraceRTMClientActivity:
 
         activity = client.get_agent_activity(agent_id)
 
-        assert len(activity) >= 2
+        assert len(activity) >= COUNT_TWO
         assert any(e["event_type"] == "item_created" for e in activity)
         client.close()
 
@@ -860,7 +862,7 @@ class TestTraceRTMClientActivity:
             client.create_item(f"Item {i}", "FEATURE", "feature")
 
         activity = client.get_agent_activity(agent_id, limit=5)
-        assert len(activity) <= 5
+        assert len(activity) <= COUNT_FIVE
         client.close()
 
     def test_get_agent_activity_no_agent(self, api_client_setup) -> None:  # noqa: ARG002
@@ -958,7 +960,7 @@ class TestFastAPIHealthEndpoint:
     def test_health_check_success(self, fastapi_test_client) -> None:
         """Test health check returns healthy status."""
         response = fastapi_test_client.get("/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["status"] == "healthy"
         assert data["version"] == "1.0.0"
@@ -971,7 +973,7 @@ class TestFastAPIItemEndpoints:
     def test_list_items_empty(self, fastapi_test_client, test_project) -> None:
         """Test listing items when none exist."""
         response = fastapi_test_client.get(f"/api/v1/items?project_id={test_project.id}")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] == 0
         assert data["items"] == []
@@ -979,22 +981,22 @@ class TestFastAPIItemEndpoints:
     def test_list_items_with_data(self, fastapi_test_client, test_project, sample_items) -> None:  # noqa: ARG002
         """Test listing items with sample data."""
         response = fastapi_test_client.get(f"/api/v1/items?project_id={test_project.id}")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
-        assert data["total"] == 3
-        assert len(data["items"]) == 3
+        assert data["total"] == COUNT_THREE
+        assert len(data["items"]) == COUNT_THREE
 
     def test_list_items_pagination(self, fastapi_test_client, test_project, sample_items) -> None:  # noqa: ARG002
         """Test listing items with pagination."""
         response = fastapi_test_client.get(f"/api/v1/items?project_id={test_project.id}&skip=1&limit=2")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
-        assert len(data["items"]) == 2
+        assert len(data["items"]) == COUNT_TWO
 
     def test_get_item_success(self, fastapi_test_client, sample_items) -> None:
         """Test getting specific item."""
         response = fastapi_test_client.get(f"/api/v1/items/{sample_items[0].id}")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["id"] == str(sample_items[0].id)
         assert data["title"] == sample_items[0].title
@@ -1002,7 +1004,7 @@ class TestFastAPIItemEndpoints:
     def test_get_item_not_found(self, fastapi_test_client) -> None:
         """Test getting non-existent item."""
         response = fastapi_test_client.get("/api/v1/items/nonexistent")
-        assert response.status_code == 404
+        assert response.status_code == HTTP_NOT_FOUND
 
 
 class TestFastAPILinkEndpoints:
@@ -1011,22 +1013,22 @@ class TestFastAPILinkEndpoints:
     def test_list_links_empty(self, fastapi_test_client, test_project) -> None:
         """Test listing links when none exist."""
         response = fastapi_test_client.get(f"/api/v1/links?project_id={test_project.id}")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] == 0
 
     def test_list_links_with_data(self, fastapi_test_client, test_project, sample_links) -> None:  # noqa: ARG002
         """Test listing links with sample data."""
         response = fastapi_test_client.get(f"/api/v1/links?project_id={test_project.id}")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
-        assert data["total"] == 2
-        assert len(data["links"]) == 2
+        assert data["total"] == COUNT_TWO
+        assert len(data["links"]) == COUNT_TWO
 
     def test_list_links_pagination(self, fastapi_test_client, test_project, sample_links) -> None:  # noqa: ARG002
         """Test listing links with pagination."""
         response = fastapi_test_client.get(f"/api/v1/links?project_id={test_project.id}&skip=1&limit=1")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert len(data["links"]) == 1
 
@@ -1036,7 +1038,7 @@ class TestFastAPILinkEndpoints:
         update_data = {"link_type": "new_type", "metadata": {"key": "value"}}
 
         response = fastapi_test_client.put(f"/api/v1/links/{link_id}", json=update_data)
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["type"] == "new_type"
         assert data["metadata"] == {"key": "value"}
@@ -1044,7 +1046,7 @@ class TestFastAPILinkEndpoints:
     def test_update_link_not_found(self, fastapi_test_client) -> None:
         """Test updating non-existent link."""
         response = fastapi_test_client.put("/api/v1/links/nonexistent", json={"link_type": "new"})
-        assert response.status_code == 404
+        assert response.status_code == HTTP_NOT_FOUND
 
 
 class TestFastAPIProjectEndpoints:
@@ -1053,7 +1055,7 @@ class TestFastAPIProjectEndpoints:
     def test_list_projects(self, fastapi_test_client, test_project) -> None:  # noqa: ARG002
         """Test listing projects."""
         response = fastapi_test_client.get("/api/v1/projects")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] >= 1
         assert len(data["projects"]) >= 1
@@ -1061,7 +1063,7 @@ class TestFastAPIProjectEndpoints:
     def test_get_project_success(self, fastapi_test_client, test_project) -> None:
         """Test getting specific project."""
         response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["id"] == str(test_project.id)
         assert data["name"] == test_project.name
@@ -1069,7 +1071,7 @@ class TestFastAPIProjectEndpoints:
     def test_get_project_not_found(self, fastapi_test_client) -> None:
         """Test getting non-existent project."""
         response = fastapi_test_client.get("/api/v1/projects/nonexistent")
-        assert response.status_code == 404
+        assert response.status_code == HTTP_NOT_FOUND
 
     def test_create_project(self, fastapi_test_client) -> None:
         """Test creating new project."""
@@ -1080,7 +1082,7 @@ class TestFastAPIProjectEndpoints:
         }
 
         response = fastapi_test_client.post("/api/v1/projects", json=project_data)
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["name"] == "New Project"
         assert data["description"] == "Test Description"
@@ -1090,14 +1092,14 @@ class TestFastAPIProjectEndpoints:
         update_data = {"name": "Updated Name", "description": "Updated Description"}
 
         response = fastapi_test_client.put(f"/api/v1/projects/{test_project.id}", json=update_data)
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["name"] == "Updated Name"
 
     def test_update_project_not_found(self, fastapi_test_client) -> None:
         """Test updating non-existent project."""
         response = fastapi_test_client.put("/api/v1/projects/nonexistent", json={"name": "New"})
-        assert response.status_code == 404
+        assert response.status_code == HTTP_NOT_FOUND
 
     def test_delete_project(self, fastapi_test_client, test_session) -> None:
         """Test deleting project."""
@@ -1107,13 +1109,13 @@ class TestFastAPIProjectEndpoints:
         test_session.commit()
 
         response = fastapi_test_client.delete(f"/api/v1/projects/{project.id}")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert response.json()["success"] is True
 
     def test_delete_project_not_found(self, fastapi_test_client) -> None:
         """Test deleting non-existent project."""
         response = fastapi_test_client.delete("/api/v1/projects/nonexistent")
-        assert response.status_code == 404
+        assert response.status_code == HTTP_NOT_FOUND
 
 
 class TestFastAPIAnalysisEndpoints:
@@ -1154,7 +1156,7 @@ class TestFastAPIExportImportEndpoints:
     def test_export_project_unsupported_format(self, fastapi_test_client, test_project) -> None:
         """Test exporting with unsupported format."""
         response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}/export?format=xml")
-        assert response.status_code == 400
+        assert response.status_code == HTTP_BAD_REQUEST
 
     def test_import_project_json(self, fastapi_test_client, test_project) -> None:
         """Test importing project data."""
@@ -1172,7 +1174,7 @@ class TestFastAPIExportImportEndpoints:
         import_data = {"format": "xml", "data": "<xml></xml>"}
 
         response = fastapi_test_client.post(f"/api/v1/projects/{test_project.id}/import", json=import_data)
-        assert response.status_code == 400
+        assert response.status_code == HTTP_BAD_REQUEST
 
 
 class TestFastAPISyncEndpoints:
@@ -1181,7 +1183,7 @@ class TestFastAPISyncEndpoints:
     def test_get_sync_status(self, fastapi_test_client, test_project) -> None:
         """Test getting sync status."""
         response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}/sync/status")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert "project_id" in data
         assert "status" in data
@@ -1189,7 +1191,7 @@ class TestFastAPISyncEndpoints:
     def test_sync_project(self, fastapi_test_client, test_project) -> None:
         """Test syncing project."""
         response = fastapi_test_client.post(f"/api/v1/projects/{test_project.id}/sync")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["project_id"] == test_project.id
 
@@ -1215,7 +1217,7 @@ class TestFastAPIGraphEndpoints:
             f"/api/v1/projects/{test_project.id}/graph/neighbors"
             f"?item_id={sample_links[0].source_item_id}&direction=both",
         )
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert "neighbors" in data
 
@@ -1224,7 +1226,7 @@ class TestFastAPIGraphEndpoints:
         response = fastapi_test_client.get(
             f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={sample_links[0].source_item_id}&direction=out",
         )
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["direction"] == "out"
 
@@ -1233,7 +1235,7 @@ class TestFastAPIGraphEndpoints:
         response = fastapi_test_client.get(
             f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={sample_links[0].target_item_id}&direction=in",
         )
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["direction"] == "in"
 
@@ -1252,7 +1254,7 @@ class TestApiConfigClass:
         assert config.base_url == "https://api.test.com"
         assert config.token == "test-token"
         assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert config.max_retries == COUNT_THREE
 
     def test_api_config_from_config_manager(self, tmp_path, monkeypatch) -> None:
         """Test creating ApiConfig from ConfigManager."""
@@ -1270,7 +1272,7 @@ class TestApiConfigClass:
         assert config.base_url == "https://custom.api.com"
         assert config.token == "custom-token"
         assert config.timeout == 60.0
-        assert config.max_retries == 5
+        assert config.max_retries == COUNT_FIVE
 
     def test_api_config_defaults(self, tmp_path, monkeypatch) -> None:
         """Test ApiConfig defaults when values not set."""
@@ -1317,7 +1319,7 @@ class TestChangeClass:
         assert result["entity_id"] == "item-123"
         assert result["operation"] == "update"
         assert result["data"] == {"status": "done"}
-        assert result["version"] == 2
+        assert result["version"] == COUNT_TWO
         assert result["client_id"] == "client-1"
 
 
@@ -1340,8 +1342,8 @@ class TestConflictClass:
         conflict = Conflict.from_dict(data)
         assert conflict.conflict_id == "conflict-123"
         assert conflict.entity_type == "item"
-        assert conflict.local_version == 2
-        assert conflict.remote_version == 3
+        assert conflict.local_version == COUNT_TWO
+        assert conflict.remote_version == COUNT_THREE
 
 
 class TestUploadResultClass:
@@ -1397,9 +1399,9 @@ class TestSyncStatusClass:
         }
 
         status = SyncStatus.from_dict(data)
-        assert status.pending_changes == 5
+        assert status.pending_changes == COUNT_FIVE
         assert status.online is True
-        assert status.conflicts_pending == 2
+        assert status.conflicts_pending == COUNT_TWO
 
     def test_sync_status_from_dict_minimal(self) -> None:
         """Test SyncStatus with minimal data."""
@@ -1477,7 +1479,7 @@ class TestApiClientRetryLogic:
             mock_request.return_value = mock_response
 
             response = await client._retry_request("GET", "/status/200")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
         await client.close()
 
@@ -1532,7 +1534,7 @@ class TestApiClientRetryLogic:
                 await client._retry_request("GET", "/test")
 
             # Should have retried
-            assert mock_request.call_count == 2
+            assert mock_request.call_count == COUNT_TWO
 
         await client.close()
 
@@ -1704,7 +1706,7 @@ class TestApiClientSyncOperations:
             mock_request.return_value = mock_response
 
             status = await client.get_sync_status()
-            assert status.pending_changes == 3
+            assert status.pending_changes == COUNT_THREE
             assert status.online is True
 
         await client.close()
@@ -1811,7 +1813,7 @@ class TestErrorHandling:
     async def test_api_error_hierarchy(self) -> None:
         """Test API error class hierarchy."""
         base_error = ApiError("Base error", status_code=500)
-        assert base_error.status_code == 500
+        assert base_error.status_code == HTTP_INTERNAL_SERVER_ERROR
         assert str(base_error) == "Base error"
 
         auth_error = AuthenticationError("Auth failed", status_code=401)

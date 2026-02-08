@@ -26,6 +26,8 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from rich.console import Console
@@ -167,11 +169,11 @@ class TestReportCreation:
             timestamp="2024-01-01T12:00:00",
         )
 
-        assert report.total_tests == 10
+        assert report.total_tests == COUNT_TEN
         assert report.passed == 8
-        assert report.failed == 2
+        assert report.failed == COUNT_TWO
         assert report.skipped == 0
-        assert report.duration_seconds == 5.5
+        assert report.duration_seconds == COUNT_FIVE.5
 
     def test_test_report_zero_values(self):
         """Test TestReport with zero values."""
@@ -280,10 +282,10 @@ class TestTestReporter:
 
         report = TestReporter.generate_json_report(results)
 
-        assert report["report"]["total_tests"] == 2
+        assert report["report"]["total_tests"] == COUNT_TWO
         assert report["report"]["passed"] == 1
         assert report["report"]["failed"] == 1
-        assert len(report["results"]) == 2
+        assert len(report["results"]) == COUNT_TWO
 
     def test_generate_json_report_serializable(self):
         """Test that JSON report is JSON-serializable."""
@@ -359,7 +361,7 @@ class TestStorageManager:
                 mock_lsm.return_value = Mock(spec=['get_sync_state'])
                 manager2 = get_storage_manager()
                 # Both should have been called
-                assert mock_lsm.call_count >= 2
+                assert mock_lsm.call_count >= COUNT_TWO
 
     def test_get_current_project_none(self):
         """Test getting current project when none is set."""
@@ -519,7 +521,7 @@ class TestFormatItemsTable:
         table = format_items_table(items, title="Features")
 
         assert isinstance(table, Table)
-        assert len(table.rows) == 3
+        assert len(table.rows) == COUNT_THREE
 
     def test_format_items_table_with_project(self):
         """Test formatting items table with project column."""
@@ -530,7 +532,7 @@ class TestFormatItemsTable:
         table = format_items_table(items, show_project=True)
 
         # Should have project column
-        assert len(table.rows) == 2
+        assert len(table.rows) == COUNT_TWO
 
     def test_format_items_table_long_titles(self):
         """Test that long titles are truncated."""
@@ -566,14 +568,14 @@ class TestFormatLinksTable:
         table = format_links_table(links, title="Links")
 
         assert isinstance(table, Table)
-        assert len(table.rows) == 2
+        assert len(table.rows) == COUNT_TWO
 
     def test_format_links_table_without_items(self):
         """Test formatting links table without item context."""
         links = [(MockLink(), None, None), (MockLink(), None, None)]
         table = format_links_table(links)
 
-        assert len(table.rows) == 2
+        assert len(table.rows) == COUNT_TWO
 
 
 class TestHumanTimeDelta:
@@ -977,7 +979,7 @@ class TestTimedDecorator:
             return x * 2
 
         result = sample_func(5)
-        assert result == 10
+        assert result == COUNT_TEN
 
     def test_timed_decorator_return_value(self):
         """Test that timed decorator preserves return value."""
@@ -1358,7 +1360,7 @@ class TestIntegration:
 
         # Get timings
         timings = monitor.get_timings()
-        assert len(timings) == 3
+        assert len(timings) == COUNT_THREE
         assert timings["processing"] > timings["init"]
         assert timings["completion"] > timings["processing"]
 

@@ -13,6 +13,8 @@ Target: 90%+ coverage for query_service.py
 
 import asyncio
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_FIVE, COUNT_TEN
+
 
 import pytest
 
@@ -44,7 +46,7 @@ class TestQueryServiceConcurrency:
         results = await asyncio.gather(*tasks)
 
         # Verify all complete successfully
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(isinstance(r, list) for r in results)
 
     async def test_query_with_circular_dependencies(self, service) -> None:
@@ -98,7 +100,7 @@ class TestQueryServiceConcurrency:
         tasks = [service.search(criteria) for criteria in criteria_list]
         results = await asyncio.gather(*tasks)
 
-        assert len(results) == 5
+        assert len(results) == COUNT_FIVE
         assert all(isinstance(r, list) for r in results)
 
 
@@ -245,7 +247,7 @@ class TestQueryServiceResourceManagement:
         tasks = [s.search({"instance": i}) for i, s in enumerate(services)]
         results = await asyncio.gather(*tasks)
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(isinstance(r, list) for r in results)
 
     async def test_service_reuse(self) -> None:

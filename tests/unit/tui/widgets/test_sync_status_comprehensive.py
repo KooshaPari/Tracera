@@ -7,6 +7,8 @@ Coverage target: 80%+ (313 lines total)
 
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -82,7 +84,7 @@ class TestSyncStatusWidgetReactiveUpdates:
 
         widget.pending_changes = 5
 
-        assert widget.pending_changes == 5
+        assert widget.pending_changes == COUNT_FIVE
 
     def test_watch_last_sync(self) -> None:
         """Test watch_last_sync triggers update."""
@@ -103,7 +105,7 @@ class TestSyncStatusWidgetReactiveUpdates:
 
         widget.conflicts_count = 3
 
-        assert widget.conflicts_count == 3
+        assert widget.conflicts_count == COUNT_THREE
 
     def test_watch_last_error(self) -> None:
         """Test watch_last_error triggers update."""
@@ -404,7 +406,7 @@ class TestSyncStatusWidgetSetters:
 
         widget.set_pending_changes(10)
 
-        assert widget.pending_changes == 10
+        assert widget.pending_changes == COUNT_TEN
 
     def test_set_last_sync(self) -> None:
         """Test set_last_sync updates last_sync."""
@@ -421,7 +423,7 @@ class TestSyncStatusWidgetSetters:
 
         widget.set_conflicts(5)
 
-        assert widget.conflicts_count == 5
+        assert widget.conflicts_count == COUNT_FIVE
 
     def test_set_error(self) -> None:
         """Test set_error updates last_error."""
@@ -560,7 +562,7 @@ class TestCompactSyncStatusSetters:
 
         widget.set_conflicts(2)
 
-        assert widget.conflicts_count == 2
+        assert widget.conflicts_count == COUNT_TWO
 
 
 class TestWidgetAvailability:

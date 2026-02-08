@@ -5,6 +5,8 @@ Tests authentication mechanisms, token validation, and access control.
 
 from datetime import UTC, datetime, timezone
 from unittest.mock import MagicMock, patch
+from tests.test_constants import HTTP_OK, HTTP_UNAUTHORIZED
+
 
 import pytest
 from fastapi import HTTPException
@@ -54,7 +56,7 @@ class TestTokenValidation:
             response = client.get("/api/v1/items", params={"project_id": "test"}, headers=headers)
 
             # Should not get 401 Unauthorized
-            assert response.status_code != 401
+            assert response.status_code != HTTP_UNAUTHORIZED
 
     def test_missing_token_rejected(self) -> None:
         """Test that requests without tokens are rejected when auth is enabled."""
@@ -336,7 +338,7 @@ class TestAuthenticationBypass:
 
         # Health check should always be public
         response = client.get("/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
     def test_auth_disabled_mode(self) -> None:
         """Test that all endpoints work when auth is disabled."""
@@ -378,7 +380,7 @@ class TestTokenRefresh:
                 try:
                     response = client.post("/api/auth/refresh", json={"refresh_token": refresh_token})
                     # Should get new token
-                    if response.status_code == 200:
+                    if response.status_code == HTTP_OK:
                         data = response.json()
                         assert "access_token" in data
                 except Exception:

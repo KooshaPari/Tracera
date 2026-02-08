@@ -14,6 +14,8 @@ Target: ~80 tests to bring coverage to 80%+
 import asyncio
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -312,7 +314,7 @@ class TestIntegrationCredentialRepository:
 
         credentials = await credential_repo.get_by_project(project.id, include_global_user_id=user_id)
 
-        assert len(credentials) == 2
+        assert len(credentials) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_get_by_project_empty(self, credential_repo, project) -> None:  # noqa: ARG002
@@ -346,7 +348,7 @@ class TestIntegrationCredentialRepository:
 
         credentials = await credential_repo.list_by_user(user_id)
 
-        assert len(credentials) == 2
+        assert len(credentials) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_list_by_user_with_provider_filter(self, credential_repo) -> None:
@@ -708,7 +710,7 @@ class TestIntegrationMappingRepository:
 
         mappings = await mapping_repo.get_by_tracertm_item(item.id)
 
-        assert len(mappings) == 2
+        assert len(mappings) == COUNT_TWO
 
     # -------------------------------------------------------------------------
     # get_by_external_id() tests
@@ -801,9 +803,9 @@ class TestIntegrationMappingRepository:
         first_page, total = await mapping_repo.list_by_project(project.id, skip=0, limit=2)
         second_page, _ = await mapping_repo.list_by_project(project.id, skip=2, limit=2)
 
-        assert len(first_page) == 2
-        assert len(second_page) == 2
-        assert total == 5
+        assert len(first_page) == COUNT_TWO
+        assert len(second_page) == COUNT_TWO
+        assert total == COUNT_FIVE
 
     # -------------------------------------------------------------------------
     # list_by_credential() tests
@@ -867,7 +869,7 @@ class TestIntegrationMappingRepository:
             )
             await db_session.refresh(mapping)
 
-        assert mapping.consecutive_failures >= 5
+        assert mapping.consecutive_failures >= COUNT_FIVE
         assert mapping.status == "sync_error"
 
     # -------------------------------------------------------------------------
@@ -999,7 +1001,7 @@ class TestIntegrationSyncQueueRepository:
 
         pending = await sync_queue_repo.get_pending(limit=3)
 
-        assert len(pending) == 3
+        assert len(pending) == COUNT_THREE
 
     # -------------------------------------------------------------------------
     # get_retryable() tests
@@ -1109,7 +1111,7 @@ class TestIntegrationSyncQueueRepository:
         assert queue_item.next_retry_at is not None
         # Should be roughly 5 minutes from now
         expected_retry = datetime.now(UTC) + timedelta(seconds=300)
-        assert abs((queue_item.next_retry_at - expected_retry).total_seconds()) < 5
+        assert abs((queue_item.next_retry_at - expected_retry).total_seconds()) < COUNT_FIVE
 
     # -------------------------------------------------------------------------
     # cancel() tests
@@ -1232,8 +1234,8 @@ class TestIntegrationSyncLogRepository:
 
         logs, total = await sync_log_repo.list_by_mapping(mapping.id)
 
-        assert len(logs) == 2
-        assert total == 2
+        assert len(logs) == COUNT_TWO
+        assert total == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_list_by_mapping_with_success_filter(self, sync_log_repo, mapping) -> None:
@@ -1307,9 +1309,9 @@ class TestIntegrationSyncLogRepository:
         first_page, total = await sync_log_repo.list_by_project(project.id, skip=0, limit=2)
         second_page, _ = await sync_log_repo.list_by_project(project.id, skip=2, limit=2)
 
-        assert len(first_page) == 2
-        assert len(second_page) == 2
-        assert total == 5
+        assert len(first_page) == COUNT_TWO
+        assert len(second_page) == COUNT_TWO
+        assert total == COUNT_FIVE
 
 
 # =============================================================================
@@ -1396,8 +1398,8 @@ class TestIntegrationConflictRepository:
 
         conflicts, total = await conflict_repo.list_pending_by_project(project.id)
 
-        assert len(conflicts) == 2
-        assert total == 2
+        assert len(conflicts) == COUNT_TWO
+        assert total == COUNT_TWO
         assert all(c.resolution_status == "pending" for c in conflicts)
 
     @pytest.mark.asyncio
@@ -1587,7 +1589,7 @@ class TestIntegrationRateLimitRepository:
         await db_session.refresh(rate_limit)
 
         assert rate_limit.is_rate_limited is True
-        assert rate_limit.requests_used == 3
+        assert rate_limit.requests_used == COUNT_THREE
 
     # -------------------------------------------------------------------------
     # set_backoff() tests
@@ -1609,7 +1611,7 @@ class TestIntegrationRateLimitRepository:
         assert rate_limit.backoff_until is not None
         # Should be roughly 10 minutes from now
         expected_backoff = datetime.now(UTC) + timedelta(seconds=600)
-        assert abs((rate_limit.backoff_until - expected_backoff).total_seconds()) < 5
+        assert abs((rate_limit.backoff_until - expected_backoff).total_seconds()) < COUNT_FIVE
 
 
 # =============================================================================
@@ -1722,7 +1724,7 @@ class TestIntegrationRepositoryCrossRepository:
 
         # 3. Check pending conflicts
         _pending, total = await conflict_repo.list_pending_by_project(project.id)
-        assert total == 2
+        assert total == COUNT_TWO
 
         # 4. Resolve one conflict
         await conflict_repo.resolve(conflict1.id, "done", "external_wins")

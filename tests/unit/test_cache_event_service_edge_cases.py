@@ -8,6 +8,8 @@ Coverage Goal: Increase coverage by testing edge cases
 import json
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -360,7 +362,7 @@ class TestCacheServiceEdgeCases:
             service = CacheService()
             result = await service.clear_prefix("test")
 
-            assert result == 3
+            assert result == COUNT_THREE
             mock_client.keys.assert_called_once_with("test:*")
 
     @pytest.mark.asyncio
@@ -405,7 +407,7 @@ class TestCacheServiceEdgeCases:
             stats = await service.get_stats()
 
             assert stats.hits == 7
-            assert stats.misses == 3
+            assert stats.misses == COUNT_THREE
             assert stats.hit_rate == 70.0  # 7/10 * 100
             assert stats.evictions == 1
 
@@ -610,11 +612,11 @@ class TestCacheStatsDataclass:
         """Test creating CacheStats instance."""
         stats = CacheStats(hits=10, misses=5, hit_rate=66.67, total_size_bytes=1024, evictions=2)
 
-        assert stats.hits == 10
-        assert stats.misses == 5
+        assert stats.hits == COUNT_TEN
+        assert stats.misses == COUNT_FIVE
         assert stats.hit_rate == 66.67
         assert stats.total_size_bytes == 1024
-        assert stats.evictions == 2
+        assert stats.evictions == COUNT_TWO
 
     def test_cache_stats_zero_values(self) -> None:
         """Test CacheStats with all zero values."""

@@ -1,4 +1,6 @@
 import pytest
+from tests.test_constants import COUNT_TWO
+
 
 from tracertm.models.project import Project
 from tracertm.repositories.link_repository import LinkRepository
@@ -32,7 +34,7 @@ async def test_delete_and_delete_by_item(async_session) -> None:
     await repo.create("proj-1", "a", "c", "tests")
 
     removed_count = await repo.delete_by_item("a")
-    assert removed_count == 2
+    assert removed_count == COUNT_TWO
 
     remaining = await repo.get_by_project("proj-1")
     assert remaining == []

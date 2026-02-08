@@ -13,6 +13,8 @@ Test Count: 40+ tests
 
 from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -93,10 +95,10 @@ class TestStateTransitions:
 
         # Accumulate changes
         widget.pending_changes = 5
-        assert widget.pending_changes == 5
+        assert widget.pending_changes == COUNT_FIVE
 
         widget.pending_changes = 10
-        assert widget.pending_changes == 10
+        assert widget.pending_changes == COUNT_TEN
 
         # Reset
         widget.pending_changes = 0
@@ -109,11 +111,11 @@ class TestStateTransitions:
 
         # Create conflicts
         widget.conflicts_count = 3
-        assert widget.conflicts_count == 3
+        assert widget.conflicts_count == COUNT_THREE
 
         # Resolve one
         widget.conflicts_count = 2
-        assert widget.conflicts_count == 2
+        assert widget.conflicts_count == COUNT_TWO
 
         # Resolve all
         widget.conflicts_count = 0
@@ -538,7 +540,7 @@ class TestErrorRecovery:
         widget.is_syncing = True
         widget.pending_changes = 10
         assert widget.is_syncing is True
-        assert widget.pending_changes == 10
+        assert widget.pending_changes == COUNT_TEN
 
         # Complete sync
         widget.is_syncing = False
@@ -701,7 +703,7 @@ class TestComprehensiveIntegration:
 
         # Step 3: Changes pending
         widget.pending_changes = 5
-        assert widget.pending_changes == 5
+        assert widget.pending_changes == COUNT_FIVE
 
         # Step 4: Sync starts
         widget.is_syncing = True
@@ -727,7 +729,7 @@ class TestComprehensiveIntegration:
         widget.is_syncing = True
         widget.conflicts_count = 3
         widget.last_error = "Conflicts detected"
-        assert widget.conflicts_count == 3
+        assert widget.conflicts_count == COUNT_THREE
         assert widget.last_error is not None
 
         # User resolves conflicts

@@ -9,6 +9,8 @@ Tests:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_NOT_FOUND, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -73,10 +75,10 @@ class TestListProjectsEndpoint:
 
             response = client.get("/api/v1/projects")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert data["total"] == 2
-            assert len(data["projects"]) == 2
+            assert data["total"] == COUNT_TWO
+            assert len(data["projects"]) == COUNT_TWO
             assert data["projects"][0]["id"] == "proj-1"
             assert data["projects"][0]["name"] == "Project 1"
 
@@ -92,10 +94,10 @@ class TestListProjectsEndpoint:
 
             response = client.get("/api/v1/projects?skip=2&limit=3")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert data["total"] == 10
-            assert len(data["projects"]) == 3
+            assert data["total"] == COUNT_TEN
+            assert len(data["projects"]) == COUNT_THREE
             assert data["projects"][0]["id"] == "proj-2"
 
     @pytest.mark.asyncio
@@ -108,7 +110,7 @@ class TestListProjectsEndpoint:
 
             response = client.get("/api/v1/projects")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["total"] == 0
             assert len(data["projects"]) == 0
@@ -133,7 +135,7 @@ class TestGetProjectEndpoint:
 
             response = client.get("/api/v1/projects/proj-123")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == "proj-123"
             assert data["name"] == "Test Project"
@@ -150,7 +152,7 @@ class TestGetProjectEndpoint:
 
             response = client.get("/api/v1/projects/nonexistent")
 
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
             assert "Project not found" in response.json()["detail"]
 
 
@@ -176,7 +178,7 @@ class TestCreateProjectEndpoint:
                 json={"name": "New Project", "description": "New description"},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == "proj-new"
             assert data["name"] == "New Project"
@@ -201,7 +203,7 @@ class TestCreateProjectEndpoint:
                 json={"name": "New Project", "metadata": {"key": "value"}},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["metadata"] == {"key": "value"}
 
@@ -221,7 +223,7 @@ class TestCreateProjectEndpoint:
 
             response = client.post("/api/v1/projects", json={"name": "New Project"})
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["name"] == "New Project"
 
@@ -248,7 +250,7 @@ class TestUpdateProjectEndpoint:
                 json={"name": "Updated Project", "description": "Updated description"},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == "proj-123"
             assert data["name"] == "Updated Project"
@@ -273,7 +275,7 @@ class TestUpdateProjectEndpoint:
                 json={"description": "Updated description"},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["description"] == "Updated description"
 
@@ -290,7 +292,7 @@ class TestUpdateProjectEndpoint:
                 json={"name": "Updated"},
             )
 
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
             assert "Project not found" in response.json()["detail"]
 
     @pytest.mark.asyncio
@@ -312,7 +314,7 @@ class TestUpdateProjectEndpoint:
                 json={"metadata": {"key": "new_value"}},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["metadata"] == {"key": "new_value"}
 
@@ -352,7 +354,7 @@ class TestDeleteProjectEndpoint:
 
                         response = client.delete("/api/v1/projects/proj-123")
 
-                        assert response.status_code == 200
+                        assert response.status_code == HTTP_OK
                         data = response.json()
                         assert data["success"] is True
                         assert "Project deleted successfully" in data["message"]
@@ -367,7 +369,7 @@ class TestDeleteProjectEndpoint:
 
             response = client.delete("/api/v1/projects/nonexistent")
 
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
             assert "Project not found" in response.json()["detail"]
 
     @pytest.mark.asyncio
@@ -412,7 +414,7 @@ class TestDeleteProjectEndpoint:
 
                         response = client.delete("/api/v1/projects/proj-123")
 
-                        assert response.status_code == 200
+                        assert response.status_code == HTTP_OK
                         data = response.json()
                         assert data["success"] is True
                         assert "Project deleted successfully" in data["message"]

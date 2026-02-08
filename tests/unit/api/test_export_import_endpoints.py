@@ -7,6 +7,8 @@ Tests:
 
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_TWO, HTTP_BAD_REQUEST, HTTP_NOT_FOUND, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -70,12 +72,12 @@ class TestExportEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/export?format=json")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["format"] == "json"
             assert data["project"]["id"] == "proj-123"
-            assert len(data["items"]) == 2
-            assert data["item_count"] == 2
+            assert len(data["items"]) == COUNT_TWO
+            assert data["item_count"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_export_csv_success(self, client) -> None:
@@ -93,7 +95,7 @@ class TestExportEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/export?format=csv")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["format"] == "csv"
             assert "content" in data
@@ -115,7 +117,7 @@ class TestExportEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/export?format=markdown")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["format"] == "markdown"
             assert "content" in data
@@ -133,7 +135,7 @@ class TestExportEndpoint:
 
             response = client.get("/api/v1/projects/nonexistent/export?format=json")
 
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
             assert "Project not found" in response.json()["detail"]
 
     @pytest.mark.asyncio
@@ -141,7 +143,7 @@ class TestExportEndpoint:
         """Test exporting with unsupported format returns 400."""
         response = client.get("/api/v1/projects/proj-123/export?format=xml")
 
-        assert response.status_code == 400
+        assert response.status_code == HTTP_BAD_REQUEST
         assert "Unsupported format" in response.json()["detail"]
 
     @pytest.mark.asyncio
@@ -161,7 +163,7 @@ class TestExportEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/export")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["format"] == "json"
 
@@ -196,10 +198,10 @@ class TestImportEndpoint:
                 json={"format": "json", "data": json_data},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["success"] is True
-            assert data["imported_count"] == 2
+            assert data["imported_count"] == COUNT_TWO
             assert data["error_count"] == 0
 
     @pytest.mark.asyncio
@@ -224,7 +226,7 @@ class TestImportEndpoint:
                 json={"format": "csv", "data": csv_data},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["success"] is True
             assert data["imported_count"] == 1
@@ -246,7 +248,7 @@ class TestImportEndpoint:
                 json={"format": "json", "data": invalid_json},
             )
 
-            assert response.status_code == 400
+            assert response.status_code == HTTP_BAD_REQUEST
             assert "Invalid JSON format" in response.json()["detail"]
 
     @pytest.mark.asyncio
@@ -266,7 +268,7 @@ class TestImportEndpoint:
                 json={"format": "json", "data": json_data},
             )
 
-            assert response.status_code == 400
+            assert response.status_code == HTTP_BAD_REQUEST
             assert "Missing 'items' field" in response.json()["detail"]
 
     @pytest.mark.asyncio
@@ -277,7 +279,7 @@ class TestImportEndpoint:
             json={"format": "xml", "data": "<data></data>"},
         )
 
-        assert response.status_code == 400
+        assert response.status_code == HTTP_BAD_REQUEST
         assert "Unsupported format" in response.json()["detail"]
 
     @pytest.mark.asyncio
@@ -307,7 +309,7 @@ class TestImportEndpoint:
                 json={"format": "json", "data": json_data},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["success"] is True
             assert data["imported_count"] == 1

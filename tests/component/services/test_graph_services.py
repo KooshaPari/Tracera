@@ -1,4 +1,6 @@
 import pytest
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
@@ -51,9 +53,9 @@ async def test_impact_analysis_counts_children(async_session) -> None:
     svc = ImpactAnalysisService(async_session)
     result = await svc.analyze_impact("root", max_depth=5)
 
-    assert result.total_affected == 3
-    assert result.max_depth_reached == 2
-    assert result.affected_by_depth[1] == 2
+    assert result.total_affected == COUNT_THREE
+    assert result.max_depth_reached == COUNT_TWO
+    assert result.affected_by_depth[1] == COUNT_TWO
     assert result.affected_by_depth[2] == 1
 
 
@@ -90,7 +92,7 @@ async def test_shortest_path_service_finds_path(async_session) -> None:
 
     assert path.exists is True
     assert path.path == ["a", "b", "c"]
-    assert path.distance == 2
+    assert path.distance == COUNT_TWO
 
 
 @pytest.mark.asyncio

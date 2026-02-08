@@ -10,6 +10,8 @@ Test count: 30+ tests across all functionality
 
 from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_THREE
+
 
 import pytest
 
@@ -758,7 +760,7 @@ class TestSetterMethods:
 
         widget.set_conflicts(5)
 
-        assert widget.conflicts_count == 5
+        assert widget.conflicts_count == COUNT_FIVE
 
     def test_set_error(self) -> None:
         """Test set_error sets error message."""
@@ -874,7 +876,7 @@ class TestCompactSyncStatusIntegration:
 
         widget.set_pending_changes(5)
 
-        assert widget.pending_changes == 5
+        assert widget.pending_changes == COUNT_FIVE
 
     def test_compact_widget_set_conflicts(self) -> None:
         """Test CompactSyncStatus set_conflicts."""
@@ -882,7 +884,7 @@ class TestCompactSyncStatusIntegration:
 
         widget.set_conflicts(3)
 
-        assert widget.conflicts_count == 3
+        assert widget.conflicts_count == COUNT_THREE
 
 
 class TestComplexScenarios:
@@ -1037,7 +1039,7 @@ class TestReactiveWatchers:
 
         widget.pending_changes = 5
 
-        assert widget.pending_changes == 5
+        assert widget.pending_changes == COUNT_FIVE
 
     def test_watch_last_sync_triggers_update(self) -> None:
         """Test last_sync watcher mechanism through reactive."""
@@ -1054,7 +1056,7 @@ class TestReactiveWatchers:
 
         widget.conflicts_count = 3
 
-        assert widget.conflicts_count == 3
+        assert widget.conflicts_count == COUNT_THREE
 
     def test_watch_last_error_triggers_update(self) -> None:
         """Test last_error watcher mechanism through reactive."""

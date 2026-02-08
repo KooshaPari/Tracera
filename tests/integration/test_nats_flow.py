@@ -3,6 +3,8 @@
 import asyncio
 import os
 from typing import Any
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -345,7 +347,7 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
 
         async def failing_handler(event: dict[str, Any]) -> None:  # noqa: ARG001
             nonlocal error_count, success_count
-            if error_count < 2:
+            if error_count < COUNT_TWO:
                 error_count += 1
                 msg = "Test error"
                 raise ValueError(msg)

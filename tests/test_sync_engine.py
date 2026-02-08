@@ -10,6 +10,8 @@ Tests basic functionality of the sync engine including:
 import hashlib
 from pathlib import Path
 from unittest.mock import MagicMock
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -80,7 +82,7 @@ class TestChangeDetector:
 
         # No stored hashes = all files are changed
         changes = detector.detect_changes_in_directory(tmp_path, {})
-        assert len(changes) == 2
+        assert len(changes) == COUNT_TWO
 
         # With correct hashes = no changes
         stored_hashes = {
@@ -187,7 +189,7 @@ class TestSyncEngine:
         assert engine.api == mock_api
         assert engine.storage == mock_storage
         assert not engine._syncing
-        assert engine.max_retries == 3
+        assert engine.max_retries == COUNT_THREE
 
     def test_queue_change(self, mock_db, mock_api, mock_storage) -> None:
         """Test queuing a change."""

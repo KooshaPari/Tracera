@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from types import SimpleNamespace
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -33,9 +35,9 @@ async def test_project_metrics_counts_status_and_view(monkeypatch, async_session
 
     metrics = await svc.project_metrics("proj-1")
 
-    assert metrics["total_items"] == 3
-    assert metrics["by_status"]["done"] == 2
-    assert metrics["by_view"]["FEATURE"] == 2
+    assert metrics["total_items"] == COUNT_THREE
+    assert metrics["by_status"]["done"] == COUNT_TWO
+    assert metrics["by_view"]["FEATURE"] == COUNT_TWO
     assert metrics["completion_rate"] == pytest.approx(66.66, rel=0.1)
 
 
@@ -54,9 +56,9 @@ async def test_team_analytics_counts_agents(monkeypatch, async_session) -> None:
     monkeypatch.setattr(svc.events, "get_by_project", fake_events)
 
     data = await svc.team_analytics("proj-1")
-    assert data["total_agents"] == 2
-    assert data["total_events"] == 3
-    assert data["agent_activity"]["a1"] == 2
+    assert data["total_agents"] == COUNT_TWO
+    assert data["total_events"] == COUNT_THREE
+    assert data["agent_activity"]["a1"] == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -80,8 +82,8 @@ async def test_trend_analysis_filters_by_days(monkeypatch, async_session) -> Non
     monkeypatch.setattr(svc.events, "get_by_project", fake_events)
 
     trend = await svc.trend_analysis("proj-1", days=7)
-    assert trend["total_events"] == 3  # all events returned
-    assert len(trend["daily_events"]) == 2  # only two inside 7-day window
+    assert trend["total_events"] == COUNT_THREE  # all events returned
+    assert len(trend["daily_events"]) == COUNT_TWO  # only two inside 7-day window
 
 
 @pytest.mark.asyncio
@@ -98,7 +100,7 @@ async def test_dependency_metrics_handles_missing_links(monkeypatch, async_sessi
     monkeypatch.setattr(svc.items, "query", fake_query_items)
 
     deps = await svc.dependency_metrics("proj-1")
-    assert deps["total_links"] == 2
+    assert deps["total_links"] == COUNT_TWO
     assert deps["average_links_per_item"] == pytest.approx(1.0)
 
 

@@ -13,6 +13,8 @@ Target Coverage: 90%+ for repository layer
 
 import pytest
 from sqlalchemy.orm import Session
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
@@ -53,7 +55,7 @@ def test_project_create_multiple(db_session: Session) -> None:
 
     # Verify all created
     all_projects = db_session.query(Project).all()
-    assert len(all_projects) >= 3
+    assert len(all_projects) >= COUNT_THREE
 
 
 def test_project_update(db_session: Session) -> None:
@@ -154,7 +156,7 @@ def test_item_create_multiple_in_project(db_session: Session) -> None:
 
     # Verify all created
     found_items = db_session.query(Item).filter_by(project_id=project.id).all()
-    assert len(found_items) == 5
+    assert len(found_items) == COUNT_FIVE
 
 
 def test_item_update_status(db_session: Session) -> None:
@@ -278,7 +280,7 @@ def test_link_create_multiple(db_session: Session) -> None:
 
     # Verify
     all_links = db_session.query(Link).all()
-    assert len(all_links) >= 3
+    assert len(all_links) >= COUNT_THREE
 
 
 def test_link_query_by_source(db_session: Session) -> None:
@@ -457,9 +459,9 @@ def test_query_items_by_status(db_session: Session) -> None:
     in_progress = db_session.query(Item).filter_by(status="in_progress").all()
     done = db_session.query(Item).filter_by(status="done").all()
 
-    assert len(todos) >= 2
-    assert len(in_progress) >= 2
-    assert len(done) >= 2
+    assert len(todos) >= COUNT_TWO
+    assert len(in_progress) >= COUNT_TWO
+    assert len(done) >= COUNT_TWO
 
 
 def test_query_items_by_priority(db_session: Session) -> None:
@@ -553,7 +555,7 @@ def test_count_items_by_project(db_session: Session) -> None:
 
     # Count
     count = db_session.query(Item).filter_by(project_id=project.id).count()
-    assert count == 5
+    assert count == COUNT_FIVE
 
 
 def test_count_links_by_source(db_session: Session) -> None:

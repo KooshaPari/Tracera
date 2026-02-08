@@ -16,6 +16,8 @@ Focus areas:
 
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK, HTTP_TOO_MANY_REQUESTS
+
 
 import httpx
 import pytest
@@ -68,7 +70,7 @@ class TestSyncClientEdgeCases:
 
         assert config.base_url == "https://api.tracertm.io"
         assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert config.max_retries == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_config_from_manager_with_string_timeout(self) -> None:
@@ -89,7 +91,7 @@ class TestSyncClientEdgeCases:
             config = ApiConfig.from_config_manager()
 
         assert config.timeout == 45.5
-        assert config.max_retries == 5
+        assert config.max_retries == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_config_trailing_slash_stripped(self) -> None:
@@ -158,8 +160,8 @@ class TestSyncClientEdgeCases:
             err = exc_info.value
             assert "after 3 retries" in str(err)
             assert isinstance(err, ApiError)
-            assert err.status_code == 500
-            assert mock_request.call_count == 3
+            assert err.status_code == HTTP_INTERNAL_SERVER_ERROR
+            assert mock_request.call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_retry_request_rate_limit_with_retry_after(self) -> None:
@@ -187,7 +189,7 @@ class TestSyncClientEdgeCases:
 
                 result = await client._retry_request("GET", "/test")
 
-                assert result.status_code == 200
+                assert result.status_code == HTTP_OK
                 mock_sleep.assert_called_once_with(2)
 
     @pytest.mark.asyncio
@@ -668,7 +670,7 @@ class TestBulkOperationServiceEdgeCases:
 
         result = service.bulk_delete_items("proj-1", filters, agent_id="agent-1")
 
-        assert result["items_deleted"] == 2
+        assert result["items_deleted"] == COUNT_TWO
         for item in mock_items:
             assert item.deleted_at is not None
 
@@ -1284,7 +1286,7 @@ Some non-table text
 
         result = list_items(temp_dir, "test_project")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     def test_get_item_path_story_pluralization(self, temp_dir) -> None:
         """TC-MP-E23: get_item_path correctly pluralizes 'story'.
@@ -1515,7 +1517,7 @@ Body
         error = RateLimitError("Rate limited", retry_after=120, status_code=429)
 
         assert error.retry_after == 120
-        assert error.status_code == 429
+        assert error.status_code == HTTP_TOO_MANY_REQUESTS
 
     def test_conflict_error_stores_conflicts(self) -> None:
         """TC-MP-E37: ConflictError stores conflict list.

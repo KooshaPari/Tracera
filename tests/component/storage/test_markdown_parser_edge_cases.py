@@ -12,6 +12,8 @@ Tests cover:
 
 from datetime import datetime
 from pathlib import Path
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -274,7 +276,7 @@ Not a checkbox item
 
         item = parse_item_markdown(md_file)
         # Should capture checkbox items
-        assert len(item.acceptance_criteria) >= 4
+        assert len(item.acceptance_criteria) >= COUNT_FOUR
         assert any("Unchecked" in ac for ac in item.acceptance_criteria)
 
     def test_parse_history_table_variations(self, tmp_path: Path) -> None:
@@ -302,7 +304,7 @@ status: todo
         )
 
         item = parse_item_markdown(md_file)
-        assert len(item.history) == 3
+        assert len(item.history) == COUNT_THREE
         assert item.history[0]["version"] == "1"
         # Table parsing may preserve escaped pipes
         assert "pipes" in item.history[1]["changes"]
@@ -455,8 +457,8 @@ counters:
         config = parse_config_yaml(config_file)
         assert config["name"] == "Test Project"
         assert config["settings"]["auto_link"] is True
-        assert len(config["team"]) == 2
-        assert config["counters"]["epic"] == 5
+        assert len(config["team"]) == COUNT_TWO
+        assert config["counters"]["epic"] == COUNT_FIVE
 
     def test_link_data_to_dict_and_from_dict(self) -> None:
         """Test LinkData serialization roundtrip."""
@@ -545,11 +547,11 @@ counters:
 
         # List all
         all_items = list_items(tmp_path, "TestProject")
-        assert len(all_items) == 3
+        assert len(all_items) == COUNT_THREE
 
         # List only epics
         epics = list_items(tmp_path, "TestProject", item_type="epic")
-        assert len(epics) == 2
+        assert len(epics) == COUNT_TWO
         assert all("EPIC" in p.name for p in epics)
 
         # List only stories

@@ -12,6 +12,8 @@ Target: +5% coverage on ProjectBackupService module
 """
 
 from datetime import UTC, datetime, timezone
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine
@@ -334,7 +336,7 @@ class TestRestoreProjectWorkflows:
         new_project_id = service.restore_project(backup_data)
 
         items = sync_db_session.query(Item).filter(Item.project_id == new_project_id).all()
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
         child = next(i for i in items if i.title == "Child")
         parent = next(i for i in items if i.title == "Parent")
@@ -444,11 +446,11 @@ class TestCloneProjectVariations:
 
         # Verify items were cloned
         cloned_items = sync_db_session.query(Item).filter(Item.project_id == cloned_id).all()
-        assert len(cloned_items) == 5
+        assert len(cloned_items) == COUNT_FIVE
 
         # Verify links were cloned
         cloned_links = sync_db_session.query(Link).filter(Link.project_id == cloned_id).all()
-        assert len(cloned_links) == 4
+        assert len(cloned_links) == COUNT_FOUR
 
     def test_clone_without_links(self, sync_db_session, sample_project) -> None:  # noqa: ARG002
         """Test clone with items but without links."""
@@ -463,7 +465,7 @@ class TestCloneProjectVariations:
 
         # Verify items were cloned
         cloned_items = sync_db_session.query(Item).filter(Item.project_id == cloned_id).all()
-        assert len(cloned_items) == 5
+        assert len(cloned_items) == COUNT_FIVE
 
         # Verify no links were cloned
         cloned_links = sync_db_session.query(Link).filter(Link.project_id == cloned_id).all()
@@ -567,7 +569,7 @@ class TestTemplateOperations:
         assert template1_id is not None
         assert template2_id is not None
         assert template3_id is not None
-        assert len({template1_id, template2_id, template3_id}) == 3
+        assert len({template1_id, template2_id, template3_id}) == COUNT_THREE
 
     def test_list_templates_returns_only_templates(self, sync_db_session) -> None:
         """Test that list_templates returns only marked templates."""
@@ -662,7 +664,7 @@ class TestErrorHandlingAndEdgeCases:
         restored_items = sync_db_session.query(Item).filter(Item.project_id == new_id).all()
 
         assert restored.name == "Restored Project"
-        assert len(restored_items) == 5
+        assert len(restored_items) == COUNT_FIVE
 
     def test_clone_independence_from_source(self, sync_db_session) -> None:
         """Test that cloned project is independent from source."""

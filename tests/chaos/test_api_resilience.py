@@ -9,6 +9,8 @@ Uses unittest.mock to simulate httpx failures without a live Go backend.
 
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import httpx
 import pytest
@@ -38,7 +40,7 @@ class TestNetworkTimeoutResilience:
             await go_client.get_item("some-uuid")
 
         # Should have been called 3 times (initial + 2 retries)
-        assert go_client.client.request.await_count == 3
+        assert go_client.client.request.await_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_timeout_recovery_on_second_attempt(self, go_client) -> None:
@@ -57,7 +59,7 @@ class TestNetworkTimeoutResilience:
 
         result = await go_client.get_item("item-1")
         assert result == {"id": "item-1", "title": "Recovered"}
-        assert go_client.client.request.await_count == 2
+        assert go_client.client.request.await_count == COUNT_TWO
 
 
 @pytest.mark.chaos
@@ -73,7 +75,7 @@ class TestNetworkErrorResilience:
             await go_client.search_items("test query")
 
         # 3 attempts total
-        assert go_client.client.request.await_count == 3
+        assert go_client.client.request.await_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_network_recovery_on_third_attempt(self, go_client) -> None:
@@ -93,7 +95,7 @@ class TestNetworkErrorResilience:
 
         result = await go_client.search_items("query")
         assert result == {"items": []}
-        assert go_client.client.request.await_count == 3
+        assert go_client.client.request.await_count == COUNT_THREE
 
 
 @pytest.mark.chaos

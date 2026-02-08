@@ -18,6 +18,8 @@ import pytest
 from sqlalchemy import and_, create_engine, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 from tracertm.models.base import Base
 from tracertm.models.item import Item
@@ -80,7 +82,7 @@ def sample_items(db_session, sample_project):
             title=f"Item {i}",
             view="FEATURE" if i % 2 == 0 else "REQUIREMENT",
             item_type="feature" if i % 2 == 0 else "requirement",
-            status="todo" if i <= 5 else "done",
+            status="todo" if i <= COUNT_FIVE else "done",
             content=f"Content for item {i}",
         )
         db_session.add(item)
@@ -147,27 +149,27 @@ class TestSimpleQueryOperations:
         """Test retrieving all items in project."""
         items = db_session.query(Item).filter_by(project_id=sample_project.id).all()
 
-        assert len(items) == 10
+        assert len(items) == COUNT_TEN
 
     def test_get_items_by_status(self, db_session, sample_project) -> None:
         """Test filtering items by status."""
         items = db_session.query(Item).filter_by(project_id=sample_project.id, status="todo").all()
 
-        assert len(items) == 5
+        assert len(items) == COUNT_FIVE
         assert all(item.status == "todo" for item in items)
 
     def test_get_items_by_view(self, db_session, sample_project) -> None:
         """Test filtering items by view."""
         items = db_session.query(Item).filter_by(project_id=sample_project.id, view="FEATURE").all()
 
-        assert len(items) == 5
+        assert len(items) == COUNT_FIVE
         assert all(item.view == "FEATURE" for item in items)
 
     def test_get_links_by_project(self, db_session, sample_project, sample_links) -> None:  # noqa: ARG002
         """Test retrieving all links in project."""
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
 
-        assert len(links) == 5
+        assert len(links) == COUNT_FIVE
 
     def test_get_links_by_source(self, db_session, sample_items) -> None:
         """Test retrieving links by source item."""
@@ -185,7 +187,7 @@ class TestSimpleQueryOperations:
         """Test retrieving links by type."""
         links = db_session.query(Link).filter_by(project_id=sample_project.id, link_type="depends_on").all()
 
-        assert len(links) == 5
+        assert len(links) == COUNT_FIVE
 
 
 # ============================================================
@@ -289,10 +291,10 @@ class TestAggregationAndGrouping:
 
         results = query.all()
 
-        assert len(results) == 2  # "todo" and "done"
+        assert len(results) == COUNT_TWO  # "todo" and "done"
         status_map = dict(results)
-        assert status_map.get("todo") == 5
-        assert status_map.get("done") == 5
+        assert status_map.get("todo") == COUNT_FIVE
+        assert status_map.get("done") == COUNT_FIVE
 
     def test_count_items_by_view(self, db_session, sample_project) -> None:
         """Test counting items grouped by view."""
@@ -305,7 +307,7 @@ class TestAggregationAndGrouping:
 
         results = query.all()
 
-        assert len(results) == 2  # "FEATURE" and "REQUIREMENT"
+        assert len(results) == COUNT_TWO  # "FEATURE" and "REQUIREMENT"
 
     def test_count_links_by_type(self, db_session, sample_project) -> None:
         """Test counting links grouped by type."""
@@ -345,7 +347,7 @@ class TestAggregationAndGrouping:
 
         results = query.all()
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
 
     def test_max_min_aggregations(self, db_session, sample_project) -> None:
         """Test max and min aggregations."""
@@ -422,8 +424,8 @@ class TestFilteringAndSorting:
             .all()
         )
 
-        assert len(page1) == 3
-        assert len(page2) == 3
+        assert len(page1) == COUNT_THREE
+        assert len(page2) == COUNT_THREE
         # No overlap
         ids1 = {item.id for item in page1}
         ids2 = {item.id for item in page2}
@@ -452,13 +454,13 @@ class TestFilteringAndSorting:
         statuses = ["todo", "done"]
         items = db_session.query(Item).filter(Item.status.in_(statuses), Item.project_id == sample_project.id).all()
 
-        assert len(items) == 10
+        assert len(items) == COUNT_TEN
 
     def test_filter_null_values(self, db_session, sample_project) -> None:
         """Test filtering for null values."""
         items = db_session.query(Item).filter(Item.description.isnot(None), Item.project_id == sample_project.id).all()
 
-        assert len(items) == 10
+        assert len(items) == COUNT_TEN
 
 
 # ============================================================
@@ -610,7 +612,7 @@ class TestBulkOperations:
 
         count = db_session.query(Item).filter(Item.id.like("bulk-%")).count()
 
-        assert count == 10
+        assert count == COUNT_TEN
 
     def test_bulk_update(self, db_session, sample_project) -> None:
         """Test bulk update operation."""
@@ -636,7 +638,7 @@ class TestBulkOperations:
         # Verify update
         updated = db_session.query(Item).filter(Item.id.like("upd-%"), Item.status == "done").count()
 
-        assert updated == 5
+        assert updated == COUNT_FIVE
 
     def test_bulk_delete(self, db_session, sample_project) -> None:
         """Test bulk delete operation."""
@@ -685,7 +687,7 @@ class TestQueryOptimization:
 
         items = query.all()
 
-        assert len(items) == 10
+        assert len(items) == COUNT_TEN
 
     def test_query_with_distinct(self, db_session, sample_project) -> None:
         """Test querying with DISTINCT."""
@@ -693,7 +695,7 @@ class TestQueryOptimization:
 
         results = query.all()
 
-        assert len(results) == 2  # "FEATURE" and "REQUIREMENT"
+        assert len(results) == COUNT_TWO  # "FEATURE" and "REQUIREMENT"
 
     def test_subquery_in_filter(self, db_session, sample_project) -> None:
         """Test filtering with subquery."""
@@ -711,7 +713,7 @@ class TestQueryOptimization:
 
         # All results should have only id and title
         for result in results:
-            assert len(result) == 2
+            assert len(result) == COUNT_TWO
 
 
 # ============================================================
@@ -760,7 +762,7 @@ class TestErrorHandling:
         # Multiple queries in sequence
         for _ in range(5):
             items = db_session.query(Item).filter(Item.project_id == sample_project.id).all()
-            assert len(items) == 10
+            assert len(items) == COUNT_TEN
 
 
 # ============================================================
@@ -813,7 +815,7 @@ class TestComplexQueryScenarios:
 
         results = query.all()
 
-        assert len(results) >= 2
+        assert len(results) >= COUNT_TWO
 
     def test_find_orphan_items(self, db_session, sample_project) -> None:
         """Test finding orphan items (no links)."""

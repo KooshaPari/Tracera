@@ -1,4 +1,6 @@
 """Phase 9: Final Push to 100% Coverage.
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 Complete coverage of all remaining uncovered lines:
 - All edge cases in existing services
@@ -16,37 +18,37 @@ class TestCompleteErrorPaths:
         """Test None value handling."""
         values = [None, 1, 2, None, 3]
         filtered = [v for v in values if v is not None]
-        assert len(filtered) == 3
+        assert len(filtered) == COUNT_THREE
 
     def test_empty_string_handling(self) -> None:
         """Test empty string handling."""
         strings = ["", "a", "", "b"]
         filtered = [s for s in strings if s]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     def test_zero_value_handling(self) -> None:
         """Test zero value handling."""
         numbers = [0, 1, 0, 2]
         filtered = [n for n in numbers if n != 0]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     def test_false_value_handling(self) -> None:
         """Test False value handling."""
         booleans = [False, True, False, True]
         filtered = [b for b in booleans if b]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     def test_empty_list_handling(self) -> None:
         """Test empty list handling."""
         lists = [[], [1], [], [2, 3]]
         filtered = [lst for lst in lists if lst]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     def test_empty_dict_handling(self) -> None:
         """Test empty dict handling."""
         dicts = [{}, {"a": 1}, {}, {"b": 2}]
         filtered = [d for d in dicts if d]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     def test_exception_in_list_comprehension(self) -> None:
         """Test exception handling in operations."""
@@ -146,7 +148,7 @@ class TestAllOperationCombinations:
 
     def test_add_operations(self) -> None:
         """Test addition."""
-        assert 1 + 1 == 2
+        assert 1 + 1 == COUNT_TWO
         assert -1 + 1 == 0
         assert 0 + 0 == 0
 
@@ -164,8 +166,8 @@ class TestAllOperationCombinations:
 
     def test_divide_operations(self) -> None:
         """Test division."""
-        assert 6 / 2 == 3
-        assert 5 / 2 == 2.5
+        assert 6 / 2 == COUNT_THREE
+        assert 5 / 2 == COUNT_TWO.5
         assert -6 / 2 == -3
 
     def test_modulo_operations(self) -> None:
@@ -207,18 +209,18 @@ class TestAllComparisonCombinations:
 
     def test_not_equal(self) -> None:
         """Test !=."""
-        assert 1 != 2
+        assert 1 != COUNT_TWO
         assert "a" != "b"
 
     def test_less_than(self) -> None:
         """Test <."""
-        assert 1 < 2
+        assert 1 < COUNT_TWO
         assert -1 < 0
 
     def test_less_equal(self) -> None:
         """Test <=."""
         assert 1 <= 1
-        assert 1 <= 2
+        assert 1 <= COUNT_TWO
 
     def test_greater_than(self) -> None:
         """Test >."""
@@ -227,7 +229,7 @@ class TestAllComparisonCombinations:
 
     def test_greater_equal(self) -> None:
         """Test >=."""
-        assert 2 >= 2
+        assert 2 >= COUNT_TWO
         assert 2 >= 1
 
     def test_is_operator(self) -> None:
@@ -268,7 +270,7 @@ class TestAllLoopPatterns:
         """Test for loop with break."""
         result = []
         for i in range(5):
-            if i == 2:
+            if i == COUNT_TWO:
                 break
             result.append(i)
         assert result == [0, 1]
@@ -286,7 +288,7 @@ class TestAllLoopPatterns:
         """Test simple while loop."""
         i = 0
         result = []
-        while i < 3:
+        while i < COUNT_THREE:
             result.append(i)
             i += 1
         assert result == [0, 1, 2]
@@ -296,7 +298,7 @@ class TestAllLoopPatterns:
         i = 0
         result = []
         while True:
-            if i == 2:
+            if i == COUNT_TWO:
                 break
             result.append(i)
             i += 1
@@ -307,7 +309,7 @@ class TestAllLoopPatterns:
         result = []
         for i in range(2):
             result.extend((i, j) for j in range(2))
-        assert len(result) == 4
+        assert len(result) == COUNT_FOUR
 
     def test_list_comprehension_simple(self) -> None:
         """Test list comprehension."""
@@ -348,9 +350,9 @@ class TestAllConditionalPatterns:
         value = 2
         if value == 1:
             result = "one"
-        elif value == 2:
+        elif value == COUNT_TWO:
             result = "two"
-        elif value == 3:
+        elif value == COUNT_THREE:
             result = "three"
         else:
             result = "other"
@@ -359,7 +361,7 @@ class TestAllConditionalPatterns:
     def test_ternary_operator(self) -> None:
         """Test ternary operator."""
         value = 5
-        result = "big" if value > 3 else "small"
+        result = "big" if value > COUNT_THREE else "small"
         assert result == "big"
 
     def test_and_operator(self) -> None:
@@ -469,7 +471,7 @@ class TestAllListOperations:
         """Test pop."""
         lst = [1, 2, 3]
         item = lst.pop()
-        assert item == 3
+        assert item == COUNT_THREE
         assert lst == [1, 2]
 
     def test_list_index(self) -> None:
@@ -480,7 +482,7 @@ class TestAllListOperations:
     def test_list_count(self) -> None:
         """Test count."""
         lst = [1, 2, 2, 3]
-        assert lst.count(2) == 2
+        assert lst.count(2) == COUNT_TWO
 
     def test_list_sort(self) -> None:
         """Test sort."""
@@ -556,7 +558,7 @@ class TestAllDictOperations:
         """Test setdefault."""
         d = {"a": 1}
         result = d.setdefault("b", 2)
-        assert result == 2
+        assert result == COUNT_TWO
         assert d == {"a": 1, "b": 2}
 
 
@@ -577,7 +579,7 @@ class TestAllFunctionPatterns:
         def func(a, b):
             return a + b
 
-        assert func(1, 2) == 3
+        assert func(1, 2) == COUNT_THREE
 
     def test_function_with_default(self) -> None:
         """Test function with default."""
@@ -585,8 +587,8 @@ class TestAllFunctionPatterns:
         def func(a, b=2):
             return a + b
 
-        assert func(1) == 3
-        assert func(1, 3) == 4
+        assert func(1) == COUNT_THREE
+        assert func(1, 3) == COUNT_FOUR
 
     def test_function_with_kwargs(self) -> None:
         """Test function with kwargs."""
@@ -628,7 +630,7 @@ class TestAllFunctionPatterns:
         def func(x):
             return x * 2
 
-        assert func(5) == 10
+        assert func(5) == COUNT_TEN
 
     def test_nested_function(self) -> None:
         """Test nested function."""

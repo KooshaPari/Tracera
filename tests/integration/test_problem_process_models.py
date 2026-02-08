@@ -2,6 +2,8 @@
 
 from datetime import UTC, datetime, timezone
 from uuid import uuid4
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -106,7 +108,7 @@ async def test_process_model_crud(async_db_session) -> None:
     assert process.version_number == 1
     stages = process.stages or []
     swimlanes = process.swimlanes or []
-    assert len(stages) == 2
+    assert len(stages) == COUNT_TWO
     assert len(swimlanes) == 1
 
     # Update the process

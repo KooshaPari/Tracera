@@ -13,6 +13,8 @@ Tests cover:
 from pathlib import Path
 from threading import Thread
 from unittest.mock import patch
+from tests.test_constants import COUNT_TEN, COUNT_TWO
+
 
 import pytest
 
@@ -181,7 +183,7 @@ class TestLocalStorageRecovery:
             t.join()
 
         # All should succeed or handle conflicts gracefully
-        assert len(results) + len(errors) == 10
+        assert len(results) + len(errors) == COUNT_TEN
 
         # Due to potential race conditions in counter increment,
         # we may have some duplicates - just verify all completed
@@ -368,7 +370,7 @@ status: todo
         item_1_entries = [e for e in queue if e["entity_id"] == "item-1"]
         assert len(item_1_entries) == 1
         # Should have latest payload
-        assert item_1_entries[0]["payload"]["v"] == 2
+        assert item_1_entries[0]["payload"]["v"] == COUNT_TWO
 
     def test_update_item_preserves_metadata(self, tmp_path: Path) -> None:
         """Test that updating item preserves existing metadata."""
@@ -495,18 +497,18 @@ status: todo
         assert len(epics) == 1
 
         stories = item_storage.list_items(item_type="story")
-        assert len(stories) == 2
+        assert len(stories) == COUNT_TWO
 
         # Filter by status
         todo_items = item_storage.list_items(status="todo")
-        assert len(todo_items) == 2
+        assert len(todo_items) == COUNT_TWO
 
         in_progress = item_storage.list_items(status="in_progress")
         assert len(in_progress) == 1
 
         # Filter by parent
         children = item_storage.list_items(parent_id=str(epic1.id))
-        assert len(children) == 2
+        assert len(children) == COUNT_TWO
 
     def test_list_links_filters(self, tmp_path: Path) -> None:
         """Test list_links with various filters."""

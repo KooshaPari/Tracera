@@ -6,6 +6,8 @@ and token management scenarios.
 
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 
@@ -175,7 +177,7 @@ class TestTokenRevocation:
 
         revoked_count = mock_token_manager.revoke_all_user_tokens(user_id)
 
-        assert revoked_count == 3
+        assert revoked_count == COUNT_THREE
 
     def test_revoked_token_in_blacklist(self, mock_token_manager) -> None:
         """Test that revoked tokens are added to blacklist."""

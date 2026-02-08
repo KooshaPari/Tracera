@@ -5,6 +5,8 @@ Comprehensive test coverage for test coverage traceability operations.
 
 from datetime import datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -330,8 +332,8 @@ class TestCoverageRepositoryList:
         entities = multiple_coverages
 
         coverages, total = await repo.list_by_project(entities["project"].id)
-        assert len(coverages) == 3
-        assert total == 3
+        assert len(coverages) == COUNT_THREE
+        assert total == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_list_by_project_with_pagination(self, db_session: AsyncSession, multiple_coverages) -> None:
@@ -344,8 +346,8 @@ class TestCoverageRepositoryList:
             skip=0,
             limit=2,
         )
-        assert len(coverages) == 2
-        assert total == 3
+        assert len(coverages) == COUNT_TWO
+        assert total == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_list_by_project_filter_by_type(self, db_session: AsyncSession, multiple_coverages) -> None:
@@ -455,7 +457,7 @@ class TestCoverageRepositoryUpdate:
         assert updated is not None
         assert updated.coverage_percentage == 75
         assert updated.notes == "Updated notes"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_coverage_not_found(self, db_session: AsyncSession) -> None:
@@ -480,7 +482,7 @@ class TestCoverageRepositoryUpdate:
         assert verified.verified_by == "verifier_user"
         assert verified.notes == "Verified and approved"
         assert verified.last_verified_at is not None
-        assert verified.version == 2
+        assert verified.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_verify_coverage_logs_activity(self, db_session: AsyncSession, coverage_for_update) -> None:
@@ -492,7 +494,7 @@ class TestCoverageRepositoryUpdate:
 
         activities = await repo.get_activities(coverage.id)
         # Should have creation + verification activities
-        assert len(activities) == 2
+        assert len(activities) == COUNT_TWO
         verify_activity = next(a for a in activities if a.activity_type == "verified")
         assert verify_activity.performed_by == "verifier"
 
@@ -517,7 +519,7 @@ class TestCoverageRepositoryUpdate:
         assert updated is not None
         assert updated.last_test_result == "passed"
         assert updated.last_tested_at is not None
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_test_result_with_timestamp(self, db_session: AsyncSession, coverage_for_update) -> None:
@@ -671,11 +673,11 @@ class TestCoverageRepositoryTraceability:
         matrix = await repo.get_traceability_matrix(entities["project"].id)
 
         assert matrix["project_id"] == entities["project"].id
-        assert matrix["total_requirements"] == 5
-        assert matrix["covered_requirements"] == 3
-        assert matrix["uncovered_requirements"] == 2
+        assert matrix["total_requirements"] == COUNT_FIVE
+        assert matrix["covered_requirements"] == COUNT_THREE
+        assert matrix["uncovered_requirements"] == COUNT_TWO
         assert matrix["coverage_percentage"] == 60.0
-        assert len(matrix["matrix"]) == 5
+        assert len(matrix["matrix"]) == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_get_traceability_matrix_with_test_results(self, db_session: AsyncSession, traceability_setup) -> None:
@@ -695,7 +697,7 @@ class TestCoverageRepositoryTraceability:
         passed = [m for m in covered_items if m["overall_status"] == "passed"]
         failed = [m for m in covered_items if m["overall_status"] == "failed"]
 
-        assert len(passed) == 2
+        assert len(passed) == COUNT_TWO
         assert len(failed) == 1
 
     @pytest.mark.asyncio
@@ -707,10 +709,10 @@ class TestCoverageRepositoryTraceability:
         gaps = await repo.get_coverage_gaps(entities["project"].id)
 
         assert gaps["project_id"] == entities["project"].id
-        assert gaps["total_requirements"] == 5
-        assert gaps["uncovered_count"] == 2
+        assert gaps["total_requirements"] == COUNT_FIVE
+        assert gaps["uncovered_count"] == COUNT_TWO
         assert gaps["coverage_percentage"] == 60.0
-        assert len(gaps["gaps"]) == 2
+        assert len(gaps["gaps"]) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_get_coverage_gaps_sorted_by_priority(self, db_session: AsyncSession, traceability_setup) -> None:
@@ -803,14 +805,14 @@ class TestCoverageRepositoryStats:
         stats = await repo.get_stats(entities["project"].id)
 
         assert stats["project_id"] == entities["project"].id
-        assert stats["total_mappings"] == 5
-        assert stats["by_type"]["direct"] == 2
+        assert stats["total_mappings"] == COUNT_FIVE
+        assert stats["by_type"]["direct"] == COUNT_TWO
         assert stats["by_type"]["partial"] == 1
         assert stats["by_type"]["indirect"] == 1
         assert stats["by_type"]["regression"] == 1
-        assert stats["by_status"]["active"] == 5
-        assert stats["unique_test_cases"] == 3
-        assert stats["unique_requirements"] == 5
+        assert stats["by_status"]["active"] == COUNT_FIVE
+        assert stats["unique_test_cases"] == COUNT_THREE
+        assert stats["unique_requirements"] == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_get_stats_empty_project(self, db_session: AsyncSession) -> None:
@@ -877,11 +879,11 @@ class TestCoverageRepositoryActivities:
 
         activities = await repo.get_activities(coverage.id)
 
-        assert len(activities) >= 3  # created + 2 verifications
+        assert len(activities) >= COUNT_THREE  # created + 2 verifications
         # Newest first
         activity_types = [a.activity_type for a in activities]
         assert "created" in activity_types
-        assert activity_types.count("verified") == 2
+        assert activity_types.count("verified") == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_get_activities_with_limit(self, db_session: AsyncSession, coverage_with_activities) -> None:
@@ -890,7 +892,7 @@ class TestCoverageRepositoryActivities:
         coverage = coverage_with_activities
 
         activities = await repo.get_activities(coverage.id, limit=2)
-        assert len(activities) == 2
+        assert len(activities) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_get_activities_empty(self, db_session: AsyncSession) -> None:
@@ -1011,4 +1013,4 @@ class TestCoverageRepositoryEdgeCases:
         updated = await repo.update(coverage.id)
 
         assert updated is not None
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO

@@ -1,6 +1,8 @@
 """Integration tests for Epic 6: Project Switching & Isolation (Stories 6.3, 6.4)."""
 
 import time
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 
@@ -61,7 +63,7 @@ def test_project_switching_speed(multi_project_setup) -> None:
     config_manager.set("current_project_name", "project-2")
     elapsed = (time.time() - start_time) * 1000  # Convert to ms
 
-    assert elapsed < 500, f"Project switch took {elapsed}ms, expected <500ms"
+    assert elapsed < HTTP_INTERNAL_SERVER_ERROR, f"Project switch took {elapsed}ms, expected <500ms"
 
     # Verify switch
     assert config_manager.get("current_project_id") == project2_id

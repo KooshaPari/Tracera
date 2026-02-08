@@ -5,6 +5,8 @@ Tests:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_TWO, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -62,12 +64,12 @@ class TestAdvancedSearchEndpoint:
                 json={"query": "test"},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["project_id"] == "proj-123"
             assert data["query"] == "test"
-            assert len(data["results"]) == 2
-            assert data["total"] == 2
+            assert len(data["results"]) == COUNT_TWO
+            assert data["total"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_advanced_search_with_filters(self, client) -> None:
@@ -87,7 +89,7 @@ class TestAdvancedSearchEndpoint:
                 json={"filters": filters},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["project_id"] == "proj-123"
             assert len(data["results"]) == 1
@@ -109,7 +111,7 @@ class TestAdvancedSearchEndpoint:
                 json={"query": "test", "filters": {"view": "FEATURE"}},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["query"] == "test"
             assert len(data["results"]) == 1
@@ -129,7 +131,7 @@ class TestAdvancedSearchEndpoint:
                 json={"query": "nonexistent"},
             )
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert len(data["results"]) == 0
             assert data["total"] == 0
@@ -149,10 +151,10 @@ class TestAdvancedSearchEndpoint:
 
             response = client.post("/api/v1/projects/proj-123/search/advanced", json={})
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["query"] is None
-            assert len(data["results"]) == 2
+            assert len(data["results"]) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_advanced_search_response_structure(self, client) -> None:
@@ -166,7 +168,7 @@ class TestAdvancedSearchEndpoint:
 
             response = client.post("/api/v1/projects/proj-123/search/advanced", json={})
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert isinstance(data, dict)
             assert "project_id" in data

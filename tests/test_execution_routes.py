@@ -2,6 +2,8 @@
 
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_TWO, HTTP_BAD_REQUEST, HTTP_NOT_FOUND
+
 
 import pytest
 from fastapi import HTTPException
@@ -193,8 +195,8 @@ async def test_list_executions_success(mock_db, mock_claims, mock_execution) -> 
             db=mock_db,
         )
 
-        assert result.total == 2
-        assert len(result.executions) == 2
+        assert result.total == COUNT_TWO
+        assert len(result.executions) == COUNT_TWO
         assert result.executions[0].id == "exec123"
         assert result.executions[1].id == "exec456"
 
@@ -272,7 +274,7 @@ async def test_get_execution_not_found(mock_db, mock_claims) -> None:
 
         exc = exc_info.value
         assert isinstance(exc, HTTPException)
-        assert getattr(exc, "status_code", None) == 404
+        assert getattr(exc, "status_code", None) == HTTP_NOT_FOUND
 
 
 @pytest.mark.asyncio
@@ -553,4 +555,4 @@ async def test_generate_vhs_tape_no_artifacts(mock_db, mock_claims, mock_executi
 
         exc = exc_info.value
         assert isinstance(exc, HTTPException)
-        assert getattr(exc, "status_code", None) == 400
+        assert getattr(exc, "status_code", None) == HTTP_BAD_REQUEST

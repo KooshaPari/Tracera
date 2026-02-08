@@ -1,6 +1,8 @@
 import asyncio
 from datetime import UTC, datetime, timezone
 from typing import Never
+from tests.test_constants import COUNT_TWO
+
 
 import httpx
 import pytest
@@ -90,7 +92,7 @@ async def test_get_status_success() -> None:
 
     client = _client_with(handler)
     status = await client.get_sync_status()
-    assert status.pending_changes == 2
+    assert status.pending_changes == COUNT_TWO
     assert status.online is True
     assert status.conflicts_pending == 1
 

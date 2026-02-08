@@ -10,6 +10,8 @@ Tests full workflow including:
 
 import pytest
 import pytest_asyncio
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 from tracertm.models.project import Project
 from tracertm.repositories.blockchain_repository import VersionBlockRepository
@@ -147,7 +149,7 @@ class TestChainGrowth:
         )
 
         assert new_block is not None
-        assert new_block.version_number == 2
+        assert new_block.version_number == COUNT_TWO
         assert new_block.previous_block_id == genesis.block_id
         assert new_block.change_type == "update"
 
@@ -174,7 +176,7 @@ class TestChainGrowth:
 
         chain = await repo.get_chain_index(db_session, "GROW-001", "document")
         assert chain is not None
-        assert chain.chain_length == 4  # 1 genesis + 3 updates
+        assert chain.chain_length == COUNT_FOUR  # 1 genesis + 3 updates
 
     @pytest.mark.asyncio
     async def test_chain_head_updated(self, db_session, chain_with_genesis) -> None:
@@ -280,8 +282,8 @@ class TestChainTraversal:
         )
 
         # Should return blocks newest first
-        assert len(chain) == 5
-        assert chain[0].version_number == 5  # Newest
+        assert len(chain) == COUNT_FIVE
+        assert chain[0].version_number == COUNT_FIVE  # Newest
         assert chain[-1].version_number == 1  # Genesis
 
     @pytest.mark.asyncio
@@ -318,9 +320,9 @@ class TestChainTraversal:
             limit=3,
         )
 
-        assert len(chain) == 3
-        assert chain[0].version_number == 5
-        assert chain[-1].version_number == 3
+        assert len(chain) == COUNT_THREE
+        assert chain[0].version_number == COUNT_FIVE
+        assert chain[-1].version_number == COUNT_THREE
 
 
 class TestChainIntegrity:
@@ -442,7 +444,7 @@ class TestMultipleChains:
         chain_b = await repo.get_chain_index(db_session, "CHAIN-B", "type-b")
         assert chain_a is not None
         assert chain_b is not None
-        assert chain_a.chain_length == 2
+        assert chain_a.chain_length == COUNT_TWO
         assert chain_b.chain_length == 1
 
     @pytest.mark.asyncio

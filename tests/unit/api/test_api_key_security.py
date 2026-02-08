@@ -5,6 +5,8 @@ Tests for API key generation, validation, rotation, and security.
 
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -310,7 +312,7 @@ class TestAPIKeyRevocation:
 
         revoked_count = mock_api_key_manager.revoke_all("user123")
 
-        assert revoked_count == 3
+        assert revoked_count == COUNT_THREE
 
 
 class TestAPIKeyMetadata:
@@ -374,7 +376,7 @@ class TestAPIKeyListAndManagement:
 
         keys = mock_api_key_manager.list_keys("user123")
 
-        assert len(keys) == 2
+        assert len(keys) == COUNT_TWO
 
     def test_api_key_masking_in_response(self, mock_api_key_manager) -> None:
         """Test that API keys are masked in responses."""
@@ -406,7 +408,7 @@ class TestAPIKeyListAndManagement:
         details = mock_api_key_manager.get_key_details("key_1")
 
         assert details["name"] == "Production Server"
-        assert len(details["scopes"]) == 2
+        assert len(details["scopes"]) == COUNT_TWO
 
     def test_delete_api_key(self, mock_api_key_manager) -> None:
         """Test deleting an API key."""

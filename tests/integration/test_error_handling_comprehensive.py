@@ -8,6 +8,8 @@ Target: +3-4% coverage (40-55 tests)
 
 import pytest
 from sqlalchemy.exc import IntegrityError, OperationalError
+from tests.test_constants import COUNT_FIVE, COUNT_THREE
+
 
 from tracertm.models.event import Event
 from tracertm.models.item import Item
@@ -472,7 +474,7 @@ class TestTimeoutAndRetryExhaustion:
 
         # Verify all created
         count = initialized_db.query(Item).filter(Item.id.startswith("BATCH-NEW-")).count()
-        assert count == 5
+        assert count == COUNT_FIVE
 
 
 class TestTransactionRollbackScenarios:
@@ -638,7 +640,7 @@ class TestCascadingErrorHandling:
 
         # Verify items exist
         item_count = sync_db_session.query(Item).filter_by(project_id="cascade-delete").count()
-        assert item_count == 3
+        assert item_count == COUNT_THREE
 
     @pytest.mark.integration
     def test_constraint_violation_cascade(self, initialized_db) -> None:

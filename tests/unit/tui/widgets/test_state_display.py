@@ -10,6 +10,8 @@ Tests cover:
 """
 
 import pytest
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 try:
     from textual.widgets import DataTable  # type: ignore[import-untyped]
@@ -120,7 +122,7 @@ class TestStateDisplayWidgetDataManipulation:
             widget.add_row("CODE", "20", "15")
             widget.add_row("TEST", "8", "3")
             if hasattr(widget, "row_count"):
-                assert widget.row_count == 3
+                assert widget.row_count == COUNT_THREE
 
     def test_clear_widget(self) -> None:
         """Test clearing all rows."""
@@ -309,7 +311,7 @@ class TestStateDisplayWidgetIntegration:
             widget.add_row("CODE", "22", "16")
 
             if hasattr(widget, "row_count"):
-                assert widget.row_count == 2
+                assert widget.row_count == COUNT_TWO
 
     def test_incremental_updates(self) -> None:
         """Test incremental state updates."""
@@ -322,7 +324,7 @@ class TestStateDisplayWidgetIntegration:
             widget.add_row("TEST", "3", "1")
 
             if hasattr(widget, "row_count"):
-                assert widget.row_count == 3
+                assert widget.row_count == COUNT_THREE
 
     def test_complete_state_display(self) -> None:
         """Test displaying complete project state."""
@@ -461,7 +463,7 @@ class TestStateDisplayWidgetPerformance:
                 widget.add_row("CODE", "20", "15")
 
             if hasattr(widget, "row_count"):
-                assert widget.row_count == 2
+                assert widget.row_count == COUNT_TWO
 
     def test_large_numbers(self) -> None:
         """Test displaying large numbers."""
@@ -534,4 +536,4 @@ class TestStateDisplayWidgetDataFormats:
             widget.add_row("FEATURE", "10", "5 active")
             widget.add_row("CODE", "20 total", "15")
             if hasattr(widget, "row_count"):
-                assert widget.row_count == 2
+                assert widget.row_count == COUNT_TWO

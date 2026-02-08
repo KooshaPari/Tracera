@@ -9,6 +9,8 @@ Tests:
 
 import time
 from itertools import starmap
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 import pytest_asyncio
@@ -53,7 +55,7 @@ class TestMerkleTreePerformance:
         assert root != ""
         assert len(structure["leaves"]) == 10000
         # Should complete in under 5 seconds
-        assert elapsed < 5.0, f"Tree build took {elapsed:.3f}s, expected < 5.0s"
+        assert elapsed < COUNT_FIVE.0, f"Tree build took {elapsed:.3f}s, expected < COUNT_FIVE.0s"
 
     def test_merkle_proof_generation_batch(self, baseline_repo) -> None:
         """Test generating proofs for all items in a large tree."""
@@ -70,7 +72,7 @@ class TestMerkleTreePerformance:
         assert len(proofs) == 1000
         assert all(p is not None for p in proofs)
         # Should generate 1000 proofs in under 2 seconds
-        assert elapsed < 2.0, f"Proof generation took {elapsed:.3f}s, expected < 2.0s"
+        assert elapsed < COUNT_TWO.0, f"Proof generation took {elapsed:.3f}s, expected < COUNT_TWO.0s"
 
     def test_merkle_proof_verification_batch(self, baseline_repo) -> None:
         """Test verifying proofs for all items in a large tree."""
@@ -187,9 +189,9 @@ class TestDatabasePerformance:
         elapsed = time.perf_counter() - start
 
         assert baseline is not None
-        assert baseline.items_count == 500
+        assert baseline.items_count == HTTP_INTERNAL_SERVER_ERROR
         # Should complete in under 5 seconds
-        assert elapsed < 5.0, f"Baseline creation took {elapsed:.3f}s, expected < 5.0s"
+        assert elapsed < COUNT_FIVE.0, f"Baseline creation took {elapsed:.3f}s, expected < COUNT_FIVE.0s"
 
     @pytest.mark.asyncio
     async def test_chain_growth_100_blocks(self, db_session, large_project) -> None:
@@ -230,7 +232,7 @@ class TestDatabasePerformance:
         assert chain.chain_length == 100
 
         # Should complete in under 10 seconds
-        assert elapsed < 10.0, f"Chain growth took {elapsed:.3f}s, expected < 10.0s"
+        assert elapsed < COUNT_TEN.0, f"Chain growth took {elapsed:.3f}s, expected < COUNT_TEN.0s"
 
     @pytest.mark.asyncio
     async def test_chain_retrieval_100_blocks(self, db_session, large_project) -> None:
@@ -316,7 +318,7 @@ class TestDatabasePerformance:
         assert is_valid is True
         assert broken == []
         # Should verify in under 2 seconds
-        assert elapsed < 2.0, f"Chain verification took {elapsed:.3f}s, expected < 2.0s"
+        assert elapsed < COUNT_TWO.0, f"Chain verification took {elapsed:.3f}s, expected < COUNT_TWO.0s"
 
 
 class TestMemoryUsage:
@@ -359,7 +361,7 @@ class TestMemoryUsage:
         size_kb = len(structure_json) / 1024
 
         # For 1000 items, structure should be under 500KB
-        assert size_kb < 500, f"Structure size {size_kb:.1f}KB exceeds 500KB limit"
+        assert size_kb < HTTP_INTERNAL_SERVER_ERROR, f"Structure size {size_kb:.1f}KB exceeds 500KB limit"
 
 
 class TestScalabilityLimits:

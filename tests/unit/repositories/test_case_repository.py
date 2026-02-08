@@ -22,6 +22,8 @@ Tests for:
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -236,7 +238,7 @@ async def test_list_all_basic(db_session: AsyncSession) -> None:
 
     cases = await repo.list_all(project_id=project.id)
 
-    assert len(cases) == 3
+    assert len(cases) == COUNT_THREE
 
 
 @pytest.mark.unit
@@ -390,8 +392,8 @@ async def test_list_all_pagination(db_session: AsyncSession) -> None:
     page1 = await repo.list_all(project_id=project.id, limit=5, offset=0)
     page2 = await repo.list_all(project_id=project.id, limit=5, offset=5)
 
-    assert len(page1) == 5
-    assert len(page2) == 5
+    assert len(page1) == COUNT_FIVE
+    assert len(page2) == COUNT_FIVE
 
 
 # ============================================================================
@@ -414,7 +416,7 @@ async def test_count_basic(db_session: AsyncSession) -> None:
 
     count = await repo.count(project_id=project.id)
 
-    assert count == 2
+    assert count == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -461,7 +463,7 @@ async def test_update_basic(db_session: AsyncSession) -> None:
 
     assert updated.title == "Updated Title"
     assert updated.description == "New description"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -787,7 +789,7 @@ async def test_count_by_type(db_session: AsyncSession) -> None:
 
     counts = await repo.count_by_type(project.id)
 
-    assert len(counts) >= 2
+    assert len(counts) >= COUNT_TWO
 
 
 @pytest.mark.unit
@@ -805,7 +807,7 @@ async def test_count_by_priority(db_session: AsyncSession) -> None:
 
     counts = await repo.count_by_priority(project.id)
 
-    assert len(counts) >= 2
+    assert len(counts) >= COUNT_TWO
 
 
 @pytest.mark.unit
@@ -823,7 +825,7 @@ async def test_count_by_automation_status(db_session: AsyncSession) -> None:
 
     counts = await repo.count_by_automation_status(project.id)
 
-    assert len(counts) >= 2
+    assert len(counts) >= COUNT_TWO
 
 
 @pytest.mark.unit
@@ -844,8 +846,8 @@ async def test_get_execution_summary(db_session: AsyncSession) -> None:
 
     summary = await repo.get_execution_summary(project.id)
 
-    assert summary["total_runs"] == 3
-    assert summary["total_passed"] == 2
+    assert summary["total_runs"] == COUNT_THREE
+    assert summary["total_passed"] == COUNT_TWO
     assert summary["total_failed"] == 1
 
 
@@ -870,6 +872,6 @@ async def test_get_activities(db_session: AsyncSession) -> None:
     activities = await repo.get_activities(tc.id)
 
     # Should have "created" and "status_transition" activities
-    assert len(activities) >= 2
+    assert len(activities) >= COUNT_TWO
     activity_types = [a.activity_type for a in activities]
     assert "created" in activity_types

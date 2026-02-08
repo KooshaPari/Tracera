@@ -17,6 +17,8 @@ Total: 100+ comprehensive error path tests
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from tests.test_constants import COUNT_TWO
+
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
@@ -508,7 +510,7 @@ class TestConstraintViolations:
         db_session.commit()
         # Allow but document as potential deduplication target
         assert (
-            db_session.query(Link).filter_by(source_item_id="dup-link-src", target_item_id="dup-link-tgt").count() == 2
+            db_session.query(Link).filter_by(source_item_id="dup-link-src", target_item_id="dup-link-tgt").count() == COUNT_TWO
         )
 
     def test_invalid_project_foreign_key(self, db_session: Session) -> None:
@@ -812,4 +814,4 @@ class TestConflictResolution:
         item.item_metadata["version"] = 2
         db_session.commit()
 
-        assert item.item_metadata["version"] == 2
+        assert item.item_metadata["version"] == COUNT_TWO

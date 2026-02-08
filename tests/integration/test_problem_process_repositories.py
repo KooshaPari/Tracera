@@ -1,6 +1,8 @@
 """Integration tests for Problem and Process repositories."""
 
 from uuid import uuid4
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -107,7 +109,7 @@ async def test_problem_repository_stats(async_db_session) -> None:
     status_counts = await repo.count_by_status(str(project.id))
     priority_counts = await repo.count_by_priority(str(project.id))
 
-    assert status_counts["open"] == 2
+    assert status_counts["open"] == COUNT_TWO
     assert status_counts["closed"] == 1
     assert priority_counts["critical"] == 1
     assert priority_counts["high"] == 1
@@ -147,7 +149,7 @@ async def test_process_repository_crud(async_db_session) -> None:
     assert process.process_number is not None
     assert process.name == "Repository Test Process"
     assert process.status == "draft"  # Default status
-    assert len(process.stages or []) == 2
+    assert len(process.stages or []) == COUNT_TWO
     assert len(process.swimlanes or []) == 1
 
     # Get by ID
@@ -212,7 +214,7 @@ async def test_process_repository_stats(async_db_session) -> None:
     status_counts = await repo.count_by_status(str(project.id))
     category_counts = await repo.count_by_category(str(project.id))
 
-    assert status_counts["active"] == 2
+    assert status_counts["active"] == COUNT_TWO
     assert status_counts["draft"] == 1
-    assert category_counts["operational"] == 2
+    assert category_counts["operational"] == COUNT_TWO
     assert category_counts["support"] == 1

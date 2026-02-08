@@ -13,6 +13,8 @@ Focuses on:
 import asyncio
 import threading
 from typing import Never
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import text
@@ -60,7 +62,7 @@ class TestConcurrencyThreadSafety:
                 call_counts[op_id] = call_counts.get(op_id, 0) + 1
                 count = call_counts[op_id]
 
-            if count < 2:
+            if count < COUNT_TWO:
                 msg = f"Operation {op_id} retry {count}"
                 raise ConcurrencyError(msg)
             return f"success_{op_id}"
@@ -70,10 +72,10 @@ class TestConcurrencyThreadSafety:
             update_with_retry(lambda op_id=i: operation_with_id(op_id)) for i in range(10)
         ])
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(r.startswith("success_") for r in results)
         # Each operation should have been called twice
-        assert all(count >= 2 for count in call_counts.values())
+        assert all(count >= COUNT_TWO for count in call_counts.values())
 
     @pytest.mark.asyncio
     async def test_race_condition_with_shared_state(self) -> None:
@@ -110,8 +112,8 @@ class TestConcurrencyThreadSafety:
 
         # All should eventually succeed
         successful = [r for r in results if not isinstance(r, Exception)]
-        assert len(successful) == 10, f"Expected 10 successful, got {len(successful)}"
-        assert shared_counter["value"] == 10
+        assert len(successful) == COUNT_TEN, f"Expected 10 successful, got {len(successful)}"
+        assert shared_counter["value"] == COUNT_TEN
         # Should have detected some conflicts due to concurrent access
         assert conflicts["count"] > 0, "Expected some version conflicts"
 
@@ -170,9 +172,9 @@ class TestConcurrencyTimeouts:
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Fast operations should succeed
-        assert sum(1 for r in results[:5] if not isinstance(r, Exception)) == 5
+        assert sum(1 for r in results[:5] if not isinstance(r, Exception)) == COUNT_FIVE
         # Slow operations should timeout
-        assert sum(1 for r in results[5:] if isinstance(r, asyncio.TimeoutError)) == 5
+        assert sum(1 for r in results[5:] if isinstance(r, asyncio.TimeoutError)) == COUNT_FIVE
 
 
 class TestConcurrencyCancellation:
@@ -200,7 +202,7 @@ class TestConcurrencyCancellation:
             await task
 
         # Should have been cancelled early
-        assert call_count <= 3
+        assert call_count <= COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_cancel_multiple_operations(self) -> None:
@@ -221,7 +223,7 @@ class TestConcurrencyCancellation:
 
         # All should be cancelled (CancelledError is raised and captured as exception)
         cancelled_count = sum(1 for r in results if isinstance(r, asyncio.CancelledError))
-        assert cancelled_count == 10, f"Expected all 10 to be cancelled, got {cancelled_count}"
+        assert cancelled_count == COUNT_TEN, f"Expected all 10 to be cancelled, got {cancelled_count}"
 
 
 # ==============================================================================
@@ -281,7 +283,7 @@ class TestDatabaseConnectionPool:
 
         # Pool should be reusing connections (some IDs should repeat)
         # This is implementation-dependent, so we just verify connections work
-        assert len(connection_ids) == 5
+        assert len(connection_ids) == COUNT_FIVE
 
     def test_pool_concurrent_access(self, tmp_path) -> None:
         """Test concurrent access to connection pool."""
@@ -529,7 +531,7 @@ class TestDatabaseContextManagers:
 
             with engine.connect() as conn2:
                 result2 = conn2.execute(text("SELECT 2"))
-                assert result2.scalar() == 2
+                assert result2.scalar() == COUNT_TWO
 
 
 class TestDatabaseConcurrentAccess:
@@ -744,7 +746,7 @@ class TestConcurrentDatabaseOperations:
             update_with_retry(lambda i=i: database_operation_with_retry(i), max_retries=3) for i in range(10)
         ])
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert sorted(results) == list(range(10))
 
     @pytest.mark.asyncio

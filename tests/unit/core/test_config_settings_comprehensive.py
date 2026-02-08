@@ -21,6 +21,8 @@ Test areas:
 import os
 from pathlib import Path
 from unittest.mock import patch
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, HTTP_OK
+
 
 import pytest
 import yaml
@@ -93,7 +95,7 @@ class TestDatabaseConfigInitialization:
         assert config.username == "tracertm"
         assert config.password == "tracertm"
         assert config.pool_size == 20
-        assert config.max_overflow == 10
+        assert config.max_overflow == COUNT_TEN
 
     @pytest.mark.unit
     def test_database_config_custom_host(self) -> None:
@@ -663,7 +665,7 @@ class TestDatabaseSettingsExtended:
 
         # Maximum
         s2 = DatabaseSettings(max_overflow=200)
-        assert s2.max_overflow == 200
+        assert s2.max_overflow == HTTP_OK
 
 
 class TestTraceSettingsExtended:
@@ -795,7 +797,7 @@ class TestConfigManagerInit:
         assert config.current_project_id is None
         assert config.default_view == "FEATURE"
         assert config.output_format == "table"
-        assert config.max_agents == 4
+        assert config.max_agents == COUNT_FOUR
         assert config.log_level == "INFO"
 
 

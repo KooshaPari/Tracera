@@ -8,6 +8,8 @@ Tests for:
 
 from datetime import UTC, datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -192,7 +194,7 @@ async def test_list_runs_basic(db_session: AsyncSession) -> None:
 
     runs = await repo.list_runs(project_id=str(project.id))
 
-    assert len(runs) == 3
+    assert len(runs) == COUNT_THREE
 
 
 @pytest.mark.unit
@@ -213,7 +215,7 @@ async def test_list_runs_filters_by_project(db_session: AsyncSession) -> None:
     runs1 = await repo.list_runs(project_id=str(project1.id))
     runs2 = await repo.list_runs(project_id=str(project2.id))
 
-    assert len(runs1) == 2
+    assert len(runs1) == COUNT_TWO
     assert len(runs2) == 1
 
 
@@ -262,7 +264,7 @@ async def test_list_runs_filter_by_workflow_name(db_session: AsyncSession) -> No
     data_sync_runs = await repo.list_runs(project_id=str(project.id), workflow_name="data_sync")
     analysis_runs = await repo.list_runs(project_id=str(project.id), workflow_name="analysis")
 
-    assert len(data_sync_runs) == 2
+    assert len(data_sync_runs) == COUNT_TWO
     assert len(analysis_runs) == 1
     assert all(run.workflow_name == "data_sync" for run in data_sync_runs)
     assert all(run.workflow_name == "analysis" for run in analysis_runs)
@@ -283,7 +285,7 @@ async def test_list_runs_pagination_limit(db_session: AsyncSession) -> None:
 
     runs = await repo.list_runs(project_id=str(project.id), limit=5)
 
-    assert len(runs) == 5
+    assert len(runs) == COUNT_FIVE
 
 
 @pytest.mark.unit
@@ -301,7 +303,7 @@ async def test_list_runs_pagination_offset(db_session: AsyncSession) -> None:
 
     runs = await repo.list_runs(project_id=str(project.id), limit=5, offset=5)
 
-    assert len(runs) == 5
+    assert len(runs) == COUNT_FIVE
 
 
 @pytest.mark.unit

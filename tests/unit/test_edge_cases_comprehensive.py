@@ -17,6 +17,8 @@ from datetime import UTC, datetime
 from typing import Any, Never, cast
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
+from tests.test_constants import COUNT_TEN, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,7 +70,7 @@ class TestStringBoundaryConditions:
             view="requirements",
             item_type="req",
         )
-        assert len(item.title) == 500
+        assert len(item.title) == HTTP_INTERNAL_SERVER_ERROR
         assert item.title == max_length_title
 
     def test_unicode_characters_in_title(self) -> None:
@@ -519,7 +521,7 @@ class TestConcurrencyEdgeCases:
         tasks = [simulate_update(f"item_{i}") for i in range(10)]
         results = await asyncio.gather(*tasks)
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(r.startswith("updated_") for r in results)
 
     @pytest.mark.asyncio
@@ -798,7 +800,7 @@ class TestStringEncodingEdgeCases:
             view="requirements",
             item_type="req",
         )
-        assert item.title.count("\n") == 2
+        assert item.title.count("\n") == COUNT_TWO
 
     def test_carriage_return_characters(self) -> None:
         """Test string with carriage return characters."""
@@ -810,7 +812,7 @@ class TestStringEncodingEdgeCases:
             view="requirements",
             item_type="req",
         )
-        assert item.title.count("\r") == 2
+        assert item.title.count("\r") == COUNT_TWO
 
     def test_mixed_line_endings(self) -> None:
         """Test string with mixed line endings."""

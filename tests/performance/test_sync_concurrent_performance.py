@@ -15,6 +15,8 @@ import asyncio
 import time
 from datetime import UTC, datetime
 from typing import Never
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.orm.exc import StaleDataError
@@ -45,7 +47,7 @@ class TestChangeDetectorPerformance:
         hash_value = ChangeDetector.compute_hash(content)
         elapsed = time.time() - start_time
 
-        assert elapsed < 0.01, "Hash should be computed in < 10ms"
+        assert elapsed < 0.01, "Hash should be computed in < COUNT_TENms"
         assert len(hash_value) == 64  # SHA-256 hex digest
 
     def test_hash_computation_large_content(self) -> None:
@@ -150,7 +152,7 @@ class TestRetryWithBackoffPerformance:
         elapsed = time.time() - start_time
 
         assert result == "success"
-        assert call_count == 2
+        assert call_count == COUNT_TWO
         # Should wait initial_delay before retry
         assert elapsed >= 0.05, "Should wait for backoff"
         assert elapsed < 0.15, "Total wait should be reasonable"
@@ -169,7 +171,7 @@ class TestRetryWithBackoffPerformance:
         with pytest.raises(ConcurrencyError):
             operation()
 
-        assert call_count == 3  # Initial + 2 retries
+        assert call_count == COUNT_THREE  # Initial + 2 retries
 
     def test_retry_exponential_backoff(self) -> None:
         """Test exponential backoff timing."""
@@ -178,7 +180,7 @@ class TestRetryWithBackoffPerformance:
         @retry_with_backoff(max_retries=3, initial_delay=0.01, exponential_base=2.0, jitter=False)
         def operation() -> str:
             call_times.append(time.time())
-            if len(call_times) < 4:
+            if len(call_times) < COUNT_FOUR:
                 msg = "Conflict"
                 raise StaleDataError(msg)
             return "success"
@@ -188,7 +190,7 @@ class TestRetryWithBackoffPerformance:
         elapsed = time.time() - start_time
 
         assert result == "success"
-        assert len(call_times) == 4
+        assert len(call_times) == COUNT_FOUR
 
         # Check that delays increase exponentially
         delays = [call_times[i] - call_times[i - 1] for i in range(1, len(call_times))]
@@ -206,7 +208,7 @@ class TestRetryWithBackoffPerformance:
             nonlocal call_count
             call_times.append(time.time())
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "Conflict"
                 raise StaleDataError(msg)
             return "success"
@@ -216,7 +218,7 @@ class TestRetryWithBackoffPerformance:
         elapsed = time.time() - start_time
 
         assert result == "success"
-        assert len(call_times) == 3
+        assert len(call_times) == COUNT_THREE
 
         # With jitter, timing should be variable
         delay1 = call_times[1] - call_times[0]
@@ -269,7 +271,7 @@ class TestRetryWithBackoffPerformance:
                 call_counts[op_id] = 0
             call_counts[op_id] += 1
 
-            if call_counts[op_id] < 2:
+            if call_counts[op_id] < COUNT_TWO:
                 msg = "Conflict"
                 raise StaleDataError(msg)
             return f"success-{op_id}"
@@ -282,7 +284,7 @@ class TestRetryWithBackoffPerformance:
             except Exception:
                 pass
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(f"success-{i}" in results for i in range(10))
 
 
@@ -320,7 +322,7 @@ class TestSyncQueuePerformance:
         state.pending_changes = 10
         state.status = SyncStatus.SYNCING
 
-        assert state.pending_changes == 10
+        assert state.pending_changes == COUNT_TEN
         assert state.status == SyncStatus.SYNCING
 
     @pytest.mark.asyncio
@@ -348,7 +350,7 @@ class TestSyncQueuePerformance:
         )
 
         assert result.success is False
-        assert len(result.conflicts) == 2
+        assert len(result.conflicts) == COUNT_TWO
         assert len(result.errors) == 1
 
 
@@ -387,7 +389,7 @@ class TestConcurrentOperationsPerformance:
                     operation_states[op_id] = 0
                 operation_states[op_id] += 1
 
-                if operation_states[op_id] < 2:
+                if operation_states[op_id] < COUNT_TWO:
                     if attempt < max_retries:
                         await asyncio.sleep(delay)
                         delay *= 2.0
@@ -403,9 +405,9 @@ class TestConcurrentOperationsPerformance:
         results = await asyncio.gather(*[operation(i) for i in range(10)])
         elapsed = time.time() - start_time
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         # With retries, should still be reasonably fast
-        assert elapsed < 2.0
+        assert elapsed < COUNT_TWO.0
 
     @pytest.mark.asyncio
     async def test_sync_throughput(self) -> None:
@@ -448,8 +450,8 @@ class TestConcurrentOperationsPerformance:
         stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_increase = sum(stat.size_diff for stat in stats) / (1024 * 1024)
 
-        # 100 operations * 1KB should use < 5MB
-        assert total_increase < 5.0
+        # 100 operations * 1KB should use < COUNT_FIVEMB
+        assert total_increase < COUNT_FIVE.0
 
     @pytest.mark.asyncio
     async def test_batched_sync_operations(self) -> None:

@@ -15,6 +15,8 @@ Routes tested:
 
 import json
 from unittest.mock import AsyncMock, patch
+from tests.test_constants import HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -89,7 +91,7 @@ class TestRouteValidation:
                 response = client.request(route["method"], route["path"], headers=headers)
 
             # Main assertion - status code must be less than 500 (no server errors)
-            assert response.status_code < 500, (
+            assert response.status_code < HTTP_INTERNAL_SERVER_ERROR, (
                 f"{route['method']} {route['path']} returned {response.status_code}: {response.text[:200]}"
             )
             assert response.status_code > 0, f"{route['method']} {route['path']} did not respond"
@@ -128,7 +130,7 @@ class TestRouteValidation:
 
         # Assertions - CORS headers should be present for WebSocket
         # Note: If endpoint doesn't support CORS, we still verify response is not 500+
-        assert response.status_code < 500, f"WebSocket CORS preflight returned {response.status_code}"
+        assert response.status_code < HTTP_INTERNAL_SERVER_ERROR, f"WebSocket CORS preflight returned {response.status_code}"
 
         if cors_origin:
             assert cors_credentials == "true", "CORS credentials should allow true"
@@ -171,7 +173,7 @@ class TestRouteValidation:
                     response = client.request(route["method"], route["path"], headers=headers)
 
                 # Success = responded without 5xx error
-                is_success = response.status_code < 500
+                is_success = response.status_code < HTTP_INTERNAL_SERVER_ERROR
                 results.append({
                     "route": route["path"],
                     "method": route["method"],
@@ -209,7 +211,7 @@ class TestRouteValidation:
         """Test health endpoint returns expected response structure."""
         response = client.get("/health")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
 
         # Verify expected fields
@@ -238,7 +240,7 @@ class TestRouteValidation:
 
                 # Should return 4xx error or success (depends on mock)
                 # Main thing is it doesn't crash with 500
-                assert response.status_code < 500, f"{route} returned 500+ without auth: {response.status_code}"
+                assert response.status_code < HTTP_INTERNAL_SERVER_ERROR, f"{route} returned 500+ without auth: {response.status_code}"
 
             except Exception as e:
                 # Exception is OK if it's about missing auth
@@ -264,8 +266,8 @@ class TestRouteValidation:
 
         for route in test_routes:
             response = client.get(route, headers=headers)
-            assert response.status_code < 500, f"{route} returned server error: {response.status_code}"
+            assert response.status_code < HTTP_INTERNAL_SERVER_ERROR, f"{route} returned server error: {response.status_code}"
 
             # If 2xx or 3xx, should have content-type header
-            if response.status_code < 400:
+            if response.status_code < HTTP_BAD_REQUEST:
                 assert "content-type" in response.headers, f"{route} response missing content-type"

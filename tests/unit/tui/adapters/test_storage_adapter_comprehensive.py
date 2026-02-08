@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -127,7 +129,7 @@ class TestStorageAdapterItemOperations:
         adapter = StorageAdapter()
         results = adapter.list_items(project, item_type="epic", status="todo")
 
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
         assert results[0] == mock_item1
         mock_item_storage.list_items.assert_called_once_with(item_type="epic", status="todo", parent_id=None)
 
@@ -249,7 +251,7 @@ class TestStorageAdapterLinkOperations:
         adapter = StorageAdapter()
         results = adapter.list_links(project, link_type="implements")
 
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
         mock_item_storage.list_links.assert_called_once_with(source_id=None, target_id=None, link_type="implements")
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
@@ -311,7 +313,7 @@ class TestStorageAdapterSearchOperations:
         adapter = StorageAdapter()
         results = adapter.search_items("auth", project_id="proj-123")
 
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
         mock_storage.search_items.assert_called_once_with("auth", "proj-123")
 
 
@@ -345,7 +347,7 @@ class TestStorageAdapterSyncOperations:
         result = adapter.get_sync_status()
 
         assert result.status == SyncStatus.IDLE
-        assert result.pending_changes == 2
+        assert result.pending_changes == COUNT_TWO
         assert result.last_sync is None
 
     @pytest.mark.asyncio
@@ -367,8 +369,8 @@ class TestStorageAdapterSyncOperations:
         result = await adapter.trigger_sync(force=True)
 
         assert result["success"] is True
-        assert result["entities_synced"] == 10
-        assert callback.call_count >= 2  # Starting and completion notifications
+        assert result["entities_synced"] == COUNT_TEN
+        assert callback.call_count >= COUNT_TWO  # Starting and completion notifications
 
     @pytest.mark.asyncio
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
@@ -401,7 +403,7 @@ class TestStorageAdapterSyncOperations:
 
         assert result["success"] is False
         assert "Network error" in result["error"]
-        assert callback.call_count >= 2  # Starting and error notifications
+        assert callback.call_count >= COUNT_TWO  # Starting and error notifications
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
     def test_get_pending_changes_count(self, mock_storage_class) -> None:
@@ -413,7 +415,7 @@ class TestStorageAdapterSyncOperations:
         adapter = StorageAdapter()
         result = adapter.get_pending_changes_count()
 
-        assert result == 3
+        assert result == COUNT_THREE
 
 
 class TestStorageAdapterConflictOperations:
@@ -439,7 +441,7 @@ class TestStorageAdapterConflictOperations:
         adapter = StorageAdapter(sync_engine=mock_sync_engine)
         results = adapter.get_unresolved_conflicts()
 
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
         mock_session.close.assert_called_once()
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
@@ -471,7 +473,7 @@ class TestStorageAdapterConflictOperations:
         adapter = StorageAdapter(sync_engine=mock_sync_engine)
         count = adapter.get_conflict_count()
 
-        assert count == 3
+        assert count == COUNT_THREE
 
 
 class TestStorageAdapterStatistics:
@@ -499,8 +501,8 @@ class TestStorageAdapterStatistics:
         stats = adapter.get_project_stats(project)
 
         assert stats["total_items"] == 38  # 5+10+8+15
-        assert stats["items_by_type"]["epic"] == 5
-        assert stats["items_by_type"]["story"] == 10
+        assert stats["items_by_type"]["epic"] == COUNT_FIVE
+        assert stats["items_by_type"]["story"] == COUNT_TEN
         assert stats["items_by_type"]["test"] == 8
         assert stats["items_by_type"]["task"] == 15
         assert stats["total_links"] == 20
@@ -953,7 +955,7 @@ class TestStorageAdapterSyncOperationsExtended:
         result = await adapter.trigger_sync()
 
         assert result["success"] is True
-        assert result["conflicts"] == 2
+        assert result["conflicts"] == COUNT_TWO
 
     @pytest.mark.asyncio
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
@@ -1062,10 +1064,10 @@ class TestStorageAdapterCallbackUnregister:
         unregister2 = adapter.on_sync_status_change(callback2)
         unregister3 = adapter.on_sync_status_change(callback3)
 
-        assert len(adapter._sync_status_callbacks) == 3
+        assert len(adapter._sync_status_callbacks) == COUNT_THREE
 
         unregister2()
-        assert len(adapter._sync_status_callbacks) == 2
+        assert len(adapter._sync_status_callbacks) == COUNT_TWO
         assert callback2 not in adapter._sync_status_callbacks
 
         unregister1()

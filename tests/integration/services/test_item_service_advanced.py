@@ -14,6 +14,8 @@ Target: 40+ tests with 95%+ coverage of ItemService and ItemRepository
 """
 
 import time
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine, func, select
@@ -143,7 +145,7 @@ class TestComplexQueries:
                 title=f"Item {i}",
                 view="FEATURE" if i % 2 == 0 else "TEST",
                 item_type="feature",
-                status="done" if i > 5 else "todo",
+                status="done" if i > COUNT_FIVE else "todo",
                 priority="high" if i > 7 else "low",
             )
             db_session.add(item)
@@ -187,8 +189,8 @@ class TestComplexQueries:
         # Get page 2 (items 10-19)
         page2 = repo.get_by_project(sample_project.id, limit=10, offset=10)
 
-        assert len(page1) == 10
-        assert len(page2) == 10
+        assert len(page1) == COUNT_TEN
+        assert len(page2) == COUNT_TEN
         assert page1[0].id != page2[0].id
 
     def test_hierarchical_query_ancestors(self, db_session, sample_project) -> None:
@@ -234,7 +236,7 @@ class TestComplexQueries:
         result = db_session.execute(query)
         ancestors = result.scalars().all()
 
-        assert len(ancestors) == 2
+        assert len(ancestors) == COUNT_TWO
         assert any(a.id == "h-root" for a in ancestors)
         assert any(a.id == "h-child" for a in ancestors)
 
@@ -260,7 +262,7 @@ class TestComplexQueries:
         items = repo.get_by_view(sample_project.id, view="FEATURE")
 
         assert all(item.view == "FEATURE" for item in items)
-        assert len(items) == 3  # 3 statuses
+        assert len(items) == COUNT_THREE  # 3 statuses
 
     def test_query_with_metadata_filter(self, db_session, sample_project) -> None:
         """Test querying items by metadata."""
@@ -311,7 +313,7 @@ class TestComplexQueries:
         result = db_session.execute(query)
         items = result.scalars().all()
 
-        assert len(items) == 5
+        assert len(items) == COUNT_FIVE
 
     def test_count_items_by_status(self, db_session, sample_project) -> None:
         """Test counting items grouped by status."""
@@ -334,9 +336,9 @@ class TestComplexQueries:
         result = db_session.execute(query)
         counts = dict(result.all())
 
-        assert counts.get("todo", 0) == 2
+        assert counts.get("todo", 0) == COUNT_TWO
         assert counts.get("in_progress", 0) == 1
-        assert counts.get("done", 0) == 3
+        assert counts.get("done", 0) == COUNT_THREE
 
     def test_query_items_by_owner(self, db_session, sample_project) -> None:
         """Test querying items by owner."""
@@ -359,7 +361,7 @@ class TestComplexQueries:
         result = db_session.execute(query)
         items = result.scalars().all()
 
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
         assert all(item.owner == "alice" for item in items)
 
     def test_list_items_with_view_filter(self, db_session, sample_project) -> None:
@@ -413,7 +415,7 @@ class TestConcurrentModifications:
 
         # Update with correct version
         updated = repo.update("lock-test-1", expected_version=1, status="in_progress")
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
         # Try to update again with old version - should fail
         with pytest.raises(ConcurrencyError):
@@ -466,7 +468,7 @@ class TestConcurrentModifications:
             item_metadata={"key": "new_value", "new_key": "new_value"},
         )
 
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
         assert updated.item_metadata["key"] == "new_value"
         assert updated.item_metadata["new_key"] == "new_value"
 
@@ -497,7 +499,7 @@ class TestConcurrentModifications:
             owner="alice",
         )
 
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
         assert updated.status == "in_progress"
         assert updated.priority == "high"
         assert updated.owner == "alice"
@@ -776,7 +778,7 @@ class TestPerformance:
         elapsed = time.time() - start
 
         # Should complete in reasonable time
-        assert elapsed < 10.0
+        assert elapsed < COUNT_TEN.0
 
         # Verify all items were created
         all_items = repo.get_by_project(sample_project.id, limit=200)
@@ -811,7 +813,7 @@ class TestPerformance:
                 repo.update(f"update-perf-{i:04d}", expected_version=item.version, priority="high")
         elapsed = time.time() - start
 
-        assert elapsed < 10.0
+        assert elapsed < COUNT_TEN.0
 
     def test_complex_hierarchy_query(self, db_session, sample_project) -> None:
         """Test querying complex hierarchy."""
@@ -848,7 +850,7 @@ class TestPerformance:
         children = repo.get_children("perf-root")
         elapsed = time.time() - start
 
-        assert len(children) == 10
+        assert len(children) == COUNT_TEN
         assert elapsed < 0.5
 
     def test_get_descendants_large_tree(self, db_session, sample_project) -> None:
@@ -1139,7 +1141,7 @@ class TestLinksAndRelationships:
 
         # Verify links exist
         links = db_session.query(Link).filter_by(source_item_id="source-with-links").all()
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
     def test_get_items_by_link_type(self, db_session, sample_project) -> None:
         """Test getting items by link type."""
@@ -1173,7 +1175,7 @@ class TestLinksAndRelationships:
         # Query links
         depends_on_links = db_session.query(Link).filter_by(source_item_id="link-item-0", link_type="depends_on").all()
 
-        assert len(depends_on_links) == 2
+        assert len(depends_on_links) == COUNT_TWO
 
     def test_bidirectional_links(self, db_session, sample_project) -> None:
         """Test creating bidirectional links between items."""

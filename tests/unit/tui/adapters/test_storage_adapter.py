@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -314,7 +316,7 @@ class TestSyncOperations:
             result = adapter.get_sync_status()
 
             assert result.last_sync is None
-            assert result.pending_changes == 2
+            assert result.pending_changes == COUNT_TWO
             assert result.status == SyncStatus.IDLE
 
     @pytest.mark.asyncio
@@ -331,7 +333,7 @@ class TestSyncOperations:
         result = await storage_adapter.trigger_sync()
 
         assert result["success"] is True
-        assert result["entities_synced"] == 10
+        assert result["entities_synced"] == COUNT_TEN
         assert len(callback_states) >= 1  # At least one callback
 
     @pytest.mark.asyncio
@@ -365,7 +367,7 @@ class TestSyncOperations:
 
         result = storage_adapter.get_pending_changes_count()
 
-        assert result == 5
+        assert result == COUNT_FIVE
 
 
 class TestConflictOperations:
@@ -399,7 +401,7 @@ class TestConflictOperations:
 
             result = storage_adapter.get_conflict_count()
 
-            assert result == 3
+            assert result == COUNT_THREE
 
 
 class TestReactiveCallbacks:

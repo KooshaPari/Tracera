@@ -6,6 +6,8 @@ import asyncio
 from datetime import datetime
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -62,7 +64,7 @@ class TestUpdateWithRetry:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "version conflict"
                 raise ConcurrencyError(msg)
             return "success"
@@ -71,7 +73,7 @@ class TestUpdateWithRetry:
             result = await update_with_retry(flaky_fn, max_retries=3, base_delay=0.01)
 
         assert result == "success"
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_update_with_retry_max_retries_exceeded(self) -> None:
@@ -108,7 +110,7 @@ class TestUpdateWithRetry:
             await update_with_retry(always_fails, max_retries=3, base_delay=0.1)
 
         # Should have slept twice (before retry 2 and 3)
-        assert len(sleep_calls) == 2
+        assert len(sleep_calls) == COUNT_TWO
         # First sleep should be base_delay + jitter
         assert 0.1 <= sleep_calls[0] <= 0.12  # 0.1 + up to 10% jitter
         # Second sleep should be 2*base_delay + jitter

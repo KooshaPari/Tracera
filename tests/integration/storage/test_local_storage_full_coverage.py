@@ -20,6 +20,8 @@ import time
 from collections.abc import Generator
 from pathlib import Path
 from typing import cast
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
+
 
 import pytest
 import yaml
@@ -525,7 +527,7 @@ class TestItemCRUD:
         item_storage.create_item(title="Item 2", item_type="story")
 
         items = item_storage.list_items()
-        assert len(items) >= 2
+        assert len(items) >= COUNT_TWO
 
     def test_list_items_filters_by_type(self, temp_base_dir) -> None:
         """Test listing items filtered by type."""
@@ -603,7 +605,7 @@ class TestLinkManagement:
         item_storage.create_link(str(item1.id), str(item3.id), "depends_on")
 
         links = item_storage.list_links(source_id=str(item1.id))
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
         assert all(link.source_item_id == item1.id for link in links)
 
     def test_list_links_by_type(self, temp_base_dir) -> None:
@@ -763,7 +765,7 @@ class TestSyncQueue:
         storage_manager.queue_sync("item", "item-2", "update", {"title": "Item 2"})
 
         queue = storage_manager.get_sync_queue()
-        assert len(queue) >= 2
+        assert len(queue) >= COUNT_TWO
 
     def test_clear_sync_queue_entry(self, storage_manager) -> None:
         """Test removing entry from sync queue."""
@@ -783,7 +785,7 @@ class TestSyncQueue:
             storage_manager.queue_sync("item", f"item-{i}", "create", {})
 
         queue = storage_manager.get_sync_queue(limit=10)
-        assert len(queue) == 10
+        assert len(queue) == COUNT_TEN
 
     def test_sync_queue_payload_json(self, storage_manager) -> None:
         """Test that sync queue stores payload as JSON."""
@@ -1113,7 +1115,7 @@ class TestConcurrentAccess:
         for thread in threads:
             thread.join()
 
-        assert len(created_items) == 5
+        assert len(created_items) == COUNT_FIVE
 
     def test_concurrent_item_updates(self, temp_base_dir) -> None:
         """Test updating items concurrently."""
@@ -1267,10 +1269,10 @@ class TestIntegration:
 
         # Verify
         epic_stories = item_storage.list_items(item_type="story", parent_id=str(epic.id))
-        assert len(epic_stories) == 2
+        assert len(epic_stories) == COUNT_TWO
 
         links = item_storage.list_links(source_id=str(epic.id))
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
     def test_full_workflow_project_lifecycle(self, temp_base_dir) -> None:
         """Test complete project lifecycle."""
@@ -1311,7 +1313,7 @@ class TestIntegration:
 
         # List items
         items = item_storage.list_items(item_type="task")
-        assert len(items) >= 2
+        assert len(items) >= COUNT_TWO
 
         # Search
         results = manager.search_items("Task", project_id=project_id)

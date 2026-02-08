@@ -6,6 +6,8 @@ Verifies that applications handle slow networks gracefully and recover within SL
 
 import logging
 import time
+from tests.test_constants import HTTP_OK
+
 
 import httpx
 import pytest
@@ -155,7 +157,7 @@ async def test_backend_api_latency(
     async with httpx.AsyncClient(timeout=30.0) as client:
         # Baseline
         response = await client.get(f"{go_backend_proxy}/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         logger.info("Baseline backend health check OK")
 
         # Inject latency
@@ -171,7 +173,7 @@ async def test_backend_api_latency(
         response = await client.get(f"{go_backend_proxy}/health")
         latency_request_time = time.time() - start
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert latency_request_time >= 1.0, "Expected request to be delayed"
         logger.info(f"Health check completed with latency in {latency_request_time:.2f}s")
 
@@ -185,7 +187,7 @@ async def test_backend_api_latency(
         # Verify recovery
         recovery_start = time.time()
         response = await client.get(f"{go_backend_proxy}/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
         assert_recovery_within_target(recovery_start)
 

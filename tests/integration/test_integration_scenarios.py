@@ -37,6 +37,8 @@ Total Target: 80-120 comprehensive integration scenario tests
 
 from typing import cast
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+
 
 import pytest
 from sqlalchemy.orm import Session
@@ -134,7 +136,7 @@ class TestProjectCreationAndSetup:
 
         # Verify items were created
         retrieved_items = sync_db_session.query(Item).filter_by(project_id=project.id).all()
-        assert len(retrieved_items) == 5
+        assert len(retrieved_items) == COUNT_FIVE
 
     def test_project_hierarchical_items(self, sync_db_session: Session) -> None:
         """Test creating hierarchical item structure."""
@@ -180,7 +182,7 @@ class TestProjectCreationAndSetup:
         retrieved_children = sync_db_session.query(Item).filter_by(parent_id=parent.id).all()
 
         assert retrieved_parent is not None
-        assert len(retrieved_children) == 3
+        assert len(retrieved_children) == COUNT_THREE
         for child in retrieved_children:
             assert child.parent_item_id == parent.id
 
@@ -266,7 +268,7 @@ class TestItemLinksAndDependencies:
 
         # Verify all links
         all_links = sync_db_session.query(Link).all()
-        assert len(all_links) == 3
+        assert len(all_links) == COUNT_THREE
 
     def test_change_link_type(self, sync_db_session: Session) -> None:
         """Test changing link type from depends_on to relates_to."""
@@ -371,7 +373,7 @@ class TestBulkOperations:
 
         # Verify updates
         in_progress = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_IN_PROGRESS).count()
-        assert in_progress == 10
+        assert in_progress == COUNT_TEN
 
     def test_bulk_delete_items(self, sync_db_session: Session) -> None:
         """Test bulk deleting items."""
@@ -424,7 +426,7 @@ class TestMultiProjectWorkflows:
 
         # Verify all projects
         all_projects = sync_db_session.query(Project).all()
-        assert len(all_projects) >= 5
+        assert len(all_projects) >= COUNT_FIVE
 
     def test_cross_project_item_organization(self, sync_db_session: Session) -> None:
         """Test organizing items across multiple projects."""
@@ -452,8 +454,8 @@ class TestMultiProjectWorkflows:
         project1_items = sync_db_session.query(Item).filter_by(project_id=project1.id).count()
         project2_items = sync_db_session.query(Item).filter_by(project_id=project2.id).count()
 
-        assert project1_items == 10
-        assert project2_items == 10
+        assert project1_items == COUNT_TEN
+        assert project2_items == COUNT_TEN
 
 
 # ============================================================================
@@ -624,7 +626,7 @@ class TestCascadingStatusUpdates:
 
         # Verify children still exist with their own status
         retrieved_children = sync_db_session.query(Item).filter_by(parent_id=parent.id).all()
-        assert len(retrieved_children) == 3
+        assert len(retrieved_children) == COUNT_THREE
 
     def test_parent_with_mixed_child_statuses(self, sync_db_session: Session) -> None:
         """Test parent with children in different states."""
@@ -854,7 +856,7 @@ class TestImpactAnalysisWorkflows:
 
         impacted_items = find_dependents(str(items[0].id), sync_db_session)
         # Should find B, C, D
-        assert len(impacted_items) >= 3
+        assert len(impacted_items) >= COUNT_THREE
 
 
 # ============================================================================
@@ -965,8 +967,8 @@ class TestConcurrentItemAccess:
         in_progress = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_IN_PROGRESS).count()
         completed = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_COMPLETED).count()
 
-        assert in_progress == 10
-        assert completed == 10
+        assert in_progress == COUNT_TEN
+        assert completed == COUNT_TEN
 
 
 class TestConflictResolution:
@@ -1048,7 +1050,7 @@ class TestLargeScaleOperations:
 
         # Verify count
         count = sync_db_session.query(Item).filter_by(project_id=project.id).count()
-        assert count == 500
+        assert count == HTTP_INTERNAL_SERVER_ERROR
 
     def test_query_performance_on_large_dataset(self, sync_db_session: Session) -> None:
         """Test query performance on large dataset."""
@@ -1078,7 +1080,7 @@ class TestLargeScaleOperations:
 
         # Query 2: By project
         project_items = sync_db_session.query(Item).filter_by(project_id=project.id).count()
-        assert project_items == 200
+        assert project_items == HTTP_OK
 
         # Query 3: Combined filter
         results = sync_db_session.query(Item).filter_by(project_id=project.id, status=ITEM_STATUS_IN_PROGRESS).all()
@@ -1353,7 +1355,7 @@ class TestWorkflowIntegration:
 
         # Verify state
         in_progress = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_IN_PROGRESS).count()
-        assert in_progress == 3
+        assert in_progress == COUNT_THREE
 
         total_links = sync_db_session.query(Link).count()
         assert total_links == len(all_items) - 1

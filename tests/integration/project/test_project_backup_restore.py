@@ -1,6 +1,8 @@
 """Integration tests for Epic 6: Project Backup & Restore (Story 6.6, FR53)."""
 
 import pytest
+from tests.test_constants import COUNT_TWO
+
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
@@ -84,7 +86,7 @@ def test_project_backup(project_with_data_setup) -> None:
         assert "items" in backup_data
         assert "links" in backup_data
         assert backup_data["project"]["id"] == project_id
-        assert len(backup_data["items"]) == 2
+        assert len(backup_data["items"]) == COUNT_TWO
         assert len(backup_data["links"]) == 1
 
 
@@ -111,7 +113,7 @@ def test_project_restore(project_with_data_setup) -> None:
 
         # Verify items restored
         items = session.query(Item).filter(Item.project_id == new_project_id).all()
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
         # Verify links restored
         links = session.query(Link).filter(Link.project_id == new_project_id).all()
@@ -138,7 +140,7 @@ def test_project_clone(project_with_data_setup) -> None:
 
         # Verify items cloned
         items = session.query(Item).filter(Item.project_id == new_project_id).all()
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
         # Verify links cloned
         links = session.query(Link).filter(Link.project_id == new_project_id).all()

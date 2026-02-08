@@ -6,6 +6,8 @@ and mock HTTP interactions for sync operations.
 
 from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TWO, HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK, HTTP_UNAUTHORIZED
+
 
 import pytest
 from httpx import AsyncClient, ConnectError, Request, Response
@@ -109,7 +111,7 @@ class TestApiClientRequestResponse:
         )
 
         # Assert
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert response.json()["status"] == "ok"
         mock_httpx_client.get.assert_called_once()
 
@@ -138,7 +140,7 @@ class TestApiClientRequestResponse:
         )
 
         # Assert
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert response.json()["success"] is True
         assert response.json()["applied"] == 1
         mock_httpx_client.post.assert_called_once()
@@ -168,7 +170,7 @@ class TestApiClientRequestResponse:
         )
 
         # Assert
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert len(response.json()["changes"]) == 1
         assert "server_time" in response.json()
 
@@ -232,7 +234,7 @@ class TestApiClientErrorHandling:
         response = await mock_httpx_client.get(f"{api_config['base_url']}/api/invalid")
 
         # Assert
-        assert response.status_code == 404
+        assert response.status_code == HTTP_NOT_FOUND
         assert response.json()["error"] == "Not found"
 
     @pytest.mark.unit
@@ -256,7 +258,7 @@ class TestApiClientErrorHandling:
         response = await mock_httpx_client.get(f"{api_config['base_url']}/api/sync/status")
 
         # Assert
-        assert response.status_code == 401
+        assert response.status_code == HTTP_UNAUTHORIZED
         assert response.json()["error"] == "Unauthorized"
 
     @pytest.mark.unit
@@ -280,7 +282,7 @@ class TestApiClientErrorHandling:
         response = await mock_httpx_client.get(f"{api_config['base_url']}/api/sync/status")
 
         # Assert
-        assert response.status_code == 500
+        assert response.status_code == HTTP_INTERNAL_SERVER_ERROR
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -357,8 +359,8 @@ class TestApiClientRetryLogic:
                 continue
 
         # Assert
-        assert response.status_code == 200
-        assert mock_httpx_client.get.call_count == 2
+        assert response.status_code == HTTP_OK
+        assert mock_httpx_client.get.call_count == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -385,12 +387,12 @@ class TestApiClientRetryLogic:
         max_retries = 3
         for _attempt in range(max_retries):
             response = await mock_httpx_client.get(f"{api_config['base_url']}/api/sync/status")
-            if response.status_code < 500:
+            if response.status_code < HTTP_INTERNAL_SERVER_ERROR:
                 break
 
         # Assert
-        assert response.status_code == 200
-        assert mock_httpx_client.get.call_count == 2
+        assert response.status_code == HTTP_OK
+        assert mock_httpx_client.get.call_count == COUNT_TWO
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -438,7 +440,7 @@ class TestApiClientRetryLogic:
         response = await mock_httpx_client.post(f"{api_config['base_url']}/api/sync/upload", json={})
 
         # Assert - No retry on 4xx errors
-        assert response.status_code == 400
+        assert response.status_code == HTTP_BAD_REQUEST
         assert mock_httpx_client.post.call_count == 1
 
     @pytest.mark.unit
@@ -461,8 +463,8 @@ class TestApiClientRetryLogic:
 
         # Assert
         assert delays[0] == 1.0
-        assert delays[1] == 2.0
-        assert delays[2] == 4.0
+        assert delays[1] == COUNT_TWO.0
+        assert delays[2] == COUNT_FOUR.0
         assert delays[3] == 8.0
         assert delays[4] == 16.0
 
@@ -534,7 +536,7 @@ class TestApiClientConflictHandling:
         response = await mock_httpx_client.post(f"{api_config['base_url']}/api/sync/resolve", json=resolution_payload)
 
         # Assert
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert response.json()["resolved"] is True
 
 
@@ -572,7 +574,7 @@ class TestApiClientSyncStatus:
         # Assert
         status = response.json()
         assert "last_sync" in status
-        assert status["pending_changes"] == 5
+        assert status["pending_changes"] == COUNT_FIVE
         assert status["online"] is True
 
     @pytest.mark.unit
@@ -593,7 +595,7 @@ class TestApiClientSyncStatus:
         # Act
         try:
             response = await mock_httpx_client.get(f"{api_config['base_url']}/api/ping")
-            is_online = response.status_code == 200
+            is_online = response.status_code == HTTP_OK
         except ConnectError:
             is_online = False
 

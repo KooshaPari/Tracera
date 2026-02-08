@@ -7,6 +7,8 @@ Tests:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_OK, HTTP_UNPROCESSABLE_ENTITY
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -74,12 +76,12 @@ class TestImpactAnalysisEndpoint:
 
             response = client.get("/api/v1/analysis/impact/item-1?project_id=test")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["root_item_id"] == "item-1"
-            assert data["total_affected"] == 10
-            assert data["max_depth"] == 5
-            assert len(data["affected_items"]) == 10
+            assert data["total_affected"] == COUNT_TEN
+            assert data["max_depth"] == COUNT_FIVE
+            assert len(data["affected_items"]) == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_impact_analysis_no_dependencies(self, client) -> None:
@@ -98,7 +100,7 @@ class TestImpactAnalysisEndpoint:
 
             response = client.get("/api/v1/analysis/impact/item-1?project_id=test")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["total_affected"] == 0
             assert data["max_depth"] == 0
@@ -121,10 +123,10 @@ class TestImpactAnalysisEndpoint:
 
             response = client.get("/api/v1/analysis/impact/item-1?project_id=test")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["max_depth"] == 1
-            assert data["total_affected"] == 3
+            assert data["total_affected"] == COUNT_THREE
 
 
 class TestCycleDetectionEndpoint:
@@ -147,7 +149,7 @@ class TestCycleDetectionEndpoint:
 
             response = client.get("/api/v1/analysis/cycles/test-project")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["has_cycles"] is False
             assert data["total_cycles"] == 0
@@ -171,12 +173,12 @@ class TestCycleDetectionEndpoint:
 
             response = client.get("/api/v1/analysis/cycles/test-project")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["has_cycles"] is True
-            assert data["total_cycles"] == 3
+            assert data["total_cycles"] == COUNT_THREE
             assert data["severity"] == "high"
-            assert len(data["affected_items"]) == 5
+            assert len(data["affected_items"]) == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_cycle_detection_low_severity(self, client) -> None:
@@ -195,7 +197,7 @@ class TestCycleDetectionEndpoint:
 
             response = client.get("/api/v1/analysis/cycles/test-project")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["severity"] == "low"
             assert data["total_cycles"] == 1
@@ -221,7 +223,7 @@ class TestShortestPathEndpoint:
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-999")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is False
             assert data["distance"] == -1
@@ -244,11 +246,11 @@ class TestShortestPathEndpoint:
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-2")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is True
             assert data["distance"] == 1
-            assert len(data["path"]) == 2
+            assert len(data["path"]) == COUNT_TWO
             assert len(data["link_types"]) == 1
 
     @pytest.mark.asyncio
@@ -268,12 +270,12 @@ class TestShortestPathEndpoint:
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-5")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is True
-            assert data["distance"] == 4
-            assert len(data["path"]) == 5
-            assert len(data["link_types"]) == 4
+            assert data["distance"] == COUNT_FOUR
+            assert len(data["path"]) == COUNT_FIVE
+            assert len(data["link_types"]) == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_shortest_path_same_source_target(self, client) -> None:
@@ -292,7 +294,7 @@ class TestShortestPathEndpoint:
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-1")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is True
             assert data["distance"] == 0
@@ -303,12 +305,12 @@ class TestShortestPathEndpoint:
         """Test shortest path with missing required parameters."""
         # Missing source_id
         response = client.get("/api/v1/analysis/shortest-path?project_id=test&target_id=item-2")
-        assert response.status_code == 422  # FastAPI validation error
+        assert response.status_code == HTTP_UNPROCESSABLE_ENTITY  # FastAPI validation error
 
         # Missing target_id
         response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1")
-        assert response.status_code == 422  # FastAPI validation error
+        assert response.status_code == HTTP_UNPROCESSABLE_ENTITY  # FastAPI validation error
 
         # Missing project_id
         response = client.get("/api/v1/analysis/shortest-path?source_id=item-1&target_id=item-2")
-        assert response.status_code == 422  # FastAPI validation error
+        assert response.status_code == HTTP_UNPROCESSABLE_ENTITY  # FastAPI validation error

@@ -4,6 +4,8 @@ Targets: services/github_import_service.py (22.73%), services/jira_import_servic
 
 import json
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -134,7 +136,7 @@ class TestGitHubImportService:
 
         assert result["success"] is True
         assert result["project_id"] == "proj-123"
-        assert result["items_imported"] == 2
+        assert result["items_imported"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_import_github_project_with_issues_field(self) -> None:
@@ -413,7 +415,7 @@ class TestJiraImportService:
         result = await service.import_jira_project("test-project", valid_data)
 
         assert result["success"] is True
-        assert result["items_imported"] == 2
+        assert result["items_imported"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_import_jira_project_with_inward_links(self) -> None:

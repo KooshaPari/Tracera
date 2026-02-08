@@ -9,6 +9,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -597,7 +599,7 @@ def test_generate_performance_reports(reporter) -> None:
         assert "timestamp" in data
         assert "tests" in data
         assert "test_1" in data["tests"]
-        assert data["tests"]["test_1"]["summary"]["runs"] == 2
+        assert data["tests"]["test_1"]["summary"]["runs"] == COUNT_TWO
 
     # Verify text report
     text_content = text_path.read_text()

@@ -14,6 +14,8 @@ Target: 90%+ coverage for progress_service.py
 import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.orm import Session
@@ -64,7 +66,7 @@ class TestProgressTrackingConcurrency:
         results = await asyncio.gather(*tasks)
 
         # Verify all complete successfully
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(isinstance(r, dict) for r in results)
         assert all("progress" in r for r in results)
 
@@ -81,7 +83,7 @@ class TestProgressTrackingConcurrency:
         duration = time.time() - start
 
         # Should complete quickly
-        assert duration < 2.0, f"100 queries took {duration}s, expected < 2s"
+        assert duration < COUNT_TWO.0, f"100 queries took {duration}s, expected < COUNT_TWOs"
 
     async def test_concurrent_progress_different_items(self, stub_service) -> None:
         """Test concurrent progress for different items."""
@@ -229,7 +231,7 @@ class TestProgressStateConsistency:
         tasks = [s.progress() for s in services]
         results = await asyncio.gather(*tasks)
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all("progress" in r for r in results)
 
     async def test_service_reuse_stability(self, stub_service) -> None:
@@ -378,7 +380,7 @@ class TestStalledItemTracking:
         result = real_service.get_stalled_items("project1", days_threshold=7)
         assert len(result) == 1
         assert result[0]["item_id"] == "stalled_item"
-        assert result[0]["days_stalled"] >= 10
+        assert result[0]["days_stalled"] >= COUNT_TEN
 
 
 class TestVelocityCalculations:
@@ -420,10 +422,10 @@ class TestVelocityCalculations:
         mock_session.query.return_value = mock_query
 
         result = real_service.calculate_velocity("project1", days=7)
-        assert result["items_completed"] == 10
+        assert result["items_completed"] == COUNT_TEN
         assert result["items_created"] == 15
-        assert result["completion_rate"] == 10 / 7
-        assert result["net_change"] == 5
+        assert result["completion_rate"] == COUNT_TEN / 7
+        assert result["net_change"] == COUNT_FIVE
 
 
 @pytest.mark.asyncio

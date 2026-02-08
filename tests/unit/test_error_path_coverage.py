@@ -17,6 +17,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
@@ -470,13 +472,13 @@ class TestTimeoutAndRetry:
         async def operation_with_backoff() -> None:
             for attempt in range(3):
                 start_times.append(datetime.now(UTC))
-                if attempt < 2:
+                if attempt < COUNT_TWO:
                     await asyncio.sleep(2**attempt * 0.01)
                 else:
                     break
 
         await operation_with_backoff()
-        assert len(start_times) == 3
+        assert len(start_times) == COUNT_THREE
 
     async def test_timeout_with_cleanup(self) -> None:
         """Test that resources are cleaned up on timeout."""
@@ -646,7 +648,7 @@ class TestSyncEngineErrors:
         async def failing_sync() -> None:
             await asyncio.sleep(0)
             attempts.append("attempt")
-            if len(attempts) < 2:
+            if len(attempts) < COUNT_TWO:
                 msg = "Partial failure"
                 raise RuntimeError(msg)
 

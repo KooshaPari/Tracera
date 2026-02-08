@@ -4,6 +4,8 @@ Target: +2% coverage on configuration paths (40 test cases)
 """
 
 from pathlib import Path
+from tests.test_constants import COUNT_TEN, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+
 
 import pytest
 from pydantic import ValidationError
@@ -25,7 +27,7 @@ class TestDatabaseSettings:
         settings = DatabaseSettings()
         assert settings.url == "sqlite:///tracertm.db"
         assert settings.echo is False
-        assert settings.pool_size == 10
+        assert settings.pool_size == COUNT_TEN
         assert settings.max_overflow == 20
 
     @pytest.mark.unit
@@ -64,7 +66,7 @@ class TestDatabaseSettings:
         assert db.max_overflow == 0
 
         db = DatabaseSettings(max_overflow=200)
-        assert db.max_overflow == 200
+        assert db.max_overflow == HTTP_OK
 
         with pytest.raises(ValidationError):
             DatabaseSettings(max_overflow=-1)
@@ -138,7 +140,7 @@ class TestTraceSettingsDefaults:
         assert settings.current_project_name == "My Project"
         assert settings.default_view == "CODE"
         assert settings.output_format == "json"
-        assert settings.max_agents == 500
+        assert settings.max_agents == HTTP_INTERNAL_SERVER_ERROR
 
 
 class TestTraceSettingsValidation:
@@ -377,7 +379,7 @@ class TestSettingsEnvironmentVariables:
         monkeypatch.setenv("TRACERTM_BATCH_SIZE", "75")
 
         settings = TraceSettings()
-        assert settings.max_agents == 500
+        assert settings.max_agents == HTTP_INTERNAL_SERVER_ERROR
         assert settings.cache_ttl == 600
         assert settings.batch_size == 75
 

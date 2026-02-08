@@ -5,6 +5,8 @@ Tests all CRUD operations, validation, filtering, and edge cases for links.
 
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_NOT_FOUND, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -46,7 +48,7 @@ class TestLinksCRUD:
             }
 
             response = client.post("/api/v1/links", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == "link1"
             assert data["source_id"] == "item1"
@@ -89,7 +91,7 @@ class TestLinksCRUD:
             }
 
             response = client.post("/api/v1/links", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["metadata"] == metadata
 
@@ -116,7 +118,7 @@ class TestLinksCRUD:
 
             payload = {"link_type": "related_to"}
             response = client.put("/api/v1/links/link1", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["type"] == "related_to"
 
@@ -144,7 +146,7 @@ class TestLinksCRUD:
 
             payload = {"metadata": new_metadata}
             response = client.put("/api/v1/links/link1", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["metadata"] == new_metadata
 
@@ -178,7 +180,7 @@ class TestLinksFiltering:
         mock_session.execute.side_effect = results
 
         response = client.get("/api/v1/links?source_id=item1&target_id=item2&skip=0&limit=100")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] == 1
         if data["links"]:
@@ -213,7 +215,7 @@ class TestLinksFiltering:
         mock_session.execute.side_effect = results
 
         response = client.get("/api/v1/links?project_id=proj1&skip=10&limit=10")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] == 50
 
@@ -234,7 +236,7 @@ class TestLinksFiltering:
         mock_session.execute.side_effect = results
 
         response = client.get("/api/v1/links?source_id=nonexistent&skip=0&limit=100")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] == 0
         assert len(data["links"]) == 0
@@ -281,9 +283,9 @@ class TestLinksFiltering:
         mock_session.execute.side_effect = results
 
         response = client.get("/api/v1/links?source_id=item1&skip=0&limit=100")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
-        assert data["total"] == 3
+        assert data["total"] == COUNT_THREE
         assert all(link["source_id"] == "item1" for link in data["links"])
 
     @patch("tracertm.api.main.get_db")
@@ -320,9 +322,9 @@ class TestLinksFiltering:
         mock_session.execute.side_effect = results
 
         response = client.get("/api/v1/links?target_id=item99&skip=0&limit=100")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
-        assert data["total"] == 2
+        assert data["total"] == COUNT_TWO
         assert all(link["target_id"] == "item99" for link in data["links"])
 
 
@@ -420,7 +422,7 @@ class TestLinksValidation:
 
             payload = {}  # Empty payload
             response = client.put("/api/v1/links/link1", json=payload)
-            assert response.status_code == 200  # Should still work with all None values
+            assert response.status_code == HTTP_OK  # Should still work with all None values
 
 
 class TestLinksEdgeCases:
@@ -455,7 +457,7 @@ class TestLinksEdgeCases:
             }
 
             response = client.post("/api/v1/links", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["source_id"] == data["target_id"]
 
@@ -491,7 +493,7 @@ class TestLinksEdgeCases:
             }
 
             response = client.post("/api/v1/links", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["source_id"] == special_source
             assert data["target_id"] == special_target
@@ -539,7 +541,7 @@ class TestLinksEdgeCases:
             }
 
             response = client.post("/api/v1/links", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["metadata"] == complex_metadata
 
@@ -582,7 +584,7 @@ class TestLinksEdgeCases:
                 }
 
                 response = client.post("/api/v1/links", json=payload)
-                assert response.status_code == 200
+                assert response.status_code == HTTP_OK
                 data = response.json()
                 assert data["type"] == link_type
 
@@ -601,7 +603,7 @@ class TestLinksEdgeCases:
 
             payload = {"link_type": "related_to"}
             response = client.put("/api/v1/links/nonexistent", json=payload)
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
 
 
 if __name__ == "__main__":

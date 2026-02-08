@@ -12,6 +12,8 @@ Target: Additional +0.5-1% coverage
 import os
 from unittest.mock import patch
 from uuid import uuid4
+from tests.test_constants import COUNT_THREE, HTTP_INTERNAL_SERVER_ERROR
+
 
 
 class TestCommandLineArgumentEdgeCases:
@@ -124,7 +126,7 @@ class TestFilePathEdgeCases:
         """Test very long file path."""
         long_path = "/path/" + "/".join([f"dir_{i}" for i in range(100)]) + "/file.md"
         # Check path is indeed long (each dir_N is variable length)
-        assert len(long_path) > 500
+        assert len(long_path) > HTTP_INTERNAL_SERVER_ERROR
 
     def test_file_path_windows_style(self) -> None:
         """Test Windows-style file paths."""
@@ -225,7 +227,7 @@ class TestTerminalRenderingEdgeCases:
             ["", "col2", ""],
             ["col1", "col2", "col3"],
         ]
-        assert len(table_data) == 3
+        assert len(table_data) == COUNT_THREE
 
     def test_render_table_with_null_values(self) -> None:
         """Test rendering table with None values."""

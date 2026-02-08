@@ -21,6 +21,8 @@ from pathlib import Path
 from threading import Thread
 from typing import Never
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -268,7 +270,7 @@ class TestConcurrentAccess:
             for thread in threads:
                 thread.join()
 
-            assert len(sessions) == 10
+            assert len(sessions) == COUNT_TEN
 
     def test_storage_manager_thread_safety(self, tmp_path) -> None:
         """Test that storage manager operations are thread-safe."""
@@ -322,7 +324,7 @@ class TestConcurrentAccess:
             for thread in threads:
                 thread.join()
 
-            assert len(states) == 10
+            assert len(states) == COUNT_TEN
 
     def test_concurrent_sync_queue_access(self, tmp_path) -> None:
         """Test concurrent access to sync queue."""
@@ -346,7 +348,7 @@ class TestConcurrentAccess:
             for thread in threads:
                 thread.join()
 
-            assert len(queues) == 10
+            assert len(queues) == COUNT_TEN
 
     def test_multiple_threads_singleton_consistency(self, tmp_path) -> None:
         """Test that multiple threads see consistent singleton."""
@@ -526,7 +528,7 @@ class TestConfigurationLoading:
             result = get_current_project()
 
             assert isinstance(result, tuple)
-            assert len(result) == 2
+            assert len(result) == COUNT_TWO
             assert result == ("project-123", "My Project")
 
     def test_get_current_project_returns_none_when_not_set(self) -> None:
@@ -831,7 +833,7 @@ class TestWithSyncDecorator:
             with patch("tracertm.cli.storage_helper._trigger_sync"):
                 result = my_command(2, 3)
 
-                assert result == 5
+                assert result == COUNT_FIVE
 
 
 # ============================================================================
@@ -1142,7 +1144,7 @@ class TestIntegration:
 
             # Format and retrieve
             retrieved_items = session.query(Item).filter_by(project_id="proj-1").all()
-            assert len(retrieved_items) == 3
+            assert len(retrieved_items) == COUNT_THREE
 
             # Format for display
             table = format_items_table(retrieved_items)

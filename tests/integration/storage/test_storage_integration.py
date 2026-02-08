@@ -20,6 +20,8 @@ import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -358,7 +360,7 @@ class TestLocalStorageManagerIntegration:
         counters = storage_manager.get_project_counters(temp_project_dir)
 
         assert counters["epic"] == 1
-        assert counters["story"] == 2
+        assert counters["story"] == COUNT_TWO
         assert counters["test"] == 0
 
     def test_index_project_parses_markdown_files(self, temp_project_dir, storage_manager) -> None:
@@ -504,7 +506,7 @@ Test item {i}
             )
 
         queued = storage_manager.get_sync_queue(limit=5)
-        assert len(queued) == 5
+        assert len(queued) == COUNT_FIVE
 
     def test_clear_sync_queue_entry_removes_item(self, storage_manager) -> None:
         """Given: Item in sync queue
@@ -768,7 +770,7 @@ class TestItemStorageIntegration:
         epics = item_storage.list_items(item_type="epic")
         stories = item_storage.list_items(item_type="story")
 
-        assert len(epics) == 2
+        assert len(epics) == COUNT_TWO
         assert len(stories) == 1
 
     def test_list_items_filters_by_status(self, item_storage) -> None:
@@ -783,7 +785,7 @@ class TestItemStorageIntegration:
         todo_items = item_storage.list_items(status="todo")
         in_progress_items = item_storage.list_items(status="in_progress")
 
-        assert len(todo_items) == 2
+        assert len(todo_items) == COUNT_TWO
         assert len(in_progress_items) == 1
 
     def test_list_items_excludes_deleted(self, item_storage) -> None:
@@ -873,7 +875,7 @@ class TestItemStorageIntegration:
         item_storage.create_link(item2.id, item3.id, "depends_on")
 
         links = item_storage.list_links(source_id=item1.id)
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
     def test_list_links_filters_by_target(self, item_storage) -> None:
         """Given: Multiple links
@@ -888,7 +890,7 @@ class TestItemStorageIntegration:
         item_storage.create_link(item2.id, item3.id, "implements")
 
         links = item_storage.list_links(target_id=item3.id)
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
     def test_list_links_filters_by_type(self, item_storage) -> None:
         """Given: Links of different types
@@ -977,7 +979,7 @@ links:
 
         parsed = parse_item_markdown(file_path)
 
-        assert len(parsed.links) == 2
+        assert len(parsed.links) == COUNT_TWO
         assert parsed.links[0]["type"] == "implements"
         assert parsed.links[1]["target"] == "STORY-002"
 
@@ -1048,7 +1050,7 @@ type: story
         # Parse back
         parsed_links = parse_links_yaml(file_path)
 
-        assert len(parsed_links) == 2
+        assert len(parsed_links) == COUNT_TWO
         assert parsed_links[0].id == "link-1"
         assert parsed_links[0].source == "EPIC-001"
         assert parsed_links[1].metadata["coverage"] == "90%"
@@ -1106,7 +1108,7 @@ type: story
             (type_dir / f"{item_type.upper()}-001.md").write_text("# Test")
 
         items = list_items(temp_storage_dir, "TestProject")
-        assert len(items) == 3
+        assert len(items) == COUNT_THREE
 
     def test_list_items_filters_by_type(self, temp_storage_dir) -> None:
         """Given: Items of multiple types
@@ -1125,7 +1127,7 @@ type: story
         (stories_dir / "STORY-001.md").write_text("# Story")
 
         epics = list_items(temp_storage_dir, "TestProject", item_type="epic")
-        assert len(epics) == 2
+        assert len(epics) == COUNT_TWO
 
     def test_get_item_path_constructs_correct_path(self, temp_storage_dir) -> None:
         """Given: Item parameters
@@ -1228,7 +1230,7 @@ class TestSyncEngineIntegration:
 
         pending = sync_queue.get_pending(limit=10)
         assert len(pending) == 1
-        assert pending[0].payload["version"] == 2
+        assert pending[0].payload["version"] == COUNT_TWO
 
     def test_sync_queue_get_pending_orders_by_created_at(self, sync_queue) -> None:
         """Given: Multiple queue entries
@@ -1817,7 +1819,7 @@ class TestConflictResolverIntegration:
 
         stats = conflict_resolver.get_conflict_stats()
 
-        assert stats["total"] == 3
+        assert stats["total"] == COUNT_THREE
         assert ConflictStatus.UNRESOLVED.value in stats["by_status"]
         assert "item" in stats["by_entity_type"]
 
@@ -1946,7 +1948,7 @@ class TestConflictBackupIntegration:
             (item_backup / "conflict.json").write_text(json.dumps(conflict_meta))
 
         backups = backup_manager.list_backups()
-        assert len(backups) == 3
+        assert len(backups) == COUNT_THREE
 
     def test_list_backups_filters_by_entity_type(self, backup_manager, temp_storage_dir) -> None:
         """Given: Backups of different entity types

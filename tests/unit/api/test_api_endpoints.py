@@ -5,6 +5,8 @@ and correct response structure with minimal but effective mocking.
 """
 
 from unittest.mock import AsyncMock, patch
+from tests.test_constants import HTTP_NOT_FOUND, HTTP_OK, HTTP_UNAUTHORIZED
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -20,13 +22,13 @@ class TestEndpointAvailability:
     def test_health_endpoint_available(self) -> None:
         """Test health endpoint is available."""
         response = client.get("/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert "status" in response.json()
 
     def test_api_v1_health_endpoint_available(self) -> None:
         """Test v1 health endpoint is available."""
         response = client.get("/api/v1/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert "status" in response.json()
 
     def test_items_list_endpoint_available(self) -> None:
@@ -116,7 +118,7 @@ class TestResponseStructure:
     def test_health_response_structure(self) -> None:
         """Test health response has correct structure."""
         response = client.get("/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert "status" in data
         assert "version" in data
@@ -125,7 +127,7 @@ class TestResponseStructure:
     def test_health_response_values(self) -> None:
         """Test health response has correct values."""
         response = client.get("/api/v1/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["status"] == "ok"
         assert data["service"] == "tracertm-api"
@@ -138,7 +140,7 @@ class TestResponseStructure:
 
             response = client.get("/api/v1/items/nonexistent")
             # If item not found, should have error message
-            if response.status_code == 404:
+            if response.status_code == HTTP_NOT_FOUND:
                 data = response.json()
                 assert "detail" in data
 
@@ -189,7 +191,7 @@ class TestCORSHeaders:
         # Check for common CORS patterns
         headers = response.headers
         # FastAPI CORS middleware sets these
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
 
 class TestAuthentication:
@@ -198,7 +200,7 @@ class TestAuthentication:
     def test_public_endpoint_without_auth(self) -> None:
         """Test public endpoints work without auth."""
         response = client.get("/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
     def test_protected_endpoint_with_mock_auth(self) -> None:
         """Test protected endpoints work with auth mock."""
@@ -208,7 +210,7 @@ class TestAuthentication:
 
             response = client.get("/api/v1/items?project_id=test")
             # Should not fail due to authentication
-            assert response.status_code != 401
+            assert response.status_code != HTTP_UNAUTHORIZED
 
 
 class TestResponseFormats:

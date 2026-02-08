@@ -12,6 +12,8 @@ Tests core/database.py:
 import logging
 from typing import Never
 from unittest.mock import patch
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
@@ -285,7 +287,7 @@ class TestGetSession:
             sessions.append(session2)
 
         # Should get different session instances
-        assert len(sessions) == 2
+        assert len(sessions) == COUNT_TWO
         assert sessions[0] is not sessions[1]
 
     @pytest.mark.asyncio
@@ -479,7 +481,7 @@ class TestDatabaseModuleIntegration:
         )
 
         # Should have created 3 sessions
-        assert len(sessions) == 3
+        assert len(sessions) == COUNT_THREE
 
 
 class TestDatabaseConfiguration:
@@ -602,7 +604,7 @@ class TestDatabaseErrorHandling:
             except RuntimeError as e:
                 errors.append(str(e))
 
-        assert len(errors) == 3
+        assert len(errors) == COUNT_THREE
         assert all(f"Error {i}" in errors[i] for i in range(3))
 
 

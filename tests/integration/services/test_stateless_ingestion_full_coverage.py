@@ -14,6 +14,8 @@ Tests cover:
 import tempfile
 from pathlib import Path
 from typing import Any
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import yaml
@@ -43,14 +45,14 @@ Content about email validation."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path, validate=True)
 
-            assert result["items_created"] == 3
+            assert result["items_created"] == COUNT_THREE
             assert result["links_created"] >= 0
             assert "project_id" in result
             assert result["file_path"] == file_path
 
             # Verify items created
             items = db_session.query(Item).all()
-            assert len(items) == 3
+            assert len(items) == COUNT_THREE
             titles = {item.title for item in items}
             assert "Epic: User Management" in titles
             assert "Feature: User Registration" in titles
@@ -83,7 +85,7 @@ Content here."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result["items_created"] == 2
+            assert result["items_created"] == COUNT_TWO
             # The project should be created; check by finding it in the database
             projects = db_session.query(Project).all()
             assert len(projects) >= 1
@@ -110,7 +112,7 @@ Content for section B."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result["items_created"] == 3
+            assert result["items_created"] == COUNT_THREE
             links = db_session.query(Link).all()
             assert len(links) >= 0
         finally:
@@ -134,9 +136,9 @@ Content for section B."""
             result = service.ingest_markdown(file_path, dry_run=True)
 
             assert result["dry_run"] is True
-            assert result["headers_found"] == 4
+            assert result["headers_found"] == COUNT_FOUR
             assert result["links_found"] == 1
-            assert result["would_create_items"] == 4
+            assert result["would_create_items"] == COUNT_FOUR
 
             # Verify nothing was created
             items = db_session.query(Item).all()
@@ -217,7 +219,7 @@ type_mapping:
 
             items = db_session.query(Item).all()
             # The type_mapping should be used; verify at least items were created
-            assert len(items) == 3
+            assert len(items) == COUNT_THREE
             # Each item should have the custom type from type_mapping or default
             types_set = {item.item_type for item in items}
             # Should have created items with specified types
@@ -244,9 +246,9 @@ Content after gaps."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result["items_created"] == 3
+            assert result["items_created"] == COUNT_THREE
             items = db_session.query(Item).all()
-            assert len(items) == 3
+            assert len(items) == COUNT_THREE
         finally:
             Path(file_path).unlink()
 
@@ -268,7 +270,7 @@ More content."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result["items_created"] == 3
+            assert result["items_created"] == COUNT_THREE
             project = db_session.query(Project).first()
             assert project is not None
         finally:
@@ -294,9 +296,9 @@ More content."""
             result = service.ingest_markdown(file_path, project_id="existing-proj")
 
             assert result["project_id"] == "existing-proj"
-            assert result["items_created"] == 2
+            assert result["items_created"] == COUNT_TWO
             items = db_session.query(Item).filter_by(project_id="existing-proj").all()
-            assert len(items) == 2
+            assert len(items) == COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -520,7 +522,7 @@ sections:
             result = service.ingest_yaml(file_path)
 
             assert result["format"] == "yaml"
-            assert result["items_created"] >= 2
+            assert result["items_created"] >= COUNT_TWO
             assert "project_id" in result
         finally:
             Path(file_path).unlink()
@@ -562,7 +564,7 @@ components:
             assert result["format"] == "openapi"
             assert result["schemas_created"] == 1
             assert result["endpoints_created"] >= 1
-            assert result["items_created"] >= 2
+            assert result["items_created"] >= COUNT_TWO
 
             items = db_session.query(Item).all()
             schema_items = [i for i in items if i.item_type == "schema"]
@@ -612,7 +614,7 @@ components:
 
             assert result["format"] == "openapi"
             links = db_session.query(Link).all()
-            assert len(links) >= 2  # Request and response links
+            assert len(links) >= COUNT_TWO  # Request and response links
         finally:
             Path(file_path).unlink()
 
@@ -648,8 +650,8 @@ components:
 
             assert result["dry_run"] is True
             assert result["format"] == "openapi"
-            assert result["endpoints_found"] == 3
-            assert result["schemas_found"] == 2
+            assert result["endpoints_found"] == COUNT_THREE
+            assert result["schemas_found"] == COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -694,8 +696,8 @@ traceability:
             result = service.ingest_yaml(file_path)
 
             assert result["format"] == "bmad"
-            assert result["requirements_created"] == 2
-            assert result["links_created"] >= 2
+            assert result["requirements_created"] == COUNT_TWO
+            assert result["links_created"] >= COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -720,7 +722,7 @@ traceability:
 
             assert result["dry_run"] is True
             assert result["format"] == "bmad"
-            assert result["requirements_found"] == 3
+            assert result["requirements_found"] == COUNT_THREE
         finally:
             Path(file_path).unlink()
 
@@ -786,7 +788,7 @@ level1:
 
             assert result["format"] == "yaml"
             items = db_session.query(Item).all()
-            assert len(items) >= 5
+            assert len(items) >= COUNT_FIVE
         finally:
             Path(file_path).unlink()
 
@@ -887,7 +889,7 @@ section2:
             assert result["format"] in {"bmad", "yaml"}
             items = db_session.query(Item).all()
             # Should have created items
-            assert len(items) >= 2
+            assert len(items) >= COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -925,7 +927,7 @@ requirements:
             items = db_session.query(Item).all()
             views = {item.view for item in items}
             # Should have items in different views based on type
-            assert len(items) == 4
+            assert len(items) == COUNT_FOUR
         finally:
             Path(file_path).unlink()
 
@@ -1179,9 +1181,9 @@ Different details."""
 
             # Both should be created with unique IDs
             items = db_session.query(Item).all()
-            assert len(items) == 3
+            assert len(items) == COUNT_THREE
             task_items = [i for i in items if i.title == "Task"]
-            assert len(task_items) == 2
+            assert len(task_items) == COUNT_TWO
             assert task_items[0].id != task_items[1].id
         finally:
             Path(file_path).unlink()
@@ -1207,9 +1209,9 @@ requirements:
             result = service.ingest_yaml(file_path)
 
             items = db_session.query(Item).all()
-            assert len(items) == 2
+            assert len(items) == COUNT_TWO
             ids = {i.id for i in items}
-            assert len(ids) == 2  # All unique
+            assert len(ids) == COUNT_TWO  # All unique
         finally:
             Path(file_path).unlink()
 
@@ -1242,8 +1244,8 @@ Content"""
             stories = [i for i in items if i.item_type == "story"]
 
             assert epic is not None
-            assert len(features) == 2
-            assert len(stories) == 2
+            assert len(features) == COUNT_TWO
+            assert len(stories) == COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -1437,7 +1439,7 @@ components:
             result = service.ingest_yaml(file_path)
 
             links = db_session.query(Link).all()
-            assert len(links) >= 2  # Request and response links
+            assert len(links) >= COUNT_TWO  # Request and response links
             link_types = {link.link_type for link in links}
             assert "uses" in link_types or "returns" in link_types
         finally:
@@ -1500,7 +1502,7 @@ More content."""
             result = service.ingest_markdown(file_path)
 
             items = db_session.query(Item).all()
-            assert len(items) >= 3
+            assert len(items) >= COUNT_THREE
         finally:
             Path(file_path).unlink()
 
@@ -1689,7 +1691,7 @@ paths:
             result = service.ingest_yaml(file_path)
 
             links = db_session.query(Link).filter_by(link_type="related_to").all()
-            assert len(links) >= 2  # Should have links between methods
+            assert len(links) >= COUNT_TWO  # Should have links between methods
         finally:
             Path(file_path).unlink()
 
@@ -1782,7 +1784,7 @@ project: SharedProject
 
                 # Should have created at least 2 items across potentially 1-2 projects
                 items = db_session.query(Item).all()
-                assert len(items) >= 2
+                assert len(items) >= COUNT_TWO
             finally:
                 Path(file_path2).unlink()
         finally:
@@ -1808,7 +1810,7 @@ class TestSpecialCharacters:
             result = service.ingest_markdown(file_path)
 
             items = db_session.query(Item).all()
-            assert len(items) == 3
+            assert len(items) == COUNT_THREE
             titles = {item.title for item in items}
             assert any("@" in title or "!" in title for title in titles)
         finally:
@@ -2024,10 +2026,10 @@ requirements:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result["requirements_created"] == 2
+            assert result["requirements_created"] == COUNT_TWO
             items = db_session.query(Item).all()
             # Should have generated IDs for requirements
-            assert len(items) == 2
+            assert len(items) == COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -2078,7 +2080,7 @@ items:
             result = service.ingest_yaml(file_path)
 
             items = db_session.query(Item).all()
-            assert len(items) >= 3
+            assert len(items) >= COUNT_THREE
         finally:
             Path(file_path).unlink()
 
@@ -2104,7 +2106,7 @@ More content."""
             result = service.ingest_markdown(file_path)
 
             items = db_session.query(Item).all()
-            assert len(items) >= 2
+            assert len(items) >= COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -2126,7 +2128,7 @@ Related content."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result["items_created"] >= 2
+            assert result["items_created"] >= COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -2195,7 +2197,7 @@ components:
 
             links = db_session.query(Link).filter_by(link_type="uses").all()
             # Should have links for multiple content types
-            assert len(links) >= 2
+            assert len(links) >= COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -2303,7 +2305,7 @@ Implementation using `bcrypt`."""
             result = service.ingest_markdown(file_path)
 
             items = db_session.query(Item).all()
-            assert len(items) >= 2
+            assert len(items) >= COUNT_TWO
         finally:
             Path(file_path).unlink()
 

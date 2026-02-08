@@ -5,6 +5,8 @@ including ADRs, Contracts, Features, and Scenarios.
 """
 
 from collections.abc import AsyncGenerator
+from tests.test_constants import HTTP_CREATED, HTTP_NOT_FOUND, HTTP_NO_CONTENT, HTTP_OK, HTTP_UNPROCESSABLE_ENTITY
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -192,7 +194,7 @@ class TestADREndpoints:
         """Test successful ADR creation."""
         response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
 
-        assert response.status_code == 201
+        assert response.status_code == HTTP_CREATED
         data = response.json()
         assert data["title"] == adr_payload["title"]
         assert data["project_id"] == adr_payload["project_id"]
@@ -216,7 +218,7 @@ class TestADREndpoints:
         # Get ADR
         response = client.get(f"/api/v1/specifications/adrs/{adr_id}", headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["id"] == adr_id
         assert data["title"] == adr_payload["title"]
@@ -225,7 +227,7 @@ class TestADREndpoints:
         """Test getting non-existent ADR."""
         response = client.get("/api/v1/specifications/adrs/nonexistent", headers=auth_headers)
 
-        assert response.status_code == 404
+        assert response.status_code == HTTP_NOT_FOUND
         assert "not found" in response.json()["detail"].lower()
 
     def test_update_adr_success(self, client, auth_headers, adr_payload) -> None:
@@ -238,7 +240,7 @@ class TestADREndpoints:
         update_payload = {"status": "accepted"}
         response = client.put(f"/api/v1/specifications/adrs/{adr_id}", json=update_payload, headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["status"] == "accepted"
 
@@ -251,7 +253,7 @@ class TestADREndpoints:
         # Delete ADR
         response = client.delete(f"/api/v1/specifications/adrs/{adr_id}", headers=auth_headers)
 
-        assert response.status_code == 204
+        assert response.status_code == HTTP_NO_CONTENT
 
     def test_list_adrs_by_project(self, client, auth_headers, adr_payload) -> None:
         """Test listing ADRs for a project."""
@@ -263,7 +265,7 @@ class TestADREndpoints:
         # List ADRs
         response = client.get(f"/api/v1/specifications/projects/{project_id}/adrs", headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert "total" in data
         assert "adrs" in data
@@ -278,7 +280,7 @@ class TestADREndpoints:
         # Verify compliance
         response = client.post(f"/api/v1/specifications/adrs/{adr_id}/verify", headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert "is_valid" in data
         assert "score" in data
@@ -299,7 +301,7 @@ class TestContractEndpoints:
         """Test successful contract creation."""
         response = client.post("/api/v1/specifications/contracts", json=contract_payload, headers=auth_headers)
 
-        assert response.status_code == 201
+        assert response.status_code == HTTP_CREATED
         data = response.json()
         assert data["title"] == contract_payload["title"]
         assert data["project_id"] == contract_payload["project_id"]
@@ -314,7 +316,7 @@ class TestContractEndpoints:
         # Get contract
         response = client.get(f"/api/v1/specifications/contracts/{contract_id}", headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["id"] == contract_id
 
@@ -327,7 +329,7 @@ class TestContractEndpoints:
         # Delete contract
         response = client.delete(f"/api/v1/specifications/contracts/{contract_id}", headers=auth_headers)
 
-        assert response.status_code == 204
+        assert response.status_code == HTTP_NO_CONTENT
 
     def test_verify_contract_compliance(self, client, auth_headers, contract_payload) -> None:
         """Test contract compliance verification."""
@@ -338,7 +340,7 @@ class TestContractEndpoints:
         # Verify compliance
         response = client.post(f"/api/v1/specifications/contracts/{contract_id}/verify", headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert "is_valid" in data
         assert "score" in data
@@ -356,7 +358,7 @@ class TestFeatureEndpoints:
         """Test successful feature creation."""
         response = client.post("/api/v1/specifications/features", json=feature_payload, headers=auth_headers)
 
-        assert response.status_code == 201
+        assert response.status_code == HTTP_CREATED
         data = response.json()
         assert data["name"] == feature_payload["name"]
         assert data["project_id"] == feature_payload["project_id"]
@@ -371,7 +373,7 @@ class TestFeatureEndpoints:
         # Get feature
         response = client.get(f"/api/v1/specifications/features/{feature_id}", headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["id"] == feature_id
 
@@ -384,7 +386,7 @@ class TestFeatureEndpoints:
         # Delete feature
         response = client.delete(f"/api/v1/specifications/features/{feature_id}", headers=auth_headers)
 
-        assert response.status_code == 204
+        assert response.status_code == HTTP_NO_CONTENT
 
 
 # =============================================================================
@@ -406,7 +408,7 @@ class TestScenarioEndpoints:
             f"/api/v1/specifications/features/{feature_id}/scenarios", json=scenario_payload, headers=auth_headers,
         )
 
-        assert response.status_code == 201
+        assert response.status_code == HTTP_CREATED
         data = response.json()
         assert data["title"] == scenario_payload["title"]
         assert data["feature_id"] == feature_id
@@ -425,7 +427,7 @@ class TestScenarioEndpoints:
         # Get scenario
         response = client.get(f"/api/v1/specifications/scenarios/{scenario_id}", headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["id"] == scenario_id
 
@@ -443,7 +445,7 @@ class TestScenarioEndpoints:
         # Run scenario
         response = client.post(f"/api/v1/specifications/scenarios/{scenario_id}/run", headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert "scenario_id" in data
         assert "passed" in data
@@ -468,7 +470,7 @@ class TestProjectLevelEndpoints:
         # Get summary
         response = client.get(f"/api/v1/specifications/projects/{project_id}/summary", headers=auth_headers)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["project_id"] == project_id
         assert "adr_count" in data
@@ -491,14 +493,14 @@ class TestErrorHandling:
         del adr_payload["title"]
         response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
 
-        assert response.status_code == 422  # Validation error
+        assert response.status_code == HTTP_UNPROCESSABLE_ENTITY  # Validation error
 
     def test_invalid_enum_value(self, client, auth_headers, adr_payload) -> None:
         """Test validation error for invalid enum."""
         adr_payload["status"] = "invalid_status"
         response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
 
-        assert response.status_code == 422
+        assert response.status_code == HTTP_UNPROCESSABLE_ENTITY
 
     def test_unauthenticated_request(self, client, adr_payload) -> None:
         """Test that requests without auth are rejected."""

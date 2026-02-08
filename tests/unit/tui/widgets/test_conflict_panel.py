@@ -8,6 +8,8 @@ Coverage target: 80%+ of 101 statements
 from datetime import datetime
 from typing import Any, cast
 from unittest.mock import MagicMock, Mock, patch
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 
@@ -122,7 +124,7 @@ class TestConflictListDisplay:
         panel.refresh_conflict_list()
 
         mock_table.clear.assert_called_once()
-        assert mock_table.add_row.call_count == 3  # 3 conflicts
+        assert mock_table.add_row.call_count == COUNT_THREE  # 3 conflicts
 
     def test_refresh_conflict_list_empty(self) -> None:
         """Test refreshing empty conflict list."""

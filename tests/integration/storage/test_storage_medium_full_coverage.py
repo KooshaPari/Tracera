@@ -23,6 +23,8 @@ from collections.abc import Generator
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import yaml
@@ -206,7 +208,7 @@ class TestChangeDetector:
         (temp_base_dir / "file2.md").write_text("content2")
 
         changes = ChangeDetector.detect_changes_in_directory(temp_base_dir, {})
-        assert len(changes) == 2
+        assert len(changes) == COUNT_TWO
 
     def test_detect_changes_in_directory_modified_files(self, temp_base_dir) -> None:
         """Test detection of modified markdown files."""
@@ -245,7 +247,7 @@ class TestChangeDetector:
         (subdir / "file2.md").write_text("content2")
 
         changes = ChangeDetector.detect_changes_in_directory(temp_base_dir, {})
-        assert len(changes) == 2
+        assert len(changes) == COUNT_TWO
 
     def test_detect_changes_ignores_non_markdown(self, temp_base_dir) -> None:
         """Test that non-markdown files are ignored."""
@@ -310,14 +312,14 @@ class TestSyncQueue:
         for i in range(5):
             sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i:03d}", OperationType.CREATE, {"title": f"Item {i}"})
         pending = sync_queue.get_pending()
-        assert len(pending) == 5
+        assert len(pending) == COUNT_FIVE
 
     def test_get_pending_limit(self, sync_queue) -> None:
         """Test limit parameter in get_pending."""
         for i in range(10):
             sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i:03d}", OperationType.CREATE, {})
         pending = sync_queue.get_pending(limit=3)
-        assert len(pending) == 3
+        assert len(pending) == COUNT_THREE
 
     def test_remove_from_queue(self, sync_queue) -> None:
         """Test removing item from queue."""
@@ -342,7 +344,7 @@ class TestSyncQueue:
         """Test clearing entire queue."""
         for i in range(5):
             sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
-        assert sync_queue.get_count() == 5
+        assert sync_queue.get_count() == COUNT_FIVE
         sync_queue.clear()
         assert sync_queue.get_count() == 0
 
@@ -352,7 +354,7 @@ class TestSyncQueue:
         sync_queue.enqueue(SyncEntityType.ITEM, "i1", OperationType.CREATE, {})
         assert sync_queue.get_count() == 1
         sync_queue.enqueue(SyncEntityType.ITEM, "i2", OperationType.CREATE, {})
-        assert sync_queue.get_count() == 2
+        assert sync_queue.get_count() == COUNT_TWO
 
 
 # ============================================================================
@@ -367,7 +369,7 @@ class TestSyncStateManager:
         """Test SyncState dataclass creation."""
         state = SyncState(status=SyncStatus.SYNCING, pending_changes=5, last_sync=datetime.now(UTC))
         assert state.status == SyncStatus.SYNCING
-        assert state.pending_changes == 5
+        assert state.pending_changes == COUNT_FIVE
         assert state.last_sync is not None
 
     def test_sync_status_enum_values(self) -> None:
@@ -399,7 +401,7 @@ class TestSyncStateManager:
     def test_sync_state_with_conflicts(self) -> None:
         """Test SyncState with conflicts count."""
         state = SyncState(conflicts_count=3)
-        assert state.conflicts_count == 3
+        assert state.conflicts_count == COUNT_THREE
 
 
 # ============================================================================
@@ -505,7 +507,7 @@ class TestSyncEngine:
         """Test clearing sync queue."""
         for i in range(3):
             sync_engine.queue_change(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
-        assert sync_engine.queue.get_count() == 3
+        assert sync_engine.queue.get_count() == COUNT_THREE
         await sync_engine.clear_queue()
         assert sync_engine.queue.get_count() == 0
 
@@ -580,7 +582,7 @@ class TestSyncEngine:
             max_retries=5,
         )
         assert isinstance(engine, SyncEngine)
-        assert engine.max_retries == 5
+        assert engine.max_retries == COUNT_FIVE
 
 
 # ============================================================================
@@ -742,7 +744,7 @@ external_id: "ITEM-001"
         assert file_path.exists()
 
         parsed = parse_links_yaml(file_path)
-        assert len(parsed) == 2
+        assert len(parsed) == COUNT_TWO
         assert parsed[0].source == "EPIC-001"
         assert parsed[1].link_type == "tested_by"
 
@@ -972,7 +974,7 @@ class TestStorageIntegration:
         sync_engine.queue_change(SyncEntityType.ITEM, "item-1", OperationType.CREATE, {"title": "Item 1"})
         sync_engine.queue_change(SyncEntityType.ITEM, "item-2", OperationType.UPDATE, {"title": "Updated"})
 
-        assert sync_engine.queue.get_count() == 2
+        assert sync_engine.queue.get_count() == COUNT_TWO
 
     def test_markdown_roundtrip(self, temp_base_dir) -> None:
         """Test markdown write and parse roundtrip."""
@@ -1034,7 +1036,7 @@ class TestStorageIntegration:
 
         # Parse all items
         files = list(temp_base_dir.glob("*.md"))
-        assert len(files) == 10
+        assert len(files) == COUNT_TEN
 
         parsed_items = [parse_item_markdown(f) for f in files]
         assert all(p.item_type == "story" for p in parsed_items)
@@ -1171,13 +1173,13 @@ class TestStoragePerformance:
 
         # Should find all files
         changes = ChangeDetector.detect_changes_in_directory(temp_base_dir, {})
-        assert len(changes) == 10
+        assert len(changes) == COUNT_TEN
 
     def test_sync_result_dataclass(self) -> None:
         """Test SyncResult dataclass."""
         result = SyncResult(success=True, entities_synced=10, duration_seconds=1.5)
         assert result.success
-        assert result.entities_synced == 10
+        assert result.entities_synced == COUNT_TEN
         assert result.duration_seconds == 1.5
 
     @pytest.mark.asyncio
@@ -1391,8 +1393,8 @@ class TestLocalStorageFileOperations:
         counter3, id3 = storage_manager.increment_project_counter(project_path, "story")
 
         assert counter1 == 1 and id1 == "STORY-001"
-        assert counter2 == 2 and id2 == "STORY-002"
-        assert counter3 == 3 and id3 == "STORY-003"
+        assert counter2 == COUNT_TWO and id2 == "STORY-002"
+        assert counter3 == COUNT_THREE and id3 == "STORY-003"
 
     def test_get_project_counters_from_yaml(self, storage_manager, temp_base_dir) -> None:
         """Test reading counters from project.yaml."""
@@ -1406,7 +1408,7 @@ class TestLocalStorageFileOperations:
 
         counters = storage_manager.get_project_counters(project_path)
 
-        assert counters["epic"] == 2
+        assert counters["epic"] == COUNT_TWO
         assert counters["story"] == 0
 
     def test_get_current_project_path_finds_trace_directory(self, storage_manager, temp_base_dir) -> None:
@@ -1482,7 +1484,7 @@ class TestLocalStorageFileOperations:
             storage_manager.queue_sync("item", f"item-{i}", "create", {})
 
         queue = storage_manager.get_sync_queue(limit=5)
-        assert len(queue) == 5
+        assert len(queue) == COUNT_FIVE
 
     def test_clear_sync_queue_entry_removes_item(self, storage_manager) -> None:
         """Test clear_sync_queue_entry removes specific entry."""
@@ -1704,7 +1706,7 @@ class TestItemStorage:
             item_storage.create_item(f"Item {i}", "epic", f"EPIC-{i:03d}")
 
         items = item_storage.list_items()
-        assert len(items) == 3
+        assert len(items) == COUNT_THREE
 
     def test_list_items_filters_by_type(self, item_storage_setup) -> None:
         """Test list_items can filter by item type."""
@@ -1771,7 +1773,7 @@ class TestItemStorage:
         item_storage.create_link(item1.id, item3.id, "depends_on")
 
         links = item_storage.list_links(source_id=item1.id)
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
     def test_hash_content_consistency(self, item_storage_setup) -> None:
         """Test content hashing is consistent."""

@@ -13,6 +13,8 @@ Target: 90%+ coverage for search_service.py
 
 import asyncio
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_TEN, COUNT_TWO
+
 
 import pytest
 
@@ -44,7 +46,7 @@ class TestSearchServiceConcurrency:
         results = await asyncio.gather(*tasks)
 
         # Verify all complete successfully
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(isinstance(r, list) for r in results)
 
     async def test_search_index_corruption_recovery(self, service) -> None:
@@ -64,7 +66,7 @@ class TestSearchServiceConcurrency:
         duration = time.time() - start
 
         # Verify performance
-        assert duration < 2.0, f"Search took {duration}s, expected < 2s"
+        assert duration < COUNT_TWO.0, f"Search took {duration}s, expected < COUNT_TWOs"
         assert isinstance(result, list)
 
     async def test_concurrent_search_and_index(self, service) -> None:
@@ -77,7 +79,7 @@ class TestSearchServiceConcurrency:
         results = await asyncio.gather(*all_tasks)
 
         # Verify no deadlocks or conflicts
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(isinstance(r, list) for r in results)
 
     async def test_concurrent_search_same_query(self, service) -> None:
@@ -100,7 +102,7 @@ class TestSearchServiceConcurrency:
         duration = time.time() - start
 
         # Should complete quickly
-        assert duration < 2.0, f"100 searches took {duration}s, expected < 2s"
+        assert duration < COUNT_TWO.0, f"100 searches took {duration}s, expected < COUNT_TWOs"
 
 
 @pytest.mark.asyncio
@@ -309,7 +311,7 @@ class TestSearchServicePerformance:
         tasks = [s.search(f"query_{i}", {}) for i, s in enumerate(services)]
         results = await asyncio.gather(*tasks)
 
-        assert len(results) == 10
+        assert len(results) == COUNT_TEN
         assert all(isinstance(r, list) for r in results)
 
     async def test_service_reuse_stability(self) -> None:

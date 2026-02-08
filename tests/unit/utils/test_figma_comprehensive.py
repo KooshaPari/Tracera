@@ -11,6 +11,8 @@ Tests all functions in tracertm.utils.figma:
 """
 
 from typing import Never
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -274,7 +276,7 @@ class TestExtractFigmaProtocolUrl:
         ![Preview2](figma://def456/2:84)
         """
         results = extract_figma_protocol_url(markdown)
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
         assert ("abc123", "1:42") in results
         assert ("def456", "2:84") in results
 
@@ -430,7 +432,7 @@ class TestValidateFigmaMetadata:
             "figma_node_id": "invalid",
         }
         errors = validate_figma_metadata(metadata)
-        assert len(errors) >= 2  # At least URL and format errors
+        assert len(errors) >= COUNT_TWO  # At least URL and format errors
 
     def test_validate_empty_metadata(self) -> None:
         """Test validating empty metadata."""

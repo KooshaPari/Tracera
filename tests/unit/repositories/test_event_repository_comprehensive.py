@@ -11,6 +11,8 @@ This file covers all missing functionality identified in coverage analysis:
 import asyncio
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -133,7 +135,7 @@ async def test_get_by_entity_returns_all_events(db_session: AsyncSession) -> Non
 
     # Get events for entity
     events = await event_repo.get_by_entity(entity_id)
-    assert len(events) == 3
+    assert len(events) == COUNT_THREE
     event_ids = {event.id for event in events}
     assert event1.id in event_ids
     assert event2.id in event_ids
@@ -160,7 +162,7 @@ async def test_get_by_entity_respects_limit(db_session: AsyncSession) -> None:
 
     # Get with limit
     events = await event_repo.get_by_entity(entity_id, limit=3)
-    assert len(events) <= 3
+    assert len(events) <= COUNT_THREE
 
 
 @pytest.mark.unit
@@ -192,7 +194,7 @@ async def test_get_by_entity_orders_by_created_at_desc(db_session: AsyncSession)
     events = await event_repo.get_by_entity(entity_id)
     # Filter to only our events (in case other tests created events)
     our_events = [e for e in events if e.id in {event1.id, event2.id}]
-    assert len(our_events) >= 2
+    assert len(our_events) >= COUNT_TWO
 
     # Verify both events are present
     event_ids = {e.id for e in our_events}
@@ -276,7 +278,7 @@ async def test_get_by_project_returns_all_events(db_session: AsyncSession) -> No
 
     # Get events for project
     events = await event_repo.get_by_project(project.id)
-    assert len(events) == 2
+    assert len(events) == COUNT_TWO
     event_ids = {e.id for e in events}
     assert event1.id in event_ids
     assert event2.id in event_ids
@@ -301,7 +303,7 @@ async def test_get_by_project_respects_limit(db_session: AsyncSession) -> None:
 
     # Get with limit
     events = await event_repo.get_by_project(project.id, limit=3)
-    assert len(events) <= 3
+    assert len(events) <= COUNT_THREE
 
 
 @pytest.mark.unit
@@ -375,7 +377,7 @@ async def test_get_by_agent_returns_all_events(db_session: AsyncSession) -> None
 
     # Get events by agent
     events = await event_repo.get_by_agent(agent_id)
-    assert len(events) == 2
+    assert len(events) == COUNT_TWO
     event_ids = {event.id for event in events}
     assert event1.id in event_ids
     assert event2.id in event_ids
@@ -406,7 +408,7 @@ async def test_get_by_agent_respects_limit(db_session: AsyncSession) -> None:
 
     # Get with limit
     events = await event_repo.get_by_agent(agent_id, limit=3)
-    assert len(events) <= 3
+    assert len(events) <= COUNT_THREE
 
 
 @pytest.mark.unit

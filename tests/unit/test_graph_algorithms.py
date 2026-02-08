@@ -9,6 +9,8 @@ Focus on high-impact coverage gains:
 """
 
 from datetime import datetime, timedelta
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 
 class TestImpactAnalysisAlgorithms:
@@ -91,7 +93,7 @@ class TestImpactAnalysisAlgorithms:
         result = calculate_depth(1, graph)
         assert result[1] == 0
         assert result[2] == 1
-        assert result[3] == 2
+        assert result[3] == COUNT_TWO
 
     def test_calculate_impact_score(self) -> None:
         """Test impact score calculation."""
@@ -124,7 +126,7 @@ class TestImpactAnalysisAlgorithms:
             return paths
 
         result = find_paths(1, 4, graph)
-        assert len(result) == 2  # Two paths to node 4
+        assert len(result) == COUNT_TWO  # Two paths to node 4
         assert [1, 2, 4] in result
         assert [1, 3, 4] in result
 
@@ -173,7 +175,7 @@ class TestShortestPathAlgorithms:
             return distances[end]
 
         result = dijkstra(1, 3, graph)
-        assert result == 3  # 1→2→3 = 1+2
+        assert result == COUNT_THREE  # 1→2→3 = 1+2
 
     def test_bfs_shortest_path(self) -> None:
         """Test BFS shortest path (unweighted)."""
@@ -197,7 +199,7 @@ class TestShortestPathAlgorithms:
 
         result = bfs_shortest(1, 4, graph)
         assert result in ([1, 2, 4], [1, 3, 4])
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     def test_all_pairs_shortest(self) -> None:
         """Test all-pairs shortest path."""
@@ -220,7 +222,7 @@ class TestShortestPathAlgorithms:
             return dist
 
         result = floyd_warshall(graph)
-        assert result[1][3] == 2  # Path 1→2→3
+        assert result[1][3] == COUNT_TWO  # Path 1→2→3
 
     def test_graph_connectivity(self) -> None:
         """Test graph connectivity check."""
@@ -272,7 +274,7 @@ class TestShortestPathAlgorithms:
             return max(bfs_farthest(n) for n in graph)
 
         result = get_diameter(graph)
-        assert result == 2
+        assert result == COUNT_TWO
 
 
 class TestCacheServiceAdvanced:
@@ -325,8 +327,8 @@ class TestCacheServiceAdvanced:
         lru.put("c", 3)
 
         assert lru.get("a") is None  # Evicted
-        assert lru.get("b") == 2
-        assert lru.get("c") == 3
+        assert lru.get("b") == COUNT_TWO
+        assert lru.get("c") == COUNT_THREE
 
     def test_cache_invalidation(self) -> None:
         """Test cache invalidation patterns."""
@@ -339,7 +341,7 @@ class TestCacheServiceAdvanced:
             return len(keys)
 
         count = invalidate_pattern(cache, "user:")
-        assert count == 2
+        assert count == COUNT_TWO
         assert len(cache) == 0
 
     def test_cache_warming(self) -> None:
@@ -352,7 +354,7 @@ class TestCacheServiceAdvanced:
 
         data = {"a": 1, "b": 2, "c": 3}
         count = warm_cache(data)
-        assert count == 3
+        assert count == COUNT_THREE
         assert cache["a"] == 1
 
     def test_cache_statistics(self) -> None:
@@ -397,8 +399,8 @@ class TestAPIEndpointCoverage:
         page1 = paginate(items, 1, 10)
         page2 = paginate(items, 2, 10)
 
-        assert len(page1) == 10
-        assert len(page2) == 10
+        assert len(page1) == COUNT_TEN
+        assert len(page2) == COUNT_TEN
         assert page1[0]["id"] == 1
         assert page2[0]["id"] == 11
 

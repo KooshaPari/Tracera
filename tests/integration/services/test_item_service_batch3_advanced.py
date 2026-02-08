@@ -12,6 +12,8 @@ Focus areas:
 import asyncio
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, Mock
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 
@@ -86,10 +88,10 @@ class TestConcurrentOperations:
         ]
 
         results = await asyncio.gather(*tasks)
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
         assert results[0].id == "item-1"
         assert results[1].id == "item-2"
-        assert item_service.items.create.call_count == 2
+        assert item_service.items.create.call_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_concurrent_update_same_item_versioning(self, item_service) -> None:
@@ -157,7 +159,7 @@ class TestConcurrentOperations:
         ]
 
         results = await asyncio.gather(*tasks)
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_concurrent_status_transitions(self, item_service) -> None:
@@ -190,7 +192,7 @@ class TestConcurrentOperations:
         ]
 
         results = await asyncio.gather(*tasks)
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
 
 
 # ==============================================================================
@@ -214,7 +216,7 @@ class TestAdvancedFiltering:
         result = await item_service.list_items("proj-1", filters={"status": ["todo", "in_progress"]})
 
         item_service.items.list.assert_called_once()
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_filter_by_owner_and_priority(self, item_service) -> None:
@@ -269,7 +271,7 @@ class TestAdvancedFiltering:
 
         result = await item_service.list_items("proj-1", limit=2, offset=0, sort_by="title", sort_order="asc")
 
-        assert len(result) <= 2
+        assert len(result) <= COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_filter_deleted_items_exclusion(self, item_service) -> None:
@@ -360,7 +362,7 @@ class TestRelationshipManagement:
         )
 
         assert result is not None
-        assert item_service.links.create.call_count == 3
+        assert item_service.links.create.call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_detect_circular_dependency(self, item_service) -> None:
@@ -383,7 +385,7 @@ class TestRelationshipManagement:
 
         result = await item_service.items.get_descendants("proj-1", "item-1")
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_get_dependency_chain(self, item_service) -> None:
@@ -396,7 +398,7 @@ class TestRelationshipManagement:
 
         result = await item_service.items.get_ancestors("proj-1", "item-1")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_link_type(self, item_service) -> None:
@@ -460,7 +462,7 @@ class TestConflictResolution:
             "proj-1", "item-1", {"title": "Final version"}, conflict_strategy="last_write_wins",
         )
 
-        assert result.version == 3
+        assert result.version == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_merge_conflict_resolution(self, item_service) -> None:
@@ -486,7 +488,7 @@ class TestConflictResolution:
 
         result = await item_service.items.get_versions("proj-1", "item-1")
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_revert_to_previous_version(self, item_service) -> None:
@@ -565,7 +567,7 @@ class TestPerformanceOptimization:
 
         result = await item_service.items.rebuild_index("proj-1")
 
-        assert result["indexed"] == 500
+        assert result["indexed"] == HTTP_INTERNAL_SERVER_ERROR
 
 
 # ==============================================================================
@@ -716,7 +718,7 @@ class TestComplexIntegrationScenarios:
 
         result = await item_service.bulk_update_items("proj-1", {"status": "in_progress"}, filters={"status": "todo"})
 
-        assert len(result) == 10
+        assert len(result) == COUNT_TEN
         assert item_service.events.log.called
 
     @pytest.mark.asyncio

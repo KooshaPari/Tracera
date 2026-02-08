@@ -5,6 +5,8 @@ Comprehensive test coverage for specification CRUD and query operations.
 
 from datetime import UTC, datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -276,7 +278,7 @@ class TestADRRepositoryList:
         repo = ADRRepository(db_session)
         adrs = await repo.list_by_project(multiple_adrs["project"].id)
 
-        assert len(adrs) == 3
+        assert len(adrs) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_list_by_project_with_status_filter(self, db_session: AsyncSession, multiple_adrs) -> None:
@@ -293,7 +295,7 @@ class TestADRRepositoryList:
         repo = ADRRepository(db_session)
         adrs = await repo.list_by_project(multiple_adrs["project"].id, limit=2, offset=0)
 
-        assert len(adrs) == 2
+        assert len(adrs) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_find_by_status(self, db_session: AsyncSession, multiple_adrs) -> None:
@@ -337,7 +339,7 @@ class TestADRRepositoryUpdate:
 
         assert updated.title == "Updated Title"
         assert updated.context == "Updated Context"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_adr_not_found(self, db_session: AsyncSession) -> None:
@@ -387,7 +389,7 @@ class TestADRRepositoryTransition:
         updated = await repo.transition_status(adr_for_transition.id, "accepted")
 
         assert updated.status == "accepted"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_transition_proposed_to_rejected(self, db_session: AsyncSession, adr_for_transition) -> None:
@@ -442,7 +444,7 @@ class TestADRRepositoryVerify:
 
         assert updated.compliance_score == 0.85
         assert updated.last_verified_at is not None
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_verify_compliance_not_found(self, db_session: AsyncSession) -> None:
@@ -533,8 +535,8 @@ class TestADRRepositoryStats:
 
         counts = await repo.count_by_status(adrs_for_stats.id)
 
-        assert counts.get("proposed") == 3
-        assert counts.get("accepted") == 2
+        assert counts.get("proposed") == COUNT_THREE
+        assert counts.get("accepted") == COUNT_TWO
 
 
 # ============================================================================
@@ -735,7 +737,7 @@ class TestContractRepositoryList:
         repo = ContractRepository(db_session)
         contracts = await repo.list_by_project(multiple_contracts["project"].id)
 
-        assert len(contracts) == 3
+        assert len(contracts) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_list_by_project_filter_by_type(self, db_session: AsyncSession, multiple_contracts) -> None:
@@ -743,7 +745,7 @@ class TestContractRepositoryList:
         repo = ContractRepository(db_session)
         contracts = await repo.list_by_project(multiple_contracts["project"].id, contract_type="api")
 
-        assert len(contracts) == 2
+        assert len(contracts) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_list_by_item(self, db_session: AsyncSession, multiple_contracts) -> None:
@@ -866,7 +868,7 @@ class TestFeatureRepositoryList:
         repo = FeatureRepository(db_session)
         features = await repo.list_by_project(multiple_features["project"].id)
 
-        assert len(features) == 3
+        assert len(features) == COUNT_THREE
 
 
 # ============================================================================
@@ -1009,7 +1011,7 @@ class TestScenarioRepositoryList:
         repo = ScenarioRepository(db_session)
         scenarios = await repo.list_by_feature(multiple_scenarios["feature"].id)
 
-        assert len(scenarios) == 3
+        assert len(scenarios) == COUNT_THREE
 
 
 # ============================================================================
@@ -1046,7 +1048,7 @@ class TestADRRepositoryAdditionalTransitions:
         updated = await adr_repo.transition_status(adr.id, "deprecated")
 
         assert updated.status == "deprecated"
-        assert updated.version == 3  # created=1, accepted=2, deprecated=3
+        assert updated.version == COUNT_THREE  # created=1, accepted=2, deprecated=3
 
     @pytest.mark.asyncio
     async def test_transition_rejected_to_proposed(self, db_session: AsyncSession, project) -> None:
@@ -1068,7 +1070,7 @@ class TestADRRepositoryAdditionalTransitions:
         updated = await adr_repo.transition_status(adr.id, "proposed")
 
         assert updated.status == "proposed"
-        assert updated.version == 3
+        assert updated.version == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_transition_deprecated_is_terminal(self, db_session: AsyncSession, project) -> None:
@@ -1207,7 +1209,7 @@ class TestContractRepositoryUpdate:
         )
 
         assert updated.title == "Updated Contract"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_contract_not_found(self, db_session: AsyncSession) -> None:
@@ -1268,7 +1270,7 @@ class TestContractRepositoryTransition:
         updated = await repo.transition_status(contract_for_transition.id, "review")
 
         assert updated.status == "review"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_transition_review_to_approved(self, db_session: AsyncSession, contract_for_transition) -> None:
@@ -1282,7 +1284,7 @@ class TestContractRepositoryTransition:
         updated = await repo.transition_status(contract_for_transition.id, "approved")
 
         assert updated.status == "approved"
-        assert updated.version == 3
+        assert updated.version == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_transition_approved_to_archived(self, db_session: AsyncSession, contract_for_transition) -> None:
@@ -1417,8 +1419,8 @@ class TestContractRepositoryStats:
 
         counts = await repo.count_by_type(contracts_for_stats.id)
 
-        assert counts.get("api") == 3
-        assert counts.get("state_machine") == 2
+        assert counts.get("api") == COUNT_THREE
+        assert counts.get("state_machine") == COUNT_TWO
 
 
 class TestContractRepositoryVerify:
@@ -1456,7 +1458,7 @@ class TestContractRepositoryVerify:
 
         assert updated.verification_result == verification_result
         assert updated.last_verified_at is not None
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_verify_contract_not_found(self, db_session: AsyncSession) -> None:
@@ -1540,7 +1542,7 @@ class TestFeatureRepositoryUpdate:
 
         assert updated.name == "Updated Feature"
         assert updated.description == "New description"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_feature_not_found(self, db_session: AsyncSession) -> None:
@@ -1591,7 +1593,7 @@ class TestFeatureRepositoryTransition:
         updated = await repo.transition_status(feature_for_transition.id, "review")
 
         assert updated.status == "review"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_transition_review_to_approved(self, db_session: AsyncSession, feature_for_transition) -> None:
@@ -1667,7 +1669,7 @@ class TestFeatureRepositoryDelete:
 
         # Verify scenarios exist
         scenarios_before = await scenario_repo.list_by_feature(feature_with_scenarios["feature"].id)
-        assert len(scenarios_before) == 3
+        assert len(scenarios_before) == COUNT_THREE
 
         # Delete feature
         result = await feature_repo.delete(feature_with_scenarios["feature"].id)
@@ -1727,9 +1729,9 @@ class TestFeatureRepositoryListWithScenarios:
 
         results = await repo.list_with_scenarios(features_with_scenarios["project"].id)
 
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
         for _, scenarios in results:
-            assert len(scenarios) == 2
+            assert len(scenarios) == COUNT_TWO
 
 
 class TestFeatureNumberFormat:
@@ -1800,7 +1802,7 @@ class TestScenarioRepositoryUpdate:
 
         assert updated.title == "Updated Scenario"
         assert updated.gherkin_text == "Given updated"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_scenario_not_found(self, db_session: AsyncSession) -> None:
@@ -1858,7 +1860,7 @@ class TestScenarioRepositoryTransition:
         updated = await repo.transition_status(scenario_for_transition.id, "ready")
 
         assert updated.status == "ready"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_transition_ready_to_executing(self, db_session: AsyncSession, scenario_for_transition) -> None:
@@ -2006,7 +2008,7 @@ class TestScenarioRepositoryStats:
 
         counts = await repo.count_by_status(scenarios_for_stats.id)
 
-        assert counts.get("draft") == 2
+        assert counts.get("draft") == COUNT_TWO
         assert counts.get("ready") == 1
         assert counts.get("passed") == 1
         assert counts.get("failed") == 1
@@ -2070,7 +2072,7 @@ class TestScenarioRepositoryUpdatePassRate:
         updated = await repo.update_pass_rate(scenario_for_pass_rate.id, 0.85)
 
         assert updated.pass_rate == 0.85
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_pass_rate_not_found(self, db_session: AsyncSession) -> None:
@@ -2116,7 +2118,7 @@ class TestScenarioRepositoryFindByStatus:
 
         scenarios = await repo.find_by_status(scenarios_with_statuses.id, "draft")
 
-        assert len(scenarios) == 2
+        assert len(scenarios) == COUNT_TWO
         for s in scenarios:
             assert s.status == "draft"
 
@@ -2127,7 +2129,7 @@ class TestScenarioRepositoryFindByStatus:
 
         scenarios = await repo.find_by_status(scenarios_with_statuses.id, "ready")
 
-        assert len(scenarios) == 2
+        assert len(scenarios) == COUNT_TWO
         for s in scenarios:
             assert s.status == "ready"
 
@@ -2215,7 +2217,7 @@ class TestADRRepositoryUpdateEdgeCases:
 
         # Valid update should work
         assert updated.title == "Updated Title"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
         # Invalid attributes should be silently ignored
         assert not hasattr(updated, "nonexistent_field")
 
@@ -2231,7 +2233,7 @@ class TestADRRepositoryUpdateEdgeCases:
         )
 
         # Version should still increment even if no actual changes
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
         assert updated.title == "Edge Case ADR"  # Unchanged
 
 
@@ -2277,7 +2279,7 @@ class TestContractRepositoryListFilters:
 
         # Filter by draft status
         draft_contracts = await repo.list_by_project(contracts_with_statuses["project"].id, status="draft")
-        assert len(draft_contracts) == 2
+        assert len(draft_contracts) == COUNT_TWO
 
         # Filter by review status
         review_contracts = await repo.list_by_project(contracts_with_statuses["project"].id, status="review")
@@ -2296,7 +2298,7 @@ class TestContractRepositoryListFilters:
         filtered = await repo.list_by_project(
             contracts_with_statuses["project"].id, contract_type="api", status="draft",
         )
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
 
 class TestContractRepositoryUpdateEdgeCases:
@@ -2337,7 +2339,7 @@ class TestContractRepositoryUpdateEdgeCases:
         )
 
         assert updated.title == "Updated Contract"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
         assert not hasattr(updated, "nonexistent_field")
 
 
@@ -2487,7 +2489,7 @@ class TestFeatureRepositoryFilters:
 
         # Filter by draft status
         draft_features = await repo.list_by_project(features_setup["project1"].id, status="draft")
-        assert len(draft_features) == 2
+        assert len(draft_features) == COUNT_TWO
 
         # Filter by review status
         review_features = await repo.list_by_project(features_setup["project1"].id, status="review")
@@ -2522,7 +2524,7 @@ class TestFeatureRepositoryUpdateEdgeCases:
         )
 
         assert updated.name == "Updated Feature"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
         assert not hasattr(updated, "nonexistent_field")
 
 
@@ -2563,7 +2565,7 @@ class TestScenarioRepositoryFilters:
 
         # Filter by draft status
         draft_scenarios = await repo.list_by_feature(scenarios_for_filters["feature"].id, status="draft")
-        assert len(draft_scenarios) == 2
+        assert len(draft_scenarios) == COUNT_TWO
 
         # Filter by ready status
         ready_scenarios = await repo.list_by_feature(scenarios_for_filters["feature"].id, status="ready")
@@ -2609,7 +2611,7 @@ class TestScenarioRepositoryUpdateEdgeCases:
         )
 
         assert updated.title == "Updated Scenario"
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
         assert not hasattr(updated, "nonexistent_field")
 
     @pytest.mark.asyncio
@@ -2632,7 +2634,7 @@ class TestScenarioRepositoryUpdateEdgeCases:
         assert updated.given_steps == new_given
         assert updated.when_steps == new_when
         assert updated.then_steps == new_then
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
 
 class TestScenarioRepositoryTransitionEdgeCases:
@@ -2908,7 +2910,7 @@ class TestADRVerifyComplianceExplicitTime:
         # Lines 220-225 should be covered
         assert updated.compliance_score == 0.92
         assert updated.last_verified_at == explicit_time
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
 
 class TestContractVerifyMethod:
@@ -2948,7 +2950,7 @@ class TestContractVerifyMethod:
 
         assert updated.last_verified_at is not None
         assert updated.verification_result == verification_result
-        assert updated.version == 2
+        assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_verify_contract_not_found(self, db_session: AsyncSession) -> None:

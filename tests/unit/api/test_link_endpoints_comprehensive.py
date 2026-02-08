@@ -6,6 +6,8 @@ Tests:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, HTTP_NOT_FOUND, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -55,7 +57,7 @@ class TestListLinksEndpoint:
 
             response = client.get("/api/v1/links?project_id=empty-project")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["total"] == 0
             assert len(data["links"]) == 0
@@ -80,17 +82,17 @@ class TestListLinksEndpoint:
 
             # Test skip beyond total
             response = client.get("/api/v1/links?project_id=test&skip=10&limit=5")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert data["total"] == 5
+            assert data["total"] == COUNT_FIVE
             assert len(data["links"]) == 0  # Empty because skip > total
 
             # Test limit larger than total
             response = client.get("/api/v1/links?project_id=test&skip=0&limit=100")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert data["total"] == 5
-            assert len(data["links"]) == 5
+            assert data["total"] == COUNT_FIVE
+            assert len(data["links"]) == COUNT_FIVE
 
 
 class TestUpdateLinkEndpoint:
@@ -124,7 +126,7 @@ class TestUpdateLinkEndpoint:
                     json={"link_type": "tests"},
                 )
 
-                assert response.status_code == 200
+                assert response.status_code == HTTP_OK
                 data = response.json()
                 assert data["id"] == "link-123"
                 assert data["type"] == "tests"
@@ -159,7 +161,7 @@ class TestUpdateLinkEndpoint:
                     json={"metadata": {"key": "value"}},
                 )
 
-                assert response.status_code == 200
+                assert response.status_code == HTTP_OK
                 data = response.json()
                 assert data["metadata"] == {"key": "value"}
                 # Verify metadata was updated
@@ -193,7 +195,7 @@ class TestUpdateLinkEndpoint:
                     json={"link_type": "tests", "metadata": {"key": "value"}},
                 )
 
-                assert response.status_code == 200
+                assert response.status_code == HTTP_OK
                 data = response.json()
                 assert data["type"] == "tests"
                 assert data["metadata"] == {"key": "value"}
@@ -211,7 +213,7 @@ class TestUpdateLinkEndpoint:
                 json={"link_type": "tests"},
             )
 
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
             assert "Link not found" in response.json()["detail"]
 
     @pytest.mark.asyncio
@@ -241,6 +243,6 @@ class TestUpdateLinkEndpoint:
                 # Update with no parameters (should still work)
                 response = client.put("/api/v1/links/link-123", json={})
 
-                assert response.status_code == 200
+                assert response.status_code == HTTP_OK
                 data = response.json()
                 assert data["id"] == "link-123"

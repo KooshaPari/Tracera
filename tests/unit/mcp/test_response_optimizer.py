@@ -1,6 +1,8 @@
 """Unit tests for response_optimizer module."""
 
 import json
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
+
 
 from tracertm.mcp.tools.response_optimizer import (
     ResponseFormat,
@@ -94,7 +96,7 @@ class TestErrorFormatting:
         )
 
         assert "suggestions" in result
-        assert len(result["suggestions"]) == 2
+        assert len(result["suggestions"]) == COUNT_TWO
         assert "Check item ID" in result["suggestions"]
 
     def test_error_categorization(self) -> None:
@@ -240,7 +242,7 @@ class TestPagination:
         result = paginate_response(items, page=5, page_size=20)
 
         assert len(result["items"]) == 20
-        assert result["page"] == 5
+        assert result["page"] == COUNT_FIVE
         assert result["total"] == 100
         assert result["has_more"] is False
 
@@ -259,7 +261,7 @@ class TestPagination:
 
         result = paginate_response(items, page=1, page_size=5, optimizer_func=optimizer)
 
-        assert len(result["items"]) == 5
+        assert len(result["items"]) == COUNT_FIVE
         assert result["items"][0]["id"] == "12345678"  # Optimized ID
 
 

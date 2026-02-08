@@ -15,6 +15,8 @@ import math
 from datetime import UTC, datetime
 from typing import Never
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_OK
+
 
 import pytest
 
@@ -87,7 +89,7 @@ class TestBatchOperationEdgeCases:
         ]
 
         unique_ids = {item["id"] for item in items}
-        assert len(unique_ids) == 2
+        assert len(unique_ids) == COUNT_TWO
 
 
 class TestConcurrentRepositoryOperations:
@@ -185,7 +187,7 @@ class TestLinkRepositoryBoundaryConditions:
             link_type=long_type,
         )
 
-        assert len(link.link_type) > 200
+        assert len(link.link_type) > HTTP_OK
 
     @pytest.mark.asyncio
     async def test_link_with_special_characters(self) -> None:
@@ -342,7 +344,7 @@ class TestStorageSyncEdgeCases:
             {"id": "item-2", "deleted_at": datetime.now(UTC)},
         ]
 
-        assert len(deleted_items) == 2
+        assert len(deleted_items) == COUNT_TWO
         assert all("deleted_at" in item for item in deleted_items)
 
     @pytest.mark.asyncio
@@ -363,7 +365,7 @@ class TestStorageSyncEdgeCases:
             },
         ]
 
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
 
 class TestErrorHandlingEdgeCases:
@@ -441,7 +443,7 @@ class TestMetadataEdgeCases:
             "key@with#special$chars": "value",
         }
 
-        assert len(metadata) == 5
+        assert len(metadata) == COUNT_FIVE
 
     def test_metadata_with_mixed_types(self) -> None:
         """Test metadata with mixed value types."""
@@ -487,7 +489,7 @@ class TestDatabaseValueEdgeCases:
             "キー": "value",
             "مفتاح": "value",
         }
-        assert len(unicode_data) == 3
+        assert len(unicode_data) == COUNT_THREE
 
     def test_json_type_with_numeric_keys(self) -> None:
         """Test JSON with numeric keys."""
@@ -496,7 +498,7 @@ class TestDatabaseValueEdgeCases:
             "999": "value",
             "-42": "value",
         }
-        assert len(numeric_data) == 3
+        assert len(numeric_data) == COUNT_THREE
 
 
 class TestTimestampEdgeCases:

@@ -6,6 +6,8 @@ and authentication/authorization for all API endpoints.
 
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -22,7 +24,7 @@ class TestHealthEndpoints:
     def test_health_check_root(self) -> None:
         """Test root health check endpoint."""
         response = client.get("/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["status"] == "healthy"
         assert data["version"] == "1.0.0"
@@ -31,7 +33,7 @@ class TestHealthEndpoints:
     def test_api_v1_health_check(self) -> None:
         """Test v1 API health check endpoint."""
         response = client.get("/api/v1/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["status"] == "ok"
         assert data["service"] == "tracertm-api"
@@ -89,10 +91,10 @@ class TestItemsEndpoints:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1&skip=0&limit=100")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert data["total"] == 2
-            assert len(data["items"]) == 2
+            assert data["total"] == COUNT_TWO
+            assert len(data["items"]) == COUNT_TWO
             assert data["items"][0]["title"] == "Item 1"
             assert data["items"][1]["title"] == "Item 2"
 
@@ -128,9 +130,9 @@ class TestItemsEndpoints:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1&skip=5&limit=5")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert data["total"] == 10
+            assert data["total"] == COUNT_TEN
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -150,7 +152,7 @@ class TestItemsEndpoints:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["total"] == 0
             assert len(data["items"]) == 0
@@ -173,7 +175,7 @@ class TestItemsEndpoints:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -199,7 +201,7 @@ class TestItemsEndpoints:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items/item1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == "item1"
             assert data["title"] == "Item 1"
@@ -218,7 +220,7 @@ class TestItemsEndpoints:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items/nonexistent")
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
             data = response.json()
             assert "not found" in data["detail"].lower()
 
@@ -261,10 +263,10 @@ class TestLinksEndpoints:
         mock_session.execute.side_effect = results
 
         response = client.get("/api/v1/links?project_id=proj1&skip=0&limit=100")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
-        assert data["total"] == 2
-        assert len(data["links"]) == 2
+        assert data["total"] == COUNT_TWO
+        assert len(data["links"]) == COUNT_TWO
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -292,7 +294,7 @@ class TestLinksEndpoints:
         mock_session.execute.side_effect = results
 
         response = client.get("/api/v1/links?source_id=item1&skip=0&limit=100")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] == 1
         assert data["links"][0]["source_id"] == "item1"
@@ -323,7 +325,7 @@ class TestLinksEndpoints:
         mock_session.execute.side_effect = results
 
         response = client.get("/api/v1/links?target_id=item2&skip=0&limit=100")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] == 1
         assert data["links"][0]["target_id"] == "item2"
@@ -354,7 +356,7 @@ class TestLinksEndpoints:
         mock_session.execute.side_effect = results
 
         response = client.get("/api/v1/links?source_id=item1&target_id=item2&skip=0&limit=100")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] == 1
 
@@ -367,7 +369,7 @@ class TestLinksEndpoints:
         mock_db.return_value = mock_session
 
         response = client.get("/api/v1/links")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["total"] == 0
         assert len(data["links"]) == 0
@@ -402,7 +404,7 @@ class TestLinksEndpoints:
             }
 
             response = client.post("/api/v1/links", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == "link1"
             assert data["source_id"] == "item1"
@@ -471,7 +473,7 @@ class TestLinksEndpoints:
             }
 
             response = client.put("/api/v1/links/link1", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == "link1"
             assert data["type"] == "related_to"
@@ -495,7 +497,7 @@ class TestLinksEndpoints:
             }
 
             response = client.put("/api/v1/links/nonexistent", json=payload)
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
 
 
 class TestAnalysisEndpoints:
@@ -522,12 +524,12 @@ class TestAnalysisEndpoints:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/impact/item1?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["root_item_id"] == "item1"
-            assert data["total_affected"] == 5
-            assert data["max_depth"] == 3
-            assert len(data["affected_items"]) == 5
+            assert data["total_affected"] == COUNT_FIVE
+            assert data["max_depth"] == COUNT_THREE
+            assert len(data["affected_items"]) == COUNT_FIVE
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -543,7 +545,7 @@ class TestAnalysisEndpoints:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/impact/nonexistent?project_id=proj1")
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -566,12 +568,12 @@ class TestAnalysisEndpoints:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/cycles/proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["has_cycles"] is True
-            assert data["total_cycles"] == 2
+            assert data["total_cycles"] == COUNT_TWO
             assert data["severity"] == "high"
-            assert len(data["affected_items"]) == 3
+            assert len(data["affected_items"]) == COUNT_THREE
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -594,7 +596,7 @@ class TestAnalysisEndpoints:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/cycles/proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["has_cycles"] is False
             assert data["total_cycles"] == 0
@@ -620,11 +622,11 @@ class TestAnalysisEndpoints:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item4")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is True
-            assert data["distance"] == 3
-            assert len(data["path"]) == 4
+            assert data["distance"] == COUNT_THREE
+            assert len(data["path"]) == COUNT_FOUR
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -647,7 +649,7 @@ class TestAnalysisEndpoints:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item999")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is False
             assert data["distance"] is None
@@ -664,7 +666,7 @@ class TestAuthenticationAndAuthorization:
         mock_db.return_value = AsyncMock()
 
         response = client.get("/api/v1/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -675,7 +677,7 @@ class TestAuthenticationAndAuthorization:
 
         headers = {"Authorization": "Bearer valid_token_123"}
         response = client.get("/api/v1/health", headers=headers)
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -753,7 +755,7 @@ class TestRateLimiting:
 
             headers = {"X-Bulk-Operation": "true"}
             response = client.get("/api/v1/items?project_id=proj1", headers=headers)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
 
 class TestErrorHandling:
@@ -773,7 +775,7 @@ class TestErrorHandling:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1")
-            assert response.status_code == 500
+            assert response.status_code == HTTP_INTERNAL_SERVER_ERROR
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -827,7 +829,7 @@ class TestErrorHandling:
             mock_repo_class.return_value = mock_repo
 
             response = client.post("/api/v1/links", json=payload, headers=headers)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
 
 class TestResponseFormats:
@@ -864,7 +866,7 @@ class TestResponseFormats:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
 
             # Check response structure
@@ -913,7 +915,7 @@ class TestResponseFormats:
             }
 
             response = client.post("/api/v1/links", json=payload)
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
 
             # Check response structure
@@ -944,7 +946,7 @@ class TestResponseFormats:
             mock_service_class.return_value = mock_service
 
             response = client.get("/api/v1/analysis/impact/item1?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
 
             # Check response structure

@@ -3,6 +3,8 @@
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_TWO, HTTP_OK, HTTP_UNAUTHORIZED
+
 
 from tracertm.models.integration import (
     IntegrationConflict,
@@ -34,7 +36,7 @@ class TestIntegrationStatsEndpoint:
             headers=auth_headers,
         )
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["project_id"] == test_project_id
         assert data["providers"] == []
@@ -117,13 +119,13 @@ class TestIntegrationStatsEndpoint:
             headers=auth_headers,
         )
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["project_id"] == test_project_id
         assert len(data["providers"]) >= 1
         assert data["providers"][0]["provider"] == "github"
-        assert data["mappings"]["total"] >= 2
-        assert data["mappings"]["active"] >= 2
+        assert data["mappings"]["total"] >= COUNT_TWO
+        assert data["mappings"]["active"] >= COUNT_TWO
         assert "github" in data["mappings"]["by_provider"]
         assert data["sync"]["queue_pending"] >= 1
         assert data["conflicts"]["pending"] >= 1
@@ -140,7 +142,7 @@ class TestIntegrationStatsEndpoint:
             params={"project_id": test_project_id},
         )
 
-        assert response.status_code == 401
+        assert response.status_code == HTTP_UNAUTHORIZED
 
     async def test_get_integration_stats_no_project_access(
         self,

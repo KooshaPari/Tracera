@@ -11,6 +11,8 @@ Coverage goal: +2-3% improvement
 """
 
 from unittest.mock import AsyncMock, Mock
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 from sqlalchemy.exc import OperationalError
@@ -307,7 +309,7 @@ class TestDisconnectedComponents:
         result = service.detect_cycles("proj1")
 
         assert result.has_cycles is True
-        assert result.cycle_count >= 2
+        assert result.cycle_count >= COUNT_TWO
 
     def test_isolated_node_in_graph(self, service, mock_session) -> None:
         """Test graph with isolated node (no links)."""
@@ -353,7 +355,7 @@ class TestComplexCyclePatterns:
         result = service.detect_cycles("proj1")
 
         assert result.has_cycles is True
-        assert result.cycle_count >= 2
+        assert result.cycle_count >= COUNT_TWO
 
     def test_cycle_with_branch_structure(self, service, mock_session) -> None:
         """Test cycle with branching: A->B->C, A->D, D->B creates path C->A->D->B."""
@@ -689,7 +691,7 @@ class TestMissingDependencies:
         result = service.detect_missing_dependencies("proj1")
 
         assert result["has_missing_dependencies"] is True
-        assert result["missing_count"] >= 2
+        assert result["missing_count"] >= COUNT_TWO
 
 
 # ============================================================================
@@ -746,7 +748,7 @@ class TestLargeGraphs:
 
     def test_large_acyclic_graph_100_nodes(self, service, mock_session) -> None:
         """Test handling of large acyclic graph with 100 nodes."""
-        # Create a chain: 0 -> 1 -> 2 -> ... -> 99
+        # Create a chain: 0 -> 1 -> COUNT_TWO -> ... -> 99
         links = [
             Mock(spec=Link, source_item_id=str(i), target_item_id=str(i + 1), link_type="depends_on") for i in range(99)
         ]
@@ -924,7 +926,7 @@ class TestFindCyclesAlgorithm:
             "D": {"C"},  # Cycle 2: C <-> D
         }
         cycles = service._find_cycles(graph)
-        assert len(cycles) >= 2
+        assert len(cycles) >= COUNT_TWO
 
     def test_find_cycles_returns_cycle_paths(self, service) -> None:
         """Test that cycles include complete paths."""

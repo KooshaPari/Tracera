@@ -15,6 +15,8 @@ Test count: 45+
 
 import time
 from datetime import datetime
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -300,7 +302,7 @@ class TestRelationshipValidation:
             .filter_by(source_item_id=sample_items_5[0].id, target_item_id=sample_items_5[1].id, link_type="depends_on")
             .all()
         )
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
     def test_bidirectional_links(self, db_session, sample_project, sample_items_5) -> None:
         """Test creating bidirectional links (A -> B and B -> A)."""
@@ -452,7 +454,7 @@ class TestDeletionCascades:
             .filter((Link.source_item_id == sample_items_5[0].id) | (Link.target_item_id == sample_items_5[0].id))
             .all()
         )
-        assert len(links_before) == 2
+        assert len(links_before) == COUNT_TWO
 
         # Item deletion with CASCADE should delete related links
         # Note: SQLite with ondelete="CASCADE" will delete the foreign key references
@@ -478,7 +480,7 @@ class TestDeletionCascades:
 
         # Verify links exist
         links_before = db_session.query(Link).filter_by(project_id=sample_project.id).all()
-        assert len(links_before) == 4
+        assert len(links_before) == COUNT_FOUR
 
         # Delete project - cascades delete to items which cascade to links
         db_session.delete(sample_project)
@@ -553,7 +555,7 @@ class TestLinkRetrieval:
         db_session.commit()
 
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
-        assert len(links) == 4
+        assert len(links) == COUNT_FOUR
 
     def test_get_links_by_source_item(self, db_session, sample_project, sample_items_5) -> None:
         """Test retrieving links by source item."""
@@ -569,7 +571,7 @@ class TestLinkRetrieval:
         db_session.commit()
 
         links = db_session.query(Link).filter_by(source_item_id=sample_items_5[0].id).all()
-        assert len(links) == 3
+        assert len(links) == COUNT_THREE
 
     def test_get_links_by_target_item(self, db_session, sample_project, sample_items_5) -> None:
         """Test retrieving links by target item."""
@@ -585,7 +587,7 @@ class TestLinkRetrieval:
         db_session.commit()
 
         links = db_session.query(Link).filter_by(target_item_id=sample_items_5[4].id).all()
-        assert len(links) == 3
+        assert len(links) == COUNT_THREE
 
     def test_get_links_by_type(self, db_session, sample_project, sample_items_5) -> None:
         """Test retrieving links by type."""
@@ -629,7 +631,7 @@ class TestLinkRetrieval:
             .filter((Link.source_item_id == sample_items_5[2].id) | (Link.target_item_id == sample_items_5[2].id))
             .all()
         )
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
 
 # ============================================================
@@ -653,7 +655,7 @@ class TestLinkMetrics:
         db_session.commit()
 
         count = db_session.query(func.count(Link.id)).filter_by(project_id=sample_project.id).scalar()
-        assert count == 4
+        assert count == COUNT_FOUR
 
     def test_count_links_by_type(self, db_session, sample_project, sample_items_5) -> None:
         """Test counting links by type."""
@@ -684,7 +686,7 @@ class TestLinkMetrics:
         db_session.commit()
 
         count = db_session.query(func.count(Link.id)).filter_by(source_item_id=sample_items_5[0].id).scalar()
-        assert count == 3
+        assert count == COUNT_THREE
 
     def test_count_incoming_links_per_item(self, db_session, sample_project, sample_items_5) -> None:
         """Test counting incoming links per item."""
@@ -699,7 +701,7 @@ class TestLinkMetrics:
         db_session.commit()
 
         count = db_session.query(func.count(Link.id)).filter_by(target_item_id=sample_items_5[4].id).scalar()
-        assert count == 3
+        assert count == COUNT_THREE
 
 
 # ============================================================
@@ -725,7 +727,7 @@ class TestLinkOrphans:
 
         result = cycle_detection_service.detect_orphans(sample_project.id)
         assert result["has_orphans"] is True
-        assert result["orphan_count"] >= 2  # Items 4 and at least one more
+        assert result["orphan_count"] >= COUNT_TWO  # Items 4 and at least one more
 
     def test_no_orphan_items_all_linked(self, db_session, sample_project, sample_items_5, cycle_detection_service) -> None:
         """Test orphan detection when items have links."""
@@ -810,7 +812,7 @@ class TestImpactAnalysis:
 
     def test_analyze_impact_multi_level(self, db_session, sample_project, sample_items_20, cycle_detection_service) -> None:
         """Test impact analysis with multiple dependency levels."""
-        # Create reverse chain: 3 -> 2 -> 1 -> 0 (items depend on item 0)
+        # Create reverse chain: 3 -> COUNT_TWO -> 1 -> 0 (items depend on item 0)
         links_data = [(3, 2), (2, 1), (1, 0)]
         for source_idx, target_idx in links_data:
             link = Link(
@@ -842,9 +844,9 @@ class TestImpactAnalysis:
         db_session.commit()
 
         result = cycle_detection_service.analyze_impact(sample_project.id, sample_items_20[0].id, max_depth=3)
-        # Max depth should be <= 3
+        # Max depth should be <= COUNT_THREE
         max_reached = result.get("max_depth_reached", 0)
-        assert max_reached <= 3
+        assert max_reached <= COUNT_THREE
 
 
 # ============================================================
@@ -877,7 +879,7 @@ class TestScaleAndPerformance:
         # Verify all created
         count = db_session.query(func.count(Link.id)).filter_by(project_id=sample_project.id).scalar()
         assert count == 100
-        assert elapsed < 10  # Should complete in < 10 seconds
+        assert elapsed < COUNT_TEN  # Should complete in < COUNT_TEN seconds
 
     def test_query_performance_large_link_set(self, db_session, sample_project, sample_items_20) -> None:
         """Test query performance with 100+ links."""
@@ -1144,7 +1146,7 @@ class TestAsyncOperations:
 
             # Get by project
             links = await repo.get_by_project(project.id)
-            assert len(links) == 2
+            assert len(links) == COUNT_TWO
 
         await engine.dispose()
 

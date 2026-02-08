@@ -13,6 +13,8 @@ Target Coverage: 90%+ for repository layer
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.item_repository import ItemRepository
@@ -253,7 +255,7 @@ async def test_item_count_by_status(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     counts = await repo_item.count_by_status(project.id)
-    assert counts.get("todo", 0) >= 2
+    assert counts.get("todo", 0) >= COUNT_TWO
     assert counts.get("done", 0) >= 1
 
 
@@ -322,15 +324,15 @@ async def test_item_hierarchy_operations(db_session: AsyncSession) -> None:
 
     # Get children
     children = await repo_item.get_children(root.id)
-    assert len(children) >= 2
+    assert len(children) >= COUNT_TWO
 
     # Get descendants
     descendants = await repo_item.get_descendants(root.id)
-    assert len(descendants) >= 3
+    assert len(descendants) >= COUNT_THREE
 
     # Get ancestors
     ancestors = await repo_item.get_ancestors(grandchild.id)
-    assert len(ancestors) >= 2
+    assert len(ancestors) >= COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -416,7 +418,7 @@ async def test_link_get_by_source_and_target(db_session: AsyncSession) -> None:
 
     # Get links from item1
     links = await repo_link.get_by_source(item1.id)
-    assert len(links) >= 2
+    assert len(links) >= COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -446,7 +448,7 @@ async def test_link_get_all_by_item(db_session: AsyncSession) -> None:
 
     # Get all links for item1 (both incoming and outgoing)
     all_links = await repo_link.get_by_item(item1.id)
-    assert len(all_links) >= 2
+    assert len(all_links) >= COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -565,8 +567,8 @@ async def test_complex_link_graph(db_session: AsyncSession) -> None:
     a_deps = await repo_link.get_by_source(items["A"].id)
     d_incoming = await repo_link.get_by_target(items["D"].id)
 
-    assert len(a_deps) >= 2
-    assert len(d_incoming) >= 2
+    assert len(a_deps) >= COUNT_TWO
+    assert len(d_incoming) >= COUNT_TWO
 
 
 # ============================================================================

@@ -21,6 +21,8 @@ import json
 import logging
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_TEN, HTTP_OK, HTTP_UNAUTHORIZED
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -75,7 +77,7 @@ class TestAuthenticationFlows:
             }
 
             response = client.get("/health")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
     def test_jwt_authentication_missing_token(self) -> None:
         """Test authentication failure when token is missing."""
@@ -142,7 +144,7 @@ class TestAuthenticationFlows:
             mock_verify.return_value = {"user_id": "user123", "valid": True}
 
             response = client.get("/health")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
     def test_api_key_authentication_invalid(self) -> None:
         """Test API key authentication failure with invalid key."""
@@ -259,7 +261,7 @@ class TestTokenValidation:
 
             headers = {"Authorization": "Bearer valid_token"}
             response = client.get("/health")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
 
 class TestAuthorizationControl:
@@ -385,7 +387,7 @@ class TestRateLimiting:
                 nonlocal call_count
                 call_count += 1
                 # Allow 10 requests per user
-                return call_count <= 10
+                return call_count <= COUNT_TEN
 
             limiter.is_allowed.side_effect = check_limit
             limiter.get_remaining.return_value = 100
@@ -401,7 +403,7 @@ class TestRateLimiting:
                         client.get("/api/v1/projects", headers=headers)
                     except Exception as e:
                         if "429" in str(e) or "rate limit" in str(e).lower():
-                            assert _i >= 10  # Should block after 10 requests
+                            assert _i >= COUNT_TEN  # Should block after 10 requests
                             break
 
     def test_rate_limit_per_ip_anonymous(self) -> None:
@@ -445,7 +447,7 @@ class TestRateLimiting:
                 response = client.get("/health")
 
                 # Should include rate limit headers
-                assert response.status_code == 200
+                assert response.status_code == HTTP_OK
 
     def test_rate_limit_reset_after_window(self) -> None:
         """Test that rate limit resets after time window."""
@@ -465,7 +467,7 @@ class TestRateLimiting:
                     elapsed = (request_times[-1] - request_times[0]).total_seconds()
                     if elapsed >= 60:
                         request_times.clear()
-                return len(request_times) <= 10
+                return len(request_times) <= COUNT_TEN
 
             limiter.is_allowed.side_effect = check_limit
 
@@ -500,7 +502,7 @@ class TestRateLimiting:
                 mock_verify.return_value = {"sub": "premium_user", "tier": "premium"}
 
                 response = client.get("/health")
-                assert response.status_code == 200
+                assert response.status_code == HTTP_OK
 
 
 class TestWebhookSecurity:
@@ -591,7 +593,7 @@ class TestWebhookSecurity:
         try:
             resp = client.post("/api/v1/webhooks/events", json=json.loads(payload), headers=headers)
             # Should require signature
-            assert resp.status_code != 200 or "signature" not in str(resp)
+            assert resp.status_code != HTTP_OK or "signature" not in str(resp)
         except Exception as e:
             logger.debug("Expected in test: %s", e)
 
@@ -637,7 +639,7 @@ class TestCORSAndSecurityHeaders:
 
             response = client.get("/health")
             # Should include security headers
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
     def test_x_frame_options_header(self) -> None:
         """Test X-Frame-Options header (clickjacking protection)."""
@@ -646,7 +648,7 @@ class TestCORSAndSecurityHeaders:
         client = TestClient(app)
 
         response = client.get("/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
     def test_strict_transport_security_header(self) -> None:
         """Test Strict-Transport-Security header (HTTPS enforcement)."""
@@ -663,7 +665,7 @@ class TestCORSAndSecurityHeaders:
             mock_config.return_value = manager
 
             response = client.get("/health")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
 
 class TestSessionManagement:
@@ -769,7 +771,7 @@ class TestInputValidationSecurity:
             try:
                 resp = client.post("/api/v1/projects", json={"name": malicious_input}, headers=headers)
                 # Response should not contain unescaped script
-                assert "<script>" not in resp.text or resp.status_code != 200
+                assert "<script>" not in resp.text or resp.status_code != HTTP_OK
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
@@ -845,7 +847,7 @@ class TestMultiFactorAuthentication:
                 try:
                     response = client.post("/api/v1/projects", json={"name": "New Project"}, headers=headers)
                     # Should require MFA
-                    if response.status_code == 200:
+                    if response.status_code == HTTP_OK:
                         pytest.fail("Should require MFA")
                 except Exception as e:
                     logger.debug("Expected in test: %s", e)
@@ -908,7 +910,7 @@ class TestErrorHandlingSecurity:
             try:
                 resp = client.get("/api/v1/projects", headers={"Authorization": "Bearer invalid"})
                 # Error message should be generic
-                if resp.status_code == 401:
+                if resp.status_code == HTTP_UNAUTHORIZED:
                     error_text = resp.text.lower()
                     assert "password" not in error_text or "user" in error_text
             except Exception as e:

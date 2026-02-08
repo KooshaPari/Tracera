@@ -13,6 +13,8 @@ Target: +2% coverage on performance-sensitive paths
 import asyncio
 import time
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -124,7 +126,7 @@ class TestCriticalPathPerformance:
         links = []
         for i in range(0, 500, 2):
             for j in range(1, 3):
-                if i + j < 500:
+                if i + j < HTTP_INTERNAL_SERVER_ERROR:
                     link = MagicMock(spec=Link)
                     link.source_item_id = f"item-{i:04d}"
                     link.target_item_id = f"item-{i + j:04d}"
@@ -145,8 +147,8 @@ class TestCriticalPathPerformance:
         result = await service.calculate_critical_path(project_id)
         elapsed = time.time() - start_time
 
-        # Should complete in < 2s even with 500 items
-        assert elapsed < 2.0, f"Critical path took {elapsed}s for 500 items"
+        # Should complete in < COUNT_TWOs even with 500 items
+        assert elapsed < COUNT_TWO.0, f"Critical path took {elapsed}s for 500 items"
         assert result is not None
 
     @pytest.mark.asyncio
@@ -221,8 +223,8 @@ class TestCriticalPathPerformance:
         results = await asyncio.gather(*[run_cp_analysis(f"proj-{i:03d}", 50) for i in range(10)])
         elapsed = time.time() - start_time
 
-        assert len(results) == 10
-        assert elapsed < 3.0, f"Concurrent analyses took {elapsed}s"
+        assert len(results) == COUNT_TEN
+        assert elapsed < COUNT_THREE.0, f"Concurrent analyses took {elapsed}s"
         assert all(r is not None for r in results)
 
     @pytest.mark.asyncio
@@ -268,8 +270,8 @@ class TestCriticalPathPerformance:
         stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_increase = sum(stat.size_diff for stat in stats) / (1024 * 1024)
 
-        # Should use < 10MB for 200 items + 300 links
-        assert total_increase < 10.0, f"Memory increase {total_increase}MB is too high"
+        # Should use < COUNT_TENMB for 200 items + 300 links
+        assert total_increase < COUNT_TEN.0, f"Memory increase {total_increase}MB is too high"
 
     @pytest.mark.asyncio
     async def test_critical_path_empty_graph(self, mock_async_session) -> None:

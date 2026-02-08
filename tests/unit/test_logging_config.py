@@ -5,6 +5,8 @@ the logging system for the TraceRTM application using loguru.
 """
 
 import pytest
+from tests.test_constants import COUNT_FIVE
+
 
 from tracertm.logging_config import get_logger, setup_logging
 
@@ -144,7 +146,7 @@ class TestLoggingIntegration:
         elapsed = time.time() - start
 
         # Should complete in reasonable time
-        assert elapsed < 5.0
+        assert elapsed < COUNT_FIVE.0
 
     def test_logging_with_contextual_info(self) -> None:
         """Test logging with contextual information."""

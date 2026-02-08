@@ -1,6 +1,8 @@
 """Integration tests for Epic 5: Batch Operations (Story 5.5, FR44)."""
 
 import pytest
+from tests.test_constants import COUNT_TEN, COUNT_TWO
+
 
 pytestmark = pytest.mark.integration
 
@@ -56,11 +58,11 @@ def test_batch_create_items(temp_project_setup) -> None:  # noqa: ARG001
 
     result = client.batch_create_items(items)
     assert isinstance(result, BatchResult)
-    assert result["items_created"] == 10
+    assert result["items_created"] == COUNT_TEN
 
     # Verify items were created
     all_items = client.query_items()
-    assert len(all_items) == 10
+    assert len(all_items) == COUNT_TEN
 
     client.close()
 
@@ -82,7 +84,7 @@ def test_batch_update_items(temp_project_setup) -> None:  # noqa: ARG001
 
     result = client.batch_update_items(updates)
     assert isinstance(result, BatchResult)
-    assert result["items_updated"] == 2
+    assert result["items_updated"] == COUNT_TWO
 
     # Verify updates
     updated1 = client.get_item(item1["id"])
@@ -108,7 +110,7 @@ def test_batch_delete_items(temp_project_setup) -> None:  # noqa: ARG001
     # Batch delete
     result = client.batch_delete_items([item1["id"], item2["id"]])
     assert isinstance(result, BatchResult)
-    assert result["items_deleted"] == 2
+    assert result["items_deleted"] == COUNT_TWO
 
     # Verify items are deleted (soft delete) - query_items should not return them
     all_items = client.query_items()
@@ -134,10 +136,10 @@ def test_batch_operations_atomicity(temp_project_setup) -> None:  # noqa: ARG001
     # Batch create should succeed
     result = client.batch_create_items(items)
     assert isinstance(result, BatchResult)
-    assert result["items_created"] == 2
+    assert result["items_created"] == COUNT_TWO
 
     # Verify all items were created (atomicity - all or nothing)
     all_items = client.query_items()
-    assert len(all_items) == 2
+    assert len(all_items) == COUNT_TWO
 
     client.close()

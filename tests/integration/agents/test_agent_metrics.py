@@ -1,6 +1,8 @@
 """Integration tests for Epic 5: Agent Metrics (Story 5.6)."""
 
 from datetime import UTC, datetime, timedelta, timezone
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE
+
 
 import pytest
 
@@ -91,7 +93,7 @@ def test_metrics_calculation(temp_project_setup) -> None:
         assert len(metrics["metrics"]) > 0
 
         agent_metrics = metrics["metrics"][0]
-        assert agent_metrics["total_operations"] == 10
+        assert agent_metrics["total_operations"] == COUNT_TEN
         assert agent_metrics["agent_id"] == agent_id
 
     db.close()
@@ -123,7 +125,7 @@ def test_workload_calculation(temp_project_setup) -> None:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo" if i < 3 else "in_progress",
+                status="todo" if i < COUNT_THREE else "in_progress",
                 owner=agent_id,
             )
             session.add(item)
@@ -134,7 +136,7 @@ def test_workload_calculation(temp_project_setup) -> None:
         workload = service.get_agent_workload(project_id, agent_id)
 
         assert workload["agent_id"] == agent_id
-        assert workload["total_items"] == 5
+        assert workload["total_items"] == COUNT_FIVE
         assert "by_status" in workload
 
     db.close()

@@ -12,6 +12,8 @@ This file covers all missing functionality identified in coverage analysis:
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -179,7 +181,7 @@ async def test_get_by_project_returns_all_links(db_session: AsyncSession) -> Non
 
     # Get all links in project
     links = await link_repo.get_by_project(project.id)
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
     link_ids = {link.id for link in links}
     assert link1.id in link_ids
     assert link2.id in link_ids
@@ -267,7 +269,7 @@ async def test_get_by_source_returns_outgoing_links(db_session: AsyncSession) ->
 
     # Get links from source
     links = await link_repo.get_by_source(source.id)
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
     link_ids = {link.id for link in links}
     assert link1.id in link_ids
     assert link2.id in link_ids
@@ -354,7 +356,7 @@ async def test_get_by_target_returns_incoming_links(db_session: AsyncSession) ->
 
     # Get links to target
     links = await link_repo.get_by_target(target.id)
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
     link_ids = {link.id for link in links}
     assert link1.id in link_ids
     assert link2.id in link_ids
@@ -443,7 +445,7 @@ async def test_get_by_item_returns_all_links(db_session: AsyncSession) -> None:
 
     # Get all links connected to item1
     links = await link_repo.get_by_item(item1.id)
-    assert len(links) == 2
+    assert len(links) == COUNT_TWO
     link_ids = {link.id for link in links}
     assert link1.id in link_ids
     assert link2.id in link_ids
@@ -547,7 +549,7 @@ async def test_delete_by_item_removes_all_links(db_session: AsyncSession) -> Non
 
     # Delete all links involving item1
     deleted_count = await link_repo.delete_by_item(item1.id)
-    assert deleted_count == 2
+    assert deleted_count == COUNT_TWO
     await db_session.commit()
 
     # Verify links involving item1 are deleted
@@ -604,7 +606,7 @@ async def test_delete_by_item_handles_both_source_and_target(db_session: AsyncSe
 
     # Delete all links involving item1
     deleted_count = await link_repo.delete_by_item(item1.id)
-    assert deleted_count == 2
+    assert deleted_count == COUNT_TWO
     await db_session.commit()
 
     # Verify both links are deleted

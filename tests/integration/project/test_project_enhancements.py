@@ -1,6 +1,8 @@
 """Integration tests for Epic 6: Project Enhancements (Stories 6.3-6.6)."""
 
 import json
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -81,6 +83,6 @@ def test_project_export_import(temp_project_setup) -> None:
     data = json.loads(export_data)
 
     assert "items" in data
-    assert len(data["items"]) == 2
+    assert len(data["items"]) == COUNT_TWO
 
     client.close()

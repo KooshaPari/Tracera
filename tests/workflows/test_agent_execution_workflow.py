@@ -6,6 +6,8 @@ Tests workflow execution, checkpoint creation, and session resumability.
 import tempfile
 from pathlib import Path
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -81,8 +83,8 @@ class TestCheckpointService:
         latest = await service.load_latest_checkpoint(session_id)
 
         assert latest is not None
-        assert latest.turn_number == 3
-        assert latest.state_snapshot["turn"] == 3
+        assert latest.turn_number == COUNT_THREE
+        assert latest.state_snapshot["turn"] == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_load_checkpoint_by_turn(self, db_session) -> None:
@@ -110,8 +112,8 @@ class TestCheckpointService:
         checkpoint = await service.load_checkpoint_by_turn(session_id, 2)
 
         assert checkpoint is not None
-        assert checkpoint.turn_number == 2
-        assert checkpoint.state_snapshot["turn"] == 2
+        assert checkpoint.turn_number == COUNT_TWO
+        assert checkpoint.state_snapshot["turn"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_list_checkpoints(self, db_session) -> None:
@@ -138,9 +140,9 @@ class TestCheckpointService:
         # List checkpoints
         checkpoints = await service.list_checkpoints(session_id, limit=10)
 
-        assert len(checkpoints) == 5
+        assert len(checkpoints) == COUNT_FIVE
         # Should be ordered by turn number descending
-        assert checkpoints[0].turn_number == 5
+        assert checkpoints[0].turn_number == COUNT_FIVE
         assert checkpoints[-1].turn_number == 1
 
     @pytest.mark.asyncio
@@ -175,8 +177,8 @@ class TestCheckpointService:
 
         # Verify only 3 remain
         remaining = await service.list_checkpoints(session_id)
-        assert len(remaining) == 3
-        assert remaining[0].turn_number == 10
+        assert len(remaining) == COUNT_THREE
+        assert remaining[0].turn_number == COUNT_TEN
         assert remaining[-1].turn_number == 8
 
     @pytest.mark.asyncio
@@ -205,8 +207,8 @@ class TestCheckpointService:
         stats = await service.get_checkpoint_stats(session_id)
 
         assert stats["session_id"] == session_id
-        assert stats["total_checkpoints"] == 4
-        assert stats["latest_turn"] == 10
+        assert stats["total_checkpoints"] == COUNT_FOUR
+        assert stats["latest_turn"] == COUNT_TEN
         assert stats["oldest_turn"] == 1
         assert "latest_checkpoint_at" in stats
 

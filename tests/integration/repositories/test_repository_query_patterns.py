@@ -12,6 +12,8 @@ Test Categories:
 """
 
 from datetime import UTC, datetime
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -207,7 +209,7 @@ class TestComplexFilters:
         project_id = parent.project_id
 
         children = await repo.query(project_id, {"parent_id": parent.id})
-        assert len(children) == 2
+        assert len(children) == COUNT_TWO
         assert all(item.parent_id == parent.id for item in children)
 
     async def test_filter_by_null_parent_id(self, db_session: AsyncSession, setup_items: dict) -> None:
@@ -271,7 +273,7 @@ class TestPagination:
         project_id = setup_items["item1"].project_id
 
         page = await repo.get_by_project(project_id, limit=5, offset=0)
-        assert len(page) <= 5
+        assert len(page) <= COUNT_FIVE
 
     async def test_pagination_basic_second_page(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Get second page with offset."""
@@ -582,7 +584,7 @@ class TestAggregations:
 
         counts = await repo.count_by_status(project.id)
 
-        assert counts.get("todo") == 5
+        assert counts.get("todo") == COUNT_FIVE
         assert len(counts) == 1
 
     async def test_count_by_status_multiple_statuses(self, db_session: AsyncSession) -> None:
@@ -604,8 +606,8 @@ class TestAggregations:
 
         counts = await repo.count_by_status(project.id)
 
-        assert counts.get("todo") == 2
-        assert counts.get("in_progress") == 2
+        assert counts.get("todo") == COUNT_TWO
+        assert counts.get("in_progress") == COUNT_TWO
         assert counts.get("done") == 1
 
     async def test_count_excludes_deleted(self, db_session: AsyncSession) -> None:
@@ -633,7 +635,7 @@ class TestAggregations:
 
         # Count before delete
         counts_before = await repo.count_by_status(project.id)
-        assert counts_before.get("todo") == 2
+        assert counts_before.get("todo") == COUNT_TWO
 
         # Delete one item
         await repo.delete(item1.id, soft=True)
@@ -688,7 +690,7 @@ class TestAggregations:
         counts = await repo.count_by_status(project_id)
 
         # Should include parent and children
-        assert sum(counts.values()) > 2
+        assert sum(counts.values()) > COUNT_TWO
 
     async def test_get_children_count(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Count direct children."""
@@ -697,7 +699,7 @@ class TestAggregations:
 
         children = await repo.get_children(parent.id)
 
-        assert len(children) == 2
+        assert len(children) == COUNT_TWO
         assert all(child.parent_id == parent.id for child in children)
 
     async def test_get_descendants_count(self, db_session: AsyncSession, setup_items: dict) -> None:
@@ -707,7 +709,7 @@ class TestAggregations:
 
         descendants = await repo.get_descendants(parent.id)
 
-        assert len(descendants) >= 2  # At least the two direct children
+        assert len(descendants) >= COUNT_TWO  # At least the two direct children
 
     async def test_get_ancestors_count(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Count ancestors."""
@@ -746,9 +748,9 @@ class TestAggregations:
 
         counts = await repo.count_by_status(project.id)
 
-        assert counts["todo"] == 10
-        assert counts["in_progress"] == 5
-        assert counts["done"] == 3
+        assert counts["todo"] == COUNT_TEN
+        assert counts["in_progress"] == COUNT_FIVE
+        assert counts["done"] == COUNT_THREE
 
     async def test_complex_aggregation_query(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test complex aggregation across multiple dimensions."""
@@ -955,7 +957,7 @@ class TestHierarchicalQueries:
 
         children = await repo.get_children(parent.id)
 
-        assert len(children) == 2
+        assert len(children) == COUNT_TWO
         assert all(child.parent_id == parent.id for child in children)
 
     async def test_get_descendants_recursive(self, db_session: AsyncSession, setup_items: dict) -> None:
@@ -965,7 +967,7 @@ class TestHierarchicalQueries:
 
         descendants = await repo.get_descendants(parent.id)
 
-        assert len(descendants) >= 2
+        assert len(descendants) >= COUNT_TWO
         parent_ids = {d.parent_id for d in descendants}
         assert parent.id in parent_ids
 
@@ -1156,7 +1158,7 @@ class TestProjectRepositoryQueries:
 
         all_projects = await repo.get_all()
 
-        assert len(all_projects) >= 3
+        assert len(all_projects) >= COUNT_THREE
         project_names = {p.name for p in all_projects}
         assert "Project 1" in project_names
 

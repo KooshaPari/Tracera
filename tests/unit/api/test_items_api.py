@@ -5,6 +5,8 @@ Tests all CRUD operations, validation, filtering, and edge cases for items.
 
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -49,7 +51,7 @@ class TestItemsCRUD:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["total"] == 150
             assert len(data["items"]) <= 100  # Default limit
@@ -82,7 +84,7 @@ class TestItemsCRUD:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items/item1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == "item1"
             assert data["project_id"] == "proj1"
@@ -122,9 +124,9 @@ class TestItemsCRUD:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert len(data["items"]) == 5
+            assert len(data["items"]) == COUNT_FIVE
             found_statuses = {item["status"] for item in data["items"]}
             assert len(found_statuses) > 0
 
@@ -161,9 +163,9 @@ class TestItemsCRUD:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert len(data["items"]) == 4
+            assert len(data["items"]) == COUNT_FOUR
 
 
 class TestItemsFiltering:
@@ -200,7 +202,7 @@ class TestItemsFiltering:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             for item in data["items"]:
                 assert item["project_id"] == "proj1"
@@ -237,7 +239,7 @@ class TestItemsFiltering:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1&skip=5&limit=5")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
@@ -271,9 +273,9 @@ class TestItemsFiltering:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1&limit=10")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert len(data["items"]) <= 10
+            assert len(data["items"]) <= COUNT_TEN
 
 
 class TestItemsEdgeCases:
@@ -304,7 +306,7 @@ class TestItemsEdgeCases:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items/item1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             # Should handle gracefully
             assert "id" in data
@@ -335,7 +337,7 @@ class TestItemsEdgeCases:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items/item1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["title"] == special_title
 
@@ -365,7 +367,7 @@ class TestItemsEdgeCases:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items/item1")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert len(data["title"]) == 1000
 
@@ -401,7 +403,7 @@ class TestItemsEdgeCases:
             mock_repo_class.return_value = mock_repo
 
             response = client.get(f"/api/v1/items?project_id={special_project_id}")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             if data["items"]:
                 assert data["items"][0]["project_id"] == special_project_id
@@ -432,7 +434,7 @@ class TestItemsEdgeCases:
             mock_repo_class.return_value = mock_repo
 
             response = client.get(f"/api/v1/items/{uuid_id}")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == uuid_id
 
@@ -468,7 +470,7 @@ class TestItemsEdgeCases:
             mock_repo_class.return_value = mock_repo
 
             response = client.get("/api/v1/items?project_id=proj1&limit=10000")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["total"] == 100
 
@@ -498,7 +500,7 @@ class TestItemsEdgeCases:
             mock_repo_class.return_value = mock_repo
 
             response = client.get(f"/api/v1/items/{numeric_id}")
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == numeric_id
 

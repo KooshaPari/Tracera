@@ -12,6 +12,8 @@ Tests cover:
 import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from tests.test_constants import COUNT_FIVE
+
 
 import pytest
 
@@ -213,7 +215,7 @@ class TestSyncQueue:
         mock_db.engine.connect.return_value = mock_conn
 
         count = sync_queue.get_count()
-        assert count == 5
+        assert count == COUNT_FIVE
 
 
 class TestSyncStateManager:
@@ -534,7 +536,7 @@ class TestSyncEngine:
         state = sync_engine.get_status()
 
         assert state.status == SyncStatus.IDLE
-        assert state.pending_changes == 5
+        assert state.pending_changes == COUNT_FIVE
 
     def test_is_syncing_true(self, sync_engine) -> None:
         """Test syncing status check."""

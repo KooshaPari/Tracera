@@ -1,5 +1,7 @@
 import asyncio
 from types import SimpleNamespace
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 from fastmcp.exceptions import ToolError
@@ -62,7 +64,7 @@ async def test_sync_manage_status(monkeypatch) -> None:
 
     result = await param_tools._sync_manage_impl(action="status", payload={}, ctx=None)
     assert result["data"]["status"] == "idle"
-    assert result["data"]["pending_changes"] == 2
+    assert result["data"]["pending_changes"] == COUNT_TWO
 
 
 @pytest.mark.asyncio

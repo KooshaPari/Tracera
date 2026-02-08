@@ -19,6 +19,8 @@ import json
 import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine, text
@@ -216,7 +218,7 @@ class TestEntityVersion:
             data=complex_data,
             vector_clock=clock,
         )
-        assert version.data["metadata"]["nested"]["level"] == 2
+        assert version.data["metadata"]["nested"]["level"] == COUNT_TWO
 
     def test_entity_version_all_types(self, base_time) -> None:
         """Test entity version with all supported entity types."""
@@ -1134,7 +1136,7 @@ class TestConflictQueries:
             resolver.detect_conflict(local, remote)
 
         unresolved = resolver.list_unresolved()
-        assert len(unresolved) == 3
+        assert len(unresolved) == COUNT_THREE
 
     def test_list_unresolved_by_type(self, resolver, base_time) -> None:
         """Test filtering unresolved by entity type."""
@@ -1229,7 +1231,7 @@ class TestConflictQueries:
                 resolver.resolve(conflict, ConflictStrategy.LOCAL_WINS)
 
         stats = resolver.get_conflict_stats()
-        assert stats["total"] == 2
+        assert stats["total"] == COUNT_TWO
         assert ConflictStatus.UNRESOLVED.value in stats["by_status"]
 
     def test_get_conflict_stats_empty(self, resolver) -> None:
@@ -1260,7 +1262,7 @@ class TestConflictQueries:
 
         unresolved = resolver.list_unresolved()
         # Should be in reverse order (newest first)
-        assert len(unresolved) == 3
+        assert len(unresolved) == COUNT_THREE
 
 
 # ============================================================================
@@ -1600,7 +1602,7 @@ class TestIntegration:
         resolver.resolve_manual(c3, {"source": "item-1", "target": "item-4"})
 
         stats = resolver.get_conflict_stats()
-        assert stats["total"] == 3
+        assert stats["total"] == COUNT_THREE
 
     def test_sequential_conflict_resolution(self, resolver, base_time) -> None:
         """Test resolving multiple conflicts sequentially."""

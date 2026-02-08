@@ -1,6 +1,8 @@
 """Unit tests for EventRepository."""
 
 from datetime import UTC, datetime, timezone
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,7 +61,7 @@ async def test_get_by_entity(db_session: AsyncSession) -> None:
     )
 
     events = await event_repo.get_by_entity("item-123")
-    assert len(events) == 2
+    assert len(events) == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -98,7 +100,7 @@ async def test_get_by_project(db_session: AsyncSession) -> None:
     )
 
     events = await event_repo.get_by_project(str(project1.id), limit=10)
-    assert len(events) == 2
+    assert len(events) == COUNT_TWO
     assert all(e.project_id == project1.id for e in events)
 
 
@@ -137,7 +139,7 @@ async def test_get_by_agent(db_session: AsyncSession) -> None:
     )
 
     agent_events = await event_repo.get_by_agent("agent-1")
-    assert len(agent_events) == 2
+    assert len(agent_events) == COUNT_TWO
     assert all(e.agent_id == "agent-1" for e in agent_events)
 
 
@@ -192,7 +194,7 @@ async def test_get_by_entity_multiple_events(db_session: AsyncSession) -> None:
         )
 
     events = await event_repo.get_by_entity("item-1")
-    assert len(events) == 5
+    assert len(events) == COUNT_FIVE
 
 
 @pytest.mark.unit
@@ -215,7 +217,7 @@ async def test_get_by_project_with_limit(db_session: AsyncSession) -> None:
         )
 
     events = await event_repo.get_by_project(str(project.id), limit=5)
-    assert len(events) <= 5
+    assert len(events) <= COUNT_FIVE
 
 
 @pytest.mark.unit
@@ -244,7 +246,7 @@ async def test_event_data_persistence(db_session: AsyncSession) -> None:
     )
 
     assert event.data == complex_data
-    assert event.data["nested"]["deep"]["level"] == 2
+    assert event.data["nested"]["deep"]["level"] == COUNT_TWO
 
 
 @pytest.mark.unit

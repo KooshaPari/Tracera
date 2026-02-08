@@ -1,4 +1,6 @@
 """UI Layer Polish: API Endpoint Edge Cases and Final Polish Tests.
+from tests.test_constants import COUNT_THREE, HTTP_INTERNAL_SERVER_ERROR, HTTP_UNAUTHORIZED
+
 
 This test suite covers final edge case and integration scenarios for API endpoints.
 
@@ -93,7 +95,7 @@ class TestApiErrorResponseEdgeCases:
         from tracertm.api.sync_client import ApiError
 
         error = ApiError(status_code=500, message="")
-        assert error.status_code == 500
+        assert error.status_code == HTTP_INTERNAL_SERVER_ERROR
 
     def test_error_response_with_very_long_message(self) -> None:
         """Test error response with very long error message."""
@@ -101,14 +103,14 @@ class TestApiErrorResponseEdgeCases:
 
         long_message = "Error: " + "A" * 1000
         error = ApiError(status_code=500, message=long_message)
-        assert error.status_code == 500
+        assert error.status_code == HTTP_INTERNAL_SERVER_ERROR
 
     def test_error_response_with_unicode_message(self) -> None:
         """Test error response with unicode in message."""
         from tracertm.api.sync_client import ApiError
 
         error = ApiError(status_code=500, message="Error: 中文 日本語 ✨")
-        assert error.status_code == 500
+        assert error.status_code == HTTP_INTERNAL_SERVER_ERROR
 
     def test_error_response_with_newlines(self) -> None:
         """Test error response with newline characters."""
@@ -116,7 +118,7 @@ class TestApiErrorResponseEdgeCases:
 
         multiline_error = "Line 1\nLine 2\nLine 3"
         error = ApiError(status_code=500, message=multiline_error)
-        assert error.status_code == 500
+        assert error.status_code == HTTP_INTERNAL_SERVER_ERROR
 
     def test_error_with_invalid_status_code(self) -> None:
         """Test error with invalid/malformed status code."""
@@ -271,7 +273,7 @@ class TestApiRetryConfigurationEdgeCases:
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", retry_backoff_base=3.0, retry_backoff_max=120.0)
-        assert config.retry_backoff_base == 3.0
+        assert config.retry_backoff_base == COUNT_THREE.0
         assert config.retry_backoff_max == 120.0
 
 
@@ -378,7 +380,7 @@ class TestApiAuthenticationErrorEdgeCases:
         from tracertm.api.sync_client import AuthenticationError
 
         error = AuthenticationError(status_code=500, message="Auth failed")
-        assert error.status_code == 500
+        assert error.status_code == HTTP_INTERNAL_SERVER_ERROR
 
     def test_auth_error_with_403_forbidden(self) -> None:
         """Test authentication error with 403 Forbidden."""
@@ -392,7 +394,7 @@ class TestApiAuthenticationErrorEdgeCases:
         from tracertm.api.sync_client import AuthenticationError
 
         error = AuthenticationError(status_code=401, message="Token expired")
-        assert error.status_code == 401
+        assert error.status_code == HTTP_UNAUTHORIZED
 
 
 # =============================================================================

@@ -9,6 +9,8 @@ This module provides 50+ tests for:
 """
 
 from typing import Never
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from hypothesis import given
@@ -293,7 +295,7 @@ class TestExtractFigmaProtocolUrl:
         """Test extracting multiple figma:// URLs."""
         text = "![Preview1](figma://abc123/1:42) and ![Preview2](figma://xyz789/2:84)"
         result = extract_figma_protocol_url(text)
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert ("abc123", "1:42") in result
         assert ("xyz789", "2:84") in result
 
@@ -337,7 +339,7 @@ class TestExtractFigmaProtocolUrl:
         ![Preview2](figma://xyz789/2:84)
         """
         result = extract_figma_protocol_url(text)
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
 
 class TestConvertFigmaProtocolToUrl:
@@ -465,7 +467,7 @@ class TestValidateFigmaMetadata:
             "figma_node_id": "invalid",
         }
         errors = validate_figma_metadata(metadata)
-        assert len(errors) >= 3
+        assert len(errors) >= COUNT_THREE
 
     @pytest.mark.unit
     def test_validate_valid_file_key(self) -> None:
@@ -618,7 +620,7 @@ class TestLoggingConfiguration:
         test_logger.warning("Warning message")
         test_logger.error("Error message")
 
-        assert len(logs) == 4
+        assert len(logs) == COUNT_FOUR
         assert "DEBUG:Debug message" in logs[0]
         assert "INFO:Info message" in logs[1]
         assert "WARNING:Warning message" in logs[2]
@@ -682,7 +684,7 @@ class TestLoggingConfiguration:
         test_logger.warning("Warning message")
         test_logger.error("Error message")
 
-        assert len(logs) == 2  # Only WARNING and ERROR
+        assert len(logs) == COUNT_TWO  # Only WARNING and ERROR
         assert "Warning message" in logs[0]
         assert "Error message" in logs[1]
 
@@ -715,7 +717,7 @@ class TestLoggingConfiguration:
         test_logger.info("Info message")
         test_logger.error("Error message")
 
-        assert len(logs1) == 2  # Both INFO and ERROR
+        assert len(logs1) == COUNT_TWO  # Both INFO and ERROR
         assert len(logs2) == 1  # Only ERROR
 
     @pytest.mark.unit

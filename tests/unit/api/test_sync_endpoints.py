@@ -6,6 +6,8 @@ Tests:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -50,7 +52,7 @@ class TestSyncStatusEndpoint:
         """Test getting sync status returns correct data."""
         response = client.get("/api/v1/projects/proj-123/sync/status")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["project_id"] == "proj-123"
         assert "status" in data
@@ -63,7 +65,7 @@ class TestSyncStatusEndpoint:
         """Test sync status response has expected structure."""
         response = client.get("/api/v1/projects/proj-123/sync/status")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert isinstance(data, dict)
         assert "project_id" in data
@@ -87,7 +89,7 @@ class TestSyncExecuteEndpoint:
 
             response = client.post("/api/v1/projects/proj-123/sync")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["project_id"] == "proj-123"
             assert data["status"] == "synced"
@@ -106,7 +108,7 @@ class TestSyncExecuteEndpoint:
 
             response = client.post("/api/v1/projects/proj-123/sync")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert isinstance(data, dict)
             assert "project_id" in data
@@ -126,6 +128,6 @@ class TestSyncExecuteEndpoint:
             # Test with different project IDs
             for project_id in ["proj-1", "proj-2", "proj-abc"]:
                 response = client.post(f"/api/v1/projects/{project_id}/sync")
-                assert response.status_code == 200
+                assert response.status_code == HTTP_OK
                 data = response.json()
                 assert data["project_id"] == project_id

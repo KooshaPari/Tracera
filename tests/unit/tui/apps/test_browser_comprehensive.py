@@ -7,6 +7,8 @@ Coverage target: 80%+ (221 lines total)
 
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -186,7 +188,7 @@ class TestBrowserAppTreeNavigation:
         app.refresh_tree()
 
         mock_tree.clear.assert_called_once()
-        assert mock_root.add.call_count == 2
+        assert mock_root.add.call_count == COUNT_TWO
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     @patch("tracertm.tui.apps.browser.DatabaseConnection")
@@ -221,7 +223,7 @@ class TestBrowserAppTreeNavigation:
         app.project_id = project_id
         app._add_children(mock_session, mock_parent_node, parent_id)
 
-        assert mock_parent_node.add.call_count == 2
+        assert mock_parent_node.add.call_count == COUNT_TWO
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     def test_refresh_tree_no_database(self, mock_config_manager) -> None:

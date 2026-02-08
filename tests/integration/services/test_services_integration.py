@@ -16,6 +16,8 @@ import json
 import pathlib
 from datetime import UTC, datetime, timezone
 from io import StringIO
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -295,10 +297,10 @@ class TestBulkOperationService:
             limit=5,
         )
 
-        assert result["total_count"] == 3  # 3 FEATURE items
-        assert len(result["sample_items"]) == 3
+        assert result["total_count"] == COUNT_THREE  # 3 FEATURE items
+        assert len(result["sample_items"]) == COUNT_THREE
         assert all(s["new"]["status"] == "in_progress" for s in result["sample_items"])
-        assert result["estimated_duration_ms"] == 3 * 10  # 30ms
+        assert result["estimated_duration_ms"] == COUNT_THREE * 10  # 30ms
 
     @pytest.mark.asyncio
     async def test_bulk_update_preview_by_status(
@@ -317,7 +319,7 @@ class TestBulkOperationService:
         )
 
         assert result["total_count"] == 6  # 6 todo items
-        assert len(result["sample_items"]) <= 5
+        assert len(result["sample_items"]) <= COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_bulk_update_preview_by_priority(
@@ -335,7 +337,7 @@ class TestBulkOperationService:
             limit=5,
         )
 
-        assert result["total_count"] == 5  # 5 high priority items
+        assert result["total_count"] == COUNT_FIVE  # 5 high priority items
         assert all(s["new"]["owner"] == "test_agent" for s in result["sample_items"])
 
     @pytest.mark.asyncio
@@ -354,7 +356,7 @@ class TestBulkOperationService:
             limit=5,
         )
 
-        assert result["total_count"] == 2  # 2 TEST items with todo status
+        assert result["total_count"] == COUNT_TWO  # 2 TEST items with todo status
 
     @pytest.mark.asyncio
     async def test_bulk_update_preview_large_operation_warning(
@@ -485,7 +487,7 @@ class TestBulkOperationService:
             },
         )
 
-        assert result["items_updated"] == 3
+        assert result["items_updated"] == COUNT_THREE
 
         # Verify updates
         await db_session.commit()
@@ -536,7 +538,7 @@ class TestBulkOperationService:
             },
         )
 
-        assert result["items_updated"] == 2
+        assert result["items_updated"] == COUNT_TWO
 
         # Verify
         await db_session.commit()
@@ -569,7 +571,7 @@ class TestBulkOperationService:
             agent_id="cleanup_agent",
         )
 
-        assert result["items_deleted"] == 3
+        assert result["items_deleted"] == COUNT_THREE
 
         # Verify soft delete
         await db_session.commit()
@@ -591,7 +593,7 @@ class TestBulkOperationService:
         )
         events_result = await db_session.execute(events_stmt)
         events = events_result.scalars().all()
-        assert len(events) == 3
+        assert len(events) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_bulk_delete_items_by_view(
@@ -607,7 +609,7 @@ class TestBulkOperationService:
             filters={"view": "API"},
         )
 
-        assert result["items_deleted"] == 2
+        assert result["items_deleted"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_bulk_delete_items_rollback_on_error(self, test_project: Project, sync_db_session: Session) -> None:  # noqa: ARG002
@@ -643,10 +645,10 @@ Feature C,FEATURE,feature,in_progress,low"""
             limit=5,
         )
 
-        assert result["total_count"] == 3
-        assert len(result["sample_items"]) == 3
+        assert result["total_count"] == COUNT_THREE
+        assert len(result["sample_items"]) == COUNT_THREE
         assert result["validation_errors"] == []
-        assert result["estimated_duration_ms"] == 3 * 15  # 45ms
+        assert result["estimated_duration_ms"] == COUNT_THREE * 15  # 45ms
 
     @pytest.mark.asyncio
     async def test_bulk_create_preview_empty_csv(self, test_project: Project, sync_db_session: Session) -> None:
@@ -779,7 +781,7 @@ New Code 1,CODE,class,todo,high,agent1"""
             agent_id="import_agent",
         )
 
-        assert result["items_created"] == 3
+        assert result["items_created"] == COUNT_THREE
 
         # Verify in database
         await db_session.commit()
@@ -791,7 +793,7 @@ New Code 1,CODE,class,todo,high,agent1"""
         )
         db_result = await db_session.execute(stmt)
         items = db_result.scalars().all()
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
         # Verify events
         events_stmt = select(Event).where(
@@ -799,7 +801,7 @@ New Code 1,CODE,class,todo,high,agent1"""
         )
         events_result = await db_session.execute(events_stmt)
         events = events_result.scalars().all()
-        assert len(events) >= 3
+        assert len(events) >= COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_bulk_create_items_with_metadata(
@@ -851,7 +853,7 @@ Another Valid,CODE,class"""
         )
 
         # Should create 2 items (skip the empty row)
-        assert result["items_created"] == 2
+        assert result["items_created"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_bulk_create_items_rollback_on_error(
@@ -894,8 +896,8 @@ class TestExportImportService:
         assert result["format"] == "json"
         assert result["project"]["id"] == str(test_project.id)
         assert result["project"]["name"] == test_project.name
-        assert result["item_count"] == 10
-        assert len(result["items"]) == 10
+        assert result["item_count"] == COUNT_TEN
+        assert len(result["items"]) == COUNT_TEN
 
         # Verify item structure
         first_item = result["items"][0]
@@ -931,14 +933,14 @@ class TestExportImportService:
         result = await service.export_to_csv(str(test_project.id))
 
         assert result["format"] == "csv"
-        assert result["item_count"] == 10
+        assert result["item_count"] == COUNT_TEN
 
         # Parse CSV
         csv_content = result["content"]
         reader = csv.DictReader(StringIO(csv_content))
         rows = list(reader)
 
-        assert len(rows) == 10
+        assert len(rows) == COUNT_TEN
         fieldnames = reader.fieldnames or []
         assert "ID" in fieldnames
         assert "Title" in fieldnames
@@ -959,7 +961,7 @@ class TestExportImportService:
         result = await service.export_to_markdown(test_project.id)
 
         assert result["format"] == "markdown"
-        assert result["item_count"] == 10
+        assert result["item_count"] == COUNT_TEN
 
         content = result["content"]
         assert f"# {test_project.name}" in content
@@ -994,7 +996,7 @@ class TestExportImportService:
         assert "json" in formats
         assert "csv" in formats
         assert "markdown" in formats
-        assert len(formats) == 3
+        assert len(formats) == COUNT_THREE
 
     # ========== Import Tests ==========
 
@@ -1029,7 +1031,7 @@ class TestExportImportService:
         )
 
         assert result["success"] is True
-        assert result["imported_count"] == 2
+        assert result["imported_count"] == COUNT_TWO
         assert result["error_count"] == 0
 
         # Verify in database
@@ -1039,7 +1041,7 @@ class TestExportImportService:
         )
         db_result = await db_session.execute(stmt)
         items = db_result.scalars().all()
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_import_from_json_invalid_format(
@@ -1097,7 +1099,7 @@ CSV Import 2,CODE,class,done"""
         )
 
         assert result["success"] is True
-        assert result["imported_count"] == 2
+        assert result["imported_count"] == COUNT_TWO
 
         # Verify
         stmt = select(Item).where(
@@ -1106,7 +1108,7 @@ CSV Import 2,CODE,class,done"""
         )
         db_result = await db_session.execute(stmt)
         items = db_result.scalars().all()
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_import_from_csv_invalid_format(
@@ -1164,7 +1166,7 @@ Valid Item,FEATURE,feature,todo
 
         assert "json" in formats
         assert "csv" in formats
-        assert len(formats) == 2
+        assert len(formats) == COUNT_TWO
 
 
 # ============================================================
@@ -1294,7 +1296,7 @@ class TestTraceabilityService:
         )
 
         assert matrix.coverage_percentage == 0
-        assert len(matrix.gaps) == 3  # 3 TEST items
+        assert len(matrix.gaps) == COUNT_THREE  # 3 TEST items
         assert len(matrix.links) == 0
 
     @pytest.mark.asyncio
@@ -1326,7 +1328,7 @@ class TestTraceabilityService:
 
         # 1 out of 3 FEATURE items linked = 33.33%
         assert 30 <= matrix.coverage_percentage <= 35
-        assert len(matrix.gaps) == 2  # 2 FEATURE items without links
+        assert len(matrix.gaps) == COUNT_TWO  # 2 FEATURE items without links
 
     @pytest.mark.asyncio
     async def test_generate_matrix_gaps_identification(
@@ -1549,7 +1551,7 @@ class TestTraceabilityService:
             depth=2,
         )
 
-        assert len(downstream) >= 2
+        assert len(downstream) >= COUNT_TWO
 
 
 # ============================================================
@@ -1613,7 +1615,7 @@ class TestVisualizationService:
         assert "Level 3" in result
         # Check indentation
         lines = result.split("\n")
-        assert len(lines) >= 3
+        assert len(lines) >= COUNT_THREE
 
     def test_render_tree_empty(self) -> None:
         """Given: Empty list
@@ -1780,7 +1782,7 @@ class TestVisualizationService:
 
         # Count X's - should have 3
         x_count = result.count(" X ")
-        assert x_count == 3
+        assert x_count == COUNT_THREE
 
 
 # ============================================================
@@ -1811,7 +1813,7 @@ class TestEdgeCasesAndErrors:
         )
 
         # Should update 2 FEATURE items (3rd is deleted)
-        assert result["items_updated"] == 2
+        assert result["items_updated"] == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_export_empty_project(self, db_session: AsyncSession) -> None:

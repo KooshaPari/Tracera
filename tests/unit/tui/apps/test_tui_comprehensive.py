@@ -18,6 +18,8 @@ Coverage includes:
 from typing import Any, cast
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
+
 
 import pytest
 
@@ -248,7 +250,7 @@ class TestBrowserAppComprehensive:
         app.refresh_tree()
 
         mock_tree.clear.assert_called_once()
-        assert mock_tree.root.add.call_count == 2
+        assert mock_tree.root.add.call_count == COUNT_TWO
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     @patch("tracertm.tui.apps.browser.Session")
@@ -886,7 +888,7 @@ class TestGraphAppComprehensive:
 
         app.load_graph_data()
 
-        assert len(getattr(app, "nodes", {})) == 2
+        assert len(getattr(app, "nodes", {})) == COUNT_TWO
         assert ("item1", "item2") in getattr(app, "links", [])
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -935,7 +937,7 @@ class TestGraphAppComprehensive:
         def mock_first():
             if mock_query.filter.call_count % 3 == 1:
                 return source_item
-            if mock_query.filter.call_count % 3 == 2:
+            if mock_query.filter.call_count % 3 == COUNT_TWO:
                 return target_item
             return link
 
@@ -1015,7 +1017,7 @@ class TestGraphAppComprehensive:
 
         app.action_zoom_in()
 
-        assert getattr(app, "zoom", 5.0) <= 5.0
+        assert getattr(app, "zoom", 5.0) <= COUNT_FIVE.0
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -1030,7 +1032,7 @@ class TestGraphAppComprehensive:
 
         app.action_zoom_out()
 
-        assert getattr(app, "zoom", 2.0) < 2.0
+        assert getattr(app, "zoom", 2.0) < COUNT_TWO.0
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")

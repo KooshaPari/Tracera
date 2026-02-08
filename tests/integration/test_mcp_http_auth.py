@@ -10,6 +10,8 @@ Tests that MCP endpoints properly integrate with FastAPI authentication:
 
 from typing import Never
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_TWO, HTTP_NO_CONTENT, HTTP_OK, HTTP_UNAUTHORIZED
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -47,7 +49,7 @@ class TestMCPHTTPAuth:
     def test_health_endpoint_no_auth(self, client) -> None:
         """Health endpoint should not require auth."""
         response = client.get("/api/v1/mcp/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["status"] == "healthy"
         assert data["service"] == "mcp"
@@ -60,7 +62,7 @@ class TestMCPHTTPAuth:
 
         response = client.get("/api/v1/mcp/tools", headers={"Authorization": "Bearer valid_token_here"})
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert "tools" in data
         assert isinstance(data["tools"], list)
@@ -77,7 +79,7 @@ class TestMCPHTTPAuth:
             response = client.get("/api/v1/mcp/tools")
 
             # Should return 401 if auth is enabled
-            if response.status_code == 401:
+            if response.status_code == HTTP_UNAUTHORIZED:
                 assert response.json()["detail"] == "Authorization required"
 
     @patch("tracertm.api.deps.verify_token")
@@ -87,7 +89,7 @@ class TestMCPHTTPAuth:
 
         response = client.get("/api/v1/mcp/tools", headers={"Authorization": "Bearer invalid_token"})
 
-        assert response.status_code == 401
+        assert response.status_code == HTTP_UNAUTHORIZED
         assert "Invalid token" in response.json()["detail"]
 
     @patch("tracertm.api.deps.verify_token")
@@ -100,7 +102,7 @@ class TestMCPHTTPAuth:
 
         response = client.get("/api/v1/mcp/tools", headers={"Authorization": "Bearer valid_token"})
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
         # User context should be set during request processing
         # Note: Context vars are request-scoped, so we can't verify after response
@@ -117,7 +119,7 @@ class TestMCPHTTPAuth:
             "/api/v1/mcp/messages", json=request_data, headers={"Authorization": "Bearer valid_token"},
         )
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["jsonrpc"] == "2.0"
         assert data["id"] == 1
@@ -133,7 +135,7 @@ class TestMCPHTTPAuth:
 
             response = client.post("/api/v1/mcp/messages", json=request_data)
 
-            if response.status_code == 401:
+            if response.status_code == HTTP_UNAUTHORIZED:
                 assert response.json()["detail"] == "Authorization required"
 
     @patch("tracertm.api.deps.verify_token")
@@ -147,14 +149,14 @@ class TestMCPHTTPAuth:
             "/api/v1/mcp/messages", json=request_data, headers={"Authorization": "Bearer expired_token"},
         )
 
-        assert response.status_code == 401
+        assert response.status_code == HTTP_UNAUTHORIZED
         assert "Token expired" in response.json()["detail"]
 
     def test_cors_preflight(self, client) -> None:
         """CORS preflight should work for MCP endpoints."""
         response = client.options("/api/v1/mcp/messages")
 
-        assert response.status_code == 204
+        assert response.status_code == HTTP_NO_CONTENT
         assert "Access-Control-Allow-Origin" in response.headers
         assert "Access-Control-Allow-Methods" in response.headers
         assert "POST" in response.headers["Access-Control-Allow-Methods"]
@@ -171,7 +173,7 @@ class TestMCPHTTPAuth:
             "/api/v1/mcp/messages", json=request_data, headers={"Authorization": "Bearer valid_token"},
         )
 
-        assert response.status_code == 200  # JSON-RPC always returns 200
+        assert response.status_code == HTTP_OK  # JSON-RPC always returns 200
         data = response.json()
         assert data["jsonrpc"] == "2.0"
         assert data["id"] == 1
@@ -191,7 +193,7 @@ class TestMCPHTTPAuth:
 
         response = client.get("/api/v1/mcp/tools", headers={"Authorization": "Bearer valid_token"})
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
         # Verify RLS context was set (checked in get_db dependency)
         # This is validated by the fact that get_db sets RLS context based on current_user_id
@@ -204,7 +206,7 @@ class TestMCPHTTPAuth:
         response = client.get("/api/v1/mcp/sse", headers={"Authorization": "Bearer valid_token"})
 
         # SSE endpoint returns 200 and starts streaming
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert "text/event-stream" in response.headers.get("content-type", "")
 
     def test_sse_endpoint_without_token(self, client) -> None:
@@ -214,7 +216,7 @@ class TestMCPHTTPAuth:
 
             response = client.get("/api/v1/mcp/sse")
 
-            if response.status_code == 401:
+            if response.status_code == HTTP_UNAUTHORIZED:
                 assert response.json()["detail"] == "Authorization required"
 
     @patch("tracertm.api.deps.verify_token")
@@ -232,10 +234,10 @@ class TestMCPHTTPAuth:
 
         # Both should accept the same token
         # (REST endpoint might return different status codes based on data)
-        assert mcp_response.status_code == 200
+        assert mcp_response.status_code == HTTP_OK
 
         # Verify same token was used for both
-        assert mock_verify.call_count >= 2
+        assert mock_verify.call_count >= COUNT_TWO
         for call in mock_verify.call_args_list:
             assert call[0][0] == "same_token"
 
@@ -259,7 +261,7 @@ class TestMCPToolExecution:
             "/api/v1/mcp/messages", json=request_data, headers={"Authorization": "Bearer valid_token"},
         )
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["jsonrpc"] == "2.0"
         assert "result" in data or "error" in data

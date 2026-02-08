@@ -4,6 +4,8 @@ Tests programmatic access for AI agents.
 """
 
 import json
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -78,7 +80,7 @@ def test_query_items(temp_project_setup) -> None:  # noqa: ARG001
 
     # Query all items
     items = client.query_items()
-    assert len(items) >= 2
+    assert len(items) >= COUNT_TWO
 
     # Query by view
     features = client.query_items(view="FEATURE")
@@ -230,7 +232,7 @@ def test_export_project(temp_project_setup) -> None:  # noqa: ARG001
 
     assert "project" in data
     assert "items" in data
-    assert len(data["items"]) >= 2
+    assert len(data["items"]) >= COUNT_TWO
 
     # Export as YAML
     yaml_data = client.export_project(format="yaml")
@@ -266,7 +268,7 @@ def test_import_data(temp_project_setup) -> None:  # noqa: ARG001
     # Import data
     result = client.import_data(import_data)
 
-    assert result["items_created"] == 2
+    assert result["items_created"] == COUNT_TWO
     assert result["links_created"] == 0
 
     # Verify items were created
@@ -290,7 +292,7 @@ def test_agent_activity_monitoring(temp_project_setup) -> None:  # noqa: ARG001
     # Get activity
     activity = client.get_agent_activity(agent_id)
 
-    assert len(activity) >= 2
+    assert len(activity) >= COUNT_TWO
     assert any(event["event_type"] == "item_created" for event in activity)
 
     client.close()

@@ -6,6 +6,8 @@ Coverage Goal: Increase repository coverage with edge cases
 """
 
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -218,7 +220,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
         result = await repo.get_by_project("proj-1")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(isinstance(link, Link) for link in result)
 
     @pytest.mark.asyncio
@@ -267,7 +269,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
         result = await repo.get_by_source("item-1")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(link.source_item_id == "item-1" for link in result)
 
     @pytest.mark.asyncio
@@ -316,7 +318,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
         result = await repo.get_by_target("item-3")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(link.target_item_id == "item-3" for link in result)
 
     @pytest.mark.asyncio
@@ -365,7 +367,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
         result = await repo.get_by_item("item-1")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_delete_link_found(self) -> None:
@@ -417,7 +419,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
         count = await repo.delete_by_item("item-1")
 
-        assert count == 5
+        assert count == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_delete_by_item_as_source_and_target(self) -> None:
@@ -431,7 +433,7 @@ class TestLinkRepositoryEdgeCases:
         count = await repo.delete_by_item("item-1")
 
         # Should delete all links where item is either source or target
-        assert count == 10
+        assert count == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_link_metadata_special_characters(self) -> None:

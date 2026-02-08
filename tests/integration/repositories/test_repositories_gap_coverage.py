@@ -16,6 +16,8 @@ Total Tests: 85+
 
 import asyncio
 from datetime import UTC, datetime, timedelta
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -248,7 +250,7 @@ async def test_item_update_multiple_fields(db_session: AsyncSession) -> None:
     assert updated.priority == "high"
     assert updated.owner == "newowner"
     assert updated.description == "New description"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
     await db_session.commit()
 
@@ -272,7 +274,7 @@ async def test_item_update_ignores_invalid_attributes(db_session: AsyncSession) 
 
     assert updated.title == "Valid Update"
     assert not hasattr(updated, "invalid_field")
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
     await db_session.commit()
 
@@ -388,7 +390,7 @@ async def test_item_get_by_project_limit_offset_edge_cases(db_session: AsyncSess
 
     # Limit exceeds remaining
     result = await repo.get_by_project(str(project.id), limit=5, offset=8)
-    assert len(result) == 2
+    assert len(result) == COUNT_TWO
 
     # Zero limit
     result = await repo.get_by_project(str(project.id), limit=0, offset=0)
@@ -412,7 +414,7 @@ async def test_item_query_with_empty_filters(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     result = await repo.query(str(project.id), filters={})
-    assert len(result) == 2
+    assert len(result) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -760,7 +762,7 @@ async def test_agent_get_by_project_all_statuses(db_session: AsyncSession) -> No
     await db_session.commit()
 
     all_agents = await repo.get_by_project(str(project.id))
-    assert len(all_agents) == 2
+    assert len(all_agents) == COUNT_TWO
 
 
 @pytest.mark.asyncio
@@ -894,7 +896,7 @@ async def test_event_get_by_entity_with_limit(db_session: AsyncSession) -> None:
 
     # Get with limit
     events = await repo.get_by_entity("item1", limit=5)
-    assert len(events) == 5
+    assert len(events) == COUNT_FIVE
 
 
 @pytest.mark.asyncio
@@ -1282,7 +1284,7 @@ async def test_agent_event_correlation(db_session: AsyncSession) -> None:
 
     # Get events by agent
     agent_events = await event_repo.get_by_agent(str(agent.id))
-    assert len(agent_events) == 5
+    assert len(agent_events) == COUNT_FIVE
     assert all(e.agent_id == agent.id for e in agent_events)
 
 

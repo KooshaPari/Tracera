@@ -9,6 +9,8 @@ Tests cover:
 """
 
 from __future__ import annotations
+from tests.test_constants import COUNT_TWO
+
 
 import json
 from typing import Any
@@ -132,7 +134,7 @@ class TestHTTPAuthentication:
         auth_value = valid_auth_headers["Authorization"]
         parts = auth_value.split(" ")
 
-        assert len(parts) == 2
+        assert len(parts) == COUNT_TWO
         assert parts[0] == "Bearer"
         assert len(parts[1]) > 0
 

@@ -9,6 +9,8 @@ Comprehensive API testing:
 
 import json
 import operator
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_UNPROCESSABLE_ENTITY
+
 
 
 class TestItemEndpoints:
@@ -71,7 +73,7 @@ class TestItemEndpoints:
         """Test list items with results."""
         items = [{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 2"}, {"id": 3, "name": "Item 3"}]
 
-        assert len(items) == 3
+        assert len(items) == COUNT_THREE
         assert items[0]["id"] == 1
 
     def test_list_items_pagination(self) -> None:
@@ -82,7 +84,7 @@ class TestItemEndpoints:
             return {"items": items[skip : skip + limit], "total": len(items), "skip": skip, "limit": limit}
 
         result = paginate(items, skip=0, limit=10)
-        assert len(result["items"]) == 10
+        assert len(result["items"]) == COUNT_TEN
         assert result["total"] == 50
 
     def test_list_items_filter_by_status(self) -> None:
@@ -94,7 +96,7 @@ class TestItemEndpoints:
         ]
 
         filtered = [i for i in items if i["status"] == "active"]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     def test_update_item_success(self) -> None:
         """Test successful item update."""
@@ -205,7 +207,7 @@ class TestLinkEndpoints:
         ]
 
         filtered = [link for link in links if link["source_id"] == 1]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     def test_list_links_by_target(self) -> None:
         """Test list links filtered by target."""
@@ -215,8 +217,8 @@ class TestLinkEndpoints:
             {"id": 3, "source_id": 2, "target_id": 1},
         ]
 
-        filtered = [link for link in links if link["target_id"] == 3]
-        assert len(filtered) == 2
+        filtered = [link for link in links if link["target_id"] == COUNT_THREE]
+        assert len(filtered) == COUNT_TWO
 
     def test_list_links_by_type(self) -> None:
         """Test list links filtered by type."""
@@ -227,7 +229,7 @@ class TestLinkEndpoints:
         ]
 
         filtered = [link for link in links if link["link_type"] == "depends_on"]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     def test_update_link_type(self) -> None:
         """Test update link type."""
@@ -260,7 +262,7 @@ class TestProjectEndpoints:
         """Test list projects."""
         projects = [{"id": "proj-1", "name": "Project 1"}, {"id": "proj-2", "name": "Project 2"}]
 
-        assert len(projects) == 2
+        assert len(projects) == COUNT_TWO
 
     def test_switch_project(self) -> None:
         """Test switch project."""
@@ -309,7 +311,7 @@ class TestBackupEndpoints:
             {"backup_id": "b2", "timestamp": "2025-11-22T09:00:00Z"},
         ]
 
-        assert len(backups) == 2
+        assert len(backups) == COUNT_TWO
 
     def test_restore_backup(self) -> None:
         """Test restore from backup."""
@@ -351,7 +353,7 @@ class TestConfigEndpoints:
         updates = {"api_key": "secret", "timeout": "60", "debug": "true"}
         config.update(updates)
 
-        assert len(config) == 3
+        assert len(config) == COUNT_THREE
         assert config["debug"] == "true"
 
     def test_reset_config(self) -> None:
@@ -387,13 +389,13 @@ class TestErrorResponses:
         """Test 400 Bad Request response."""
         response = {"error": "Invalid request", "code": 400, "details": "Missing required field: name"}
 
-        assert response["code"] == 400
+        assert response["code"] == HTTP_BAD_REQUEST
 
     def test_404_not_found(self) -> None:
         """Test 404 Not Found response."""
         response = {"error": "Not Found", "code": 404, "details": "Item with ID 999 not found"}
 
-        assert response["code"] == 404
+        assert response["code"] == HTTP_NOT_FOUND
 
     def test_409_conflict(self) -> None:
         """Test 409 Conflict response."""
@@ -409,14 +411,14 @@ class TestErrorResponses:
             "details": [{"field": "name", "message": "Required"}, {"field": "status", "message": "Invalid value"}],
         }
 
-        assert response["code"] == 422
-        assert len(response["details"]) == 2
+        assert response["code"] == HTTP_UNPROCESSABLE_ENTITY
+        assert len(response["details"]) == COUNT_TWO
 
     def test_500_server_error(self) -> None:
         """Test 500 Server Error response."""
         response = {"error": "Internal Server Error", "code": 500, "details": "Database connection failed"}
 
-        assert response["code"] == 500
+        assert response["code"] == HTTP_INTERNAL_SERVER_ERROR
 
 
 class TestSearchAndFilter:
@@ -433,14 +435,14 @@ class TestSearchAndFilter:
         query = "app"
         results = [i for i in items if query.lower() in str(i["name"]).lower()]
 
-        assert len(results) == 2
+        assert len(results) == COUNT_TWO
 
     def test_filter_by_status(self) -> None:
         """Test filter items by status."""
         items = [{"id": 1, "status": "active"}, {"id": 2, "status": "inactive"}, {"id": 3, "status": "active"}]
 
         filtered = [i for i in items if i["status"] == "active"]
-        assert len(filtered) == 2
+        assert len(filtered) == COUNT_TWO
 
     def test_sort_by_field(self) -> None:
         """Test sort items by field."""

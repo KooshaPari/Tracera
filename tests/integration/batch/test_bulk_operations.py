@@ -1,6 +1,8 @@
 """Integration tests for Epic 2: Bulk Operations (Story 2.8, FR14)."""
 
 import pytest
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
@@ -72,8 +74,8 @@ def test_bulk_update_preview(temp_project_with_items) -> None:
             {"status": "in_progress"},
         )
 
-        assert preview["total_count"] == 5  # 5 items with status=todo
-        assert len(preview["sample_items"]) <= 5
+        assert preview["total_count"] == COUNT_FIVE  # 5 items with status=todo
+        assert len(preview["sample_items"]) <= COUNT_FIVE
         assert "updates" in preview
         assert "estimated_duration_ms" in preview
 
@@ -95,11 +97,11 @@ def test_bulk_update_atomicity(temp_project_with_items) -> None:
             {"status": "in_progress"},
         )
 
-        assert result["items_updated"] == 5
+        assert result["items_updated"] == COUNT_FIVE
 
         # Verify all items were updated
         updated_items = session.query(Item).filter(Item.project_id == project_id, Item.status == "in_progress").count()
-        assert updated_items == 10  # All 10 items should now be in_progress
+        assert updated_items == COUNT_TEN  # All 10 items should now be in_progress
 
 
 def test_bulk_delete_atomicity(temp_project_with_items) -> None:
@@ -118,7 +120,7 @@ def test_bulk_delete_atomicity(temp_project_with_items) -> None:
             {"status": "todo"},
         )
 
-        assert result["items_deleted"] == 5
+        assert result["items_deleted"] == COUNT_FIVE
 
         # Verify items are soft-deleted
         active_items = (
@@ -130,7 +132,7 @@ def test_bulk_delete_atomicity(temp_project_with_items) -> None:
             )
             .count()
         )
-        assert active_items == 5  # Only in_progress items remain
+        assert active_items == COUNT_FIVE  # Only in_progress items remain
 
 
 def test_bulk_create_preview(temp_project_with_items) -> None:
@@ -153,8 +155,8 @@ Task 1,FEATURE,task,todo,low,First task
         # Preview bulk create
         preview = service.bulk_create_preview(project_id, csv_data)
 
-        assert preview["total_count"] == 3
-        assert len(preview["sample_items"]) == 3
+        assert preview["total_count"] == COUNT_THREE
+        assert len(preview["sample_items"]) == COUNT_THREE
         assert "validation_errors" in preview
         assert "warnings" in preview
         assert "estimated_duration_ms" in preview
@@ -188,7 +190,7 @@ Invalid View,INVALID,feature,todo
 
         # Should have 2 valid items (INVALID is a valid view string per schema, just not a standard view)
         # 1 invalid row (empty title)
-        assert preview["total_count"] == 2
+        assert preview["total_count"] == COUNT_TWO
         # Should have validation errors
         assert len(preview["validation_errors"]) > 0
         assert preview["invalid_rows_count"] == 1
@@ -217,7 +219,7 @@ New Task 1,FEATURE,task,todo,low,First new task
         # Perform bulk create
         result = service.bulk_create_items(project_id, csv_data)
 
-        assert result["items_created"] == 3
+        assert result["items_created"] == COUNT_THREE
 
         # Verify items were created
         final_count = session.query(Item).filter(Item.project_id == project_id).count()
@@ -301,7 +303,7 @@ Valid Item 3,FEATURE,feature,done
 
         # Should create 4 valid items (INVALID is a valid view string per schema, just not a standard view)
         # Skip 1 invalid row (empty title)
-        assert result["items_created"] == 4
+        assert result["items_created"] == COUNT_FOUR
 
         # Verify final count
         final_count = session.query(Item).filter(Item.project_id == project_id).count()

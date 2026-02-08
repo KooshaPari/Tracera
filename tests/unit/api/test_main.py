@@ -5,6 +5,8 @@ Coverage target: 80%+ of 59 statements
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -78,7 +80,7 @@ class TestHealthCheckEndpoint:
         """Test health check returns correct status."""
         response = client.get("/health")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = response.json()
         assert data["status"] == "healthy"
         assert data["version"] == "1.0.0"
@@ -150,7 +152,7 @@ class TestDatabaseDependency:
             with pytest.raises(HTTPException) as exc_info:
                 await anext(gen)
 
-            assert exc_info.value.status_code == 500
+            assert exc_info.value.status_code == HTTP_INTERNAL_SERVER_ERROR
             assert "Database not configured" in exc_info.value.detail
 
 
@@ -172,10 +174,10 @@ class TestItemsEndpoints:
 
             response = client.get("/api/v1/items?project_id=test-project")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert data["total"] == 2
-            assert len(data["items"]) == 2
+            assert data["total"] == COUNT_TWO
+            assert len(data["items"]) == COUNT_TWO
             assert data["items"][0]["id"] == "item-1"
             assert data["items"][0]["title"] == "Test Item 1"
 
@@ -191,10 +193,10 @@ class TestItemsEndpoints:
 
             response = client.get("/api/v1/items?project_id=test&skip=2&limit=3")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert data["total"] == 10
-            assert len(data["items"]) == 3  # Limited to 3
+            assert data["total"] == COUNT_TEN
+            assert len(data["items"]) == COUNT_THREE  # Limited to 3
             assert data["items"][0]["id"] == "item-2"  # Skipped 2
 
     @pytest.mark.asyncio
@@ -219,7 +221,7 @@ class TestItemsEndpoints:
 
             response = client.get("/api/v1/items/item-123")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["id"] == "item-123"
             assert data["title"] == "Test Item"
@@ -237,7 +239,7 @@ class TestItemsEndpoints:
 
             response = client.get("/api/v1/items/nonexistent")
 
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
             assert "Item not found" in response.json()["detail"]
 
 
@@ -259,10 +261,10 @@ class TestLinksEndpoints:
 
             response = client.get("/api/v1/links?project_id=test-project")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
-            assert data["total"] == 2
-            assert len(data["links"]) == 2
+            assert data["total"] == COUNT_TWO
+            assert len(data["links"]) == COUNT_TWO
             assert data["links"][0]["type"] == "implements"
 
 
@@ -283,11 +285,11 @@ class TestAnalysisEndpoints:
 
             response = client.get("/api/v1/analysis/impact/item-1?project_id=test")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["root_item_id"] == "item-1"
-            assert data["total_affected"] == 5
-            assert data["max_depth"] == 3
+            assert data["total_affected"] == COUNT_FIVE
+            assert data["max_depth"] == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_cycle_detection_success(self, client) -> None:
@@ -303,10 +305,10 @@ class TestAnalysisEndpoints:
 
             response = client.get("/api/v1/analysis/cycles/test-project")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["has_cycles"] is True
-            assert data["total_cycles"] == 2
+            assert data["total_cycles"] == COUNT_TWO
             assert data["severity"] == "high"
 
     @pytest.mark.asyncio
@@ -326,11 +328,11 @@ class TestAnalysisEndpoints:
 
             response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-4")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is True
-            assert data["distance"] == 3
-            assert len(data["path"]) == 4
+            assert data["distance"] == COUNT_THREE
+            assert len(data["path"]) == COUNT_FOUR
 
 
 class TestErrorHandling:
@@ -339,7 +341,7 @@ class TestErrorHandling:
     def test_invalid_endpoint_returns_404(self, client) -> None:
         """Test accessing invalid endpoint returns 404."""
         response = client.get("/api/v1/invalid-endpoint")
-        assert response.status_code == 404
+        assert response.status_code == HTTP_NOT_FOUND
 
     @pytest.mark.asyncio
     async def test_database_error_handling(self, client) -> None:
@@ -352,4 +354,4 @@ class TestErrorHandling:
             response = client.get("/api/v1/items?project_id=test")
 
             # Should return 500 error
-            assert response.status_code == 500
+            assert response.status_code == HTTP_INTERNAL_SERVER_ERROR

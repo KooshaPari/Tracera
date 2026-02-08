@@ -9,6 +9,8 @@ Tests concurrency.py:
 
 import asyncio
 from typing import Never
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -69,14 +71,14 @@ class TestUpdateWithRetrySuccess:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "Retry me"
                 raise ConcurrencyError(msg)
             return "success"
 
         result = await update_with_retry(update_fn, max_retries=3)
         assert result == "success"
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_returns_different_types(self) -> None:
@@ -128,7 +130,7 @@ class TestUpdateWithRetryFailure:
             await update_with_retry(always_fail, max_retries=3)
 
         assert "Failed after 3 retries" in str(exc_info.value)
-        assert call_count == 3
+        assert call_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_single_retry_exhausted(self) -> None:
@@ -194,7 +196,7 @@ class TestUpdateWithRetryBackoff:
         async def track_calls() -> str:
             await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
-            if len(call_times) < 3:
+            if len(call_times) < COUNT_THREE:
                 msg = "Retry"
                 raise ConcurrencyError(msg)
             return "done"
@@ -203,10 +205,10 @@ class TestUpdateWithRetryBackoff:
         await update_with_retry(track_calls, max_retries=3, base_delay=0.01)
 
         # Verify calls happened
-        assert len(call_times) == 3
+        assert len(call_times) == COUNT_THREE
 
         # Verify increasing delays (with jitter tolerance)
-        if len(call_times) >= 3:
+        if len(call_times) >= COUNT_THREE:
             delay1 = call_times[1] - call_times[0]
             delay2 = call_times[2] - call_times[1]
             # Second delay should be roughly twice the first (allowing for jitter)
@@ -220,7 +222,7 @@ class TestUpdateWithRetryBackoff:
         async def track_calls() -> str:
             await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
-            if len(call_times) < 2:
+            if len(call_times) < COUNT_TWO:
                 msg = "Retry"
                 raise ConcurrencyError(msg)
             return "done"
@@ -228,7 +230,7 @@ class TestUpdateWithRetryBackoff:
         await update_with_retry(track_calls, max_retries=2, base_delay=0.05)
 
         # First retry should wait at least base_delay
-        if len(call_times) >= 2:
+        if len(call_times) >= COUNT_TWO:
             delay = call_times[1] - call_times[0]
             assert delay >= 0.05  # At least base_delay
 
@@ -244,19 +246,19 @@ class TestUpdateWithRetryBackoff:
             async def track_calls(_ct=call_times) -> str:
                 await asyncio.sleep(0)
                 _ct.append(asyncio.get_event_loop().time())
-                if len(_ct) < 2:
+                if len(_ct) < COUNT_TWO:
                     msg = "Retry"
                     raise ConcurrencyError(msg)
                 return "done"
 
             await update_with_retry(track_calls, max_retries=2, base_delay=0.01)
 
-            if len(call_times) >= 2:
+            if len(call_times) >= COUNT_TWO:
                 delay = call_times[1] - call_times[0]
                 delays.append(delay)
 
         # Delays should vary due to jitter (not all identical)
-        if len(delays) >= 3:
+        if len(delays) >= COUNT_THREE:
             # Check that we have some variance
             assert len(set(delays)) > 1 or all(d >= 0.01 for d in delays)
 
@@ -279,7 +281,7 @@ class TestUpdateWithRetryEdgeCases:
         with pytest.raises(ConcurrencyError):
             await update_with_retry(count_calls)  # No max_retries specified
 
-        assert call_count == 3  # Default is 3
+        assert call_count == COUNT_THREE  # Default is 3
 
     @pytest.mark.asyncio
     async def test_base_delay_default(self) -> None:
@@ -289,14 +291,14 @@ class TestUpdateWithRetryEdgeCases:
         async def track_calls() -> str:
             await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
-            if len(call_times) < 2:
+            if len(call_times) < COUNT_TWO:
                 msg = "Retry"
                 raise ConcurrencyError(msg)
             return "done"
 
         await update_with_retry(track_calls, max_retries=2)
 
-        if len(call_times) >= 2:
+        if len(call_times) >= COUNT_TWO:
             delay = call_times[1] - call_times[0]
             # Should be at least 0.1 (base_delay) with jitter
             assert delay >= 0.1
@@ -310,14 +312,14 @@ class TestUpdateWithRetryEdgeCases:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            if call_count < 10:
+            if call_count < COUNT_TEN:
                 msg = "Retry"
                 raise ConcurrencyError(msg)
             return "finally_succeeded"
 
         result = await update_with_retry(fail_then_succeed, max_retries=10, base_delay=0.001)
         assert result == "finally_succeeded"
-        assert call_count == 10
+        assert call_count == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_zero_base_delay(self) -> None:
@@ -328,7 +330,7 @@ class TestUpdateWithRetryEdgeCases:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "Retry"
                 raise ConcurrencyError(msg)
             return "done"
@@ -338,7 +340,7 @@ class TestUpdateWithRetryEdgeCases:
         elapsed = asyncio.get_event_loop().time() - start
 
         assert result == "done"
-        assert call_count == 3
+        assert call_count == COUNT_THREE
         # Should complete very quickly with zero delay
         assert elapsed < 0.5
 
@@ -368,7 +370,7 @@ class TestUpdateWithRetryEdgeCases:
 
         result = await update_with_retry(return_complex)
         assert result["items"] == [1, 2, 3]
-        assert result["metadata"]["count"] == 3
+        assert result["metadata"]["count"] == COUNT_THREE
         assert result["nested"]["deep"]["value"] == 42
 
     @pytest.mark.asyncio
@@ -392,4 +394,4 @@ class TestUpdateWithRetryEdgeCases:
 
         result = await update_with_retry(different_errors, max_retries=5)
         assert result == "success"
-        assert call_count == 3
+        assert call_count == COUNT_THREE

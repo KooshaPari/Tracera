@@ -5,6 +5,8 @@ Tests:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_OK
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -78,17 +80,17 @@ class TestGraphNeighborsEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=both")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["project_id"] == "proj-123"
             assert data["item_id"] == "item-1"
             assert data["direction"] == "both"
-            assert data["total"] == 3
-            assert len(data["neighbors"]) == 3
+            assert data["total"] == COUNT_THREE
+            assert len(data["neighbors"]) == COUNT_THREE
 
             # Check outbound neighbors
             out_neighbors = [n for n in data["neighbors"] if n["direction"] == "out"]
-            assert len(out_neighbors) == 2
+            assert len(out_neighbors) == COUNT_TWO
 
             # Check inbound neighbors
             in_neighbors = [n for n in data["neighbors"] if n["direction"] == "in"]
@@ -113,7 +115,7 @@ class TestGraphNeighborsEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=out")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["direction"] == "out"
             assert data["total"] == 1
@@ -138,7 +140,7 @@ class TestGraphNeighborsEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=in")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["direction"] == "in"
             assert data["total"] == 1
@@ -164,7 +166,7 @@ class TestGraphNeighborsEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["direction"] == "both"  # Default
 
@@ -179,7 +181,7 @@ class TestGraphNeighborsEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert data["total"] == 0
             assert len(data["neighbors"]) == 0
@@ -204,7 +206,7 @@ class TestGraphNeighborsEndpoint:
 
             response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             assert isinstance(data, dict)
             assert "project_id" in data
@@ -242,7 +244,7 @@ class TestGraphNeighborsEndpoint:
             # Invalid direction should default to "both"
             response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=invalid")
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
             # Should still work, but direction might be "invalid" or default to "both"
             assert "neighbors" in data

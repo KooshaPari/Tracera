@@ -7,6 +7,8 @@ Tests automatic reconnection, retry logic, and graceful degradation.
 import asyncio
 import logging
 import time
+from tests.test_constants import HTTP_OK
+
 
 import httpx
 import pytest
@@ -168,7 +170,7 @@ async def test_backend_service_restart(
     async with httpx.AsyncClient(timeout=10.0) as client:
         # Baseline
         response = await client.get(f"{go_backend_proxy}/health")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         logger.info("Baseline backend health OK")
 
         # Simulate pod kill
@@ -195,7 +197,7 @@ async def test_backend_service_restart(
         for attempt in range(max_retries):
             try:
                 response = await client.get(f"{go_backend_proxy}/health")
-                if response.status_code == 200:
+                if response.status_code == HTTP_OK:
                     logger.info(f"Backend service recovered after {attempt + 1} attempts")
                     break
             except Exception as e:

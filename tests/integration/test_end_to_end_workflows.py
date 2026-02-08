@@ -9,6 +9,8 @@ Target: +4-5% coverage (45-60 tests)
 
 from datetime import UTC, datetime, timezone
 from typing import Any
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -51,7 +53,7 @@ class TestItemCreationLinkingSync:
         items = sync_db_session.query(Item).filter_by(project_id="workflow-project").all()
 
         assert project_result is not None
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
 
     @pytest.mark.integration
     def test_item_linking_workflow(self, db_with_sample_data) -> None:
@@ -81,7 +83,7 @@ class TestItemCreationLinkingSync:
 
         # Verify links
         result_links = db_with_sample_data.query(Link).filter(Link.id.startswith("workflow-link")).all()
-        assert len(result_links) == 2
+        assert len(result_links) == COUNT_TWO
 
     @pytest.mark.integration
     def test_item_modification_workflow(self, initialized_db) -> None:
@@ -219,7 +221,7 @@ class TestProjectSetupManagementExport:
 
         # Query fresh from database
         result = sync_db_session.query(Project).filter_by(id="team-project").first()
-        assert len(result.project_metadata["members"]) >= 2
+        assert len(result.project_metadata["members"]) >= COUNT_TWO
 
     @pytest.mark.integration
     def test_project_archive_workflow(self, sync_db_session) -> None:
@@ -257,7 +259,7 @@ class TestProjectSetupManagementExport:
         }
 
         assert len(export_data["projects"]) >= 1
-        assert len(export_data["items"]) >= 4
+        assert len(export_data["items"]) >= COUNT_FOUR
 
 
 class TestConflictDetectionResolution:
@@ -364,7 +366,7 @@ class TestConflictDetectionResolution:
         sync_db_session.commit()
 
         result = sync_db_session.query(Item).filter_by(id="MERGE-001").first()
-        assert result.item_metadata["version"] == 2
+        assert result.item_metadata["version"] == COUNT_TWO
         assert result.item_metadata["reviewer"] == "bob"
 
 
@@ -395,7 +397,7 @@ class TestBulkOperationsWithRollback:
         sync_db_session.commit()
 
         count = sync_db_session.query(Item).filter(Item.id.startswith("BULK-")).count()
-        assert count == 10
+        assert count == COUNT_TEN
 
     @pytest.mark.integration
     def test_bulk_link_creation(self, sync_db_session) -> None:
@@ -435,7 +437,7 @@ class TestBulkOperationsWithRollback:
         sync_db_session.commit()
 
         count = sync_db_session.query(Link).filter(Link.id.startswith("BULK-LINK")).count()
-        assert count == 10
+        assert count == COUNT_TEN
 
     @pytest.mark.integration
     def test_bulk_update_operation(self, initialized_db) -> None:
@@ -448,7 +450,7 @@ class TestBulkOperationsWithRollback:
         initialized_db.commit()
 
         updated_items = initialized_db.query(Item).filter_by(status="in_progress").all()
-        assert len(updated_items) >= 2
+        assert len(updated_items) >= COUNT_TWO
 
     @pytest.mark.integration
     def test_bulk_operation_partial_rollback(self, sync_db_session) -> None:
@@ -572,7 +574,7 @@ class TestMultiStepUserScenarios:
 
         # Verify workflow
         items = sync_db_session.query(Item).filter_by(project_id="feature-dev").all()
-        assert len(items) == 4
+        assert len(items) == COUNT_FOUR
 
     @pytest.mark.integration
     def test_requirement_traceability_workflow(self, sync_db_session) -> None:
@@ -680,7 +682,7 @@ class TestImportExportWorkflows:
         }
 
         assert export["project"]["id"] is not None
-        assert len(export["items"]) >= 4
+        assert len(export["items"]) >= COUNT_FOUR
         assert len(export["links"]) >= 1
 
     @pytest.mark.integration
@@ -715,7 +717,7 @@ class TestImportExportWorkflows:
 
         # Verify import
         imported_items = sync_db_session.query(Item).filter_by(project_id="imported-project").all()
-        assert len(imported_items) == 2
+        assert len(imported_items) == COUNT_TWO
 
 
 class TestBackupRecoveryWorkflows:
@@ -738,7 +740,7 @@ class TestBackupRecoveryWorkflows:
         assert backup["project_id"] is not None
         item_count: int = backup["item_count"]
         items_list: list[Any] = backup["items"]
-        assert item_count >= 4
+        assert item_count >= COUNT_FOUR
         assert len(items_list) == item_count
 
     @pytest.mark.integration
@@ -767,7 +769,7 @@ class TestBackupRecoveryWorkflows:
 
         # Simulate recovery: verify data
         recovered_items = sync_db_session.query(Item).filter_by(project_id="recovery-project").all()
-        assert len(recovered_items) == 3
+        assert len(recovered_items) == COUNT_THREE
 
     @pytest.mark.integration
     def test_incremental_backup_workflow(self, sync_db_session) -> None:
@@ -812,4 +814,4 @@ class TestBackupRecoveryWorkflows:
 
         # Verify both batches
         all_items = sync_db_session.query(Item).filter_by(project_id="incremental-backup").all()
-        assert len(all_items) == 4
+        assert len(all_items) == COUNT_FOUR

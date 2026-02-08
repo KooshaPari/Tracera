@@ -1,4 +1,6 @@
 from types import SimpleNamespace
+from tests.test_constants import COUNT_FIVE
+
 
 import pytest
 
@@ -28,7 +30,7 @@ async def test_preview_bulk_update_warns_on_large_operation(async_session, monke
     assert preview.total_count == 120
     assert any("Large operation" in w for w in preview.validation_warnings)
     assert preview.estimated_duration_ms == 120 * 10
-    assert len(preview.sample_items) == 5
+    assert len(preview.sample_items) == COUNT_FIVE
 
 
 @pytest.mark.asyncio

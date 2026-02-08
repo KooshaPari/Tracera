@@ -7,6 +7,8 @@ shell completion, and alias system.
 import subprocess
 import sys
 from pathlib import Path
+from tests.test_constants import COUNT_FIVE, COUNT_THREE
+
 
 import pytest
 from typer.testing import CliRunner
@@ -282,7 +284,7 @@ class TestPerformanceUnderLoad:
         elapsed = time.perf_counter() - start
 
         # Should complete in reasonable time
-        assert elapsed < 5.0, f"10 help invocations took {elapsed:.2f}s (too slow)"
+        assert elapsed < COUNT_FIVE.0, f"10 help invocations took {elapsed:.2f}s (too slow)"
 
     def test_mixed_command_sequence(self, runner, cli_app) -> None:
         """Test mixed command sequence performance."""
@@ -305,7 +307,7 @@ class TestPerformanceUnderLoad:
         elapsed = time.perf_counter() - start
 
         # All commands should complete quickly
-        assert elapsed < 3.0, f"Command sequence took {elapsed:.2f}s"
+        assert elapsed < COUNT_THREE.0, f"Command sequence took {elapsed:.2f}s"
 
 
 # ============================================================

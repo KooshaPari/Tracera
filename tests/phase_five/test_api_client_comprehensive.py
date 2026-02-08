@@ -6,6 +6,8 @@ Focus lines: 67-73, 91, 108-116, 142->144, 185-187, 190-194, 196-199, 204, 220-2
 
 import json
 from unittest.mock import patch
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -496,7 +498,7 @@ class TestItemAPIOperations:
         with patch("tracertm.api.client.get_session", return_value=db_session):
             results = client.query_items(metadata_filter={"tag": "important"})  # filters
 
-            assert len(results) >= 2
+            assert len(results) >= COUNT_TWO
             assert all(item.metadata.get("tag") == "important" for item in results)
 
     def test_query_items_with_pagination(
@@ -508,14 +510,14 @@ class TestItemAPIOperations:
         with patch("tracertm.api.client.get_session", return_value=db_session):
             # Test limit
             results = client.query_items(options={"limit": 2})
-            assert len(results) <= 2
+            assert len(results) <= COUNT_TWO
 
             # Test offset
             all_results = client.query_items()
             paginated_results = client.query_items(options={"offset": 2, "limit": 2})
 
-            if len(all_results) > 2:
-                assert len(paginated_results) <= 2
+            if len(all_results) > COUNT_TWO:
+                assert len(paginated_results) <= COUNT_TWO
 
     def test_query_items_with_sorting(
         self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
@@ -693,7 +695,7 @@ class TestLinkAPIOperations:
                 metadata={"bidirectional": True},
             )
 
-            assert len(links) == 2
+            assert len(links) == COUNT_TWO
             assert links[0].link_type == "depends_on"
             assert links[1].link_type == "required_by"
 
@@ -803,7 +805,7 @@ class TestLinkAPIOperations:
             # Query links by source
             links = client.query_links(source_id=str(source_item.id))
 
-            assert len(links) >= 3
+            assert len(links) >= COUNT_THREE
             assert all(link.source_id == source_item.id for link in links)
 
     def test_query_links_by_target(
@@ -822,7 +824,7 @@ class TestLinkAPIOperations:
             # Query links by target
             links = client.query_links(target_id=str(target_item.id))
 
-            assert len(links) >= 3
+            assert len(links) >= COUNT_THREE
             assert all(link.target_id == target_item.id for link in links)
 
     def test_query_links_by_type(
@@ -851,7 +853,7 @@ class TestLinkAPIOperations:
             implement_links = client.query_links(link_type="implements")
             test_links = client.query_links(link_type="tests")
 
-            assert len(implement_links) >= 2
+            assert len(implement_links) >= COUNT_TWO
             assert len(test_links) >= 1
             assert all(link.link_type == "implements" for link in implement_links)
             assert all(link.link_type == "tests" for link in test_links)
@@ -898,7 +900,7 @@ class TestLinkAPIOperations:
                 start_id=str(test_items["feature"].id), link_types=["implements"],
             )
 
-            assert len(closure) >= 4  # Should include all items in chain
+            assert len(closure) >= COUNT_FOUR  # Should include all items in chain
 
     def test_link_path_finding(
         self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
@@ -918,7 +920,7 @@ class TestLinkAPIOperations:
             # Find path
             path = client.find_path(start_id=str(test_items["feature"].id), end_id=str(test_items["database"].id))
 
-            assert len(path) >= 4
+            assert len(path) >= COUNT_FOUR
             assert path[0] == test_items["feature"].id
             assert path[-1] == test_items["database"].id
 
@@ -1016,7 +1018,7 @@ class TestAdvancedAPIScenarios:
             duration = end_time - start_time
 
             assert len(created_items) == len(items_data)
-            assert duration < 10.0  # Should complete within reasonable time
+            assert duration < COUNT_TEN.0  # Should complete within reasonable time
 
     def test_transaction_rollback_on_error(
         self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
@@ -1060,7 +1062,7 @@ class TestAdvancedAPIScenarios:
 
             # All items should be created successfully
             # (Rate limiting behavior depends on implementation)
-            assert len(items_created) == 10
+            assert len(items_created) == COUNT_TEN
 
     def test_api_caching_mechanism(
         self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002

@@ -1,6 +1,8 @@
 """Integration tests for Epic 2: Status Workflow (Story 2.7, FR13)."""
 
 import pytest
+from tests.test_constants import COUNT_TWO
+
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
@@ -120,7 +122,7 @@ def test_status_history_tracking(temp_project_setup) -> None:
         # Get history (ordered by created_at DESC, most recent first)
         history = service.get_status_history(item_id)
 
-        assert len(history) >= 2
+        assert len(history) >= COUNT_TWO
         # History is ordered by created_at DESC, so most recent is first
         # Verify both statuses are in history
         statuses = [h["new_status"] for h in history]
@@ -130,7 +132,7 @@ def test_status_history_tracking(temp_project_setup) -> None:
         # But due to timing, check that we have both transitions
         assert history[0]["new_status"] in {"done", "in_progress"}
         # Ensure we can see the progression
-        if len(history) >= 2:
+        if len(history) >= COUNT_TWO:
             # At least verify the transitions happened
             assert any(h["new_status"] == "done" for h in history)
             assert any(h["new_status"] == "in_progress" for h in history)

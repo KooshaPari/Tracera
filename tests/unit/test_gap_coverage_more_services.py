@@ -5,6 +5,8 @@ Targets: query_optimization_service.py (22.58%), project_backup_service.py (11.9
 """
 
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -166,7 +168,7 @@ class TestQueryOptimizationService:
 
         count = service.clear_cache()
 
-        assert count == 2
+        assert count == COUNT_TWO
         assert len(service.query_cache) == 0
 
     def test_get_cache_stats(self) -> None:
@@ -212,7 +214,7 @@ class TestQueryOptimizationService:
 
         stats = service.get_query_statistics()
 
-        assert stats["total_queries"] == 3
+        assert stats["total_queries"] == COUNT_THREE
         assert stats["min_execution_time"] == 0.1
         assert stats["max_execution_time"] == 0.3
         assert stats["total_items_returned"] == 45
@@ -281,7 +283,7 @@ class TestQueryOptimizationService:
         )
 
         assert "execution_time_seconds" in result
-        assert result["items_returned"] == 2
+        assert result["items_returned"] == COUNT_TWO
         assert "performance_rating" in result
         assert "optimization_suggestions" in result
 

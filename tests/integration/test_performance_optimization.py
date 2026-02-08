@@ -8,6 +8,8 @@ Target: +2-3% coverage (30-45 tests)
 """
 
 import time
+from tests.test_constants import COUNT_FIVE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+
 
 import pytest
 
@@ -52,7 +54,7 @@ class TestBulkOperationsPerformance:
         assert count == 100
 
         # Performance check (should be fast)
-        assert elapsed < 5.0
+        assert elapsed < COUNT_FIVE.0
 
     @pytest.mark.integration
     def test_bulk_create_500_items(self, sync_db_session) -> None:
@@ -82,7 +84,7 @@ class TestBulkOperationsPerformance:
         elapsed = time.time() - start_time
 
         count = sync_db_session.query(Item).filter(Item.id.startswith("BULK500-")).count()
-        assert count == 500
+        assert count == HTTP_INTERNAL_SERVER_ERROR
         assert elapsed < 15.0
 
     @pytest.mark.integration
@@ -124,7 +126,7 @@ class TestBulkOperationsPerformance:
         # Verify
         updated_count = sync_db_session.query(Item).filter(Item.status == "in_progress").count()
         assert updated_count == 100
-        assert elapsed < 5.0
+        assert elapsed < COUNT_FIVE.0
 
     @pytest.mark.integration
     def test_bulk_delete_100_items(self, sync_db_session) -> None:
@@ -165,7 +167,7 @@ class TestBulkOperationsPerformance:
         # Verify
         remaining = sync_db_session.query(Item).filter(Item.id.startswith("DELETE100-")).count()
         assert remaining == 0
-        assert elapsed < 5.0
+        assert elapsed < COUNT_FIVE.0
 
 
 class TestLargeGraphTraversal:
@@ -421,7 +423,7 @@ class TestQueryOptimization:
 
         elapsed = time.time() - start_time
 
-        assert len(items) == 200
+        assert len(items) == HTTP_OK
         assert elapsed < 1.0
 
     @pytest.mark.integration
@@ -588,7 +590,7 @@ class TestConcurrentAccessPatterns:
             assert item is not None
 
         elapsed = time.time() - start_time
-        assert elapsed < 2.0
+        assert elapsed < COUNT_TWO.0
 
     @pytest.mark.integration
     def test_bulk_read_access_pattern(self, sync_db_session) -> None:

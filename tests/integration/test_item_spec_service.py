@@ -1,6 +1,8 @@
 """Integration tests for item_spec_service with database."""
 
 import pytest
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
@@ -212,7 +214,7 @@ class TestRequirementSpecServiceIntegration:
         # Generate report
         report = await service.get_health_report(project_id="test-proj")
 
-        assert report["total_requirements"] == 3
+        assert report["total_requirements"] == COUNT_THREE
         assert "health_score" in report
         assert "average_quality_score" in report
         assert 0 <= report["health_score"] <= 1.0
@@ -319,7 +321,7 @@ class TestImpactAnalyzerIntegration:
         impact = await analyzer.calculate_impact(item_id="item-1", project_id="test-proj")
 
         # item-1 has direct links to item-2 and item-4
-        assert impact["downstream_count"] >= 2
+        assert impact["downstream_count"] >= COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_calculate_indirect_downstream(self, session, setup_graph) -> None:  # noqa: ARG002
@@ -378,7 +380,7 @@ class TestVolatilityTrackingIntegration:
 
         # Volatility should increase
         assert spec.volatility_index > initial_volatility
-        assert spec.change_count == 5
+        assert spec.change_count == COUNT_FIVE
 
 
 @pytest.mark.asyncio
@@ -405,7 +407,7 @@ class TestQualityAnalyzerComplexScenarios:
         result = analyzer.analyze(text)
 
         assert result["overall_score"] > 0.75
-        assert len(result["issues"]) < 2
+        assert len(result["issues"]) < COUNT_TWO
 
     def test_mixed_quality_requirement(self) -> None:
         """Test requirement with mixed quality issues."""
@@ -416,5 +418,5 @@ class TestQualityAnalyzerComplexScenarios:
         result = analyzer.analyze(text)
 
         assert result["overall_score"] < 0.65
-        assert len(result["issues"]) >= 3
+        assert len(result["issues"]) >= COUNT_THREE
         assert result["missing_criteria"] is True

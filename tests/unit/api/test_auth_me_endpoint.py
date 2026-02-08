@@ -4,6 +4,8 @@ Verifies that the endpoint correctly fetches user data from WorkOS API.
 """
 
 from unittest.mock import patch
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK, HTTP_UNAUTHORIZED
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -58,7 +60,7 @@ class TestAuthMeEndpoint:
 
             response = client.get("/api/v1/auth/me", headers=headers)
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
 
             # Verify user data structure
@@ -98,7 +100,7 @@ class TestAuthMeEndpoint:
 
             response = client.get("/api/v1/auth/me", headers=headers)
 
-            assert response.status_code == 401
+            assert response.status_code == HTTP_UNAUTHORIZED
             assert "missing user ID" in response.json()["detail"]
 
     def test_me_endpoint_user_not_found(self, mock_jwt_claims) -> None:
@@ -119,7 +121,7 @@ class TestAuthMeEndpoint:
 
             response = client.get("/api/v1/auth/me", headers=headers)
 
-            assert response.status_code == 404
+            assert response.status_code == HTTP_NOT_FOUND
             assert "not found" in response.json()["detail"]
 
     def test_me_endpoint_workos_api_error(self, mock_jwt_claims) -> None:
@@ -140,7 +142,7 @@ class TestAuthMeEndpoint:
 
             response = client.get("/api/v1/auth/me", headers=headers)
 
-            assert response.status_code == 500
+            assert response.status_code == HTTP_INTERNAL_SERVER_ERROR
             assert "Failed to fetch user information" in response.json()["detail"]
 
     def test_me_endpoint_workos_not_configured(self, mock_jwt_claims) -> None:
@@ -161,7 +163,7 @@ class TestAuthMeEndpoint:
 
             response = client.get("/api/v1/auth/me", headers=headers)
 
-            assert response.status_code == 500
+            assert response.status_code == HTTP_INTERNAL_SERVER_ERROR
             assert "not configured" in response.json()["detail"]
 
     def test_me_endpoint_no_account_in_claims(self, mock_workos_user) -> None:
@@ -188,7 +190,7 @@ class TestAuthMeEndpoint:
 
             response = client.get("/api/v1/auth/me", headers=headers)
 
-            assert response.status_code == 200
+            assert response.status_code == HTTP_OK
             data = response.json()
 
             # Account should be None

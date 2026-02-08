@@ -20,6 +20,8 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -1536,7 +1538,7 @@ class TestGraphAppIntegration:
                 for _ in range(10):
                     await pilot.press("plus")
 
-                assert app.zoom <= 5.0
+                assert app.zoom <= COUNT_FIVE.0
 
                 # Zoom out many times
                 for _ in range(20):
@@ -1619,7 +1621,7 @@ class TestWidgetIntegration:
             await pilot.pause()
 
             assert widget.is_online == True
-            assert widget.pending_changes == 3
+            assert widget.pending_changes == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_sync_status_widget_time_formatting(self) -> None:
@@ -1697,7 +1699,7 @@ class TestWidgetIntegration:
             widget.set_conflicts(2)
             await pilot.pause()
 
-            assert widget.conflicts_count == 2
+            assert widget.conflicts_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_sync_status_widget_error_display(self) -> None:

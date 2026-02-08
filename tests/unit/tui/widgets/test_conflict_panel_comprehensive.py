@@ -9,6 +9,8 @@ from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -42,7 +44,7 @@ class TestConflictPanelInitialization:
 
         panel = _panel(conflicts=conflicts)
 
-        assert len(panel.conflicts) == 2
+        assert len(panel.conflicts) == COUNT_TWO
         assert panel.conflicts[0] == mock_conflict1
 
     def test_init_with_custom_id(self) -> None:
@@ -111,7 +113,7 @@ class TestConflictPanelDisplay:
         panel.refresh_conflict_list()
 
         mock_table.clear.assert_called_once()
-        assert mock_table.add_row.call_count == 2
+        assert mock_table.add_row.call_count == COUNT_TWO
 
 
 class TestConflictPanelSelection:

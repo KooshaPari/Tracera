@@ -1,4 +1,6 @@
 from datetime import UTC, datetime, timedelta, timezone
+from tests.test_constants import COUNT_TWO
+
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -153,4 +155,4 @@ def test_calculate_velocity_counts_created_and_completed() -> None:
     svc = ProgressService(session)
     v = svc.calculate_velocity("proj", days=7)
     assert v["items_completed"] == 1
-    assert v["items_created"] == 2  # Both done and created are in the 7-day window
+    assert v["items_created"] == COUNT_TWO  # Both done and created are in the 7-day window

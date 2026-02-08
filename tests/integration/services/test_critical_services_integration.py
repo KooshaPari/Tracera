@@ -18,6 +18,8 @@ import asyncio
 import tempfile
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import pytest_asyncio
@@ -179,7 +181,7 @@ class TestStatelessIngestionService:
                 view="FEATURE",
             )
 
-            assert result["items_created"] == 4  # 1 epic + 2 stories + 1 task
+            assert result["items_created"] == COUNT_FOUR  # 1 epic + 2 stories + 1 task
             assert result["project_id"] == test_project.id
         finally:
             await asyncio.to_thread(Path(file_path).unlink)
@@ -222,9 +224,9 @@ class TestStatelessIngestionService:
             result = service.ingest_markdown(file_path, dry_run=True)
 
             assert result["dry_run"] is True
-            assert result["headers_found"] == 3
+            assert result["headers_found"] == COUNT_THREE
             assert result["links_found"] >= 1
-            assert result["would_create_items"] == 3
+            assert result["would_create_items"] == COUNT_THREE
         finally:
             Path(file_path).unlink()
 
@@ -288,7 +290,7 @@ class TestStatelessIngestionService:
             service = StatelessIngestionService(sync_db_session)
             result = service.ingest_markdown(file_path, test_project.id)
 
-            assert result["items_created"] >= 2
+            assert result["items_created"] >= COUNT_TWO
             # May create internal links
         finally:
             Path(file_path).unlink()
@@ -416,7 +418,7 @@ class TestStatelessIngestionService:
             assert result["format"] == "openapi"
             assert result["schemas_created"] >= 1
             assert result["endpoints_created"] >= 1
-            assert result["items_created"] >= 2
+            assert result["items_created"] >= COUNT_TWO
         finally:
             Path(file_path).unlink()
 
@@ -454,7 +456,7 @@ class TestStatelessIngestionService:
             result = service.ingest_yaml(file_path, test_project.id)
 
             assert result["format"] == "bmad"
-            assert result["requirements_created"] >= 2
+            assert result["requirements_created"] >= COUNT_TWO
             assert result["links_created"] >= 1
         finally:
             Path(file_path).unlink()
@@ -559,7 +561,7 @@ class TestStatelessIngestionService:
             service = StatelessIngestionService(sync_db_session)
             result = service.ingest_yaml(file_path, test_project.id)
 
-            assert result["links_created"] >= 2  # Request and response links
+            assert result["links_created"] >= COUNT_TWO  # Request and response links
         finally:
             Path(file_path).unlink()
 
@@ -593,7 +595,7 @@ class TestStatelessIngestionService:
             service = StatelessIngestionService(sync_db_session)
             result = service.ingest_yaml(file_path, test_project.id)
 
-            assert result["links_created"] >= 3  # R2->R1, R3->R1, R3->R2
+            assert result["links_created"] >= COUNT_THREE  # R2->R1, R3->R1, R3->R2
         finally:
             Path(file_path).unlink()
 
@@ -793,7 +795,7 @@ class TestCycleDetectionService:
         result = service.detect_cycles(test_project.id, link_type="depends_on")
 
         assert result.has_cycles is True
-        assert result.cycle_count >= 2
+        assert result.cycle_count >= COUNT_TWO
 
     # ========== detect_cycles_async Tests ==========
 
@@ -1199,7 +1201,7 @@ class TestChaosModeService:
 
         result = await service.mass_update_items(test_project.id, item_ids, updates, agent_id="mass_updater")
 
-        assert result["updated_count"] == 2
+        assert result["updated_count"] == COUNT_TWO
         assert result["error_count"] == 0
 
         # Verify updates in DB
@@ -1275,7 +1277,7 @@ class TestChaosModeService:
 
         items_created = await service.explode_file(content, test_project.id, view="FEATURE")
 
-        assert items_created >= 4
+        assert items_created >= COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_explode_file_yaml_list(self, db_session: AsyncSession, test_project: Project) -> None:
@@ -1290,7 +1292,7 @@ class TestChaosModeService:
         service = ChaosModeService(db_session)
         items_created = await service.explode_file(content, test_project.id, view="CODE")
 
-        assert items_created >= 3
+        assert items_created >= COUNT_THREE
 
     # ========== track_scope_crash Tests ==========
 
@@ -1305,7 +1307,7 @@ class TestChaosModeService:
         item_ids = [sample_items[0].id, sample_items[1].id]
         result = await service.track_scope_crash(test_project.id, "Budget constraints", item_ids, agent_id="pm")
 
-        assert result["items_affected"] == 2
+        assert result["items_affected"] == COUNT_TWO
         assert result["reason"] == "Budget constraints"
         assert "event_id" in result
 
@@ -1396,7 +1398,7 @@ class TestShortestPathService:
 
         assert result.exists is True
         assert result.distance == 1
-        assert len(result.path) == 2
+        assert len(result.path) == COUNT_TWO
         assert result.path[0] == sample_items[0].id
         assert result.path[1] == sample_items[1].id
 
@@ -1421,8 +1423,8 @@ class TestShortestPathService:
         )
 
         assert result.exists is True
-        assert result.distance == 3
-        assert len(result.path) == 4
+        assert result.distance == COUNT_THREE
+        assert len(result.path) == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_find_shortest_path_no_path(
@@ -1492,7 +1494,7 @@ class TestShortestPathService:
         )
 
         assert result.exists is True
-        assert result.distance == 2  # A -> B -> C
+        assert result.distance == COUNT_TWO  # A -> B -> C
 
     @pytest.mark.asyncio
     async def test_find_shortest_path_chooses_shortest(
@@ -1701,7 +1703,7 @@ class TestShortestPathService:
         result = await service.find_shortest_path(test_project.id, sample_items[0].id, sample_items[2].id)
 
         assert result.exists is True
-        assert len(result.link_types) >= 2
+        assert len(result.link_types) >= COUNT_TWO
         assert "implements" in result.link_types or "tested_by" in result.link_types
 
 
@@ -1730,7 +1732,7 @@ class TestEdgeCasesAndErrorHandling:
             service = StatelessIngestionService(sync_db_session)
             result = service.ingest_markdown(file_path, test_project.id)
 
-            assert result["items_created"] >= 2
+            assert result["items_created"] >= COUNT_TWO
         finally:
             await asyncio.to_thread(Path(file_path).unlink)
 
@@ -1770,7 +1772,7 @@ class TestEdgeCasesAndErrorHandling:
             )
             items.append(item)
 
-        # Create chain: 0 -> 1 -> 2 -> ... -> 49
+        # Create chain: 0 -> 1 -> COUNT_TWO -> ... -> 49
         for i in range(49):
             await links_repo.create(
                 project_id=test_project.id,
@@ -1791,4 +1793,4 @@ class TestEdgeCasesAndErrorHandling:
 
         assert result.exists is True
         assert result.distance == 49
-        assert duration < 5.0  # Should complete in under 5 seconds
+        assert duration < COUNT_FIVE.0  # Should complete in under 5 seconds

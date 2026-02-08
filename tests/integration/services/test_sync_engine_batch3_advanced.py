@@ -12,6 +12,8 @@ Focus areas:
 import asyncio
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 
@@ -101,7 +103,7 @@ class TestSyncStateManagement:
         sync_engine.state.synced_entities = 10
 
         assert sync_engine.state.status == SyncStatus.SUCCESS
-        assert sync_engine.state.synced_entities == 10
+        assert sync_engine.state.synced_entities == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_record_sync_error(self, sync_engine) -> None:
@@ -120,10 +122,10 @@ class TestSyncStateManagement:
         sync_engine.state = SyncState()
 
         sync_engine.state.pending_changes = 5
-        assert sync_engine.state.pending_changes == 5
+        assert sync_engine.state.pending_changes == COUNT_FIVE
 
         sync_engine.state.pending_changes -= 1
-        assert sync_engine.state.pending_changes == 4
+        assert sync_engine.state.pending_changes == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_track_conflict_count(self, sync_engine) -> None:
@@ -131,7 +133,7 @@ class TestSyncStateManagement:
         sync_engine.state = SyncState()
 
         sync_engine.state.conflicts_count = 3
-        assert sync_engine.state.conflicts_count == 3
+        assert sync_engine.state.conflicts_count == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_reset_sync_state(self, sync_engine) -> None:
@@ -300,7 +302,7 @@ class TestIncrementalSync:
 
         result = await sync_engine.change_queue.enqueue_batch(changes)
 
-        assert result == 5
+        assert result == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_process_pending_changes_fifo(self, sync_engine) -> None:
@@ -320,8 +322,8 @@ class TestIncrementalSync:
         result = await sync_engine.change_queue.get_pending("proj-1")
 
         assert result[0].id == 1
-        assert result[1].id == 2
-        assert result[2].id == 3
+        assert result[1].id == COUNT_TWO
+        assert result[2].id == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_skip_deleted_items_in_delta(self, sync_engine) -> None:
@@ -432,8 +434,8 @@ class TestConflictHandling:
         result = await sync_engine.conflict_resolver.merge_dictionaries(local, remote)
 
         assert result["a"] == 1
-        assert result["b"] == 2
-        assert result["c"] == 3
+        assert result["b"] == COUNT_TWO
+        assert result["c"] == COUNT_THREE
 
 
 # ==============================================================================
@@ -455,7 +457,7 @@ class TestNetworkResilience:
         result = await sync_engine.sync_with_retry("proj-1", max_retries=2, backoff_factor=0.1)
 
         assert result.success is True
-        assert sync_engine.sync_with_server.call_count == 2
+        assert sync_engine.sync_with_server.call_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_exponential_backoff(self, sync_engine) -> None:
@@ -473,7 +475,7 @@ class TestNetworkResilience:
         with pytest.raises(ConnectionError):
             await sync_engine.sync_with_retry("proj-1", max_retries=2)
 
-        assert sync_engine.sync_with_server.call_count <= 2
+        assert sync_engine.sync_with_server.call_count <= COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_handle_network_disconnection(self, sync_engine) -> None:
@@ -535,7 +537,7 @@ class TestFullSyncWorkflow:
 
         result = await sync_engine.full_sync("proj-1", push_only=True)
 
-        assert result.entities_synced == 5
+        assert result.entities_synced == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_sync_with_remote_changes_only(self, sync_engine) -> None:
@@ -544,7 +546,7 @@ class TestFullSyncWorkflow:
 
         result = await sync_engine.full_sync("proj-1", pull_only=True)
 
-        assert result.entities_synced == 10
+        assert result.entities_synced == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_sync_empty_project(self, sync_engine) -> None:
@@ -577,7 +579,7 @@ class TestFullSyncWorkflow:
         result = await sync_engine.full_sync("proj-1")
 
         assert result.success is False
-        assert len(result.errors) == 2
+        assert len(result.errors) == COUNT_TWO
 
 
 # ==============================================================================
@@ -598,7 +600,7 @@ class TestMultiProjectSync:
             result = await sync_engine.full_sync(proj_id)
             results.append(result)
 
-        assert len(results) == 3
+        assert len(results) == COUNT_THREE
         assert all(r.success for r in results)
 
     @pytest.mark.asyncio
@@ -614,7 +616,7 @@ class TestMultiProjectSync:
 
         results = await asyncio.gather(*tasks)
 
-        assert len(results) == 3
+        assert len(results) == COUNT_THREE
         assert all(r.success for r in results)
 
     @pytest.mark.asyncio
@@ -626,7 +628,7 @@ class TestMultiProjectSync:
         await sync_engine.full_sync("proj-2")
 
         # Verify isolation by checking that changes are project-specific
-        assert sync_engine.full_sync.call_count == 2
+        assert sync_engine.full_sync.call_count == COUNT_TWO
 
 
 # ==============================================================================
@@ -662,7 +664,7 @@ class TestPerformanceOptimization:
 
         result = await sync_engine.process_changes_parallel("proj-1", chunk_size=50, max_workers=4)
 
-        assert result.entities_synced == 500
+        assert result.entities_synced == HTTP_INTERNAL_SERVER_ERROR
 
 
 # ==============================================================================

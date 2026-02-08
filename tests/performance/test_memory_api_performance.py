@@ -15,6 +15,8 @@ import asyncio
 import json
 import time
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -66,7 +68,7 @@ class TestMemoryEfficiency:
         json_str = json.dumps({"items": items})
         elapsed = time.time() - start_time
 
-        assert elapsed < 0.01, "Large serialization should be < 10ms"
+        assert elapsed < 0.01, "Large serialization should be < COUNT_TENms"
         assert len(json_str) > 10000
 
     def test_memory_during_large_iteration(self) -> None:
@@ -103,7 +105,7 @@ class TestMemoryEfficiency:
         snapshot_after = tracemalloc.take_snapshot()
         tracemalloc.stop()
 
-        assert len(transformed) == 500
+        assert len(transformed) == HTTP_INTERNAL_SERVER_ERROR
 
     def test_list_comprehension_vs_loop(self) -> None:
         """Compare memory efficiency of list comprehension vs loop."""
@@ -209,7 +211,7 @@ class TestAPIPerformance:
         elapsed = time.time() - start_time
 
         throughput = len(results) / elapsed
-        assert throughput > 5, f"Throughput {throughput} req/s is too low"
+        assert throughput > COUNT_FIVE, f"Throughput {throughput} req/s is too low"
 
     @pytest.mark.asyncio
     async def test_large_response_handling(self) -> None:
@@ -232,7 +234,7 @@ class TestAPIPerformance:
         elapsed = time.time() - start_time
 
         assert len(parsed["items"]) == 1000
-        assert elapsed < 0.2, "Parsing 1000 items should be < 200ms"
+        assert elapsed < 0.2, "Parsing 1000 items should be < HTTP_OKms"
 
     @pytest.mark.asyncio
     async def test_batch_api_requests(self) -> None:
@@ -250,7 +252,7 @@ class TestAPIPerformance:
         elapsed = time.time() - start_time
 
         total_items = sum(batches)
-        assert total_items == 500
+        assert total_items == HTTP_INTERNAL_SERVER_ERROR
         assert elapsed < 0.5
 
     @pytest.mark.asyncio
@@ -309,7 +311,7 @@ class TestAPIPerformance:
         elapsed = time.time() - start_time
 
         assert len(results) == 100
-        assert elapsed < 2.0, "With pooling should be efficient"
+        assert elapsed < COUNT_TWO.0, "With pooling should be efficient"
 
     @pytest.mark.asyncio
     async def test_pagination_api(self) -> None:
@@ -392,7 +394,7 @@ class TestSerializationPerformance:
         elapsed = time.time() - start_time
 
         assert elapsed < 0.05
-        assert len(decoded["items"]) == 500
+        assert len(decoded["items"]) == HTTP_INTERNAL_SERVER_ERROR
 
     def test_dict_vs_dataclass_serialization(self) -> None:
         """Test dict vs dataclass serialization."""

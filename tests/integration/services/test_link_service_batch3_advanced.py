@@ -11,6 +11,8 @@ Focus areas:
 
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, Mock
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -202,7 +204,7 @@ class TestLinkQueriesAndTraversal:
 
         result = await link_service.get_outgoing_links("proj-1", "item-1")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(l.source_item_id == "item-1" for l in result)
 
     @pytest.mark.asyncio
@@ -216,7 +218,7 @@ class TestLinkQueriesAndTraversal:
 
         result = await link_service.get_incoming_links("proj-1", "item-1")
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(l.target_item_id == "item-1" for l in result)
 
     @pytest.mark.asyncio
@@ -231,7 +233,7 @@ class TestLinkQueriesAndTraversal:
         out_result = await link_service.get_outgoing_links("proj-1", "item-1")
         in_result = await link_service.get_incoming_links("proj-1", "item-1")
 
-        assert len(out_result) + len(in_result) == 2
+        assert len(out_result) + len(in_result) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_filter_links_by_type(self, link_service) -> None:
@@ -294,7 +296,7 @@ class TestLinkQueriesAndTraversal:
                 links = await link_service.links.get_outgoing("proj-1", current)
                 to_visit.extend(link.target_item_id for link in links if link.target_item_id not in visited)
 
-        assert len(visited) == 3
+        assert len(visited) == COUNT_THREE
 
 
 # ==============================================================================
@@ -308,7 +310,7 @@ class TestCircularDependencyDetection:
     @pytest.mark.asyncio
     async def test_detect_no_cycle_linear_chain(self, link_service) -> None:
         """Test detecting no cycles in linear dependency chain."""
-        # Chain: 1 -> 2 -> 3 (no cycle)
+        # Chain: 1 -> COUNT_TWO -> COUNT_THREE (no cycle)
         link_service.has_cycle.return_value = False
 
         has_cycle = await link_service.has_cycle("proj-1", "item-1")
@@ -351,7 +353,7 @@ class TestCircularDependencyDetection:
 
         path = await link_service.find_path("proj-1", "item-1", "item-3")
 
-        assert len(path) == 3
+        assert len(path) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_no_path_exists(self, link_service) -> None:
@@ -457,7 +459,7 @@ class TestBulkLinkOperations:
             ],
         )
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_bulk_delete_links(self, link_service) -> None:
@@ -466,7 +468,7 @@ class TestBulkLinkOperations:
 
         result = await link_service.bulk_delete_links("proj-1", [f"link-{i}" for i in range(1, 6)])
 
-        assert result == 5
+        assert result == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_bulk_update_link_properties(self, link_service) -> None:
@@ -483,7 +485,7 @@ class TestBulkLinkOperations:
             ],
         )
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_bulk_create_with_validation(self, link_service) -> None:
@@ -501,7 +503,7 @@ class TestBulkLinkOperations:
             ],
         )
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
 
 
 # ==============================================================================

@@ -1,6 +1,8 @@
 """Integration tests for Epic 4: Dependency Detection (Story 4.6, FR22, NFR-R2)."""
 
 import pytest
+from tests.test_constants import COUNT_TWO
+
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
@@ -112,7 +114,7 @@ def test_detect_orphans(temp_project_with_items) -> None:
 
         # Items 3 and 4 should be orphans (no links)
         assert result["has_orphans"] is True
-        assert result["orphan_count"] >= 2
+        assert result["orphan_count"] >= COUNT_TWO
 
         orphan_ids = {orphan["item_id"] for orphan in result["orphans"]}
         assert items["item_3"] in orphan_ids

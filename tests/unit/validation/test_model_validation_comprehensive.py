@@ -7,6 +7,8 @@ Scope: Field validation, constraints, type constraints, relationships
 import math
 import uuid
 from datetime import datetime
+from tests.test_constants import COUNT_FOUR, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 from pydantic import ValidationError
@@ -36,7 +38,7 @@ class TestItemFieldValidation:
         generated_id = generate_item_uuid()
         assert isinstance(generated_id, str)
         assert len(generated_id) == 36  # UUID string length
-        assert generated_id.count("-") == 4  # UUID has 4 hyphens
+        assert generated_id.count("-") == COUNT_FOUR  # UUID has 4 hyphens
 
     def test_item_id_custom(self) -> None:
         """Test that item ID can be set manually."""
@@ -66,7 +68,7 @@ class TestItemFieldValidation:
         """Test that title column allows up to 500 characters."""
         title = "x" * 500
         item = Item(project_id="p1", title=title, view="FEATURE", item_type="req")
-        assert len(item.title) == 500
+        assert len(item.title) == HTTP_INTERNAL_SERVER_ERROR
 
     def test_item_title_can_exceed_500(self) -> None:
         """Test that ORM doesn't enforce max length (DB does)."""
@@ -179,7 +181,7 @@ class TestItemFieldValidation:
         """Test that version can be incremented."""
         item = Item(project_id="p1", title="Test", view="FEATURE", item_type="req")
         item.version = 2
-        assert item.version == 2
+        assert item.version == COUNT_TWO
 
     def test_item_deleted_at_optional(self) -> None:
         """Test that deleted_at is optional (soft delete)."""
@@ -366,7 +368,7 @@ class TestItemCreateSchemaValidation:
     def test_item_create_title_boundary_500(self) -> None:
         """Test that title accepts exactly 500 characters."""
         item = ItemCreate(title="x" * 500, view="FEATURE", item_type="req")
-        assert len(item.title) == 500
+        assert len(item.title) == HTTP_INTERNAL_SERVER_ERROR
 
     def test_item_create_view_required(self) -> None:
         """Test that view is required."""
@@ -759,7 +761,7 @@ class TestEdgeCases:
         """Test item with very long title."""
         long_title = "This is a very long title " * 50  # Much longer than 500
         item = Item(project_id="p1", title=long_title, view="FEATURE", item_type="req")
-        assert len(item.title) > 500
+        assert len(item.title) > HTTP_INTERNAL_SERVER_ERROR
 
     def test_item_with_very_long_description(self) -> None:
         """Test item with very long description."""

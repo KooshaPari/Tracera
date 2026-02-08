@@ -15,6 +15,8 @@ Total: 50+ comprehensive concurrency tests
 """
 
 from typing import cast
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.orm import Session
@@ -69,7 +71,7 @@ class TestConcurrentReads:
 
         results = [read_items() for _ in range(15)]
 
-        assert all(r == 5 for r in results)
+        assert all(r == COUNT_FIVE for r in results)
 
     def test_concurrent_link_reads(self, db_session: Session) -> None:
         """Test concurrent reads of links."""
@@ -253,7 +255,7 @@ class TestConcurrentWrites:
         db_session.commit()
 
         retrieved = db_session.query(Item).filter_by(id="conc-meta-item").first()
-        assert len(retrieved.item_metadata) == 10
+        assert len(retrieved.item_metadata) == COUNT_TEN
 
     def test_mixed_concurrent_operations(self, db_session: Session) -> None:
         """Test mixed creates and updates."""
@@ -433,7 +435,7 @@ class TestLockManagement:
         item.title = "Updated"
         db_session.commit()
 
-        assert item.item_metadata["version"] == 2
+        assert item.item_metadata["version"] == COUNT_TWO
 
     def test_lock_timeout_scenario(self, db_session: Session) -> None:
         """Test handling of lock timeouts."""
@@ -518,7 +520,7 @@ class TestLockManagement:
         item.item_metadata["priority"] = 10
         db_session.commit()
 
-        assert item.item_metadata["priority"] == 10
+        assert item.item_metadata["priority"] == COUNT_TEN
 
 
 class TestStressTesting:

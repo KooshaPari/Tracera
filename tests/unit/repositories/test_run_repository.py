@@ -19,6 +19,8 @@ Tests for:
 
 from datetime import UTC, datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -293,8 +295,8 @@ async def test_list_by_project_basic(db_session: AsyncSession) -> None:
 
     runs, total = await repo.list_by_project(str(project.id))
 
-    assert len(runs) == 3
-    assert total == 3
+    assert len(runs) == COUNT_THREE
+    assert total == COUNT_THREE
 
 
 @pytest.mark.unit
@@ -315,7 +317,7 @@ async def test_list_by_project_filters_by_project(db_session: AsyncSession) -> N
     _, total1 = await repo.list_by_project(project1.id)
     _, total2 = await repo.list_by_project(project2.id)
 
-    assert total1 == 2
+    assert total1 == COUNT_TWO
     assert total2 == 1
 
 
@@ -393,9 +395,9 @@ async def test_list_by_project_pagination(db_session: AsyncSession) -> None:
     runs_page1, total = await repo.list_by_project(project.id, limit=5, skip=0)
     runs_page2, _ = await repo.list_by_project(project.id, limit=5, skip=5)
 
-    assert len(runs_page1) == 5
-    assert len(runs_page2) == 5
-    assert total == 10
+    assert len(runs_page1) == COUNT_FIVE
+    assert len(runs_page2) == COUNT_FIVE
+    assert total == COUNT_TEN
 
 
 # ============================================================================
@@ -419,7 +421,7 @@ async def test_update_basic(db_session: AsyncSession) -> None:
 
     assert updated is not None
     assert updated.name == "Updated Name"
-    assert updated.version == 2
+    assert updated.version == COUNT_TWO
 
 
 @pytest.mark.unit
@@ -798,11 +800,11 @@ async def test_add_bulk_results(db_session: AsyncSession) -> None:
 
     results = await repo.add_bulk_results(run.id, results_data)
 
-    assert len(results) == 3
+    assert len(results) == COUNT_THREE
 
     updated_run = await repo.get_by_id(run.id)
     assert updated_run is not None
-    assert updated_run.total_tests == 3
+    assert updated_run.total_tests == COUNT_THREE
     assert updated_run.passed_count == 1
     assert updated_run.failed_count == 1
     assert updated_run.skipped_count == 1
@@ -892,7 +894,7 @@ async def test_get_activities(db_session: AsyncSession) -> None:
     activities = await repo.get_activities(run.id)
 
     # Should have "created" and "started" activities
-    assert len(activities) >= 2
+    assert len(activities) >= COUNT_TWO
     activity_types = [a.activity_type for a in activities]
     assert "created" in activity_types
     assert "started" in activity_types
@@ -964,7 +966,7 @@ async def test_get_stats(db_session: AsyncSession) -> None:
 
     stats = await repo.get_stats(str(project.id))
 
-    assert stats["total_runs"] == 2
+    assert stats["total_runs"] == COUNT_TWO
     assert "by_status" in stats
     assert "by_type" in stats
     assert "by_environment" in stats
@@ -1077,14 +1079,14 @@ async def test_list_by_project_filter_by_date_range(db_session: AsyncSession) ->
     _, total_from_past = await repo.list_by_project(project.id, from_date=past_date)
     _, total_from_future = await repo.list_by_project(project.id, from_date=future_date)
 
-    assert total_from_past == 2  # All runs are after past date
+    assert total_from_past == COUNT_TWO  # All runs are after past date
     assert total_from_future == 0  # No runs are after future date
 
     # Test to_date filter
     _, total_to_future = await repo.list_by_project(project.id, to_date=future_date)
     _, total_to_past = await repo.list_by_project(project.id, to_date=past_date)
 
-    assert total_to_future == 2  # All runs are before future date
+    assert total_to_future == COUNT_TWO  # All runs are before future date
     assert total_to_past == 0  # No runs are before past date
 
 
@@ -1442,11 +1444,11 @@ async def test_add_bulk_results_with_blocked_and_error(db_session: AsyncSession)
 
     results = await repo.add_bulk_results(run.id, results_data)
 
-    assert len(results) == 5
+    assert len(results) == COUNT_FIVE
 
     updated_run = await repo.get_by_id(run.id)
     assert updated_run is not None
-    assert updated_run.total_tests == 5
+    assert updated_run.total_tests == COUNT_FIVE
     assert updated_run.passed_count == 1
     assert updated_run.failed_count == 1
     assert updated_run.skipped_count == 1

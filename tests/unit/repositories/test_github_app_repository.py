@@ -6,6 +6,8 @@ Comprehensive tests covering GitHub App installation CRUD operations.
 import asyncio
 from datetime import datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_THREE
+
 
 import pytest
 import pytest_asyncio
@@ -262,7 +264,7 @@ class TestListByAccount:
 
         result = await github_app_repo.list_by_account(account_for_github_app.id)
 
-        assert len(result) == 3
+        assert len(result) == COUNT_THREE
         # Verify all installations are returned (order may vary with SQLite)
         actual_installation_ids = {r.installation_id for r in result}
         assert actual_installation_ids == expected_installation_ids

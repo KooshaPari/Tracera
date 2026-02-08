@@ -21,6 +21,8 @@ Coverage includes:
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from unittest.mock import MagicMock, PropertyMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_TWO
+
 
 import pytest
 
@@ -134,7 +136,7 @@ class TestConflictPanel:
         panel.refresh_conflict_list()
 
         mock_table.clear.assert_called_once()
-        assert mock_table.add_row.call_count == 2
+        assert mock_table.add_row.call_count == COUNT_TWO
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_on_data_table_row_selected(self) -> None:
@@ -714,7 +716,7 @@ class TestSyncStatusWidget:
 
         widget.set_pending_changes(10)
 
-        assert widget.pending_changes == 10
+        assert widget.pending_changes == COUNT_TEN
 
     def test_sync_status_set_last_sync(self) -> None:
         """Test set_last_sync method."""
@@ -731,7 +733,7 @@ class TestSyncStatusWidget:
 
         widget.set_conflicts(5)
 
-        assert widget.conflicts_count == 5
+        assert widget.conflicts_count == COUNT_FIVE
 
     def test_sync_status_set_error(self) -> None:
         """Test set_error method."""
@@ -859,7 +861,7 @@ class TestCompactSyncStatus:
 
         widget.set_conflicts(4)
 
-        assert widget.conflicts_count == 4
+        assert widget.conflicts_count == COUNT_FOUR
 
 
 # =============================================================================

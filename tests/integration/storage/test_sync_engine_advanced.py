@@ -27,6 +27,8 @@ import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine, text
@@ -234,7 +236,7 @@ class TestQueueManagement:
                 payload={"title": f"Item {i}"},
             )
 
-        assert sync_engine.queue.get_count() == 5
+        assert sync_engine.queue.get_count() == COUNT_FIVE
 
     def test_queue_update_overwrites_existing(self, sync_engine) -> None:
         """Test that enqueuing same entity twice updates the entry."""
@@ -266,7 +268,7 @@ class TestQueueManagement:
 
         pending = sync_engine.queue.get_pending(limit=10)
 
-        assert len(pending) == 3
+        assert len(pending) == COUNT_THREE
         assert all(isinstance(c, QueuedChange) for c in pending)
         assert pending[0].retry_count == 0
 
@@ -289,7 +291,7 @@ class TestQueueManagement:
                 entity_type=EntityType.ITEM, entity_id=f"item-{i}", operation=OperationType.CREATE, payload={},
             )
 
-        assert sync_engine.queue.get_count() == 5
+        assert sync_engine.queue.get_count() == COUNT_FIVE
 
         sync_engine.queue.clear()
 
@@ -395,7 +397,7 @@ class TestMultiWayMergeScenarios:
             )
 
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 3
+        assert len(pending) == COUNT_THREE
 
         for change in pending:
             assert change.operation == OperationType.CREATE
@@ -428,7 +430,7 @@ class TestMultiWayMergeScenarios:
         # UNIQUE constraint is on (entity_type, entity_id, operation)
         # So all three different operations are kept separate
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 3
+        assert len(pending) == COUNT_THREE
         operations = [c.operation for c in pending]
         assert OperationType.CREATE in operations
         assert OperationType.UPDATE in operations
@@ -459,9 +461,9 @@ class TestMultiWayMergeScenarios:
         )
 
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 3  # ITEM CREATE + LINK CREATE + LINK UPDATE
+        assert len(pending) == COUNT_THREE  # ITEM CREATE + LINK CREATE + LINK UPDATE
         link_changes = [c for c in pending if c.entity_type == EntityType.LINK]
-        assert len(link_changes) == 2  # Both CREATE and UPDATE are present
+        assert len(link_changes) == COUNT_TWO  # Both CREATE and UPDATE are present
         update_change = next(c for c in link_changes if c.operation == OperationType.UPDATE)
         assert update_change.payload["type"] == "implements"
 
@@ -508,7 +510,7 @@ class TestMultiWayMergeScenarios:
         )
 
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 3
+        assert len(pending) == COUNT_THREE
 
     @pytest.mark.asyncio
     async def test_merge_diamond_dependency(self, sync_engine) -> None:
@@ -547,7 +549,7 @@ class TestMultiWayMergeScenarios:
         )
 
         pending = sync_engine.queue.get_pending()
-        assert len(pending) == 5
+        assert len(pending) == COUNT_FIVE
 
 
 # ============================================================================
@@ -616,13 +618,13 @@ class TestPartialSyncAndInterruptions:
 
         # Process queue partially (mock only processes first one)
         pending_before = sync_engine.queue.get_pending()
-        assert len(pending_before) == 3
+        assert len(pending_before) == COUNT_THREE
 
         # Simulate processing one
         sync_engine.queue.remove(pending_before[0].id)
 
         pending_after = sync_engine.queue.get_pending()
-        assert len(pending_after) == 2
+        assert len(pending_after) == COUNT_TWO
 
     def test_partial_sync_with_error_tracking(self, sync_engine) -> None:
         """Test that partial syncs track errors properly."""
@@ -700,7 +702,7 @@ class TestErrorRecoveryAndRetryLogic:
 
         sync_engine.queue.update_retry(queue_id, "Error 2")
         pending = sync_engine.queue.get_pending()
-        assert pending[0].retry_count == 2
+        assert pending[0].retry_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_max_retries_exceeded(self, sync_engine) -> None:
@@ -720,7 +722,7 @@ class TestErrorRecoveryAndRetryLogic:
 
         pending = sync_engine.queue.get_pending()
         assert len(pending) == 1
-        assert pending[0].retry_count == 3
+        assert pending[0].retry_count == COUNT_THREE
 
         # Process queue should skip it
         result = await sync_engine.process_queue()
@@ -983,7 +985,7 @@ class TestSyncQueueOperations:
         assert sync_engine.queue.get_count() == 1
 
         pending = sync_engine.queue.get_pending()
-        assert pending[0].payload["v"] == 2  # Latest payload
+        assert pending[0].payload["v"] == COUNT_TWO  # Latest payload
 
     def test_queue_ordered_by_created_at(self, sync_engine) -> None:
         """Test that queue returns items ordered by created_at."""
@@ -1059,8 +1061,8 @@ class TestSyncResultsAndMetrics:
         )
 
         assert result.success
-        assert result.entities_synced == 5
-        assert len(result.conflicts) == 2
+        assert result.entities_synced == COUNT_FIVE
+        assert len(result.conflicts) == COUNT_TWO
         assert len(result.errors) == 1
         assert result.duration_seconds == 1.5
 
@@ -1089,7 +1091,7 @@ async def test_cleanup_operations(sync_engine) -> None:
     for i in range(5):
         sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
 
-    assert sync_engine.queue.get_count() == 5
+    assert sync_engine.queue.get_count() == COUNT_FIVE
 
     # Clear queue
     await sync_engine.clear_queue()

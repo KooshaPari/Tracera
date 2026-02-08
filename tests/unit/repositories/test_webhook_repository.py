@@ -5,6 +5,8 @@ request logging, and statistics.
 """
 
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_OK
+
 
 import pytest
 import pytest_asyncio
@@ -142,7 +144,7 @@ class TestWebhookCreate:
 
         # Verify it's a valid UUID format
         assert len(webhook.id) == 36
-        assert webhook.id.count("-") == 4
+        assert webhook.id.count("-") == COUNT_FOUR
 
     @pytest.mark.asyncio
     async def test_create_default_enabled_events(self, project_setup) -> None:
@@ -225,8 +227,8 @@ class TestWebhookList:
 
         webhooks, total = await repo.list_by_project(str(project.id))
 
-        assert len(webhooks) == 5
-        assert total == 5
+        assert len(webhooks) == COUNT_FIVE
+        assert total == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_list_by_project_filter_provider(self, project_setup) -> None:
@@ -242,8 +244,8 @@ class TestWebhookList:
 
         webhooks, total = await repo.list_by_project(str(project.id), provider=WebhookProvider.CUSTOM)
 
-        assert len(webhooks) == 2
-        assert total == 2
+        assert len(webhooks) == COUNT_TWO
+        assert total == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_list_by_project_filter_status(self, project_setup) -> None:
@@ -275,12 +277,12 @@ class TestWebhookList:
 
         # Get first page
         page1, total = await repo.list_by_project(str(project.id), skip=0, limit=3)
-        assert len(page1) == 3
-        assert total == 10
+        assert len(page1) == COUNT_THREE
+        assert total == COUNT_TEN
 
         # Get second page
         page2, _ = await repo.list_by_project(str(project.id), skip=3, limit=3)
-        assert len(page2) == 3
+        assert len(page2) == COUNT_THREE
 
         # Ensure different results
         page1_ids = {w.id for w in page1}
@@ -304,7 +306,7 @@ class TestWebhookUpdate:
 
         assert result is not None
         assert result.name == "Updated Name"
-        assert result.version == 2
+        assert result.version == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_update_multiple_fields(self, webhook_setup) -> None:
@@ -323,7 +325,7 @@ class TestWebhookUpdate:
         assert result.name == "New Name"
         assert result.description == "New Description"
         assert result.callback_url == "https://new.example.com"
-        assert result.rate_limit_per_minute == 200
+        assert result.rate_limit_per_minute == HTTP_OK
 
     @pytest.mark.asyncio
     async def test_update_not_found(self, webhook_setup) -> None:
@@ -571,8 +573,8 @@ class TestWebhookRecordRequest:
         await repo.record_request(webhook.id, success=False)
 
         result = await repo.get_by_id(webhook.id)
-        assert result.total_requests == 3
-        assert result.successful_requests == 2
+        assert result.total_requests == COUNT_THREE
+        assert result.successful_requests == COUNT_TWO
         assert result.failed_requests == 1
 
     @pytest.mark.asyncio
@@ -611,7 +613,7 @@ class TestWebhookLogs:
         assert log.http_method == "POST"
         assert log.source_ip == "192.168.1.1"
         assert log.success is True
-        assert log.status_code == 200
+        assert log.status_code == HTTP_OK
 
     @pytest.mark.asyncio
     async def test_create_log_with_all_fields(self, webhook_setup) -> None:
@@ -668,8 +670,8 @@ class TestWebhookLogs:
 
         logs, total = await repo.get_logs(webhook.id)
 
-        assert len(logs) == 5
-        assert total == 5
+        assert len(logs) == COUNT_FIVE
+        assert total == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_get_logs_filter_success(self, webhook_setup) -> None:
@@ -683,8 +685,8 @@ class TestWebhookLogs:
 
         logs, total = await repo.get_logs(webhook.id, success=True)
 
-        assert len(logs) == 2
-        assert total == 2
+        assert len(logs) == COUNT_TWO
+        assert total == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_get_logs_filter_event_type(self, webhook_setup) -> None:
@@ -698,8 +700,8 @@ class TestWebhookLogs:
 
         logs, total = await repo.get_logs(webhook.id, event_type="push")
 
-        assert len(logs) == 2
-        assert total == 2
+        assert len(logs) == COUNT_TWO
+        assert total == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_get_logs_pagination(self, webhook_setup) -> None:
@@ -713,9 +715,9 @@ class TestWebhookLogs:
         page1, total = await repo.get_logs(webhook.id, skip=0, limit=3)
         page2, _ = await repo.get_logs(webhook.id, skip=3, limit=3)
 
-        assert len(page1) == 3
-        assert len(page2) == 3
-        assert total == 10
+        assert len(page1) == COUNT_THREE
+        assert len(page2) == COUNT_THREE
+        assert total == COUNT_TEN
 
 
 # ==================== Stats Tests ====================
@@ -756,11 +758,11 @@ class TestWebhookStats:
 
         stats = await repo.get_stats(str(project.id))
 
-        assert stats["total"] == 3
-        assert stats["by_provider"]["github_actions"] == 2
+        assert stats["total"] == COUNT_THREE
+        assert stats["by_provider"]["github_actions"] == COUNT_TWO
         assert stats["by_provider"]["custom"] == 1
-        assert stats["total_requests"] == 3
-        assert stats["successful_requests"] == 2
+        assert stats["total_requests"] == COUNT_THREE
+        assert stats["successful_requests"] == COUNT_TWO
         assert stats["failed_requests"] == 1
 
     @pytest.mark.asyncio
@@ -778,5 +780,5 @@ class TestWebhookStats:
 
         stats = await repo.get_stats(str(project.id))
 
-        assert stats["by_status"]["active"] == 2
+        assert stats["by_status"]["active"] == COUNT_TWO
         assert stats["by_status"]["paused"] == 1

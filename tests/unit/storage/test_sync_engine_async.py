@@ -11,6 +11,8 @@ Tests for:
 import asyncio
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
+
 
 import pytest
 
@@ -54,7 +56,7 @@ class TestSyncEngineLocking:
         gathered = await asyncio.gather(engine.sync(), engine.sync(), return_exceptions=True)
 
         # All should complete
-        assert len(gathered) == 2
+        assert len(gathered) == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_sync_lock_timeout_behavior(self) -> None:
@@ -174,7 +176,7 @@ class TestQueueProcessingAsync:
         result = await engine.process_queue()
 
         assert result.success
-        assert upload_count == 2
+        assert upload_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_process_queue_with_timeout(self) -> None:
@@ -378,7 +380,7 @@ class TestSyncStateManagementAsync:
         state.pending_changes = 5
 
         assert state.status == SyncStatus.SYNCING
-        assert state.pending_changes == 5
+        assert state.pending_changes == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_concurrent_state_updates(self) -> None:
@@ -399,7 +401,7 @@ class TestSyncStateManagementAsync:
                 update_status(SyncStatus.SUCCESS),
             ])
 
-            assert len(updates) == 2
+            assert len(updates) == COUNT_TWO
 
 
 class TestSyncEngineIntegrationAsync:

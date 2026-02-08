@@ -10,6 +10,8 @@ Tests measure performance under concurrent load:
 
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR
+
 
 import pytest
 from sqlalchemy.orm import sessionmaker
@@ -126,7 +128,7 @@ def test_concurrent_create_500_items_50_threads(benchmark, perf_sync_db_engine) 
             return sum(results)
 
     result = benchmark(run_concurrent)
-    assert result == 500
+    assert result == HTTP_INTERNAL_SERVER_ERROR
 
 
 # ============================================================
@@ -310,7 +312,7 @@ def test_concurrent_create_links_50_threads(benchmark, perf_sync_db_engine) -> N
             return sum(results)
 
     result = benchmark(run_concurrent)
-    assert result == 500
+    assert result == HTTP_INTERNAL_SERVER_ERROR
 
 
 # ============================================================

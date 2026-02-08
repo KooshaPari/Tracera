@@ -9,6 +9,8 @@ Tests cover:
 """
 
 from __future__ import annotations
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+
 
 import asyncio
 import time
@@ -120,7 +122,7 @@ class TestConcurrentRequests:
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             # Analyze results
-            successful = [r for r in results if isinstance(r, tuple) and r[0] == 200]
+            successful = [r for r in results if isinstance(r, tuple) and r[0] == HTTP_OK]
             response_times = [r[1] for r in results if isinstance(r, tuple)]
 
             if response_times:
@@ -176,7 +178,7 @@ class TestResponseTime:
             percentiles = calculate_percentiles(response_times)
 
             # Baseline should be fast
-            assert avg_time < 500  # < 500ms average
+            assert avg_time < HTTP_INTERNAL_SERVER_ERROR  # < HTTP_INTERNAL_SERVER_ERRORms average
 
     @pytest.mark.asyncio
     async def test_response_time_degradation(self, auth_headers) -> None:
@@ -202,7 +204,7 @@ class TestResponseTime:
 
         # p95 should stay reasonable even under load
         if 50 in results_by_load:
-            assert results_by_load[50]["p95"] < 5000  # < 5s at p95
+            assert results_by_load[50]["p95"] < 5000  # < COUNT_FIVEs at p95
 
 
 # ============================================================================
@@ -227,7 +229,7 @@ class TestConnectionPool:
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             # All requests should complete despite pool limit
-            successful = [r for r in results if isinstance(r, tuple) and r[0] == 200]
+            successful = [r for r in results if isinstance(r, tuple) and r[0] == HTTP_OK]
 
             assert len(successful) >= 18  # 90% success rate
 
@@ -278,7 +280,7 @@ class TestResourceLeaks:
                 try:
                     status, _ = await make_request(client, request_data, auth_headers)
                     request_count += 1
-                    if status != 200:
+                    if status != HTTP_OK:
                         error_count += 1
                 except Exception:
                     error_count += 1
@@ -287,7 +289,7 @@ class TestResourceLeaks:
                 await asyncio.sleep(0.1)
 
         # Error rate should be low
-        assert error_count / request_count < 0.05  # < 5% error rate
+        assert error_count / request_count < 0.05  # < COUNT_FIVE% error rate
 
     @pytest.mark.asyncio
     async def test_memory_stability(self, auth_headers) -> None:
@@ -337,7 +339,7 @@ class TestThroughput:
             throughput = request_count / elapsed
 
             # Should handle at least 10 req/s
-            assert throughput >= 10
+            assert throughput >= COUNT_TEN
 
 
 # ============================================================================

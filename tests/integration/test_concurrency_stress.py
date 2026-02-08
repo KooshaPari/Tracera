@@ -12,6 +12,8 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Never
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine
@@ -224,7 +226,7 @@ class TestConcurrentWrites:
 
         # Most operations should succeed in concurrent environment
         assert len(results) >= 15, f"Expected at least 15 successes, got {len(results)}"
-        assert len(errors) <= 5, f"Should have minimal errors: {errors}"
+        assert len(errors) <= COUNT_FIVE, f"Should have minimal errors: {errors}"
 
         # Verify most items exist
         session = SessionLocal()
@@ -261,7 +263,7 @@ class TestConcurrentWrites:
 
         assert len(results) >= 25 - 5, "Most updates should succeed"
         # Some errors are acceptable due to concurrent updates
-        assert len(errors) <= 5, f"Too many errors: {errors}"
+        assert len(errors) <= COUNT_FIVE, f"Too many errors: {errors}"
 
     def test_concurrent_link_creation(self, concurrent_initialized_db) -> None:
         """Test concurrent creation of links."""
@@ -725,7 +727,7 @@ class TestTransactionIsolation:
         t2.join()
 
         # Both reads in same session might see different values in SQLite
-        assert len(reads) == 2
+        assert len(reads) == COUNT_TWO
 
     def test_serializable_isolation(self, concurrent_initialized_db) -> None:
         """Test serializable isolation with conflict detection."""
@@ -797,14 +799,14 @@ class TestRetryAndBackoff:
         def flaky_operation() -> str:
             nonlocal call_count
             call_count += 1
-            if call_count < 2:
+            if call_count < COUNT_TWO:
                 msg = "Simulated conflict"
                 raise ConcurrencyError(msg)
             return "success"
 
         result = flaky_operation()
         assert result == "success"
-        assert call_count == 2
+        assert call_count == COUNT_TWO
 
     def test_retry_decorator_max_retries_exceeded(self) -> None:
         """Test that retry decorator raises after max retries."""
@@ -820,7 +822,7 @@ class TestRetryAndBackoff:
         with pytest.raises(ConcurrencyError):
             always_failing()
 
-        assert call_count == 3  # Initial + 2 retries
+        assert call_count == COUNT_THREE  # Initial + 2 retries
 
     def test_exponential_backoff_timing(self) -> None:
         """Test that exponential backoff increases delay."""
@@ -832,7 +834,7 @@ class TestRetryAndBackoff:
             nonlocal call_count
             call_times.append(time.time())
             call_count += 1
-            if call_count < 3:
+            if call_count < COUNT_THREE:
                 msg = "Simulated conflict"
                 raise ConcurrencyError(msg)
             return "success"
@@ -842,7 +844,7 @@ class TestRetryAndBackoff:
         total_time = time.time() - start
 
         assert result == "success"
-        assert call_count == 3
+        assert call_count == COUNT_THREE
         # Should have delays due to backoff
         assert total_time > 0.01
 
@@ -857,7 +859,7 @@ class TestRetryAndBackoff:
             call_count += 1
             start = time.time()
             timings.append(start)
-            if call_count < 2:
+            if call_count < COUNT_TWO:
                 msg = "Conflict"
                 raise ConcurrencyError(msg)
             return "success"
@@ -867,7 +869,7 @@ class TestRetryAndBackoff:
         elapsed = time.time() - start
 
         assert result == "success"
-        assert call_count == 2, "Should have retried once"
+        assert call_count == COUNT_TWO, "Should have retried once"
         # With jitter, timing should vary
         assert elapsed > 0
 
@@ -938,7 +940,7 @@ class TestBulkOperationConcurrency:
         assert len(statuses) > 0
         assert all(s.startswith("status-") for s in statuses)
         # Errors may occur due to stale data in concurrent updates
-        assert len(errors) <= 3, f"Should have minimal errors: {errors}"
+        assert len(errors) <= COUNT_THREE, f"Should have minimal errors: {errors}"
 
     def test_concurrent_bulk_preview_and_execute(self, concurrent_initialized_db) -> None:
         """Test concurrent bulk preview and execution."""
@@ -1041,7 +1043,7 @@ class TestStressConditions:
                 future.result()
 
         assert len(results) >= 40, f"Operations should complete, got {len(results)}"
-        assert len(errors) <= 10, f"Should have minimal errors: {errors}"
+        assert len(errors) <= COUNT_TEN, f"Should have minimal errors: {errors}"
 
     def test_rapid_connection_cycling(self, concurrent_initialized_db) -> None:
         """Test rapid creation and destruction of connections."""
@@ -1067,7 +1069,7 @@ class TestStressConditions:
                 future.result()
 
         # Allow for some errors due to rapid cycling, but most should succeed
-        assert len(errors) <= 2, f"Should have minimal errors: {errors}"
+        assert len(errors) <= COUNT_TWO, f"Should have minimal errors: {errors}"
         assert len(results) >= 70, f"Most operations should complete, got {len(results)}"
 
 
@@ -1129,9 +1131,9 @@ class TestConcurrencyIntegration:
                 future.result()
 
         assert metrics["reads"] > 0, "Should have reads"
-        assert metrics["updates"] >= 10, "Should have updates"
+        assert metrics["updates"] >= COUNT_TEN, "Should have updates"
         # Errors may occur due to concurrent write conflicts, but should be minimal
-        assert metrics["errors"] <= 5, f"Should have minimal errors: {metrics['errors']}"
+        assert metrics["errors"] <= COUNT_FIVE, f"Should have minimal errors: {metrics['errors']}"
 
     def test_concurrent_agent_operations(self, concurrent_initialized_db) -> None:
         """Test concurrent operations with agent tracking."""
@@ -1176,8 +1178,8 @@ class TestConcurrencyIntegration:
             for future in as_completed(futures):
                 future.result()
 
-        assert len(results) >= 10, "Most agent operations should succeed"
-        assert len(errors) <= 5, f"Should have minimal errors: {errors}"
+        assert len(results) >= COUNT_TEN, "Most agent operations should succeed"
+        assert len(errors) <= COUNT_FIVE, f"Should have minimal errors: {errors}"
 
 
 # ============================================================================

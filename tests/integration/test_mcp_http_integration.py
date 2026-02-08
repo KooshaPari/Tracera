@@ -9,6 +9,8 @@ Tests cover:
 """
 
 from __future__ import annotations
+from tests.test_constants import COUNT_FIVE, HTTP_OK
+
 
 import asyncio
 import json
@@ -77,7 +79,7 @@ async def test_project_id(http_client, auth_headers):
         headers=auth_headers,
     )
 
-    if response.status_code == 200:
+    if response.status_code == HTTP_OK:
         data = response.json()
         if "result" in data and "content" in data["result"]:
             # Extract project ID from result
@@ -130,7 +132,7 @@ class TestHTTPWorkflow:
             headers=auth_headers,
         )
 
-        assert list_response.status_code == 200
+        assert list_response.status_code == HTTP_OK
         list_data = list_response.json()
         assert "result" in list_data or "error" in list_data
 
@@ -186,7 +188,7 @@ class TestHTTPWorkflow:
             headers=auth_headers,
         )
 
-        assert query_response.status_code == 200
+        assert query_response.status_code == HTTP_OK
         query_data = query_response.json()
         assert "result" in query_data or "error" in query_data
 
@@ -366,7 +368,7 @@ class TestMultiClientAccess:
             responses = await asyncio.gather(*tasks, return_exceptions=True)
 
             # Verify all requests completed
-            assert len(responses) == 5
+            assert len(responses) == COUNT_FIVE
 
     def test_request_isolation(self) -> None:
         """Test that requests are properly isolated."""

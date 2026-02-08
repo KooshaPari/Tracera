@@ -18,6 +18,8 @@ Tests for:
 
 from datetime import UTC, datetime
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -123,8 +125,8 @@ async def test_create_with_impact_metrics(db_session: AsyncSession) -> None:
     )
 
     assert spec.change_propagation_index == 0.75
-    assert spec.downstream_impact_count == 5
-    assert spec.upstream_dependency_count == 3
+    assert spec.downstream_impact_count == COUNT_FIVE
+    assert spec.upstream_dependency_count == COUNT_THREE
     assert spec.impact_assessment["risk"] == "high"
 
 
@@ -151,7 +153,7 @@ async def test_create_with_wsjf(db_session: AsyncSession) -> None:
         wsjf_components=wsjf_components,
     )
 
-    assert spec.wsjf_score == 3.2
+    assert spec.wsjf_score == COUNT_THREE.2
     assert spec.wsjf_components == wsjf_components
 
 
@@ -258,7 +260,7 @@ async def test_list_by_project_basic(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     specs = await repo.list_by_project(project.id)
-    assert len(specs) == 3
+    assert len(specs) == COUNT_THREE
 
 
 @pytest.mark.unit
@@ -276,10 +278,10 @@ async def test_list_by_project_pagination(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     specs = await repo.list_by_project(project.id, limit=5, offset=0)
-    assert len(specs) == 5
+    assert len(specs) == COUNT_FIVE
 
     specs = await repo.list_by_project(project.id, limit=5, offset=5)
-    assert len(specs) == 5
+    assert len(specs) == COUNT_FIVE
 
 
 @pytest.mark.unit
@@ -297,7 +299,7 @@ async def test_list_by_project_ascending_order(db_session: AsyncSession) -> None
     await db_session.commit()
 
     specs = await repo.list_by_project(project.id, descending=False)
-    assert len(specs) == 3
+    assert len(specs) == COUNT_THREE
 
 
 # ============================================================================
@@ -326,7 +328,7 @@ async def test_list_by_quality_score(db_session: AsyncSession) -> None:
 
     # Filter for scores between 0.4 and 0.8
     specs = await repo.list_by_quality_score(project.id, min_score=0.4, max_score=0.8)
-    assert len(specs) == 2
+    assert len(specs) == COUNT_TWO
     assert all(0.4 <= s.overall_quality_score <= 0.8 for s in specs)
 
 
@@ -356,7 +358,7 @@ async def test_list_high_volatility(db_session: AsyncSession) -> None:
 
     # List specs with volatility >= 0.5
     specs = await repo.list_high_volatility(project.id, threshold=0.5)
-    assert len(specs) == 2
+    assert len(specs) == COUNT_TWO
     assert all(s.volatility_index >= 0.5 for s in specs)
 
 
@@ -386,7 +388,7 @@ async def test_list_high_impact(db_session: AsyncSession) -> None:
 
     # List specs with CPI >= 0.3
     specs = await repo.list_high_impact(project.id, threshold=0.3)
-    assert len(specs) == 3
+    assert len(specs) == COUNT_THREE
     assert all(s.change_propagation_index >= 0.3 for s in specs)
 
 
@@ -414,7 +416,7 @@ async def test_list_unverified(db_session: AsyncSession) -> None:
     await db_session.commit()
 
     specs = await repo.list_unverified(project.id)
-    assert len(specs) == 2
+    assert len(specs) == COUNT_TWO
     assert all(not s.is_verified for s in specs)
 
 
@@ -444,7 +446,7 @@ async def test_list_by_wsjf_priority(db_session: AsyncSession) -> None:
 
     specs = await repo.list_by_wsjf_priority(project.id)
     # Should only return specs with WSJF scores
-    assert len(specs) == 4
+    assert len(specs) == COUNT_FOUR
     # Should be ordered by WSJF score descending
     scores = [s.wsjf_score for s in specs]
     assert scores == sorted(scores, reverse=True)
@@ -477,7 +479,7 @@ async def test_update_quality_scores(db_session: AsyncSession) -> None:
 
     assert updated.quality_scores == new_scores
     assert updated.overall_quality_score == 0.875
-    assert updated.version == 2  # Version should increment
+    assert updated.version == COUNT_TWO  # Version should increment
 
 
 @pytest.mark.unit
@@ -556,7 +558,7 @@ async def test_update_all_fields(db_session: AsyncSession) -> None:
     assert updated.quality_scores == {"test": 0.9}
     assert updated.change_propagation_index == 0.8
     assert updated.volatility_index == 0.6
-    assert updated.wsjf_score == 4.5
+    assert updated.wsjf_score == COUNT_FOUR.5
 
 
 # ============================================================================
@@ -647,17 +649,17 @@ async def test_get_stats(db_session: AsyncSession) -> None:
             overall_quality_score=0.5 + (i * 0.1),
             volatility_index=0.1 * i,
             change_propagation_index=0.2 * i,
-            is_verified=(i >= 2),  # Last 2 are verified
+            is_verified=(i >= COUNT_TWO),  # Last 2 are verified
         )
     await db_session.commit()
 
     stats = await repo.get_stats(project.id)
 
-    assert stats["total_specs"] == 4
+    assert stats["total_specs"] == COUNT_FOUR
     assert "average_quality_score" in stats
     assert "average_volatility" in stats
     assert "average_impact_index" in stats
-    assert stats["verified_count"] == 2
+    assert stats["verified_count"] == COUNT_TWO
     assert stats["verification_rate"] == 0.5
 
 

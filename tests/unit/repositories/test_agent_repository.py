@@ -2,6 +2,8 @@
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_constants import COUNT_TWO
+
 
 from tracertm.repositories.agent_repository import AgentRepository
 from tracertm.repositories.project_repository import ProjectRepository
@@ -67,7 +69,7 @@ async def test_get_by_project(db_session: AsyncSession) -> None:
     await agent_repo.create(project_id=project2.id, name="Agent-3", agent_type="cli")
 
     agents = await agent_repo.get_by_project(project1.id)
-    assert len(agents) == 2
+    assert len(agents) == COUNT_TWO
     assert all(a.project_id == project1.id for a in agents)
 
 
@@ -127,7 +129,7 @@ async def test_get_active_agents(db_session: AsyncSession) -> None:
     await agent_repo.update_status(agent3.id, "inactive")
 
     active_agents = await agent_repo.get_by_project(project.id, status="active")
-    assert len(active_agents) == 2
+    assert len(active_agents) == COUNT_TWO
     assert all(a.status == "active" for a in active_agents)
 
 

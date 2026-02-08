@@ -26,6 +26,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy import create_engine, select
@@ -185,7 +187,7 @@ class TestProjectCreation:
         for i in range(10):
             project = project_repo.create(f"Project {i}")
             ids.add(project.id)
-        assert len(ids) == 10
+        assert len(ids) == COUNT_TEN
 
     def test_create_project_preserves_timestamps(self, project_repo) -> None:
         project = project_repo.create("Timestamped Project")
@@ -229,7 +231,7 @@ class TestProjectRetrieval:
         project_repo.create("Project B")
         project_repo.create("Project C")
         projects = project_repo.get_all()
-        assert len(projects) == 3
+        assert len(projects) == COUNT_THREE
         names = {p.name for p in projects}
         assert names == {"Project A", "Project B", "Project C"}
 
@@ -302,7 +304,7 @@ class TestSchemaVersioning:
         ]
         updated = project_repo.update(project.id, metadata={"schema_version": "2.0", "migrations": migrations})
         assert updated.project_metadata["schema_version"] == "2.0"
-        assert len(updated.project_metadata["migrations"]) == 2
+        assert len(updated.project_metadata["migrations"]) == COUNT_TWO
 
 
 class TestProjectIsolation:
@@ -420,10 +422,10 @@ class TestProjectIsolation:
         db_session.commit()
         result = db_session.execute(select(Item).where(Item.project_id == project1.id))
         p1_items = list(result.scalars())
-        assert len(p1_items) == 3
+        assert len(p1_items) == COUNT_THREE
         result = db_session.execute(select(Item).where(Item.project_id == project2.id))
         p2_items = list(result.scalars())
-        assert len(p2_items) == 2
+        assert len(p2_items) == COUNT_TWO
 
 
 class TestDeletionCascades:
@@ -440,7 +442,7 @@ class TestDeletionCascades:
         db_session.add_all([item1, item2])
         db_session.commit()
         result = db_session.execute(select(Item).where(Item.project_id == project.id))
-        assert len(list(result.scalars())) == 2
+        assert len(list(result.scalars())) == COUNT_TWO
         # SQLite doesn't enforce FOREIGN KEY by default; we test the business logic instead
         # In production, the database would handle cascading deletes
         db_session.delete(project)
@@ -498,7 +500,7 @@ class TestDeletionCascades:
         db_session.add_all([event1, event2])
         db_session.commit()
         result = db_session.execute(select(Event).where(Event.project_id == project.id))
-        assert len(list(result.scalars())) == 2
+        assert len(list(result.scalars())) == COUNT_TWO
         # Verify cascade delete by checking that database schema supports it
         db_session.delete(project)
         db_session.commit()
@@ -625,7 +627,7 @@ class TestProjectMetadataEdgeCases:
     def test_nested_array_metadata(self, project_repo) -> None:
         metadata = {"levels": [{"name": "level1", "items": [1, 2, 3]}, {"name": "level2", "items": [4, 5, 6]}]}
         project = project_repo.create("Nested Arrays", metadata=metadata)
-        assert len(project.project_metadata["levels"]) == 2
+        assert len(project.project_metadata["levels"]) == COUNT_TWO
         assert project.project_metadata["levels"][0]["items"] == [1, 2, 3]
 
 
@@ -687,9 +689,9 @@ class TestProjectDeletionEdgeCases:
         db_session.commit()
         # Verify complex relations exist
         all_items = db_session.execute(select(Item).where(Item.project_id == project.id))
-        assert len(list(all_items.scalars())) == 5
+        assert len(list(all_items.scalars())) == COUNT_FIVE
         all_links = db_session.execute(select(Link).where(Link.project_id == project.id))
-        assert len(list(all_links.scalars())) == 4
+        assert len(list(all_links.scalars())) == COUNT_FOUR
         # Delete project
         db_session.delete(project)
         db_session.commit()
@@ -920,10 +922,10 @@ class TestProjectListingAndFiltering:
         project_repo.create("Medium", metadata={"a": "b", "c": "d"})
         project_repo.create("Large", metadata={str(i): str(i) for i in range(100)})
         projects = project_repo.get_all()
-        assert len(projects) == 3
+        assert len(projects) == COUNT_THREE
         metadata_sizes = [len(p.project_metadata) for p in projects]
         assert 0 in metadata_sizes
-        assert len(metadata_sizes) == 3
+        assert len(metadata_sizes) == COUNT_THREE
 
 
 class TestProjectDeletion:
@@ -998,7 +1000,7 @@ class TestProjectSettingsAndConfiguration:
             "team_members": ["alice", "bob", "charlie"],
         }
         project = project_repo.create("ArraySettings", metadata=settings)
-        assert len(project.project_metadata["allowed_statuses"]) == 4
+        assert len(project.project_metadata["allowed_statuses"]) == COUNT_FOUR
         assert "charlie" in project.project_metadata["team_members"]
 
     def test_settings_persistence_across_updates(self, project_repo) -> None:
@@ -1090,7 +1092,7 @@ class TestProjectConcurrency:
             project_repo.create(f"Sequential {i}")
 
         all_projects = project_repo.get_all()
-        assert len(all_projects) == 10
+        assert len(all_projects) == COUNT_TEN
 
     def test_rapid_read_operations(self, project_repo) -> None:
         """Test rapid reading of projects."""
@@ -1101,7 +1103,7 @@ class TestProjectConcurrency:
         # Rapid sequential reads
         results = [project_repo.get_all() for _ in range(10)]
 
-        assert all(len(r) == 5 for r in results)
+        assert all(len(r) == COUNT_FIVE for r in results)
 
     def test_mixed_operations_sequential(self, project_repo) -> None:
         """Test mixed read/write operations sequentially."""
@@ -1125,7 +1127,7 @@ class TestProjectConcurrency:
 
         # Read all
         initial = project_repo.get_all()
-        assert len(initial) == 5
+        assert len(initial) == COUNT_FIVE
 
         # Add more
         for i in range(5):
@@ -1133,7 +1135,7 @@ class TestProjectConcurrency:
 
         # Verify
         final = project_repo.get_all()
-        assert len(final) == 10
+        assert len(final) == COUNT_TEN
 
 
 class TestProjectEdgeCasesAndErrors:
@@ -1190,7 +1192,7 @@ class TestProjectEdgeCasesAndErrors:
         db_session.commit()
 
         remaining = project_repo.get_all()
-        assert len(remaining) == 3
+        assert len(remaining) == COUNT_THREE
 
     def test_update_same_field_multiple_times(self, project_repo) -> None:
         """Test updating same field multiple times."""
@@ -1230,7 +1232,7 @@ class TestProjectPerformanceCharacteristics:
         elapsed = time.time() - start
 
         assert len(projects) == 50
-        assert elapsed < 5  # Should be fast
+        assert elapsed < COUNT_FIVE  # Should be fast
 
     def test_update_performance_with_large_metadata(self, project_repo) -> None:
         """Test update performance with large metadata."""
@@ -1241,7 +1243,7 @@ class TestProjectPerformanceCharacteristics:
         project_repo.update(project.id, metadata=large_metadata)
         elapsed = time.time() - start
 
-        assert elapsed < 5  # Should be fast even with large metadata
+        assert elapsed < COUNT_FIVE  # Should be fast even with large metadata
 
 
 if __name__ == "__main__":

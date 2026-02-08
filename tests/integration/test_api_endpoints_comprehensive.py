@@ -11,6 +11,8 @@ Target Coverage: 85%+ of API endpoints
 """
 
 import pytest
+from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_NOT_FOUND, HTTP_OK, HTTP_UNPROCESSABLE_ENTITY
+
 
 from tracertm.api.main import app, get_db
 from tracertm.models.item import Item
@@ -117,7 +119,7 @@ def test_links(db_session, test_items):
 def test_health_check(client) -> None:
     """Test health check endpoint."""
     response = client.get("/health")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
     assert data["status"] == "healthy"
     assert "version" in data
@@ -127,7 +129,7 @@ def test_health_check(client) -> None:
 def test_api_health_check(client) -> None:
     """Test API health check endpoint."""
     response = client.get("/api/v1/health")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
     assert data["status"] == "ok"
     assert "service" in data
@@ -147,7 +149,7 @@ def test_create_project(client, db_session) -> None:  # noqa: ARG001
     }
 
     response = client.post("/api/v1/projects", json=payload)
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert data["id"] is not None
@@ -158,7 +160,7 @@ def test_create_project(client, db_session) -> None:  # noqa: ARG001
 def test_list_projects(client, test_project) -> None:  # noqa: ARG001
     """Test listing all projects."""
     response = client.get("/api/v1/projects")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "total" in data
@@ -168,7 +170,7 @@ def test_list_projects(client, test_project) -> None:  # noqa: ARG001
 def test_get_project(client, test_project) -> None:
     """Test getting a specific project."""
     response = client.get(f"/api/v1/projects/{test_project.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert data["id"] == test_project.id
@@ -178,7 +180,7 @@ def test_get_project(client, test_project) -> None:
 def test_get_project_not_found(client) -> None:
     """Test getting a non-existent project."""
     response = client.get("/api/v1/projects/nonexistent-id")
-    assert response.status_code == 404
+    assert response.status_code == HTTP_NOT_FOUND
 
 
 def test_update_project(client, test_project) -> None:
@@ -186,7 +188,7 @@ def test_update_project(client, test_project) -> None:
     payload = {"name": "Updated Project Name", "description": "Updated description", "metadata": {"version": "2.0"}}
 
     response = client.put(f"/api/v1/projects/{test_project.id}", json=payload)
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert data["name"] == "Updated Project Name"
@@ -195,7 +197,7 @@ def test_update_project(client, test_project) -> None:
 def test_delete_project(client, test_project) -> None:
     """Test deleting a project."""
     response = client.delete(f"/api/v1/projects/{test_project.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
     assert data["success"] is True
 
@@ -208,27 +210,27 @@ def test_delete_project(client, test_project) -> None:
 def test_list_items_by_project(client, test_project, test_items) -> None:  # noqa: ARG001
     """Test listing items in a project."""
     response = client.get(f"/api/v1/items?project_id={test_project.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "total" in data
     assert "items" in data
-    assert data["total"] >= 3
+    assert data["total"] >= COUNT_THREE
 
 
 def test_list_items_with_pagination(client, test_project, test_items) -> None:  # noqa: ARG001
     """Test listing items with skip/limit."""
     response = client.get(f"/api/v1/items?project_id={test_project.id}&skip=0&limit=2")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
-    assert len(data["items"]) <= 2
+    assert len(data["items"]) <= COUNT_TWO
 
 
 def test_get_item(client, test_items) -> None:
     """Test getting a specific item."""
     item = test_items[0]
     response = client.get(f"/api/v1/items/{item.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert data["id"] == item.id
@@ -239,14 +241,14 @@ def test_get_item(client, test_items) -> None:
 def test_get_item_not_found(client) -> None:
     """Test getting a non-existent item."""
     response = client.get("/api/v1/items/nonexistent-id")
-    assert response.status_code == 404
+    assert response.status_code == HTTP_NOT_FOUND
 
 
 def test_delete_item(client, test_items) -> None:
     """Test deleting an item."""
     item_id = test_items[0].id
     response = client.delete(f"/api/v1/items/{item_id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
     assert data["status"] == "deleted"
 
@@ -259,7 +261,7 @@ def test_delete_item(client, test_items) -> None:
 def test_list_links_by_project(client, test_project, test_links) -> None:  # noqa: ARG001
     """Test listing links in a project."""
     response = client.get(f"/api/v1/links?project_id={test_project.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "total" in data
@@ -270,7 +272,7 @@ def test_list_links_by_source(client, test_items, test_links) -> None:  # noqa: 
     """Test listing links by source item."""
     source_id = test_items[0].id
     response = client.get(f"/api/v1/links?source_id={source_id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "links" in data
@@ -280,7 +282,7 @@ def test_list_links_by_target(client, test_items, test_links) -> None:  # noqa: 
     """Test listing links by target item."""
     target_id = test_items[1].id
     response = client.get(f"/api/v1/links?target_id={target_id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "links" in data
@@ -292,7 +294,7 @@ def test_list_links_by_source_and_target(client, test_items, test_links) -> None
     target_id = test_items[1].id
 
     response = client.get(f"/api/v1/links?source_id={source_id}&target_id={target_id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "links" in data
@@ -308,7 +310,7 @@ def test_impact_analysis(client, test_project, test_items) -> None:
     item_id = test_items[0].id
 
     response = client.get(f"/api/v1/analysis/impact/{item_id}?project_id={test_project.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "root_item_id" in data
@@ -320,7 +322,7 @@ def test_impact_analysis(client, test_project, test_items) -> None:
 def test_cycle_detection(client, test_project) -> None:
     """Test cycle detection endpoint."""
     response = client.get(f"/api/v1/analysis/cycles/{test_project.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "has_cycles" in data
@@ -337,7 +339,7 @@ def test_shortest_path(client, test_project, test_items) -> None:
     response = client.get(
         f"/api/v1/analysis/shortest-path?project_id={test_project.id}&source_id={source_id}&target_id={target_id}",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "exists" in data
@@ -373,13 +375,13 @@ def test_missing_required_fields(client, test_project) -> None:
     }
 
     response = client.post("/api/v1/items", json=payload)
-    assert response.status_code == 422  # Validation error
+    assert response.status_code == HTTP_UNPROCESSABLE_ENTITY  # Validation error
 
 
 def test_empty_response_handling(client, test_project) -> None:
     """Test handling of empty responses."""
     response = client.get(f"/api/v1/items?project_id={test_project.id}&skip=1000&limit=10")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
     assert isinstance(data["items"], list)
 
@@ -387,7 +389,7 @@ def test_empty_response_handling(client, test_project) -> None:
 def test_large_skip_and_limit(client, test_project, test_items) -> None:  # noqa: ARG001
     """Test handling of large skip/limit values."""
     response = client.get(f"/api/v1/items?project_id={test_project.id}&skip=999999&limit=999999")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
     assert isinstance(data["items"], list)
 
@@ -432,7 +434,7 @@ def test_item_response_format(client, test_items) -> None:
     """Test that item responses have correct format."""
     item = test_items[0]
     response = client.get(f"/api/v1/items/{item.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     required_fields = ["id", "title", "view", "status"]
@@ -446,7 +448,7 @@ def test_item_response_format(client, test_items) -> None:
 def test_list_response_format(client, test_project, test_items) -> None:  # noqa: ARG001
     """Test that list responses have correct format."""
     response = client.get(f"/api/v1/items?project_id={test_project.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert isinstance(data, dict)
@@ -458,7 +460,7 @@ def test_list_response_format(client, test_project, test_items) -> None:  # noqa
 def test_project_response_format(client, test_project) -> None:
     """Test that project responses have correct format."""
     response = client.get(f"/api/v1/projects/{test_project.id}")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     required_fields = ["id", "name"]
@@ -472,7 +474,7 @@ def test_project_response_format(client, test_project) -> None:
 def test_link_response_format(client, test_links) -> None:  # noqa: ARG001
     """Test that link responses have correct format."""
     response = client.get("/api/v1/links")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "total" in data
@@ -505,7 +507,7 @@ def test_get_graph_neighbors_outgoing(client, test_project, test_items, test_lin
     item_id = test_items[0].id
 
     response = client.get(f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={item_id}&direction=out")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "neighbors" in data
@@ -518,7 +520,7 @@ def test_get_graph_neighbors_incoming(client, test_project, test_items, test_lin
     item_id = test_items[1].id
 
     response = client.get(f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={item_id}&direction=in")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "neighbors" in data
@@ -530,7 +532,7 @@ def test_get_graph_neighbors_both_directions(client, test_project, test_items) -
     item_id = test_items[0].id
 
     response = client.get(f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={item_id}&direction=both")
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     data = response.json()
 
     assert "neighbors" in data

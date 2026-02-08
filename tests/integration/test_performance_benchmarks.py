@@ -15,6 +15,8 @@ import time
 from datetime import datetime
 from typing import Any
 from uuid import uuid4
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+
 
 import pytest
 
@@ -170,7 +172,7 @@ class TestBulkCreatePerformance:
 
         # Verify
         query_count = db_session.query(Item).filter(Item.project_id == large_project.id).count()
-        assert query_count == 500
+        assert query_count == HTTP_INTERNAL_SERVER_ERROR
 
     def test_bulk_create_1000_items(self, db_session, large_project, perf_metrics) -> None:
         """Test creating 1000+ items."""
@@ -320,7 +322,7 @@ class TestBulkUpdatePerformance:
             )
             .count()
         )
-        assert updated_count == 500
+        assert updated_count == HTTP_INTERNAL_SERVER_ERROR
 
     def test_bulk_update_1000_items(self, db_session, large_project, perf_metrics) -> None:
         """Test updating 1000+ items."""
@@ -409,8 +411,8 @@ class TestBulkOperationService:
         )
 
         # Verify
-        assert preview["total_count"] == 500
-        assert len(preview["sample_items"]) <= 5
+        assert preview["total_count"] == HTTP_INTERNAL_SERVER_ERROR
+        assert len(preview["sample_items"]) <= COUNT_FIVE
 
     def test_bulk_update_service_performance(self, db_session, large_project, perf_metrics) -> None:
         """Test BulkOperationService update performance."""
@@ -614,7 +616,7 @@ class TestGraphTraversalPerformance:
 
         links = []
         for i in range(500):
-            if i + 1 < 500:
+            if i + 1 < HTTP_INTERNAL_SERVER_ERROR:
                 link1 = Link(
                     id=f"link-{i}-{i + 1}",
                     project_id=large_project.id,
@@ -624,7 +626,7 @@ class TestGraphTraversalPerformance:
                 )
                 links.append(link1)
 
-            if i + 2 < 500:
+            if i + 2 < HTTP_INTERNAL_SERVER_ERROR:
                 link2 = Link(
                     id=f"link-{i}-{i + 2}",
                     project_id=large_project.id,
@@ -744,7 +746,7 @@ class TestSyncPerformance:
 
         # Verify
         event_count = db_session.query(Event).filter(Event.project_id == large_project.id).count()
-        assert event_count == 500
+        assert event_count == HTTP_INTERNAL_SERVER_ERROR
 
     def test_sync_state_tracking(self, db_session, large_project, perf_metrics) -> None:
         """Test tracking sync state with large change history."""
@@ -835,7 +837,7 @@ class TestSyncPerformance:
         )
 
         # Verify
-        assert len(changelog) == 200
+        assert len(changelog) == HTTP_OK
 
 
 # ============================================================================
@@ -1110,13 +1112,13 @@ def test_performance_report_generation(perf_metrics) -> None:
     assert "metrics" in report
     assert "summary" in report
 
-    assert len(report["metrics"]) == 3
+    assert len(report["metrics"]) == COUNT_THREE
     assert "operation1" in report["summary"]
     assert "operation2" in report["summary"]
 
     # Verify aggregations
     op1_summary = report["summary"]["operation1"]
-    assert op1_summary["count"] == 2
+    assert op1_summary["count"] == COUNT_TWO
     assert op1_summary["avg_ms"] == pytest.approx(102.85, rel=0.01)
     assert op1_summary["avg_per_item_ms"] == pytest.approx(2.057, rel=0.01)
 

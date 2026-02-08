@@ -10,6 +10,8 @@ Tests for:
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +35,7 @@ class TestAsyncDatabaseOperations:
 
         results = await asyncio.gather(*[read_items(i) for i in range(5)])
 
-        assert len(results) == 5
+        assert len(results) == COUNT_FIVE
         assert all(r["name"].startswith("Item") for r in results)
 
     @pytest.mark.asyncio
@@ -52,7 +54,7 @@ class TestAsyncDatabaseOperations:
 
         results = await asyncio.gather(*[write_item(i) for i in range(3)])
 
-        assert len(results) == 3
+        assert len(results) == COUNT_THREE
         assert all(r["status"] == "created" for r in results)
 
     @pytest.mark.asyncio
@@ -219,7 +221,7 @@ class TestAsyncOptimisticLocking:
         # One succeeds, one fails
         assert True in results
         assert False in results
-        assert data.version == 2  # Only one update succeeded
+        assert data.version == COUNT_TWO  # Only one update succeeded
 
     @pytest.mark.asyncio
     async def test_retry_on_version_conflict(self) -> None:
@@ -283,7 +285,7 @@ class TestAsyncConnectionPool:
 
         await asyncio.gather(*[use_connection(0.02) for _ in range(4)])
 
-        assert pool.peak_usage == 2
+        assert pool.peak_usage == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_connection_pool_exhaustion(self) -> None:
@@ -331,7 +333,7 @@ class TestAsyncBatchOperations:
 
         items = [{"name": f"Item {i}"} for i in range(10)]
         count = await bulk_insert(items)
-        assert count == 10
+        assert count == COUNT_TEN
 
     @pytest.mark.asyncio
     async def test_async_bulk_update(self) -> None:
@@ -346,8 +348,8 @@ class TestAsyncBatchOperations:
 
         ids = [1, 2, 3, 4, 5]
         count = await bulk_update(ids, "updated")
-        assert count == 5
-        assert len(updated_items) == 5
+        assert count == COUNT_FIVE
+        assert len(updated_items) == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_async_batch_with_partial_failure(self) -> None:
@@ -369,9 +371,9 @@ class TestAsyncBatchOperations:
         items = [1, 2, 3, 4, 5]
         result = await process_batch(items)
 
-        assert len(result["success"]) == 2
-        assert len(result["failed"]) == 3
-        assert len(result["errors"]) == 3
+        assert len(result["success"]) == COUNT_TWO
+        assert len(result["failed"]) == COUNT_THREE
+        assert len(result["errors"]) == COUNT_THREE
 
 
 class TestAsyncQueryOperations:
@@ -410,7 +412,7 @@ class TestAsyncQueryOperations:
         # Fetch multiple pages concurrently
         pages = await asyncio.gather(*[fetch_page(page, 10) for page in range(1, 4)])
 
-        assert len(pages) == 3
+        assert len(pages) == COUNT_THREE
         assert all(p["total"] == 100 for p in pages)
 
     @pytest.mark.asyncio
@@ -504,7 +506,7 @@ class TestAsyncTransactionPatterns:
         results = await asyncio.gather(*[db.increment_in_transaction() for _ in range(5)])
 
         assert results == [1, 2, 3, 4, 5]
-        assert db.data["counter"] == 5
+        assert db.data["counter"] == COUNT_FIVE
 
 
 class TestAsyncRepositoryPatterns:
@@ -589,5 +591,5 @@ class TestAsyncRepositoryPatterns:
         # Create items concurrently
         results = await asyncio.gather(*[repo.batch_create([{"id": i}]) for i in range(3)])
 
-        assert len(results) == 3
+        assert len(results) == COUNT_THREE
         assert all(isinstance(r, list) for r in results)

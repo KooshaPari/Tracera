@@ -2,6 +2,8 @@
 
 import uuid
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -38,7 +40,7 @@ class TestItemHierarchy:
 
         result = await item_service.get_children(parent_id)
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         assert all(c.parent_id == parent_id for c in result)
         item_service.items.get_children.assert_called_once_with(parent_id)
 
@@ -55,7 +57,7 @@ class TestItemHierarchy:
 
         result = await item_service.get_ancestors(item_id)
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         item_service.items.get_ancestors.assert_called_once_with(item_id)
 
     async def test_get_descendants(self, item_service, mock_session) -> None:  # noqa: ARG002
@@ -71,7 +73,7 @@ class TestItemHierarchy:
 
         result = await item_service.get_descendants(item_id)
 
-        assert len(result) == 2
+        assert len(result) == COUNT_TWO
         item_service.items.get_descendants.assert_called_once_with(item_id)
 
     async def test_create_child_item_validation(self, item_service, mock_session) -> None:

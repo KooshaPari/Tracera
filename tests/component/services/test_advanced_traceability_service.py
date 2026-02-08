@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_TWO
+
 
 import pytest
 
@@ -67,4 +69,4 @@ async def test_circular_dependency_check(monkeypatch, async_session) -> None:
     monkeypatch.setattr(svc.links, "get_by_source", get_by_source)
 
     cycles = await svc.circular_dependency_check("proj-1")
-    assert cycles and len(cycles[0]) >= 2
+    assert cycles and len(cycles[0]) >= COUNT_TWO

@@ -12,6 +12,8 @@ Coverage target: 90%+ for entire API module
 import json
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_TOO_MANY_REQUESTS
+
 
 import httpx
 import pytest
@@ -720,10 +722,10 @@ class TestTraceRTMClientExportImport:
             with patch("tracertm.api.client.Event") as mock_event_cls:
                 result = client.import_data(data)
 
-                assert result["items_created"] == 2
+                assert result["items_created"] == COUNT_TWO
                 assert result["links_created"] == 0
                 # 2 items + 1 event from _log_operation = 3 add calls
-                assert mock_session.add.call_count == 3
+                assert mock_session.add.call_count == COUNT_THREE
 
     def test_import_data_with_links(self, client, mock_session) -> None:  # noqa: ARG002
         """Test importing both items and links."""
@@ -768,9 +770,9 @@ class TestTraceRTMClientBatchOperations:
         with patch("tracertm.api.client.Item"), patch("tracertm.api.client.Event"):
             result = client.batch_create_items(items_data)
 
-            assert result["items_created"] == 3
+            assert result["items_created"] == COUNT_THREE
             # Commit is called twice: once for items, once for logging event
-            assert mock_session.commit.call_count == 2
+            assert mock_session.commit.call_count == COUNT_TWO
 
     def test_batch_create_items_rollback_on_error(self, client, mock_session) -> None:
         """Test batch create rolls back on error."""
@@ -809,7 +811,7 @@ class TestTraceRTMClientBatchOperations:
         with patch("tracertm.api.client.Event"):
             result = client.batch_update_items(updates)
 
-            assert result["items_updated"] == 3
+            assert result["items_updated"] == COUNT_THREE
             for item in mock_items:
                 assert "Updated" in item.title
 
@@ -851,7 +853,7 @@ class TestTraceRTMClientBatchOperations:
         with patch("tracertm.api.client.Event"):
             result = client.batch_delete_items(item_ids)
 
-            assert result["items_deleted"] == 3
+            assert result["items_deleted"] == COUNT_THREE
             for item in mock_items:
                 assert item.deleted_at is not None
 
@@ -889,7 +891,7 @@ class TestTraceRTMClientAgentActivity:
         with patch("tracertm.api.client.Event"):
             activity = client.get_agent_activity("agent-123", limit=50)
 
-            assert len(activity) == 2
+            assert len(activity) == COUNT_TWO
             assert activity[0]["event_type"] == "item_created"
             assert activity[1]["event_type"] == "item_updated"
 
@@ -951,7 +953,7 @@ class TestTraceRTMClientAgentActivity:
 
         items = client.get_assigned_items("agent-123")
 
-        assert len(items) == 2
+        assert len(items) == COUNT_TWO
         assert items[0]["title"] == "Task 1"
 
     def test_get_assigned_items_no_agent_id(self, client, mock_session) -> None:  # noqa: ARG002
@@ -1082,7 +1084,7 @@ class TestApiConfig:
         assert config.base_url == "https://api.example.com"
         assert config.token == "my-token"
         assert config.timeout == 30.0
-        assert config.max_retries == 5
+        assert config.max_retries == COUNT_FIVE
         assert config.verify_ssl is False
 
     def test_api_config_defaults(self) -> None:
@@ -1091,7 +1093,7 @@ class TestApiConfig:
 
         assert config.token is None
         assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert config.max_retries == COUNT_THREE
         assert config.verify_ssl is True
 
     def test_api_config_from_config_manager(self) -> None:
@@ -1111,7 +1113,7 @@ class TestApiConfig:
             assert config.base_url == "https://custom.api.com"  # Trailing slash removed
             assert config.token == "custom-token"
             assert config.timeout == 45.0
-            assert config.max_retries == 5
+            assert config.max_retries == COUNT_FIVE
 
     def test_api_config_from_config_manager_creates_new(self) -> None:
         """Test from_config_manager creates ConfigManager if None."""
@@ -1168,7 +1170,7 @@ class TestChangeDataClass:
         assert data["entity_type"] == "link"
         assert data["entity_id"] == "link-456"
         assert data["operation"] == "update"
-        assert data["version"] == 2
+        assert data["version"] == COUNT_TWO
         assert data["timestamp"] == "2024-01-01T12:00:00"
 
     def test_change_default_timestamp(self) -> None:
@@ -1203,7 +1205,7 @@ class TestConflictDataClass:
         conflict = Conflict.from_dict(data)
 
         assert conflict.conflict_id == "conflict-123"
-        assert conflict.local_version == 5
+        assert conflict.local_version == COUNT_FIVE
         assert conflict.remote_version == 6
         assert conflict.local_data["title"] == "Local Title"
 
@@ -1239,7 +1241,7 @@ class TestUploadResultDataClass:
 
         result = UploadResult.from_dict(data)
 
-        assert len(result.applied) == 2
+        assert len(result.applied) == COUNT_TWO
         assert result.applied[0] == "item-1"
         assert len(result.conflicts) == 0
 
@@ -1284,9 +1286,9 @@ class TestSyncStatusDataClass:
 
         status = SyncStatus.from_dict(data)
 
-        assert status.pending_changes == 5
+        assert status.pending_changes == COUNT_FIVE
         assert status.online is True
-        assert status.conflicts_pending == 2
+        assert status.conflicts_pending == COUNT_TWO
 
     def test_sync_status_from_dict_no_last_sync(self) -> None:
         """Test SyncStatus handles missing last_sync."""
@@ -1434,7 +1436,7 @@ class TestApiClientRetryLogic:
         response = await api_client._retry_request("GET", "/test")
 
         assert response == mock_response
-        assert mock_http_client.request.call_count == 2
+        assert mock_http_client.request.call_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_retry_request_raises_after_max_retries(self, api_client) -> None:
@@ -1448,7 +1450,7 @@ class TestApiClientRetryLogic:
         with pytest.raises(NetworkError, match="Network error after"):
             await api_client._retry_request("GET", "/test")
 
-        assert mock_http_client.request.call_count == 2
+        assert mock_http_client.request.call_count == COUNT_TWO
 
     @pytest.mark.asyncio
     async def test_retry_request_handles_rate_limit(self, api_client) -> None:
@@ -1466,7 +1468,7 @@ class TestApiClientRetryLogic:
         with pytest.raises(RateLimitError) as exc_info:
             await api_client._retry_request("GET", "/test")
 
-        assert exc_info.value.retry_after == 5
+        assert exc_info.value.retry_after == COUNT_FIVE
 
     @pytest.mark.asyncio
     async def test_retry_request_handles_auth_error(self, api_client) -> None:
@@ -1505,7 +1507,7 @@ class TestApiClientRetryLogic:
             await api_client._retry_request("GET", "/test")
 
             # Should have slept between retries with increasing delays
-            assert mock_sleep.call_count == 2
+            assert mock_sleep.call_count == COUNT_TWO
 
 
 class TestApiClientHealthCheck:
@@ -1567,7 +1569,7 @@ class TestApiClientUploadChanges:
         with patch.object(api_client, "_retry_request", AsyncMock(return_value=mock_response)):
             result = await api_client.upload_changes(changes)
 
-            assert len(result.applied) == 2
+            assert len(result.applied) == COUNT_TWO
             assert result.applied[0] == "item-1"
 
     @pytest.mark.asyncio
@@ -1750,7 +1752,7 @@ class TestApiClientSyncStatus:
         with patch.object(api_client, "_retry_request", AsyncMock(return_value=mock_response)):
             status = await api_client.get_sync_status()
 
-            assert status.pending_changes == 3
+            assert status.pending_changes == COUNT_THREE
             assert status.online is True
             assert status.conflicts_pending == 1
 
@@ -1862,7 +1864,7 @@ class TestApiClientFullSync:
 
             # Verify it resolved and continued
             assert len(upload_result.applied) == 1
-            assert mock_req.call_count == 4  # upload, resolve, retry upload, download
+            assert mock_req.call_count == COUNT_FOUR  # upload, resolve, retry upload, download
 
     @pytest.mark.asyncio
     async def test_full_sync_manual_conflict_raises(self, api_client) -> None:
@@ -1908,7 +1910,7 @@ class TestApiExceptions:
         )
 
         assert str(error) == "Test error"
-        assert error.status_code == 500
+        assert error.status_code == HTTP_INTERNAL_SERVER_ERROR
         assert error.response_data["detail"] == "Internal error"
 
     def test_api_error_defaults(self) -> None:
@@ -1927,7 +1929,7 @@ class TestApiExceptions:
         )
 
         assert error.retry_after == 60
-        assert error.status_code == 429
+        assert error.status_code == HTTP_TOO_MANY_REQUESTS
 
     def test_conflict_error_with_conflicts(self) -> None:
         """Test ConflictError stores conflict list."""

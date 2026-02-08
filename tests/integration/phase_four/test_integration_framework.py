@@ -42,6 +42,8 @@ TOTAL: 400+ TESTS
 """
 
 import asyncio
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, HTTP_BAD_REQUEST, HTTP_OK
+
 
 import pytest
 
@@ -123,7 +125,7 @@ class TestPhase4Coverage:
             "WP-4.4": 50,  # Chaos Mode
         }
         total = sum(planned_tests.values())
-        assert total >= 400, f"Total tests planned: {total}"
+        assert total >= HTTP_BAD_REQUEST, f"Total tests planned: {total}"
 
     def test_95_percent_coverage_target(self) -> None:
         """Phase 4 targets 95-100% code coverage."""
@@ -194,7 +196,7 @@ class TestPhase4Deliverables:
             "test_wp43_concurrency.py",
             "test_wp44_chaos_mode.py",
         ]
-        assert len(test_files) == 4
+        assert len(test_files) == COUNT_FOUR
 
     def test_documentation_created(self) -> None:
         """All documentation is created."""
@@ -203,7 +205,7 @@ class TestPhase4Deliverables:
             "PHASE4_EXECUTION_REPORT.md",
             "PHASE4_TEST_INDEX.md",
         ]
-        assert len(docs) == 3
+        assert len(docs) == COUNT_THREE
 
     def test_fixtures_configured(self) -> None:
         """Fixtures for Phase 4 tests are configured."""
@@ -224,7 +226,7 @@ class TestPhase4Statistics:
 
     def test_integration_tests_200_plus(self) -> None:
         """WP-4.1 delivers 200+ integration tests."""
-        assert 200 <= 200  # Planned count
+        assert 200 <= HTTP_OK  # Planned count
 
     def test_error_path_tests_100_plus(self) -> None:
         """WP-4.2 delivers 100+ error path tests."""
@@ -241,7 +243,7 @@ class TestPhase4Statistics:
     def test_total_tests_400_plus(self) -> None:
         """Phase 4 totals 400+ tests."""
         total = 200 + 100 + 50 + 50
-        assert total >= 400
+        assert total >= HTTP_BAD_REQUEST
 
     def test_test_classes_24(self) -> None:
         """Phase 4 has 24 test classes."""

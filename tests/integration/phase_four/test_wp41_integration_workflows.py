@@ -15,6 +15,8 @@ Total: 160+ comprehensive integration tests
 """
 
 from datetime import UTC, datetime, timezone
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
+
 
 import pytest
 from sqlalchemy.orm import Session
@@ -71,7 +73,7 @@ class TestProjectLifecycleWorkflows:
         db_session.add(project)
         db_session.commit()
 
-        assert len(project.project_metadata["teams"]) == 3
+        assert len(project.project_metadata["teams"]) == COUNT_THREE
 
     def test_project_update_flow(self, db_session: Session) -> None:
         """Test updating project through multiple changes."""
@@ -130,7 +132,7 @@ class TestProjectLifecycleWorkflows:
         db_session.commit()
 
         count = db_session.query(Project).filter(Project.id.like("proj-batch-%")).count()
-        assert count == 10
+        assert count == COUNT_TEN
 
     def test_project_retrieval_performance(self, db_session: Session) -> None:
         """Test efficient retrieval of projects."""
@@ -327,7 +329,7 @@ class TestItemLifecycleWorkflows:
 
         retrieved = db_session.query(Item).filter_by(id="ITEM-META").first()
         assert retrieved.item_metadata["priority"] == "critical"
-        assert len(retrieved.item_metadata["tags"]) == 3
+        assert len(retrieved.item_metadata["tags"]) == COUNT_THREE
 
     def test_item_archive_flow(self, db_session: Session) -> None:
         """Test item archival process."""
@@ -571,7 +573,7 @@ class TestSearchAndQueryWorkflows:
         results = (
             db_session.query(Item).filter(Item.project_id == "proj-search-1", Item.title.like("%Important%")).all()
         )
-        assert len(results) >= 5
+        assert len(results) >= COUNT_FIVE
 
     def test_search_by_item_status(self, db_session: Session) -> None:
         """Search items by status."""
@@ -594,7 +596,7 @@ class TestSearchAndQueryWorkflows:
         db_session.commit()
 
         done_items = db_session.query(Item).filter_by(project_id="proj-search-2", status="done").all()
-        assert len(done_items) == 3
+        assert len(done_items) == COUNT_THREE
 
     def test_search_by_metadata(self, db_session: Session) -> None:
         """Search items by metadata attributes."""
@@ -620,7 +622,7 @@ class TestSearchAndQueryWorkflows:
             for item in db_session.query(Item).filter_by(project_id="proj-search-3").all()
             if item.item_metadata.get("priority") == "high"
         ]
-        assert len(high_priority) >= 2
+        assert len(high_priority) >= COUNT_TWO
 
     def test_query_items_by_view(self, db_session: Session) -> None:
         """Query items filtered by view."""
@@ -643,7 +645,7 @@ class TestSearchAndQueryWorkflows:
         db_session.commit()
 
         feature_items = db_session.query(Item).filter_by(project_id="proj-search-4", view="FEATURE").all()
-        assert len(feature_items) == 3
+        assert len(feature_items) == COUNT_THREE
 
     def test_linked_items_query(self, db_session: Session) -> None:
         """Query items that have links."""
@@ -684,7 +686,7 @@ class TestSearchAndQueryWorkflows:
             .filter(Link.project_id == "proj-search-5")
             .all()
         )
-        assert len(linked_sources) >= 3
+        assert len(linked_sources) >= COUNT_THREE
 
 
 class TestBatchOperationsWorkflows:
@@ -804,7 +806,7 @@ class TestBatchOperationsWorkflows:
         db_session.commit()
 
         remaining = db_session.query(Item).filter_by(project_id="proj-batch-4").count()
-        assert remaining == 10
+        assert remaining == COUNT_TEN
 
     def test_batch_metadata_update(self, db_session: Session) -> None:
         """Batch update metadata on items."""

@@ -13,6 +13,8 @@ import tempfile
 from datetime import UTC, datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_TOO_MANY_REQUESTS, HTTP_UNAUTHORIZED
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -132,7 +134,7 @@ class TestApiErrorBaseClass:
     def test_api_error_with_status_code(self) -> None:
         """Test ApiError with status code."""
         error = ApiError("Request failed", status_code=500)
-        assert error.status_code == 500
+        assert error.status_code == HTTP_INTERNAL_SERVER_ERROR
 
     def test_api_error_with_response_data(self) -> None:
         """Test ApiError with response data."""
@@ -160,7 +162,7 @@ class TestAuthenticationErrorHandling:
     def test_authentication_error_with_message_and_status(self) -> None:
         """Test AuthenticationError with status code."""
         error = AuthenticationError("Unauthorized", status_code=401)
-        assert error.status_code == 401
+        assert error.status_code == HTTP_UNAUTHORIZED
 
     def test_authentication_error_is_api_error(self) -> None:
         """Test AuthenticationError is ApiError."""
@@ -201,7 +203,7 @@ class TestNetworkErrorHandling:
             NetworkError("Connection refused"),
             NetworkError("DNS lookup failed"),
         ]
-        assert len(errors) == 3
+        assert len(errors) == COUNT_THREE
         assert all(isinstance(e, NetworkError) for e in errors)
 
 
@@ -212,7 +214,7 @@ class TestRateLimitErrorHandling:
         """Test RateLimitError creation."""
         error = RateLimitError("Rate limit exceeded", retry_after=10)
         assert "Rate limit exceeded" in str(error)
-        assert error.retry_after == 10
+        assert error.retry_after == COUNT_TEN
         assert isinstance(error, ApiError)
 
     def test_rate_limit_error_with_different_retry_times(self) -> None:
@@ -229,7 +231,7 @@ class TestRateLimitErrorHandling:
     def test_rate_limit_error_with_status_429(self) -> None:
         """Test RateLimitError represents 429 status."""
         error = RateLimitError("Too many requests", status_code=429)
-        assert error.status_code == 429
+        assert error.status_code == HTTP_TOO_MANY_REQUESTS
 
 
 class TestConflictErrorHandling:
@@ -268,7 +270,7 @@ class TestConflictErrorHandling:
             for i in range(5)
         ]
         error = ConflictError("Multiple conflicts", conflicts)
-        assert len(error.conflicts) == 5
+        assert len(error.conflicts) == COUNT_FIVE
         assert all(c.entity_type == "item" for c in error.conflicts)
 
     def test_conflict_error_empty_conflicts_list(self) -> None:
@@ -308,7 +310,7 @@ class TestApiConfigurationErrors:
         assert config.base_url == "https://api.test.local"
         assert config.token is None
         assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert config.max_retries == COUNT_THREE
 
     def test_api_config_with_all_options(self) -> None:
         """Test ApiConfig with all options."""
@@ -324,7 +326,7 @@ class TestApiConfigurationErrors:
         assert config.base_url == "https://api.example.com"
         assert config.token == "secret_token"
         assert config.timeout == 60.0
-        assert config.max_retries == 5
+        assert config.max_retries == COUNT_FIVE
         assert config.verify_ssl is False
 
     def test_api_config_from_config_manager_complete(self) -> None:
@@ -345,7 +347,7 @@ class TestApiConfigurationErrors:
             assert config.base_url == "https://api.example.com"
             assert config.token == "token123"
             assert config.timeout == 45.0
-            assert config.max_retries == 5
+            assert config.max_retries == COUNT_FIVE
 
     def test_api_config_from_config_manager_defaults(self) -> None:
         """Test ApiConfig from ConfigManager uses defaults."""
@@ -354,7 +356,7 @@ class TestApiConfigurationErrors:
             config = ApiConfig.from_config_manager()
             assert config.base_url == "https://api.tracertm.io"
             assert config.timeout == 30.0
-            assert config.max_retries == 3
+            assert config.max_retries == COUNT_THREE
 
     def test_api_config_url_normalization(self) -> None:
         """Test API config handles URLs."""
@@ -507,7 +509,7 @@ class TestTraceRTMClientLogOperationErrors:
             "sync_started",
         ]
         # Just verify these are valid event types (no actual logging)
-        assert len(event_types) == 5
+        assert len(event_types) == COUNT_FIVE
 
 
 # ============================================================================
@@ -585,7 +587,7 @@ class TestConflictObjectHandling:
         conflict = Conflict.from_dict(data)
         assert conflict.conflict_id == "c1"
         assert conflict.local_version == 1
-        assert conflict.remote_version == 2
+        assert conflict.remote_version == COUNT_TWO
 
     def test_conflict_version_comparison(self) -> None:
         """Test conflict version fields."""
@@ -599,7 +601,7 @@ class TestConflictObjectHandling:
             remote_data={},
         )
         assert conflict.local_version < conflict.remote_version
-        assert conflict.local_version == 5
+        assert conflict.local_version == COUNT_FIVE
 
 
 # ============================================================================
@@ -732,12 +734,12 @@ class TestHTTPStatusCodeHandling:
             503: ApiError,
         }
         # Verify error types exist
-        assert len(status_codes_to_errors) == 5
+        assert len(status_codes_to_errors) == COUNT_FIVE
 
     def test_rate_limit_429_status(self) -> None:
         """Test 429 status is recognized as rate limit."""
         error = RateLimitError("Too many requests", status_code=429)
-        assert error.status_code == 429
+        assert error.status_code == HTTP_TOO_MANY_REQUESTS
 
     def test_conflict_409_status(self) -> None:
         """Test 409 status is recognized as conflict."""
@@ -751,7 +753,7 @@ class TestHTTPStatusCodeHandling:
     def test_auth_401_status(self) -> None:
         """Test 401 status is recognized as auth error."""
         error = AuthenticationError("Unauthorized", status_code=401)
-        assert error.status_code == 401
+        assert error.status_code == HTTP_UNAUTHORIZED
 
 
 # ============================================================================
@@ -878,7 +880,7 @@ class TestErrorHandlingIntegrationScenarios:
             RateLimitError("Rate limited", retry_after=60),
             AuthenticationError("Token expired"),
         ]
-        assert len(errors) == 3
+        assert len(errors) == COUNT_THREE
         assert isinstance(errors[0], NetworkError)
         assert isinstance(errors[1], RateLimitError)
         assert isinstance(errors[2], AuthenticationError)

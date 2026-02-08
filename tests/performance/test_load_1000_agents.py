@@ -12,6 +12,8 @@ Success Criteria:
 
 import asyncio
 import time
+from tests.test_constants import COUNT_FIVE
+
 
 import pytest
 
@@ -138,7 +140,7 @@ class TestLoad1000Agents:
 
         # Assertions
         assert successful_updates + conflicts == 1000
-        assert conflicts < 1000 * 0.05, "Conflict rate > 5% for same item"
+        assert conflicts < 1000 * 0.05, "Conflict rate > COUNT_FIVE% for same item"
 
     @pytest.mark.benchmark
     async def test_query_performance_10k_items(self, db_session, project_factory, item_factory) -> None:

@@ -17,6 +17,8 @@ Coverage includes:
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 import yaml
@@ -266,7 +268,7 @@ class TestLocalStorageManager:
             # Increment again
             counter, external_id = manager.increment_project_counter(tmpdir, "epic")
 
-            assert counter == 2
+            assert counter == COUNT_TWO
             assert external_id == "EPIC-002"
 
     def test_get_current_project_path_from_cwd(self) -> None:
@@ -377,7 +379,7 @@ class TestLocalStorageManager:
 
             queue = manager.get_sync_queue(limit=3)
 
-            assert len(queue) == 3
+            assert len(queue) == COUNT_THREE
 
     def test_clear_sync_queue_entry(self) -> None:
         """Test clearing specific queue entry."""
@@ -568,7 +570,7 @@ class TestItemStorage:
 
         items = item_storage.list_items()
 
-        assert len(items) == 3
+        assert len(items) == COUNT_THREE
 
     def test_list_items_with_type_filter(self, item_storage) -> None:
         """Test listing items with type filter."""
@@ -624,7 +626,7 @@ class TestItemStorage:
 
         links = item_storage.list_links(source_id=item1.id)
 
-        assert len(links) == 2
+        assert len(links) == COUNT_TWO
 
     def test_list_links_with_type_filter(self, item_storage) -> None:
         """Test listing links with type filter."""

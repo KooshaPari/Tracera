@@ -2,6 +2,8 @@
 
 import uuid
 from unittest.mock import AsyncMock
+from tests.test_constants import COUNT_THREE, COUNT_TWO
+
 
 import pytest
 
@@ -52,7 +54,7 @@ class TestItemUpdate:
         # Verify
         assert result.title == "New Title"
         assert result.status == "in_progress"
-        assert result.version == 2
+        assert result.version == COUNT_TWO
 
         item_service.items.update.assert_called_once()
         kwargs = item_service.items.update.call_args.kwargs
@@ -86,8 +88,8 @@ class TestItemUpdate:
         result = await item_service.update_item(item_id=item_id, agent_id=agent_id, status="done")
 
         # Verify
-        assert result.version == 2
-        assert item_service.items.update.call_count == 2  # Failed once, succeeded second time
+        assert result.version == COUNT_TWO
+        assert item_service.items.update.call_count == COUNT_TWO  # Failed once, succeeded second time
 
     async def test_update_item_concurrency_fail(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test optimistic locking max retries exceeded."""
@@ -105,7 +107,7 @@ class TestItemUpdate:
             await item_service.update_item(item_id=item_id, agent_id=agent_id, status="done")
 
         # Should have tried 3 times (default max_retries)
-        assert item_service.items.update.call_count == 3
+        assert item_service.items.update.call_count == COUNT_THREE
 
     async def test_update_item_not_found(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test updating non-existent item."""
