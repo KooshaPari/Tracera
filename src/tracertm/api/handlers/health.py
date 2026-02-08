@@ -75,7 +75,7 @@ async def check_redis(cache: CacheService) -> dict[str, Any]:
         return {"redis": {"status": "unhealthy", "error": str(exc)}}
 
 
-async def check_nats(nats_client: Any | None) -> dict[str, Any]:
+async def check_nats(nats_client: object | None) -> dict[str, Any]:
     """Check NATS health.
 
     Args:
@@ -142,7 +142,7 @@ async def check_go_backend() -> dict[str, Any]:
 async def get_comprehensive_health(
     db: AsyncSession,
     cache: CacheService,
-    nats_client: Any | None = None,
+    nats_client: object | None = None,
 ) -> tuple[dict[str, Any], str]:
     """Get comprehensive health status for all components.
 

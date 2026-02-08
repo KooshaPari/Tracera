@@ -2,7 +2,10 @@
 
 import re
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from tracertm.models.item import Item
 
 from fastapi import HTTPException
 from sqlalchemy import func, select
@@ -191,7 +194,7 @@ async def execute_item_query(
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-def serialize_item_for_list(item: Any, project_id: str | None) -> dict[str, Any]:
+def serialize_item_for_list(item: Item, project_id: str | None) -> dict[str, Any]:
     """Serialize a single item for list response."""
     created_at = getattr(item, "created_at", None)
     return {

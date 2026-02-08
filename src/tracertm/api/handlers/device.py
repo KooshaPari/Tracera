@@ -7,7 +7,7 @@ for authentication on devices without a browser or with limited input.
 import os
 import secrets
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fastapi import HTTPException
 
@@ -225,7 +225,7 @@ def _find_device_code_by_user_code(user_code: str) -> str | None:
     return None
 
 
-def _authenticate_with_code(auth_code: str, workos_auth_service: Any) -> dict[str, Any]:
+def _authenticate_with_code(auth_code: str, workos_auth_service: WorkOSAuthService) -> dict[str, Any]:
     """Exchange authorization code for tokens using WorkOS.
 
     Args:
@@ -244,7 +244,7 @@ def _authenticate_with_code(auth_code: str, workos_auth_service: Any) -> dict[st
         raise HTTPException(status_code=400, detail=f"Authentication failed: {e!s}")
 
 
-def _extract_user_info(result: dict[str, Any], workos_auth_service: Any) -> dict[str, Any] | None:
+def _extract_user_info(result: dict[str, Any], workos_auth_service: WorkOSAuthService) -> dict[str, Any] | None:
     """Extract user info from authentication result.
 
     Args:
@@ -268,7 +268,7 @@ def _extract_user_info(result: dict[str, Any], workos_auth_service: Any) -> dict
     return None
 
 
-async def device_complete_handler(data: dict[str, Any], workos_auth_service: Any) -> dict[str, Any]:
+async def device_complete_handler(data: dict[str, Any], workos_auth_service: WorkOSAuthService) -> dict[str, Any]:
     """Complete device authorization from browser.
 
     This endpoint is called by the browser after the user enters the code
