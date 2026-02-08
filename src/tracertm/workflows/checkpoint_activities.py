@@ -354,7 +354,7 @@ async def create_sandbox_snapshot(
 async def update_session_snapshot_ref(
     session_id: str,
     s3_key: str,
-    snapshot_metadata: dict[str, Any],
+    snapshot_metadata: dict[str, Any],  # noqa: ARG002
 ) -> dict[str, Any]:
     """Update session with snapshot S3 reference.
 

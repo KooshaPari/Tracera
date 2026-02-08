@@ -11,6 +11,6 @@ class DrillDownService:
     def __init__(self, db_session: Any | None = None) -> None:
         self.db_session = db_session
 
-    async def drill(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+    async def drill(self, *args: Any, **kwargs: Any) -> dict[str, Any]:  # noqa: ARG002
         """Return a minimal drill-down result."""
         return {"status": "ok", "items": []}

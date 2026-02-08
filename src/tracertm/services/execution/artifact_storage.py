@@ -46,7 +46,7 @@ class ArtifactStorageService:
         project_id: str,
         execution_id: str,
         source_path: str | Path,
-        artifact_type: str,
+        artifact_type: str,  # noqa: ARG002
         *,
         filename: str | None = None,
         subdir: str | None = None,

@@ -11,5 +11,5 @@ class VerificationService:
     def __init__(self, db_session: Any | None = None) -> None:
         self.db_session = db_session
 
-    async def verify(self, *args: Any, **kwargs: Any) -> dict[str, bool]:
+    async def verify(self, *args: Any, **kwargs: Any) -> dict[str, bool]:  # noqa: ARG002
         return {"verified": True}

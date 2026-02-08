@@ -13,9 +13,9 @@ class SearchService:
 
     async def search(
         self,
-        query: str | None = None,
-        filters: dict[str, object] | None = None,
-        project_id: str | None = None,
+        query: str | None = None,  # noqa: ARG002
+        filters: dict[str, object] | None = None,  # noqa: ARG002
+        project_id: str | None = None,  # noqa: ARG002
     ) -> list[dict[str, object]]:
         """Search; project_id can be passed as kwarg or via filters['project_id']."""
         return []

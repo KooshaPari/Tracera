@@ -29,7 +29,7 @@ class AutoLinkService:
         self.session = session
 
     def parse_commit_message(
-        self, project_id: str, commit_message: str, commit_hash: str | None = None,
+        self, project_id: str, commit_message: str, commit_hash: str | None = None,  # noqa: ARG002
     ) -> list[tuple[str, str]]:
         """Parse commit message to extract story/item IDs (FR18).
 
