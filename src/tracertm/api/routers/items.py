@@ -65,7 +65,7 @@ def ensure_write_permission(claims: dict[str, Any] | None, action: str) -> None:
     _ensure_write_permission(claims, action=action)
 
 
-async def _maybe_await(result: Any) -> Any:
+async def _maybe_await(result: object) -> object:
     """Await result if it's awaitable, otherwise return as-is.
 
     Note: This function should be imported from main.py or moved to a shared module.
@@ -118,7 +118,7 @@ class ItemBulkUpdate(BaseModel):
 # ==================== ENDPOINT IMPLEMENTATIONS ====================
 
 
-def _serialize_item_for_response(item: Any) -> dict[str, Any]:
+def _serialize_item_for_response(item: object) -> dict[str, Any]:
     """Build response dict for a single item; safe for None/missing attributes."""
     created_at = getattr(item, "created_at", None)
     updated_at = getattr(item, "updated_at", None)

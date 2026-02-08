@@ -60,7 +60,7 @@ def ensure_project_access_fn(project_id: str | None, claims: dict[str, Any] | No
         raise HTTPException(status_code=403, detail="Project access denied")
 
 
-def ensure_credential_access_fn(credential: Any, claims: dict[str, Any]) -> None:
+def ensure_credential_access_fn(credential: object, claims: dict[str, Any]) -> None:
     """Check credential access (injected from main)."""
     from tracertm.api.main import ensure_credential_access
 
