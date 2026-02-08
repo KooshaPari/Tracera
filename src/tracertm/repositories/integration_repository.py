@@ -24,6 +24,12 @@ class IntegrationCredentialRepository:
     """Repository for integration credentials."""
 
     def __init__(self, session: AsyncSession, encryption_service=None) -> None:
+        """Initialize integration repository with database session.
+
+        Args:
+            session: AsyncSession for database operations.
+            encryption_service: Optional encryption service for credentials.
+        """
         self.session = session
         self._encryption = encryption_service
 

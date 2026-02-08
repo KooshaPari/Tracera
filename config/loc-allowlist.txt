@@ -15,7 +15,7 @@ frontend/apps/web/src/views/ItemsTableView.tsx 1415
 frontend/apps/web/src/components/layout/Sidebar.tsx 1401
 src/tracertm/cli/commands/project.py 1388
 src/tracertm/api/client.py 1368
-src/tracertm/repositories/item_spec_repository.py 1358
+src/tracertm/repositories/item_spec_repository.py 1394
 backend/internal/equivalence/handler.go 1310
 src/tracertm/api/routers/specifications.py 1311
 backend/internal/handlers/item_handler_test.go 1238
@@ -84,7 +84,7 @@ src/tracertm/repositories/specification_repository.py 898
 frontend/apps/web/src/components/graph/JourneyExplorer.tsx 850
 frontend/apps/web/e2e/auth-flow.spec.ts 849
 frontend/apps/web/src/views/ProjectsListView.tsx 847
-src/tracertm/services/specification_service.py 862
+src/tracertm/services/specification_service.py 887
 frontend/apps/web/e2e/settings.spec.ts 841
 frontend/apps/web/src/views/DashboardView.tsx 839
 frontend/apps/web/src/__tests__/performance/graph-optimizations.test.tsx 829
@@ -270,7 +270,7 @@ backend/tests/api/search_test.go 579
 frontend/apps/web/src/views/SettingsView.tsx 582
 backend/tests/integration/test_helpers.py 578
 backend/tests/load/load_test.go 577
-src/tracertm/services/item_service.py 592
+src/tracertm/services/item_service.py 597
 frontend/apps/web/src/__tests__/utils/formatters.comprehensive.test.ts 575
 backend/internal/handlers/auth_handler.go 575
 frontend/packages/types/src/progress.ts 574
@@ -322,7 +322,7 @@ backend/internal/handlers/code_index_handler_test.go 616
 backend/internal/codeindex/parsers/golang.go 536
 src/tracertm/mcp/tools/streaming.py 538
 frontend/apps/web/e2e/critical-path-helpers.ts 535
-src/tracertm/services/integration_sync_processor.py 536
+src/tracertm/services/integration_sync_processor.py 541
 backend/internal/cache/redis_error_handling_test.go 569
 backend/internal/middleware/middleware.go 576
 src/tracertm/agent/events.py 529
@@ -412,7 +412,6 @@ frontend/apps/web/src/__tests__/hooks/useItems.p1.test.ts 734
 frontend/apps/web/src/__tests__/lib/cache.p1.test.ts 685
 frontend/apps/web/src/__tests__/lib/cache.test.ts 547
 frontend/apps/web/src/__tests__/lib/queryConfig.p1.test.ts 711
-frontend/apps/web/src/components/graph/layouts/dagLayoutHelpers.ts 840
 frontend/apps/web/src/components/layout/sidebar-hooks.ts 560
 frontend/apps/web/src/components/layout/sidebar-view.tsx 596
 frontend/apps/web/src/hooks/testCasesApi.ts 563

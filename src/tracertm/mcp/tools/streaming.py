@@ -18,8 +18,8 @@ try:
 except Exception:  # pragma: no cover - test fallback when FastMCP isn't available
 
     class _StubMCP:
-        def tool(self, *args: Any, **kwargs: Any):
-            def decorator(fn):
+        def tool(self, *args: Any, **kwargs: Any) -> Any:
+            def decorator(fn) -> Any:
                 return fn
 
             return decorator

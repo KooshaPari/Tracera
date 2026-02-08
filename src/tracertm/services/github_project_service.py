@@ -27,6 +27,11 @@ class GitHubProjectService:
     """Service for GitHub Projects operations."""
 
     def __init__(self, db: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            db: SQLAlchemy async session for database operations.
+        """
         self.db = db
         self.repo = GitHubProjectRepository(db)
 

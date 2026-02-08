@@ -159,11 +159,11 @@ class DatabaseManager:
             return
 
         @event.listens_for(self._engine.sync_engine, "before_cursor_execute")
-        def before_cursor_execute(conn, cursor, statement, parameters, context, executemany) -> None:  # noqa: PLR0913
+        def before_cursor_execute(conn: Any, cursor: Any, statement: Any, parameters: Any, context: Any, executemany: Any) -> None:  # noqa: PLR0913
             context._query_start_time = time.perf_counter()
 
         @event.listens_for(self._engine.sync_engine, "after_cursor_execute")
-        def after_cursor_execute(conn, cursor, statement, parameters, context, executemany) -> None:  # noqa: PLR0913
+        def after_cursor_execute(conn: Any, cursor: Any, statement: Any, parameters: Any, context: Any, executemany: Any) -> None:  # noqa: PLR0913
             duration_ms = (time.perf_counter() - context._query_start_time) * 1000
             self.metrics.record_query(statement, duration_ms, parameters)
 

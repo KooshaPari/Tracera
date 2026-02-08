@@ -501,6 +501,6 @@ if not TEXTUAL_AVAILABLE:
     class DashboardApp:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
-        def __init__(self, *args, **kwargs: Any: Any) -> None:
+        def __init__(self, *args, **kwargs: Any) -> None:
             msg = "Textual is required for TUI. Install with: pip install textual"
             raise ImportError(msg)

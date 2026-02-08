@@ -12,6 +12,9 @@ import (
 // Type represents the type of search to perform
 type Type string
 
+// SearchType is an alias for Type
+type SearchType = Type
+
 const (
 	// TypeFullText uses PostgreSQL full-text search.
 	TypeFullText Type = "fulltext"
@@ -78,6 +81,9 @@ type Request struct {
 	FuzzyThreshold      float64  `json:"fuzzy_threshold"`       // Similarity threshold for fuzzy search (0.0-1.0, default: 0.3)
 	EnableTypoTolerance bool     `json:"enable_typo_tolerance"` // Enable fuzzy matching for typos in any search type
 }
+
+// SearchRequest is an alias for Request
+type SearchRequest = Request
 
 // Response encapsulates search results and metadata
 type Response struct {

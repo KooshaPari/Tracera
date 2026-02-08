@@ -44,7 +44,7 @@ go list -f '{{.Dir}}' ./... \
         continue
       fi
       echo "Linting ${rel}"
-  env GOTOOLCHAIN=go1.25.7 GOMAXPROCS=1 GOGC=5 GOMEMLIMIT=256MiB GOCACHE="${cache_dir}" \
+  env GOTOOLCHAIN=go1.25.7 GOFLAGS="-buildvcs=false" GOMAXPROCS=1 GOGC=5 GOMEMLIMIT=256MiB GOCACHE="${cache_dir}" \
     GOLANGCI_LINT_CACHE="${lint_cache_dir}" \
         golangci-lint run --timeout=10m --concurrency=1 --tests=false \
         --allow-parallel-runners --max-issues-per-linter=1 --max-same-issues=1 \

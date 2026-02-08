@@ -409,14 +409,14 @@ def main() -> int:
     if violations or directory_violations or identifier_violations:
         if directory_violations:
             for path in sorted(set(directory_violations)):
-                pass
+                print(f"DIR_VIOLATION:{path}")
         if violations:
             for path in sorted(set(violations)):
-                pass
+                print(f"PATH_VIOLATION:{path}")
         if identifier_violations:
             for path in sorted(identifier_violations):
                 for _name in identifier_violations[path]:
-                    pass
+                    print(f"IDENTIFIER_VIOLATION:{path}:{_name}")
         return 1
 
     return 0

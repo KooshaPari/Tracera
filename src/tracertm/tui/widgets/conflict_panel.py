@@ -115,13 +115,13 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        def __init__(self, conflicts: list[Any] | None = None, *args, **kwargs: Any: Any) -> None:
+        def __init__(self, conflicts: list[Any] | None = None, *args, **kwargs) -> None:
             """Initialize conflict panel.
 
             Args:
                 conflicts: List of Conflict objects
             """
-            super().__init__(*args, **kwargs: Any: Any)
+            super().__init__(*args, **kwargs)
             self.conflicts = conflicts or []
             self.selected_conflict = None
 
@@ -270,7 +270,7 @@ if not TEXTUAL_AVAILABLE:
         conflicts: list
         selected_conflict: object | None
 
-        def __init__(self, conflicts: list[Any] | None = None, *args: object, **kwargs: Any: object) -> None:
+        def __init__(self, conflicts: list[Any] | None = None, *args: object, **kwargs: object) -> None:
             self.conflicts = conflicts or []
             self.selected_conflict = None
 

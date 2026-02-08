@@ -85,7 +85,7 @@ def measure_token_usage(data: dict[str, Any]) -> int:
     return len(serialized) // 4
 
 
-def benchmark_single_item():
+def benchmark_single_item() -> None:
     """Benchmark single item response."""
     # Original format
     original = format_original_response(MOCK_ITEM)
@@ -108,7 +108,7 @@ def benchmark_single_item():
     }
 
 
-def benchmark_list_response(item_count: int = _DEFAULT_LIST_ITEM_COUNT):
+def benchmark_list_response(item_count: int = _DEFAULT_LIST_ITEM_COUNT) -> None:
     """Benchmark list response with multiple items."""
     items = [MOCK_ITEM.copy() for _ in range(item_count)]
 
@@ -150,7 +150,7 @@ def benchmark_list_response(item_count: int = _DEFAULT_LIST_ITEM_COUNT):
     }
 
 
-def benchmark_compression():
+def benchmark_compression() -> None:
     """Benchmark compression effectiveness."""
     import base64
     import gzip
@@ -180,7 +180,7 @@ def benchmark_compression():
     }
 
 
-def benchmark_streaming():
+def benchmark_streaming() -> None:
     """Benchmark streaming vs full response."""
     total_items = 200
     batch_size = 50
@@ -214,7 +214,7 @@ def benchmark_streaming():
     }
 
 
-def benchmark_error_messages():
+def benchmark_error_messages() -> None:
     """Benchmark error message optimization."""
     # Original error format
     original_error = {

@@ -248,6 +248,11 @@ class RequirementSpecRepository(BaseSpecRepository):
     """Repository for RequirementSpec CRUD and query operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize requirement specification repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         from tracertm.models.item_spec import RequirementSpec
 
         super().__init__(session, RequirementSpec)
@@ -456,6 +461,11 @@ class TestSpecRepository(BaseSpecRepository):
     """Repository for TestSpec CRUD and query operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize TestSpec repository with database session.
+
+        Args:
+            session: AsyncSession for database operations.
+        """
         from tracertm.models.item_spec import TestSpec
 
         super().__init__(session, TestSpec)
@@ -712,6 +722,11 @@ class EpicSpecRepository(BaseSpecRepository):
     """Repository for EpicSpec CRUD and query operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize EpicSpec repository with database session.
+
+        Args:
+            session: AsyncSession for database operations.
+        """
         from tracertm.models.item_spec import EpicSpec
 
         super().__init__(session, EpicSpec)
@@ -835,6 +850,11 @@ class UserStorySpecRepository(BaseSpecRepository):
     """Repository for UserStorySpec CRUD and query operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize UserStorySpec repository with database session.
+
+        Args:
+            session: AsyncSession for database operations.
+        """
         from tracertm.models.item_spec import UserStorySpec
 
         super().__init__(session, UserStorySpec)
@@ -951,6 +971,11 @@ class TaskSpecRepository(BaseSpecRepository):
     """Repository for TaskSpec CRUD and query operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize TaskSpec repository with database session.
+
+        Args:
+            session: AsyncSession for database operations.
+        """
         from tracertm.models.item_spec import TaskSpec
 
         super().__init__(session, TaskSpec)
@@ -1094,6 +1119,11 @@ class DefectSpecRepository(BaseSpecRepository):
     """Repository for DefectSpec CRUD and query operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize DefectSpec repository with database session.
+
+        Args:
+            session: AsyncSession for database operations.
+        """
         from tracertm.models.item_spec import DefectSpec
 
         super().__init__(session, DefectSpec)

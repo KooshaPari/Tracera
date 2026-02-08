@@ -1,6 +1,6 @@
 module github.com/kooshapari/tracertm-backend/tests
 
-go 1.24.0
+go 1.25.7
 
 require (
 	github.com/alicebob/miniredis/v2 v2.36.1
@@ -17,6 +17,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
 	github.com/testcontainers/testcontainers-go/modules/neo4j v0.40.0
+	go.temporal.io/sdk v1.39.0
 	gorm.io/datatypes v1.2.7
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
@@ -145,7 +146,6 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
 	go.temporal.io/api v1.59.0 // indirect
-	go.temporal.io/sdk v1.39.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.27.1 // indirect

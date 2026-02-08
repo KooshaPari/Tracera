@@ -592,6 +592,8 @@ class RequirementSpecService:
         # Calculate WSJF if components provided
         wsjf_score = None
         if all(x is not None for x in [business_value, time_sensitivity, risk_reduction, job_size]):
+            assert business_value is not None and time_sensitivity is not None
+            assert risk_reduction is not None and job_size is not None
             wsjf_score = self.wsjf_calculator.calculate_wsjf(
                 float(business_value),
                 float(time_sensitivity),

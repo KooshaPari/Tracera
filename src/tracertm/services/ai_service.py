@@ -107,8 +107,8 @@ class AIService:
                     model=model,
                     max_tokens=max_tokens,
                     system=system_prompt or "",
-                    messages=anthropic_messages,
-                    tools=TOOLS,
+                    messages=anthropic_messages,  # type: ignore[arg-type]
+                    tools=TOOLS,  # type: ignore[arg-type]
                 )
 
                 # Process response content blocks
@@ -235,8 +235,8 @@ class AIService:
                     model=model,
                     max_tokens=max_tokens,
                     system=system_prompt or "",
-                    messages=anthropic_messages,
-                    tools=TOOLS,
+                    messages=anthropic_messages,  # type: ignore[arg-type]
+                    tools=TOOLS,  # type: ignore[arg-type]
                 )
                 assistant_content = []
                 has_tool_use = False
@@ -320,8 +320,8 @@ class AIService:
                     model=model,
                     max_tokens=max_tokens,
                     system=system_prompt or "",
-                    messages=anthropic_messages,
-                    tools=TOOLS,
+                    messages=anthropic_messages,  # type: ignore[arg-type]
+                    tools=TOOLS,  # type: ignore[arg-type]
                 ) as stream:
                     async for event in stream:
                         if event.type == "content_block_start":
@@ -355,7 +355,7 @@ class AIService:
                                 except json.JSONDecodeError:
                                     tool_input = {}
 
-                                current_tool_use["input"] = tool_input
+                                current_tool_use["input"] = tool_input  # type: ignore[assignment]
                                 tool_uses.append(current_tool_use)
 
                                 yield format_sse(

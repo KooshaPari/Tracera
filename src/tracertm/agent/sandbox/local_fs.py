@@ -81,7 +81,7 @@ class LocalFilesystemSandboxProvider:
             msg = f"Sandbox has no root: {sandbox_id}"
             raise ValueError(msg)
 
-        def run():
+        def run() -> dict[str, str | int]:
             import shlex
             import subprocess  # noqa: S404
 

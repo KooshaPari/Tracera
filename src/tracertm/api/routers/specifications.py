@@ -377,7 +377,7 @@ async def verify_adr_compliance(
             data={
                 "description": "ADR verification run",
                 "score": score,
-                "performed_by": claims.get("sub") if isinstance(claims, dict[str, Any]) else None,
+                "performed_by": claims.get("sub") if isinstance(claims, dict) else None,
             },
         )
         await db.commit()
@@ -640,7 +640,7 @@ async def verify_contract_compliance(
             data={
                 "description": "Contract verification run",
                 "score": score,
-                "performed_by": claims.get("sub") if isinstance(claims, dict[str, Any]) else None,
+                "performed_by": claims.get("sub") if isinstance(claims, dict) else None,
             },
         )
         await db.commit()
@@ -996,11 +996,11 @@ async def list_scenario_activities_for_project(
             "id": str(event.id),
             "scenario_id": event.entity_id,
             "activity_type": event.event_type,
-            "from_value": event.data.get("from_value") if isinstance(event.data, dict[str, Any]) else None,
-            "to_value": event.data.get("to_value") if isinstance(event.data, dict[str, Any]) else None,
-            "description": event.data.get("description") if isinstance(event.data, dict[str, Any]) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict[str, Any]) else None,
-            "metadata": event.data if isinstance(event.data, dict[str, Any]) else {},
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
+            "metadata": event.data if isinstance(event.data, dict) else {},
             "created_at": event.created_at,
         }
         for event in events
@@ -1062,11 +1062,11 @@ async def get_scenario_activities(
             "id": str(event.id),
             "scenario_id": scenario_id,
             "activity_type": event.event_type,
-            "from_value": event.data.get("from_value") if isinstance(event.data, dict[str, Any]) else None,
-            "to_value": event.data.get("to_value") if isinstance(event.data, dict[str, Any]) else None,
-            "description": event.data.get("description") if isinstance(event.data, dict[str, Any]) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict[str, Any]) else None,
-            "metadata": event.data if isinstance(event.data, dict[str, Any]) else {},
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
+            "metadata": event.data if isinstance(event.data, dict) else {},
             "created_at": event.created_at,
         }
         for event in events

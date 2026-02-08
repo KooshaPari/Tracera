@@ -858,7 +858,7 @@ async def import_manage(
 
     def _load_data_no_path() -> Any:
         data = payload.get("data")
-        if isinstance(data, dict[str, Any]):
+        if isinstance(data, dict):
             return data
         content = payload.get("content")
         if content:
@@ -1021,7 +1021,7 @@ async def backup_manage(
             raise ToolError(msg)
         backup_data = await asyncio.to_thread(_backup_read, path)
 
-        if not isinstance(backup_data, dict[str, Any]) or "tables" not in backup_data:
+        if not isinstance(backup_data, dict) or "tables" not in backup_data:
             msg = "Invalid backup format."
             raise ToolError(msg)
 
@@ -1347,7 +1347,7 @@ async def progress_manage(
                 if not item:
                     msg = f"Item not found: {item_id}"
                     raise ToolError(msg)
-                completion = service.calculate_completion(item.id)
+                completion = service.calculate_completion(str(item.id))
                 return _wrap(
                     {
                         "item_id": str(item.id),
@@ -1370,7 +1370,7 @@ async def progress_manage(
                     .all()
                 )
                 avg_completion = (
-                    sum(service.calculate_completion(item.id) for item in items) / len(items) if items else 0
+                    sum(service.calculate_completion(str(item.id)) for item in items) / len(items) if items else 0
                 )
                 return _wrap(
                     {"view": view, "items": len(items), "average_completion": avg_completion},
@@ -1378,7 +1378,7 @@ async def progress_manage(
                     action,
                 )
             items = session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).all()
-            avg_completion = sum(service.calculate_completion(item.id) for item in items) / len(items) if items else 0
+            avg_completion = sum(service.calculate_completion(str(item.id)) for item in items) / len(items) if items else 0
             return _wrap({"items": len(items), "average_completion": avg_completion}, ctx, action)
 
         if action == "blocked":
@@ -1729,14 +1729,14 @@ async def design_manage(
         figma_token = payload.get("figma_token", "")
         designs_config = dict[str, Any](design_module.DESIGNS_YAML_TEMPLATE)
         figma_config = designs_config.get("figma")
-        if isinstance(figma_config, dict[str, Any]):
+        if isinstance(figma_config, dict):
             figma_config["file_key"] = figma_key
             figma_config["access_token"] = figma_token
         design_module._save_designs_config(trace_dir, designs_config)
 
         components_config = dict[str, Any](design_module.COMPONENTS_YAML_TEMPLATE)
         metadata = components_config.get("metadata")
-        if isinstance(metadata, dict[str, Any]):
+        if isinstance(metadata, dict):
             metadata["created_at"] = datetime.now(UTC).isoformat()
         design_module._save_components_config(trace_dir, components_config)
         return _wrap({"initialized": True}, ctx, action)

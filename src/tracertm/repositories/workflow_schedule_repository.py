@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 
 class WorkflowScheduleRepository:
+    """Repository for workflow schedule CRUD and query operations."""
+
     def __init__(self, session: AsyncSession) -> None:
         """Initialize repository.
         
@@ -34,6 +36,21 @@ class WorkflowScheduleRepository:
         created_by_user_id: str | None = None,
         description: str | None = None,
     ) -> WorkflowSchedule:
+        """Create a new workflow schedule.
+
+        Args:
+            schedule_id: Unique schedule identifier.
+            workflow_name: Name of the workflow to schedule.
+            schedule_type: Type of schedule (cron, interval, etc.).
+            schedule_spec: Schedule specification details.
+            project_id: Optional project association.
+            task_queue: Optional task queue assignment.
+            created_by_user_id: Optional user ID who created the schedule.
+            description: Optional schedule description.
+
+        Returns:
+            Created WorkflowSchedule instance.
+        """
         schedule = WorkflowSchedule(
             id=uuid4(),
             schedule_id=schedule_id,
@@ -56,6 +73,16 @@ class WorkflowScheduleRepository:
         limit: int = 100,
         offset: int = 0,
     ) -> list[WorkflowSchedule]:
+        """List workflow schedules for a project.
+
+        Args:
+            project_id: Project ID to filter schedules.
+            limit: Maximum number of schedules to return.
+            offset: Number of schedules to skip.
+
+        Returns:
+            List of WorkflowSchedule instances ordered by creation date.
+        """
         query = (
             select(WorkflowSchedule)
             .where(WorkflowSchedule.project_id == project_id)
@@ -67,10 +94,24 @@ class WorkflowScheduleRepository:
         return list(result.scalars().all())
 
     async def get_by_schedule_id(self, schedule_id: str) -> WorkflowSchedule | None:
+        """Get workflow schedule by schedule ID.
+
+        Args:
+            schedule_id: Schedule identifier.
+
+        Returns:
+            WorkflowSchedule if found, None otherwise.
+        """
         result = await self.session.execute(select(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id))
         return result.scalar_one_or_none()
 
     async def mark_last_run(self, schedule_id: str, last_run_at: datetime) -> None:
+        """Update the last run timestamp for a schedule.
+
+        Args:
+            schedule_id: Schedule identifier.
+            last_run_at: Timestamp of last execution.
+        """
         await self.session.execute(
             update(WorkflowSchedule)
             .where(WorkflowSchedule.schedule_id == schedule_id)
@@ -78,5 +119,13 @@ class WorkflowScheduleRepository:
         )
 
     async def delete_by_schedule_id(self, schedule_id: str) -> int:
+        """Delete a workflow schedule by schedule ID.
+
+        Args:
+            schedule_id: Schedule identifier.
+
+        Returns:
+            Number of rows deleted (0 or 1).
+        """
         result = await self.session.execute(delete(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id))
         return getattr(result, "rowcount", 0) or 0

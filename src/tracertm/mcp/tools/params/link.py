@@ -12,7 +12,7 @@ except Exception:  # pragma: no cover
 
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
-            def decorator(fn):
+            def decorator(fn: Any) -> Any:
                 return fn
 
             return decorator
