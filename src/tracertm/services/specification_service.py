@@ -11,6 +11,17 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import delete, func, select
 
+from tracertm.constants import (
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET,
+    SCORE_MIN,
+    SCORE_MAX,
+    SEQUENCE_START,
+    SEQUENCE_PADDING,
+    VERSION_INITIAL,
+    VERSION_INCREMENT,
+    ZERO,
+)
 from tracertm.core.concurrency import update_with_retry
 from tracertm.models.specification import ADR, Contract, Feature, Scenario
 
@@ -161,13 +172,13 @@ class ADRService:
         if last_adr:
             try:
                 last_num = int(last_adr.adr_number.replace("ADR-", ""))
-                next_num = last_num + 1
+                next_num = last_num + VERSION_INCREMENT
             except ValueError:
-                next_num = 1
+                next_num = SEQUENCE_START
         else:
-            next_num = 1
+            next_num = SEQUENCE_START
 
-        adr_number = f"ADR-{next_num:04d}"
+        adr_number = f"ADR-{next_num:0{SEQUENCE_PADDING}d}"
 
         adr = ADR(
             id=str(uuid.uuid4()),
@@ -185,7 +196,7 @@ class ADRService:
             stakeholders=opts.stakeholders or [],
             tags=opts.tags or [],
             date=opts.date_value or datetime.now(UTC).date(),
-            version=1,
+            version=VERSION_INITIAL,
         )
 
         self.session.add(adr)
@@ -201,8 +212,8 @@ class ADRService:
         self,
         project_id: str,
         status: str | None = None,
-        skip: int = 0,
-        limit: int = 50,
+        skip: int = DEFAULT_OFFSET,
+        limit: int = DEFAULT_LIMIT,
     ) -> tuple[list[ADR], int]:
         """List ADRs for a project."""
         query = select(ADR).where(ADR.project_id == project_id)
@@ -214,7 +225,7 @@ class ADRService:
         count_query = select(func.count()).select_from(query.subquery())
         total_result = await self.session.execute(count_query)
         total = await _maybe_await(total_result.scalar())
-        total = total or 0
+        total = total or ZERO
 
         # Apply pagination
         query = query.order_by(ADR.date.desc(), ADR.created_at.desc())
@@ -238,7 +249,7 @@ class ADRService:
                 if hasattr(adr, key) and value is not None:
                     setattr(adr, key, value)
 
-            adr.version += 1
+            adr.version += VERSION_INCREMENT
             self.session.add(adr)
             await self.session.flush()
             return adr
@@ -252,7 +263,7 @@ class ADRService:
         """Delete an ADR."""
         result = await self.session.execute(delete(ADR).where(ADR.id == adr_id))
         await self.session.flush()
-        return (getattr(result, "rowcount", 0) or 0) > 0
+        return (getattr(result, "rowcount", ZERO) or ZERO) > ZERO
 
     async def verify_compliance(
         self, adr_id: str, compliance_score: float, verified_at: datetime | None = None,
@@ -321,13 +332,13 @@ class ContractService:
         if last_contract:
             try:
                 last_num = int(last_contract.contract_number.replace("CONTRACT-", ""))
-                next_num = last_num + 1
+                next_num = last_num + VERSION_INCREMENT
             except ValueError:
-                next_num = 1
+                next_num = SEQUENCE_START
         else:
-            next_num = 1
+            next_num = SEQUENCE_START
 
-        contract_number = f"CONTRACT-{next_num:04d}"
+        contract_number = f"CONTRACT-{next_num:0{SEQUENCE_PADDING}d}"
 
         contract = Contract(
             id=str(uuid.uuid4()),
@@ -345,7 +356,7 @@ class ContractService:
             executable_spec=opts.executable_spec,
             spec_language=opts.spec_language,
             tags=opts.tags or [],
-            version=1,
+            version=VERSION_INITIAL,
         )
 
         self.session.add(contract)
@@ -362,8 +373,8 @@ class ContractService:
         project_id: str,
         contract_type: str | None = None,
         status: str | None = None,
-        skip: int = 0,
-        limit: int = 50,
+        skip: int = DEFAULT_OFFSET,
+        limit: int = DEFAULT_LIMIT,
     ) -> tuple[list[Contract], int]:
         """List contracts for a project."""
         query = select(Contract).where(Contract.project_id == project_id)
@@ -378,7 +389,7 @@ class ContractService:
         count_query = select(func.count()).select_from(query.subquery())
         total_result = await self.session.execute(count_query)
         total = await _maybe_await(total_result.scalar())
-        total = total or 0
+        total = total or ZERO
 
         # Apply pagination
         query = query.order_by(Contract.created_at.desc())
@@ -425,7 +436,7 @@ class ContractService:
         """Delete a Contract."""
         result = await self.session.execute(delete(Contract).where(Contract.id == contract_id))
         await self.session.flush()
-        return (getattr(result, "rowcount", 0) or 0) > 0
+        return (getattr(result, "rowcount", ZERO) or ZERO) > ZERO
 
     async def verify(self, contract_id: str, verification_result: dict[str, Any]) -> Contract | None:
         """Verify contract and store verification result."""
@@ -492,13 +503,13 @@ class FeatureService:
         if last_feature:
             try:
                 last_num = int(last_feature.feature_number.replace("FEAT-", ""))
-                next_num = last_num + 1
+                next_num = last_num + VERSION_INCREMENT
             except ValueError:
-                next_num = 1
+                next_num = SEQUENCE_START
         else:
-            next_num = 1
+            next_num = SEQUENCE_START
 
-        feature_number = f"FEAT-{next_num:04d}"
+        feature_number = f"FEAT-{next_num:0{SEQUENCE_PADDING}d}"
 
         feature = Feature(
             id=str(uuid.uuid4()),
@@ -514,7 +525,7 @@ class FeatureService:
             tags=opts.tags or [],
             related_requirements=opts.related_requirements or [],
             related_adrs=opts.related_adrs or [],
-            version=1,
+            version=VERSION_INITIAL,
         )
 
         self.session.add(feature)
@@ -530,8 +541,8 @@ class FeatureService:
         self,
         project_id: str,
         status: str | None = None,
-        skip: int = 0,
-        limit: int = 50,
+        skip: int = DEFAULT_OFFSET,
+        limit: int = DEFAULT_LIMIT,
     ) -> tuple[list[Feature], int]:
         """List features for a project."""
         query = select(Feature).where(Feature.project_id == project_id)
@@ -543,7 +554,7 @@ class FeatureService:
         count_query = select(func.count()).select_from(query.subquery())
         total_result = await self.session.execute(count_query)
         total = await _maybe_await(total_result.scalar())
-        total = total or 0
+        total = total or ZERO
 
         # Apply pagination
         query = query.order_by(Feature.created_at.desc())
@@ -581,7 +592,7 @@ class FeatureService:
         """Delete a Feature."""
         result = await self.session.execute(delete(Feature).where(Feature.id == feature_id))
         await self.session.flush()
-        return (getattr(result, "rowcount", 0) or 0) > 0
+        return (getattr(result, "rowcount", ZERO) or ZERO) > ZERO
 
     async def get_with_scenarios(self, feature_id: str) -> dict[str, Any] | None:
         """Get Feature with related scenarios."""
@@ -608,7 +619,7 @@ class FeatureService:
             select(func.avg(Scenario.pass_rate)).where(Scenario.feature_id == feature_id),
         )
         avg_pass_rate = await _maybe_await(result.scalar())
-        avg_pass_rate = avg_pass_rate or 0.0
+        avg_pass_rate = avg_pass_rate or SCORE_MIN
         return float(avg_pass_rate)
 
 
@@ -642,11 +653,11 @@ class ScenarioService:
         if last_scenario:
             try:
                 last_num = int(last_scenario.scenario_number.split("-")[-1])
-                next_num = last_num + 1
+                next_num = last_num + VERSION_INCREMENT
             except (ValueError, IndexError):
-                next_num = 1
+                next_num = SEQUENCE_START
         else:
-            next_num = 1
+            next_num = SEQUENCE_START
 
         scenario_number = f"{feature_obj.feature_number}-SC-{next_num:03d}"
 
@@ -667,8 +678,8 @@ class ScenarioService:
             requirement_ids=opts.requirement_ids or [],
             test_case_ids=opts.test_case_ids or [],
             status="draft",
-            pass_rate=0.0,
-            version=1,
+            pass_rate=SCORE_MIN,
+            version=VERSION_INITIAL,
         )
 
         self.session.add(scenario)
@@ -723,7 +734,7 @@ class ScenarioService:
         """Delete a Scenario."""
         result = await self.session.execute(delete(Scenario).where(Scenario.id == scenario_id))
         await self.session.flush()
-        return (getattr(result, "rowcount", 0) or 0) > 0
+        return (getattr(result, "rowcount", ZERO) or ZERO) > ZERO
 
     async def run(self, scenario_id: str, results: dict[str, Any]) -> Scenario | None:
         """Run scenario and record results."""
@@ -733,15 +744,15 @@ class ScenarioService:
 
         # Calculate pass rate from step results
         total_steps = len(scenario.given_steps or []) + len(scenario.when_steps or []) + len(scenario.then_steps or [])
-        if total_steps > 0:
-            passed_steps = results.get("passed_steps", 0)
+        if total_steps > ZERO:
+            passed_steps = results.get("passed_steps", ZERO)
             pass_rate = passed_steps / total_steps
         else:
-            pass_rate = 0.0
+            pass_rate = SCORE_MIN
 
         scenario.pass_rate = pass_rate
         scenario.status = "executed"
-        scenario.version += 1
+        scenario.version += VERSION_INCREMENT
 
         # Store run results in metadata
         if not scenario.metadata_:
@@ -758,8 +769,8 @@ class ScenarioService:
         if not scenario:
             return None
 
-        scenario.pass_rate = max(0.0, min(1.0, pass_rate))
-        scenario.version += 1
+        scenario.pass_rate = max(SCORE_MIN, min(SCORE_MAX, pass_rate))
+        scenario.version += VERSION_INCREMENT
 
         self.session.add(scenario)
         await self.session.flush()
@@ -772,7 +783,7 @@ class ScenarioService:
             return None
 
         scenario.test_case_ids = list(set(scenario.test_case_ids or []) | set(test_case_ids))
-        scenario.version += 1
+        scenario.version += VERSION_INCREMENT
 
         self.session.add(scenario)
         await self.session.flush()
@@ -803,9 +814,9 @@ class StepDefinitionService:
             "description": opts.description,
             "parameters": opts.parameters or [],
             "tags": opts.tags or [],
-            "usage_count": 0,
+            "usage_count": ZERO,
             "created_at": datetime.now(UTC).isoformat(),
-            "version": 1,
+            "version": VERSION_INITIAL,
         }
 
     async def find_matching(
@@ -828,8 +839,8 @@ class StepDefinitionService:
         self,
         project_id: str,
         step_type: str | None = None,
-        skip: int = 0,
-        limit: int = 50,
+        skip: int = DEFAULT_OFFSET,
+        limit: int = DEFAULT_LIMIT,
     ) -> tuple[list[dict[str, Any]], int]:
         """List step definitions for a project."""
         # Placeholder implementation

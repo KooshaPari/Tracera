@@ -147,7 +147,7 @@ async def _list_items_impl(
     db: AsyncSession,
     cache: CacheService,
     request: Request | None,
-):
+) -> dict[str, Any]:
     """Implementation of list items; errors are caught by list_items."""
     # Skip rate limiting for bulk operations (e.g., fetching counts)
     if not (request and request.headers.get("X-Bulk-Operation") == "true"):
@@ -199,10 +199,10 @@ async def list_items(
     parent_id: str | None = None,
     skip: int = 0,
     limit: int = 100,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+    cache: Annotated[CacheService, Depends(get_cache_service)] = Depends(get_cache_service),
+) -> dict[str, Any]:
     """List items in a project. Returns empty list on any backend error so callers (e.g. home loader) do not get 500."""
     try:
         return await _list_items_impl(
@@ -228,7 +228,7 @@ async def get_item(
     request: Request,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Get a specific item."""
     try:
         enforce_rate_limit(request, claims)
@@ -257,7 +257,7 @@ async def create_item_endpoint(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
     cache: Annotated[CacheService, Depends(get_cache_service)],
-):
+) -> dict[str, Any]:
     """Create an item with simple permission checks."""
     ensure_write_permission(claims, action="create")
     # Skip rate limiting for bulk operations
@@ -308,7 +308,7 @@ async def update_item_endpoint(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
     cache: Annotated[CacheService, Depends(get_cache_service)],
-):
+) -> dict[str, Any]:
     """Update an item with optimistic locking (if expected_version provided)."""
     ensure_write_permission(claims, action="update")
     enforce_rate_limit(request, claims)
@@ -361,7 +361,7 @@ async def delete_item_endpoint(
     item_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Delete an item (permission-gated)."""
     ensure_write_permission(claims, action="delete")
     enforce_rate_limit(request, claims)
@@ -382,7 +382,7 @@ async def bulk_update_items_endpoint(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
     cache: Annotated[CacheService, Depends(get_cache_service)],
-):
+) -> dict[str, Any]:
     """Bulk update item status with optional preview."""
     ensure_write_permission(claims, action="bulk_update")
     enforce_rate_limit(request, claims)
@@ -427,7 +427,7 @@ async def summarize_items_endpoint(
     view: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Summarize items in a view (counts by status + samples)."""
     enforce_rate_limit(request, claims)
     ensure_project_access(project_id, claims)

@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import Any
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.clients.github_client import GitHubClient
@@ -53,7 +54,7 @@ class GitHubProjectService:
         is_org = True  # Assume org for now, could be determined dynamically
         try:
             projects = await client.list_projects_graphql(owner=github_repo_owner, is_org=is_org)
-        except Exception:
+        except (ValueError, KeyError, OperationalError):
             # If org fails, try as user
             projects = await client.list_projects_graphql(owner=github_repo_owner, is_org=False)
 

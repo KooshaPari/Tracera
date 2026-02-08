@@ -38,6 +38,13 @@ class AgentService:
         event_bus: Any = None,
         nats_client: Any = None,
     ) -> None:
+        """Initialize AgentService.
+
+        Args:
+            session_store: Optional session sandbox store.
+            event_bus: Optional legacy event bus for backward compatibility.
+            nats_client: Optional NATS client for publishing agent lifecycle events.
+        """
         self._store = session_store or SessionSandboxStore()
         self._event_bus = event_bus  # Legacy EventBus for backward compatibility
 

@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from io import StringIO
 from typing import Any
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from tracertm.models.event import Event
@@ -361,7 +362,7 @@ class BulkOperationService:
                 }
                 valid_items.append(valid_item)
 
-            except Exception as e:
+            except (ValueError, KeyError, TypeError) as e:
                 invalid_rows.append({
                     "row": row_num,
                     "error": str(e),
@@ -524,7 +525,7 @@ class BulkOperationService:
                     )
                     self.session.add(event)
 
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, OperationalError) as e:
                     logger.debug("Skipping invalid row: %s", e)
                     continue
 

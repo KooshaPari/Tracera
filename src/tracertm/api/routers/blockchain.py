@@ -138,7 +138,7 @@ async def create_baseline(
     request: Annotated[CreateBaselineRequest, Body()],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Create a new baseline snapshot.
 
     Creates a Merkle tree from the provided items and stores
@@ -206,7 +206,7 @@ async def list_baselines(
     offset: Annotated[int, Query(ge=0)] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """List baselines for a project.
 
     Args:
@@ -280,7 +280,7 @@ async def get_baseline(
     baseline_id: Annotated[str, Path(description="Baseline ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Get baseline details with items.
 
     Args:
@@ -400,7 +400,7 @@ async def generate_embeddings(
     request: Annotated[GenerateEmbeddingsRequest, Body()],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Generate embeddings for specifications.
 
     Uses sentence-transformers to generate vector embeddings
@@ -509,7 +509,7 @@ async def get_embedding_stats(
     project_id: Annotated[str, Path(description="Project ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Get embedding statistics for a project.
 
     Args:
@@ -611,7 +611,7 @@ async def get_version_chain_stats(
     project_id: Annotated[str, Path(description="Project ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Get version chain statistics for a project.
 
     Args:

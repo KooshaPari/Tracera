@@ -117,35 +117,56 @@ STATE_PARTS_EXTENDED = 4  # state format: scope:project_id:provider or scope:pro
 
 
 class APIKeyManager:
+    """Placeholder API key manager.
+
+    These methods exist primarily for unit tests that patch them.
+    """
+
     def generate(self, *_: Any, **__: Any) -> dict[str, str]:
+        """Generate an API key."""
         return {"api_key": "sk_test_placeholder"}
 
     def validate(self, *_: Any, **__: Any) -> dict[str, bool]:
+        """Validate an API key."""
         return {"valid": True}
 
     def has_scope(self, *_: Any, **__: Any) -> bool:
+        """Return True if the API key has the required scope."""
         return True
 
     def is_expired(self, *_: Any, **__: Any) -> bool:
+        """Return True if the API key is expired."""
         return False
 
 
 class TokenManager:
+    """Placeholder token manager.
+
+    Provides stubbed access/refresh token operations used by tests.
+    """
+
     def generate_access_token(self, *_: Any, **__: Any) -> dict[str, Any]:
+        """Generate an access token."""
         return {"access_token": "token", "token_type": "bearer", "expires_in": 3600}
 
     def refresh_access_token(self, *_: Any, **__: Any) -> dict[str, Any]:
+        """Refresh an access token."""
         return {"access_token": "token", "token_type": "bearer", "expires_in": 3600}
 
     def validate_refresh_token(self, *_: Any, **__: Any) -> bool:
+        """Validate a refresh token."""
         return True
 
     def revoke_token(self, *_: Any, **__: Any) -> bool:
+        """Revoke a token."""
         return True
 
 
 class PermissionManager:
+    """Placeholder permission manager."""
+
     def has_permission(self, *_: Any, **__: Any) -> bool:
+        """Return True if the user has the specified permission."""
         return True
 
 
@@ -153,31 +174,40 @@ class RateLimiter:
     """Lightweight in-memory rate limiter used for tests."""
 
     def __init__(self) -> None:
+        """Initialize the in-memory rate limiter."""
         self._counts: defaultdict[Any, int] = defaultdict(int)
 
     def check_limit(self, key: Any, *_: Any, limit: int | None = None, **__: Any) -> bool:
+        """Return True if the key is still under the rate limit."""
         limit = limit or 1000  # Increased limit for bulk operations
         self._counts[key] += 1
         return self._counts[key] <= limit
 
     def get_remaining(self, key: Any = None, limit: int | None = None, **__: Any) -> int:
+        """Return remaining requests for the key within the window."""
         limit = limit or 1000  # Increased limit for bulk operations
         return max(0, limit - self._counts.get(key, 0))
 
     def get_limit(self, *_: Any, **__: Any) -> int:
+        """Return the configured rate limit."""
         return 1000  # Increased limit for bulk operations
 
     def get_reset_time(self, *_: Any, **__: Any) -> int:
+        """Return the epoch seconds for the reset time (placeholder)."""
         return 0
 
     def get_retry_after(self, *_: Any, **__: Any) -> int:
+        """Return seconds until retry should be attempted."""
         return 1
 
     def get_message(self, *_: Any, **__: Any) -> str:
+        """Return a human-readable rate limit error message."""
         return "Rate limit exceeded"
 
 
 class WorkflowTriggerPayload(BaseModel):
+    """Request payload for triggering a workflow by name."""
+
     workflow_name: str
     input: dict[str, Any]
 
@@ -217,10 +247,12 @@ def generate_access_token(refresh_token_val: str, *_: Any, **__: Any) -> dict[st
 
 
 def check_permissions(*_: Any, **__: Any) -> bool:
+    """Return True when permission checks are satisfied (placeholder)."""
     return True
 
 
 def check_project_access(*_: Any, **__: Any) -> bool:
+    """Return True when project access checks are satisfied (placeholder)."""
     return True
 
 
@@ -261,66 +293,82 @@ def is_system_admin(claims: dict[str, Any] | None, email_from_user: str | None =
 
 
 def check_permission(*args: Any, **kwargs: Any) -> bool:
+    """Return True when permission checks are satisfied (placeholder)."""
     return True
 
 
 def has_permission(*args: Any, **kwargs: Any) -> bool:
+    """Return True when permission checks are satisfied (placeholder)."""
     return True
 
 
 def check_resource_ownership(*args: Any, **kwargs: Any) -> bool:
+    """Return True when resource ownership checks are satisfied (placeholder)."""
     return True
 
 
 def verify_webhook_signature(*args: Any, **kwargs: Any) -> bool:
+    """Return True when webhook signature is valid (placeholder)."""
     return True
 
 
 def verify_webhook_timestamp(*args: Any, **kwargs: Any) -> bool:
+    """Return True when webhook timestamp is valid (placeholder)."""
     return True
 
 
 def create_session(*args: Any, **kwargs: Any) -> dict[str, str]:
+    """Create a session and return its id (placeholder)."""
     return {"session_id": "placeholder"}
 
 
 def verify_session(*args: Any, **kwargs: Any) -> bool:
+    """Return True when session is valid (placeholder)."""
     return True
 
 
 def invalidate_session(*args: Any, **kwargs: Any) -> bool:
+    """Invalidate an existing session (placeholder)."""
     return True
 
 
 def check_mfa_requirement(*args: Any, **kwargs: Any) -> bool:
+    """Return True when MFA is required (placeholder)."""
     return True
 
 
 def verify_mfa_code(*args: Any, **kwargs: Any) -> bool:
+    """Return True when MFA code is valid (placeholder)."""
     return True
 
 
 def verify_csrf_token(*args: Any, **kwargs: Any) -> bool:
+    """Return True when CSRF token is valid (placeholder)."""
     return True
 
 
 def hash_password(password: str) -> str:
+    """Return a deterministic password hash (placeholder)."""
     return f"hashed-{password}"
 
 
 def get_rate_limit(*args: Any, **kwargs: Any) -> dict[str, int]:
+    """Return rate limit information (placeholder)."""
     return {"limit": 100, "remaining": 100, "reset": 0}
 
 
 def get_endpoint_limit(*args: Any, **kwargs: Any) -> dict[str, int]:
+    """Return endpoint limit information (placeholder)."""
     return {"limit": 100, "window": 60}
 
 
 def get_client_ip(*args: Any, **kwargs: Any) -> str:
+    """Return the client IP address (placeholder)."""
     return "127.0.0.1"
 
 
 def is_whitelisted(*args: Any, **kwargs: Any) -> bool:
+    """Return True if client is IP-whitelisted (placeholder)."""
     return False
 
 
@@ -1228,6 +1276,8 @@ async def list_links_grouped(
 
 
 class LinkCreate(BaseModel):
+    """Request payload for creating a link."""
+
     project_id: str
     source_id: str
     target_id: str
@@ -1236,6 +1286,8 @@ class LinkCreate(BaseModel):
 
 
 class LinkUpdate(BaseModel):
+    """Request payload for updating a link."""
+
     link_type: str | None = None
     metadata: dict[str, Any] | None = None
 
@@ -1519,6 +1571,8 @@ async def find_shortest_path(
 
 
 class ItemCreate(BaseModel):
+    """Request payload for creating an item."""
+
     project_id: str
     title: str
     type: str
@@ -1531,6 +1585,8 @@ class ItemCreate(BaseModel):
 
 
 class ItemUpdate(BaseModel):
+    """Request payload for updating an item."""
+
     title: str | None = None
     description: str | None = None
     status: str | None = None
@@ -1666,6 +1722,8 @@ async def delete_item_endpoint(
 
 
 class ItemBulkUpdate(BaseModel):
+    """Request payload for bulk-updating item status."""
+
     project_id: str
     view: str | None = None
     status: str | None = None
@@ -6766,6 +6824,7 @@ async def receive_inbound_webhook(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Receive inbound webhook from CI/CD systems.
+
     This endpoint does NOT require auth_guard - it uses HMAC signature verification.
     """
     from tracertm.services.webhook_service import WebhookService

@@ -4,9 +4,16 @@ from dataclasses import dataclass
 from typing import Any
 
 from loguru import logger
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.core.concurrency import update_with_retry
+from tracertm.constants import (
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET,
+    PERCENTAGE_MAX,
+    ZERO,
+)
+from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 from tracertm.models.item import Item
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
@@ -39,8 +46,8 @@ class ListItemsParams:
     view: str | None = None
     status: str | None = None
     include_deleted: bool = False
-    limit: int = 100
-    offset: int = 0
+    limit: int = DEFAULT_LIMIT
+    offset: int = DEFAULT_OFFSET
 
 
 # Valid status transitions
@@ -354,11 +361,11 @@ class ItemService:
             return {
                 "item_id": item_id,
                 "total": 1,
-                "done": 1 if item.status == "done" else 0,
-                "in_progress": 1 if item.status == "in_progress" else 0,
-                "blocked": 1 if item.status == "blocked" else 0,
-                "todo": 1 if item.status == "todo" else 0,
-                "percentage": 100 if item.status == "done" else 0,
+                "done": 1 if item.status == "done" else ZERO,
+                "in_progress": 1 if item.status == "in_progress" else ZERO,
+                "blocked": 1 if item.status == "blocked" else ZERO,
+                "todo": 1 if item.status == "todo" else ZERO,
+                "percentage": PERCENTAGE_MAX if item.status == "done" else ZERO,
             }
 
         # Count children by status
@@ -368,7 +375,7 @@ class ItemService:
         blocked = sum(1 for child in children if child.status == "blocked")
         todo = sum(1 for child in children if child.status == "todo")
 
-        percentage = int((done / total) * 100) if total > 0 else 0
+        percentage = int((done / total) * PERCENTAGE_MAX) if total > ZERO else ZERO
 
         return {
             "item_id": item_id,
@@ -422,13 +429,13 @@ class ItemService:
         if not items:
             return {
                 "success": True,
-                "updated": 0,
-                "failed": 0,
+                "updated": ZERO,
+                "failed": ZERO,
                 "errors": [],
             }
 
-        updated_count = 0
-        failed_count = 0
+        updated_count = ZERO
+        failed_count = ZERO
         errors = []
 
         # Update each item
@@ -451,7 +458,8 @@ class ItemService:
                 )
 
                 updated_count += 1
-            except Exception as e:
+            except (ValueError, ConcurrencyError, OperationalError) as e:
+                logger.error(f"Failed to update item {item.id}: {e}", exc_info=True)
                 failed_count += 1
                 errors.append({
                     "item_id": item.id,
@@ -504,7 +512,8 @@ class ItemService:
                 )
 
                 deleted_count += 1
-            except Exception as e:
+            except (ValueError, ConcurrencyError, OperationalError) as e:
+                logger.error(f"Failed to delete item {item.id}: {e}", exc_info=True)
                 failed_count += 1
                 errors.append({
                     "item_id": item.id,
@@ -578,6 +587,6 @@ class ItemService:
             if direction in {"incoming", "both"}:
                 related.extend(await self._collect_related_incoming(project_id, item_id, link_type))
             return self._deduplicate_items(related)
-        except Exception as e:
+        except (ValueError, OperationalError, KeyError) as e:
             logger.error(f"Error getting related items for {item_id}: {e}", exc_info=True)
             return []

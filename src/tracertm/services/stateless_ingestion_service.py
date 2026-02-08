@@ -9,6 +9,7 @@ from uuid import uuid4
 
 import yaml
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import OperationalError
 
 # Lazy imports for optional dependencies
 try:
@@ -95,7 +96,7 @@ class StatelessIngestionService:
             try:
                 post = frontmatter.loads(content)
                 return post.metadata, post.content
-            except Exception:
+            except (ValueError, KeyError, OperationalError):
                 return {}, content
         return {}, content
 

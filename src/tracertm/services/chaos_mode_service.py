@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import OperationalError
 
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
@@ -204,7 +205,7 @@ class ChaosModeService:
                 )
 
                 updated.append(updated_item.id)
-            except Exception as e:
+            except (ValueError, KeyError, OperationalError) as e:
                 errors.append(f"Failed to update {item_id}: {e!s}")
 
         return {

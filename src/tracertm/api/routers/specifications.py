@@ -103,7 +103,7 @@ async def create_adr_spec(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
     event_bus: Annotated[EventBus, Depends(get_event_bus)],
-):
+) -> ADRResponse:
     """Create a new Architecture Decision Record.
 
     Args:
@@ -162,7 +162,7 @@ async def get_adr_spec(
     adr_id: Annotated[str, Path(description="ADR ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> ADRResponse:
     """Retrieve a specific ADR by ID.
 
     Args:
@@ -187,10 +187,10 @@ async def get_adr_spec(
 async def update_adr_spec(
     adr_id: Annotated[str, Path(description="ADR ID")],
     updates: Annotated[ADRUpdate | None, Body()] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    event_bus: EventBus = Depends(get_event_bus),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+    event_bus: Annotated[EventBus, Depends(get_event_bus)] = Depends(get_event_bus),
+) -> ADRResponse:
     """Update an ADR.
 
     Args:
@@ -278,9 +278,9 @@ async def list_adrs_for_project(
     project_id: Annotated[str, Path(description="Project ID")],
     status: Annotated[str | None, Query(description="Filter by ADR status")] = None,
     tags: Annotated[list[str] | None, Query(description="Filter by tags")] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> ADRListResponse:
     """List all ADRs for a project with optional filtering.
 
     Args:
@@ -307,7 +307,7 @@ async def verify_adr_compliance(
     adr_id: Annotated[str, Path(description="ADR ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> VerificationResult:
     """Verify ADR compliance with decision patterns and traceability.
 
     Args:
@@ -397,7 +397,7 @@ async def create_contract_spec(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
     event_bus: Annotated[EventBus, Depends(get_event_bus)],
-):
+) -> ContractResponse:
     """Create a new contract specification.
 
     Args:
@@ -455,7 +455,7 @@ async def get_contract_spec(
     contract_id: Annotated[str, Path(description="Contract ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> ContractResponse:
     """Retrieve a specific contract by ID.
 
     Args:
@@ -480,9 +480,9 @@ async def get_contract_spec(
 async def update_contract_spec(
     contract_id: Annotated[str, Path(description="Contract ID")],
     updates: Annotated[ContractUpdate | None, Body()] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> ContractResponse:
     """Update a contract.
 
     Args:
@@ -541,9 +541,9 @@ async def list_contracts_for_project(
     item_id: Annotated[str | None, Query(description="Filter by item ID")] = None,
     contract_type: Annotated[str | None, Query(description="Filter by contract type")] = None,
     status: Annotated[str | None, Query(description="Filter by status")] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> ContractListResponse:
     """List all contracts for a project with optional filtering.
 
     Args:
@@ -573,7 +573,7 @@ async def verify_contract_compliance(
     contract_id: Annotated[str, Path(description="Contract ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> VerificationResult:
     """Verify contract compliance and specification completeness.
 
     Args:
@@ -659,7 +659,7 @@ async def create_feature_spec(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
     event_bus: Annotated[EventBus, Depends(get_event_bus)],
-):
+) -> FeatureResponse:
     """Create a new BDD feature.
 
     Args:
@@ -718,9 +718,9 @@ async def create_feature_spec(
 async def get_feature_spec(
     feature_id: Annotated[str, Path(description="Feature ID")],
     include_scenarios: Annotated[bool, Query(description="Include associated scenarios")] = False,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> FeatureResponse | dict[str, Any]:
     """Retrieve a specific feature by ID.
 
     Args:
@@ -754,9 +754,9 @@ async def get_feature_spec(
 async def update_feature_spec(
     feature_id: Annotated[str, Path(description="Feature ID")],
     updates: Annotated[FeatureUpdate | None, Body()] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> FeatureResponse:
     """Update a feature.
 
     Args:
@@ -817,9 +817,9 @@ async def list_features_for_project(
     project_id: Annotated[str, Path(description="Project ID")],
     status: Annotated[str | None, Query(description="Filter by status")] = None,
     tags: Annotated[list[str] | None, Query(description="Filter by tags")] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> FeatureListResponse:
     """List all features for a project with optional filtering.
 
     Args:
@@ -850,10 +850,10 @@ async def list_features_for_project(
 async def create_scenario_spec(
     feature_id: Annotated[str, Path(description="Feature ID")],
     scenario: Annotated[ScenarioCreate | None, Body()] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    event_bus: EventBus = Depends(get_event_bus),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+    event_bus: Annotated[EventBus, Depends(get_event_bus)] = Depends(get_event_bus),
+) -> ScenarioResponse:
     """Create a new scenario for a feature.
 
     Args:
@@ -919,9 +919,9 @@ async def create_scenario_spec(
 async def list_scenarios_for_feature(
     feature_id: Annotated[str, Path(description="Feature ID")],
     status: Annotated[str | None, Query(description="Filter by status")] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> ScenarioListResponse:
     """List all scenarios for a feature.
 
     Args:
@@ -955,9 +955,9 @@ async def list_scenarios_for_feature(
 async def list_scenarios_for_project(
     project_id: Annotated[str, Path(description="Project ID")],
     status: Annotated[str | None, Query(description="Filter by status")] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> ScenarioListResponse:
     """List all scenarios for a project.
 
     Args:
@@ -984,9 +984,9 @@ async def list_scenario_activities_for_project(
     event_type: Annotated[str | None, Query(description="Filter by event type")] = None,
     since: Annotated[datetime | None, Query(description="Return events since this time")] = None,
     until: Annotated[datetime | None, Query(description="Return events until this time")] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> dict[str, Any]:
     repo = EventRepository(db)
     events = await repo.get_by_project(project_id, limit=limit + offset)
     activities = [
@@ -1023,7 +1023,7 @@ async def get_scenario_spec(
     scenario_id: Annotated[str, Path(description="Scenario ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> ScenarioResponse:
     """Retrieve a specific scenario by ID.
 
     Args:
@@ -1049,9 +1049,9 @@ async def get_scenario_activities(
     scenario_id: Annotated[str, Path(description="Scenario ID")],
     limit: Annotated[int, Query(description="Max activities to return")] = 100,
     offset: Annotated[int, Query(description="Offset for pagination")] = 0,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> dict[str, Any]:
     repo = EventRepository(db)
     events = await repo.get_by_entity(scenario_id, limit=limit + offset)
     activities = [
@@ -1080,10 +1080,10 @@ async def get_scenario_activities(
 async def update_scenario_spec(
     scenario_id: Annotated[str, Path(description="Scenario ID")],
     updates: Annotated[ScenarioUpdate | None, Body()] = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    event_bus: EventBus = Depends(get_event_bus),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+    event_bus: Annotated[EventBus, Depends(get_event_bus)] = Depends(get_event_bus),
+) -> ScenarioResponse:
     """Update a scenario.
 
     Args:
@@ -1181,7 +1181,7 @@ async def run_scenario(
     scenario_id: Annotated[str, Path(description="Scenario ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> ScenarioRunResult:
     """Run a scenario and capture results.
 
     This endpoint orchestrates scenario execution by:
@@ -1261,7 +1261,7 @@ async def get_specifications_summary(
     project_id: Annotated[str, Path(description="Project ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> SpecificationsSummary:
     """Get a summary of all specifications in a project.
 
     Args:

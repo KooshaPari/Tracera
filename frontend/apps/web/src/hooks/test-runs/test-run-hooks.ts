@@ -1,40 +1,38 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+  type UseQueryResult,
+} from '@tanstack/react-query';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { TestResult, TestRunActivity, TestRunStats } from '@tracertm/types';
 
-import type { TestResult, TestRun, TestRunActivity, TestRunStats } from '@tracertm/types';
-
+import { testRunApi } from './test-run-api';
 import type { CreateTestRunData, SubmitTestResultData, TestRunFilters } from './test-run-types';
 
-import {
-  cancelTestRun,
-  completeTestRun,
-  createTestRun,
-  deleteTestRun,
-  fetchTestRun,
-  fetchTestRunActivities,
-  fetchTestRunResults,
-  fetchTestRunStats,
-  fetchTestRuns,
-  startTestRun,
-  submitBulkTestResults,
-  submitTestResult,
-  type BulkSubmitResponse,
-  type TestRunsResponse,
-} from './test-run-api';
+type TestRunsResponse = Awaited<ReturnType<typeof testRunApi.fetchTestRuns>>;
+type BulkSubmitResponse = Awaited<ReturnType<typeof testRunApi.submitBulkTestResults>>;
+type TestRun = Awaited<ReturnType<typeof testRunApi.fetchTestRun>>;
 
-function useTestRuns(filters: TestRunFilters): UseQueryResult<TestRunsResponse, Error> {
+function useTestRuns(filters: TestRunFilters): UseQueryResult<TestRunsResponse> {
   return useQuery({
     enabled: filters.projectId.length > 0,
-    queryFn: async () => await fetchTestRuns(filters),
+    queryFn: async () => {
+      const result = await testRunApi.fetchTestRuns(filters);
+      return result;
+    },
     queryKey: ['testRuns', JSON.stringify(filters)],
   });
 }
 
-function useTestRun(id: string): UseQueryResult<TestRun, Error> {
+function useTestRun(id: string): UseQueryResult<TestRun> {
   return useQuery({
     enabled: id.length > 0,
-    queryFn: async () => await fetchTestRun(id),
+    queryFn: async () => {
+      const result = await testRunApi.fetchTestRun(id);
+      return result;
+    },
     queryKey: ['testRuns', id],
   });
 }
@@ -46,9 +44,12 @@ function useCreateTestRun(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: CreateTestRunData) => await createTestRun(data),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['testRuns'] });
+    mutationFn: async (data: CreateTestRunData) => {
+      const result = await testRunApi.createTestRun(data);
+      return result;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
     },
   });
 }
@@ -60,11 +61,13 @@ function useUpdateTestRun(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; data: Partial<CreateTestRunData> }) =>
-      await updateTestRun(vars.id, vars.data),
-    onSuccess: (_, vars) => {
-      void queryClient.invalidateQueries({ queryKey: ['testRuns'] });
-      void queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
+    mutationFn: async (vars: { id: string; data: Partial<CreateTestRunData> }) => {
+      const result = await testRunApi.updateTestRun(vars.id, vars.data);
+      return result;
+    },
+    onSuccess: async (_, vars) => {
+      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
+      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
     },
   });
 }
@@ -76,12 +79,14 @@ function useStartTestRun(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; executedBy?: string }) =>
-      await startTestRun(vars.id, vars.executedBy),
-    onSuccess: (_, vars) => {
-      void queryClient.invalidateQueries({ queryKey: ['testRuns'] });
-      void queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
-      void queryClient.invalidateQueries({ queryKey: ['testRunActivities', vars.id] });
+    mutationFn: async (vars: { id: string; executedBy?: string }) => {
+      const result = await testRunApi.startTestRun(vars.id, vars.executedBy);
+      return result;
+    },
+    onSuccess: async (_, vars) => {
+      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
+      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ['testRunActivities', vars.id] });
     },
   });
 }
@@ -93,12 +98,14 @@ function useCompleteTestRun(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; failureSummary?: string; notes?: string }) =>
-      await completeTestRun(vars.id, vars.failureSummary, vars.notes),
-    onSuccess: (_, vars) => {
-      void queryClient.invalidateQueries({ queryKey: ['testRuns'] });
-      void queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
-      void queryClient.invalidateQueries({ queryKey: ['testRunActivities', vars.id] });
+    mutationFn: async (vars: { id: string; failureSummary?: string; notes?: string }) => {
+      const result = await testRunApi.completeTestRun(vars.id, vars.failureSummary, vars.notes);
+      return result;
+    },
+    onSuccess: async (_, vars) => {
+      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
+      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ['testRunActivities', vars.id] });
     },
   });
 }
@@ -110,12 +117,14 @@ function useCancelTestRun(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; reason?: string }) =>
-      await cancelTestRun(vars.id, vars.reason),
-    onSuccess: (_, vars) => {
-      void queryClient.invalidateQueries({ queryKey: ['testRuns'] });
-      void queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
-      void queryClient.invalidateQueries({ queryKey: ['testRunActivities', vars.id] });
+    mutationFn: async (vars: { id: string; reason?: string }) => {
+      const result = await testRunApi.cancelTestRun(vars.id, vars.reason);
+      return result;
+    },
+    onSuccess: async (_, vars) => {
+      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
+      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ['testRunActivities', vars.id] });
     },
   });
 }
@@ -123,9 +132,11 @@ function useCancelTestRun(): UseMutationResult<
 function useDeleteTestRun(): UseMutationResult<void, Error, string> {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => await deleteTestRun(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['testRuns'] });
+    mutationFn: async (id: string) => {
+      await testRunApi.deleteTestRun(id);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
     },
   });
 }
@@ -137,11 +148,13 @@ function useSubmitTestResult(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { runId: string; data: SubmitTestResultData }) =>
-      await submitTestResult(vars.runId, vars.data),
-    onSuccess: (_, vars) => {
-      void queryClient.invalidateQueries({ queryKey: ['testRunResults', vars.runId] });
-      void queryClient.invalidateQueries({ queryKey: ['testRuns', vars.runId] });
+    mutationFn: async (vars: { runId: string; data: SubmitTestResultData }) => {
+      const result = await testRunApi.submitTestResult(vars.runId, vars.data);
+      return result;
+    },
+    onSuccess: async (_, vars) => {
+      await queryClient.invalidateQueries({ queryKey: ['testRunResults', vars.runId] });
+      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.runId] });
     },
   });
 }
@@ -153,19 +166,24 @@ function useSubmitBulkTestResults(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { runId: string; results: SubmitTestResultData[] }) =>
-      await submitBulkTestResults(vars.runId, vars.results),
-    onSuccess: (_, vars) => {
-      void queryClient.invalidateQueries({ queryKey: ['testRunResults', vars.runId] });
-      void queryClient.invalidateQueries({ queryKey: ['testRuns', vars.runId] });
+    mutationFn: async (vars: { runId: string; results: SubmitTestResultData[] }) => {
+      const result = await testRunApi.submitBulkTestResults(vars.runId, vars.results);
+      return result;
+    },
+    onSuccess: async (_, vars) => {
+      await queryClient.invalidateQueries({ queryKey: ['testRunResults', vars.runId] });
+      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.runId] });
     },
   });
 }
 
-function useTestRunResults(runId: string): UseQueryResult<TestResult[], Error> {
+function useTestRunResults(runId: string): UseQueryResult<TestResult[]> {
   return useQuery({
     enabled: runId.length > 0,
-    queryFn: async () => await fetchTestRunResults(runId),
+    queryFn: async () => {
+      const result = await testRunApi.fetchTestRunResults(runId);
+      return result;
+    },
     queryKey: ['testRunResults', runId],
   });
 }
@@ -173,18 +191,24 @@ function useTestRunResults(runId: string): UseQueryResult<TestResult[], Error> {
 function useTestRunActivities(
   runId: string,
   limit: number = 50,
-): UseQueryResult<{ runId: string; activities: TestRunActivity[] }, Error> {
+): UseQueryResult<{ runId: string; activities: TestRunActivity[] }> {
   return useQuery({
     enabled: runId.length > 0,
-    queryFn: async () => await fetchTestRunActivities(runId, limit),
+    queryFn: async () => {
+      const result = await testRunApi.fetchTestRunActivities(runId, limit);
+      return result;
+    },
     queryKey: ['testRunActivities', runId, limit],
   });
 }
 
-function useTestRunStats(projectId: string): UseQueryResult<TestRunStats, Error> {
+function useTestRunStats(projectId: string): UseQueryResult<TestRunStats> {
   return useQuery({
     enabled: projectId.length > 0,
-    queryFn: async () => await fetchTestRunStats(projectId),
+    queryFn: async () => {
+      const result = await testRunApi.fetchTestRunStats(projectId);
+      return result;
+    },
     queryKey: ['testRunStats', projectId],
   });
 }

@@ -14,6 +14,15 @@ class CacheHeadersMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        """Apply Cache-Control headers based on request path and method.
+
+        Args:
+            request: Incoming HTTP request.
+            call_next: Next middleware/endpoint handler.
+
+        Returns:
+            The response with cache headers set.
+        """
         response = await call_next(request)
 
         path = request.url.path

@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import OperationalError
 
 from tracertm.models.event import Event
 from tracertm.repositories.event_repository import EventRepository
@@ -91,7 +92,7 @@ class EventSourcingService:
             try:
                 state = await self._apply_event(state, event)
                 replayed += 1
-            except Exception:
+            except (ValueError, KeyError, OperationalError):
                 failed += 1
 
         return ReplayResult(

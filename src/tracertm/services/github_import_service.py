@@ -4,8 +4,10 @@ import json
 import logging
 from typing import Any, ClassVar
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
@@ -86,7 +88,8 @@ class GitHubImportService:
                     item = await self._import_github_item(str(project.id), item_data, agent_id)
                     item_map[item_data.get("id", item_data.get("number"))] = item.id
                     items_imported += 1
-                except Exception as e:
+                except (ValueError, KeyError, ConcurrencyError, OperationalError) as e:
+                    logger.warning(f"Failed to import item {item_data.get('id', 'unknown')}: {e}")
                     errors.append(f"Failed to import item: {e!s}")
 
             # Import links (PRs linked to issues)
@@ -95,7 +98,8 @@ class GitHubImportService:
                 try:
                     links = await self._import_github_links(str(project.id), item_data, item_map, agent_id)
                     links_imported += len(links)
-                except Exception as e:
+                except (ValueError, KeyError, ConcurrencyError, OperationalError) as e:
+                    logger.warning(f"Failed to import links for item {item_data.get('id', 'unknown')}: {e}")
                     errors.append(f"Failed to import links: {e!s}")
 
             return {
@@ -106,7 +110,8 @@ class GitHubImportService:
                 "errors": errors,
             }
 
-        except Exception as e:
+        except (json.JSONDecodeError, ValueError, KeyError, OperationalError) as e:
+            logger.error(f"GitHub import failed: {e}", exc_info=True)
             return {
                 "success": False,
                 "errors": [f"Import failed: {e!s}"],
@@ -179,7 +184,7 @@ class GitHubImportService:
                             link_type="implements",
                         )
                         links.append(link)
-                    except Exception as e:
+                    except (ValueError, ConcurrencyError, OperationalError) as e:
                         logger.debug("Link creation skipped: %s", e)
 
         return links

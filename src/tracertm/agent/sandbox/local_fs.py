@@ -35,6 +35,11 @@ class LocalFilesystemSandboxProvider:
     """Sandbox provider using local directories under a base path."""
 
     def __init__(self, base_dir: str | None = None) -> None:
+        """Initialize the local filesystem sandbox provider.
+
+        Args:
+            base_dir: Optional base directory for sandboxes; defaults to env/temp.
+        """
         self._base_dir = (base_dir or _get_base_dir()).rstrip("/")
         self._metadata: dict[str, SandboxMetadata] = {}
 

@@ -6,16 +6,6 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-# HTTP status codes
-_STATUS_CREATED = 201
-_STATUS_NO_CONTENT = 204
-_STATUS_BAD_REQUEST = 400
-_STATUS_UNAUTHORIZED = 401
-_STATUS_FORBIDDEN = 403
-_STATUS_NOT_FOUND = 404
-_STATUS_SERVER_ERROR = 500
-_STATUS_TOO_MANY_REQUESTS = 429
-
 import httpx
 import jwt
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
@@ -24,6 +14,27 @@ from tenacity import (
     retry_if_exception,
     stop_after_attempt,
     wait_exponential,
+)
+
+from tracertm.constants import (
+    HTTP_CREATED,
+    HTTP_NO_CONTENT,
+    HTTP_BAD_REQUEST,
+    HTTP_UNAUTHORIZED,
+    HTTP_FORBIDDEN,
+    HTTP_NOT_FOUND,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_TOO_MANY_REQUESTS,
+    TIMEOUT_DEFAULT,
+    DEFAULT_PAGE_SIZE,
+    MAX_RETRIES_DEFAULT,
+    RETRY_BACKOFF_MIN,
+    RETRY_BACKOFF_MAX,
+    RETRY_BACKOFF_MULTIPLIER,
+    GRAPHQL_FIRST_DEFAULT,
+    JWT_CLOCK_SKEW,
+    JWT_EXPIRY_SHORT,
+    ZERO,
 )
 
 
@@ -45,7 +56,7 @@ class IssueListParams:
     labels: list[str] | None = None
     sort: str = "updated"
     direction: str = "desc"
-    per_page: int = 30
+    per_page: int = DEFAULT_PAGE_SIZE
     page: int = 1
 
 
@@ -64,7 +75,7 @@ class PullRequestListParams:
     state: str = "open"
     sort: str = "updated"
     direction: str = "desc"
-    per_page: int = 30
+    per_page: int = DEFAULT_PAGE_SIZE
     page: int = 1
 
 
@@ -92,9 +103,6 @@ class GitHubNotFoundError(GitHubClientError):
     """Resource not found."""
 
 
-HTTP_CREATED = 201
-
-
 class GitHubClient:
     """GitHub API client with rate limiting and error handling.
 
@@ -106,7 +114,7 @@ class GitHubClient:
     def __init__(
         self,
         token: str,
-        timeout: float = 30.0,
+        timeout: float = TIMEOUT_DEFAULT,
         is_app_token: bool = False,
     ) -> None:
         """Initialize GitHub client.
@@ -150,15 +158,15 @@ class GitHubClient:
 
         now = int(time.time())
         jwt_payload = {
-            "iat": now - 60,
-            "exp": now + (10 * 60),
+            "iat": now - JWT_CLOCK_SKEW,
+            "exp": now + JWT_EXPIRY_SHORT,
             "iss": app_id,
         }
 
         app_jwt = jwt.encode(jwt_payload, private_key_obj, algorithm="RS256")
 
         # Exchange JWT for installation token
-        async with asyncio.timeout(30.0):
+        async with asyncio.timeout(TIMEOUT_DEFAULT):
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     f"{cls.BASE_URL}/app/installations/{installation_id}/access_tokens",
@@ -199,12 +207,12 @@ class GitHubClient:
             self._client = None
 
     @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
+        stop=stop_after_attempt(MAX_RETRIES_DEFAULT),
+        wait=wait_exponential(multiplier=RETRY_BACKOFF_MULTIPLIER, min=RETRY_BACKOFF_MIN, max=RETRY_BACKOFF_MAX),
         retry=retry_if_exception(
             lambda e: (
                 isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
-                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= _STATUS_SERVER_ERROR)
+                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= HTTP_INTERNAL_SERVER_ERROR)
             ),
         ),
         reraise=True,
@@ -219,7 +227,7 @@ class GitHubClient:
         """Perform one request; raises on 5xx so tenacity can retry."""
         client = await self._get_client()
         response = await client.request(method, path, params=params, json=json)
-        if response.status_code >= _STATUS_SERVER_ERROR:
+        if response.status_code >= HTTP_INTERNAL_SERVER_ERROR:
             response.raise_for_status()
         return response
 
@@ -234,27 +242,27 @@ class GitHubClient:
         response = await self._request_once(method, path, params=params, json=json)
 
         # Handle rate limiting
-        if response.status_code == _STATUS_FORBIDDEN and "X-RateLimit-Remaining" in response.headers:
-            remaining = int(response.headers.get("X-RateLimit-Remaining", 0))
-            if remaining == 0:
-                reset_timestamp = int(response.headers.get("X-RateLimit-Reset", 0))
+        if response.status_code == HTTP_FORBIDDEN and "X-RateLimit-Remaining" in response.headers:
+            remaining = int(response.headers.get("X-RateLimit-Remaining", ZERO))
+            if remaining == ZERO:
+                reset_timestamp = int(response.headers.get("X-RateLimit-Reset", ZERO))
                 reset_at = datetime.fromtimestamp(reset_timestamp, tz=UTC)
                 raise GitHubRateLimitError(reset_at)
 
         # Handle auth errors
-        if response.status_code == _STATUS_UNAUTHORIZED:
+        if response.status_code == HTTP_UNAUTHORIZED:
             msg = "Invalid or expired token"
             raise GitHubAuthError(msg)
 
         # Handle not found
-        if response.status_code == _STATUS_NOT_FOUND:
+        if response.status_code == HTTP_NOT_FOUND:
             msg = f"Resource not found: {path}"
             raise GitHubNotFoundError(msg)
 
         # Raise for other errors
         response.raise_for_status()
 
-        if response.status_code == _STATUS_NO_CONTENT:
+        if response.status_code == HTTP_NO_CONTENT:
             return None
 
         return response.json()
@@ -288,7 +296,7 @@ class GitHubClient:
         self,
         sort: str = "updated",
         direction: str = "desc",
-        per_page: int = 30,
+        per_page: int = DEFAULT_PAGE_SIZE,
         page: int = 1,
     ) -> list[dict]:
         """List repositories for authenticated user."""
@@ -308,7 +316,7 @@ class GitHubClient:
         org: str,
         sort: str = "updated",
         direction: str = "desc",
-        per_page: int = 30,
+        per_page: int = DEFAULT_PAGE_SIZE,
         page: int = 1,
     ) -> list[dict]:
         """List repositories for an organization."""
@@ -372,7 +380,7 @@ class GitHubClient:
         query: str,
         sort: str = "updated",
         order: str = "desc",
-        per_page: int = 30,
+        per_page: int = DEFAULT_PAGE_SIZE,
         page: int = 1,
     ) -> dict[str, Any]:
         """Search repositories.
@@ -402,7 +410,7 @@ class GitHubClient:
     async def list_installation_repos(
         self,
         installation_id: int | None = None,
-        per_page: int = 30,
+        per_page: int = DEFAULT_PAGE_SIZE,
         page: int = 1,
     ) -> dict[str, Any]:
         """List repositories accessible to a GitHub App installation.
@@ -608,7 +616,7 @@ class GitHubClient:
         query: str,
         sort: str = "updated",
         order: str = "desc",
-        per_page: int = 30,
+        per_page: int = DEFAULT_PAGE_SIZE,
         page: int = 1,
     ) -> dict[str, Any]:
         """Search issues and pull requests."""
@@ -657,11 +665,11 @@ class GitHubClient:
         }
         """ % ("organization" if is_org else "user")
 
-        result = await self.graphql_query(query, {"owner": owner, "first": 100})
+        result = await self.graphql_query(query, {"owner": owner, "first": GRAPHQL_FIRST_DEFAULT})
         key = "organization" if is_org else "user"
         return result.get("data", {}).get(key, {}).get("projectsV2", {}).get("nodes", [])
 
-    async def get_project_items(self, project_id: str, first: int = 100) -> list[dict]:
+    async def get_project_items(self, project_id: str, first: int = GRAPHQL_FIRST_DEFAULT) -> list[dict]:
         """Get items from a GitHub Project v2."""
         query = """
         query($projectId: ID!, $first: Int!) {

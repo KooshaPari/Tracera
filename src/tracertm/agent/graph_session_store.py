@@ -40,6 +40,14 @@ class GraphSessionStore(SessionSandboxStoreDB):
         neo4j_client: Any = None,
         nats_client: Any = None,
     ) -> None:
+        """Initialize the graph-backed session store.
+
+        Args:
+            sandbox_provider: Optional sandbox provider implementation.
+            cache_service: Optional cache service for session lookups.
+            neo4j_client: Optional Neo4j client for graph persistence.
+            nats_client: Optional NATS client for publishing lifecycle events.
+        """
         super().__init__(sandbox_provider, cache_service)
         self._neo4j = neo4j_client
         self._event_publisher = AgentEventPublisher(nats_client) if nats_client else None

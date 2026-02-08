@@ -382,7 +382,7 @@ async def mcp_sse(
     # Get optional task_id for task-specific streaming
     task_id = request.query_params.get("task_id")
 
-    async def event_generator():
+    async def event_generator() -> dict[str, Any]:
         """Generate SSE events."""
         try:
             # Send initial connection event

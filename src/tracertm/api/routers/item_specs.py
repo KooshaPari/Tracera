@@ -2081,7 +2081,7 @@ async def analyze_ears_pattern(
     request: Annotated[AnalyzeEARSRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Analyze EARS (Easy Approach to Requirements Syntax) pattern.
 
     Classifies the requirement into EARS patterns:
@@ -2165,7 +2165,7 @@ async def analyze_quality_dimensions(
     request: Annotated[AnalyzeQualityRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Analyze ISO 29148 quality dimensions.
 
     Evaluates the requirement against 8 quality dimensions:
@@ -2238,7 +2238,7 @@ async def get_version_chain(
     limit: Annotated[int, Query(ge=1, le=200, description="Max chain entries")] = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Get blockchain-style version chain history.
 
     Returns the cryptographic version chain showing all
@@ -2302,7 +2302,7 @@ async def verify_baseline(
     baseline_root: Annotated[str, Query(description="Merkle root to verify against")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Verify spec against a baseline using Merkle proof.
 
     Generates and verifies a Merkle proof to confirm the
@@ -2386,7 +2386,7 @@ async def get_merkle_proof(
     baseline_id: Annotated[str | None, Query(description="Baseline ID to get proof from (optional, uses latest if not specified)")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Generate Merkle proof for the specification.
 
     Creates a Merkle proof that can be used to verify
@@ -2467,7 +2467,7 @@ async def get_content_address(
     spec_id: Annotated[str, Path(description="Spec ID")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Get IPFS-style content addressing information.
 
     Returns the content hash (SHA-256) and content identifier (CID)
@@ -2517,7 +2517,7 @@ async def analyze_flakiness(
     request: Annotated[AnalyzeFlakinessRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Analyze test flakiness using Meta's probabilistic model.
 
     Uses Bayesian inference to calculate flakiness probability
@@ -2587,7 +2587,7 @@ async def analyze_odc_classification(
     request: Annotated[AnalyzeODCRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Classify defect using IBM Orthogonal Defect Classification.
 
     Analyzes the defect to determine:
@@ -2658,7 +2658,7 @@ async def analyze_cvss_score(
     request: Annotated[AnalyzeCVSSRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Calculate CVSS security score for security-related defects.
 
     Computes the Common Vulnerability Scoring System (CVSS) base score
@@ -2721,7 +2721,7 @@ async def analyze_impact(
     request: AnalyzeImpactRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Analyze impact of changes using graph traversal.
 
     Performs depth-first traversal of the traceability graph
@@ -2812,7 +2812,7 @@ async def calculate_prioritization(
     request: CalculatePrioritizationRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Calculate WSJF, RICE, and MoSCoW prioritization.
 
     Computes prioritization scores:
@@ -2901,7 +2901,7 @@ async def analyze_coverage_gaps(
     request: AnalyzeCoverageGapsRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Analyze test coverage gaps across requirements.
 
     Identifies requirements without test coverage or with
@@ -2982,7 +2982,7 @@ async def analyze_suspect_links(
     request: AnalyzeSuspectLinksRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Detect suspect traceability links.
 
     Identifies links that may be stale, broken, or incorrectly
@@ -3054,7 +3054,7 @@ async def analyze_similarity(
     request: AnalyzeSimilarityRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Find semantically similar specifications.
 
     Uses sentence embeddings to find specifications with

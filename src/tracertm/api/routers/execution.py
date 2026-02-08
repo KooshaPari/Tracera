@@ -34,7 +34,7 @@ async def create_execution(
     execution_create: ExecutionCreate,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Create a new execution."""
     service = ExecutionService(db)
     execution = await service.create(
@@ -65,7 +65,7 @@ async def list_executions(
     offset: Annotated[int, Query(ge=0)] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """List executions for a project."""
     service = ExecutionService(db)
     executions = await service.list_by_project(
@@ -97,7 +97,7 @@ async def get_execution(
     execution_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Get execution details by ID."""
     service = ExecutionService(db)
     execution = await service.get(execution_id)
@@ -126,7 +126,7 @@ async def start_execution(
     start_data: ExecutionStart,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Start an execution (transition from pending to running)."""
     service = ExecutionService(db)
     execution = await service.get(execution_id)
@@ -165,7 +165,7 @@ async def complete_execution(
     complete_data: ExecutionComplete,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Complete an execution (stop container, record duration, mark status)."""
     service = ExecutionService(db)
     execution = await service.get(execution_id)
@@ -204,7 +204,7 @@ async def list_artifacts(
     artifact_type: Annotated[str | None, Query(description="Filter by artifact type")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """List artifacts for an execution."""
     service = ExecutionService(db)
     execution = await service.get(execution_id)
@@ -232,7 +232,7 @@ async def add_artifact(
     artifact_create: ExecutionArtifactCreate,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Add an artifact to an execution."""
     service = ExecutionService(db)
     execution = await service.get(execution_id)
@@ -269,7 +269,7 @@ async def get_execution_config(
     project_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Get execution environment configuration for a project."""
     service = ExecutionService(db)
     config = await service.get_config(project_id)
@@ -289,7 +289,7 @@ async def update_execution_config(
     config_update: ExecutionEnvironmentConfigUpdate,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Update execution environment configuration for a project."""
     service = ExecutionService(db)
 
@@ -317,7 +317,7 @@ async def generate_vhs_tape(
     execution_id: Annotated[str, Query(description="Execution ID to generate tape for")],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Generate a VHS tape file (terminal recording) from execution artifacts."""
     service = ExecutionService(db)
     execution = await service.get(execution_id)

@@ -708,7 +708,7 @@ def _search_files(params: dict[str, Any], base_dir: str | None) -> dict[str, Any
 
                         if len(results) >= max_results:
                             break
-            except Exception as e:
+            except (OSError, UnicodeDecodeError, PermissionError) as e:
                 logger.debug("Skipping file %s: %s", file_path, e)
                 continue
 
@@ -787,10 +787,11 @@ async def _run_command(params: dict[str, Any], base_dir: str | None) -> dict[str
         try:
             if process is not None:
                 process.kill()
-        except Exception as e:
+        except (ProcessLookupError, OSError) as e:
             logger.debug("Process kill failed: %s", e)
         return {"success": False, "error": f"Command timed out after {timeout}s"}
-    except Exception as e:
+    except (OSError, subprocess.SubprocessError) as e:
+        logger.error(f"Command execution failed: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
 

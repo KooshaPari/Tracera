@@ -15,8 +15,8 @@ interface SavePayload {
 }
 
 interface ItemMutations {
-  deleteItem: (id: string) => Promise<void>;
-  saveItem: (payload: SavePayload) => Promise<void>;
+  deleteItem: (id: string, onSuccess: () => void) => void;
+  saveItem: (payload: SavePayload, onSuccess: () => void) => void;
 }
 
 function normalizeOwner(owner: string): string | undefined {
@@ -32,31 +32,48 @@ export function useItemMutations(item: Item | undefined): ItemMutations {
   const updateItemMutation = useUpdateItem();
 
   const deleteItem = useCallback(
-    async (id: string): Promise<void> => {
-      await deleteItemMutation.mutateAsync(id);
-      toast.success('Item deleted successfully');
+    (id: string, onSuccess: () => void): void => {
+      deleteItemMutation.mutate(id, {
+        onError: () => {
+          toast.error('Failed to delete item');
+        },
+        onSuccess: () => {
+          toast.success('Item deleted successfully');
+          onSuccess();
+        },
+      });
     },
     [deleteItemMutation],
   );
 
   const saveItem = useCallback(
-    async (payload: SavePayload): Promise<void> => {
+    (payload: SavePayload, onSuccess: () => void): void => {
       if (!item) {
         toast.error('Failed to update item');
         return;
       }
 
-      await updateItemMutation.mutateAsync({
-        id: payload.id,
-        data: {
-          title: payload.title,
-          description: payload.description,
-          owner: normalizeOwner(payload.owner),
-          status: payload.status,
-          priority: payload.priority,
+      updateItemMutation.mutate(
+        {
+          id: payload.id,
+          data: {
+            title: payload.title,
+            description: payload.description,
+            owner: normalizeOwner(payload.owner),
+            status: payload.status,
+            priority: payload.priority,
+          },
         },
-      });
-      toast.success('Item updated');
+        {
+          onError: () => {
+            toast.error('Failed to update item');
+          },
+          onSuccess: () => {
+            toast.success('Item updated');
+            onSuccess();
+          },
+        },
+      );
     },
     [item, updateItemMutation],
   );

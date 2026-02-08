@@ -26,6 +26,11 @@ class SessionSandboxStore:
     """Maps session_id to sandbox path. Uses SandboxProvider to create sandboxes."""
 
     def __init__(self, sandbox_provider: SandboxProvider | None = None) -> None:
+        """Initialize an in-memory session sandbox store.
+
+        Args:
+            sandbox_provider: Optional sandbox provider; defaults to local filesystem.
+        """
         self._provider = sandbox_provider or LocalFilesystemSandboxProvider()
         self._store: dict[str, SandboxMetadata] = {}
 
@@ -91,6 +96,12 @@ class SessionSandboxStoreDB(SessionSandboxStore):
         sandbox_provider: SandboxProvider | None = None,
         cache_service: Any = None,
     ) -> None:
+        """Initialize a DB-backed session store.
+
+        Args:
+            sandbox_provider: Optional sandbox provider.
+            cache_service: Optional async cache service for fast lookups.
+        """
         super().__init__(sandbox_provider)
         self._cache = cache_service
 

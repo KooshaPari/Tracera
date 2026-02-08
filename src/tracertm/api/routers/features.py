@@ -28,7 +28,7 @@ async def create_feature(
     feature: FeatureCreate,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = FeatureService(db)
     options = CreateFeatureInput(
         description=feature.description,
@@ -51,7 +51,7 @@ async def get_feature(
     feature_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = FeatureService(db)
     feature = await service.get_feature(feature_id)
     if not feature:
@@ -78,7 +78,7 @@ async def get_feature_activities(
     limit: Annotated[int, Query(description="Max activities to return")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     repo = EventRepository(db)
     events = await repo.get_by_entity(feature_id, limit=limit)
     activities = [
@@ -117,7 +117,7 @@ async def list_features(
     status: Annotated[str | None, Query(description="Filter by status")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     service = FeatureService(db)
     return await service.list_features(project_id, status)
 
@@ -133,7 +133,7 @@ async def create_scenario(
     scenario: ScenarioCreate,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = ScenarioService(db)
     # Validate feature exists
     feat_service = FeatureService(db)
@@ -160,7 +160,7 @@ async def get_scenario(
     scenario_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = ScenarioService(db)
     scenario = await service.get_scenario(scenario_id)
     if not scenario:
@@ -174,7 +174,7 @@ async def get_scenario_activities(
     limit: Annotated[int, Query(description="Max activities to return")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     repo = EventRepository(db)
     events = await repo.get_by_entity(scenario_id, limit=limit)
     activities = [

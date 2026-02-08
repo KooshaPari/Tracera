@@ -9,6 +9,7 @@ TARGET_MS_INCREMENTAL = 1000
 TARGET_MS_FULL = 5000
 
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -94,7 +95,7 @@ class BenchmarkService:
                     "meets_target": duration_ms < self.PERFORMANCE_TARGETS.get(view_name, 100),
                 },
             )
-        except Exception as e:
+        except (OperationalError, ValueError) as e:
             return BenchmarkResult(
                 operation=f"query_{view_name}",
                 duration_ms=0,
@@ -157,7 +158,7 @@ class BenchmarkService:
                     "meets_target": duration_ms < TARGET_MS_INCREMENTAL,
                 },
             )
-        except Exception as e:
+        except (OperationalError, ValueError) as e:
             return BenchmarkResult(
                 operation="refresh_incremental",
                 duration_ms=0,
@@ -191,7 +192,7 @@ class BenchmarkService:
                     "meets_target": duration_ms < TARGET_MS_FULL,
                 },
             )
-        except Exception as e:
+        except (OperationalError, ValueError) as e:
             return BenchmarkResult(
                 operation="refresh_full",
                 duration_ms=0,

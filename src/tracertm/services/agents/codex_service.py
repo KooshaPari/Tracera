@@ -104,7 +104,7 @@ class CodexAgentService:
             output = stdout.decode().lower()
             authenticated = "authenticated" in output or "logged in" in output
             return authenticated, stdout.decode().strip()
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError, UnicodeDecodeError) as e:
             return False, str(e)
 
     async def setup_oauth(self, device_auth: bool = False) -> str:
@@ -217,7 +217,7 @@ class CodexAgentService:
             interaction.status = "failed"
             interaction.error_message = f"Task timed out after {task.timeout_seconds}s"
             interaction.completed_at = datetime.now(UTC)
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError, UnicodeDecodeError) as e:
             interaction.status = "failed"
             interaction.error_message = str(e)[:1000]
             interaction.completed_at = datetime.now(UTC)

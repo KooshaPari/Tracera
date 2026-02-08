@@ -93,7 +93,7 @@ async def start_oauth_flow(
     data: dict[str, Any],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Start OAuth flow for an external integration provider.
 
     Generates authorization URL and state token for CSRF protection.
@@ -172,7 +172,7 @@ async def oauth_callback(
     data: dict[str, Any],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Handle OAuth callback and store credentials.
 
     Exchanges authorization code for access token and stores encrypted credentials.
@@ -207,7 +207,7 @@ async def list_credentials(
     include_global: bool = True,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """List integration credentials for a project or user.
 
     Args:
@@ -266,7 +266,7 @@ async def validate_credential(
     credential_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Validate an integration credential by testing API access.
 
     Args:
@@ -341,7 +341,7 @@ async def delete_credential(
     credential_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Delete an integration credential.
 
     Args:

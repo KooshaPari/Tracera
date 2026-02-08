@@ -32,7 +32,7 @@ async def list_notifications(
     limit: int = 20,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     user_id = claims.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="User not authenticated")
@@ -64,7 +64,7 @@ async def mark_as_read(
     notification_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     user_id = claims.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="User not authenticated")
@@ -90,7 +90,7 @@ async def mark_as_read(
 async def mark_all_as_read(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     user_id = claims.get("sub")
     if not await _notifications_table_exists(db):
         return {"status": "success"}

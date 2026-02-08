@@ -9,6 +9,13 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
+from tracertm.constants import (
+    HTTP_FORBIDDEN,
+    TIME_WINDOW_WEEK,
+    PERCENTAGE_MAX,
+    DECIMAL_PRECISION_DEFAULT,
+    ZERO,
+)
 from tracertm.models.integration import (
     IntegrationConflict,
     IntegrationCredential,
@@ -29,7 +36,7 @@ def ensure_project_access(project_id: str | None, claims: dict[str, Any] | None)
     if is_system_admin(claims):
         return
     if not check_project_access(claims.get("sub") if claims else None, project_id):
-        raise HTTPException(status_code=403, detail="Project access denied")
+        raise HTTPException(status_code=HTTP_FORBIDDEN, detail="Project access denied")
 
 
 def _build_provider_stats(credentials: list[IntegrationCredential]) -> list[dict[str, Any]]:
@@ -56,8 +63,8 @@ async def _get_mapping_stats(db: AsyncSession, project_id: str) -> dict[str, Any
         .group_by(IntegrationMapping.external_system, IntegrationMapping.status),
     )
 
-    total = 0
-    active = 0
+    total = ZERO
+    active = ZERO
     by_provider: dict[str, int] = {}
     for row in mapping_result.all():
         cnt: Any = row[2]
@@ -67,7 +74,7 @@ async def _get_mapping_stats(db: AsyncSession, project_id: str) -> dict[str, Any
         if str(status_val) == "active":
             active += int(cnt)
         ext_key = str(ext)
-        by_provider[ext_key] = by_provider.get(ext_key, 0) + int(cnt)
+        by_provider[ext_key] = by_provider.get(ext_key, ZERO) + int(cnt)
 
     return {"total": total, "active": active, "by_provider": by_provider}
 
@@ -86,7 +93,7 @@ async def _get_sync_stats(db: AsyncSession, project_id: str) -> dict[str, Any]:
     )
 
     # Recent sync logs (last 7 days)
-    week_ago = datetime.now(UTC) - timedelta(days=7)
+    week_ago = datetime.now(UTC) - timedelta(days=TIME_WINDOW_WEEK)
 
     sync_logs_result = await db.execute(
         select(
@@ -101,7 +108,7 @@ async def _get_sync_stats(db: AsyncSession, project_id: str) -> dict[str, Any]:
         .group_by(IntegrationSyncLog.success),
     )
 
-    sync_counts = {"total": 0, "success": 0}
+    sync_counts = {"total": ZERO, "success": ZERO}
     for row in sync_logs_result.all():
         cnt: Any = row[1]
         success_val: Any = row[0]
@@ -109,10 +116,10 @@ async def _get_sync_stats(db: AsyncSession, project_id: str) -> dict[str, Any]:
         if bool(success_val):
             sync_counts["success"] += int(cnt)
 
-    success_rate = round(sync_counts["success"] / sync_counts["total"] * 100, 1) if sync_counts["total"] > 0 else 0
+    success_rate = round(sync_counts["success"] / sync_counts["total"] * PERCENTAGE_MAX, DECIMAL_PRECISION_DEFAULT) if sync_counts["total"] > ZERO else ZERO
 
     return {
-        "queue_pending": queue_pending or 0,
+        "queue_pending": queue_pending or ZERO,
         "recent_syncs": sync_counts["total"],
         "success_rate": success_rate,
     }
@@ -130,7 +137,7 @@ async def _get_conflict_stats(db: AsyncSession, project_id: str) -> dict[str, in
         .group_by(IntegrationConflict.resolution_status),
     )
 
-    conflict_stats = {"pending": 0, "resolved": 0}
+    conflict_stats = {"pending": ZERO, "resolved": ZERO}
     for row in conflict_result.all():
         cnt: Any = row[1]
         status_val: Any = row[0]

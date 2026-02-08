@@ -5,29 +5,9 @@ import type { Item, ItemStatus, Priority } from '@tracertm/types';
 import { useItem } from '@/hooks/useItems';
 import { useLinks } from '@/hooks/useLinks';
 
-import {
-  reportAnalysisComplete,
-  reportDeleteFailure,
-  reportImpactComplete,
-  reportNoImpact,
-  reportNoRelationships,
-  reportSaveFailure,
-} from './actions';
-import { useItemMutations } from './item-mutations';
-import {
-  buildItemLink,
-  buildTimelineEvents,
-  createdAtLabel,
-  defaultViewTypeFromParams,
-  dimensionEntries,
-  filterMetadata,
-  metadataEntries,
-  readLinksFromResponse,
-  splitMetadata,
-  updatedAtLabel,
-} from './selectors';
-import { useSpecActions } from './spec-actions';
+import { itemDetailSelectors as selectors } from './selectors-facade';
 import { EMPTY_STRING, type DraftState, type ItemQueryState } from './types';
+import { useItemDetailViewModelActions } from './view-model-actions';
 
 const DEFAULT_STATUS: ItemStatus = 'todo';
 const DEFAULT_PRIORITY: Priority = 'medium';
@@ -58,17 +38,17 @@ interface ItemDetailViewModel {
   createdAtLabel: string;
   updatedAtLabel: string;
 
-  sourceLinks: ReturnType<typeof readLinksFromResponse>;
-  targetLinks: ReturnType<typeof readLinksFromResponse>;
+  sourceLinks: ReturnType<typeof selectors.readLinksFromResponse>;
+  targetLinks: ReturnType<typeof selectors.readLinksFromResponse>;
 
   metadataSearch: string;
   setMetadataSearch: (value: string) => void;
-  filteredMetadata: ReturnType<typeof filterMetadata>;
-  integrationMetadata: ReturnType<typeof splitMetadata>['integration'];
-  generalMetadata: ReturnType<typeof splitMetadata>['general'];
+  filteredMetadata: ReturnType<typeof selectors.filterMetadata>;
+  integrationMetadata: ReturnType<typeof selectors.splitMetadata>['integration'];
+  generalMetadata: ReturnType<typeof selectors.splitMetadata>['general'];
 
-  dimensionEntries: ReturnType<typeof dimensionEntries>;
-  timelineEvents: ReturnType<typeof buildTimelineEvents>;
+  dimensionEntries: ReturnType<typeof selectors.dimensionEntries>;
+  timelineEvents: ReturnType<typeof selectors.buildTimelineEvents>;
 
   buildLinkToItem: (id: string) => string;
 
@@ -144,8 +124,8 @@ function buildDisplayPriority(
 }
 
 interface LinksState {
-  sourceLinks: ReturnType<typeof readLinksFromResponse>;
-  targetLinks: ReturnType<typeof readLinksFromResponse>;
+  sourceLinks: ReturnType<typeof selectors.readLinksFromResponse>;
+  targetLinks: ReturnType<typeof selectors.readLinksFromResponse>;
   upstreamCount: number;
   downstreamCount: number;
 }
@@ -160,8 +140,14 @@ function useLinksState(item: Item | undefined, itemId: string | undefined): Link
     targetId: itemId,
   });
 
-  const sourceLinks = useMemo(() => readLinksFromResponse(sourceLinksData), [sourceLinksData]);
-  const targetLinks = useMemo(() => readLinksFromResponse(targetLinksData), [targetLinksData]);
+  const sourceLinks = useMemo(
+    () => selectors.readLinksFromResponse(sourceLinksData),
+    [sourceLinksData],
+  );
+  const targetLinks = useMemo(
+    () => selectors.readLinksFromResponse(targetLinksData),
+    [targetLinksData],
+  );
 
   return useMemo(() => {
     const upstreamCount = targetLinks.length;
@@ -173,9 +159,9 @@ function useLinksState(item: Item | undefined, itemId: string | undefined): Link
 interface MetadataState {
   metadataSearch: string;
   setMetadataSearch: (value: string) => void;
-  filteredMetadata: ReturnType<typeof filterMetadata>;
-  integrationMetadata: ReturnType<typeof splitMetadata>['integration'];
-  generalMetadata: ReturnType<typeof splitMetadata>['general'];
+  filteredMetadata: ReturnType<typeof selectors.filterMetadata>;
+  integrationMetadata: ReturnType<typeof selectors.splitMetadata>['integration'];
+  generalMetadata: ReturnType<typeof selectors.splitMetadata>['general'];
   metadataCount: number;
 }
 
@@ -186,16 +172,16 @@ function useMetadataState(item: Item | undefined): MetadataState {
     setMetadataSearchState(value);
   }, []);
 
-  const allMetadataEntries = useMemo(() => metadataEntries(item), [item]);
+  const allMetadataEntries = useMemo(() => selectors.metadataEntries(item), [item]);
   const metadataCount = allMetadataEntries.length;
 
   const filteredMetadata = useMemo(
-    () => filterMetadata(allMetadataEntries, metadataSearch),
+    () => selectors.filterMetadata(allMetadataEntries, metadataSearch),
     [allMetadataEntries, metadataSearch],
   );
 
   const { integration: integrationMetadata, general: generalMetadata } = useMemo(
-    () => splitMetadata(filteredMetadata),
+    () => selectors.splitMetadata(filteredMetadata),
     [filteredMetadata],
   );
 
@@ -301,188 +287,77 @@ export function useItemDetailViewModel(params: Params): ItemDetailViewModel {
   );
 
   const viewType = useMemo(
-    () => defaultViewTypeFromParams(viewTypeParam, item?.view),
+    () => selectors.defaultViewTypeFromParams(viewTypeParam, item?.view),
     [item?.view, viewTypeParam],
   );
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  const {
-    draft,
-    resetDraft,
-    setDraftTitle,
-    setDraftDescription,
-    setDraftOwner,
-    setDraftStatus,
-    setDraftPriority,
-  } = useDraftState(item);
+  const draftState = useDraftState(item);
+  const metadataState = useMetadataState(item);
+  const linksState = useLinksState(item, itemId);
 
-  const {
-    metadataSearch,
-    setMetadataSearch,
-    filteredMetadata,
-    integrationMetadata,
-    generalMetadata,
-    metadataCount,
-  } = useMetadataState(item);
-
-  const { sourceLinks, targetLinks, upstreamCount, downstreamCount } = useLinksState(item, itemId);
-
-  const dims = useMemo(() => dimensionEntries(item), [item]);
+  const dims = useMemo(() => selectors.dimensionEntries(item), [item]);
   const events = useMemo(
-    () => buildTimelineEvents(item, integrationMetadata),
-    [integrationMetadata, item],
+    () => selectors.buildTimelineEvents(item, metadataState.integrationMetadata),
+    [metadataState.integrationMetadata, item],
   );
-
-  const createdLabel = useMemo(() => createdAtLabel(item), [item]);
-  const updatedLabel = useMemo(() => updatedAtLabel(item), [item]);
+  const createdLabel = useMemo(() => selectors.createdAtLabel(item), [item]);
+  const updatedLabel = useMemo(() => selectors.updatedAtLabel(item), [item]);
 
   const displayStatus = useMemo(
-    () => buildDisplayStatus(isEditing, draft, item),
-    [draft, isEditing, item],
+    () => buildDisplayStatus(isEditing, draftState.draft, item),
+    [draftState.draft, isEditing, item],
   );
   const displayPriority = useMemo(
-    () => buildDisplayPriority(isEditing, draft, item),
-    [draft, isEditing, item],
+    () => buildDisplayPriority(isEditing, draftState.draft, item),
+    [draftState.draft, isEditing, item],
   );
 
-  const buildLinkToItem = useCallback(
-    (id: string): string => buildItemLink(projectId, viewType, id),
-    [projectId, viewType],
-  );
-
-  const handleBack = useCallback((): void => {
-    globalThis.history.back();
-  }, []);
-
-  const startEditing = useCallback((): void => {
-    setIsEditing(true);
-  }, []);
-
-  const cancelEditing = useCallback((): void => {
-    if (item) {
-      resetDraft();
-    }
-    setIsEditing(false);
-  }, [item, resetDraft]);
-
-  const { deleteItem, saveItem } = useItemMutations(item);
-  const { createSpec: createSpecAsync } = useSpecActions(item?.projectId);
-
-  const handleDelete = useCallback((): void => {
-    if (itemId === undefined) {
-      return;
-    }
-    const task = async (): Promise<void> => {
-      try {
-        await deleteItem(itemId);
-        handleBack();
-      } catch {
-        reportDeleteFailure();
-      }
-    };
-    task().catch(() => {});
-  }, [deleteItem, handleBack, itemId]);
-
-  const handleSave = useCallback((): void => {
-    if (itemId === undefined || item === undefined) {
-      return;
-    }
-    const task = async (): Promise<void> => {
-      try {
-        await saveItem({
-          id: itemId,
-          title: draft.title,
-          description: draft.description,
-          owner: draft.owner,
-          status: draft.status,
-          priority: draft.priority,
-        });
-        setIsEditing(false);
-      } catch {
-        reportSaveFailure();
-      }
-    };
-    task().catch(() => {});
-  }, [draft, item, itemId, saveItem]);
-
-  const handleRunAnalysis = useCallback((): void => {
-    if (sourceLinks.length === 0 && targetLinks.length === 0) {
-      reportNoRelationships();
-      return;
-    }
-    const total = sourceLinks.length + targetLinks.length;
-    reportAnalysisComplete(total);
-  }, [sourceLinks.length, targetLinks.length]);
-
-  const handleOpenImpactAnalysis = useCallback((): void => {
-    const impactCount = upstreamCount + downstreamCount;
-    if (impactCount === 0) {
-      reportNoImpact();
-      return;
-    }
-    reportImpactComplete(impactCount);
-  }, [downstreamCount, upstreamCount]);
-
-  const createSpec = useCallback(
-    (specType: string): void => {
-      const task = async (): Promise<void> => {
-        await createSpecAsync(specType, itemId);
-      };
-      task().catch(() => {});
-    },
-    [createSpecAsync, itemId],
-  );
-
-  return {
-    query,
+  const vmActions = useItemDetailViewModelActions({
     itemId,
     projectId,
     viewType,
+    item,
+    draft: draftState.draft,
+    resetDraft: draftState.resetDraft,
+    setIsEditing,
+    sourceLinks: linksState.sourceLinks,
+    targetLinks: linksState.targetLinks,
+    upstreamCount: linksState.upstreamCount,
+    downstreamCount: linksState.downstreamCount,
+  });
 
-    isEditing,
-    draft,
-
-    upstreamCount,
-    downstreamCount,
-    metadataCount,
-
-    displayStatus,
-    displayPriority,
-
-    createdAtLabel: createdLabel,
-    updatedAtLabel: updatedLabel,
-
-    sourceLinks,
-    targetLinks,
-
-    metadataSearch,
-    setMetadataSearch,
-    filteredMetadata,
-    integrationMetadata,
-    generalMetadata,
-
-    dimensionEntries: dims,
-    timelineEvents: events,
-
-    buildLinkToItem,
-
-    startEditing,
-    cancelEditing,
-
-    setDraftTitle,
-    setDraftDescription,
-    setDraftOwner,
-    setDraftStatus,
-    setDraftPriority,
-
-    handleBack,
-    handleDelete,
-    handleSave,
-    handleRunAnalysis,
-    handleOpenImpactAnalysis,
-
-    createSpec,
+  return {
+    query, itemId, projectId, viewType,
+    isEditing, draft: draftState.draft,
+    upstreamCount: linksState.upstreamCount,
+    downstreamCount: linksState.downstreamCount,
+    metadataCount: metadataState.metadataCount,
+    displayStatus, displayPriority,
+    createdAtLabel: createdLabel, updatedAtLabel: updatedLabel,
+    sourceLinks: linksState.sourceLinks,
+    targetLinks: linksState.targetLinks,
+    metadataSearch: metadataState.metadataSearch,
+    setMetadataSearch: metadataState.setMetadataSearch,
+    filteredMetadata: metadataState.filteredMetadata,
+    integrationMetadata: metadataState.integrationMetadata,
+    generalMetadata: metadataState.generalMetadata,
+    dimensionEntries: dims, timelineEvents: events,
+    buildLinkToItem: vmActions.buildLinkToItem,
+    startEditing: vmActions.startEditing,
+    cancelEditing: vmActions.cancelEditing,
+    setDraftTitle: draftState.setDraftTitle,
+    setDraftDescription: draftState.setDraftDescription,
+    setDraftOwner: draftState.setDraftOwner,
+    setDraftStatus: draftState.setDraftStatus,
+    setDraftPriority: draftState.setDraftPriority,
+    handleBack: vmActions.handleBack,
+    handleDelete: vmActions.handleDelete,
+    handleSave: vmActions.handleSave,
+    handleRunAnalysis: vmActions.handleRunAnalysis,
+    handleOpenImpactAnalysis: vmActions.handleOpenImpactAnalysis,
+    createSpec: vmActions.createSpec,
   };
 }
 

@@ -5,6 +5,8 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Any
 
+from sqlalchemy.exc import OperationalError
+
 from tracertm.clients.github_client import GitHubClient, IssueListParams, IssueUpdateParams
 from tracertm.clients.linear_client import LinearClient
 from tracertm.repositories.integration_repository import (
@@ -62,7 +64,7 @@ class IntegrationSyncProcessor:
             await self.mappings.update_sync_status(mapping.id, success=True, direction=direction)
             await self.queue.mark_completed(queue_item.id, int((time.monotonic() - started) * 1000))
             return {"status": "completed", "result": result}
-        except Exception as exc:
+        except (ValueError, KeyError, OperationalError) as exc:
             await self.logs.create(
                 mapping_id=mapping.id,
                 operation=queue_item.event_type,

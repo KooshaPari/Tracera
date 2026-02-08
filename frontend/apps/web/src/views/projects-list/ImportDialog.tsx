@@ -78,75 +78,100 @@ const readOptionalNumber = (record: Record<string, unknown>, key: string): numbe
   return undefined;
 };
 
-const parseCanonicalExport = (jsonText: string): CanonicalExport | undefined => {
-  let parsed: unknown = undefined;
+const safeJsonParse = (jsonText: string): unknown => {
   try {
-    parsed = JSON.parse(jsonText) as unknown;
+    return JSON.parse(jsonText) as unknown;
   } catch {
-    parsed = undefined;
+    return undefined;
   }
-  if (parsed === undefined) {
+};
+
+const parseCanonicalProject = (value: unknown): CanonicalExport['project'] | undefined => {
+  if (!isRecord(value)) {
     return undefined;
   }
 
-  if (!isRecord(parsed)) {
-    return undefined;
-  }
-
-  const projectRaw = parsed['project'];
-  const itemsRaw = parsed['items'];
-  const linksRaw = parsed['links'];
-  if (!isRecord(projectRaw) || !Array.isArray(itemsRaw) || !Array.isArray(linksRaw)) {
-    return undefined;
-  }
-
-  const projectId = readString(projectRaw, 'id');
-  const projectName = readString(projectRaw, 'name');
+  const projectId = readString(value, 'id');
+  const projectName = readString(value, 'name');
   if (projectId === undefined || projectName === undefined) {
     return undefined;
   }
 
+  const project: CanonicalExport['project'] = {
+    id: projectId,
+    name: projectName,
+  };
+  const description = readOptionalString(value, 'description');
+  if (description !== undefined) {
+    project.description = description;
+  }
+  const created_at = readOptionalString(value, 'created_at');
+  if (created_at !== undefined) {
+    project.created_at = created_at;
+  }
+  return project;
+};
+
+const parseCanonicalItem = (
+  value: unknown,
+): CanonicalExport['items'][number] | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const id = readString(value, 'id');
+  const title = readString(value, 'title');
+  const view = readString(value, 'view');
+  const type = readString(value, 'type');
+  const status = readString(value, 'status');
+  if (id === undefined || title === undefined || view === undefined || type === undefined || status === undefined) {
+    return undefined;
+  }
+
+  const canonicalItem: CanonicalExport['items'][number] = {
+    id,
+    status,
+    title,
+    type,
+    view,
+  };
+
+  const description = readOptionalString(value, 'description');
+  if (description !== undefined) {
+    canonicalItem.description = description;
+  }
+
+  const version = readOptionalNumber(value, 'version');
+  if (version !== undefined) {
+    canonicalItem.version = version;
+  }
+
+  return canonicalItem;
+};
+
+const parseCanonicalItems = (value: unknown): CanonicalExport['items'] | undefined => {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
   const items: CanonicalExport['items'] = [];
-  for (const itemValue of itemsRaw) {
-    if (!isRecord(itemValue)) {
+  for (const itemValue of value) {
+    const canonicalItem = parseCanonicalItem(itemValue);
+    if (canonicalItem === undefined) {
       return undefined;
-    }
-    const id = readString(itemValue, 'id');
-    const title = readString(itemValue, 'title');
-    const view = readString(itemValue, 'view');
-    const type = readString(itemValue, 'type');
-    const status = readString(itemValue, 'status');
-    if (
-      id === undefined ||
-      title === undefined ||
-      view === undefined ||
-      type === undefined ||
-      status === undefined
-    ) {
-      return undefined;
-    }
-
-    const description = readOptionalString(itemValue, 'description');
-    const version = readOptionalNumber(itemValue, 'version');
-
-    const canonicalItem: CanonicalExport['items'][number] = {
-      id,
-      status,
-      title,
-      type,
-      view,
-    };
-    if (description !== undefined) {
-      canonicalItem.description = description;
-    }
-    if (version !== undefined) {
-      canonicalItem.version = version;
     }
     items.push(canonicalItem);
   }
+  return items;
+};
+
+const parseCanonicalLinks = (value: unknown): CanonicalExport['links'] | undefined => {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
 
   const links: CanonicalExport['links'] = [];
-  for (const linkValue of linksRaw) {
+  for (const linkValue of value) {
     if (!isRecord(linkValue)) {
       return undefined;
     }
@@ -158,20 +183,21 @@ const parseCanonicalExport = (jsonText: string): CanonicalExport | undefined => 
     }
     links.push({ source_id, target_id, type });
   }
+  return links;
+};
 
-  const project: CanonicalExport['project'] = {
-    id: projectId,
-    name: projectName,
-  };
-  const description = readOptionalString(projectRaw, 'description');
-  if (description !== undefined) {
-    project.description = description;
-  }
-  const created_at = readOptionalString(projectRaw, 'created_at');
-  if (created_at !== undefined) {
-    project.created_at = created_at;
+const parseCanonicalExport = (jsonText: string): CanonicalExport | undefined => {
+  const parsed = safeJsonParse(jsonText);
+  if (!isRecord(parsed)) {
+    return undefined;
   }
 
+  const project = parseCanonicalProject(parsed['project']);
+  const items = parseCanonicalItems(parsed['items']);
+  const links = parseCanonicalLinks(parsed['links']);
+  if (project === undefined || items === undefined || links === undefined) {
+    return undefined;
+  }
   return { items, links, project };
 };
 
@@ -202,11 +228,76 @@ interface ImportDialogModel {
   showTargetProject: boolean;
 }
 
+interface ImportMutationVariables {
+  file: File;
+  mode: ImportMode;
+  targetProjectId: string | undefined;
+}
+
+interface ImportMutationResult {
+  importedCount: number;
+  linksImported?: number;
+  mode: ImportMode;
+}
+
+function useImportMutation(
+  onOpenChange: (open: boolean) => void,
+  clearImportFile: () => void,
+): ReturnType<typeof useMutation<ImportMutationResult, unknown, ImportMutationVariables>> {
+  return useMutation({
+    mutationFn: async ({
+      file,
+      mode,
+      targetProjectId,
+    }: ImportMutationVariables): Promise<ImportMutationResult> => {
+      const content = await file.text();
+      if (mode === 'full') {
+        const canonical = parseCanonicalExport(content);
+        if (canonical === undefined) {
+          throw new Error('Invalid canonical format: need project, items, and links');
+        }
+        const result = await exportImportApi.importFull(canonical);
+        return { importedCount: result.items_imported, linksImported: result.links_imported, mode };
+      }
+
+      if (typeof targetProjectId !== 'string' || targetProjectId.length === 0) {
+        throw new Error('Select a project to import into');
+      }
+      const result = await exportImportApi.import(targetProjectId, 'json', content);
+      return { importedCount: result.imported_count, mode };
+    },
+    onError: (error) => {
+      let message = 'Import integrity failure';
+      if (error instanceof Error) {
+        const { message: errorMessage } = error;
+        message = errorMessage;
+      }
+      toast.error(message);
+    },
+    onSuccess: ({ importedCount, linksImported, mode }: ImportMutationResult) => {
+      if (mode === 'full') {
+        let links = 0;
+        if (typeof linksImported === 'number') {
+          links = linksImported;
+        }
+        toast.success(`New project created: ${importedCount} items, ${links} links`);
+      } else {
+        toast.success(`Imported ${importedCount} nodes successfully`);
+      }
+      onOpenChange(false);
+      clearImportFile();
+    },
+  });
+}
+
 function renderImportDialogContent(
   model: ImportDialogModel,
   projects: Project[],
 ): JSX.Element {
-  const importLabel = model.isImporting ? 'Importing…' : 'Execute Ingestion';
+  let importLabel = 'Execute Ingestion';
+  if (model.isImporting) {
+    importLabel = 'Importing…';
+  }
 
   return (
     <DialogContent className='bg-card rounded-[2rem] border-none p-8 shadow-2xl'>
@@ -297,10 +388,18 @@ function useImportDialogModel({
     [importFile, importMode],
   );
 
-  const handleModeChange = useCallback((value: ImportMode): void => setImportMode(value), []);
+  const handleModeChange = useCallback((value: ImportMode): void => {
+    setImportMode(value);
+  }, []);
 
   const handleProjectChange = useCallback(
-    (value: string): void => setImportProjectId(value === EMPTY_STRING ? undefined : value),
+    (value: string): void => {
+      if (value === EMPTY_STRING) {
+        setImportProjectId(undefined);
+        return;
+      }
+      setImportProjectId(value);
+    },
     [],
   );
 
@@ -309,50 +408,11 @@ function useImportDialogModel({
     setImportFile(file);
   }, []);
 
-  const importMutation = useMutation({
-    mutationFn: async ({
-      file,
-      mode,
-      targetProjectId,
-    }: {
-      file: File;
-      mode: ImportMode;
-      targetProjectId: string | undefined;
-    }): Promise<{ importedCount: number; linksImported?: number; mode: ImportMode }> => {
-      const content = await file.text();
-      if (mode === 'full') {
-        const canonical = parseCanonicalExport(content);
-        if (canonical === undefined) {
-          throw new Error('Invalid canonical format: need project, items, and links');
-        }
-        const result = await exportImportApi.importFull(canonical);
-        return { importedCount: result.items_imported, linksImported: result.links_imported, mode };
-      }
+  const clearImportFile = useCallback((): void => {
+    setImportFile(undefined);
+  }, []);
 
-      if (typeof targetProjectId !== 'string' || targetProjectId.length === 0) {
-        throw new Error('Select a project to import into');
-      }
-      const result = await exportImportApi.import(targetProjectId, 'json', content);
-      return { importedCount: result.imported_count, mode };
-    },
-    onError: (error) => {
-      let message = 'Import integrity failure';
-      if (error instanceof Error) {
-        message = error.message;
-      }
-      toast.error(message);
-    },
-    onSuccess: ({ importedCount, linksImported, mode }) => {
-      if (mode === 'full') {
-        const links = typeof linksImported === 'number' ? linksImported : 0;
-        toast.success(`New project created: ${importedCount} items, ${links} links`);
-      } else {
-        toast.success(`Imported ${importedCount} nodes successfully`);
-      }
-      onOpenChange(false);
-      setImportFile(undefined);
-    },
-  });
+  const importMutation = useImportMutation(onOpenChange, clearImportFile);
 
   const showTargetProject = importMode === 'into-existing';
   const isImporting = importMutation.isPending;

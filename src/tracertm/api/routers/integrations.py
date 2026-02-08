@@ -76,7 +76,7 @@ async def start_oauth_flow(
     data: dict[str, Any],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Start OAuth flow for an external integration provider."""
     enforce_rate_limit(request, claims)
 
@@ -143,7 +143,7 @@ async def oauth_callback(
     data: dict[str, Any],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Handle OAuth callback and store credentials."""
     from tracertm.api.handlers.oauth import oauth_callback as oauth_callback_handler
 
@@ -164,9 +164,9 @@ async def list_credentials(
     request: Request,
     project_id: str | None = None,
     include_global: bool = True,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> dict[str, Any]:
     """List integration credentials for a project."""
     enforce_rate_limit(request, claims)
     if project_id:
@@ -214,7 +214,7 @@ async def validate_credential(
     credential_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Validate an integration credential."""
     enforce_rate_limit(request, claims)
 
@@ -278,7 +278,7 @@ async def delete_credential(
     credential_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Delete an integration credential."""
     enforce_rate_limit(request, claims)
 
@@ -305,9 +305,9 @@ async def list_mappings(
     request: Request,
     project_id: str,
     provider: str | None = None,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> dict[str, Any]:
     """List integration mappings for a project."""
     enforce_rate_limit(request, claims)
     ensure_project_access_fn(project_id, claims)
@@ -347,7 +347,7 @@ async def create_mapping(
     data: dict[str, Any],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Create a new integration mapping."""
     enforce_rate_limit(request, claims)
 
@@ -451,7 +451,7 @@ async def update_mapping(
     data: dict[str, Any],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Update an integration mapping."""
     enforce_rate_limit(request, claims)
 
@@ -506,7 +506,7 @@ async def delete_mapping(
     mapping_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Delete an integration mapping."""
     enforce_rate_limit(request, claims)
 
@@ -538,7 +538,7 @@ async def get_sync_status(
     project_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Get sync status summary for a project."""
     enforce_rate_limit(request, claims)
     ensure_project_access_fn(project_id, claims)
@@ -612,7 +612,7 @@ async def trigger_sync(
     data: dict[str, Any],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Trigger a manual sync for a mapping or credential."""
     enforce_rate_limit(request, claims)
 
@@ -667,9 +667,9 @@ async def get_sync_queue(
     project_id: str,
     status: str | None = None,
     limit: int = 50,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> dict[str, Any]:
     """Get sync queue items for a project."""
     enforce_rate_limit(request, claims)
     ensure_project_access_fn(project_id, claims)
@@ -712,9 +712,9 @@ async def list_conflicts(
     request: Request,
     project_id: str,
     status: str = "pending",
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
+    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
+) -> dict[str, Any]:
     """List sync conflicts for a project."""
     enforce_rate_limit(request, claims)
     ensure_project_access_fn(project_id, claims)
@@ -761,7 +761,7 @@ async def resolve_conflict(
     data: dict[str, Any],
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Resolve a sync conflict."""
     enforce_rate_limit(request, claims)
 

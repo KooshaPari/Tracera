@@ -133,7 +133,7 @@ class PluginService:
                 try:
                     result = callback(*args, **kwargs)
                     results.append(result)
-                except Exception as e:
+                except (ImportError, ModuleNotFoundError, AttributeError) as e:
                     results.append({"error": str(e)})
         return results
 

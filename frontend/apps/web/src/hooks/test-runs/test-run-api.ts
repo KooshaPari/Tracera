@@ -4,25 +4,8 @@ import { client } from '@/api/client';
 
 import type { CreateTestRunData, SubmitTestResultData, TestRunFilters } from './test-run-types';
 
-import {
-  asRecord,
-  getOptionalArray,
-  getOptionalNumber,
-  getRequiredArray,
-  getRequiredNumber,
-  type JsonRecord,
-} from './test-run-guards';
-import {
-  parseBulkSubmitResponse,
-  parseCancelResponse,
-  parseIdRunNumber,
-  parseIdStatusTimestamp,
-  parseIdVersion,
-  parseTestResult,
-  parseTestRun,
-  parseTestRunActivitiesResponse,
-  parseTestRunStats,
-} from './test-run-parsers';
+import { testRunGuards } from './test-run-guards';
+import { testRunParsers } from './test-run-parsers';
 
 const { getAuthHeaders } = client;
 
@@ -55,7 +38,7 @@ function buildTestRunsParams(filters: TestRunFilters): URLSearchParams {
   const params = new URLSearchParams();
   params.set('project_id', filters.projectId);
 
-  const stringParams: Array<{ key: string; value: string | undefined }> = [
+  const stringParams: { key: string; value: string | undefined }[] = [
     { key: 'status', value: filters.status },
     { key: 'run_type', value: filters.runType },
     { key: 'suite_id', value: filters.suiteId },
@@ -89,11 +72,11 @@ async function fetchTestRuns(filters: TestRunFilters): Promise<TestRunsResponse>
     },
   });
 
-  const data = asRecord(json, 'test runs response');
-  const rawRuns = getOptionalArray(data, 'test_runs') ?? [];
-  const total = getOptionalNumber(data, 'total') ?? 0;
+  const data = testRunGuards.asRecord(json, 'test runs response');
+  const rawRuns = testRunGuards.getOptionalArray(data, 'test_runs') ?? [];
+  const total = testRunGuards.getOptionalNumber(data, 'total') ?? 0;
   return {
-    testRuns: rawRuns.map((item: unknown) => parseTestRun(item)),
+    testRuns: rawRuns.map((item: unknown) => testRunParsers.parseTestRun(item)),
     total,
   };
 }
@@ -102,7 +85,7 @@ async function fetchTestRun(id: string): Promise<TestRun> {
   const json = await fetchJson(`${API_URL}/api/v1/test-runs/${id}`, {
     headers: getAuthHeaders(),
   });
-  return parseTestRun(json);
+  return testRunParsers.parseTestRun(json);
 }
 
 async function createTestRun(data: CreateTestRunData): Promise<{ id: string; runNumber: string }> {
@@ -127,7 +110,7 @@ async function createTestRun(data: CreateTestRunData): Promise<{ id: string; run
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     method: 'POST',
   });
-  return parseIdRunNumber(json);
+  return testRunParsers.parseIdRunNumber(json);
 }
 
 async function updateTestRun(
@@ -150,7 +133,7 @@ async function updateTestRun(
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     method: 'PUT',
   });
-  return parseIdVersion(json);
+  return testRunParsers.parseIdVersion(json);
 }
 
 async function startTestRun(
@@ -162,7 +145,7 @@ async function startTestRun(
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     method: 'POST',
   });
-  const parsed = parseIdStatusTimestamp(json);
+  const parsed = testRunParsers.parseIdStatusTimestamp(json);
   return { id: parsed.id, startedAt: parsed.startedAt, status: parsed.status };
 }
 
@@ -176,7 +159,7 @@ async function completeTestRun(
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     method: 'POST',
   });
-  const parsed = parseIdStatusTimestamp(json);
+  const parsed = testRunParsers.parseIdStatusTimestamp(json);
   return {
     completedAt: parsed.completedAt,
     id: parsed.id,
@@ -191,7 +174,7 @@ async function cancelTestRun(id: string, reason?: string): Promise<{ id: string;
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     method: 'POST',
   });
-  return parseCancelResponse(json);
+  return testRunParsers.parseCancelResponse(json);
 }
 
 async function deleteTestRun(id: string): Promise<void> {
@@ -224,7 +207,7 @@ async function submitTestResult(runId: string, data: SubmitTestResultData): Prom
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     method: 'POST',
   });
-  return parseTestResult(json);
+  return testRunParsers.parseTestResult(json);
 }
 
 async function submitBulkTestResults(
@@ -250,16 +233,16 @@ async function submitBulkTestResults(
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     method: 'POST',
   });
-  return parseBulkSubmitResponse(json);
+  return testRunParsers.parseBulkSubmitResponse(json);
 }
 
 async function fetchTestRunResults(runId: string): Promise<TestResult[]> {
   const json = await fetchJson(`${API_URL}/api/v1/test-runs/${runId}/results`, {
     headers: getAuthHeaders(),
   });
-  const data = asRecord(json, 'test run results response');
-  const rawResults = getOptionalArray(data, 'results') ?? [];
-  return rawResults.map((item: unknown) => parseTestResult(item));
+  const data = testRunGuards.asRecord(json, 'test run results response');
+  const rawResults = testRunGuards.getOptionalArray(data, 'results') ?? [];
+  return rawResults.map((item: unknown) => testRunParsers.parseTestResult(item));
 }
 
 async function fetchTestRunActivities(
@@ -272,15 +255,31 @@ async function fetchTestRunActivities(
       headers: getAuthHeaders(),
     },
   );
-  return parseTestRunActivitiesResponse(json);
+  return testRunParsers.parseTestRunActivitiesResponse(json);
 }
 
 async function fetchTestRunStats(projectId: string): Promise<TestRunStats> {
   const json = await fetchJson(`${API_URL}/api/v1/projects/${projectId}/test-runs/stats`, {
     headers: getAuthHeaders(),
   });
-  return parseTestRunStats(json);
+  return testRunParsers.parseTestRunStats(json);
 }
+
+const testRunApi = {
+  cancelTestRun,
+  completeTestRun,
+  createTestRun,
+  deleteTestRun,
+  fetchTestRun,
+  fetchTestRunActivities,
+  fetchTestRunResults,
+  fetchTestRunStats,
+  fetchTestRuns,
+  startTestRun,
+  submitBulkTestResults,
+  submitTestResult,
+  updateTestRun,
+};
 
 export {
   cancelTestRun,
@@ -295,6 +294,8 @@ export {
   startTestRun,
   submitBulkTestResults,
   submitTestResult,
+  testRunApi,
   type BulkSubmitResponse,
   type TestRunsResponse,
+  updateTestRun,
 };

@@ -3,8 +3,10 @@
 import re
 from typing import Any, ClassVar
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
@@ -56,7 +58,7 @@ class CommitLinkingService:
                             "item_id": item.id,
                             "item_title": item.title,
                         })
-                except Exception as e:
+                except (ValueError, OperationalError) as e:
                     references["errors"].append(str(e))
 
         return references
@@ -104,7 +106,7 @@ class CommitLinkingService:
                 )
 
                 references["linked"].append(ref)
-            except Exception as e:
+            except (ValueError, ConcurrencyError, OperationalError) as e:
                 references["errors"].append(f"Failed to link {ref['reference']}: {e!s}")
 
         return references

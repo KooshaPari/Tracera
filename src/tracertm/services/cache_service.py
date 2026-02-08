@@ -7,6 +7,18 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
 
+from tracertm.constants import (
+    DEFAULT_POOL_SIZE,
+    HASH_SIZE_STANDARD,
+    TTL_VERY_SHORT,
+    TTL_SHORT,
+    TTL_MEDIUM,
+    TTL_STANDARD,
+    TTL_LONG,
+    TTL_EXTENDED,
+    ZERO,
+)
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -35,47 +47,47 @@ class CacheStats:
 # Cache configuration by data type
 CACHE_CONFIG = {
     "projects": {
-        "ttl": 600,  # 10 minutes - projects list rarely changes
+        "ttl": TTL_EXTENDED,  # 10 minutes - projects list rarely changes
         "prefix": "projects",
     },
     "project": {
-        "ttl": 300,  # 5 minutes - individual project
+        "ttl": TTL_LONG,  # 5 minutes - individual project
         "prefix": "project",
     },
     "items": {
-        "ttl": 60,  # 1 minute - items change more frequently
+        "ttl": TTL_SHORT,  # 1 minute - items change more frequently
         "prefix": "items",
     },
     "links": {
-        "ttl": 60,  # 1 minute - links change frequently
+        "ttl": TTL_SHORT,  # 1 minute - links change frequently
         "prefix": "links",
     },
     "graph": {
-        "ttl": 300,  # 5 minutes - graph is expensive to compute
+        "ttl": TTL_LONG,  # 5 minutes - graph is expensive to compute
         "prefix": "graph",
     },
     "graph_full": {
-        "ttl": 600,  # 10 minutes - full graph projection
+        "ttl": TTL_EXTENDED,  # 10 minutes - full graph projection
         "prefix": "graph_full",
     },
     "ancestors": {
-        "ttl": 300,  # 5 minutes - ancestry traversal
+        "ttl": TTL_LONG,  # 5 minutes - ancestry traversal
         "prefix": "ancestors",
     },
     "descendants": {
-        "ttl": 300,  # 5 minutes - descendant traversal
+        "ttl": TTL_LONG,  # 5 minutes - descendant traversal
         "prefix": "descendants",
     },
     "impact": {
-        "ttl": 180,  # 3 minutes - impact analysis is more volatile
+        "ttl": TTL_STANDARD,  # 3 minutes - impact analysis is more volatile
         "prefix": "impact",
     },
     "search": {
-        "ttl": 120,  # 2 minutes - search results
+        "ttl": TTL_MEDIUM,  # 2 minutes - search results
         "prefix": "search",
     },
     "system": {
-        "ttl": 30,  # 30 seconds - system status
+        "ttl": TTL_VERY_SHORT,  # 30 seconds - system status
         "prefix": "system",
     },
 }
@@ -102,7 +114,7 @@ class CacheService:
                 redis_url,
                 encoding="utf-8",
                 decode_responses=True,
-                max_connections=20,  # Connection pooling
+                max_connections=DEFAULT_POOL_SIZE,  # Connection pooling
             )
             logger.info("CacheService initialized with Redis at %s", redis_url)
         except Exception as e:
@@ -111,9 +123,9 @@ class CacheService:
             raise RedisUnavailableError(msg) from e
 
         self.stats = {
-            "hits": 0,
-            "misses": 0,
-            "evictions": 0,
+            "hits": ZERO,
+            "misses": ZERO,
+            "evictions": ZERO,
         }
 
     @classmethod
@@ -133,16 +145,16 @@ class CacheService:
         key_str = f"{prefix}:" + ":".join(key_parts) if key_parts else prefix
 
         # Hash for consistent key length (non-cryptographic use)
-        key_hash = hashlib.sha256(str(key_str).encode()).hexdigest()[:32]
+        key_hash = hashlib.sha256(str(key_str).encode()).hexdigest()[:HASH_SIZE_STANDARD]
         return f"tracertm:{prefix}:{key_hash}"
 
     def _get_ttl(self, cache_type: str) -> int:
         """Get TTL for cache type."""
-        config = CACHE_CONFIG.get(cache_type, {"ttl": 300})
-        ttl = config.get("ttl", 300)
+        config = CACHE_CONFIG.get(cache_type, {"ttl": TTL_LONG})
+        ttl = config.get("ttl", TTL_LONG)
         if isinstance(ttl, (int, float, str)):
             return int(ttl)
-        return 300
+        return TTL_LONG
 
     async def get(self, key: str) -> Any | None:
         """Get value from cache. Raises RedisUnavailableError on connection failure (required service)."""

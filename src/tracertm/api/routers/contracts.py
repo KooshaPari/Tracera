@@ -21,7 +21,7 @@ async def create_contract(
     contract: ContractCreate,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = ContractService(db)
     return await service.create_contract(
         project_id=contract.project_id,
@@ -41,7 +41,7 @@ async def get_contract(
     contract_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = ContractService(db)
     contract = await service.get_contract(contract_id)
     if not contract:
@@ -55,7 +55,7 @@ async def get_contract_activities(
     limit: Annotated[int, Query(description="Max activities to return")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     repo = EventRepository(db)
     events = await repo.get_by_entity(contract_id, limit=limit)
     activities = [
@@ -82,7 +82,7 @@ async def update_contract(
     updates: ContractUpdate,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = ContractService(db)
     update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
     updated_contract = await service.update_contract(contract_id, **update_data)
@@ -109,6 +109,6 @@ async def list_contracts(
     item_id: Annotated[str | None, Query(description="Filter by Item ID")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     service = ContractService(db)
     return await service.list_contracts(project_id, item_id)

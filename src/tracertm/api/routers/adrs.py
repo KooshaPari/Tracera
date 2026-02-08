@@ -21,7 +21,7 @@ async def create_adr(
     adr: ADRCreate,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = ADRService(db)
     return await service.create_adr(
         project_id=adr.project_id,
@@ -43,7 +43,7 @@ async def get_adr(
     adr_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = ADRService(db)
     adr = await service.get_adr(adr_id)
     if not adr:
@@ -57,7 +57,7 @@ async def get_adr_activities(
     limit: Annotated[int, Query(description="Max activities to return")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     repo = EventRepository(db)
     events = await repo.get_by_entity(adr_id, limit=limit)
     activities = [
@@ -84,7 +84,7 @@ async def update_adr(
     updates: ADRUpdate,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = ADRService(db)
     # Filter out None values
     update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
@@ -112,6 +112,6 @@ async def list_adrs(
     status: Annotated[str | None, Query(description="Filter by status")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     service = ADRService(db)
     return await service.list_adrs(project_id, status)

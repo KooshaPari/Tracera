@@ -154,6 +154,25 @@ function getSortedItems(
   });
 }
 
+const itemsTableFormatters = {
+  createViewTypeValue,
+  getFilterValue,
+  getItemOwnerLabel,
+  getItemTypeValue,
+  getLiveMessage,
+  getPriorityLabel,
+  getSearchMessage,
+  getSearchValue,
+  getSortedItems,
+  getSortAriaLabel,
+  getSortDirection,
+  getViewSegment,
+  getViewValue,
+  hasValue,
+} as const;
+
+export default itemsTableFormatters;
+
 export {
   createViewTypeValue,
   getFilterValue,
