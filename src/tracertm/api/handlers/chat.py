@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class SandboxStreamContext:
     """Bundled parameters for sandbox streaming."""
 
-    agent_service: Any
+    agent_service: AgentService
     messages: list[dict[str, str]]
     session_id: str | None
     options: Any
@@ -31,7 +31,7 @@ class SandboxStreamContext:
     sandbox_config: Any | None
 
 
-def _get_agent_service(request: Request | None = None) -> Any:
+def _get_agent_service(request: Request | None = None) -> AgentService:
     """Get agent service from app state or global singleton.
 
     Args:
@@ -47,7 +47,7 @@ def _get_agent_service(request: Request | None = None) -> Any:
     return get_agent_service()
 
 
-def _build_sandbox_config(request_body: ChatRequest) -> Any | None:
+def _build_sandbox_config(request_body: ChatRequest) -> dict[str, Any] | None:
     """Build sandbox configuration from chat request.
 
     Args:
@@ -63,7 +63,7 @@ def _build_sandbox_config(request_body: ChatRequest) -> Any | None:
     return None
 
 
-def _build_stream_chat_options(request_body: ChatRequest) -> Any:
+def _build_stream_chat_options(request_body: ChatRequest) -> dict[str, Any]:
     """Build StreamChatOptions from request body.
 
     Args:
@@ -269,7 +269,7 @@ async def stream_chat(
 
 
 async def _chat_with_agent_sandbox(
-    agent_service: Any,
+    agent_service: AgentService,
     messages: list[dict[str, str]],
     session_id: str | None,
     db_session: AsyncSession,
