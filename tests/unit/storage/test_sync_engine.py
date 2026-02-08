@@ -646,7 +646,7 @@ class TestSyncEngineErrorHandling:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_partial_sync_failure(self, sync_db, mock_api_client) -> None:
+    async def test_partial_sync_failure(self, sync_db, mock_api_client) -> None:  # noqa: ARG002
         """TC-SE.3.5: Partial Sync Failure - Some Items Succeed.
 
         Given: Multiple items to sync

@@ -43,7 +43,7 @@ def temp_project(runner, tmp_path, monkeypatch) -> str:
     return "test-project"
 
 
-def test_item_list_json_output(runner, temp_project) -> None:
+def test_item_list_json_output(runner, temp_project) -> None:  # noqa: ARG001
     """Test item list with JSON output (FR32)."""
     # Create test item
     create_result = runner.invoke(
@@ -76,7 +76,7 @@ def test_item_list_json_output(runner, temp_project) -> None:
         assert data["items"][0]["title"] == "JSON Test Item"
 
 
-def test_query_json_output(runner, temp_project) -> None:
+def test_query_json_output(runner, temp_project) -> None:  # noqa: ARG001
     """Test query with JSON output (FR32)."""
     # Create test item
     runner.invoke(
@@ -109,7 +109,7 @@ def test_query_json_output(runner, temp_project) -> None:
         assert data["count"] > 0
 
 
-def test_json_output_structure(runner, temp_project) -> None:
+def test_json_output_structure(runner, temp_project) -> None:  # noqa: ARG001
     """Test JSON output has correct structure."""
     # Create item with all fields
     runner.invoke(

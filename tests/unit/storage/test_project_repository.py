@@ -65,7 +65,7 @@ class TestProjectRepository:
             assert storage_instance is not None
 
     @pytest.mark.asyncio
-    async def test_basic_crud_operations(self, storage_instance, mock_db_session) -> None:
+    async def test_basic_crud_operations(self, storage_instance, mock_db_session) -> None:  # noqa: ARG002
         """Test basic CRUD operations."""
         if storage_instance is None:
             pytest.skip("Storage class not found or cannot be instantiated")

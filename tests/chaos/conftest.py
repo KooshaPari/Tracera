@@ -4,7 +4,8 @@ import asyncio
 import logging
 import os
 import time
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Callable, Generator
+from typing import Any
 
 import httpx
 import pytest
@@ -197,13 +198,13 @@ async def redis_client(redis_proxy: str) -> AsyncGenerator[redis.Redis, None]:
     await client.aclose()
 
 
-def measure_recovery_time(func):
+def measure_recovery_time(func: Callable[..., Any]):
     """Decorator to measure service recovery time after chaos injection.
 
     Fails the test if recovery takes longer than RECOVERY_TIME_TARGET.
     """
 
-    async def wrapper(*args, **kwargs):
+    async def wrapper(*args: Any, **kwargs: Any):
         start_time = time.time()
         result = await func(*args, **kwargs)
         recovery_time = time.time() - start_time

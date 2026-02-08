@@ -1049,7 +1049,7 @@ class TestStressConditions:
         results = []
         errors = []
 
-        def quick_operation(op_id: int) -> None:
+        def quick_operation(op_id: int) -> None:  # noqa: ARG001
             try:
                 for _ in range(5):
                     session = SessionLocal()
@@ -1203,7 +1203,7 @@ class TestConcurrencyReport:
         errors = []
         start_time = time.time()
 
-        def operation(op_id: int) -> None:
+        def operation(op_id: int) -> None:  # noqa: ARG001
             session = SessionLocal()
             try:
                 # Simple operation

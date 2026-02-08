@@ -191,7 +191,7 @@ class TestBrowserAppTreeNavigation:
     @patch("tracertm.tui.apps.browser.ConfigManager")
     @patch("tracertm.tui.apps.browser.DatabaseConnection")
     @patch("tracertm.tui.apps.browser.Session")
-    def test_add_children_recursive(self, mock_session_class, mock_db_class, mock_config_manager) -> None:
+    def test_add_children_recursive(self, mock_session_class, mock_db_class, mock_config_manager) -> None:  # noqa: ARG002
         """Test _add_children recursively adds child items."""
         project_id = str(uuid4())
         mock_config = MagicMock()
@@ -464,7 +464,7 @@ class TestBrowserAppErrorHandling:
     """Test error handling scenarios."""
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_handles_missing_textual(self, mock_config_manager) -> None:
+    def test_handles_missing_textual(self, mock_config_manager) -> None:  # noqa: ARG002
         """Test browser handles missing Textual dependency."""
         # This test validates the import guard works
         assert TEXTUAL_AVAILABLE is True  # In test environment

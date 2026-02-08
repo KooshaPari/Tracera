@@ -812,7 +812,7 @@ Test Item,EPIC,feature,Description here,in_progress,high,user@example.com,PARENT
         assert sample["priority"] == "high"
         assert sample["owner"] == "user@example.com"
 
-    def test_bulk_create_items_skip_invalid_rows(self, service, mock_session) -> None:
+    def test_bulk_create_items_skip_invalid_rows(self, service, mock_session) -> None:  # noqa: ARG002
         """TC-BOS-E16: Create skips invalid rows and continues.
 
         Given: CSV has mix of valid and invalid rows
@@ -830,7 +830,7 @@ Another Valid,STORY,task
         # Should create valid items only
         assert result["items_created"] >= 1
 
-    def test_bulk_create_items_skip_json_decode_error(self, service, mock_session) -> None:
+    def test_bulk_create_items_skip_json_decode_error(self, service, mock_session) -> None:  # noqa: ARG002
         """TC-BOS-E17: Create skips rows with JSON decode errors.
 
         Given: CSV row has invalid JSON metadata
@@ -1048,7 +1048,7 @@ links:
 
         assert result == {}
 
-    def test_item_data_frontmatter_with_figma_fields(self, temp_dir) -> None:
+    def test_item_data_frontmatter_with_figma_fields(self, temp_dir) -> None:  # noqa: ARG002
         """TC-MP-E11: ItemData includes Figma fields in frontmatter.
 
         Given: ItemData has Figma-specific fields
@@ -1077,7 +1077,7 @@ links:
         assert fm["screens"] == ["Login", "Dashboard"]
         assert fm["implements"] == ["STORY-001"]
 
-    def test_item_data_markdown_body_wireframe_type(self, temp_dir) -> None:
+    def test_item_data_markdown_body_wireframe_type(self, temp_dir) -> None:  # noqa: ARG002
         """TC-MP-E12: Wireframe type generates Figma sections.
 
         Given: ItemData type is wireframe with Figma data
@@ -1106,7 +1106,7 @@ links:
         assert "## Screens" in body
         assert "- Login Page" in body
 
-    def test_item_data_markdown_body_wireframe_no_node_id(self, temp_dir) -> None:
+    def test_item_data_markdown_body_wireframe_no_node_id(self, temp_dir) -> None:  # noqa: ARG002
         """TC-MP-E13: Wireframe without node_id shows link only.
 
         Given: Wireframe has figma_url but no file_key/node_id

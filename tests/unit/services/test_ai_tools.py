@@ -879,7 +879,7 @@ class TestBinaryFileSkipping:
         assert matches[0]["file"] == "code.py"
 
     @pytest.mark.asyncio
-    async def test_search_skips_image_files(self, temp_dir) -> None:
+    async def test_search_skips_image_files(self, temp_dir) -> None:  # noqa: ARG002
         """search_files skips image extensions."""
         assert is_binary_file("image.png") is True
         assert is_binary_file("photo.jpg") is True

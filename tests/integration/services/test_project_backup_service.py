@@ -431,7 +431,7 @@ class TestRestoreProjectWorkflows:
 class TestCloneProjectVariations:
     """Test various clone project scenarios."""
 
-    def test_clone_with_items_and_links(self, sync_db_session, sample_project) -> None:
+    def test_clone_with_items_and_links(self, sync_db_session, sample_project) -> None:  # noqa: ARG002
         """Test clone with both items and links included."""
         service = ProjectBackupService(sync_db_session)
 
@@ -450,7 +450,7 @@ class TestCloneProjectVariations:
         cloned_links = sync_db_session.query(Link).filter(Link.project_id == cloned_id).all()
         assert len(cloned_links) == 4
 
-    def test_clone_without_links(self, sync_db_session, sample_project) -> None:
+    def test_clone_without_links(self, sync_db_session, sample_project) -> None:  # noqa: ARG002
         """Test clone with items but without links."""
         service = ProjectBackupService(sync_db_session)
 
@@ -469,7 +469,7 @@ class TestCloneProjectVariations:
         cloned_links = sync_db_session.query(Link).filter(Link.project_id == cloned_id).all()
         assert len(cloned_links) == 0
 
-    def test_clone_generates_new_item_ids(self, sync_db_session, sample_project) -> None:
+    def test_clone_generates_new_item_ids(self, sync_db_session, sample_project) -> None:  # noqa: ARG002
         """Test that cloned items have different IDs."""
         service = ProjectBackupService(sync_db_session)
 
@@ -647,7 +647,7 @@ class TestErrorHandlingAndEdgeCases:
         with pytest.raises(ValueError):
             service.clone_project("does-not-exist", "Clone Target")
 
-    def test_backup_and_restore_roundtrip_preserves_data(self, sync_db_session, sample_project) -> None:
+    def test_backup_and_restore_roundtrip_preserves_data(self, sync_db_session, sample_project) -> None:  # noqa: ARG002
         """Test backup-restore roundtrip with complex data."""
         service = ProjectBackupService(sync_db_session)
 

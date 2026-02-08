@@ -90,7 +90,7 @@ def sample_items(db_session, sample_project):
 
 
 @pytest.fixture(scope="function")
-def sample_links(db_session, sample_project, sample_items):
+def sample_links(db_session, sample_project, sample_items):  # noqa: ARG001
     """Create sample links."""
     links = []
     for i in range(1, 6):
@@ -143,7 +143,7 @@ class TestSimpleQueryOperations:
         assert item.id == sample_items[0].id
         assert item.title == "Item 1"
 
-    def test_get_all_items_in_project(self, db_session, sample_project, sample_items) -> None:
+    def test_get_all_items_in_project(self, db_session, sample_project, sample_items) -> None:  # noqa: ARG002
         """Test retrieving all items in project."""
         items = db_session.query(Item).filter_by(project_id=sample_project.id).all()
 
@@ -163,7 +163,7 @@ class TestSimpleQueryOperations:
         assert len(items) == 5
         assert all(item.view == "FEATURE" for item in items)
 
-    def test_get_links_by_project(self, db_session, sample_project, sample_links) -> None:
+    def test_get_links_by_project(self, db_session, sample_project, sample_links) -> None:  # noqa: ARG002
         """Test retrieving all links in project."""
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
 
@@ -771,7 +771,7 @@ class TestErrorHandling:
 class TestComplexQueryScenarios:
     """Tests for complex real-world query scenarios."""
 
-    def test_find_items_by_dependency_chain(self, db_session, sample_project, sample_links) -> None:
+    def test_find_items_by_dependency_chain(self, db_session, sample_project, sample_links) -> None:  # noqa: ARG002
         """Test finding items in dependency chain."""
         # Start with item-1 and follow dependencies
         start_id = "item-1"

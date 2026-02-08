@@ -62,7 +62,7 @@ def _engine(tmp_path, monkeypatch):
     """Create a SyncEngine with patched state + queue for isolated behavior."""
     storage = LocalStorageManager(base_dir=tmp_path / "lsm")
     # Avoid SA2 text() requirements for table bootstrap during init
-    monkeypatch.setattr("tracertm.storage.sync_engine.SyncQueue._ensure_tables", lambda self: None)
+    monkeypatch.setattr("tracertm.storage.sync_engine.SyncQueue._ensure_tables", lambda self: None)  # noqa: ARG005
 
     engine = SyncEngine(
         db_connection=storage,
@@ -165,7 +165,7 @@ async def test_sync_happy_path_aggregates_counts(tmp_path, monkeypatch) -> None:
     async def fake_upload():
         return SyncResult(success=True, entities_synced=2)
 
-    async def fake_pull(since=None):
+    async def fake_pull(since=None):  # noqa: ARG001
         return SyncResult(success=True, entities_synced=3, conflicts=[{"id": "c1"}])
 
     engine.detect_and_queue_changes = fake_detect  # type: ignore[assignment]
@@ -220,7 +220,7 @@ async def test_pull_changes_applies_remote_errors_are_collected(tmp_path, monkey
     # fake remote changes with one failing apply
     changes = [{"id": "c1"}, {"id": "c2"}]
 
-    async def fake_pull(since=None):
+    async def fake_pull(since=None):  # noqa: ARG001
         return SyncResult(success=True, entities_synced=0)
 
     async def apply(change) -> None:

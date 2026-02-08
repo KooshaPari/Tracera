@@ -25,7 +25,7 @@ def item_service(mock_session):
 class TestItemHierarchy:
     """Test suite for item hierarchy operations."""
 
-    async def test_get_children(self, item_service, mock_session) -> None:
+    async def test_get_children(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test retrieving item children."""
         parent_id = str(uuid.uuid4())
 
@@ -42,7 +42,7 @@ class TestItemHierarchy:
         assert all(c.parent_id == parent_id for c in result)
         item_service.items.get_children.assert_called_once_with(parent_id)
 
-    async def test_get_ancestors(self, item_service, mock_session) -> None:
+    async def test_get_ancestors(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test retrieving item ancestors."""
         item_id = str(uuid.uuid4())
 
@@ -58,7 +58,7 @@ class TestItemHierarchy:
         assert len(result) == 2
         item_service.items.get_ancestors.assert_called_once_with(item_id)
 
-    async def test_get_descendants(self, item_service, mock_session) -> None:
+    async def test_get_descendants(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test retrieving all descendants."""
         item_id = str(uuid.uuid4())
 

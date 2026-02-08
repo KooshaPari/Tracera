@@ -207,7 +207,7 @@ class TestBrowserAppComprehensive:
     @patch("tracertm.tui.apps.browser.ConfigManager")
     @patch("tracertm.tui.apps.browser.Session")
     @patch("tracertm.tui.apps.browser.Item")
-    def test_browser_refresh_tree_with_items(self, mock_item, mock_session_class, mock_config_manager) -> None:
+    def test_browser_refresh_tree_with_items(self, mock_item, mock_session_class, mock_config_manager) -> None:  # noqa: ARG002
         """Test refresh_tree populates tree with items."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -252,7 +252,7 @@ class TestBrowserAppComprehensive:
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     @patch("tracertm.tui.apps.browser.Session")
-    def test_browser_add_children_recursive(self, mock_session_class, mock_config_manager) -> None:
+    def test_browser_add_children_recursive(self, mock_session_class, mock_config_manager) -> None:  # noqa: ARG002
         """Test _add_children handles recursive tree building."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -319,7 +319,7 @@ class TestBrowserAppComprehensive:
     @patch("tracertm.tui.apps.browser.ConfigManager")
     @patch("tracertm.tui.apps.browser.Session")
     @patch("tracertm.tui.apps.browser.Item")
-    def test_browser_show_item_details_success(self, mock_item, mock_session_class, mock_config_manager) -> None:
+    def test_browser_show_item_details_success(self, mock_item, mock_session_class, mock_config_manager) -> None:  # noqa: ARG002
         """Test showing item details successfully."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -559,7 +559,7 @@ class TestDashboardAppComprehensive:
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
     @patch("tracertm.tui.apps.dashboard.Session")
-    def test_dashboard_setup_view_tree(self, mock_session, mock_config_manager) -> None:
+    def test_dashboard_setup_view_tree(self, mock_session, mock_config_manager) -> None:  # noqa: ARG002
         """Test view tree setup."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -579,7 +579,7 @@ class TestDashboardAppComprehensive:
     @patch("tracertm.tui.apps.dashboard.Session")
     @patch("tracertm.tui.apps.dashboard.Item")
     @patch("tracertm.tui.apps.dashboard.Link")
-    def test_dashboard_refresh_stats_success(self, mock_link, mock_item, mock_session_class, mock_config_manager) -> None:
+    def test_dashboard_refresh_stats_success(self, mock_link, mock_item, mock_session_class, mock_config_manager) -> None:  # noqa: ARG002
         """Test refresh statistics display."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -604,7 +604,7 @@ class TestDashboardAppComprehensive:
         mock_stats_table = MagicMock()
         mock_state_summary = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "stats-table" in selector:
                 return mock_stats_table
             if "state-summary" in selector:
@@ -638,7 +638,7 @@ class TestDashboardAppComprehensive:
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
     @patch("tracertm.tui.apps.dashboard.Session")
     @patch("tracertm.tui.apps.dashboard.Item")
-    def test_dashboard_refresh_items_success(self, mock_item, mock_session_class, mock_config_manager) -> None:
+    def test_dashboard_refresh_items_success(self, mock_item, mock_session_class, mock_config_manager) -> None:  # noqa: ARG002
         """Test refresh items table."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -845,7 +845,7 @@ class TestGraphAppComprehensive:
     @patch("tracertm.tui.apps.graph.Session")
     @patch("tracertm.tui.apps.graph.Item")
     @patch("tracertm.tui.apps.graph.Link")
-    def test_graph_load_graph_data_success(self, mock_link, mock_item, mock_session_class, mock_config_manager) -> None:
+    def test_graph_load_graph_data_success(self, mock_link, mock_item, mock_session_class, mock_config_manager) -> None:  # noqa: ARG002
         """Test loading graph data successfully."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -911,7 +911,7 @@ class TestGraphAppComprehensive:
     @patch("tracertm.tui.apps.graph.Session")
     @patch("tracertm.tui.apps.graph.Item")
     @patch("tracertm.tui.apps.graph.Link")
-    def test_graph_render_graph_success(self, mock_link, mock_item, mock_session_class, mock_config_manager) -> None:
+    def test_graph_render_graph_success(self, mock_link, mock_item, mock_session_class, mock_config_manager) -> None:  # noqa: ARG002
         """Test rendering graph successfully."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -956,7 +956,7 @@ class TestGraphAppComprehensive:
         mock_link_table = MagicMock()
         mock_stats = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "graph-canvas" in selector:
                 return mock_canvas
             if "link-table" in selector:

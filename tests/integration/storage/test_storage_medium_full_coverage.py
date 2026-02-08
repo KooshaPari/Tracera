@@ -966,7 +966,7 @@ class TestFileWatcher:
 class TestStorageIntegration:
     """Integration tests combining multiple storage components."""
 
-    def test_full_sync_cycle(self, sync_engine, sync_queue) -> None:
+    def test_full_sync_cycle(self, sync_engine, sync_queue) -> None:  # noqa: ARG002
         """Test complete sync cycle with queue."""
         # Queue some changes
         sync_engine.queue_change(SyncEntityType.ITEM, "item-1", OperationType.CREATE, {"title": "Item 1"})
@@ -1925,7 +1925,7 @@ class TestStorageHelper:
 
         assert "day" in result
 
-    def test_show_sync_status_display(self, capsys) -> None:
+    def test_show_sync_status_display(self, capsys) -> None:  # noqa: ARG002
         """Test show_sync_status displays status panel."""
         from tracertm.cli.storage_helper import reset_storage_manager, show_sync_status
 

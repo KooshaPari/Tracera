@@ -419,12 +419,12 @@ class TestHasCycleMethod:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_has_cycle_checks_link_type(self, service, mock_session) -> None:
+    def test_has_cycle_checks_link_type(self, service, mock_session) -> None:  # noqa: ARG002
         """Test has_cycle returns False for non-depends_on link types."""
         result = service.has_cycle("proj1", "A", "B", link_type="references")
         assert result is False
 
-    def test_has_cycle_checks_blocks_type(self, service, mock_session) -> None:
+    def test_has_cycle_checks_blocks_type(self, service, mock_session) -> None:  # noqa: ARG002
         """Test has_cycle returns False for 'blocks' link type."""
         result = service.has_cycle("proj1", "A", "B", link_type="blocks")
         assert result is False

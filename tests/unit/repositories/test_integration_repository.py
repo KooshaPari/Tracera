@@ -273,7 +273,7 @@ class TestIntegrationCredentialRepository:
         assert credentials[0].id == credential.id
 
     @pytest.mark.asyncio
-    async def test_get_by_project_with_provider_filter(self, credential_repo, project, credential) -> None:
+    async def test_get_by_project_with_provider_filter(self, credential_repo, project, credential) -> None:  # noqa: ARG002
         """Test filtering credentials by provider."""
         # Create a second credential with different provider
         await credential_repo.create(
@@ -315,7 +315,7 @@ class TestIntegrationCredentialRepository:
         assert len(credentials) == 2
 
     @pytest.mark.asyncio
-    async def test_get_by_project_empty(self, credential_repo, project) -> None:
+    async def test_get_by_project_empty(self, credential_repo, project) -> None:  # noqa: ARG002
         """Test getting credentials for project with none."""
         credentials = await credential_repo.get_by_project(str(uuid4()))
         assert len(credentials) == 0
@@ -685,7 +685,7 @@ class TestIntegrationMappingRepository:
     # get_by_tracertm_item() tests
     # -------------------------------------------------------------------------
     @pytest.mark.asyncio
-    async def test_get_by_tracertm_item(self, mapping_repo, mapping, item) -> None:
+    async def test_get_by_tracertm_item(self, mapping_repo, mapping, item) -> None:  # noqa: ARG002
         """Test getting mappings by TraceRTM item."""
         mappings = await mapping_repo.get_by_tracertm_item(item.id)
 
@@ -693,7 +693,7 @@ class TestIntegrationMappingRepository:
         assert mappings[0].tracertm_item_id == item.id
 
     @pytest.mark.asyncio
-    async def test_get_by_tracertm_item_multiple(self, mapping_repo, project, credential, item, mapping) -> None:
+    async def test_get_by_tracertm_item_multiple(self, mapping_repo, project, credential, item, mapping) -> None:  # noqa: ARG002
         """Test getting multiple mappings for same item."""
         # Create second mapping for same item
         await mapping_repo.create(
@@ -714,7 +714,7 @@ class TestIntegrationMappingRepository:
     # get_by_external_id() tests
     # -------------------------------------------------------------------------
     @pytest.mark.asyncio
-    async def test_get_by_external_id_found(self, mapping_repo, project, mapping) -> None:
+    async def test_get_by_external_id_found(self, mapping_repo, project, mapping) -> None:  # noqa: ARG002
         """Test getting mapping by external ID."""
         found = await mapping_repo.get_by_external_id(project.id, "issue/123")
 
@@ -753,7 +753,7 @@ class TestIntegrationMappingRepository:
         assert len(error_mappings) == 1
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_credential_filter(self, mapping_repo, project, credential, mapping) -> None:
+    async def test_list_by_project_with_credential_filter(self, mapping_repo, project, credential, mapping) -> None:  # noqa: ARG002
         """Test filtering mappings by credential."""
         mappings, total = await mapping_repo.list_by_project(project.id, credential_id=credential.id)
 
@@ -761,7 +761,7 @@ class TestIntegrationMappingRepository:
         assert total == 1
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_external_system_filter(self, mapping_repo, project, mapping) -> None:
+    async def test_list_by_project_with_external_system_filter(self, mapping_repo, project, mapping) -> None:  # noqa: ARG002
         """Test filtering mappings by external system."""
         mappings, _ = await mapping_repo.list_by_project(project.id, external_system="github")
 
@@ -769,7 +769,7 @@ class TestIntegrationMappingRepository:
         assert mappings[0].external_system == "github"
 
     @pytest.mark.asyncio
-    async def test_list_by_project_pagination(self, mapping_repo, project, credential, item, db_session) -> None:
+    async def test_list_by_project_pagination(self, mapping_repo, project, credential, item, db_session) -> None:  # noqa: ARG002
         """Test pagination of mappings."""
         from tracertm.models.item import Item
 
@@ -809,7 +809,7 @@ class TestIntegrationMappingRepository:
     # list_by_credential() tests
     # -------------------------------------------------------------------------
     @pytest.mark.asyncio
-    async def test_list_by_credential(self, mapping_repo, credential, mapping) -> None:
+    async def test_list_by_credential(self, mapping_repo, credential, mapping) -> None:  # noqa: ARG002
         """Test listing mappings by credential."""
         mappings = await mapping_repo.list_by_credential(credential.id)
 
@@ -947,7 +947,7 @@ class TestIntegrationSyncQueueRepository:
     # get_pending() tests
     # -------------------------------------------------------------------------
     @pytest.mark.asyncio
-    async def test_get_pending_returns_pending_items(self, sync_queue_repo, queue_item) -> None:
+    async def test_get_pending_returns_pending_items(self, sync_queue_repo, queue_item) -> None:  # noqa: ARG002
         """Test getting pending items."""
         pending = await sync_queue_repo.get_pending()
 
@@ -1029,7 +1029,7 @@ class TestIntegrationSyncQueueRepository:
     # list_by_project() tests
     # -------------------------------------------------------------------------
     @pytest.mark.asyncio
-    async def test_list_by_project(self, sync_queue_repo, project, queue_item) -> None:
+    async def test_list_by_project(self, sync_queue_repo, project, queue_item) -> None:  # noqa: ARG002
         """Test listing queue items by project."""
         items, total = await sync_queue_repo.list_by_project(project.id)
 
@@ -1037,7 +1037,7 @@ class TestIntegrationSyncQueueRepository:
         assert total >= 1
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_status_filter(self, sync_queue_repo, project, queue_item) -> None:
+    async def test_list_by_project_with_status_filter(self, sync_queue_repo, project, queue_item) -> None:  # noqa: ARG002
         """Test filtering queue items by status."""
         pending, _ = await sync_queue_repo.list_by_project(project.id, status="pending")
         completed, _ = await sync_queue_repo.list_by_project(project.id, status="completed")
@@ -1621,7 +1621,7 @@ class TestIntegrationRepositoryCrossRepository:
     @pytest.mark.asyncio
     async def test_full_sync_workflow(
         self,
-        credential_repo,
+        credential_repo,  # noqa: ARG002
         mapping_repo,
         sync_queue_repo,
         sync_log_repo,
@@ -1691,7 +1691,7 @@ class TestIntegrationRepositoryCrossRepository:
         project,
         credential,
         item,
-        db_session,
+        db_session,  # noqa: ARG002
     ) -> None:
         """Test conflict detection and resolution workflow."""
         # 1. Create mapping

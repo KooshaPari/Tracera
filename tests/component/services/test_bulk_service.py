@@ -14,7 +14,7 @@ async def test_preview_bulk_update_warns_on_large_operation(async_session, monke
 
     fake_items = [SimpleNamespace(id=f"item-{i}", title=f"Item {i}", status="todo", version=1) for i in range(120)]
 
-    async def fake_query(project_id, filters):
+    async def fake_query(project_id, filters):  # noqa: ARG001
         return fake_items
 
     monkeypatch.setattr(service.items, "query", fake_query)
@@ -38,10 +38,10 @@ async def test_execute_bulk_update_handles_conflicts_and_logs(async_session, mon
     item_ok = SimpleNamespace(id="ok", version=1, status="todo")
     item_conflict = SimpleNamespace(id="conflict", version=2, status="todo")
 
-    async def fake_query(project_id, filters):
+    async def fake_query(project_id, filters):  # noqa: ARG001
         return [item_ok, item_conflict]
 
-    async def fake_update(item_id, expected_version, **updates):
+    async def fake_update(item_id, expected_version, **updates):  # noqa: ARG001
         if item_id == "conflict":
             msg = "version mismatch"
             raise ConcurrencyError(msg)
@@ -82,7 +82,7 @@ async def test_execute_bulk_update_blocks_on_warnings(async_session, monkeypatch
         estimated_duration_ms=100,
     )
 
-    async def fake_preview_fn(project_id, filters, updates):
+    async def fake_preview_fn(project_id, filters, updates):  # noqa: ARG001
         return fake_preview
 
     monkeypatch.setattr(service, "preview_bulk_update", fake_preview_fn)

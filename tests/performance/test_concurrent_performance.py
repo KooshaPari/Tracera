@@ -216,7 +216,7 @@ def test_concurrent_query_100_items_10_threads(benchmark, perf_sync_db_engine) -
     finally:
         session.close()
 
-    def worker(thread_id: int) -> int:
+    def worker(thread_id: int) -> int:  # noqa: ARG001
         """Worker thread to query items."""
         from tracertm.models.item import Item
 

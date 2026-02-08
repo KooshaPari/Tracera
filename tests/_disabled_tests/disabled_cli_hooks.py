@@ -29,7 +29,7 @@ class TestCliHooks:
     @pytest.fixture
     def search_service(self):
         class MockSearchService:
-            async def semantic_search(self, *args, **kwargs):
+            async def semantic_search(self, *args, **kwargs):  # noqa: ARG002
                 return []
 
         return MockSearchService()

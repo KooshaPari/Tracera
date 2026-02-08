@@ -108,7 +108,7 @@ class TestTransactionRollbackOnFailure:
         # First execute succeeds (e.g., a SELECT), second one blows up mid-transaction
         call_count = 0
 
-        async def execute_side_effect(stmt, *args, **kwargs):
+        async def execute_side_effect(stmt, *args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count == 1:

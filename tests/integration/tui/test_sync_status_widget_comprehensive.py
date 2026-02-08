@@ -70,16 +70,16 @@ class TestSyncStatusWidgetIntegration:
         widget = SyncStatusWidget(classes="custom-class")
         assert "custom-class" in widget.classes
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: False))
-    def test_update_display_handles_unmounted_widget(self, mock_mounted) -> None:
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: False))  # noqa: ARG005
+    def test_update_display_handles_unmounted_widget(self, mock_mounted) -> None:  # noqa: ARG002
         """Test update_display gracefully handles unmounted widget."""
         widget = SyncStatusWidget()
         # Should not raise when not mounted
         widget.update_display()
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_update_display_handles_composition_exception(self, mock_query, mock_mounted) -> None:
+    def test_update_display_handles_composition_exception(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test update_display handles query_one exception gracefully."""
         widget = SyncStatusWidget()
         mock_query.side_effect = Exception("Widget not yet composed")
@@ -91,16 +91,16 @@ class TestSyncStatusWidgetIntegration:
 class TestStatusDisplay:
     """Tests for status display rendering."""
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_syncing_state(self, mock_query, mock_mounted) -> None:
+    def test_display_syncing_state(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget displays syncing state correctly."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -120,16 +120,16 @@ class TestStatusDisplay:
         mock_connection.add_class.assert_called_with("syncing")
         mock_connection.remove_class.assert_called()
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_online_state(self, mock_query, mock_mounted) -> None:
+    def test_display_online_state(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget displays online state correctly."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -149,16 +149,16 @@ class TestStatusDisplay:
         mock_connection.update.assert_called()
         mock_connection.add_class.assert_called_with("online")
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_offline_state(self, mock_query, mock_mounted) -> None:
+    def test_display_offline_state(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget displays offline state correctly."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -181,16 +181,16 @@ class TestStatusDisplay:
 class TestProgressUpdates:
     """Tests for progress and change tracking."""
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_pending_changes_plural(self, mock_query, mock_mounted) -> None:
+    def test_display_pending_changes_plural(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget displays multiple pending changes correctly."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -209,16 +209,16 @@ class TestProgressUpdates:
         assert "5" in call_args
         assert "pending" in call_args.lower()
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_pending_changes_singular(self, mock_query, mock_mounted) -> None:
+    def test_display_pending_changes_singular(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget uses singular form for 1 pending change."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -236,16 +236,16 @@ class TestProgressUpdates:
         call_args = str(mock_sync_info.update.call_args)
         assert "1" in call_args
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_no_pending_changes_shows_last_sync(self, mock_query, mock_mounted) -> None:
+    def test_display_no_pending_changes_shows_last_sync(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget shows last sync when no pending changes."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -265,16 +265,16 @@ class TestProgressUpdates:
         call_args = str(mock_sync_info.update.call_args)
         assert "Last sync" in call_args
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_never_synced(self, mock_query, mock_mounted) -> None:
+    def test_display_never_synced(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget shows 'Never synced' when no sync history."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -297,16 +297,16 @@ class TestProgressUpdates:
 class TestErrorRendering:
     """Tests for error state rendering and display."""
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_error_state(self, mock_query, mock_mounted) -> None:
+    def test_display_error_state(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget displays error state correctly."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -327,16 +327,16 @@ class TestErrorRendering:
         assert "Error" in call_args
         assert error_msg in call_args
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_error_takes_precedence_over_online(self, mock_query, mock_mounted) -> None:
+    def test_error_takes_precedence_over_online(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test error state takes precedence over online state."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -354,16 +354,16 @@ class TestErrorRendering:
         # Verify error is shown, not online
         mock_connection.add_class.assert_called_with("error")
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_clear_error(self, mock_query, mock_mounted) -> None:
+    def test_clear_error(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test clearing error message."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -386,16 +386,16 @@ class TestErrorRendering:
 class TestAnimationStates:
     """Tests for animation and state transition states."""
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_syncing_animation_indicator(self, mock_query, mock_mounted) -> None:
+    def test_syncing_animation_indicator(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test syncing state shows animation indicator."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -413,16 +413,16 @@ class TestAnimationStates:
         call_args = str(mock_connection.update.call_args)
         assert "⟳" in call_args or "Syncing" in call_args
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_syncing_takes_precedence_over_online(self, mock_query, mock_mounted) -> None:
+    def test_syncing_takes_precedence_over_online(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test syncing state takes precedence over online/offline."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -440,16 +440,16 @@ class TestAnimationStates:
         # Verify syncing state overrides online
         mock_connection.add_class.assert_called_with("syncing")
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_state_transition_syncing_to_online(self, mock_query, mock_mounted) -> None:
+    def test_state_transition_syncing_to_online(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test transition from syncing to online state."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -471,16 +471,16 @@ class TestAnimationStates:
         widget.update_display()
         assert "online" in str(mock_connection.add_class.call_args_list).lower()
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_state_transition_online_to_offline(self, mock_query, mock_mounted) -> None:
+    def test_state_transition_online_to_offline(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test transition from online to offline state."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -506,16 +506,16 @@ class TestAnimationStates:
 class TestConflictDisplay:
     """Tests for conflict state rendering."""
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_conflicts_plural(self, mock_query, mock_mounted) -> None:
+    def test_display_conflicts_plural(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget displays multiple conflicts correctly."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -535,16 +535,16 @@ class TestConflictDisplay:
         assert "3" in call_args
         assert "conflict" in call_args.lower()
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_display_conflicts_singular(self, mock_query, mock_mounted) -> None:
+    def test_display_conflicts_singular(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test widget uses singular form for 1 conflict."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -562,16 +562,16 @@ class TestConflictDisplay:
         call_args = str(mock_conflict_info.update.call_args)
         assert "1" in call_args
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_hide_conflicts_when_zero(self, mock_query, mock_mounted) -> None:
+    def test_hide_conflicts_when_zero(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test conflicts are hidden when count is zero."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -888,16 +888,16 @@ class TestCompactSyncStatusIntegration:
 class TestComplexScenarios:
     """Tests for complex state combinations and scenarios."""
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_scenario_sync_with_pending_changes(self, mock_query, mock_mounted) -> None:
+    def test_scenario_sync_with_pending_changes(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test syncing while having pending changes."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -915,16 +915,16 @@ class TestComplexScenarios:
         # Should show syncing, not pending changes
         mock_connection.add_class.assert_called_with("syncing")
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_scenario_error_with_pending_changes(self, mock_query, mock_mounted) -> None:
+    def test_scenario_error_with_pending_changes(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test error state while having pending changes."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -943,16 +943,16 @@ class TestComplexScenarios:
         # Should show error state
         mock_connection.add_class.assert_called_with("error")
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_scenario_offline_with_pending_changes(self, mock_query, mock_mounted) -> None:
+    def test_scenario_offline_with_pending_changes(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test offline state with pending changes."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":
@@ -970,16 +970,16 @@ class TestComplexScenarios:
         # Should show offline state
         mock_connection.add_class.assert_called_with("offline")
 
-    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))
+    @patch.object(SyncStatusWidget, "is_mounted", new_callable=lambda: property(lambda s: True))  # noqa: ARG005
     @patch.object(SyncStatusWidget, "query_one")
-    def test_scenario_full_sync_cycle(self, mock_query, mock_mounted) -> None:
+    def test_scenario_full_sync_cycle(self, mock_query, mock_mounted) -> None:  # noqa: ARG002
         """Test complete sync cycle: offline -> syncing -> online."""
         widget = SyncStatusWidget()
         mock_connection = MagicMock()
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if selector == "#connection-status":
                 return mock_connection
             if selector == "#sync-info":

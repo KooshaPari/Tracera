@@ -520,7 +520,7 @@ class TestSyncEngine:
     """Test sync engine core functionality."""
 
     @pytest.fixture
-    def sync_engine(self, mock_db_connection, temp_dir):
+    def sync_engine(self, mock_db_connection, temp_dir):  # noqa: ARG002
         """Create sync engine for testing."""
         api_client = Mock()
         storage_manager = Mock()
@@ -1014,7 +1014,7 @@ class TestConflictResolver:
 
         assert conflict is None
 
-    def test_resolve_last_write_wins_remote_newer(self, conflict_resolver, temp_dir) -> None:
+    def test_resolve_last_write_wins_remote_newer(self, conflict_resolver, temp_dir) -> None:  # noqa: ARG002
         """Test resolution with last write wins - remote newer."""
         earlier = datetime.now(UTC)
         later = earlier + timedelta(seconds=1)

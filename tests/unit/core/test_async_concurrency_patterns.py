@@ -1055,7 +1055,7 @@ class TestAsyncIntegrationPatterns:
         max_active = 0
         semaphore = asyncio.Semaphore(2)
 
-        async def resource_user(user_id: int) -> None:
+        async def resource_user(user_id: int) -> None:  # noqa: ARG001
             nonlocal active_count, max_active
             async with semaphore:
                 active_count += 1

@@ -42,7 +42,7 @@ def temp_project(runner, tmp_path, monkeypatch) -> str:
     return "test-project"
 
 
-def test_cycle_prevention_on_link_creation(runner, temp_project) -> None:
+def test_cycle_prevention_on_link_creation(runner, temp_project) -> None:  # noqa: ARG001
     """Test that cycle prevention prevents creating circular dependencies (FR22)."""
     # Create items
     result1 = runner.invoke(
@@ -105,7 +105,7 @@ def test_cycle_prevention_on_link_creation(runner, temp_project) -> None:
     assert "Circular dependency" in result4.stdout or "cycle" in result4.stdout.lower()
 
 
-def test_cycle_detection_command(runner, temp_project) -> None:
+def test_cycle_detection_command(runner, temp_project) -> None:  # noqa: ARG001
     """Test cycle detection command (FR22)."""
     # Create items and links that form a cycle
     # This test verifies the detect-cycles command works
@@ -116,7 +116,7 @@ def test_cycle_detection_command(runner, temp_project) -> None:
     assert "No cycles detected" in result.stdout or "cycle" in result.stdout.lower()
 
 
-def test_cycle_detection_service(runner, temp_project, tmp_path, monkeypatch) -> None:
+def test_cycle_detection_service(runner, temp_project, tmp_path, monkeypatch) -> None:  # noqa: ARG001
     """Test cycle detection service directly."""
     from tracertm.config.manager import ConfigManager
 

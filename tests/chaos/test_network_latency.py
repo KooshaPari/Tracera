@@ -25,7 +25,7 @@ RECOVERY_TARGET = 30
 @pytest.mark.slow
 async def test_database_latency_injection(
     toxiproxy_client: ToxiproxyClient,
-    postgres_proxy: str,
+    postgres_proxy: str,  # noqa: ARG001
     db_session,
     assert_recovery_within_target,
 ) -> None:
@@ -82,7 +82,7 @@ async def test_database_latency_injection(
 @pytest.mark.slow
 async def test_redis_latency_injection(
     toxiproxy_client: ToxiproxyClient,
-    redis_proxy: str,
+    redis_proxy: str,  # noqa: ARG001
     redis_client: redis.Redis,
     assert_recovery_within_target,
 ) -> None:
@@ -195,7 +195,7 @@ async def test_backend_api_latency(
 @pytest.mark.slow
 async def test_variable_latency_spikes(
     toxiproxy_client: ToxiproxyClient,
-    postgres_proxy: str,
+    postgres_proxy: str,  # noqa: ARG001
     db_session,
 ) -> None:
     """Test: Variable latency spikes (simulates intermittent network issues).

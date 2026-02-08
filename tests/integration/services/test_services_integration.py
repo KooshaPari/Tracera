@@ -281,7 +281,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_update_preview_by_view(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Items in different views
         When: Preview bulk update filtered by view
@@ -302,7 +302,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_update_preview_by_status(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Items with different statuses
         When: Preview bulk update filtered by status
@@ -321,7 +321,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_update_preview_by_priority(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Items with different priorities
         When: Preview bulk update filtered by priority
@@ -340,7 +340,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_update_preview_multiple_filters(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Items with various attributes
         When: Preview with multiple filters (view AND status)
@@ -388,7 +388,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_update_preview_mixed_status_warning(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Items with different statuses
         When: Preview status update
@@ -407,7 +407,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_update_preview_no_matches(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Items in database
         When: Preview with filters that match nothing
@@ -428,7 +428,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_update_items_status(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Multiple items with status 'todo'
         When: Execute bulk status update
@@ -468,7 +468,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_update_items_multiple_fields(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Items to update
         When: Execute bulk update with multiple field changes
@@ -504,7 +504,7 @@ class TestBulkOperationService:
             assert item.owner == "qa_agent"
 
     @pytest.mark.asyncio
-    async def test_bulk_update_items_rollback_on_error(self, test_project: Project, sync_db_session: Session) -> None:
+    async def test_bulk_update_items_rollback_on_error(self, test_project: Project, sync_db_session: Session) -> None:  # noqa: ARG002
         """Given: Bulk update operation
         When: An error occurs during update
         Then: Rolls back all changes.
@@ -521,7 +521,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_update_items_with_title_and_description(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Items with various titles
         When: Bulk update title and description
@@ -556,7 +556,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_delete_items_soft_delete(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Items to delete
         When: Execute bulk delete
@@ -595,7 +595,7 @@ class TestBulkOperationService:
 
     @pytest.mark.asyncio
     async def test_bulk_delete_items_by_view(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Items in specific view
         When: Bulk delete by view filter
@@ -610,7 +610,7 @@ class TestBulkOperationService:
         assert result["items_deleted"] == 2
 
     @pytest.mark.asyncio
-    async def test_bulk_delete_items_rollback_on_error(self, test_project: Project, sync_db_session: Session) -> None:
+    async def test_bulk_delete_items_rollback_on_error(self, test_project: Project, sync_db_session: Session) -> None:  # noqa: ARG002
         """Given: Bulk delete operation
         When: Error occurs
         Then: Rolls back all deletions.
@@ -855,7 +855,7 @@ Another Valid,CODE,class"""
 
     @pytest.mark.asyncio
     async def test_bulk_create_items_rollback_on_error(
-        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Bulk create operation
         When: Database error occurs
@@ -881,7 +881,7 @@ class TestExportImportService:
 
     @pytest.mark.asyncio
     async def test_export_to_json(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Project with items
         When: Export to JSON
@@ -920,7 +920,7 @@ class TestExportImportService:
 
     @pytest.mark.asyncio
     async def test_export_to_csv(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Project with items
         When: Export to CSV
@@ -948,7 +948,7 @@ class TestExportImportService:
 
     @pytest.mark.asyncio
     async def test_export_to_markdown(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Project with items in different views
         When: Export to Markdown
@@ -999,7 +999,7 @@ class TestExportImportService:
     # ========== Import Tests ==========
 
     @pytest.mark.asyncio
-    async def test_import_from_json(self, test_project: Project, sync_db_session: Session, db_session: AsyncSession) -> None:
+    async def test_import_from_json(self, test_project: Project, sync_db_session: Session, db_session: AsyncSession) -> None:  # noqa: ARG002
         """Given: Valid JSON import data
         When: Import from JSON
         Then: Creates items in database.
@@ -1043,7 +1043,7 @@ class TestExportImportService:
 
     @pytest.mark.asyncio
     async def test_import_from_json_invalid_format(
-        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Invalid JSON data
         When: Import from JSON
@@ -1061,7 +1061,7 @@ class TestExportImportService:
 
     @pytest.mark.asyncio
     async def test_import_from_json_missing_items_field(
-        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: JSON without 'items' field
         When: Import from JSON
@@ -1080,7 +1080,7 @@ class TestExportImportService:
         assert "Missing 'items'" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_import_from_csv(self, test_project: Project, sync_db_session: Session, db_session: AsyncSession) -> None:
+    async def test_import_from_csv(self, test_project: Project, sync_db_session: Session, db_session: AsyncSession) -> None:  # noqa: ARG002
         """Given: Valid CSV import data
         When: Import from CSV
         Then: Creates items in database.
@@ -1110,7 +1110,7 @@ CSV Import 2,CODE,class,done"""
 
     @pytest.mark.asyncio
     async def test_import_from_csv_invalid_format(
-        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Invalid CSV data
         When: Import from CSV
@@ -1131,7 +1131,7 @@ CSV Import 2,CODE,class,done"""
 
     @pytest.mark.asyncio
     async def test_import_from_csv_with_errors(
-        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: CSV with some invalid rows
         When: Import from CSV
@@ -1179,7 +1179,7 @@ class TestTraceabilityService:
 
     @pytest.mark.asyncio
     async def test_create_link_valid_items(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Two valid items
         When: Create traceability link
@@ -1208,7 +1208,7 @@ class TestTraceabilityService:
 
     @pytest.mark.asyncio
     async def test_create_link_source_not_found(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Nonexistent source item
         When: Create link
@@ -1226,7 +1226,7 @@ class TestTraceabilityService:
 
     @pytest.mark.asyncio
     async def test_create_link_target_not_found(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Nonexistent target item
         When: Create link
@@ -1249,8 +1249,8 @@ class TestTraceabilityService:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        test_items: list[Item],
-        test_links: list[Link],
+        test_items: list[Item],  # noqa: ARG002
+        test_links: list[Link],  # noqa: ARG002
     ) -> None:
         """Given: Items and links between views
         When: Generate traceability matrix
@@ -1279,7 +1279,7 @@ class TestTraceabilityService:
 
     @pytest.mark.asyncio
     async def test_generate_matrix_no_links(
-        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Items with no links between views
         When: Generate matrix
@@ -1333,8 +1333,8 @@ class TestTraceabilityService:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        test_items: list[Item],
-        test_links: list[Link],
+        test_items: list[Item],  # noqa: ARG002
+        test_links: list[Link],  # noqa: ARG002
     ) -> None:
         """Given: Matrix with some gaps
         When: Generate matrix
@@ -1361,7 +1361,7 @@ class TestTraceabilityService:
         self,
         db_session: AsyncSession,
         test_items: list[Item],
-        test_links: list[Link],
+        test_links: list[Link],  # noqa: ARG002
     ) -> None:
         """Given: Item with direct links
         When: Analyze impact
@@ -1386,7 +1386,7 @@ class TestTraceabilityService:
         db_session: AsyncSession,
         test_project: Project,
         test_items: list[Item],
-        test_links: list[Link],
+        test_links: list[Link],  # noqa: ARG002
     ) -> None:
         """Given: Chain of links (A->B->C)
         When: Analyze impact with depth=2
@@ -1833,7 +1833,7 @@ class TestEdgeCasesAndErrors:
 
     @pytest.mark.asyncio
     async def test_traceability_matrix_empty_views(
-        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession,  # noqa: ARG002
     ) -> None:
         """Given: Views with no items
         When: Generate matrix

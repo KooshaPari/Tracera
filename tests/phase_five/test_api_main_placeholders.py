@@ -60,7 +60,7 @@ def test_placeholder_managers_and_helpers() -> None:
     assert main.verify_token("placeholder-token")
     assert main.verify_refresh_token("placeholder-refresh-token")
     assert main.generate_access_token()
-    assert getattr(main, "verify_api_key", lambda *a, **k: True)()
+    assert getattr(main, "verify_api_key", lambda *a, **k: True)()  # noqa: ARG005
     assert main.check_permissions()
     assert main.check_project_access()
     assert main.check_permission()
@@ -89,7 +89,7 @@ def test_ensure_write_and_project_access_branches(monkeypatch) -> None:
     with pytest.raises(ValueError):
         main.ensure_write_permission({"role": "user"}, "update")
 
-    monkeypatch.setattr(main, "check_project_access", lambda *args, **kwargs: False)
+    monkeypatch.setattr(main, "check_project_access", lambda *args, **kwargs: False)  # noqa: ARG005
     with pytest.raises(ValueError):
         main.ensure_project_access("proj", {"sub": "abc"})
 
@@ -128,7 +128,7 @@ def test_auth_guard_paths(monkeypatch) -> None:
 
 def test_enforce_rate_limit(monkeypatch) -> None:
     # Force small limit to trigger rejection on second call
-    monkeypatch.setattr(main, "get_endpoint_limit", lambda *args, **kwargs: {"limit": 1})
+    monkeypatch.setattr(main, "get_endpoint_limit", lambda *args, **kwargs: {"limit": 1})  # noqa: ARG005
     getattr(main.enforce_rate_limit, "_counts", {}).clear()
     req = _req()
     main.enforce_rate_limit(req, {"sub": "user1"})
@@ -144,7 +144,7 @@ def test_enforce_rate_limit_whitelist(monkeypatch) -> None:
     main.enforce_rate_limit(req, {"sub": "user1"})
 
 
-def test_enforce_rate_limit_bypass(monkeypatch) -> None:
+def test_enforce_rate_limit_bypass(monkeypatch) -> None:  # noqa: ARG001
     getattr(main.enforce_rate_limit, "_counts", {}).clear()
     req = _req()
     main.enforce_rate_limit(req, {"bypass_rate_limit": True})
@@ -162,7 +162,7 @@ def test_auth_guard_requires_bearer(monkeypatch) -> None:
     # Force auth enabled and malformed bearer token (main may expose ConfigManager for tests)
     cm = getattr(main, "ConfigManager", None)
     if cm is not None:
-        monkeypatch.setattr(cm, "get", lambda self, key, default=None: True if key == "auth_enabled" else default)
+        monkeypatch.setattr(cm, "get", lambda self, key, default=None: True if key == "auth_enabled" else default)  # noqa: ARG005
     req = _req(headers={"Authorization": "Bearer a b"})
     with pytest.raises(ValueError):
         main.auth_guard(req)
@@ -173,7 +173,7 @@ async def test_get_db_errors(monkeypatch) -> None:
     # Missing database_url - get_db uses get_mcp_session from mcp.database_adapter which uses ConfigManager
     from tracertm.mcp import database_adapter as db_adapter
 
-    monkeypatch.setattr(db_adapter.ConfigManager, "get", lambda self, k, default=None: None)
+    monkeypatch.setattr(db_adapter.ConfigManager, "get", lambda self, k, default=None: None)  # noqa: ARG005
     with pytest.raises(HTTPException):
         await anext(main.get_db())
 
@@ -181,10 +181,10 @@ async def test_get_db_errors(monkeypatch) -> None:
     monkeypatch.setattr(
         db_adapter.ConfigManager,
         "get",
-        lambda self, k, default=None: "sqlite:///:memory:" if k == "database_url" else default,
+        lambda self, k, default=None: "sqlite:///:memory:" if k == "database_url" else default,  # noqa: ARG005
     )
 
-    def fail_connect(*args, **kwargs) -> Never:
+    def fail_connect(*args, **kwargs) -> Never:  # noqa: ARG001
         msg = "no connect"
         raise RuntimeError(msg)
 
@@ -291,7 +291,7 @@ async def test_get_db_success_closes(monkeypatch) -> None:
     from tracertm.config.manager import ConfigManager
 
     monkeypatch.setattr(
-        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default,
+        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default,  # noqa: ARG005
     )
     monkeypatch.setattr(main, "DatabaseConnection", FakeDB)  # type: ignore[attr-defined]
     agen = main.get_db()
@@ -405,9 +405,9 @@ def test_auth_guard_success(monkeypatch) -> None:
     from tracertm.config.manager import ConfigManager
 
     monkeypatch.setattr(
-        ConfigManager, "get", lambda self, key, default=None: True if key == "auth_enabled" else default,
+        ConfigManager, "get", lambda self, key, default=None: True if key == "auth_enabled" else default,  # noqa: ARG005
     )
-    monkeypatch.setattr(main, "verify_token", lambda token: {"sub": "user123", "role": "member"})
+    monkeypatch.setattr(main, "verify_token", lambda token: {"sub": "user123", "role": "member"})  # noqa: ARG005
     req = _req(headers={"Authorization": "Bearer goodtoken"})
     claims = main.auth_guard(req)
     assert claims["sub"] == "user123"
@@ -417,11 +417,11 @@ def test_enforce_rate_limit_limit_branch(monkeypatch) -> None:
     getattr(main.enforce_rate_limit, "_counts", {}).clear()  # type: ignore[attr-defined]
 
     class AlwaysAllow(main.RateLimiter):
-        def check_limit(self, *args, **kwargs) -> bool:
+        def check_limit(self, *args, **kwargs) -> bool:  # noqa: ARG002
             return True
 
     monkeypatch.setattr(main, "RateLimiter", AlwaysAllow)
-    monkeypatch.setattr(main, "get_endpoint_limit", lambda *args, **kwargs: {"limit": 0})
+    monkeypatch.setattr(main, "get_endpoint_limit", lambda *args, **kwargs: {"limit": 0})  # noqa: ARG005
     with pytest.raises(HTTPException):
         main.enforce_rate_limit(_req(), claims={"sub": "u1"})
 
@@ -430,7 +430,7 @@ def test_enforce_rate_limit_denied(monkeypatch) -> None:
     getattr(main.enforce_rate_limit, "_counts", {}).clear()  # type: ignore[attr-defined]
 
     class AlwaysDeny(main.RateLimiter):
-        def check_limit(self, *args, **kwargs) -> bool:
+        def check_limit(self, *args, **kwargs) -> bool:  # noqa: ARG002
             return False
 
     monkeypatch.setattr(main, "RateLimiter", AlwaysDeny)
@@ -457,7 +457,7 @@ async def test_get_db_sync_close(monkeypatch) -> None:
     from tracertm.config.manager import ConfigManager
 
     monkeypatch.setattr(
-        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default,
+        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default,  # noqa: ARG005
     )
     monkeypatch.setattr(main, "DatabaseConnection", FakeDB)  # type: ignore[attr-defined]
     agen = main.get_db()
@@ -482,7 +482,7 @@ async def test_get_db_no_close(monkeypatch) -> None:
     from tracertm.config.manager import ConfigManager
 
     monkeypatch.setattr(
-        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default,
+        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default,  # noqa: ARG005
     )
     monkeypatch.setattr(main, "DatabaseConnection", FakeDB)  # type: ignore[attr-defined]
     agen = main.get_db()
@@ -565,7 +565,7 @@ async def test_update_link_success(monkeypatch) -> None:
         async def flush(self) -> None:
             self.flushed = True
 
-        async def refresh(self, link) -> None:
+        async def refresh(self, link) -> None:  # noqa: ARG002
             self.refreshed = True
 
     monkeypatch.setattr(main.link_repository, "LinkRepository", Repo)
@@ -606,7 +606,7 @@ async def test_update_link_no_changes(monkeypatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_and_delete_item_endpoints(monkeypatch) -> None:
+async def test_create_and_delete_item_endpoints(monkeypatch) -> None:  # noqa: ARG001
     getattr(main.enforce_rate_limit, "_counts", {}).clear()  # type: ignore[attr-defined]
     payload = main.ItemCreate(title="Thing", view="view", project_id="p1", type="feature")
     create_resp = await main.create_item_endpoint(payload, claims={"role": "editor"}, db=None, request=_req())
@@ -617,7 +617,7 @@ async def test_create_and_delete_item_endpoints(monkeypatch) -> None:
 
 
 def test_refresh_access_token_success(monkeypatch) -> None:
-    monkeypatch.setattr(main, "verify_refresh_token", lambda token: {"sub": "user"})
+    monkeypatch.setattr(main, "verify_refresh_token", lambda token: {"sub": "user"})  # noqa: ARG005
     monkeypatch.setattr(
         main,
         "generate_access_token",
@@ -630,8 +630,8 @@ def test_refresh_access_token_success(monkeypatch) -> None:
 
 
 def test_refresh_access_token_string_token(monkeypatch) -> None:
-    monkeypatch.setattr(main, "verify_refresh_token", lambda token: True)
-    monkeypatch.setattr(main, "generate_access_token", lambda user_id=None: "abc123")
+    monkeypatch.setattr(main, "verify_refresh_token", lambda token: True)  # noqa: ARG005
+    monkeypatch.setattr(main, "generate_access_token", lambda user_id=None: "abc123")  # noqa: ARG005
     resp = asyncio.get_event_loop().run_until_complete(
         main.refresh_access_token_endpoint(payload={"refresh_token": "ok"}),
     )
@@ -654,13 +654,13 @@ async def test_project_endpoints_success_and_errors(monkeypatch) -> None:
         async def get_all(self):
             return [Project("p1"), Project("p2")]
 
-        async def get_by_id(self, pid) -> None:
+        async def get_by_id(self, pid) -> None:  # noqa: ARG002
             return None
 
-        async def create(self, name, description=None, metadata=None):
+        async def create(self, name, description=None, metadata=None):  # noqa: ARG002
             return Project("new")
 
-        async def update(self, project_id, **_kwargs) -> None:
+        async def update(self, project_id, **_kwargs) -> None:  # noqa: ARG002
             return None
 
     monkeypatch.setattr("tracertm.repositories.project_repository.ProjectRepository", Repo)

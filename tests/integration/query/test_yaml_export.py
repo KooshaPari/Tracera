@@ -49,7 +49,7 @@ def temp_project(runner, tmp_path, monkeypatch) -> str:
     return "test-project"
 
 
-def test_export_yaml_format(runner, temp_project) -> None:
+def test_export_yaml_format(runner, temp_project) -> None:  # noqa: ARG001
     """Test export to YAML format (FR30)."""
     # Create test items
     runner.invoke(
@@ -80,7 +80,7 @@ def test_export_yaml_format(runner, temp_project) -> None:
     assert yaml_data["items"][0]["title"] == "Test Feature"
 
 
-def test_export_yaml_to_file(runner, temp_project, tmp_path) -> None:
+def test_export_yaml_to_file(runner, temp_project, tmp_path) -> None:  # noqa: ARG001
     """Test export YAML to file."""
     # Create test item
     runner.invoke(
@@ -109,7 +109,7 @@ def test_export_yaml_to_file(runner, temp_project, tmp_path) -> None:
         assert len(yaml_data["items"]) > 0
 
 
-def test_export_yaml_includes_all_data(runner, temp_project) -> None:
+def test_export_yaml_includes_all_data(runner, temp_project) -> None:  # noqa: ARG001
     """Test YAML export includes all required fields."""
     # Create item with metadata
     runner.invoke(

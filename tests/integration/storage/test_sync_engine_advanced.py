@@ -559,7 +559,7 @@ class TestPartialSyncAndInterruptions:
     """Tests for handling partial syncs and interrupted synchronization."""
 
     @pytest.mark.asyncio
-    async def test_sync_with_partial_queue_processing(self, sync_engine, mock_api_client) -> None:
+    async def test_sync_with_partial_queue_processing(self, sync_engine, mock_api_client) -> None:  # noqa: ARG002
         """Test sync processes queue even if some items fail."""
         # Enqueue 5 changes
         for i in range(5):
@@ -570,7 +570,7 @@ class TestPartialSyncAndInterruptions:
         # Mock API to fail on every other request
         call_count = 0
 
-        async def side_effect(*args, **kwargs) -> bool:
+        async def side_effect(*args, **kwargs) -> bool:  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count % 2 == 0:
@@ -739,7 +739,7 @@ class TestErrorRecoveryAndRetryLogic:
         assert "DB Error" in state.last_error
 
     @pytest.mark.asyncio
-    async def test_recovery_from_network_error(self, sync_engine, mock_api_client) -> None:
+    async def test_recovery_from_network_error(self, sync_engine, mock_api_client) -> None:  # noqa: ARG002
         """Test recovery from network errors during upload."""
         sync_engine.queue_change(
             entity_type=EntityType.ITEM, entity_id="item-1", operation=OperationType.CREATE, payload={"title": "Test"},
@@ -1048,7 +1048,7 @@ class TestSyncResultsAndMetrics:
     """Tests for sync results and metrics."""
 
     @pytest.mark.asyncio
-    async def test_sync_result_aggregation(self, sync_engine) -> None:
+    async def test_sync_result_aggregation(self, sync_engine) -> None:  # noqa: ARG002
         """Test that sync results properly aggregate data."""
         result = SyncResult(
             success=True,

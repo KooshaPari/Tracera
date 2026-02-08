@@ -188,7 +188,7 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict = MagicMock()
 
         # Return appropriate mock based on selector ID
-        def mock_query_one(selector, *args):
+        def mock_query_one(selector, *args):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection
             if "sync-info" in selector:
@@ -219,7 +219,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync = MagicMock()
         mock_conflict = MagicMock()
 
-        def mock_query_one(selector, *args):
+        def mock_query_one(selector, *args):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection
             if "sync-info" in selector:
@@ -249,7 +249,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync = MagicMock()
         mock_conflict = MagicMock()
 
-        def mock_query_one(selector, *args):
+        def mock_query_one(selector, *args):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection
             if "sync-info" in selector:
@@ -278,7 +278,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync = MagicMock()
         mock_conflict = MagicMock()
 
-        def mock_query_one(selector, *args):
+        def mock_query_one(selector, *args):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection
             if "sync-info" in selector:
@@ -306,7 +306,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync = MagicMock()
         mock_conflict = MagicMock()
 
-        def mock_query_one(selector, *args):
+        def mock_query_one(selector, *args):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection
             if "sync-info" in selector:
@@ -335,7 +335,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync = MagicMock()
         mock_conflict = MagicMock()
 
-        def mock_query_one(selector, *args):
+        def mock_query_one(selector, *args):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection
             if "sync-info" in selector:

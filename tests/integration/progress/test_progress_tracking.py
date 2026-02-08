@@ -39,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch) -> str:
     return "test-project"
 
 
-def test_progress_calculation(temp_project, runner) -> None:
+def test_progress_calculation(temp_project, runner) -> None:  # noqa: ARG001
     """Test progress calculation (FR68)."""
     # Create parent and child items
     result1 = runner.invoke(
@@ -61,14 +61,14 @@ def test_progress_calculation(temp_project, runner) -> None:
     assert result2.exit_code == 0
 
 
-def test_progress_view(temp_project, runner) -> None:
+def test_progress_view(temp_project, runner) -> None:  # noqa: ARG001
     """Test PROGRESS view (FR69)."""
     # Show progress for view
     result = runner.invoke(app, ["progress", "show", "--view", "FEATURE"])
     assert result.exit_code == 0
 
 
-def test_blocked_items(temp_project, runner) -> None:
+def test_blocked_items(temp_project, runner) -> None:  # noqa: ARG001
     """Test blocked items detection (FR70)."""
     # Create items and blocking links
     # Then check blocked items
@@ -76,14 +76,14 @@ def test_blocked_items(temp_project, runner) -> None:
     assert result.exit_code == 0
 
 
-def test_stalled_items(temp_project, runner) -> None:
+def test_stalled_items(temp_project, runner) -> None:  # noqa: ARG001
     """Test stalled items detection (FR71)."""
     # Show stalled items
     result = runner.invoke(app, ["progress", "stalled"])
     assert result.exit_code == 0
 
 
-def test_velocity_tracking(temp_project, runner) -> None:
+def test_velocity_tracking(temp_project, runner) -> None:  # noqa: ARG001
     """Test velocity tracking (FR73)."""
     # Show velocity
     result = runner.invoke(app, ["progress", "velocity"])
@@ -91,7 +91,7 @@ def test_velocity_tracking(temp_project, runner) -> None:
     assert "velocity" in result.stdout.lower() or "items" in result.stdout.lower()
 
 
-def test_progress_report(temp_project, runner) -> None:
+def test_progress_report(temp_project, runner) -> None:  # noqa: ARG001
     """Test progress report generation (FR72)."""
     # Generate report
     result = runner.invoke(app, ["progress", "report", "--days", "7"])

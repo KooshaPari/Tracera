@@ -39,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch) -> str:
     return "test-project"
 
 
-def test_auto_link_from_commit_message(runner, temp_project) -> None:
+def test_auto_link_from_commit_message(runner, temp_project) -> None:  # noqa: ARG001
     """Test auto-linking from commit message (FR18)."""
     # Create a story item
     result1 = runner.invoke(

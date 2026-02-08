@@ -64,7 +64,7 @@ def mock_db_connection():
 
 
 @pytest.fixture
-def mock_session(mock_db_connection):
+def mock_session(mock_db_connection):  # noqa: ARG001
     """Mock database session with proper chaining - FIXED.
 
     Now uses a single persistent query chain that can be configured
@@ -96,7 +96,7 @@ def mock_session(mock_db_connection):
 
 
 @pytest.fixture
-def client(mock_config_manager, mock_session):
+def client(mock_config_manager, mock_session):  # noqa: ARG001
     """Create TraceRTMClient instance with mocked dependencies."""
     client = TraceRTMClient(agent_id="test-agent-1", agent_name="Test Agent")
     client._session = mock_session
@@ -106,7 +106,7 @@ def client(mock_config_manager, mock_session):
 class TestTraceRTMClientInitialization:
     """Test TraceRTMClient initialization and configuration."""
 
-    def test_init_with_agent_id_and_name(self, mock_config_manager) -> None:
+    def test_init_with_agent_id_and_name(self, mock_config_manager) -> None:  # noqa: ARG002
         """Test initialization with agent ID and name."""
         client = TraceRTMClient(agent_id="agent-123", agent_name="My Agent")
 
@@ -115,14 +115,14 @@ class TestTraceRTMClientInitialization:
         assert client._session is None
         assert client._db is None
 
-    def test_init_without_agent(self, mock_config_manager) -> None:
+    def test_init_without_agent(self, mock_config_manager) -> None:  # noqa: ARG002
         """Test initialization without agent credentials."""
         client = TraceRTMClient()
 
         assert client.agent_id is None
         assert client.agent_name is None
 
-    def test_get_session_creates_connection(self, mock_config_manager, mock_db_connection) -> None:
+    def test_get_session_creates_connection(self, mock_config_manager, mock_db_connection) -> None:  # noqa: ARG002
         """Test _get_session creates database connection."""
         with patch("tracertm.api.client.Session") as mock_session_cls:
             mock_session = MagicMock()
@@ -153,7 +153,7 @@ class TestTraceRTMClientInitialization:
             with pytest.raises(ValueError, match="Database not configured"):
                 client._get_session()
 
-    def test_get_project_id_success(self, client, mock_config_manager) -> None:
+    def test_get_project_id_success(self, client, mock_config_manager) -> None:  # noqa: ARG002
         """Test _get_project_id returns current project."""
         project_id = client._get_project_id()
         assert project_id == "test-project-123"
@@ -218,7 +218,7 @@ class TestTraceRTMClientAgentOperations:
             assert "agent_metadata" in call_kwargs
             assert call_kwargs["agent_metadata"]["assigned_projects"] == project_ids
 
-    def test_register_agent_with_metadata(self, client, mock_session) -> None:
+    def test_register_agent_with_metadata(self, client, mock_session) -> None:  # noqa: ARG002
         """Test agent registration with custom metadata."""
         mock_agent = MagicMock()
         mock_agent.id = "agent-meta"
@@ -481,7 +481,7 @@ class TestTraceRTMClientItemCRUD:
             mock_session.add.assert_called()  # May be called multiple times (item + event log)
             mock_session.commit.assert_called()
 
-    def test_create_item_full_fields(self, client, mock_session) -> None:
+    def test_create_item_full_fields(self, client, mock_session) -> None:  # noqa: ARG002
         """Test creating item with all fields populated."""
         mock_item = MagicMock(id="full-item")
 
@@ -507,7 +507,7 @@ class TestTraceRTMClientItemCRUD:
             assert call_kwargs["description"] == "A detailed description"
             assert call_kwargs["priority"] == "high"
 
-    def test_create_item_uppercases_view(self, client, mock_session) -> None:
+    def test_create_item_uppercases_view(self, client, mock_session) -> None:  # noqa: ARG002
         """Test view is uppercased during item creation."""
         mock_item = MagicMock(id="item-upper")
 
@@ -725,7 +725,7 @@ class TestTraceRTMClientExportImport:
                 # 2 items + 1 event from _log_operation = 3 add calls
                 assert mock_session.add.call_count == 3
 
-    def test_import_data_with_links(self, client, mock_session) -> None:
+    def test_import_data_with_links(self, client, mock_session) -> None:  # noqa: ARG002
         """Test importing both items and links."""
         data = {
             "items": [{"title": "Item", "view": "feature", "type": "feat"}],
@@ -744,7 +744,7 @@ class TestTraceRTMClientExportImport:
             assert result["items_created"] == 1
             assert result["links_created"] == 1
 
-    def test_import_data_empty(self, client, mock_session) -> None:
+    def test_import_data_empty(self, client, mock_session) -> None:  # noqa: ARG002
         """Test importing empty data."""
         data = {}
 
@@ -791,7 +791,7 @@ class TestTraceRTMClientBatchOperations:
         call_count = [0]
 
         # Need to create a fresh query chain for each query() call
-        def create_query_chain(*args, **kwargs):
+        def create_query_chain(*args, **kwargs):  # noqa: ARG001
             query_chain = MagicMock()
             if call_count[0] < len(mock_items):
                 query_chain.filter.return_value = query_chain
@@ -833,7 +833,7 @@ class TestTraceRTMClientBatchOperations:
         call_count = [0]
 
         # Need to create a fresh query chain for each query() call
-        def create_query_chain(*args, **kwargs):
+        def create_query_chain(*args, **kwargs):  # noqa: ARG001
             query_chain = MagicMock()
             if call_count[0] < len(mock_items):
                 query_chain.filter.return_value = query_chain
@@ -893,7 +893,7 @@ class TestTraceRTMClientAgentActivity:
             assert activity[0]["event_type"] == "item_created"
             assert activity[1]["event_type"] == "item_updated"
 
-    def test_get_agent_activity_no_agent_id(self, client, mock_session) -> None:
+    def test_get_agent_activity_no_agent_id(self, client, mock_session) -> None:  # noqa: ARG002
         """Test get_agent_activity returns empty list without agent ID."""
         client.agent_id = None
 
@@ -954,7 +954,7 @@ class TestTraceRTMClientAgentActivity:
         assert len(items) == 2
         assert items[0]["title"] == "Task 1"
 
-    def test_get_assigned_items_no_agent_id(self, client, mock_session) -> None:
+    def test_get_assigned_items_no_agent_id(self, client, mock_session) -> None:  # noqa: ARG002
         """Test get_assigned_items returns empty list without agent ID."""
         client.agent_id = None
 
@@ -1001,7 +1001,7 @@ class TestTraceRTMClientLogging:
         # Should not raise exception
         client._log_operation("test", "test", "test", {})
 
-    def test_log_operation_with_none_data(self, client, mock_session) -> None:
+    def test_log_operation_with_none_data(self, client, mock_session) -> None:  # noqa: ARG002
         """Test logging with None data converts to empty dict."""
         client.agent_id = "test-agent"
 
@@ -1016,7 +1016,7 @@ class TestTraceRTMClientLogging:
 class TestTraceRTMClientConnectionManagement:
     """Test connection lifecycle management."""
 
-    def test_close_closes_session_and_db(self, mock_config_manager) -> None:
+    def test_close_closes_session_and_db(self, mock_config_manager) -> None:  # noqa: ARG002
         """Test close method closes both session and connection."""
         with patch("tracertm.api.client.Session") as mock_session_cls:
             with patch("tracertm.api.client.DatabaseConnection") as mock_db_cls:

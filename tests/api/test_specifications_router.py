@@ -459,7 +459,7 @@ class TestProjectLevelEndpoints:
     """Test suite for project-level specification endpoints."""
 
     def test_get_specifications_summary(
-        self, client, auth_headers, project_id, adr_payload, contract_payload, feature_payload,
+        self, client, auth_headers, project_id, adr_payload, contract_payload, feature_payload,  # noqa: ARG002
     ) -> None:
         """Test getting specifications summary."""
         # Create some specifications

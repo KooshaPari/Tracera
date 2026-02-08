@@ -420,7 +420,7 @@ class TestAPIKeyListAndManagement:
 class TestAPIKeySecurityBestPractices:
     """Test API key security best practices."""
 
-    def test_api_key_not_in_logs(self, mock_api_key) -> None:
+    def test_api_key_not_in_logs(self, mock_api_key) -> None:  # noqa: ARG002
         """Test that API keys are not logged."""
         with patch("tracertm.logging_config.logger") as mock_logger:
             # Simulate logging operation

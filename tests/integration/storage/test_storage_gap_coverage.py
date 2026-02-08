@@ -953,7 +953,7 @@ class TestSyncEngineEdgeCases:
         engine = SyncEngine(db_connection, mock_api_client, mock_storage, retry_delay=0.01)
 
         # Mock _upload_change to fail
-        async def fail_upload(change) -> bool:
+        async def fail_upload(change) -> bool:  # noqa: ARG001
             return False
 
         engine._upload_change = fail_upload  # type: ignore[assignment]
@@ -973,7 +973,7 @@ class TestSyncEngineEdgeCases:
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
 
         # Mock _apply_remote_change to raise exception
-        async def raise_error(change) -> Never:
+        async def raise_error(change) -> Never:  # noqa: ARG001
             msg = "Apply error"
             raise RuntimeError(msg)
 

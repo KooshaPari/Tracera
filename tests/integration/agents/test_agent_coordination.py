@@ -43,7 +43,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id
 
 
-def test_agent_coordination_detection(temp_project_setup) -> None:
+def test_agent_coordination_detection(temp_project_setup) -> None:  # noqa: ARG001
     """Test agent coordination conflict detection (Story 5.4)."""
     client1 = TraceRTMClient()
     agent1_id = client1.register_agent("agent-1", agent_type="ai_agent")

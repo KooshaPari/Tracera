@@ -162,7 +162,7 @@ class TestLocalFileStorageOperations:
             result = session.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sync_queue'")
             assert result.fetchone() is not None
 
-    def test_storage_projects_directory_creation(self, storage_manager, temp_storage_dir) -> None:
+    def test_storage_projects_directory_creation(self, storage_manager, temp_storage_dir) -> None:  # noqa: ARG002
         """Test that storage creates projects directory."""
         projects_dir = temp_storage_dir / "projects"
         assert projects_dir.exists()

@@ -19,7 +19,7 @@ pytestmark = pytest.mark.performance
 # ============================================================
 
 
-def test_bulk_create_100_items(benchmark, db_session: Session, perf_tracker) -> None:
+def test_bulk_create_100_items(benchmark, db_session: Session, perf_tracker) -> None:  # noqa: ARG001
     """Benchmark creation of 100 items."""
     from uuid import uuid4
 
@@ -43,7 +43,7 @@ def test_bulk_create_100_items(benchmark, db_session: Session, perf_tracker) -> 
     benchmark(create)
 
 
-def test_bulk_create_500_items(benchmark, db_session: Session, perf_tracker) -> None:
+def test_bulk_create_500_items(benchmark, db_session: Session, perf_tracker) -> None:  # noqa: ARG001
     """Benchmark creation of 500 items."""
     from uuid import uuid4
 
@@ -67,7 +67,7 @@ def test_bulk_create_500_items(benchmark, db_session: Session, perf_tracker) -> 
     benchmark(create)
 
 
-def test_bulk_create_1000_items(benchmark, db_session: Session, perf_tracker) -> None:
+def test_bulk_create_1000_items(benchmark, db_session: Session, perf_tracker) -> None:  # noqa: ARG001
     """Benchmark creation of 1000 items."""
     from uuid import uuid4
 
@@ -122,7 +122,7 @@ def test_bulk_create_with_batch_insert(benchmark, db_session: Session) -> None:
 # ============================================================
 
 
-def test_bulk_update_100_items(benchmark, db_session: Session, perf_tracker) -> None:
+def test_bulk_update_100_items(benchmark, db_session: Session, perf_tracker) -> None:  # noqa: ARG001
     """Benchmark update of 100 items."""
     from tracertm.models.item import Item
 

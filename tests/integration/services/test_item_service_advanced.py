@@ -624,21 +624,21 @@ class TestConstraintViolations:
                 parent_id="item-in-proj1",
             )
 
-    def test_update_nonexistent_item_raises(self, db_session, sample_project) -> None:
+    def test_update_nonexistent_item_raises(self, db_session, sample_project) -> None:  # noqa: ARG002
         """Test updating an item that doesn't exist."""
         repo = ItemRepository(db_session)
 
         with pytest.raises(ValueError, match="not found"):
             repo.update("nonexistent", expected_version=1, status="done")
 
-    def test_get_nonexistent_returns_none(self, db_session, sample_project) -> None:
+    def test_get_nonexistent_returns_none(self, db_session, sample_project) -> None:  # noqa: ARG002
         """Test that getting non-existent item returns None."""
         repo = ItemRepository(db_session)
 
         item = repo.get_by_id("nonexistent")
         assert item is None
 
-    def test_delete_nonexistent_returns_false(self, db_session, sample_project) -> None:
+    def test_delete_nonexistent_returns_false(self, db_session, sample_project) -> None:  # noqa: ARG002
         """Test that deleting non-existent item returns False."""
         repo = ItemRepository(db_session)
 
@@ -1033,7 +1033,7 @@ class TestDeletionAndRestoration:
 
         assert len(remaining) == initial_count - 2
 
-    def test_restore_nonexistent_returns_none(self, db_session, sample_project) -> None:
+    def test_restore_nonexistent_returns_none(self, db_session, sample_project) -> None:  # noqa: ARG002
         """Test that restoring non-existent item returns None."""
         repo = ItemRepository(db_session)
 

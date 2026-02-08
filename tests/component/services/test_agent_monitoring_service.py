@@ -52,7 +52,7 @@ def test_get_alerts_composes_from_metrics_and_errors(sync_session, monkeypatch) 
     # Inject metrics with high conflict rate
     def fake_metrics_service(_session):
         return SimpleNamespace(
-            calculate_metrics=lambda project_id, since: {
+            calculate_metrics=lambda project_id, since: {  # noqa: ARG005
                 "metrics": [{"agent_id": "a-stale", "agent_name": "Agent stale", "conflict_rate": 12.5}],
             },
         )

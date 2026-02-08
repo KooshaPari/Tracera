@@ -505,7 +505,7 @@ class TestShortestPathAlgorithms:
 
     # Empty Graph Tests
     @pytest.mark.asyncio
-    async def test_shortest_path_empty_graph(self, service, mock_async_session) -> None:
+    async def test_shortest_path_empty_graph(self, service, mock_async_session) -> None:  # noqa: ARG002
         """Test shortest path on empty graph."""
         service.items.get_by_project = AsyncMock(return_value=[])
         service.links.get_by_project = AsyncMock(return_value=[])

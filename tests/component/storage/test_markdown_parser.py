@@ -4,7 +4,7 @@ from pathlib import Path
 from tracertm.storage.markdown_parser import ItemData, LinkData
 
 
-def test_itemdata_round_trip(tmp_path: Path) -> None:
+def test_itemdata_round_trip(tmp_path: Path) -> None:  # noqa: ARG001
     item = ItemData(
         id="id1",
         external_id="EXT-1",

@@ -360,7 +360,7 @@ class TestChainIntegrity:
         return project
 
     @pytest.mark.asyncio
-    async def test_verify_valid_chain(self, db_session, verified_chain) -> None:
+    async def test_verify_valid_chain(self, db_session, verified_chain) -> None:  # noqa: ARG002
         """Test that valid chain passes verification."""
         repo = VersionBlockRepository()
 
@@ -374,7 +374,7 @@ class TestChainIntegrity:
         assert broken_links == []
 
     @pytest.mark.asyncio
-    async def test_verification_updates_chain_index(self, db_session, verified_chain) -> None:
+    async def test_verification_updates_chain_index(self, db_session, verified_chain) -> None:  # noqa: ARG002
         """Test that verification updates chain index metadata."""
         repo = VersionBlockRepository()
 

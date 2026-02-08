@@ -128,7 +128,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#connection-status": mock_connection,
                 "#sync-info": mock_sync_info,
@@ -154,7 +154,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#connection-status": mock_connection,
                 "#sync-info": mock_sync_info,
@@ -181,7 +181,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#connection-status": mock_connection,
                 "#sync-info": mock_sync_info,
@@ -208,7 +208,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#connection-status": mock_connection,
                 "#sync-info": mock_sync_info,
@@ -235,7 +235,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#connection-status": mock_connection,
                 "#sync-info": mock_sync_info,
@@ -260,7 +260,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#connection-status": mock_connection,
                 "#sync-info": mock_sync_info,
@@ -285,7 +285,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#connection-status": mock_connection,
                 "#sync-info": mock_sync_info,
@@ -310,7 +310,7 @@ class TestSyncStatusWidgetDisplay:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#connection-status": mock_connection,
                 "#sync-info": mock_sync_info,

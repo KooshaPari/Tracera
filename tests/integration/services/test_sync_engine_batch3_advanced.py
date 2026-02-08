@@ -413,7 +413,7 @@ class TestConflictHandling:
         assert flagged is True
 
     @pytest.mark.asyncio
-    async def test_vector_clock_ordering(self, sync_engine) -> None:
+    async def test_vector_clock_ordering(self, sync_engine) -> None:  # noqa: ARG002
         """Test using vector clocks to order events."""
         base_time = datetime.now(UTC)
         vc1 = VectorClock(client_id="agent-1", version=1, timestamp=base_time)

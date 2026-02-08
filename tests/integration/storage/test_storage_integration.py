@@ -1630,7 +1630,7 @@ class TestConflictResolverIntegration:
 
         assert resolved.version == remote
 
-    def test_resolve_creates_backup(self, conflict_resolver, temp_storage_dir) -> None:
+    def test_resolve_creates_backup(self, conflict_resolver, temp_storage_dir) -> None:  # noqa: ARG002
         """Given: Conflict
         When: resolve called
         Then: Backup created before resolution.
@@ -1708,7 +1708,7 @@ class TestConflictResolverIntegration:
         assert resolved.version.vector_clock.version == 6  # max(5,5) + 1
         assert conflict.metadata["merged_by"] == "alice"
 
-    def test_create_backup_writes_all_files(self, conflict_resolver, temp_storage_dir) -> None:
+    def test_create_backup_writes_all_files(self, conflict_resolver, temp_storage_dir) -> None:  # noqa: ARG002
         """Given: Conflict
         When: create_backup called
         Then: All backup files written.

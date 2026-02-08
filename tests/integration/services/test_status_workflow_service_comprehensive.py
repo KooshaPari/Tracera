@@ -64,7 +64,7 @@ class TestBasicStatusTransitions:
         assert result["new_status"] == "in_progress"
         assert result["progress"] == 50
 
-    def test_in_progress_to_done(self, workflow_service, db_session, test_item) -> None:
+    def test_in_progress_to_done(self, workflow_service, db_session, test_item) -> None:  # noqa: ARG002
         """Test valid transition: in_progress → done."""
         # First transition to in_progress
         workflow_service.update_item_status(test_item.id, "in_progress")
@@ -243,7 +243,7 @@ class TestTransitionValidation:
 class TestProgressMapping:
     """Test status-to-progress mapping."""
 
-    def test_todo_progress(self, workflow_service, test_item) -> None:
+    def test_todo_progress(self, workflow_service, test_item) -> None:  # noqa: ARG002
         """Test todo status maps to 0% progress."""
         # Test the mapping directly since we can't transition from todo to todo
         assert STATUS_PROGRESS["todo"] == 0
@@ -265,7 +265,7 @@ class TestProgressMapping:
         result = workflow_service.update_item_status(test_item.id, "done")
         assert result["progress"] == 100
 
-    def test_archived_progress(self, workflow_service, db_session, test_item) -> None:
+    def test_archived_progress(self, workflow_service, db_session, test_item) -> None:  # noqa: ARG002
         """Test archived status maps to 100% progress."""
         test_item.status = "archived"
         db_session.commit()
@@ -688,7 +688,7 @@ class TestStateMachineEdgeCases:
 class TestIdempotencyAndRecovery:
     """Test idempotency and recovery scenarios."""
 
-    def test_repeated_status_check(self, workflow_service, test_item) -> None:
+    def test_repeated_status_check(self, workflow_service, test_item) -> None:  # noqa: ARG002
         """Test repeated status validation doesn't change behavior."""
         # Validate multiple times
         for _ in range(5):

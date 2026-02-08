@@ -41,7 +41,7 @@ def mock_auth_config():
 class TestTokenValidation:
     """Test JWT token validation functionality."""
 
-    def test_valid_token_accepted(self, mock_jwt_token, mock_auth_config) -> None:
+    def test_valid_token_accepted(self, mock_jwt_token, mock_auth_config) -> None:  # noqa: ARG002
         """Test that valid JWT tokens are accepted."""
         from tracertm.api.main import app
 

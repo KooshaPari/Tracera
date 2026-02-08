@@ -25,7 +25,7 @@ def mock_rate_limiter():
 class TestBasicRateLimiting:
     """Test basic rate limiting functionality."""
 
-    def test_rate_limit_allows_under_threshold(self, mock_rate_limiter) -> None:
+    def test_rate_limit_allows_under_threshold(self, mock_rate_limiter) -> None:  # noqa: ARG002
         """Test that requests under rate limit are allowed."""
         from tracertm.api.main import app
 
@@ -52,7 +52,7 @@ class TestBasicRateLimiting:
             # First 10 requests allowed, then blocked
             call_count = 0
 
-            def check_limit(*args, **kwargs):
+            def check_limit(*args, **kwargs):  # noqa: ARG001
                 nonlocal call_count
                 call_count += 1
                 return call_count <= 10
@@ -86,7 +86,7 @@ class TestBasicRateLimiting:
             limiter = MagicMock()
             start_time = datetime.now(UTC)
 
-            def check_limit(*args, **kwargs):
+            def check_limit(*args, **kwargs):  # noqa: ARG001
                 # Reset after 60 seconds
                 elapsed = (datetime.now(UTC) - start_time).total_seconds()
                 return elapsed < 60 or elapsed >= 120
@@ -168,7 +168,7 @@ class TestPerEndpointRateLimits:
 
         with patch("tracertm.api.main.get_endpoint_limit") as mock_limit:
             # GET endpoints have higher limits
-            mock_limit.side_effect = lambda method, path: 1000 if method == "GET" else 100
+            mock_limit.side_effect = lambda method, path: 1000 if method == "GET" else 100  # noqa: ARG005
 
             # Should allow many GET requests
             for _i in range(50):
@@ -185,7 +185,7 @@ class TestPerEndpointRateLimits:
 
         with patch("tracertm.api.main.get_endpoint_limit") as mock_limit:
             # POST/PUT/DELETE have lower limits
-            mock_limit.side_effect = lambda method, path: 10 if method == "POST" else 1000
+            mock_limit.side_effect = lambda method, path: 10 if method == "POST" else 1000  # noqa: ARG005
 
             call_count = 0
             # Should hit limit faster on POST
@@ -210,7 +210,7 @@ class TestPerEndpointRateLimits:
 
         with patch("tracertm.api.main.get_endpoint_limit") as mock_limit:
             # Analysis endpoints are resource-intensive
-            mock_limit.side_effect = lambda method, path: 5 if "analysis" in path else 100
+            mock_limit.side_effect = lambda method, path: 5 if "analysis" in path else 100  # noqa: ARG005
 
             # Should have very low limit
             for _i in range(10):
@@ -232,7 +232,7 @@ class TestPerUserRateLimits:
         with patch("tracertm.api.main.RateLimiter") as mock_limiter:
             limits = {}
 
-            def check_limit(user_id, *args, **kwargs):
+            def check_limit(user_id, *args, **kwargs):  # noqa: ARG001
                 if user_id not in limits:
                     limits[user_id] = 10
                 limits[user_id] -= 1
@@ -268,7 +268,7 @@ class TestPerUserRateLimits:
         with patch("tracertm.api.main.RateLimiter") as mock_limiter:
             remaining = 100
 
-            def check_limit(*args, **kwargs) -> bool:
+            def check_limit(*args, **kwargs) -> bool:  # noqa: ARG001
                 nonlocal remaining
                 if remaining > 0:
                     remaining -= 1
@@ -305,7 +305,7 @@ class TestIPBasedRateLimiting:
             with patch("tracertm.api.main.RateLimiter") as mock_limiter:
                 limits = {}
 
-                def check_limit(ip, *args, **kwargs):
+                def check_limit(ip, *args, **kwargs):  # noqa: ARG001
                     if ip not in limits:
                         limits[ip] = 20
                     limits[ip] -= 1
@@ -331,7 +331,7 @@ class TestIPBasedRateLimiting:
         with patch("tracertm.api.main.RateLimiter") as mock_limiter:
             limits = {}
 
-            def check_limit(ip, *args, **kwargs):
+            def check_limit(ip, *args, **kwargs):  # noqa: ARG001
                 if ip not in limits:
                     limits[ip] = 10
                 limits[ip] -= 1
@@ -370,7 +370,7 @@ class TestRateLimitStrategies:
             window_start = time.time()
             requests = []
 
-            def check_limit(*args, **kwargs) -> bool:
+            def check_limit(*args, **kwargs) -> bool:  # noqa: ARG001
                 now = time.time()
                 # Remove requests older than 60 seconds
                 nonlocal requests
@@ -402,7 +402,7 @@ class TestRateLimitStrategies:
             tokens = 10
             last_refill = time.time()
 
-            def check_limit(*args, **kwargs) -> bool:
+            def check_limit(*args, **kwargs) -> bool:  # noqa: ARG001
                 nonlocal tokens, last_refill
                 now = time.time()
 
@@ -437,7 +437,7 @@ class TestRateLimitStrategies:
             window_start = int(time.time() / 60) * 60  # Minute boundary
             count = 0
 
-            def check_limit(*args, **kwargs) -> bool:
+            def check_limit(*args, **kwargs) -> bool:  # noqa: ARG001
                 nonlocal count, window_start
                 current_window = int(time.time() / 60) * 60
 

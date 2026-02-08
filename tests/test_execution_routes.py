@@ -475,7 +475,7 @@ async def test_get_execution_config_success(mock_db, mock_claims, mock_config) -
 
 
 @pytest.mark.asyncio
-async def test_update_execution_config_success(mock_db, mock_claims, mock_config) -> None:
+async def test_update_execution_config_success(mock_db, mock_claims, mock_config) -> None:  # noqa: ARG001
     """Test updating execution configuration."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()

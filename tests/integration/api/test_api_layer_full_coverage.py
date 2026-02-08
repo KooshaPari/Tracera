@@ -745,7 +745,7 @@ class TestApiClientRetryLogic:
         """Test that network errors trigger retries."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count < 2:
@@ -777,7 +777,7 @@ class TestApiClientRetryLogic:
         """Test that authentication errors are not retried."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             mock_response = MagicMock()
@@ -798,7 +798,7 @@ class TestApiClientRetryLogic:
         """Test rate limit retry with Retry-After header."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -823,7 +823,7 @@ class TestApiClientRetryLogic:
         call_count = 0
         sleep_times = []
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count < 3:
@@ -854,7 +854,7 @@ class TestApiClientTimeouts:
     """Test API client timeout handling."""
 
     @pytest.mark.asyncio
-    async def test_client_timeout_configuration(self, mock_config) -> None:
+    async def test_client_timeout_configuration(self, mock_config) -> None:  # noqa: ARG002
         """Test that client timeout is configured correctly."""
         config = ApiConfig(
             base_url="https://api.test.com",
@@ -1496,7 +1496,7 @@ class TestApiClientIntegration:
         requests = []
         responses = []
 
-        async def mock_request_handler(*args, **kwargs):
+        async def mock_request_handler(*args, **kwargs):  # noqa: ARG001
             await asyncio.sleep(0.01)
             mock_response = MagicMock()
             mock_response.status_code = 200
@@ -1579,7 +1579,7 @@ class TestApiClientResponseParsing:
     """Test API response parsing."""
 
     @pytest.mark.asyncio
-    async def test_parse_upload_result_with_conflicts(self, api_client) -> None:
+    async def test_parse_upload_result_with_conflicts(self, api_client) -> None:  # noqa: ARG002
         """Test parsing upload result with conflicts."""
         raw_response = {
             "applied": ["item-1"],
@@ -1695,7 +1695,7 @@ class TestApiClientPerformance:
         with patch.object(api_client.client, "request") as mock_request:
             call_count = 0
 
-            async def mock_request_impl(*args, **kwargs):
+            async def mock_request_impl(*args, **kwargs):  # noqa: ARG001
                 nonlocal call_count
                 call_count += 1
                 if call_count < 3:
@@ -1852,7 +1852,7 @@ class TestWebhookHandling:
         with patch.object(api_client.client, "request") as mock_request:
             call_count = 0
 
-            async def mock_webhook_request(*args, **kwargs):
+            async def mock_webhook_request(*args, **kwargs):  # noqa: ARG001
                 nonlocal call_count
                 call_count += 1
                 if call_count < 2:
@@ -2363,7 +2363,7 @@ class TestErrorRecovery:
         """Test recovery from transient network error."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -2414,7 +2414,7 @@ class TestConcurrentOperations:
             for i in range(5)
         ]
 
-        async def mock_upload(changes, **kwargs):
+        async def mock_upload(changes, **kwargs):  # noqa: ARG001
             return UploadResult(
                 applied=[c.entity_id for c in changes],
                 conflicts=[],
@@ -2430,7 +2430,7 @@ class TestConcurrentOperations:
         """Test concurrent change downloads."""
         since = datetime.now(UTC) - timedelta(hours=1)
 
-        async def mock_download(since, **kwargs):
+        async def mock_download(since, **kwargs):  # noqa: ARG001
             return []
 
         with patch.object(api_client, "download_changes", side_effect=mock_download):
@@ -2704,7 +2704,7 @@ class TestAuthenticationErrors:
         """Test auth errors are not retried."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             mock_response = MagicMock()
@@ -2901,7 +2901,7 @@ class TestAdvancedErrorHandlingRetries:
         """Test retries on 503 Service Unavailable."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count < 2:
@@ -2924,7 +2924,7 @@ class TestAdvancedErrorHandlingRetries:
         """Test retries on 502 Bad Gateway."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count < 2:
@@ -2945,7 +2945,7 @@ class TestAdvancedErrorHandlingRetries:
         """Test rate limit with custom retry-after value."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -2970,7 +2970,7 @@ class TestAdvancedErrorHandlingRetries:
         """Test network errors accumulate across retries."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs) -> Never:
+        async def mock_request(*args, **kwargs) -> Never:  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             msg = "Connection failed"
@@ -2989,7 +2989,7 @@ class TestAdvancedErrorHandlingRetries:
         call_count = 0
         sleep_times = []
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs):  # noqa: ARG001
             nonlocal call_count
             call_count += 1
             if call_count < 3:

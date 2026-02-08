@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -20,8 +22,8 @@ def mock_mcp_server():
     mock.resources = {}
     mock.prompts = {}
 
-    def mock_tool(*args: Any, **kwargs: Any):
-        def decorator(fn):
+    def mock_tool(*args: Any, **kwargs: Any):  # noqa: ARG001
+        def decorator(fn: Callable[..., Any]):
             mock.tools[fn.__name__] = {
                 "fn": fn,
                 "description": kwargs.get("description", ""),
@@ -31,7 +33,7 @@ def mock_mcp_server():
         return decorator
 
     def mock_resource(uri: str):
-        def decorator(fn):
+        def decorator(fn: Callable[..., Any]):
             mock.resources[uri] = {
                 "fn": fn,
             }
@@ -40,7 +42,7 @@ def mock_mcp_server():
         return decorator
 
     def mock_prompt(name: str):
-        def decorator(fn):
+        def decorator(fn: Callable[..., Any]):
             mock.prompts[name] = {
                 "fn": fn,
             }
@@ -161,9 +163,9 @@ class MockItem:
         priority: str = "medium",
         owner: str | None = None,
         project_id: str = "test-project",
-        created_at=None,
-        updated_at=None,
-        deleted_at=None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
+        deleted_at: datetime | None = None,
     ) -> None:
         self.id = id
         self.title = title
@@ -188,8 +190,8 @@ class MockLink:
         target_id: str,
         link_type: str = "relates_to",
         project_id: str = "test-project",
-        created_at=None,
-        deleted_at=None,
+        created_at: datetime | None = None,
+        deleted_at: datetime | None = None,
     ) -> None:
         self.id = id
         self.source_id = source_id
@@ -208,8 +210,8 @@ class MockProject:
         id: str,
         name: str,
         description: str = "",
-        created_at=None,
-        deleted_at=None,
+        created_at: datetime | None = None,
+        deleted_at: datetime | None = None,
     ) -> None:
         self.id = id
         self.name = name

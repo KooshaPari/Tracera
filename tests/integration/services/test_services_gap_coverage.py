@@ -92,7 +92,7 @@ class TestStatelessIngestionServiceGapCoverage:
             assert result["would_create_links"] == 1
             service.session.add.assert_not_called()
 
-    def test_ingest_markdown_without_frontmatter_library(self, service, mock_session) -> None:
+    def test_ingest_markdown_without_frontmatter_library(self, service, mock_session) -> None:  # noqa: ARG002
         """Test markdown ingestion when frontmatter library not available."""
         with patch("tracertm.services.stateless_ingestion_service.frontmatter", None):
             service_no_fm = StatelessIngestionService(mock_session)
@@ -286,7 +286,7 @@ Content
 
             assert "jsx_components_created" in result
 
-    def test_ingest_mdx_without_frontmatter(self, service, mock_session) -> None:
+    def test_ingest_mdx_without_frontmatter(self, service, mock_session) -> None:  # noqa: ARG002
         """Test MDX without frontmatter library."""
         with patch("tracertm.services.stateless_ingestion_service.frontmatter", None):
             service_no_fm = StatelessIngestionService(mock_session)
@@ -312,7 +312,7 @@ Content
         # Then after creation, return the mock project when queried by ID
         first_call = True
 
-        def query_side_effect(*args, **kwargs):
+        def query_side_effect(*args, **kwargs):  # noqa: ARG001
             nonlocal first_call
             mock_query = Mock()
             if first_call:
@@ -795,7 +795,7 @@ class TestCriticalPathServiceGapCoverage:
         assert result.total_duration == 0
 
     @pytest.mark.asyncio
-    async def test_calculate_critical_path_single_item(self, service, mock_async_session) -> None:
+    async def test_calculate_critical_path_single_item(self, service, mock_async_session) -> None:  # noqa: ARG002
         """Test critical path with single item."""
         item1 = Mock()
         item1.id = "item-1"
@@ -1150,7 +1150,7 @@ class TestProgressServiceGapCoverage:
         blocker2.status = "todo"
 
         # Setup query mocks
-        def query_filter_first(*args):
+        def query_filter_first(*args):  # noqa: ARG001
             mock_result = Mock()
             mock_result.filter.return_value.all.return_value = [link1, link2]
 
@@ -1187,7 +1187,7 @@ class TestProgressServiceGapCoverage:
         blocked_item.title = "Blocked"
         blocked_item.status = "blocked"
 
-        def query_side_effect(*args):
+        def query_side_effect(*args):  # noqa: ARG001
             mock_query = Mock()
             mock_query.filter.return_value.all.return_value = [link]
 

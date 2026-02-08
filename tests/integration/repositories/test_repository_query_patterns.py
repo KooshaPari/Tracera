@@ -856,7 +856,7 @@ class TestEdgeCases:
         items = await repo.get_by_project(project_id, limit=5, offset=0)
         assert len(items) > 0
 
-    async def test_get_by_id_nonexistent(self, db_session: AsyncSession, setup_items: dict) -> None:
+    async def test_get_by_id_nonexistent(self, db_session: AsyncSession, setup_items: dict) -> None:  # noqa: ARG002
         """Get item with nonexistent ID."""
         repo = ItemRepository(db_session)
 
@@ -1009,7 +1009,7 @@ class TestHierarchicalQueries:
 class TestLinkRepositoryQueries:
     """Test link repository query patterns."""
 
-    async def test_link_get_by_source(self, db_session: AsyncSession, setup_links: dict, setup_items: dict) -> None:
+    async def test_link_get_by_source(self, db_session: AsyncSession, setup_links: dict, setup_items: dict) -> None:  # noqa: ARG002
         """Get links by source item."""
         repo = LinkRepository(db_session)
         source_id = setup_items["item1"].id
@@ -1019,7 +1019,7 @@ class TestLinkRepositoryQueries:
         assert len(links) > 0
         assert all(link.source_item_id == source_id for link in links)
 
-    async def test_link_get_by_target(self, db_session: AsyncSession, setup_links: dict, setup_items: dict) -> None:
+    async def test_link_get_by_target(self, db_session: AsyncSession, setup_links: dict, setup_items: dict) -> None:  # noqa: ARG002
         """Get links by target item."""
         repo = LinkRepository(db_session)
         target_id = setup_items["item2"].id
@@ -1028,7 +1028,7 @@ class TestLinkRepositoryQueries:
 
         assert len(links) > 0 or len(links) == 0  # May or may not have links
 
-    async def test_link_get_by_type(self, db_session: AsyncSession, setup_links: dict) -> None:
+    async def test_link_get_by_type(self, db_session: AsyncSession, setup_links: dict) -> None:  # noqa: ARG002
         """Get links by type."""
         repo = LinkRepository(db_session)
 
@@ -1047,7 +1047,7 @@ class TestLinkRepositoryQueries:
         links = await repo.get_all()
         assert len(links) > 0
 
-    async def test_link_count_by_type(self, db_session: AsyncSession, setup_links: dict) -> None:
+    async def test_link_count_by_type(self, db_session: AsyncSession, setup_links: dict) -> None:  # noqa: ARG002
         """Count links by type."""
         repo = LinkRepository(db_session)
 
@@ -1070,7 +1070,7 @@ class TestLinkRepositoryQueries:
 class TestMultiRepoQueries:
     """Test queries across multiple repositories."""
 
-    async def test_query_items_and_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:
+    async def test_query_items_and_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:  # noqa: ARG002
         """Query items and their related links."""
         item_repo = ItemRepository(db_session)
         link_repo = LinkRepository(db_session)
@@ -1086,7 +1086,7 @@ class TestMultiRepoQueries:
 
         assert isinstance(source_links, list)
 
-    async def test_filter_items_by_type_and_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:
+    async def test_filter_items_by_type_and_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:  # noqa: ARG002
         """Filter items by type and check links."""
         item_repo = ItemRepository(db_session)
         link_repo = LinkRepository(db_session)
@@ -1100,7 +1100,7 @@ class TestMultiRepoQueries:
             links = await link_repo.get_by_source(feature.id)
             assert isinstance(links, list)
 
-    async def test_hierarchical_with_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:
+    async def test_hierarchical_with_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:  # noqa: ARG002
         """Test hierarchical queries combined with link queries."""
         item_repo = ItemRepository(db_session)
         parent = setup_items["parent"]
@@ -1124,7 +1124,7 @@ class TestMultiRepoQueries:
         page2_ids = {item.id for item in page2}
         assert len(page1_ids.intersection(page2_ids)) == 0
 
-    async def test_complex_multi_repo_aggregation(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:
+    async def test_complex_multi_repo_aggregation(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:  # noqa: ARG002
         """Complex aggregation across repositories."""
         item_repo = ItemRepository(db_session)
         link_repo = LinkRepository(db_session)
@@ -1150,7 +1150,7 @@ class TestMultiRepoQueries:
 class TestProjectRepositoryQueries:
     """Test project repository query patterns."""
 
-    async def test_get_all_projects(self, db_session: AsyncSession, setup_projects: dict) -> None:
+    async def test_get_all_projects(self, db_session: AsyncSession, setup_projects: dict) -> None:  # noqa: ARG002
         """Get all projects."""
         repo = ProjectRepository(db_session)
 
@@ -1160,7 +1160,7 @@ class TestProjectRepositoryQueries:
         project_names = {p.name for p in all_projects}
         assert "Project 1" in project_names
 
-    async def test_get_project_by_name(self, db_session: AsyncSession, setup_projects: dict) -> None:
+    async def test_get_project_by_name(self, db_session: AsyncSession, setup_projects: dict) -> None:  # noqa: ARG002
         """Get project by name."""
         repo = ProjectRepository(db_session)
 
@@ -1169,7 +1169,7 @@ class TestProjectRepositoryQueries:
         assert project is not None
         assert project.name == "Project 1"
 
-    async def test_project_query_consistency(self, db_session: AsyncSession, setup_projects: dict) -> None:
+    async def test_project_query_consistency(self, db_session: AsyncSession, setup_projects: dict) -> None:  # noqa: ARG002
         """Query consistency for projects."""
         repo = ProjectRepository(db_session)
 

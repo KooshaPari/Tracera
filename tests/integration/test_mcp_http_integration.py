@@ -172,7 +172,7 @@ class TestHTTPWorkflow:
         item_data = item_response.json()
         assert "result" in item_data or "error" in item_data
 
-    def test_query_items_workflow(self, http_client, auth_headers, test_project_id) -> None:
+    def test_query_items_workflow(self, http_client, auth_headers, test_project_id) -> None:  # noqa: ARG002
         """Test querying items via HTTP."""
         # Query items
         query_response = http_client.post(
@@ -222,7 +222,7 @@ class TestHTTPWorkflow:
 class TestSSEStreaming:
     """Test Server-Sent Events streaming."""
 
-    def test_sse_connection(self, http_client, auth_headers) -> None:
+    def test_sse_connection(self, http_client, auth_headers) -> None:  # noqa: ARG002
         """Test establishing SSE connection."""
         # SSE endpoint typically uses GET with stream
         # This is a placeholder for actual SSE testing

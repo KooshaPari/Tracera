@@ -24,7 +24,7 @@ RECOVERY_TARGET = 30
 @pytest.mark.slow
 async def test_bandwidth_limitation(
     toxiproxy_client: ToxiproxyClient,
-    postgres_proxy: str,
+    postgres_proxy: str,  # noqa: ARG001
     db_session,
     assert_recovery_within_target,
 ) -> None:
@@ -87,7 +87,7 @@ async def test_bandwidth_limitation(
 @pytest.mark.slow
 async def test_slow_connection_close(
     toxiproxy_client: ToxiproxyClient,
-    redis_proxy: str,
+    redis_proxy: str,  # noqa: ARG001
     redis_client: redis.Redis,
     assert_recovery_within_target,
 ) -> None:
@@ -189,7 +189,7 @@ async def test_timeout_injection(
 @pytest.mark.slow
 async def test_combined_resource_pressure(
     toxiproxy_client: ToxiproxyClient,
-    postgres_proxy: str,
+    postgres_proxy: str,  # noqa: ARG001
     db_session,
     assert_recovery_within_target,
 ) -> None:

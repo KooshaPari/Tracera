@@ -217,7 +217,7 @@ class TestThreadedConcurrentWrites:
         conflict_count = 0
         counter_lock = threading.Lock()
 
-        def update_with_version_check(agent_name: str, new_value: str) -> bool:
+        def update_with_version_check(agent_name: str, new_value: str) -> bool:  # noqa: ARG001
             nonlocal success_count, conflict_count
 
             for attempt in range(5):

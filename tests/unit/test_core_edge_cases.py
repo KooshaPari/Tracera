@@ -185,7 +185,7 @@ class TestConfigEdgeCases:
 
     @patch("pathlib.Path.exists")
     @patch("builtins.open", new_callable=mock_open, read_data="database:\n  host: testhost\n")
-    def test_config_load_existing_file(self, mock_file, mock_exists, tmp_path) -> None:
+    def test_config_load_existing_file(self, mock_file, mock_exists, tmp_path) -> None:  # noqa: ARG002
         """Test loading configuration from existing file."""
         mock_exists.return_value = True
 
@@ -195,7 +195,7 @@ class TestConfigEdgeCases:
     @patch("pathlib.Path.exists")
     @patch("pathlib.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
-    def test_config_load_creates_default(self, mock_file, mock_mkdir, mock_exists, tmp_path) -> None:
+    def test_config_load_creates_default(self, mock_file, mock_mkdir, mock_exists, tmp_path) -> None:  # noqa: ARG002
         """Test that load creates default config when file doesn't exist."""
         mock_exists.return_value = False
 
@@ -206,7 +206,7 @@ class TestConfigEdgeCases:
 
     @patch("pathlib.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
-    def test_config_save_creates_directory(self, mock_file, mock_mkdir, tmp_path) -> None:
+    def test_config_save_creates_directory(self, mock_file, mock_mkdir, tmp_path) -> None:  # noqa: ARG002
         """Test that save creates parent directory if needed."""
         config = Config()
         config.save(tmp_path / "tracertm" / "config.yaml")
@@ -214,7 +214,7 @@ class TestConfigEdgeCases:
 
     @patch("pathlib.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
-    def test_config_save_writes_yaml(self, mock_file, mock_mkdir, tmp_path) -> None:
+    def test_config_save_writes_yaml(self, mock_file, mock_mkdir, tmp_path) -> None:  # noqa: ARG002
         """Test that save writes YAML correctly."""
         config = Config()
         config.save(tmp_path / "config.yaml")

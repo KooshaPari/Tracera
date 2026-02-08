@@ -197,7 +197,7 @@ async def test_export_to_json_basic(export_import_service, sample_project) -> No
 
 
 @pytest.mark.asyncio
-async def test_export_to_json_with_items(export_import_service, sample_project, sample_items) -> None:
+async def test_export_to_json_with_items(export_import_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test JSON export includes all items."""
     result = await export_import_service.export_to_json(sample_project.id)
 
@@ -206,7 +206,7 @@ async def test_export_to_json_with_items(export_import_service, sample_project, 
 
 
 @pytest.mark.asyncio
-async def test_export_to_json_structure(export_import_service, sample_project, sample_items) -> None:
+async def test_export_to_json_structure(export_import_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test JSON export structure is correct."""
     result = await export_import_service.export_to_json(sample_project.id)
 
@@ -253,7 +253,7 @@ async def test_export_to_json_empty_project(db_session) -> None:
 
 
 @pytest.mark.asyncio
-async def test_export_to_json_preserves_item_details(export_service, sample_project, sample_items) -> None:
+async def test_export_to_json_preserves_item_details(export_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test JSON export preserves all item details."""
     json_str = await export_service.export_to_json(sample_project.id)
     data = json.loads(json_str)
@@ -270,7 +270,7 @@ async def test_export_to_json_preserves_item_details(export_service, sample_proj
 
 
 @pytest.mark.asyncio
-async def test_export_to_yaml_basic(export_service, sample_project, sample_items) -> None:
+async def test_export_to_yaml_basic(export_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test basic YAML export."""
     result = await export_service.export_yaml(sample_project.id)
 
@@ -279,7 +279,7 @@ async def test_export_to_yaml_basic(export_service, sample_project, sample_items
 
 
 @pytest.mark.asyncio
-async def test_export_to_yaml_contains_items(export_service, sample_project, sample_items) -> None:
+async def test_export_to_yaml_contains_items(export_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test YAML export contains items."""
     result = await export_service.export_yaml(sample_project.id)
 
@@ -287,7 +287,7 @@ async def test_export_to_yaml_contains_items(export_service, sample_project, sam
 
 
 @pytest.mark.asyncio
-async def test_export_to_yaml_valid_structure(export_service, sample_project, sample_items) -> None:
+async def test_export_to_yaml_valid_structure(export_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test YAML export has valid structure."""
     result = await export_service.export_yaml(sample_project.id)
 
@@ -315,7 +315,7 @@ async def test_export_to_csv_basic(export_import_service, sample_project) -> Non
 
 
 @pytest.mark.asyncio
-async def test_export_to_csv_header(export_import_service, sample_project, sample_items) -> None:
+async def test_export_to_csv_header(export_import_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test CSV export has correct header."""
     result = await export_import_service.export_to_csv(sample_project.id)
 
@@ -324,7 +324,7 @@ async def test_export_to_csv_header(export_import_service, sample_project, sampl
 
 
 @pytest.mark.asyncio
-async def test_export_to_csv_parseable(export_service, sample_project, sample_items) -> None:
+async def test_export_to_csv_parseable(export_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test CSV export is parseable."""
     csv_str = await export_service.export_to_csv(sample_project.id)
 
@@ -335,7 +335,7 @@ async def test_export_to_csv_parseable(export_service, sample_project, sample_it
 
 
 @pytest.mark.asyncio
-async def test_export_to_csv_data_integrity(export_service, sample_project, sample_items) -> None:
+async def test_export_to_csv_data_integrity(export_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test CSV export preserves data integrity."""
     csv_str = await export_service.export_to_csv(sample_project.id)
 
@@ -360,7 +360,7 @@ async def test_export_to_markdown_basic(export_import_service, sample_project) -
 
 
 @pytest.mark.asyncio
-async def test_export_to_markdown_has_project_title(export_service, sample_project, sample_items) -> None:
+async def test_export_to_markdown_has_project_title(export_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test Markdown export contains project title."""
     md = await export_service.export_to_markdown(sample_project.id)
 
@@ -368,7 +368,7 @@ async def test_export_to_markdown_has_project_title(export_service, sample_proje
 
 
 @pytest.mark.asyncio
-async def test_export_to_markdown_has_items(export_service, sample_project, sample_items) -> None:
+async def test_export_to_markdown_has_items(export_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test Markdown export contains items."""
     md = await export_service.export_to_markdown(sample_project.id)
 
@@ -376,7 +376,7 @@ async def test_export_to_markdown_has_items(export_service, sample_project, samp
 
 
 @pytest.mark.asyncio
-async def test_export_to_markdown_grouped_by_view(export_service, sample_project, sample_items) -> None:
+async def test_export_to_markdown_grouped_by_view(export_service, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test Markdown export has content."""
     md = await export_service.export_to_markdown(sample_project.id)
 
@@ -657,7 +657,7 @@ async def test_export_csv_large_dataset(db_session, sample_project) -> None:
 
 
 @pytest.mark.asyncio
-async def test_export_import_roundtrip_json(db_session, sample_project, sample_items) -> None:
+async def test_export_import_roundtrip_json(db_session, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test export then import preserves data."""
     export_svc = ExportService(db_session)
 
@@ -668,7 +668,7 @@ async def test_export_import_roundtrip_json(db_session, sample_project, sample_i
 
 
 @pytest.mark.asyncio
-async def test_export_import_roundtrip_csv(db_session, sample_project, sample_items) -> None:
+async def test_export_import_roundtrip_csv(db_session, sample_project, sample_items) -> None:  # noqa: ARG001
     """Test CSV export-import roundtrip."""
     export_svc = ExportService(db_session)
 
@@ -875,7 +875,7 @@ async def test_import_creates_project_if_missing(db_session) -> None:
 
 
 @pytest.mark.asyncio
-async def test_export_json_with_links(db_session, sample_project, sample_items, sample_links) -> None:
+async def test_export_json_with_links(db_session, sample_project, sample_items, sample_links) -> None:  # noqa: ARG001
     """Test JSON export includes links."""
     export_svc = ExportService(db_session)
 

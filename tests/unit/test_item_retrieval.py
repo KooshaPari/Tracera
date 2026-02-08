@@ -25,7 +25,7 @@ def item_service(mock_session):
 class TestItemRetrieval:
     """Test suite for item retrieval operations."""
 
-    async def test_get_item_found(self, item_service, mock_session) -> None:
+    async def test_get_item_found(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test retrieving an existing item."""
         # Setup
         project_id = str(uuid.uuid4())
@@ -47,7 +47,7 @@ class TestItemRetrieval:
         assert result.project_id == project_id
         item_service.items.get_by_id.assert_called_once_with(item_id, project_id)
 
-    async def test_list_items_by_view(self, item_service, mock_session) -> None:
+    async def test_list_items_by_view(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test listing items filtered by view."""
         # Setup
         project_id = str(uuid.uuid4())
@@ -72,7 +72,7 @@ class TestItemRetrieval:
         call_args = item_service.items.get_by_view.call_args
         assert call_args[0] == (project_id, view, None)  # project_id, view, status
 
-    async def test_list_items_by_status(self, item_service, mock_session) -> None:
+    async def test_list_items_by_status(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test listing items filtered by status."""
         # Setup
         project_id = str(uuid.uuid4())
@@ -97,7 +97,7 @@ class TestItemRetrieval:
         _, kwargs = item_service.items.get_by_project.call_args
         assert kwargs.get("status") == status
 
-    async def test_list_items_with_view_and_status(self, item_service, mock_session) -> None:
+    async def test_list_items_with_view_and_status(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test listing items filtered by both view and status."""
         # Setup
         project_id = str(uuid.uuid4())
@@ -118,7 +118,7 @@ class TestItemRetrieval:
         call_args = item_service.items.get_by_view.call_args
         assert call_args[0] == (project_id, view, status)
 
-    async def test_get_item_with_links(self, item_service, mock_session) -> None:
+    async def test_get_item_with_links(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test retrieving item with its links."""
         # Setup
         project_id = str(uuid.uuid4())
@@ -141,7 +141,7 @@ class TestItemRetrieval:
         item_service.items.get_by_id.assert_called_once_with(item_id)
         item_service.links.get_by_item.assert_called_once_with(item_id)
 
-    async def test_get_item_not_found(self, item_service, mock_session) -> None:
+    async def test_get_item_not_found(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test retrieving non-existent item."""
         # Setup
         project_id = str(uuid.uuid4())

@@ -590,7 +590,7 @@ class TestResourceCleanup:
 class TestConflictResolutionErrors:
     """Test error handling in conflict resolution."""
 
-    async def test_conflict_with_missing_version(self, db_session: AsyncSession) -> None:
+    async def test_conflict_with_missing_version(self, db_session: AsyncSession) -> None:  # noqa: ARG002
         """Test conflict resolution with missing version info."""
         # Test handling of missing version
         item1 = {"title": "version 1"}  # Missing version
@@ -602,7 +602,7 @@ class TestConflictResolutionErrors:
             with pytest.raises((ValueError, KeyError, AttributeError)):
                 _ = item1["version"]  # KeyError: missing "version"
 
-    async def test_conflicting_deletes(self, db_session: AsyncSession) -> None:
+    async def test_conflicting_deletes(self, db_session: AsyncSession) -> None:  # noqa: ARG002
         """Test handling of conflicting deletes."""
         # Both deleted should not conflict
         conflict_item1 = {"title": "item", "version": 1, "deleted": True}
@@ -611,7 +611,7 @@ class TestConflictResolutionErrors:
         # If both are deleted, they should match
         assert conflict_item1["deleted"] == conflict_item2["deleted"]
 
-    async def test_unresolvable_conflict(self, db_session: AsyncSession) -> None:
+    async def test_unresolvable_conflict(self, db_session: AsyncSession) -> None:  # noqa: ARG002
         """Test handling of unresolvable conflicts."""
         # Test unresolvable conflict scenario
         item1 = {"title": "v1", "version": 1, "data": "data1"}

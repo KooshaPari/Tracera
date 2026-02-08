@@ -985,7 +985,7 @@ class TestSyncEngineAdvanced:
         assert engine.conflict_strategy == ConflictStrategy.REMOTE_WINS
 
     @pytest.mark.asyncio
-    async def test_sync_data_class_serialization(self, sync_engine) -> None:
+    async def test_sync_data_class_serialization(self, sync_engine) -> None:  # noqa: ARG002
         """Test SyncResult data class."""
         result = SyncResult(
             success=True,
@@ -1001,7 +1001,7 @@ class TestSyncEngineAdvanced:
         assert len(result.errors) == 1
 
     @pytest.mark.asyncio
-    async def test_queued_change_data_class(self, sync_engine) -> None:
+    async def test_queued_change_data_class(self, sync_engine) -> None:  # noqa: ARG002
         """Test QueuedChange data class."""
         change = QueuedChange(
             id=1,
@@ -1017,7 +1017,7 @@ class TestSyncEngineAdvanced:
         assert change.retry_count == 2
         assert change.last_error == "Network timeout"
 
-    def test_sync_state_data_class(self, sync_engine) -> None:
+    def test_sync_state_data_class(self, sync_engine) -> None:  # noqa: ARG002
         """Test SyncState data class."""
         state = SyncState(
             last_sync=datetime.now(UTC),

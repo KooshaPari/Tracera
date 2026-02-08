@@ -42,7 +42,7 @@ class TestSyncEngineLocking:
         sync_started = []
         sync_completed = []
 
-        async def tracked_sync(force: bool = False) -> SyncResult:
+        async def tracked_sync(force: bool = False) -> SyncResult:  # noqa: ARG001
             sync_started.append(datetime.now(UTC))
             await asyncio.sleep(0.05)
             sync_completed.append(datetime.now(UTC))
@@ -105,7 +105,7 @@ class TestSyncEngineLocking:
             engine.queue.get_pending.return_value = []
             engine.state_manager.get_state.return_value = SyncState()
 
-            async def patched_sync(force=False):
+            async def patched_sync(force=False):  # noqa: ARG001
                 sync_order.append("start")
                 await asyncio.sleep(0.02)
                 sync_order.append("end")
@@ -163,7 +163,7 @@ class TestQueueProcessingAsync:
 
         upload_count = 0
 
-        async def mock_upload(change) -> bool:
+        async def mock_upload(change) -> bool:  # noqa: ARG001
             nonlocal upload_count
             await asyncio.sleep(0)
             upload_count += 1
@@ -203,7 +203,7 @@ class TestQueueProcessingAsync:
 
         engine.queue.get_pending.return_value = changes
 
-        async def slow_upload(change) -> bool:
+        async def slow_upload(change) -> bool:  # noqa: ARG001
             await asyncio.sleep(0.5)
             return True
 
@@ -240,7 +240,7 @@ class TestQueueProcessingAsync:
 
         upload_times = []
 
-        async def failing_upload(ch) -> bool:
+        async def failing_upload(ch) -> bool:  # noqa: ARG001
             await asyncio.sleep(0)
             upload_times.append(datetime.now(UTC))
             return False

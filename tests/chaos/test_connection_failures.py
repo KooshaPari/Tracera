@@ -26,7 +26,7 @@ RECOVERY_TARGET = 30
 @pytest.mark.slow
 async def test_database_connection_drop(
     toxiproxy_client: ToxiproxyClient,
-    postgres_proxy: str,
+    postgres_proxy: str,  # noqa: ARG001
     db_session,
     assert_recovery_within_target,
 ) -> None:
@@ -88,7 +88,7 @@ async def test_database_connection_drop(
 @pytest.mark.slow
 async def test_redis_connection_drop(
     toxiproxy_client: ToxiproxyClient,
-    redis_proxy: str,
+    redis_proxy: str,  # noqa: ARG001
     redis_client: redis.Redis,
     assert_recovery_within_target,
 ) -> None:
@@ -212,7 +212,7 @@ async def test_backend_service_restart(
 @pytest.mark.slow
 async def test_intermittent_connection_drops(
     toxiproxy_client: ToxiproxyClient,
-    postgres_proxy: str,
+    postgres_proxy: str,  # noqa: ARG001
     db_session,
 ) -> None:
     """Test: Intermittent connection drops (flapping network).

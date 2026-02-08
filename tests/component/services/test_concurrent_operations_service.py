@@ -19,7 +19,7 @@ def test_retry_with_backoff_retries_then_raises(monkeypatch) -> None:
         raise StaleDataError
 
     # avoid real sleep
-    monkeypatch.setattr(time, "sleep", lambda x: None)
+    monkeypatch.setattr(time, "sleep", lambda x: None)  # noqa: ARG005
     wrapped = retry_with_backoff(max_retries=2, initial_delay=0.01, jitter=False)(op)
 
     with pytest.raises(ConcurrencyError):
@@ -36,7 +36,7 @@ def test_execute_with_retry_success_after_conflict(monkeypatch) -> None:
             raise StaleDataError
         return "ok"
 
-    monkeypatch.setattr(time, "sleep", lambda x: None)
+    monkeypatch.setattr(time, "sleep", lambda x: None)  # noqa: ARG005
     svc = ConcurrentOperationsService(session=None)
     result = svc.execute_with_retry(op, max_retries=2, initial_delay=0.01)
 
@@ -45,14 +45,14 @@ def test_execute_with_retry_success_after_conflict(monkeypatch) -> None:
 
 
 def test_execute_with_retry_exhausts_and_raises(monkeypatch) -> None:
-    monkeypatch.setattr(time, "sleep", lambda x: None)
+    monkeypatch.setattr(time, "sleep", lambda x: None)  # noqa: ARG005
     svc = ConcurrentOperationsService(session=None)
 
     with pytest.raises(ConcurrencyError):
         svc.execute_with_retry(lambda: (_ for _ in ()).throw(StaleDataError()), max_retries=1, initial_delay=0.0)
 
 
-def test_execute_in_transaction_rolls_back_on_error(monkeypatch) -> None:
+def test_execute_in_transaction_rolls_back_on_error(monkeypatch) -> None:  # noqa: ARG001
     class DummySession:
         def __init__(self) -> None:
             self.committed = False

@@ -138,7 +138,7 @@ def test_api_health_check(client) -> None:
 # ============================================================================
 
 
-def test_create_project(client, db_session) -> None:
+def test_create_project(client, db_session) -> None:  # noqa: ARG001
     """Test creating a new project."""
     payload = {
         "name": "New Test Project",
@@ -155,7 +155,7 @@ def test_create_project(client, db_session) -> None:
     assert data["description"] == "A new test project"
 
 
-def test_list_projects(client, test_project) -> None:
+def test_list_projects(client, test_project) -> None:  # noqa: ARG001
     """Test listing all projects."""
     response = client.get("/api/v1/projects")
     assert response.status_code == 200
@@ -205,7 +205,7 @@ def test_delete_project(client, test_project) -> None:
 # ============================================================================
 
 
-def test_list_items_by_project(client, test_project, test_items) -> None:
+def test_list_items_by_project(client, test_project, test_items) -> None:  # noqa: ARG001
     """Test listing items in a project."""
     response = client.get(f"/api/v1/items?project_id={test_project.id}")
     assert response.status_code == 200
@@ -216,7 +216,7 @@ def test_list_items_by_project(client, test_project, test_items) -> None:
     assert data["total"] >= 3
 
 
-def test_list_items_with_pagination(client, test_project, test_items) -> None:
+def test_list_items_with_pagination(client, test_project, test_items) -> None:  # noqa: ARG001
     """Test listing items with skip/limit."""
     response = client.get(f"/api/v1/items?project_id={test_project.id}&skip=0&limit=2")
     assert response.status_code == 200
@@ -256,7 +256,7 @@ def test_delete_item(client, test_items) -> None:
 # ============================================================================
 
 
-def test_list_links_by_project(client, test_project, test_links) -> None:
+def test_list_links_by_project(client, test_project, test_links) -> None:  # noqa: ARG001
     """Test listing links in a project."""
     response = client.get(f"/api/v1/links?project_id={test_project.id}")
     assert response.status_code == 200
@@ -266,7 +266,7 @@ def test_list_links_by_project(client, test_project, test_links) -> None:
     assert "links" in data
 
 
-def test_list_links_by_source(client, test_items, test_links) -> None:
+def test_list_links_by_source(client, test_items, test_links) -> None:  # noqa: ARG001
     """Test listing links by source item."""
     source_id = test_items[0].id
     response = client.get(f"/api/v1/links?source_id={source_id}")
@@ -276,7 +276,7 @@ def test_list_links_by_source(client, test_items, test_links) -> None:
     assert "links" in data
 
 
-def test_list_links_by_target(client, test_items, test_links) -> None:
+def test_list_links_by_target(client, test_items, test_links) -> None:  # noqa: ARG001
     """Test listing links by target item."""
     target_id = test_items[1].id
     response = client.get(f"/api/v1/links?target_id={target_id}")
@@ -286,7 +286,7 @@ def test_list_links_by_target(client, test_items, test_links) -> None:
     assert "links" in data
 
 
-def test_list_links_by_source_and_target(client, test_items, test_links) -> None:
+def test_list_links_by_source_and_target(client, test_items, test_links) -> None:  # noqa: ARG001
     """Test listing links between specific items."""
     source_id = test_items[0].id
     target_id = test_items[1].id
@@ -384,7 +384,7 @@ def test_empty_response_handling(client, test_project) -> None:
     assert isinstance(data["items"], list)
 
 
-def test_large_skip_and_limit(client, test_project, test_items) -> None:
+def test_large_skip_and_limit(client, test_project, test_items) -> None:  # noqa: ARG001
     """Test handling of large skip/limit values."""
     response = client.get(f"/api/v1/items?project_id={test_project.id}&skip=999999&limit=999999")
     assert response.status_code == 200
@@ -443,7 +443,7 @@ def test_item_response_format(client, test_items) -> None:
     assert isinstance(data["title"], str)
 
 
-def test_list_response_format(client, test_project, test_items) -> None:
+def test_list_response_format(client, test_project, test_items) -> None:  # noqa: ARG001
     """Test that list responses have correct format."""
     response = client.get(f"/api/v1/items?project_id={test_project.id}")
     assert response.status_code == 200
@@ -469,7 +469,7 @@ def test_project_response_format(client, test_project) -> None:
     assert isinstance(data["name"], str)
 
 
-def test_link_response_format(client, test_links) -> None:
+def test_link_response_format(client, test_links) -> None:  # noqa: ARG001
     """Test that link responses have correct format."""
     response = client.get("/api/v1/links")
     assert response.status_code == 200
@@ -500,7 +500,7 @@ def test_bulk_operation_header_acceptance(client, test_project) -> None:
 # ============================================================================
 
 
-def test_get_graph_neighbors_outgoing(client, test_project, test_items, test_links) -> None:
+def test_get_graph_neighbors_outgoing(client, test_project, test_items, test_links) -> None:  # noqa: ARG001
     """Test getting outgoing neighbors in graph."""
     item_id = test_items[0].id
 
@@ -513,7 +513,7 @@ def test_get_graph_neighbors_outgoing(client, test_project, test_items, test_lin
     assert isinstance(data["neighbors"], list)
 
 
-def test_get_graph_neighbors_incoming(client, test_project, test_items, test_links) -> None:
+def test_get_graph_neighbors_incoming(client, test_project, test_items, test_links) -> None:  # noqa: ARG001
     """Test getting incoming neighbors in graph."""
     item_id = test_items[1].id
 

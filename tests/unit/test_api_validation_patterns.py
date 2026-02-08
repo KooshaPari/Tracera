@@ -414,7 +414,7 @@ class TestErrorHandlingPatterns:
     def test_retry_pattern(self) -> None:
         """Test retry pattern."""
 
-        def retry(func, max_attempts=3, delay=0):
+        def retry(func, max_attempts=3, delay=0):  # noqa: ARG001
             attempts = 0
             while attempts < max_attempts:
                 try:
@@ -438,7 +438,7 @@ class TestErrorHandlingPatterns:
     def test_timeout_pattern(self) -> None:
         """Test timeout pattern."""
 
-        def with_timeout(func, timeout=1):
+        def with_timeout(func, timeout=1):  # noqa: ARG001
             # Simple simulation
             try:
                 return func()

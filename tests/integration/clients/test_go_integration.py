@@ -11,11 +11,11 @@ from tracertm.clients.go_client import GoBackendClient, GoBackendError, generate
 
 
 @pytest.fixture
-async def mock_go_server(aiohttp_server, aiohttp_client):
+async def mock_go_server(aiohttp_server, aiohttp_client):  # noqa: ARG001
     """Create a mock Go backend server."""
     request_count = {"count": 0}
 
-    async def health_handler(request):
+    async def health_handler(request):  # noqa: ARG001
         return web.json_response({"status": "healthy", "service": "go-backend"})
 
     async def get_item_handler(request):
@@ -41,7 +41,7 @@ async def mock_go_server(aiohttp_server, aiohttp_client):
         query = request.query.get("q", "")
         return web.json_response({"results": [{"id": "item-1", "title": f"Result for {query}"}], "total": 1})
 
-    async def retry_handler(request):
+    async def retry_handler(request):  # noqa: ARG001
         request_count["count"] += 1
         if request_count["count"] < 3:
             return web.Response(status=503, text="Service Unavailable")

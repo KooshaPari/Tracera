@@ -49,13 +49,13 @@ except ImportError:
     HAS_HYPOTHESIS = False
 
     # Create dummy decorators if hypothesis not available
-    def given(*args, **kwargs):
+    def given(*args, **kwargs):  # noqa: ARG001
         def decorator(func):
             return pytest.mark.skip(reason="hypothesis not installed")(func)
 
         return decorator
 
-    def hypothesis_settings(*args, **kwargs):
+    def hypothesis_settings(*args, **kwargs):  # noqa: ARG001
         def decorator(func):
             return func
 

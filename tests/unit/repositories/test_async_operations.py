@@ -270,7 +270,7 @@ class TestAsyncConnectionPool:
                 self.peak_usage = max(self.peak_usage, self.in_use)
                 return id(self)
 
-            async def release_connection(self, conn_id: int) -> None:
+            async def release_connection(self, conn_id: int) -> None:  # noqa: ARG002
                 self.in_use -= 1
                 self.available.release()
 

@@ -372,7 +372,7 @@ class TestStreamChatWithToolsStreaming:
             yield MagicMock(type="content_block_delta", delta=MagicMock(type="text_delta", text=" World"))
             yield MagicMock(type="content_block_stop")
 
-        mock_stream.__aiter__ = lambda self: mock_stream_events()
+        mock_stream.__aiter__ = lambda self: mock_stream_events()  # noqa: ARG005
 
         # Mock get_final_message
         final_message = MagicMock()
@@ -466,7 +466,7 @@ class TestStreamChatWithToolsStreaming:
             yield InputJsonDelta2()
             yield BlockStop()
 
-        mock_stream1.__aiter__ = lambda self: mock_tool_events()
+        mock_stream1.__aiter__ = lambda self: mock_tool_events()  # noqa: ARG005
 
         final_message1 = MagicMock()
         final_message1.content = [ToolUseBlock()]
@@ -481,7 +481,7 @@ class TestStreamChatWithToolsStreaming:
             yield TextDelta()
             yield BlockStop()
 
-        mock_stream2.__aiter__ = lambda self: mock_text_events()
+        mock_stream2.__aiter__ = lambda self: mock_text_events()  # noqa: ARG005
 
         final_message2 = MagicMock()
         final_message2.content = [TextBlock()]
@@ -545,11 +545,11 @@ class TestSimpleChat:
     """Test non-streaming simple_chat method."""
 
     @pytest.mark.asyncio
-    async def test_simple_chat_returns_text(self, ai_service, mock_anthropic_client, sample_messages) -> None:
+    async def test_simple_chat_returns_text(self, ai_service, mock_anthropic_client, sample_messages) -> None:  # noqa: ARG002
         """simple_chat returns concatenated text response."""
 
         # Mock the streaming method to return text events
-        async def mock_stream(*args, **kwargs):
+        async def mock_stream(*args, **kwargs):  # noqa: ARG001
             await asyncio.sleep(0)
             yield format_sse(SSEEvent.TEXT, {"content": "Hello "})
             yield format_sse(SSEEvent.TEXT, {"content": "World"})
@@ -565,10 +565,10 @@ class TestSimpleChat:
         assert result == "Hello World"
 
     @pytest.mark.asyncio
-    async def test_simple_chat_handles_empty_response(self, ai_service, mock_anthropic_client, sample_messages) -> None:
+    async def test_simple_chat_handles_empty_response(self, ai_service, mock_anthropic_client, sample_messages) -> None:  # noqa: ARG002
         """simple_chat handles empty responses."""
 
-        async def mock_stream(*args, **kwargs):
+        async def mock_stream(*args, **kwargs):  # noqa: ARG001
             await asyncio.sleep(0)
             yield format_sse(SSEEvent.DONE, {})
 

@@ -185,7 +185,7 @@ class TestStatelessIngestionService:
             await asyncio.to_thread(Path(file_path).unlink)
 
     def test_ingest_markdown_with_frontmatter(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Markdown with YAML frontmatter
         When: Ingest file
@@ -272,7 +272,7 @@ class TestStatelessIngestionService:
             Path(file_path).unlink()
 
     def test_ingest_markdown_internal_links(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Markdown with internal anchor links
         When: Ingest file
@@ -295,7 +295,7 @@ class TestStatelessIngestionService:
 
     # ========== MDX Ingestion Tests ==========
 
-    def test_ingest_mdx_simple_file(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session) -> None:
+    def test_ingest_mdx_simple_file(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session) -> None:  # noqa: ARG002
         """Given: MDX file with JSX components
         When: Ingest MDX
         Then: Creates items for headers and JSX components.
@@ -352,7 +352,7 @@ class TestStatelessIngestionService:
     # ========== YAML/OpenAPI Ingestion Tests ==========
 
     def test_ingest_yaml_generic_structure(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Generic YAML file with nested structure
         When: Ingest YAML
@@ -379,7 +379,7 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_openapi_spec(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session) -> None:
+    def test_ingest_yaml_openapi_spec(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session) -> None:  # noqa: ARG002
         """Given: OpenAPI spec YAML file
         When: Ingest YAML
         Then: Creates items for endpoints and schemas.
@@ -420,7 +420,7 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_bmad_format(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session) -> None:
+    def test_ingest_yaml_bmad_format(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session) -> None:  # noqa: ARG002
         """Given: BMad format YAML with requirements
         When: Ingest YAML
         Then: Creates requirement items with traceability links.
@@ -526,7 +526,7 @@ class TestStatelessIngestionService:
             Path(file_path).unlink()
 
     def test_ingest_openapi_with_schema_refs(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: OpenAPI spec with $ref links to schemas
         When: Ingest YAML
@@ -564,7 +564,7 @@ class TestStatelessIngestionService:
             Path(file_path).unlink()
 
     def test_ingest_bmad_with_dependencies(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: BMad YAML with depends_on relationships
         When: Ingest YAML
@@ -611,10 +611,10 @@ class TestCycleDetectionService:
     @pytest.mark.asyncio
     async def test_has_cycle_no_cycle(
         self,
-        db_session: AsyncSession,
+        db_session: AsyncSession,  # noqa: ARG002
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
         sync_db_session: Session,
     ) -> None:
         """Given: Dependency graph without cycles
@@ -636,10 +636,10 @@ class TestCycleDetectionService:
     @pytest.mark.asyncio
     async def test_has_cycle_creates_cycle(
         self,
-        db_session: AsyncSession,
+        db_session: AsyncSession,  # noqa: ARG002
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
         sync_db_session: Session,
     ) -> None:
         """Given: Linear dependency A -> B -> C
@@ -661,10 +661,10 @@ class TestCycleDetectionService:
     @pytest.mark.asyncio
     async def test_has_cycle_ignores_other_link_types(
         self,
-        db_session: AsyncSession,
+        db_session: AsyncSession,  # noqa: ARG002
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
         sync_db_session: Session,
     ) -> None:
         """Given: Dependency graph
@@ -687,10 +687,10 @@ class TestCycleDetectionService:
     @pytest.mark.asyncio
     async def test_detect_cycles_no_cycles(
         self,
-        db_session: AsyncSession,
+        db_session: AsyncSession,  # noqa: ARG002
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
         sync_db_session: Session,
     ) -> None:
         """Given: Acyclic dependency graph
@@ -866,10 +866,10 @@ class TestCycleDetectionService:
     @pytest.mark.asyncio
     async def test_detect_missing_dependencies_none(
         self,
-        db_session: AsyncSession,
+        db_session: AsyncSession,  # noqa: ARG002
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
         sync_db_session: Session,
     ) -> None:
         """Given: All links reference valid items
@@ -944,10 +944,10 @@ class TestCycleDetectionService:
     @pytest.mark.asyncio
     async def test_detect_orphans_none(
         self,
-        db_session: AsyncSession,
+        db_session: AsyncSession,  # noqa: ARG002
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
         sync_db_session: Session,
     ) -> None:
         """Given: All items have at least one link
@@ -994,7 +994,7 @@ class TestCycleDetectionService:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_items: list[Item],
+        sample_items: list[Item],  # noqa: ARG002
         sync_db_session: Session,
     ) -> None:
         """Given: Item with no dependents
@@ -1019,10 +1019,10 @@ class TestCycleDetectionService:
     @pytest.mark.asyncio
     async def test_analyze_impact_with_dependents(
         self,
-        db_session: AsyncSession,
+        db_session: AsyncSession,  # noqa: ARG002
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
         sync_db_session: Session,
     ) -> None:
         """Given: Item with dependents (A -> B -> C)
@@ -1040,10 +1040,10 @@ class TestCycleDetectionService:
     @pytest.mark.asyncio
     async def test_analyze_impact_max_depth(
         self,
-        db_session: AsyncSession,
+        db_session: AsyncSession,  # noqa: ARG002
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
         sync_db_session: Session,
     ) -> None:
         """Given: Deep dependency chain
@@ -1127,7 +1127,7 @@ class TestChaosModeService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """Given: Item with dependencies and dependents
         When: Analyze impact
@@ -1234,8 +1234,8 @@ class TestChaosModeService:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """Given: Project with items in various states
         When: Get project health
@@ -1406,7 +1406,7 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """Given: Path A -> B -> C -> D
         When: Find shortest path from A to D
@@ -1430,7 +1430,7 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """Given: No path exists between items
         When: Find shortest path
@@ -1570,7 +1570,7 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """Given: Dependency graph with multiple reachable items
         When: Find all shortest paths from source
@@ -1715,7 +1715,7 @@ class TestEdgeCasesAndErrorHandling:
 
     @pytest.mark.asyncio
     async def test_stateless_ingestion_with_special_characters(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,  # noqa: ARG002
     ) -> None:
         """Given: Markdown with special characters and unicode
         When: Ingest file

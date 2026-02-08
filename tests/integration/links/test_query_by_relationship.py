@@ -39,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch) -> str:
     return "test-project"
 
 
-def test_query_by_relationship(runner, temp_project) -> None:
+def test_query_by_relationship(runner, temp_project) -> None:  # noqa: ARG001
     """Test querying items by relationship (FR21)."""
     # Create items
     result1 = runner.invoke(
@@ -99,7 +99,7 @@ def test_query_by_relationship(runner, temp_project) -> None:
     # assert "Test Case 1" in result4.stdout
 
 
-def test_query_by_relationship_no_results(runner, temp_project) -> None:
+def test_query_by_relationship_no_results(runner, temp_project) -> None:  # noqa: ARG001
     """Test query by relationship with no results."""
     # Create an item with no links
     result1 = runner.invoke(

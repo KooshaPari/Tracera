@@ -96,7 +96,7 @@ class TestEpicXStoryY:
     # ========================================================================
 
     @pytest.mark.unit
-    def test_tc_X_Y_3_error_handling(self, sample_fixture) -> None:
+    def test_tc_X_Y_3_error_handling(self, sample_fixture) -> None:  # noqa: ARG002
         """TC-X.Y.3: Story Title - Error Handling.
 
         FR: FR-XXX

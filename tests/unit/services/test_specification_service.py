@@ -161,7 +161,7 @@ class TestADRService:
         mock_session.flush.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_verify_compliance(self, service, mock_session) -> None:
+    async def test_verify_compliance(self, service, mock_session) -> None:  # noqa: ARG002
         """Test verifying ADR compliance."""
         # Setup
         mock_adr = ADR(
@@ -187,7 +187,7 @@ class TestADRService:
         assert result.last_verified_at is not None
 
     @pytest.mark.asyncio
-    async def test_link_requirements(self, service, mock_session) -> None:
+    async def test_link_requirements(self, service, mock_session) -> None:  # noqa: ARG002
         """Test linking requirements to ADR."""
         # Setup
         mock_adr = ADR(
@@ -213,7 +213,7 @@ class TestADRService:
         assert "REQ-003" in result.related_requirements
 
     @pytest.mark.asyncio
-    async def test_supersede(self, service, mock_session) -> None:
+    async def test_supersede(self, service, mock_session) -> None:  # noqa: ARG002
         """Test marking ADR as superseded."""
         # Setup
         mock_adr = ADR(
@@ -275,7 +275,7 @@ class TestContractService:
         mock_session.add.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_verify_contract(self, service, mock_session) -> None:
+    async def test_verify_contract(self, service, mock_session) -> None:  # noqa: ARG002
         """Test verifying a contract."""
         # Setup
         mock_contract = Contract(
@@ -300,7 +300,7 @@ class TestContractService:
         assert result.version == 2
 
     @pytest.mark.asyncio
-    async def test_execute_transition(self, service, mock_session) -> None:
+    async def test_execute_transition(self, service, mock_session) -> None:  # noqa: ARG002
         """Test executing state transition."""
         # Setup
         mock_contract = Contract(
@@ -444,7 +444,7 @@ class TestScenarioService:
         assert scenario.pass_rate == 0.0
 
     @pytest.mark.asyncio
-    async def test_run_scenario(self, service, mock_session) -> None:
+    async def test_run_scenario(self, service, mock_session) -> None:  # noqa: ARG002
         """Test running a scenario."""
         # Setup
         mock_scenario = Scenario(
@@ -472,7 +472,7 @@ class TestScenarioService:
         assert result.metadata_.get("last_run") == results
 
     @pytest.mark.asyncio
-    async def test_update_pass_rate(self, service, mock_session) -> None:
+    async def test_update_pass_rate(self, service, mock_session) -> None:  # noqa: ARG002
         """Test updating scenario pass rate."""
         # Setup
         mock_scenario = Scenario(
@@ -494,7 +494,7 @@ class TestScenarioService:
         assert result.version == 2
 
     @pytest.mark.asyncio
-    async def test_link_test_cases(self, service, mock_session) -> None:
+    async def test_link_test_cases(self, service, mock_session) -> None:  # noqa: ARG002
         """Test linking test cases to scenario."""
         # Setup
         mock_scenario = Scenario(
@@ -531,7 +531,7 @@ class TestStepDefinitionService:
         return StepDefinitionService(mock_session)
 
     @pytest.mark.asyncio
-    async def test_create_step_definition(self, service, mock_session) -> None:
+    async def test_create_step_definition(self, service, mock_session) -> None:  # noqa: ARG002
         """Test creating a Step Definition."""
         # Execute
         step = await service.create(
@@ -553,7 +553,7 @@ class TestStepDefinitionService:
         assert step["version"] == 1
 
     @pytest.mark.asyncio
-    async def test_find_matching_steps(self, service, mock_session) -> None:
+    async def test_find_matching_steps(self, service, mock_session) -> None:  # noqa: ARG002
         """Test finding matching step definitions."""
         # Execute
         results = await service.find_matching(
@@ -566,7 +566,7 @@ class TestStepDefinitionService:
         assert isinstance(results, list)
 
     @pytest.mark.asyncio
-    async def test_get_step(self, service, mock_session) -> None:
+    async def test_get_step(self, service, mock_session) -> None:  # noqa: ARG002
         """Test getting a Step Definition."""
         # Execute
         result = await service.get("step-1")
@@ -575,7 +575,7 @@ class TestStepDefinitionService:
         assert result is None  # Placeholder implementation
 
     @pytest.mark.asyncio
-    async def test_list_steps_by_project(self, service, mock_session) -> None:
+    async def test_list_steps_by_project(self, service, mock_session) -> None:  # noqa: ARG002
         """Test listing step definitions for a project."""
         # Execute
         steps, total = await service.list_by_project("proj-1")
@@ -585,7 +585,7 @@ class TestStepDefinitionService:
         assert total == 0
 
     @pytest.mark.asyncio
-    async def test_increment_usage(self, service, mock_session) -> None:
+    async def test_increment_usage(self, service, mock_session) -> None:  # noqa: ARG002
         """Test incrementing step usage count."""
         # Execute
         result = await service.increment_usage("step-1")

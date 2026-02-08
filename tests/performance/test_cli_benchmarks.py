@@ -274,7 +274,7 @@ class TestCacheBenchmarks:
 class TestPerformanceMonitorBenchmarks:
     """Benchmark performance monitoring overhead."""
 
-    def test_benchmark_monitor_creation(self, benchmark, benchmark_results) -> None:
+    def test_benchmark_monitor_creation(self, benchmark, benchmark_results) -> None:  # noqa: ARG002
         """Benchmark performance monitor creation."""
         from tracertm.cli.performance import PerformanceMonitor
 
@@ -299,7 +299,7 @@ class TestPerformanceMonitorBenchmarks:
             "mark_overhead_ms": benchmark.stats["mean"] * 1000,
         }
 
-    def test_benchmark_monitor_get_timings(self, benchmark, benchmark_results) -> None:
+    def test_benchmark_monitor_get_timings(self, benchmark, benchmark_results) -> None:  # noqa: ARG002
         """Benchmark retrieving timings."""
         from tracertm.cli.performance import PerformanceMonitor
 
@@ -392,7 +392,7 @@ class TestCommandExecutionBenchmarks:
 class TestComparativeBenchmarks:
     """Compare different implementation approaches."""
 
-    def test_benchmark_lazy_vs_direct_import(self, benchmark) -> None:
+    def test_benchmark_lazy_vs_direct_import(self, benchmark) -> None:  # noqa: ARG002
         """Compare lazy loading vs direct import performance."""
         from tracertm.cli.performance import LazyLoader
 
@@ -420,7 +420,7 @@ class TestComparativeBenchmarks:
         # Lazy loading should be comparable or faster due to caching
         assert avg_lazy < avg_direct * 2, "Lazy loading significantly slower than direct"
 
-    def test_benchmark_cache_vs_recompute(self, benchmark) -> None:
+    def test_benchmark_cache_vs_recompute(self, benchmark) -> None:  # noqa: ARG002
         """Compare cached vs recomputed results."""
         from tracertm.cli.performance import CommandCache
 
@@ -462,7 +462,7 @@ class TestComparativeBenchmarks:
 class TestRegressionDetection:
     """Detect performance regressions against baselines."""
 
-    def test_check_against_baselines(self, benchmark_results) -> None:
+    def test_check_against_baselines(self, benchmark_results) -> None:  # noqa: ARG002
         """Compare current results against baseline file."""
         baselines_file = Path(__file__).parent / "performance_baselines.json"
 
@@ -487,7 +487,7 @@ class TestRegressionDetection:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def generate_benchmark_report(request):
+def generate_benchmark_report(request):  # noqa: ARG001
     """Generate comprehensive benchmark report."""
     yield
 

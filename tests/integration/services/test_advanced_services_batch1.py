@@ -208,7 +208,7 @@ class TestAdvancedAnalyticsServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_project_metrics_with_populated_project(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],  # noqa: ARG002
     ) -> None:
         """GIVEN: A project with items in various statuses and views
         WHEN: project_metrics is called
@@ -288,7 +288,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_events: list[Event],
+        sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Project with events from multiple agents
         WHEN: team_analytics is called
@@ -323,7 +323,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_events: list[Event],
+        sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Events spread over 15 days
         WHEN: trend_analysis is called with default 30-day window
@@ -345,7 +345,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_events: list[Event],
+        sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Events with custom time window
         WHEN: trend_analysis is called with days=7
@@ -364,8 +364,8 @@ class TestAdvancedAnalyticsServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Items with various outgoing links
         WHEN: dependency_metrics is called
@@ -386,7 +386,7 @@ class TestAdvancedAnalyticsServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_dependency_metrics_no_links(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],  # noqa: ARG002
     ) -> None:
         """GIVEN: Items without any links
         WHEN: dependency_metrics is called
@@ -402,7 +402,7 @@ class TestAdvancedAnalyticsServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_quality_metrics_with_descriptions(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],  # noqa: ARG002
     ) -> None:
         """GIVEN: Items with varying description quality
         WHEN: quality_metrics is called
@@ -425,8 +425,8 @@ class TestAdvancedAnalyticsServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Items with outgoing links
         WHEN: quality_metrics is called
@@ -444,9 +444,9 @@ class TestAdvancedAnalyticsServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
-        sample_events: list[Event],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
+        sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Fully populated project with items, links, and events
         WHEN: generate_report is called
@@ -481,9 +481,9 @@ class TestAdvancedTraceabilityServiceIntegration:
     async def test_find_all_paths_direct_connection(
         self,
         db_session: AsyncSession,
-        test_project: Project,
+        test_project: Project,  # noqa: ARG002
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Two items with direct link
         WHEN: find_all_paths is called
@@ -502,9 +502,9 @@ class TestAdvancedTraceabilityServiceIntegration:
     async def test_find_all_paths_multi_hop(
         self,
         db_session: AsyncSession,
-        test_project: Project,
+        test_project: Project,  # noqa: ARG002
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Items connected through intermediate nodes
         WHEN: find_all_paths is called
@@ -524,9 +524,9 @@ class TestAdvancedTraceabilityServiceIntegration:
     async def test_find_all_paths_no_connection(
         self,
         db_session: AsyncSession,
-        test_project: Project,
+        test_project: Project,  # noqa: ARG002
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Two unconnected items
         WHEN: find_all_paths is called
@@ -543,9 +543,9 @@ class TestAdvancedTraceabilityServiceIntegration:
     async def test_find_all_paths_max_depth_limit(
         self,
         db_session: AsyncSession,
-        test_project: Project,
+        test_project: Project,  # noqa: ARG002
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Items with deep connection chain
         WHEN: find_all_paths is called with max_depth=1
@@ -564,7 +564,7 @@ class TestAdvancedTraceabilityServiceIntegration:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Project with dependency graph
         WHEN: transitive_closure is computed
@@ -608,9 +608,9 @@ class TestAdvancedTraceabilityServiceIntegration:
     async def test_bidirectional_impact_analysis(
         self,
         db_session: AsyncSession,
-        test_project: Project,
+        test_project: Project,  # noqa: ARG002
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Item with both incoming and outgoing links
         WHEN: bidirectional_impact is called
@@ -654,8 +654,8 @@ class TestAdvancedTraceabilityServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Items in source view with some missing links to target view
         WHEN: coverage_gaps is called
@@ -711,8 +711,8 @@ class TestAdvancedTraceabilityServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Acyclic dependency graph
         WHEN: circular_dependency_check is called
@@ -798,8 +798,8 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Project with acyclic dependencies
         WHEN: detect_circular_dependencies is called
@@ -964,7 +964,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Item with incoming and outgoing links
         WHEN: bidirectional_link_analysis is called
@@ -998,8 +998,8 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_items: list[Item],
-        dependency_graph: list[Link],
+        sample_items: list[Item],  # noqa: ARG002
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Items with links between two views
         WHEN: traceability_matrix_generation is called
@@ -1054,7 +1054,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-        dependency_graph: list[Link],
+        dependency_graph: list[Link],  # noqa: ARG002
     ) -> None:
         """GIVEN: Multi-level dependency chain
         WHEN: impact_propagation_analysis is called with max_depth
@@ -1138,7 +1138,7 @@ class TestAgentCoordinationServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_agents: list[Agent],
+        sample_agents: list[Agent],  # noqa: ARG002
     ) -> None:
         """GIVEN: Agents with non-overlapping activity
         WHEN: detect_conflicts is called
@@ -1309,9 +1309,9 @@ class TestAgentCoordinationServiceIntegration:
     async def test_get_agent_activity_with_events(
         self,
         db_session: AsyncSession,
-        test_project: Project,
-        sample_agents: list[Agent],
-        sample_events: list[Event],
+        test_project: Project,  # noqa: ARG002
+        sample_agents: list[Agent],  # noqa: ARG002
+        sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Agent with activity events
         WHEN: get_agent_activity is called
@@ -1329,7 +1329,7 @@ class TestAgentCoordinationServiceIntegration:
         assert all("timestamp" in e for e in activity)
 
     @pytest.mark.asyncio
-    async def test_get_agent_activity_with_limit(self, db_session: AsyncSession, sample_events: list[Event]) -> None:
+    async def test_get_agent_activity_with_limit(self, db_session: AsyncSession, sample_events: list[Event]) -> None:  # noqa: ARG002
         """GIVEN: Agent with many events
         WHEN: get_agent_activity is called with limit
         THEN: Returns only limited number of events.
@@ -1353,9 +1353,9 @@ class TestAgentPerformanceServiceIntegration:
     async def test_get_agent_stats_with_events(
         self,
         db_session: AsyncSession,
-        test_project: Project,
-        sample_agents: list[Agent],
-        sample_events: list[Event],
+        test_project: Project,  # noqa: ARG002
+        sample_agents: list[Agent],  # noqa: ARG002
+        sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Agent with recent activity events
         WHEN: get_agent_stats is called
@@ -1373,7 +1373,7 @@ class TestAgentPerformanceServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_get_agent_stats_custom_time_window(
-        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event],
+        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Agent activity over extended period
         WHEN: get_agent_stats is called with custom window
@@ -1404,8 +1404,8 @@ class TestAgentPerformanceServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_agents: list[Agent],
-        sample_events: list[Event],
+        sample_agents: list[Agent],  # noqa: ARG002
+        sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Project with multiple agents
         WHEN: get_team_performance is called
@@ -1436,7 +1436,7 @@ class TestAgentPerformanceServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_get_agent_efficiency_high_activity(
-        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event],
+        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Agent with high event count and diversity
         WHEN: get_agent_efficiency is called
@@ -1485,7 +1485,7 @@ class TestAgentPerformanceServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_get_agent_workload_heavy(
-        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event],
+        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event],  # noqa: ARG002
     ) -> None:
         """GIVEN: Agent with high event rate
         WHEN: get_agent_workload is called
@@ -1536,7 +1536,7 @@ class TestAgentPerformanceServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_agents: list[Agent],
+        sample_agents: list[Agent],  # noqa: ARG002
     ) -> None:
         """GIVEN: Multiple agents with varying workloads
         WHEN: recommend_agent_assignment is called
@@ -1568,7 +1568,7 @@ class TestAgentPerformanceServiceIntegration:
         self,
         db_session: AsyncSession,
         test_project: Project,
-        sample_agents: list[Agent],
+        sample_agents: list[Agent],  # noqa: ARG002
     ) -> None:
         """GIVEN: Task with specific complexity
         WHEN: recommend_agent_assignment is called

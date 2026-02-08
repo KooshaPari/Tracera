@@ -1435,7 +1435,7 @@ class TestSyncEngineEdgeCases:
         # Mock API to fail on some calls
         call_count = [0]
 
-        async def mock_post(*args, **kwargs):
+        async def mock_post(*args, **kwargs):  # noqa: ARG001
             call_count[0] += 1
             if call_count[0] % 2 == 0:
                 msg = "Intermittent failure"

@@ -15,7 +15,7 @@ class _FakeSyncEngine:
     def __init__(self) -> None:
         self.state = SyncState(status=SyncStatus.SUCCESS, pending_changes=2, conflicts_count=1)
 
-    async def sync(self, force: bool = False):
+    async def sync(self, force: bool = False):  # noqa: ARG002
         return SyncResult(
             success=True,
             entities_synced=3,
@@ -65,7 +65,7 @@ def test_sync_force_success() -> None:
 @pytest.mark.e2e
 def test_sync_failure_path() -> None:
     class _FailEngine(_FakeSyncEngine):
-        async def sync(self, force: bool = False):
+        async def sync(self, force: bool = False):  # noqa: ARG002
             return SyncResult(success=False, entities_synced=0, conflicts=[], errors=["boom"], duration_seconds=0.1)
 
     with patch("tracertm.cli.commands.sync._get_sync_engine", return_value=_FailEngine()):

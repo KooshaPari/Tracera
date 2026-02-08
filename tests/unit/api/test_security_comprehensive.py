@@ -381,7 +381,7 @@ class TestRateLimiting:
             limiter = MagicMock()
             call_count = 0
 
-            def check_limit(user_id, *args, **kwargs):
+            def check_limit(user_id, *args, **kwargs):  # noqa: ARG001
                 nonlocal call_count
                 call_count += 1
                 # Allow 10 requests per user
@@ -458,7 +458,7 @@ class TestRateLimiting:
 
             request_times = []
 
-            def check_limit(user_id, *args, **kwargs):
+            def check_limit(user_id, *args, **kwargs):  # noqa: ARG001
                 request_times.append(datetime.now(UTC))
                 # Reset after 60 seconds
                 if len(request_times) > 1:
@@ -489,7 +489,7 @@ class TestRateLimiting:
         with patch("tracertm.api.main.RateLimiter") as _:
             limiter = MagicMock()
 
-            def check_limit(user_id, tier=None, *args, **kwargs):
+            def check_limit(user_id, tier=None, *args, **kwargs):  # noqa: ARG001
                 # Premium users get higher limit
                 return (tier == "premium" and 10000) or 100
 
@@ -528,7 +528,7 @@ class TestWebhookSecurity:
             except Exception as e:
                 logger.debug("Endpoint may not exist: %s", e)
 
-    def test_webhook_signature_verification_failure(self, mock_webhook_secret) -> None:
+    def test_webhook_signature_verification_failure(self, mock_webhook_secret) -> None:  # noqa: ARG002
         """Test webhook signature verification failure."""
         from tracertm.api.main import app
 

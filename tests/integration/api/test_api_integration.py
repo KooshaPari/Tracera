@@ -92,7 +92,7 @@ def test_project(test_session):
 
 
 @pytest.fixture(scope="function")
-def api_client_setup(tmp_path, monkeypatch, test_db_engine, test_project):
+def api_client_setup(tmp_path, monkeypatch, test_db_engine, test_project):  # noqa: ARG001
     """Set up environment for TraceRTMClient tests."""
     config_dir = tmp_path / ".config" / "tracertm"
     config_dir.mkdir(parents=True)
@@ -115,7 +115,7 @@ def api_client_setup(tmp_path, monkeypatch, test_db_engine, test_project):
 
 
 @pytest.fixture(scope="function")
-def fastapi_test_client(test_db_engine, test_project):
+def fastapi_test_client(test_db_engine, test_project):  # noqa: ARG001
     """Create FastAPI test client with database dependency override."""
 
     async def override_get_db():
@@ -180,7 +180,7 @@ def sample_items(test_session, test_project):
 
 
 @pytest.fixture(scope="function")
-def sample_links(test_session, test_project, sample_items):
+def sample_links(test_session, test_project, sample_items):  # noqa: ARG001
     """Create sample links for testing."""
     links = [
         Link(
@@ -212,7 +212,7 @@ def sample_links(test_session, test_project, sample_items):
 class TestTraceRTMClientInitialization:
     """Test client initialization and setup."""
 
-    def test_client_initialization_no_args(self, api_client_setup) -> None:
+    def test_client_initialization_no_args(self, api_client_setup) -> None:  # noqa: ARG002
         """Test initializing client without arguments."""
         client = TraceRTMClient()
         assert client.config_manager is not None
@@ -222,21 +222,21 @@ class TestTraceRTMClientInitialization:
         assert client._session is None
         client.close()
 
-    def test_client_initialization_with_agent_id(self, api_client_setup) -> None:
+    def test_client_initialization_with_agent_id(self, api_client_setup) -> None:  # noqa: ARG002
         """Test initializing client with agent ID."""
         client = TraceRTMClient(agent_id="test-agent-id")
         assert client.agent_id == "test-agent-id"
         assert client.agent_name is None
         client.close()
 
-    def test_client_initialization_with_agent_name(self, api_client_setup) -> None:
+    def test_client_initialization_with_agent_name(self, api_client_setup) -> None:  # noqa: ARG002
         """Test initializing client with agent name."""
         client = TraceRTMClient(agent_name="Test Agent")
         assert client.agent_name == "Test Agent"
         assert client.agent_id is None
         client.close()
 
-    def test_get_session_creates_connection(self, api_client_setup) -> None:
+    def test_get_session_creates_connection(self, api_client_setup) -> None:  # noqa: ARG002
         """Test that _get_session creates database connection."""
         client = TraceRTMClient()
         session = client._get_session()
@@ -245,7 +245,7 @@ class TestTraceRTMClientInitialization:
         assert client._session is not None
         client.close()
 
-    def test_get_session_reuses_connection(self, api_client_setup) -> None:
+    def test_get_session_reuses_connection(self, api_client_setup) -> None:  # noqa: ARG002
         """Test that _get_session reuses existing connection."""
         client = TraceRTMClient()
         session1 = client._get_session()
@@ -289,7 +289,7 @@ class TestTraceRTMClientInitialization:
 class TestTraceRTMClientAgentOperations:
     """Test agent registration and management."""
 
-    def test_register_agent_basic(self, api_client_setup) -> None:
+    def test_register_agent_basic(self, api_client_setup) -> None:  # noqa: ARG002
         """Test basic agent registration."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -307,7 +307,7 @@ class TestTraceRTMClientAgentOperations:
         assert agent.status == "active"
         client.close()
 
-    def test_register_agent_with_type(self, api_client_setup) -> None:
+    def test_register_agent_with_type(self, api_client_setup) -> None:  # noqa: ARG002
         """Test agent registration with custom type."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Custom Agent", agent_type="custom_type")
@@ -317,7 +317,7 @@ class TestTraceRTMClientAgentOperations:
         assert agent.agent_type == "custom_type"
         client.close()
 
-    def test_register_agent_with_metadata(self, api_client_setup) -> None:
+    def test_register_agent_with_metadata(self, api_client_setup) -> None:  # noqa: ARG002
         """Test agent registration with metadata."""
         client = TraceRTMClient()
         metadata = {"key": "value", "capabilities": ["test", "code"]}
@@ -329,7 +329,7 @@ class TestTraceRTMClientAgentOperations:
         assert "capabilities" in agent.agent_metadata
         client.close()
 
-    def test_register_agent_with_project_ids(self, api_client_setup) -> None:
+    def test_register_agent_with_project_ids(self, api_client_setup) -> None:  # noqa: ARG002
         """Test agent registration with multiple project IDs."""
         client = TraceRTMClient()
         project_ids = ["project-1", "project-2"]
@@ -341,7 +341,7 @@ class TestTraceRTMClientAgentOperations:
         assert agent.agent_metadata["assigned_projects"] == project_ids
         client.close()
 
-    def test_assign_agent_to_projects(self, api_client_setup) -> None:
+    def test_assign_agent_to_projects(self, api_client_setup) -> None:  # noqa: ARG002
         """Test assigning agent to multiple projects."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -354,7 +354,7 @@ class TestTraceRTMClientAgentOperations:
         assert agent.agent_metadata["assigned_projects"] == project_ids
         client.close()
 
-    def test_assign_agent_to_projects_not_found(self, api_client_setup) -> None:
+    def test_assign_agent_to_projects_not_found(self, api_client_setup) -> None:  # noqa: ARG002
         """Test assigning non-existent agent raises error."""
         client = TraceRTMClient()
 
@@ -362,7 +362,7 @@ class TestTraceRTMClientAgentOperations:
             client.assign_agent_to_projects("nonexistent-id", ["proj-1"])
         client.close()
 
-    def test_get_agent_projects(self, api_client_setup) -> None:
+    def test_get_agent_projects(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting projects assigned to agent."""
         client = TraceRTMClient()
         project_ids = ["proj-1", "proj-2"]
@@ -376,14 +376,14 @@ class TestTraceRTMClientAgentOperations:
         assert "proj-2" in assigned_projects
         client.close()
 
-    def test_get_agent_projects_not_found(self, api_client_setup) -> None:
+    def test_get_agent_projects_not_found(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting projects for non-existent agent."""
         client = TraceRTMClient()
         projects = client.get_agent_projects("nonexistent-id")
         assert projects == []
         client.close()
 
-    def test_get_agent_projects_no_assignments(self, api_client_setup) -> None:
+    def test_get_agent_projects_no_assignments(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting projects for agent with no assignments."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -398,7 +398,7 @@ class TestTraceRTMClientAgentOperations:
 class TestTraceRTMClientItemOperations:
     """Test item CRUD operations."""
 
-    def test_create_item_basic(self, api_client_setup) -> None:
+    def test_create_item_basic(self, api_client_setup) -> None:  # noqa: ARG002
         """Test creating basic item."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -413,7 +413,7 @@ class TestTraceRTMClientItemOperations:
         assert item["version"] == 1
         client.close()
 
-    def test_create_item_with_all_fields(self, api_client_setup) -> None:
+    def test_create_item_with_all_fields(self, api_client_setup) -> None:  # noqa: ARG002
         """Test creating item with all optional fields."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -441,7 +441,7 @@ class TestTraceRTMClientItemOperations:
         assert retrieved["metadata"] == metadata
         client.close()
 
-    def test_query_items_all(self, api_client_setup) -> None:
+    def test_query_items_all(self, api_client_setup) -> None:  # noqa: ARG002
         """Test querying all items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -454,7 +454,7 @@ class TestTraceRTMClientItemOperations:
         assert len(items) == 3
         client.close()
 
-    def test_query_items_by_view(self, api_client_setup) -> None:
+    def test_query_items_by_view(self, api_client_setup) -> None:  # noqa: ARG002
         """Test querying items filtered by view."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -468,7 +468,7 @@ class TestTraceRTMClientItemOperations:
         assert all(item["view"] == "FEATURE" for item in features)
         client.close()
 
-    def test_query_items_by_status(self, api_client_setup) -> None:
+    def test_query_items_by_status(self, api_client_setup) -> None:  # noqa: ARG002
         """Test querying items filtered by status."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -482,7 +482,7 @@ class TestTraceRTMClientItemOperations:
         assert all(item["status"] == "todo" for item in todos)
         client.close()
 
-    def test_query_items_by_type(self, api_client_setup) -> None:
+    def test_query_items_by_type(self, api_client_setup) -> None:  # noqa: ARG002
         """Test querying items filtered by item type."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -495,7 +495,7 @@ class TestTraceRTMClientItemOperations:
         assert features[0]["type"] == "feature"
         client.close()
 
-    def test_query_items_with_filters(self, api_client_setup) -> None:
+    def test_query_items_with_filters(self, api_client_setup) -> None:  # noqa: ARG002
         """Test querying items with structured filters."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -512,7 +512,7 @@ class TestTraceRTMClientItemOperations:
         assert alice_items[0]["owner"] == "alice"
         client.close()
 
-    def test_query_items_limit(self, api_client_setup) -> None:
+    def test_query_items_limit(self, api_client_setup) -> None:  # noqa: ARG002
         """Test querying items with limit."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -524,7 +524,7 @@ class TestTraceRTMClientItemOperations:
         assert len(items) == 5
         client.close()
 
-    def test_get_item_success(self, api_client_setup) -> None:
+    def test_get_item_success(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting item by ID."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -537,7 +537,7 @@ class TestTraceRTMClientItemOperations:
         assert item["title"] == "Test Item"
         client.close()
 
-    def test_get_item_not_found(self, api_client_setup) -> None:
+    def test_get_item_not_found(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting non-existent item returns None."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -546,7 +546,7 @@ class TestTraceRTMClientItemOperations:
         assert item is None
         client.close()
 
-    def test_get_item_soft_deleted(self, api_client_setup) -> None:
+    def test_get_item_soft_deleted(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting soft-deleted item returns None."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -558,7 +558,7 @@ class TestTraceRTMClientItemOperations:
         assert item is None
         client.close()
 
-    def test_update_item_basic(self, api_client_setup) -> None:
+    def test_update_item_basic(self, api_client_setup) -> None:  # noqa: ARG002
         """Test updating item fields."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -571,7 +571,7 @@ class TestTraceRTMClientItemOperations:
         assert updated["version"] > created["version"]
         client.close()
 
-    def test_update_item_multiple_fields(self, api_client_setup) -> None:
+    def test_update_item_multiple_fields(self, api_client_setup) -> None:  # noqa: ARG002
         """Test updating multiple item fields."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -597,7 +597,7 @@ class TestTraceRTMClientItemOperations:
         assert item["metadata"] == {"new": "data"}
         client.close()
 
-    def test_update_item_not_found(self, api_client_setup) -> None:
+    def test_update_item_not_found(self, api_client_setup) -> None:  # noqa: ARG002
         """Test updating non-existent item raises error."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -606,7 +606,7 @@ class TestTraceRTMClientItemOperations:
             client.update_item("nonexistent-id", title="New")
         client.close()
 
-    def test_delete_item_success(self, api_client_setup) -> None:
+    def test_delete_item_success(self, api_client_setup) -> None:  # noqa: ARG002
         """Test deleting item (soft delete)."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -623,7 +623,7 @@ class TestTraceRTMClientItemOperations:
         assert item is None
         client.close()
 
-    def test_delete_item_not_found(self, api_client_setup) -> None:
+    def test_delete_item_not_found(self, api_client_setup) -> None:  # noqa: ARG002
         """Test deleting non-existent item raises error."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -636,7 +636,7 @@ class TestTraceRTMClientItemOperations:
 class TestTraceRTMClientBatchOperations:
     """Test batch operations."""
 
-    def test_batch_create_items(self, api_client_setup) -> None:
+    def test_batch_create_items(self, api_client_setup) -> None:  # noqa: ARG002
         """Test batch creating items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -656,7 +656,7 @@ class TestTraceRTMClientBatchOperations:
         assert len(items) == 3
         client.close()
 
-    def test_batch_create_items_with_fields(self, api_client_setup) -> None:
+    def test_batch_create_items_with_fields(self, api_client_setup) -> None:  # noqa: ARG002
         """Test batch creating items with all fields."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -682,7 +682,7 @@ class TestTraceRTMClientBatchOperations:
         assert items[0]["description"] == "Description"
         client.close()
 
-    def test_batch_update_items(self, api_client_setup) -> None:
+    def test_batch_update_items(self, api_client_setup) -> None:  # noqa: ARG002
         """Test batch updating items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -712,7 +712,7 @@ class TestTraceRTMClientBatchOperations:
         assert updated2["priority"] == "high"
         client.close()
 
-    def test_batch_update_items_skip_missing(self, api_client_setup) -> None:
+    def test_batch_update_items_skip_missing(self, api_client_setup) -> None:  # noqa: ARG002
         """Test batch update skips missing items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -729,7 +729,7 @@ class TestTraceRTMClientBatchOperations:
         assert result["items_updated"] == 1
         client.close()
 
-    def test_batch_delete_items(self, api_client_setup) -> None:
+    def test_batch_delete_items(self, api_client_setup) -> None:  # noqa: ARG002
         """Test batch deleting items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -748,7 +748,7 @@ class TestTraceRTMClientBatchOperations:
         assert items[0]["id"] == item3["id"]
         client.close()
 
-    def test_batch_delete_items_skip_missing(self, api_client_setup) -> None:
+    def test_batch_delete_items_skip_missing(self, api_client_setup) -> None:  # noqa: ARG002
         """Test batch delete skips missing items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -764,7 +764,7 @@ class TestTraceRTMClientBatchOperations:
 class TestTraceRTMClientExportImport:
     """Test export/import functionality."""
 
-    def test_export_project_json(self, api_client_setup) -> None:
+    def test_export_project_json(self, api_client_setup) -> None:  # noqa: ARG002
         """Test exporting project as JSON."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -780,7 +780,7 @@ class TestTraceRTMClientExportImport:
         assert len(data["items"]) >= 1
         client.close()
 
-    def test_export_project_yaml(self, api_client_setup) -> None:
+    def test_export_project_yaml(self, api_client_setup) -> None:  # noqa: ARG002
         """Test exporting project as YAML."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -792,7 +792,7 @@ class TestTraceRTMClientExportImport:
         assert "project:" in yaml_str
         client.close()
 
-    def test_import_data_items_only(self, api_client_setup) -> None:
+    def test_import_data_items_only(self, api_client_setup) -> None:  # noqa: ARG002
         """Test importing items only."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -814,7 +814,7 @@ class TestTraceRTMClientExportImport:
         assert "Imported 2" in titles
         client.close()
 
-    def test_import_data_with_links(self, api_client_setup) -> None:
+    def test_import_data_with_links(self, api_client_setup) -> None:  # noqa: ARG002
         """Test importing items and links."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -836,7 +836,7 @@ class TestTraceRTMClientExportImport:
 class TestTraceRTMClientActivity:
     """Test activity monitoring."""
 
-    def test_get_agent_activity(self, api_client_setup) -> None:
+    def test_get_agent_activity(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting agent activity."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -851,7 +851,7 @@ class TestTraceRTMClientActivity:
         assert any(e["event_type"] == "item_created" for e in activity)
         client.close()
 
-    def test_get_agent_activity_limit(self, api_client_setup) -> None:
+    def test_get_agent_activity_limit(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting agent activity with limit."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -863,14 +863,14 @@ class TestTraceRTMClientActivity:
         assert len(activity) <= 5
         client.close()
 
-    def test_get_agent_activity_no_agent(self, api_client_setup) -> None:
+    def test_get_agent_activity_no_agent(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting activity with no agent."""
         client = TraceRTMClient()
         activity = client.get_agent_activity()
         assert activity == []
         client.close()
 
-    def test_get_all_agents_activity(self, api_client_setup) -> None:
+    def test_get_all_agents_activity(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting all agents activity."""
         client1 = TraceRTMClient()
         agent1 = client1.register_agent("Agent 1")
@@ -890,7 +890,7 @@ class TestTraceRTMClientActivity:
         client1.close()
         client2.close()
 
-    def test_get_assigned_items(self, api_client_setup) -> None:
+    def test_get_assigned_items(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting items assigned to agent."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -904,7 +904,7 @@ class TestTraceRTMClientActivity:
         assert assigned[0]["title"] == "Assigned"
         client.close()
 
-    def test_get_assigned_items_no_agent(self, api_client_setup) -> None:
+    def test_get_assigned_items_no_agent(self, api_client_setup) -> None:  # noqa: ARG002
         """Test getting assigned items with no agent."""
         client = TraceRTMClient()
         assigned = client.get_assigned_items()
@@ -915,14 +915,14 @@ class TestTraceRTMClientActivity:
 class TestTraceRTMClientLogging:
     """Test operation logging."""
 
-    def test_log_operation_without_agent(self, api_client_setup) -> None:
+    def test_log_operation_without_agent(self, api_client_setup) -> None:  # noqa: ARG002
         """Test logging without agent ID skips silently."""
         client = TraceRTMClient()
         # Should not raise error
         client._log_operation("test", "test", "test-id", {"data": "value"})
         client.close()
 
-    def test_log_operation_with_agent(self, api_client_setup) -> None:
+    def test_log_operation_with_agent(self, api_client_setup) -> None:  # noqa: ARG002
         """Test logging with agent ID creates event."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -934,7 +934,7 @@ class TestTraceRTMClientLogging:
         assert len(events) >= 1
         client.close()
 
-    def test_log_operation_error_handling(self, api_client_setup) -> None:
+    def test_log_operation_error_handling(self, api_client_setup) -> None:  # noqa: ARG002
         """Test logging handles errors gracefully."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -976,7 +976,7 @@ class TestFastAPIItemEndpoints:
         assert data["total"] == 0
         assert data["items"] == []
 
-    def test_list_items_with_data(self, fastapi_test_client, test_project, sample_items) -> None:
+    def test_list_items_with_data(self, fastapi_test_client, test_project, sample_items) -> None:  # noqa: ARG002
         """Test listing items with sample data."""
         response = fastapi_test_client.get(f"/api/v1/items?project_id={test_project.id}")
         assert response.status_code == 200
@@ -984,7 +984,7 @@ class TestFastAPIItemEndpoints:
         assert data["total"] == 3
         assert len(data["items"]) == 3
 
-    def test_list_items_pagination(self, fastapi_test_client, test_project, sample_items) -> None:
+    def test_list_items_pagination(self, fastapi_test_client, test_project, sample_items) -> None:  # noqa: ARG002
         """Test listing items with pagination."""
         response = fastapi_test_client.get(f"/api/v1/items?project_id={test_project.id}&skip=1&limit=2")
         assert response.status_code == 200
@@ -1015,7 +1015,7 @@ class TestFastAPILinkEndpoints:
         data = response.json()
         assert data["total"] == 0
 
-    def test_list_links_with_data(self, fastapi_test_client, test_project, sample_links) -> None:
+    def test_list_links_with_data(self, fastapi_test_client, test_project, sample_links) -> None:  # noqa: ARG002
         """Test listing links with sample data."""
         response = fastapi_test_client.get(f"/api/v1/links?project_id={test_project.id}")
         assert response.status_code == 200
@@ -1023,7 +1023,7 @@ class TestFastAPILinkEndpoints:
         assert data["total"] == 2
         assert len(data["links"]) == 2
 
-    def test_list_links_pagination(self, fastapi_test_client, test_project, sample_links) -> None:
+    def test_list_links_pagination(self, fastapi_test_client, test_project, sample_links) -> None:  # noqa: ARG002
         """Test listing links with pagination."""
         response = fastapi_test_client.get(f"/api/v1/links?project_id={test_project.id}&skip=1&limit=1")
         assert response.status_code == 200
@@ -1050,7 +1050,7 @@ class TestFastAPILinkEndpoints:
 class TestFastAPIProjectEndpoints:
     """Test project-related endpoints."""
 
-    def test_list_projects(self, fastapi_test_client, test_project) -> None:
+    def test_list_projects(self, fastapi_test_client, test_project) -> None:  # noqa: ARG002
         """Test listing projects."""
         response = fastapi_test_client.get("/api/v1/projects")
         assert response.status_code == 200
@@ -1145,7 +1145,7 @@ class TestFastAPIAnalysisEndpoints:
 class TestFastAPIExportImportEndpoints:
     """Test export/import endpoints."""
 
-    def test_export_project_json(self, fastapi_test_client, test_project, sample_items) -> None:
+    def test_export_project_json(self, fastapi_test_client, test_project, sample_items) -> None:  # noqa: ARG002
         """Test exporting project as JSON."""
         response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}/export?format=json")
         # May return error if service not fully implemented
@@ -1197,7 +1197,7 @@ class TestFastAPISyncEndpoints:
 class TestFastAPISearchEndpoints:
     """Test search endpoints."""
 
-    def test_advanced_search(self, fastapi_test_client, test_project, sample_items) -> None:
+    def test_advanced_search(self, fastapi_test_client, test_project, sample_items) -> None:  # noqa: ARG002
         """Test advanced search endpoint."""
         search_data = {"query": "Feature", "filters": {"status": "todo"}}
 
@@ -1782,7 +1782,7 @@ class TestApiClientSyncOperations:
 class TestErrorHandling:
     """Test comprehensive error handling."""
 
-    def test_client_close_idempotent(self, api_client_setup) -> None:
+    def test_client_close_idempotent(self, api_client_setup) -> None:  # noqa: ARG002
         """Test closing client multiple times is safe."""
         client = TraceRTMClient()
         client.close()
@@ -1795,7 +1795,7 @@ class TestErrorHandling:
         await client.close()
         await client.close()  # Should not raise error
 
-    def test_batch_operations_rollback_on_error(self, api_client_setup) -> None:
+    def test_batch_operations_rollback_on_error(self, api_client_setup) -> None:  # noqa: ARG002
         """Test batch operations rollback on error."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")

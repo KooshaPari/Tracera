@@ -106,7 +106,7 @@ class TestConflictPanel:
         assert hasattr(ConflictPanel, "on_data_table_row_selected")
 
     @patch.object(ConflictPanel, "query_one")
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_refresh_conflict_list(self, mock_query_one) -> None:
         """Test refreshing conflict list display."""
         # Create mock conflicts
@@ -136,7 +136,7 @@ class TestConflictPanel:
         mock_table.clear.assert_called_once()
         assert mock_table.add_row.call_count == 2
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_on_data_table_row_selected(self) -> None:
         """Test handling row selection."""
         conflict = MagicMock()
@@ -153,7 +153,7 @@ class TestConflictPanel:
         assert panel.selected_conflict == conflict
         panel.show_conflict_detail.assert_called_once_with(conflict)
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_on_data_table_row_selected_out_of_range(self) -> None:
         """Test handling row selection out of range."""
         panel = cast("Any", ConflictPanel())
@@ -171,7 +171,7 @@ class TestConflictPanel:
 
     @patch("tracertm.tui.widgets.conflict_panel.compare_versions")
     @patch.object(ConflictPanel, "query_one")
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_show_conflict_detail(self, mock_query_one, mock_compare) -> None:
         """Test showing conflict details."""
         # Setup conflict with detailed version info
@@ -213,7 +213,7 @@ class TestConflictPanel:
 
     @patch("tracertm.tui.widgets.conflict_panel.compare_versions")
     @patch.object(ConflictPanel, "query_one")
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_show_conflict_detail_no_differences(self, mock_query_one, mock_compare) -> None:
         """Test showing conflict details with no differences."""
         local_version = MagicMock()
@@ -244,7 +244,7 @@ class TestConflictPanel:
 
         mock_detail.update.assert_called_once()
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_action_resolve_local(self) -> None:
         """Test resolve local action."""
         conflict = MagicMock()
@@ -259,7 +259,7 @@ class TestConflictPanel:
         assert message.strategy == "local"
         assert message.conflict == conflict
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_action_resolve_local_no_selection(self) -> None:
         """Test resolve local action with no selection."""
         panel = cast("Any", ConflictPanel())
@@ -270,7 +270,7 @@ class TestConflictPanel:
 
         panel.post_message.assert_not_called()
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_action_resolve_remote(self) -> None:
         """Test resolve remote action."""
         conflict = MagicMock()
@@ -284,7 +284,7 @@ class TestConflictPanel:
         message = panel.post_message.call_args[0][0]
         assert message.strategy == "remote"
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_action_resolve_manual(self) -> None:
         """Test resolve manual action."""
         conflict = MagicMock()
@@ -298,7 +298,7 @@ class TestConflictPanel:
         message = panel.post_message.call_args[0][0]
         assert message.strategy == "manual"
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_action_close(self) -> None:
         """Test close action."""
         panel = cast("Any", ConflictPanel())
@@ -308,7 +308,7 @@ class TestConflictPanel:
 
         panel.post_message.assert_called_once()
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_on_button_pressed_local(self) -> None:
         """Test button press handler for local button."""
         panel = cast("Any", ConflictPanel())
@@ -321,7 +321,7 @@ class TestConflictPanel:
 
         panel.action_resolve_local.assert_called_once()
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_on_button_pressed_remote(self) -> None:
         """Test button press handler for remote button."""
         panel = cast("Any", ConflictPanel())
@@ -334,7 +334,7 @@ class TestConflictPanel:
 
         panel.action_resolve_remote.assert_called_once()
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_on_button_pressed_manual(self) -> None:
         """Test button press handler for manual button."""
         panel = cast("Any", ConflictPanel())
@@ -347,7 +347,7 @@ class TestConflictPanel:
 
         panel.action_resolve_manual.assert_called_once()
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_on_button_pressed_close(self) -> None:
         """Test button press handler for close button."""
         panel = cast("Any", ConflictPanel())
@@ -360,7 +360,7 @@ class TestConflictPanel:
 
         panel.action_close.assert_called_once()
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_on_button_pressed_unknown(self) -> None:
         """Test button press handler for unknown button."""
         panel = cast("Any", ConflictPanel())
@@ -402,7 +402,7 @@ class TestSyncStatusWidget:
         assert hasattr(SyncStatusWidget, "_format_time_ago")
 
     @patch.object(SyncStatusWidget, "update_display")
-    @patch.object(SyncStatusWidget, "__init__", lambda x: None)
+    @patch.object(SyncStatusWidget, "__init__", lambda x: None)  # noqa: ARG005
     def test_sync_status_watch_is_online(self, mock_update) -> None:
         """Test watch_is_online triggers update."""
         widget = SyncStatusWidget()
@@ -411,7 +411,7 @@ class TestSyncStatusWidget:
         mock_update.assert_called_once()
 
     @patch.object(SyncStatusWidget, "update_display")
-    @patch.object(SyncStatusWidget, "__init__", lambda x: None)
+    @patch.object(SyncStatusWidget, "__init__", lambda x: None)  # noqa: ARG005
     def test_sync_status_watch_is_syncing(self, mock_update) -> None:
         """Test watch_is_syncing triggers update."""
         widget = SyncStatusWidget()
@@ -420,7 +420,7 @@ class TestSyncStatusWidget:
         mock_update.assert_called_once()
 
     @patch.object(SyncStatusWidget, "update_display")
-    @patch.object(SyncStatusWidget, "__init__", lambda x: None)
+    @patch.object(SyncStatusWidget, "__init__", lambda x: None)  # noqa: ARG005
     def test_sync_status_watch_pending_changes(self, mock_update) -> None:
         """Test watch_pending_changes triggers update."""
         widget = SyncStatusWidget()
@@ -429,7 +429,7 @@ class TestSyncStatusWidget:
         mock_update.assert_called_once()
 
     @patch.object(SyncStatusWidget, "update_display")
-    @patch.object(SyncStatusWidget, "__init__", lambda x: None)
+    @patch.object(SyncStatusWidget, "__init__", lambda x: None)  # noqa: ARG005
     def test_sync_status_watch_last_sync(self, mock_update) -> None:
         """Test watch_last_sync triggers update."""
         widget = SyncStatusWidget()
@@ -438,7 +438,7 @@ class TestSyncStatusWidget:
         mock_update.assert_called_once()
 
     @patch.object(SyncStatusWidget, "update_display")
-    @patch.object(SyncStatusWidget, "__init__", lambda x: None)
+    @patch.object(SyncStatusWidget, "__init__", lambda x: None)  # noqa: ARG005
     def test_sync_status_watch_conflicts_count(self, mock_update) -> None:
         """Test watch_conflicts_count triggers update."""
         widget = SyncStatusWidget()
@@ -447,7 +447,7 @@ class TestSyncStatusWidget:
         mock_update.assert_called_once()
 
     @patch.object(SyncStatusWidget, "update_display")
-    @patch.object(SyncStatusWidget, "__init__", lambda x: None)
+    @patch.object(SyncStatusWidget, "__init__", lambda x: None)  # noqa: ARG005
     def test_sync_status_watch_last_error(self, mock_update) -> None:
         """Test watch_last_error triggers update."""
         widget = SyncStatusWidget()
@@ -456,7 +456,7 @@ class TestSyncStatusWidget:
         mock_update.assert_called_once()
 
     @patch.object(SyncStatusWidget, "query_one")
-    @patch.object(SyncStatusWidget, "__init__", lambda x: None)
+    @patch.object(SyncStatusWidget, "__init__", lambda x: None)  # noqa: ARG005
     def test_sync_status_update_display_syncing(self, mock_query_one) -> None:
         """Test update_display when syncing."""
         widget = SyncStatusWidget()
@@ -466,7 +466,7 @@ class TestSyncStatusWidget:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -491,7 +491,7 @@ class TestSyncStatusWidget:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -516,7 +516,7 @@ class TestSyncStatusWidget:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -541,7 +541,7 @@ class TestSyncStatusWidget:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -566,7 +566,7 @@ class TestSyncStatusWidget:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -592,7 +592,7 @@ class TestSyncStatusWidget:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -617,7 +617,7 @@ class TestSyncStatusWidget:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -1169,7 +1169,7 @@ class TestSyncStatusWidgetEdgeCases:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -1197,7 +1197,7 @@ class TestSyncStatusWidgetEdgeCases:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -1225,7 +1225,7 @@ class TestSyncStatusWidgetEdgeCases:
         mock_sync_info = MagicMock()
         mock_conflict_info = MagicMock()
 
-        def mock_query_one(selector, widget_class):
+        def mock_query_one(selector, widget_class):  # noqa: ARG001
             if "connection-status" in selector:
                 return mock_connection_status
             if "sync-info" in selector:
@@ -1252,7 +1252,7 @@ class TestSyncStatusWidgetEdgeCases:
 class TestConflictPanelEdgeCases:
     """Edge case tests for ConflictPanel. Use cast(Any, ...) so patched/mock attributes type-check."""
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_init_with_empty_conflicts(self) -> None:
         """Test ConflictPanel initialization with empty conflict list."""
         panel = cast("Any", ConflictPanel())
@@ -1263,7 +1263,7 @@ class TestConflictPanelEdgeCases:
         assert panel.selected_conflict is None
 
     @patch.object(ConflictPanel, "query_one")
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_refresh_with_long_entity_id(self, mock_query_one) -> None:
         """Test conflict list display truncates long entity IDs."""
         conflict = MagicMock()
@@ -1288,7 +1288,7 @@ class TestConflictPanelEdgeCases:
 
     @patch("tracertm.tui.widgets.conflict_panel.compare_versions")
     @patch.object(ConflictPanel, "query_one")
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_show_conflict_detail_only_modified(self, mock_query_one, mock_compare) -> None:
         """Test showing conflict with only modified fields."""
         local_version = MagicMock()
@@ -1320,7 +1320,7 @@ class TestConflictPanelEdgeCases:
         assert "title" in update_text
         assert "Modified fields" in update_text
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_messages_exist(self) -> None:
         """Test ConflictPanel custom message classes exist."""
         panel = cast("Any", ConflictPanel())
@@ -1328,7 +1328,7 @@ class TestConflictPanelEdgeCases:
         assert hasattr(panel, "ConflictResolved")
         assert hasattr(panel, "ConflictPanelClosed")
 
-    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
+    @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)  # noqa: ARG005
     def test_conflict_panel_compose_method_exists(self) -> None:
         """Test ConflictPanel has compose method."""
         panel = cast("Any", ConflictPanel())

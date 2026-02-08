@@ -181,7 +181,7 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
     assert message["data"]["entity_id"] == "spec-456"
     assert message["data"]["payload"]["result"] == "compliant"
 
-    async def test_subscribe_to_go_events(self, event_bus: MockEventBus, nats_client: MockNATSClient) -> None:
+    async def test_subscribe_to_go_events(self, event_bus: MockEventBus, nats_client: MockNATSClient) -> None:  # noqa: ARG001
         """Test subscribing to events from Go backend."""
         received_events = []
 
@@ -210,7 +210,7 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
         assert received_events[0]["entity_type"] == "item"
         assert received_events[0]["source"] == "go"
 
-    async def test_event_payload_structure(self, nats_client: MockNATSClient) -> None:
+    async def test_event_payload_structure(self, nats_client: MockNATSClient) -> None:  # noqa: ARG001
         """Test event payload matches expected structure."""
         # Publish event with all required fields
         await nats_client.publish(
@@ -225,7 +225,7 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
         # Event should have all required fields
         # In production, this would be validated by Pydantic schemas
 
-    async def test_durable_subscription(self, event_bus: MockEventBus, nats_client: MockNATSClient) -> None:
+    async def test_durable_subscription(self, event_bus: MockEventBus, nats_client: MockNATSClient) -> None:  # noqa: ARG001
         """Test durable subscription survives reconnection."""
         received_events = []
 
@@ -251,7 +251,7 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
         # Verify event received
         assert len(received_events) == 1
 
-    async def test_multiple_subscribers(self, nats_client: MockNATSClient) -> None:
+    async def test_multiple_subscribers(self, nats_client: MockNATSClient) -> None:  # noqa: ARG001
         """Test multiple subscribers can receive the same event."""
         received_1 = []
         received_2 = []
@@ -288,7 +288,7 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
         await nats_client.unsubscribe("test-sub-1")
         await nats_client.unsubscribe("test-sub-2")
 
-    async def test_project_specific_subscription(self, event_bus: MockEventBus, nats_client: MockNATSClient) -> None:
+    async def test_project_specific_subscription(self, event_bus: MockEventBus, nats_client: MockNATSClient) -> None:  # noqa: ARG001
         """Test subscribing to events for a specific project."""
         project_id = "550e8400-e29b-41d4-a716-446655440000"
         received_events = []
@@ -316,7 +316,7 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
         assert len(received_events) == 1
         assert received_events[0]["project_id"] == project_id
 
-    async def test_message_format_validation(self, event_bus: MockEventBus) -> None:
+    async def test_message_format_validation(self, event_bus: MockEventBus) -> None:  # noqa: ARG001
         """Test that message format is validated."""
         # Valid event should not raise (payload= required by MockEventBus.publish)
         await event_bus.publish(
@@ -329,7 +329,7 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
 
         # Event with all required fields should succeed
 
-    async def test_health_check(self, event_bus: MockEventBus) -> None:
+    async def test_health_check(self, event_bus: MockEventBus) -> None:  # noqa: ARG001
         """Test event bus health check."""
         health = await event_bus.health_check()
 
@@ -338,12 +338,12 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
         assert "in_msgs" in health
         assert "out_msgs" in health
 
-    async def test_error_handling(self, event_bus: MockEventBus, nats_client: MockNATSClient) -> None:
+    async def test_error_handling(self, event_bus: MockEventBus, nats_client: MockNATSClient) -> None:  # noqa: ARG001
         """Test error handling in event processing."""
         error_count = 0
         success_count = 0
 
-        async def failing_handler(event: dict[str, Any]) -> None:
+        async def failing_handler(event: dict[str, Any]) -> None:  # noqa: ARG001
             nonlocal error_count, success_count
             if error_count < 2:
                 error_count += 1

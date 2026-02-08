@@ -40,7 +40,7 @@ async def test_sync_manage_status(monkeypatch) -> None:
         def get_status(self):
             return FakeState()
 
-        async def sync(self, force=False):
+        async def sync(self, force=False):  # noqa: ARG002
             return SimpleNamespace(
                 success=True,
                 entities_synced=0,
@@ -125,6 +125,6 @@ async def test_test_manage_discover(monkeypatch) -> None:
     ]
     from tracertm.cli.commands.test.discovery import TestDiscovery
 
-    monkeypatch.setattr(TestDiscovery, "discover", lambda self, languages=None, scope="all": dummy)
+    monkeypatch.setattr(TestDiscovery, "discover", lambda self, languages=None, scope="all": dummy)  # noqa: ARG005
     result = await param_tools._test_manage_impl(action="discover", payload={}, ctx=None)
     assert result["data"]["count"] == 1

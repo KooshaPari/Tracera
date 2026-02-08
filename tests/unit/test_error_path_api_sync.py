@@ -146,7 +146,7 @@ class TestSyncOperationErrors:
         retrieved = await repo.get_by_id(str(item1.id))
         assert retrieved is not None
 
-    async def test_sync_rollback_on_error(self, db_session: AsyncSession) -> None:
+    async def test_sync_rollback_on_error(self, db_session: AsyncSession) -> None:  # noqa: ARG002
         """Test that sync changes are rolled back on error."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_session.begin = AsyncMock()
@@ -507,7 +507,7 @@ class TestLoggingErrors:
         import logging
 
         class FailingFormatter(logging.Formatter):
-            def format(self, record) -> Never:
+            def format(self, record) -> Never:  # noqa: ARG002
                 msg = "Formatting failed"
                 raise RuntimeError(msg)
 
@@ -540,7 +540,7 @@ class TestEventHandlingErrors:
             for listener in listeners:
                 listener(data)
 
-        def failing_listener(data) -> Never:
+        def failing_listener(data) -> Never:  # noqa: ARG001
             msg = "Listener failed"
             raise RuntimeError(msg)
 
@@ -750,11 +750,11 @@ class TestRecoveryAndResilience:
                         return await self._get_from_source(key)
                     raise
 
-            async def _get_from_cache(self, key) -> Never:
+            async def _get_from_cache(self, key) -> Never:  # noqa: ARG002
                 msg = "Cache failed"
                 raise Exception(msg)
 
-            async def _get_from_source(self, key):
+            async def _get_from_source(self, key):  # noqa: ARG002
                 return {"data": "value"}
 
         service = Service()

@@ -56,7 +56,7 @@ def temp_project_dir_with_db(temp_project_dir: Path, db_session: Session) -> Pat
 
 
 @pytest.fixture
-def storage_manager(temp_project_dir: Path, db_session: Session) -> LocalStorageManager:
+def storage_manager(temp_project_dir: Path, db_session: Session) -> LocalStorageManager:  # noqa: ARG001
     """Create storage manager for testing."""
     return LocalStorageManager(base_dir=temp_project_dir)
 
@@ -537,7 +537,7 @@ class TestGraphAnalysisOperations:
     """Test Graph Analysis Operations for CLI link commands."""
 
     def test_cycle_detection_basic(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test basic cycle detection."""
         # Create items for cycle
@@ -590,7 +590,7 @@ class TestGraphAnalysisOperations:
                 assert "cycle" in result.stdout.lower()
 
     def test_cycle_detection_no_cycle(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test cycle detection with no cycles."""
         # Create acyclic graph
@@ -640,7 +640,7 @@ class TestGraphAnalysisOperations:
                 assert "no cycles" in result.stdout.lower() or "acyclic" in result.stdout.lower()
 
     def test_impact_analysis_basic(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test basic impact analysis."""
         # Create dependency chain
@@ -688,7 +688,7 @@ class TestGraphAnalysisOperations:
                 assert "impact" in result.stdout.lower()
 
     def test_impact_analysis_depth_limited(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test impact analysis with depth limit."""
         # Create multi-level dependency chain
@@ -751,7 +751,7 @@ class TestGraphAnalysisOperations:
                 assert source_item.title in result.stdout
 
     def test_graph_visualization_ascii_art(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test graph visualization with ASCII art."""
         # Create tree structure
@@ -795,7 +795,7 @@ class TestGraphAnalysisOperations:
                 assert any(char in result.stdout for char in ["│", "├", "└", "─"])
 
     def test_dependency_matrix(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test dependency matrix generation."""
         # Create items and their dependencies
@@ -834,7 +834,7 @@ class TestGraphAnalysisOperations:
                 assert "dependency" in result.stdout.lower()
 
     def test_missing_dependencies(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test missing dependencies detection."""
         # Create items that should have dependencies but don't
@@ -937,7 +937,7 @@ class TestGraphAnalysisOperations:
                 assert "tests" in result.stdout
 
     def test_path_finding(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test path finding between items."""
         # Create chain: A -> B -> C -> D
@@ -976,7 +976,7 @@ class TestGraphAnalysisOperations:
                 assert "Path Item 3" in result.stdout
 
     def test_shortest_path(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test shortest path finding."""
         # Create graph with multiple paths
@@ -1166,7 +1166,7 @@ class TestAdvancedRelationshipManagement:
                 assert result.exit_code != 0 or "duplicate" in result.stdout.lower()
 
     def test_multi_hop_relationship_query(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test querying multi-hop relationships."""
         # Create chain: A -> B -> C -> D -> E
@@ -1310,7 +1310,7 @@ class TestAdvancedRelationshipManagement:
                 assert result.exit_code == 0
 
     def test_link_cascade_operations(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test cascade operations on linked items."""
         # Create hierarchical linked structure
@@ -1676,7 +1676,7 @@ class TestCLIIntegrationScenarios:
             assert link_type in result.stdout
 
     def test_cli_shell_completion_link_ids(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test CLI shell completion for link IDs."""
         # Create test links

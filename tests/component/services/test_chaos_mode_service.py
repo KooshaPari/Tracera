@@ -33,10 +33,10 @@ async def test_detect_zombies_finds_orphan_stale(monkeypatch, async_session) -> 
 
     svc = ChaosModeService(async_session)
 
-    async def fake_items(project_id, filters):
+    async def fake_items(project_id, filters):  # noqa: ARG001
         return [stale_item, fresh_item]
 
-    async def empty_links(item_id):
+    async def empty_links(item_id):  # noqa: ARG001
         return []
 
     monkeypatch.setattr(svc.items, "query", fake_items)
@@ -53,7 +53,7 @@ async def test_detect_zombies_finds_orphan_stale(monkeypatch, async_session) -> 
 async def test_analyze_impact_returns_error_when_missing(monkeypatch, async_session) -> None:
     svc = ChaosModeService(async_session)
 
-    async def get_none(item_id) -> None:
+    async def get_none(item_id) -> None:  # noqa: ARG001
         return None
 
     monkeypatch.setattr(svc.items, "get_by_id", get_none)
@@ -70,7 +70,7 @@ async def test_analyze_impact_counts_links(monkeypatch, async_session) -> None:
 
     svc = ChaosModeService(async_session)
 
-    async def get_item(item_id):
+    async def get_item(item_id):  # noqa: ARG001
         return item
 
     async def get_by_source(iid):

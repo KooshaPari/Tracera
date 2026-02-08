@@ -39,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch) -> str:
     return "test-project"
 
 
-def test_bidirectional_link_navigation(runner, temp_project) -> None:
+def test_bidirectional_link_navigation(runner, temp_project) -> None:  # noqa: ARG001
     """Test bidirectional link navigation (FR19)."""
     # Create items in different views
     result1 = runner.invoke(
@@ -98,7 +98,7 @@ def test_bidirectional_link_navigation(runner, temp_project) -> None:
     # assert "Incoming Links" in result5.stdout
 
 
-def test_link_show_displays_both_directions(runner, temp_project) -> None:
+def test_link_show_displays_both_directions(runner, temp_project) -> None:  # noqa: ARG001
     """Test that link show displays both incoming and outgoing links."""
     # Create items and links
     # Verify that link show command shows both directions

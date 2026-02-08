@@ -26,7 +26,7 @@ def item_service(mock_session):
 class TestItemUpdate:
     """Test suite for item update and concurrency."""
 
-    async def test_update_item_success(self, item_service, mock_session) -> None:
+    async def test_update_item_success(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test successful item update."""
         # Setup
         item_id = str(uuid.uuid4())
@@ -63,7 +63,7 @@ class TestItemUpdate:
         # Verify event logging
         item_service.events.log.assert_called_once()
 
-    async def test_update_item_concurrency_retry(self, item_service, mock_session) -> None:
+    async def test_update_item_concurrency_retry(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test optimistic locking retry mechanism."""
         # Setup
         item_id = str(uuid.uuid4())
@@ -89,7 +89,7 @@ class TestItemUpdate:
         assert result.version == 2
         assert item_service.items.update.call_count == 2  # Failed once, succeeded second time
 
-    async def test_update_item_concurrency_fail(self, item_service, mock_session) -> None:
+    async def test_update_item_concurrency_fail(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test optimistic locking max retries exceeded."""
         # Setup
         item_id = str(uuid.uuid4())
@@ -107,7 +107,7 @@ class TestItemUpdate:
         # Should have tried 3 times (default max_retries)
         assert item_service.items.update.call_count == 3
 
-    async def test_update_item_not_found(self, item_service, mock_session) -> None:
+    async def test_update_item_not_found(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test updating non-existent item."""
         item_id = str(uuid.uuid4())
         item_service.items.get_by_id = AsyncMock(return_value=None)

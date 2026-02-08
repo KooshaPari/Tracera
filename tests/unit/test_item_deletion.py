@@ -25,7 +25,7 @@ def item_service(mock_session):
 class TestItemDeletion:
     """Test suite for item deletion operations."""
 
-    async def test_soft_delete_item(self, item_service, mock_session) -> None:
+    async def test_soft_delete_item(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test soft deletion of an item."""
         # Setup
         item_id = str(uuid.uuid4())
@@ -50,7 +50,7 @@ class TestItemDeletion:
         item_service.items.delete.assert_called_once_with(item_id, soft=True)
         # item_service.links.delete_by_item.assert_called_once_with(item_id) # Service now trusts repo for links
 
-    async def test_hard_delete_item(self, item_service, mock_session) -> None:
+    async def test_hard_delete_item(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test permanent deletion of an item."""
         # Setup
         item_id = str(uuid.uuid4())
@@ -72,7 +72,7 @@ class TestItemDeletion:
         assert result is True
         item_service.items.delete.assert_called_once_with(item_id, soft=False)
 
-    async def test_delete_non_existent_item(self, item_service, mock_session) -> None:
+    async def test_delete_non_existent_item(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test deletion of non-existent item."""
         item_id = str(uuid.uuid4())
         item_service.items.get_by_id = AsyncMock(return_value=None)
@@ -80,7 +80,7 @@ class TestItemDeletion:
         result = await item_service.delete_item(item_id, "agent", soft=True)
         assert result is False
 
-    async def test_undelete_item(self, item_service, mock_session) -> None:
+    async def test_undelete_item(self, item_service, mock_session) -> None:  # noqa: ARG002
         """Test recovery of deleted item."""
         # Setup
         item_id = str(uuid.uuid4())

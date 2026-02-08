@@ -92,7 +92,7 @@ class TestClientInitializationAndAuthentication:
         assert api_client.agent_name is None
         assert api_client.config_manager is not None
 
-    def test_client_initialization_with_agent_id(self, db_session: Session, api_client: TraceRTMClient) -> None:
+    def test_client_initialization_with_agent_id(self, db_session: Session, api_client: TraceRTMClient) -> None:  # noqa: ARG002
         """Test client initialization with agent ID."""
         # Create agent first
         agent = Agent(id="existing-agent", name="Existing Agent", config={}, capabilities=["test"])
@@ -102,7 +102,7 @@ class TestClientInitializationAndAuthentication:
         client = TraceRTMClient(agent_id="existing-agent")
         assert client.agent_id == "existing-agent"
 
-    def test_client_initialization_with_agent_name(self, api_client: TraceRTMClient) -> None:
+    def test_client_initialization_with_agent_name(self, api_client: TraceRTMClient) -> None:  # noqa: ARG002
         """Test client initialization with agent name."""
         client = TraceRTMClient(agent_name="New Test Agent")
         assert client.agent_name == "New Test Agent"
@@ -127,7 +127,7 @@ class TestClientInitializationAndAuthentication:
             session = client._get_session()
             assert session is async_db_session
 
-    def test_agent_registration_new_agent(self, api_client: TraceRTMClient, db_session: Session) -> None:
+    def test_agent_registration_new_agent(self, api_client: TraceRTMClient, db_session: Session) -> None:  # noqa: ARG002
         """Test registering a new agent."""
         client = TraceRTMClient(agent_name="New Agent")
 
@@ -171,13 +171,13 @@ class TestClientInitializationAndAuthentication:
         # Test that cleanup doesn't raise errors
         client.cleanup()  # Should not raise
 
-    def test_client_context_manager(self, api_client: TraceRTMClient, db_session: Session) -> None:
+    def test_client_context_manager(self, api_client: TraceRTMClient, db_session: Session) -> None:  # noqa: ARG002
         """Test client usage as context manager."""
         with patch("tracertm.api.client.get_session", return_value=db_session), TraceRTMClient() as client:
             assert client is not None
             assert client.config_manager is not None
 
-    def test_client_error_handling_invalid_config(self, api_client: TraceRTMClient) -> None:
+    def test_client_error_handling_invalid_config(self, api_client: TraceRTMClient) -> None:  # noqa: ARG002
         """Test client error handling with invalid configuration."""
         # Test with None agent_id and agent_name (should not crash)
         client = TraceRTMClient(agent_id=None, agent_name=None)
@@ -194,7 +194,7 @@ class TestClientInitializationAndAuthentication:
             assert agent_info.name == "Test Agent"
             assert "test" in agent_info.capabilities
 
-    def test_client_session_isolation(self, api_client: TraceRTMClient, db_session: Session) -> None:
+    def test_client_session_isolation(self, api_client: TraceRTMClient, db_session: Session) -> None:  # noqa: ARG002
         """Test that client maintains proper session isolation."""
         client1 = TraceRTMClient(agent_name="Client 1")
         client2 = TraceRTMClient(agent_name="Client 2")
@@ -215,7 +215,7 @@ class TestClientInitializationAndAuthentication:
             session2 = client._get_session()
             assert session1 is session2
 
-    def test_client_database_error_handling(self, api_client: TraceRTMClient) -> None:
+    def test_client_database_error_handling(self, api_client: TraceRTMClient) -> None:  # noqa: ARG002
         """Test client handles database errors gracefully."""
         client = TraceRTMClient()
 
@@ -446,7 +446,7 @@ class TestItemAPIOperations:
             assert success is True
 
     def test_query_items_basic(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test basic item querying."""
         client = api_client_with_agent
@@ -458,7 +458,7 @@ class TestItemAPIOperations:
             assert all(item.view == "FEATURE" for item in results)
 
     def test_query_items_by_type(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test querying items by type."""
         client = api_client_with_agent
@@ -470,7 +470,7 @@ class TestItemAPIOperations:
             assert all(item.type == "function" for item in results)
 
     def test_query_items_with_text_search(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test querying items with text search."""
         client = api_client_with_agent
@@ -500,7 +500,7 @@ class TestItemAPIOperations:
             assert all(item.metadata.get("tag") == "important" for item in results)
 
     def test_query_items_with_pagination(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test querying items with pagination."""
         client = api_client_with_agent
@@ -518,7 +518,7 @@ class TestItemAPIOperations:
                 assert len(paginated_results) <= 2
 
     def test_query_items_with_sorting(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test querying items with sorting."""
         client = api_client_with_agent
@@ -587,7 +587,7 @@ class TestItemAPIOperations:
                 assert item is None or hasattr(item, "deleted_at")
 
     def test_item_statistics(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test item statistics calculation."""
         client = api_client_with_agent
@@ -599,7 +599,7 @@ class TestItemAPIOperations:
             assert isinstance(stats, dict)
 
     def test_item_export(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test item data export."""
         client = api_client_with_agent
@@ -946,7 +946,7 @@ class TestAdvancedAPIScenarios:
         with patch("tracertm.api.client.get_session", side_effect=mock_session):
             with patch.object(client, "retry_with_backoff") as mock_retry:
                 # Mock the retry mechanism
-                def retry_func(func, *args, **kwargs):
+                def retry_func(func, *args, **kwargs):  # noqa: ARG001
                     return func() if call_count > 1 else None
 
                 mock_retry.side_effect = retry_func
@@ -963,7 +963,7 @@ class TestAdvancedAPIScenarios:
                     # Should handle the temporary failure
                     pass
 
-    def test_error_handling_and_recovery(self, api_client_with_agent: TraceRTMClient, db_session: Session) -> None:
+    def test_error_handling_and_recovery(self, api_client_with_agent: TraceRTMClient, db_session: Session) -> None:  # noqa: ARG002
         """Test error handling and recovery."""
         client = api_client_with_agent
 
@@ -973,7 +973,7 @@ class TestAdvancedAPIScenarios:
                 client.create_item("Error Test Item", "CODE", {"item_type": "function", "project_id": "test-project"})
 
     def test_event_logging(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test event logging for API operations."""
         client = api_client_with_agent
@@ -1019,7 +1019,7 @@ class TestAdvancedAPIScenarios:
             assert duration < 10.0  # Should complete within reasonable time
 
     def test_transaction_rollback_on_error(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test transaction rollback on errors."""
         client = api_client_with_agent
@@ -1063,7 +1063,7 @@ class TestAdvancedAPIScenarios:
             assert len(items_created) == 10
 
     def test_api_caching_mechanism(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],  # noqa: ARG002
     ) -> None:
         """Test API caching mechanisms."""
         client = api_client_with_agent

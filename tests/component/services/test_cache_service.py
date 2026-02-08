@@ -13,7 +13,7 @@ class _FakeRedis:
     def get(self, key):
         return self.store.get(key)
 
-    def setex(self, key, ttl, value) -> bool:
+    def setex(self, key, ttl, value) -> bool:  # noqa: ARG002
         self.store[key] = value
         return True
 
@@ -22,7 +22,7 @@ class _FakeRedis:
 
 
 @pytest.mark.asyncio
-async def test_cache_service_basic_set_get(monkeypatch) -> None:
+async def test_cache_service_basic_set_get(monkeypatch) -> None:  # noqa: ARG001
     svc = CacheService(redis_url=None)
     svc.redis_client = _FakeRedis()
     svc.stats = {"hits": 0, "misses": 0, "evictions": 0}
@@ -35,7 +35,7 @@ async def test_cache_service_basic_set_get(monkeypatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_cache_service_misses_without_client(monkeypatch) -> None:
+async def test_cache_service_misses_without_client(monkeypatch) -> None:  # noqa: ARG001
     svc = CacheService(redis_url=None)
     svc.redis_client = None
     svc.stats = {"hits": 0, "misses": 0, "evictions": 0}

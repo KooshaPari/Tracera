@@ -236,7 +236,7 @@ class TestStateCLI:
 
     @patch("tracertm.cli.commands.state.ConfigManager")
     @patch("tracertm.cli.commands.state.LocalStorageManager")
-    def test_show_state_no_project(self, mock_storage, mock_config) -> None:
+    def test_show_state_no_project(self, mock_storage, mock_config) -> None:  # noqa: ARG002
         """Test show_state when no project is set."""
         import click
 

@@ -83,7 +83,7 @@ def mcp_baseline_env():
 class TestLazyLoadingIntegration:
     """Test lazy loading with real tool modules."""
 
-    def test_all_tools_accessible_with_lazy_loading(self, mcp_optimized_env) -> None:
+    def test_all_tools_accessible_with_lazy_loading(self, mcp_optimized_env) -> None:  # noqa: ARG002
         """Test that all tools remain accessible with lazy loading."""
         from tracertm.mcp.registry import get_registry, register_all_tools
 
@@ -101,7 +101,7 @@ class TestLazyLoadingIntegration:
             assert metadata is not None
             assert "description" in metadata or "domain" in metadata
 
-    def test_lazy_loading_does_not_break_functionality(self, mcp_optimized_env) -> None:
+    def test_lazy_loading_does_not_break_functionality(self, mcp_optimized_env) -> None:  # noqa: ARG002
         """Test that lazy loading doesn't break tool functionality."""
         from tracertm.mcp.registry import get_registry
 
@@ -121,7 +121,7 @@ class TestLazyLoadingIntegration:
         # Verify loaded
         assert registry.is_loaded("tracertm.mcp.tools.params.project")
 
-    def test_selective_tool_loading(self, mcp_optimized_env) -> None:
+    def test_selective_tool_loading(self, mcp_optimized_env) -> None:  # noqa: ARG002
         """Test that only requested tools are loaded."""
         from tracertm.mcp.registry import get_registry
 
@@ -150,7 +150,7 @@ class TestStreamingIntegration:
     """Test streaming responses in real scenarios."""
 
     @pytest.mark.asyncio
-    async def test_streaming_large_dataset(self, mcp_optimized_env) -> None:
+    async def test_streaming_large_dataset(self, mcp_optimized_env) -> None:  # noqa: ARG002
         """Test streaming responses for large datasets."""
 
         async def stream_large_dataset(item_count: int):
@@ -173,7 +173,7 @@ class TestStreamingIntegration:
         assert len(chunks) == 10  # 1000 items / 100 per chunk
 
     @pytest.mark.asyncio
-    async def test_streaming_with_error_handling(self, mcp_optimized_env) -> None:
+    async def test_streaming_with_error_handling(self, mcp_optimized_env) -> None:  # noqa: ARG002
         """Test that streaming handles errors gracefully."""
 
         async def stream_with_error():
@@ -313,7 +313,7 @@ class TestConnectionPoolingIntegration:
         pool = ConnectionPool(size=5)
 
         # Simulate 20 concurrent requests
-        async def make_request(request_id: int) -> None:
+        async def make_request(request_id: int) -> None:  # noqa: ARG001
             conn = await pool.acquire()
             await asyncio.sleep(0.01)  # Simulate work
             await pool.release(conn)
@@ -428,7 +428,7 @@ class TestTokenManagementIntegration:
 class TestFeatureFlagsAndRollback:
     """Test optimization feature flags and rollback capability."""
 
-    def test_lazy_loading_can_be_disabled(self, mcp_baseline_env) -> None:
+    def test_lazy_loading_can_be_disabled(self, mcp_baseline_env) -> None:  # noqa: ARG002
         """Test that lazy loading can be disabled via environment."""
         assert os.getenv("TRACERTM_MCP_LAZY_LOADING") == "false"
 
@@ -461,7 +461,7 @@ class TestFeatureFlagsAndRollback:
         assert streaming_enabled
         assert streaming_disabled
 
-    def test_all_optimizations_can_be_disabled(self, mcp_baseline_env) -> None:
+    def test_all_optimizations_can_be_disabled(self, mcp_baseline_env) -> None:  # noqa: ARG002
         """Test that all optimizations can be disabled for full rollback."""
         # Verify all optimization flags are disabled
         assert os.getenv("TRACERTM_MCP_LAZY_LOADING") == "false"
@@ -478,7 +478,7 @@ class TestFeatureFlagsAndRollback:
 class TestRegressionPrevention:
     """Test that optimizations don't break existing functionality."""
 
-    def test_tool_registration_still_works(self, mcp_optimized_env) -> None:
+    def test_tool_registration_still_works(self, mcp_optimized_env) -> None:  # noqa: ARG002
         """Test that basic tool registration still works with optimizations."""
         from tracertm.mcp.registry import get_registry
 
@@ -493,7 +493,7 @@ class TestRegressionPrevention:
         tools = registry.list_registered_tools()
         assert "regression_test_tool" in tools
 
-    def test_tool_metadata_accessible(self, mcp_optimized_env) -> None:
+    def test_tool_metadata_accessible(self, mcp_optimized_env) -> None:  # noqa: ARG002
         """Test that tool metadata is still accessible."""
         from tracertm.mcp.registry import get_registry
 
@@ -510,7 +510,7 @@ class TestRegressionPrevention:
         assert metadata["version"] == "1.0"
 
     @pytest.mark.asyncio
-    async def test_async_operations_still_work(self, mcp_optimized_env) -> None:
+    async def test_async_operations_still_work(self, mcp_optimized_env) -> None:  # noqa: ARG002
         """Test that async operations work with optimizations."""
 
         async def async_operation():

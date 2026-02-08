@@ -335,7 +335,7 @@ class TestComplexCycleDetection:
             is True
         )
 
-    def test_deep_dependency_chain(self, db_session, sample_project, sample_items_large) -> None:
+    def test_deep_dependency_chain(self, db_session, sample_project, sample_items_large) -> None:  # noqa: ARG002
         """Test cycle detection in deep dependency chains."""
         service = CycleDetectionService(db_session)
 
@@ -414,7 +414,7 @@ class TestFullGraphCycleAnalysis:
         assert result.get("cycles_detected") is True
         assert "cycles" in result
 
-    def test_detect_multiple_cycles(self, db_session, sample_project, sample_items_large) -> None:
+    def test_detect_multiple_cycles(self, db_session, sample_project, sample_items_large) -> None:  # noqa: ARG002
         """Test detection of multiple cycles in same graph."""
         service = CycleDetectionService(db_session)
 
@@ -591,7 +591,7 @@ class TestCycleBreakingStrategies:
 class TestLargeGraphPerformance:
     """Tests for performance on large graphs."""
 
-    def test_performance_100_items_no_cycle(self, db_session, sample_project, sample_items_large) -> None:
+    def test_performance_100_items_no_cycle(self, db_session, sample_project, sample_items_large) -> None:  # noqa: ARG002
         """Test performance with 100 items and no cycles."""
         service = CycleDetectionService(db_session)
 
@@ -614,7 +614,7 @@ class TestLargeGraphPerformance:
         assert result.get("cycles_detected") is False
         assert elapsed < 2.0  # Should complete in < 2 seconds
 
-    def test_performance_500_items_with_cycle(self, db_session, sample_project, sample_items_xlarge) -> None:
+    def test_performance_500_items_with_cycle(self, db_session, sample_project, sample_items_xlarge) -> None:  # noqa: ARG002
         """Test performance with 500 items and a cycle."""
         service = CycleDetectionService(db_session)
 
@@ -647,7 +647,7 @@ class TestLargeGraphPerformance:
         assert result.get("cycles_detected") is True
         assert elapsed < 5.0  # Should complete in < 5 seconds
 
-    def test_performance_wide_dependency_graph(self, db_session, sample_project, sample_items_large) -> None:
+    def test_performance_wide_dependency_graph(self, db_session, sample_project, sample_items_large) -> None:  # noqa: ARG002
         """Test performance with wide dependency graph."""
         service = CycleDetectionService(db_session)
 
@@ -898,7 +898,7 @@ class TestErrorHandlingAndEdgeCases:
         assert result is not None
         assert result.get("cycles_detected") is False
 
-    def test_single_item_no_links(self, db_session, sample_project, sample_items_basic) -> None:
+    def test_single_item_no_links(self, db_session, sample_project, sample_items_basic) -> None:  # noqa: ARG002
         """Test with single item and no links."""
         service = CycleDetectionService(db_session)
 
@@ -968,7 +968,7 @@ class TestErrorHandlingAndEdgeCases:
 class TestIntegrationScenarios:
     """Integration tests combining multiple features."""
 
-    def test_complex_workflow_cycle_and_impact(self, db_session, sample_project, sample_items_large) -> None:
+    def test_complex_workflow_cycle_and_impact(self, db_session, sample_project, sample_items_large) -> None:  # noqa: ARG002
         """Test complex workflow with cycle detection and impact analysis."""
         cycle_service = CycleDetectionService(db_session)
 
@@ -1009,7 +1009,7 @@ class TestIntegrationScenarios:
             )
             assert result is True
 
-    def test_mixed_cycle_and_non_cycle_links(self, db_session, sample_project, sample_items_large) -> None:
+    def test_mixed_cycle_and_non_cycle_links(self, db_session, sample_project, sample_items_large) -> None:  # noqa: ARG002
         """Test graph with mix of cyclic and acyclic relationships."""
         service = CycleDetectionService(db_session)
 

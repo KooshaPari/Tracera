@@ -50,7 +50,7 @@ def reset_tracing_state():
 class TestTracerInitialization:
     """Test tracer provider initialization."""
 
-    def test_init_tracing_creates_provider(self, reset_tracing_state) -> None:
+    def test_init_tracing_creates_provider(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that init_tracing creates a valid tracer provider."""
         # Initialize tracing
         tracer = init_tracing(
@@ -68,7 +68,7 @@ class TestTracerInitialization:
         provider = trace.get_tracer_provider()
         assert isinstance(provider, TracerProvider)
 
-    def test_init_tracing_idempotent(self, reset_tracing_state) -> None:
+    def test_init_tracing_idempotent(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that multiple calls to init_tracing return same tracer."""
         # Initialize twice
         tracer1 = init_tracing(service_name="test-1")
@@ -77,7 +77,7 @@ class TestTracerInitialization:
         # Should return same instance
         assert tracer1 is tracer2
 
-    def test_init_tracing_respects_environment_variables(self, reset_tracing_state, monkeypatch) -> None:
+    def test_init_tracing_respects_environment_variables(self, reset_tracing_state, monkeypatch) -> None:  # noqa: ARG002
         """Test that init_tracing reads environment variables."""
         monkeypatch.setenv("OTLP_ENDPOINT", "custom-endpoint:4317")
         monkeypatch.setenv("TRACING_ENVIRONMENT", "staging")
@@ -86,7 +86,7 @@ class TestTracerInitialization:
         tracer = init_tracing(service_name="test-service")
         assert tracer is not None
 
-    def test_init_tracing_requires_exporter(self, reset_tracing_state) -> None:
+    def test_init_tracing_requires_exporter(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that init_tracing fails gracefully if exporter unavailable."""
         import tracertm.observability.tracing as tracing_module
 
@@ -99,12 +99,12 @@ class TestTracerInitialization:
 class TestGetTracer:
     """Test tracer getter."""
 
-    def test_get_tracer_initializes_if_needed(self, reset_tracing_state) -> None:
+    def test_get_tracer_initializes_if_needed(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that get_tracer initializes tracing if needed."""
         tracer = get_tracer()
         assert tracer is not None
 
-    def test_get_tracer_returns_cached_instance(self, reset_tracing_state) -> None:
+    def test_get_tracer_returns_cached_instance(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that get_tracer returns cached instance."""
         tracer1 = get_tracer()
         tracer2 = get_tracer()
@@ -116,7 +116,7 @@ class TestTraceMethodDecorator:
     """Test @trace_method decorator."""
 
     @pytest.mark.asyncio
-    async def test_trace_method_sync_function(self, reset_tracing_state) -> None:
+    async def test_trace_method_sync_function(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test tracing synchronous functions."""
 
         @trace_method(span_name="test.sync")
@@ -127,7 +127,7 @@ class TestTraceMethodDecorator:
         assert result == 84
 
     @pytest.mark.asyncio
-    async def test_trace_method_async_function(self, reset_tracing_state) -> None:
+    async def test_trace_method_async_function(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test tracing asynchronous functions."""
 
         @trace_method(span_name="test.async")
@@ -139,7 +139,7 @@ class TestTraceMethodDecorator:
         assert result == 84
 
     @pytest.mark.asyncio
-    async def test_trace_method_with_attributes(self, reset_tracing_state) -> None:
+    async def test_trace_method_with_attributes(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that trace_method includes custom attributes."""
 
         @trace_method(
@@ -153,7 +153,7 @@ class TestTraceMethodDecorator:
         assert result == "result"
 
     @pytest.mark.asyncio
-    async def test_trace_method_error_handling(self, reset_tracing_state) -> None:
+    async def test_trace_method_error_handling(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that trace_method records exceptions."""
 
         @trace_method(span_name="test.error")
@@ -169,7 +169,7 @@ class TestSpanCreation:
     """Test manual span creation."""
 
     @pytest.mark.asyncio
-    async def test_create_sync_span(self, reset_tracing_state) -> None:
+    async def test_create_sync_span(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test creating synchronous spans."""
         tracer = get_tracer()
 
@@ -178,7 +178,7 @@ class TestSpanCreation:
             span.set_attribute("test.key", "test.value")
 
     @pytest.mark.asyncio
-    async def test_create_async_span(self, reset_tracing_state) -> None:
+    async def test_create_async_span(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test creating asynchronous spans."""
         tracer = get_tracer()
 
@@ -187,7 +187,7 @@ class TestSpanCreation:
             await asyncio.sleep(0.01)
 
     @pytest.mark.asyncio
-    async def test_nested_spans(self, reset_tracing_state) -> None:
+    async def test_nested_spans(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test creating nested spans."""
         tracer = get_tracer()
 
@@ -198,7 +198,7 @@ class TestSpanCreation:
                 child.set_attribute("span.type", "child")
 
     @pytest.mark.asyncio
-    async def test_span_attributes(self, reset_tracing_state) -> None:
+    async def test_span_attributes(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test setting span attributes."""
         tracer = get_tracer()
 
@@ -328,7 +328,7 @@ class TestOTLPExporter:
 class TestResourceMetadata:
     """Test resource metadata in spans."""
 
-    def test_resource_has_service_name(self, reset_tracing_state) -> None:
+    def test_resource_has_service_name(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that resource includes service name."""
         init_tracing(service_name="test-service")
 
@@ -337,7 +337,7 @@ class TestResourceMetadata:
 
         assert resource.attributes.get("service.name") == "test-service"
 
-    def test_resource_has_environment(self, reset_tracing_state) -> None:
+    def test_resource_has_environment(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that resource includes deployment environment."""
         # Note: init_tracing is idempotent, so different envs on subsequent calls don't change
         # This test verifies that ANY initialization includes deployment.environment attribute
@@ -349,7 +349,7 @@ class TestResourceMetadata:
         # Just verify the attribute exists (it was set in the first initialization)
         assert "deployment.environment" in resource.attributes
 
-    def test_resource_has_version(self, reset_tracing_state) -> None:
+    def test_resource_has_version(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that resource includes service version."""
         # Note: init_tracing is idempotent, so different versions on subsequent calls don't change
         # This test verifies that ANY initialization includes service.version attribute
@@ -365,7 +365,7 @@ class TestResourceMetadata:
 class TestTraceContextPropagation:
     """Test W3C Trace Context propagation."""
 
-    def test_trace_context_propagator_configured(self, reset_tracing_state) -> None:
+    def test_trace_context_propagator_configured(self, reset_tracing_state) -> None:  # noqa: ARG002
         """Test that trace context propagator is configured."""
         init_tracing()
 

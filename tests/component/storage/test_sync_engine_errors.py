@@ -49,7 +49,7 @@ class MockConnection:
     def __exit__(self, *args):
         pass
 
-    def execute(self, *args, **kwargs):
+    def execute(self, *args, **kwargs):  # noqa: ARG002
         return Mock(fetchone=Mock(return_value=None), scalar=Mock(return_value=0))
 
     def commit(self) -> None:

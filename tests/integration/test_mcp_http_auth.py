@@ -124,7 +124,7 @@ class TestMCPHTTPAuth:
         assert "result" in data
 
     @patch("tracertm.api.deps.verify_token")
-    def test_messages_endpoint_without_token(self, mock_verify, client) -> None:
+    def test_messages_endpoint_without_token(self, mock_verify, client) -> None:  # noqa: ARG002
         """Messages endpoint should reject requests without token."""
         with patch("tracertm.api.deps.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = True

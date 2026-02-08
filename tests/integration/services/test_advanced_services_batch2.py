@@ -520,12 +520,12 @@ class TestCommitLinkingServiceIntegration:
         return CommitLinkingService(db_session)
 
     @pytest_asyncio.fixture
-    async def test_project(self, db_session, project_factory):
+    async def test_project(self, db_session, project_factory):  # noqa: ARG002
         """Create a test project."""
         return await project_factory(name="Test Project")
 
     @pytest_asyncio.fixture
-    async def test_item(self, db_session, item_factory, test_project):
+    async def test_item(self, db_session, item_factory, test_project):  # noqa: ARG002
         """Create a test item."""
         return await item_factory(project_id=test_project.id, title="Test Feature", item_type="feature")
 
@@ -636,7 +636,7 @@ class TestCommitLinkingServiceIntegration:
     # Auto-Linking Tests (Lines 66-116)
 
     @pytest.mark.asyncio
-    async def test_auto_link_commit_success(self, commit_service, test_project, test_item, db_session) -> None:
+    async def test_auto_link_commit_success(self, commit_service, test_project, test_item, db_session) -> None:  # noqa: ARG002
         """Test successfully auto-linking a commit to an item.
 
         GIVEN: A commit message referencing an item
@@ -659,7 +659,7 @@ class TestCommitLinkingServiceIntegration:
         assert "errors" in result
 
     @pytest.mark.asyncio
-    async def test_auto_link_commit_no_references(self, commit_service, test_project, db_session) -> None:
+    async def test_auto_link_commit_no_references(self, commit_service, test_project, db_session) -> None:  # noqa: ARG002
         """Test auto-linking with no item references.
 
         GIVEN: A commit message without references
@@ -679,7 +679,7 @@ class TestCommitLinkingServiceIntegration:
         assert len(result["linked"]) == 0
 
     @pytest.mark.asyncio
-    async def test_auto_link_commit_with_errors(self, commit_service, test_project, db_session) -> None:
+    async def test_auto_link_commit_with_errors(self, commit_service, test_project, db_session) -> None:  # noqa: ARG002
         """Test auto-linking when errors occur.
 
         GIVEN: A commit message with invalid references
@@ -726,7 +726,7 @@ class TestCommitLinkingServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_find_item_by_reference_wrong_project(
-        self, commit_service, test_project, test_item, db_session, project_factory,
+        self, commit_service, test_project, test_item, db_session, project_factory,  # noqa: ARG002
     ) -> None:
         """Test finding item from different project.
 
@@ -1198,12 +1198,12 @@ class TestEventSourcingServiceIntegration:
         return EventSourcingService(db_session)
 
     @pytest_asyncio.fixture
-    async def test_project(self, db_session, project_factory):
+    async def test_project(self, db_session, project_factory):  # noqa: ARG002
         """Create a test project."""
         return await project_factory(name="Event Test Project")
 
     @pytest_asyncio.fixture
-    async def test_item(self, db_session, item_factory, test_project):
+    async def test_item(self, db_session, item_factory, test_project):  # noqa: ARG002
         """Create a test item."""
         return await item_factory(project_id=test_project.id, title="Event Test Item")
 
@@ -1232,7 +1232,7 @@ class TestEventSourcingServiceIntegration:
     # Audit Trail Tests (Lines 44-71)
 
     @pytest.mark.asyncio
-    async def test_get_audit_trail_by_project(self, event_service, test_project, create_test_events) -> None:
+    async def test_get_audit_trail_by_project(self, event_service, test_project, create_test_events) -> None:  # noqa: ARG002
         """Test getting audit trail for entire project.
 
         GIVEN: Multiple events in a project
@@ -1246,7 +1246,7 @@ class TestEventSourcingServiceIntegration:
         assert all(entry.entity_type in {"item", "project"} for entry in trail)
 
     @pytest.mark.asyncio
-    async def test_get_audit_trail_by_entity(self, event_service, test_project, test_item, create_test_events) -> None:
+    async def test_get_audit_trail_by_entity(self, event_service, test_project, test_item, create_test_events) -> None:  # noqa: ARG002
         """Test getting audit trail for specific entity.
 
         GIVEN: Multiple events for an entity
@@ -1259,7 +1259,7 @@ class TestEventSourcingServiceIntegration:
         assert all(entry.entity_id == test_item.id for entry in trail)
 
     @pytest.mark.asyncio
-    async def test_get_audit_trail_with_limit(self, event_service, test_project, create_test_events) -> None:
+    async def test_get_audit_trail_with_limit(self, event_service, test_project, create_test_events) -> None:  # noqa: ARG002
         """Test getting audit trail with limit.
 
         GIVEN: Multiple events
@@ -1271,7 +1271,7 @@ class TestEventSourcingServiceIntegration:
         assert len(trail) <= 2
 
     @pytest.mark.asyncio
-    async def test_audit_trail_entry_structure(self, event_service, test_project, create_test_events) -> None:
+    async def test_audit_trail_entry_structure(self, event_service, test_project, create_test_events) -> None:  # noqa: ARG002
         """Test audit trail entry has correct structure.
 
         GIVEN: Events in the system
@@ -1292,7 +1292,7 @@ class TestEventSourcingServiceIntegration:
     # Event Replay Tests (Lines 72-107)
 
     @pytest.mark.asyncio
-    async def test_replay_events_all(self, event_service, test_project, test_item, create_test_events) -> None:
+    async def test_replay_events_all(self, event_service, test_project, test_item, create_test_events) -> None:  # noqa: ARG002
         """Test replaying all events for an entity.
 
         GIVEN: Multiple events for an entity
@@ -1307,7 +1307,7 @@ class TestEventSourcingServiceIntegration:
         assert isinstance(result.final_state, dict)
 
     @pytest.mark.asyncio
-    async def test_replay_events_up_to_timestamp(self, event_service, test_project, test_item, create_test_events) -> None:
+    async def test_replay_events_up_to_timestamp(self, event_service, test_project, test_item, create_test_events) -> None:  # noqa: ARG002
         """Test replaying events up to specific timestamp.
 
         GIVEN: Multiple events at different times
@@ -1437,7 +1437,7 @@ class TestEventSourcingServiceIntegration:
     # Event History Tests (Lines 145-157)
 
     @pytest.mark.asyncio
-    async def test_get_event_history_all(self, event_service, test_item, create_test_events) -> None:
+    async def test_get_event_history_all(self, event_service, test_item, create_test_events) -> None:  # noqa: ARG002
         """Test getting complete event history.
 
         GIVEN: Multiple events for an entity
@@ -1450,7 +1450,7 @@ class TestEventSourcingServiceIntegration:
         assert all(e.entity_id == test_item.id for e in events)
 
     @pytest.mark.asyncio
-    async def test_get_event_history_filtered_by_type(self, event_service, test_item, create_test_events) -> None:
+    async def test_get_event_history_filtered_by_type(self, event_service, test_item, create_test_events) -> None:  # noqa: ARG002
         """Test getting event history filtered by type.
 
         GIVEN: Multiple events of different types
@@ -1476,7 +1476,7 @@ class TestEventSourcingServiceIntegration:
     # Changes Between Timestamps Tests (Lines 158-187)
 
     @pytest.mark.asyncio
-    async def test_get_changes_between_timestamps(self, event_service, test_item, create_test_events, db_session) -> None:
+    async def test_get_changes_between_timestamps(self, event_service, test_item, create_test_events, db_session) -> None:  # noqa: ARG002
         """Test getting changes between two timestamps.
 
         GIVEN: Events at different times
@@ -1495,7 +1495,7 @@ class TestEventSourcingServiceIntegration:
         assert all(isinstance(c, AuditTrailEntry) for c in changes)
 
     @pytest.mark.asyncio
-    async def test_get_changes_between_narrow_window(self, event_service, test_item, create_test_events) -> None:
+    async def test_get_changes_between_narrow_window(self, event_service, test_item, create_test_events) -> None:  # noqa: ARG002
         """Test getting changes in a narrow time window.
 
         GIVEN: Events spread over time

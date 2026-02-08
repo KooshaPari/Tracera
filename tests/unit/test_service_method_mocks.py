@@ -14,7 +14,7 @@ class TestImpactAnalysisServiceMethods:
     """Test impact analysis service actual methods."""
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_get_impacted_items(self, mock_service_class) -> None:
+    def test_service_get_impacted_items(self, mock_service_class) -> None:  # noqa: ARG002
         """Test get_impacted_items method."""
         mock_service = Mock()
         mock_service.get_impacted_items = Mock(return_value=[2, 3])
@@ -24,7 +24,7 @@ class TestImpactAnalysisServiceMethods:
         assert all(isinstance(x, int) for x in result)
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_calculate_impact_score(self, mock_service_class) -> None:
+    def test_service_calculate_impact_score(self, mock_service_class) -> None:  # noqa: ARG002
         """Test calculate_impact_score method."""
         mock_service = Mock()
         mock_service.calculate_impact_score = Mock(return_value=0.75)
@@ -33,7 +33,7 @@ class TestImpactAnalysisServiceMethods:
         assert 0 <= result <= 1
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_analyze_impact(self, mock_service_class) -> None:
+    def test_service_analyze_impact(self, mock_service_class) -> None:  # noqa: ARG002
         """Test analyze_impact method."""
         mock_service = Mock()
         mock_service.analyze_impact = Mock(return_value={"item_id": 1, "impacted_items": [2, 3], "score": 0.75})
@@ -43,7 +43,7 @@ class TestImpactAnalysisServiceMethods:
         assert "impacted_items" in result
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_get_upstream_impacts(self, mock_service_class) -> None:
+    def test_service_get_upstream_impacts(self, mock_service_class) -> None:  # noqa: ARG002
         """Test get_upstream_impacts method."""
         mock_service = Mock()
         mock_service.get_upstream_impacts = Mock(return_value=[0, -1])
@@ -52,7 +52,7 @@ class TestImpactAnalysisServiceMethods:
         assert isinstance(result, list)
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_get_downstream_impacts(self, mock_service_class) -> None:
+    def test_service_get_downstream_impacts(self, mock_service_class) -> None:  # noqa: ARG002
         """Test get_downstream_impacts method."""
         mock_service = Mock()
         mock_service.get_downstream_impacts = Mock(return_value=[2, 3, 4])
@@ -65,7 +65,7 @@ class TestShortestPathServiceMethods:
     """Test shortest path service actual methods."""
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_find_shortest_path(self, mock_service_class) -> None:
+    def test_service_find_shortest_path(self, mock_service_class) -> None:  # noqa: ARG002
         """Test find_shortest_path method."""
         mock_service = Mock()
         mock_service.find_shortest_path = Mock(return_value=[1, 2, 3])
@@ -75,7 +75,7 @@ class TestShortestPathServiceMethods:
         assert result[0] == 1 or result is None
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_find_all_paths(self, mock_service_class) -> None:
+    def test_service_find_all_paths(self, mock_service_class) -> None:  # noqa: ARG002
         """Test find_all_paths method."""
         mock_service = Mock()
         mock_service.find_all_paths = Mock(return_value=[[1, 2, 4], [1, 3, 4]])
@@ -84,7 +84,7 @@ class TestShortestPathServiceMethods:
         assert isinstance(result, list)
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_has_path(self, mock_service_class) -> None:
+    def test_service_has_path(self, mock_service_class) -> None:  # noqa: ARG002
         """Test has_path method."""
         mock_service = Mock()
         mock_service.has_path = Mock(return_value=True)
@@ -93,7 +93,7 @@ class TestShortestPathServiceMethods:
         assert isinstance(result, bool)
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_get_path_weight(self, mock_service_class) -> None:
+    def test_service_get_path_weight(self, mock_service_class) -> None:  # noqa: ARG002
         """Test get_path_weight method."""
         mock_service = Mock()
         mock_service.get_path_weight = Mock(return_value=5)
@@ -102,7 +102,7 @@ class TestShortestPathServiceMethods:
         assert isinstance(result, (int, float))
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_find_k_shortest_paths(self, mock_service_class) -> None:
+    def test_service_find_k_shortest_paths(self, mock_service_class) -> None:  # noqa: ARG002
         """Test find_k_shortest_paths method."""
         mock_service = Mock()
         mock_service.find_k_shortest_paths = Mock(return_value=[[1, 2], [1, 3]])
@@ -115,7 +115,7 @@ class TestCacheServiceMethods:
     """Test cache service actual methods."""
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_set_and_get(self, mock_service_class) -> None:
+    def test_cache_set_and_get(self, mock_service_class) -> None:  # noqa: ARG002
         """Test cache set and get."""
         mock_cache = Mock()
         mock_cache.set = Mock()
@@ -127,7 +127,7 @@ class TestCacheServiceMethods:
         assert result == "value"
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_delete(self, mock_service_class) -> None:
+    def test_cache_delete(self, mock_service_class) -> None:  # noqa: ARG002
         """Test cache delete."""
         mock_cache = Mock()
         mock_cache.delete = Mock(return_value=True)
@@ -136,7 +136,7 @@ class TestCacheServiceMethods:
         assert result
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_clear(self, mock_service_class) -> None:
+    def test_cache_clear(self, mock_service_class) -> None:  # noqa: ARG002
         """Test cache clear."""
         mock_cache = Mock()
         mock_cache.clear = Mock()
@@ -145,7 +145,7 @@ class TestCacheServiceMethods:
         mock_cache.clear.assert_called_once()
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_exists(self, mock_service_class) -> None:
+    def test_cache_exists(self, mock_service_class) -> None:  # noqa: ARG002
         """Test cache key exists."""
         mock_cache = Mock()
         mock_cache.exists = Mock(return_value=True)
@@ -154,7 +154,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, bool)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_expire(self, mock_service_class) -> None:
+    def test_cache_expire(self, mock_service_class) -> None:  # noqa: ARG002
         """Test cache expiration."""
         mock_cache = Mock()
         mock_cache.expire = Mock(return_value=True)
@@ -163,7 +163,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, bool)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_increment(self, mock_service_class) -> None:
+    def test_cache_increment(self, mock_service_class) -> None:  # noqa: ARG002
         """Test cache increment."""
         mock_cache = Mock()
         mock_cache.increment = Mock(return_value=2)
@@ -172,7 +172,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, int)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_decrement(self, mock_service_class) -> None:
+    def test_cache_decrement(self, mock_service_class) -> None:  # noqa: ARG002
         """Test cache decrement."""
         mock_cache = Mock()
         mock_cache.decrement = Mock(return_value=0)
@@ -181,7 +181,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, int)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_mget(self, mock_service_class) -> None:
+    def test_cache_mget(self, mock_service_class) -> None:  # noqa: ARG002
         """Test cache mget (get multiple)."""
         mock_cache = Mock()
         mock_cache.mget = Mock(return_value=["v1", "v2"])
@@ -190,7 +190,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, list)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_mset(self, mock_service_class) -> None:
+    def test_cache_mset(self, mock_service_class) -> None:  # noqa: ARG002
         """Test cache mset (set multiple)."""
         mock_cache = Mock()
         mock_cache.mset = Mock()
@@ -203,7 +203,7 @@ class TestItemServiceMethods:
     """Test item service methods with DB."""
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_create(self, mock_service_class) -> None:
+    def test_item_service_create(self, mock_service_class) -> None:  # noqa: ARG002
         """Test create item."""
         mock_service = Mock()
         mock_service.create = Mock(return_value={"id": 1, "name": "Item"})
@@ -212,7 +212,7 @@ class TestItemServiceMethods:
         assert result["id"] == 1
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_get(self, mock_service_class) -> None:
+    def test_item_service_get(self, mock_service_class) -> None:  # noqa: ARG002
         """Test get item."""
         mock_service = Mock()
         mock_service.get = Mock(return_value={"id": 1, "name": "Item"})
@@ -221,7 +221,7 @@ class TestItemServiceMethods:
         assert result["id"] == 1
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_update(self, mock_service_class) -> None:
+    def test_item_service_update(self, mock_service_class) -> None:  # noqa: ARG002
         """Test update item."""
         mock_service = Mock()
         mock_service.update = Mock(return_value={"id": 1, "name": "Updated"})
@@ -230,7 +230,7 @@ class TestItemServiceMethods:
         assert result["name"] == "Updated"
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_delete(self, mock_service_class) -> None:
+    def test_item_service_delete(self, mock_service_class) -> None:  # noqa: ARG002
         """Test delete item."""
         mock_service = Mock()
         mock_service.delete = Mock(return_value=True)
@@ -239,7 +239,7 @@ class TestItemServiceMethods:
         assert result
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_list(self, mock_service_class) -> None:
+    def test_item_service_list(self, mock_service_class) -> None:  # noqa: ARG002
         """Test list items."""
         mock_service = Mock()
         mock_service.list = Mock(return_value=[{"id": 1}, {"id": 2}])
@@ -309,7 +309,7 @@ class TestApiWebhooksServiceMethods:
     """Test API webhooks service methods."""
 
     @patch("tracertm.services.api_webhooks_service.APIWebhooksService")
-    def test_register_webhook(self, mock_service_class) -> None:
+    def test_register_webhook(self, mock_service_class) -> None:  # noqa: ARG002
         """Test webhook registration."""
         mock_service = Mock()
         mock_service.register = Mock(return_value={"id": "123", "url": "http://example.com"})
@@ -318,7 +318,7 @@ class TestApiWebhooksServiceMethods:
         assert "id" in result
 
     @patch("tracertm.services.api_webhooks_service.APIWebhooksService")
-    def test_trigger_webhook(self, mock_service_class) -> None:
+    def test_trigger_webhook(self, mock_service_class) -> None:  # noqa: ARG002
         """Test trigger webhook."""
         mock_service = Mock()
         mock_service.trigger = Mock(return_value=True)
@@ -327,7 +327,7 @@ class TestApiWebhooksServiceMethods:
         assert isinstance(result, bool)
 
     @patch("tracertm.services.api_webhooks_service.APIWebhooksService")
-    def test_delete_webhook(self, mock_service_class) -> None:
+    def test_delete_webhook(self, mock_service_class) -> None:  # noqa: ARG002
         """Test delete webhook."""
         mock_service = Mock()
         mock_service.delete = Mock(return_value=True)

@@ -50,14 +50,14 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id
 
 
-def test_api_client_initialization(temp_project_setup) -> None:
+def test_api_client_initialization(temp_project_setup) -> None:  # noqa: ARG001
     """Test API client initialization (FR36)."""
     client = TraceRTMClient()
     assert client.config_manager is not None
     client.close()
 
 
-def test_register_agent(temp_project_setup) -> None:
+def test_register_agent(temp_project_setup) -> None:  # noqa: ARG001
     """Test agent registration (FR41)."""
     client = TraceRTMClient()
     agent_id = client.register_agent("Test Agent", capabilities=["code", "test"], agent_type="ai_agent")
@@ -67,7 +67,7 @@ def test_register_agent(temp_project_setup) -> None:
     client.close()
 
 
-def test_query_items(temp_project_setup) -> None:
+def test_query_items(temp_project_setup) -> None:  # noqa: ARG001
     """Test querying items (FR37, FR44)."""
     client = TraceRTMClient()
     client.register_agent("Query Agent")
@@ -97,7 +97,7 @@ def test_query_items(temp_project_setup) -> None:
     client.close()
 
 
-def test_get_item(temp_project_setup) -> None:
+def test_get_item(temp_project_setup) -> None:  # noqa: ARG001
     """Test getting a specific item (FR37)."""
     client = TraceRTMClient()
     client.register_agent("Get Agent")
@@ -119,7 +119,7 @@ def test_get_item(temp_project_setup) -> None:
     client.close()
 
 
-def test_create_item(temp_project_setup) -> None:
+def test_create_item(temp_project_setup) -> None:  # noqa: ARG001
     """Test creating items (FR38)."""
     client = TraceRTMClient()
     client.register_agent("Create Agent")
@@ -148,7 +148,7 @@ def test_create_item(temp_project_setup) -> None:
     client.close()
 
 
-def test_update_item_optimistic_locking(temp_project_setup) -> None:
+def test_update_item_optimistic_locking(temp_project_setup) -> None:  # noqa: ARG001
     """Test updating items with optimistic locking (FR38, FR42)."""
     client1 = TraceRTMClient()
     client1.register_agent("Agent 1")
@@ -166,7 +166,7 @@ def test_update_item_optimistic_locking(temp_project_setup) -> None:
     client1.close()
 
 
-def test_update_item_conflict_detection(temp_project_setup) -> None:
+def test_update_item_conflict_detection(temp_project_setup) -> None:  # noqa: ARG001
     """Test conflict detection on concurrent updates (FR43)."""
     client1 = TraceRTMClient()
     client1.register_agent("Agent 1")
@@ -195,7 +195,7 @@ def test_update_item_conflict_detection(temp_project_setup) -> None:
     client2.close()
 
 
-def test_delete_item(temp_project_setup) -> None:
+def test_delete_item(temp_project_setup) -> None:  # noqa: ARG001
     """Test deleting items (FR38)."""
     client = TraceRTMClient()
     client.register_agent("Delete Agent")
@@ -215,7 +215,7 @@ def test_delete_item(temp_project_setup) -> None:
     client.close()
 
 
-def test_export_project(temp_project_setup) -> None:
+def test_export_project(temp_project_setup) -> None:  # noqa: ARG001
     """Test exporting project data (FR39)."""
     client = TraceRTMClient()
     client.register_agent("Export Agent")
@@ -239,7 +239,7 @@ def test_export_project(temp_project_setup) -> None:
     client.close()
 
 
-def test_import_data(temp_project_setup) -> None:
+def test_import_data(temp_project_setup) -> None:  # noqa: ARG001
     """Test importing bulk data (FR40)."""
     client = TraceRTMClient()
     client.register_agent("Import Agent")
@@ -278,7 +278,7 @@ def test_import_data(temp_project_setup) -> None:
     client.close()
 
 
-def test_agent_activity_monitoring(temp_project_setup) -> None:
+def test_agent_activity_monitoring(temp_project_setup) -> None:  # noqa: ARG001
     """Test agent activity monitoring (FR45)."""
     client = TraceRTMClient()
     agent_id = client.register_agent("Activity Agent")
@@ -296,7 +296,7 @@ def test_agent_activity_monitoring(temp_project_setup) -> None:
     client.close()
 
 
-def test_structured_filter_language(temp_project_setup) -> None:
+def test_structured_filter_language(temp_project_setup) -> None:  # noqa: ARG001
     """Test structured filter language (FR44)."""
     client = TraceRTMClient()
     client.register_agent("Filter Agent")

@@ -43,12 +43,12 @@ async def test_upload_changes_success() -> None:
 async def test_upload_changes_rate_limit_retry_then_fail(monkeypatch) -> None:
     calls = {"count": 0}
 
-    async def handler(request):
+    async def handler(request):  # noqa: ARG001
         calls["count"] += 1
         return httpx.Response(429, json={"error": "rate limit"})
 
     # Avoid real sleeping
-    async def _noop(*args, **kwargs) -> None:
+    async def _noop(*args, **kwargs) -> None:  # noqa: ARG001
         return None
 
     monkeypatch.setattr(asyncio, "sleep", _noop)
@@ -64,7 +64,7 @@ async def test_upload_changes_rate_limit_retry_then_fail(monkeypatch) -> None:
 
 @pytest.mark.asyncio
 async def test_upload_changes_auth_error() -> None:
-    async def handler(request):
+    async def handler(request):  # noqa: ARG001
         return httpx.Response(401, json={"error": "unauthorized"})
 
     client = _client_with(handler)
@@ -76,7 +76,7 @@ async def test_upload_changes_auth_error() -> None:
 async def test_get_status_success() -> None:
     now = datetime.now(UTC)
 
-    async def handler(request):
+    async def handler(request):  # noqa: ARG001
         return httpx.Response(
             200,
             json={
@@ -99,11 +99,11 @@ async def test_get_status_success() -> None:
 async def test_get_status_network_error(monkeypatch) -> None:
     from tracertm.api.sync_client import NetworkError
 
-    async def handler(request) -> Never:
+    async def handler(request) -> Never:  # noqa: ARG001
         msg = "timeout"
         raise httpx.ConnectTimeout(msg)
 
-    async def _noop(*args, **kwargs) -> None:
+    async def _noop(*args, **kwargs) -> None:  # noqa: ARG001
         return None
 
     monkeypatch.setattr(asyncio, "sleep", _noop)

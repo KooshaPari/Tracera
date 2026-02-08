@@ -258,7 +258,7 @@ async def db_session(async_test_db_engine):
 
 
 @pytest.fixture(scope="function", autouse=True)
-def isolated_cli_environment(tmp_path, monkeypatch):
+def isolated_cli_environment(tmp_path, monkeypatch):  # noqa: ARG001
     """Isolate CLI tests from the repository's .trace/ directory.
 
     Changes the working directory to a temporary directory so that

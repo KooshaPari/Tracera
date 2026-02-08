@@ -11,7 +11,7 @@ class _Item(SimpleNamespace):
 
 
 @pytest.mark.asyncio
-async def test_find_all_paths(monkeypatch, async_session) -> None:
+async def test_find_all_paths(monkeypatch, async_session) -> None:  # noqa: ARG001
     svc = AdvancedTraceabilityService(async_session)
     path_links = [
         SimpleNamespace(target_item_id="i2"),
@@ -29,7 +29,7 @@ async def test_coverage_gaps(monkeypatch, async_session) -> None:
     source_item = _Item(id="s1", view="FEATURE")
     target_item = _Item(id="t1", view="TEST")
 
-    async def get_by_view(project_id, view, status=None, limit=100, offset=0):
+    async def get_by_view(project_id, view, status=None, limit=100, offset=0):  # noqa: ARG001
         return [source_item] if view == "FEATURE" else [target_item]
 
     async def get_by_source(item_id):

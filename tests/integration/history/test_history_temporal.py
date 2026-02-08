@@ -39,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch) -> str:
     return "test-project"
 
 
-def test_view_history(temp_project, runner) -> None:
+def test_view_history(temp_project, runner) -> None:  # noqa: ARG001
     """Test viewing item history (FR55)."""
     # Create item
     result1 = runner.invoke(
@@ -66,7 +66,7 @@ def test_view_history(temp_project, runner) -> None:
     # assert "item_created" in result3.stdout or "History Test Item" in result3.stdout
 
 
-def test_temporal_query(temp_project, runner) -> None:
+def test_temporal_query(temp_project, runner) -> None:  # noqa: ARG001
     """Test temporal queries with --at flag (FR56, FR59)."""
     # Create item
     result1 = runner.invoke(

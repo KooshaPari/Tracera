@@ -11,7 +11,7 @@ from tracertm.services.concurrent_operations_service import ConcurrencyError
 
 def test_init_without_database_url_raises(monkeypatch) -> None:
     class FakeConfig:
-        def get(self, key, default=None) -> None:
+        def get(self, key, default=None) -> None:  # noqa: ARG002
             return None
 
     monkeypatch.setattr(client_mod, "ConfigManager", FakeConfig)
@@ -20,9 +20,9 @@ def test_init_without_database_url_raises(monkeypatch) -> None:
         c._get_session()
 
 
-def test_log_operation_rolls_back_on_error(monkeypatch) -> None:
+def test_log_operation_rolls_back_on_error(monkeypatch) -> None:  # noqa: ARG001
     class FakeSession:
-        def add(self, obj) -> Never:
+        def add(self, obj) -> Never:  # noqa: ARG002
             msg = "fail"
             raise RuntimeError(msg)
 
@@ -48,7 +48,7 @@ def test_log_operation_rolls_back_on_error(monkeypatch) -> None:
             return None
 
     class FakeConfig:
-        def get(self, key, default=None) -> str | None:
+        def get(self, key, default=None) -> str | None:  # noqa: ARG002
             if key == "database_url":
                 return "sqlite://"
             if key == "current_project_id":
@@ -84,15 +84,15 @@ def test_register_agent_stores_assigned_projects(monkeypatch) -> None:
             return None
 
     class FakeConfig:
-        def get(self, key, default=None) -> str | None:
+        def get(self, key, default=None) -> str | None:  # noqa: ARG002
             if key == "database_url":
                 return "sqlite://"
             if key == "current_project_id":
                 return "proj"
             return None
 
-    monkeypatch.setattr(client_mod, "Session", lambda engine: FakeSession())
-    monkeypatch.setattr(client_mod, "DatabaseConnection", lambda url: FakeDB())
+    monkeypatch.setattr(client_mod, "Session", lambda engine: FakeSession())  # noqa: ARG005
+    monkeypatch.setattr(client_mod, "DatabaseConnection", lambda url: FakeDB())  # noqa: ARG005
 
     c = TraceRTMClient(agent_id=None)
     c.config_manager = FakeConfig()
@@ -103,11 +103,11 @@ def test_register_agent_stores_assigned_projects(monkeypatch) -> None:
     assert any("assigned_projects" in getattr(a, "agent_metadata", {}) for a in session_items)
 
 
-def test_update_item_conflict_raises(monkeypatch) -> None:
+def test_update_item_conflict_raises(monkeypatch) -> None:  # noqa: ARG001
     class FakeSession:
-        def query(self, model):
+        def query(self, model):  # noqa: ARG002
             class _Q:
-                def filter(self, *args, **kwargs):
+                def filter(self, *args, **kwargs):  # noqa: ARG002
                     return self
 
                 def first(self) -> Never:
@@ -123,7 +123,7 @@ def test_update_item_conflict_raises(monkeypatch) -> None:
 
     c = TraceRTMClient(agent_id="agent")
     c.config_manager = SimpleNamespace(
-        get=lambda key, default=None: "proj" if key == "current_project_id" else "sqlite://",
+        get=lambda key, default=None: "proj" if key == "current_project_id" else "sqlite://",  # noqa: ARG005
     )
     c._get_session = FakeSession  # type: ignore[assignment]
 

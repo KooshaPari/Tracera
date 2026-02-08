@@ -39,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch) -> str:
     return "test-project"
 
 
-def test_full_text_search(temp_project, runner) -> None:
+def test_full_text_search(temp_project, runner) -> None:  # noqa: ARG001
     """Test full-text search (FR60)."""
     # Create items
     runner.invoke(
@@ -61,7 +61,7 @@ def test_full_text_search(temp_project, runner) -> None:
     assert "Authentication" in result.stdout or "No items found" in result.stdout
 
 
-def test_search_with_filters(temp_project, runner) -> None:
+def test_search_with_filters(temp_project, runner) -> None:  # noqa: ARG001
     """Test search with multiple filters (FR61-FR64, FR67)."""
     # Create item with specific attributes
     runner.invoke(
@@ -96,7 +96,7 @@ def test_search_with_filters(temp_project, runner) -> None:
     assert result.exit_code == 0
 
 
-def test_fuzzy_matching(temp_project, runner) -> None:
+def test_fuzzy_matching(temp_project, runner) -> None:  # noqa: ARG001
     """Test fuzzy matching (FR66)."""
     # Create item
     runner.invoke(
@@ -117,7 +117,7 @@ def test_fuzzy_matching(temp_project, runner) -> None:
     assert result.exit_code == 0
 
 
-def test_saved_queries(temp_project, runner) -> None:
+def test_saved_queries(temp_project, runner) -> None:  # noqa: ARG001
     """Test saved queries (FR65)."""
     # Save a query
     result1 = runner.invoke(

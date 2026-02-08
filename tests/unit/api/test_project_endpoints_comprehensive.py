@@ -38,7 +38,7 @@ def mock_db_connection():
 
 
 @pytest.fixture
-def client(mock_config_manager, mock_db_connection):
+def client(mock_config_manager, mock_db_connection):  # noqa: ARG001
     """Create test client with mocked dependencies."""
     from tracertm.api.main import app
 

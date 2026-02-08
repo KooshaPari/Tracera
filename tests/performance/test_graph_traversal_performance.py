@@ -151,7 +151,7 @@ class TestCriticalPathPerformance:
 
     @pytest.mark.asyncio
     async def test_critical_path_with_link_type_filter(
-        self, mock_async_session, create_graph_items, create_graph_links,
+        self, mock_async_session, create_graph_items, create_graph_links,  # noqa: ARG002
     ) -> None:
         """Test critical path with link type filtering."""
         project_id = "proj-003"

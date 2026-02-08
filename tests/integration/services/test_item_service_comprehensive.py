@@ -537,7 +537,7 @@ class TestBulkUpdateComprehensive:
         item_service.items.list_by_filters = AsyncMock(return_value=items)
 
         # Simulate 2 failures
-        def side_effect(*args, **kwargs):
+        def side_effect(*args, **kwargs):  # noqa: ARG001
             if kwargs.get("item_id") in {"item-0", "item-1"}:
                 msg = "Update failed"
                 raise Exception(msg)
@@ -647,7 +647,7 @@ class TestBulkDeleteComprehensive:
         items = [create_mock_item(item_id=f"item-{i}") for i in range(5)]
         item_service.items.list_by_filters = AsyncMock(return_value=items)
 
-        def soft_delete_side_effect(item_id, *args, **kwargs) -> None:
+        def soft_delete_side_effect(item_id, *args, **kwargs) -> None:  # noqa: ARG001
             if item_id in {"item-0", "item-2"}:
                 msg = "Delete failed"
                 raise Exception(msg)

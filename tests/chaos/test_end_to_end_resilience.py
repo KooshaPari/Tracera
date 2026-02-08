@@ -26,8 +26,8 @@ RECOVERY_TARGET = 30
 @pytest.mark.e2e
 async def test_cascading_failure_recovery(
     toxiproxy_client: ToxiproxyClient,
-    postgres_proxy: str,
-    redis_proxy: str,
+    postgres_proxy: str,  # noqa: ARG001
+    redis_proxy: str,  # noqa: ARG001
     go_backend_proxy: str,
     db_session,
     redis_client: redis.Redis,
@@ -155,7 +155,7 @@ async def test_cascading_failure_recovery(
 @pytest.mark.e2e
 async def test_gradual_degradation_under_load(
     toxiproxy_client: ToxiproxyClient,
-    postgres_proxy: str,
+    postgres_proxy: str,  # noqa: ARG001
     db_session,
     assert_recovery_within_target,
 ) -> None:

@@ -294,7 +294,7 @@ Create login page with email and password fields.
         assert project_storage.docs_dir.exists()
         assert project_storage.changes_dir.exists()
 
-    def test_project_storage_global_projects_dir(self, temp_dir, storage) -> None:
+    def test_project_storage_global_projects_dir(self, temp_dir, storage) -> None:  # noqa: ARG002
         """Test ProjectStorage works with global projects dir (~/.tracertm/projects/)."""
         project_storage = storage.get_project_storage("global-project")
 

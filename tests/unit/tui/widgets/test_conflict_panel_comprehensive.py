@@ -424,7 +424,7 @@ class TestConflictPanelIntegration:
         mock_table = MagicMock()
         mock_detail = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             if "table" in selector:
                 return mock_table
             if "detail" in selector:

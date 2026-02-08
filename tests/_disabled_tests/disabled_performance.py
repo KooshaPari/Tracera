@@ -23,7 +23,7 @@ class TestPerformance:
         """Create registry."""
         return ToolRegistry(TOOL_REGISTRY)
 
-    def test_router_initialization_time(self, router) -> None:
+    def test_router_initialization_time(self, router) -> None:  # noqa: ARG002
         """Test router initialization time."""
         start = time.time()
         ArchRouter()
@@ -32,7 +32,7 @@ class TestPerformance:
         # Should initialize in <100ms
         assert elapsed < 0.1, f"Router init took {elapsed:.3f}s"
 
-    def test_registry_initialization_time(self, registry) -> None:
+    def test_registry_initialization_time(self, registry) -> None:  # noqa: ARG002
         """Test registry initialization time."""
         start = time.time()
         ToolRegistry(TOOL_REGISTRY)

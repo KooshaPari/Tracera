@@ -196,7 +196,7 @@ async def project_with_graph(db_session: AsyncSession):
 
 
 @pytest_asyncio.fixture(scope="function")
-async def default_graph(db_session: AsyncSession, project_with_graph):
+async def default_graph(db_session: AsyncSession, project_with_graph):  # noqa: ARG001
     """Get the default graph from a project_with_graph fixture."""
     await asyncio.sleep(0)
     return project_with_graph["graph"]
@@ -221,7 +221,7 @@ async def create_default_graph_for_project(session: AsyncSession, project_id: st
 
 
 @pytest_asyncio.fixture(scope="function", autouse=False)
-async def link_test_setup(db_session: AsyncSession):
+async def link_test_setup(db_session: AsyncSession):  # noqa: ARG001
     """Fixture that patches ProjectRepository.create to automatically create a default graph.
 
     Use this fixture in link tests to ensure graphs are created automatically.

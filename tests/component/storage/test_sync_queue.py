@@ -9,7 +9,7 @@ from tracertm.storage.sync_engine import EntityType, OperationType, SyncQueue
 def _queue(tmp_path: Path, monkeypatch) -> SyncQueue:
     mgr = LocalStorageManager(base_dir=tmp_path / "global")
     # Avoid SA2 text() requirement in the sync queue bootstrap for this component test
-    monkeypatch.setattr(SyncQueue, "_ensure_tables", lambda self: None)
+    monkeypatch.setattr(SyncQueue, "_ensure_tables", lambda self: None)  # noqa: ARG005
     queue = SyncQueue(mgr)
     # Manually ensure tables via raw SQL for test
     with mgr.engine.connect() as conn:

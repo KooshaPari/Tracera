@@ -25,7 +25,7 @@ from tracertm.services.item_service import ItemService
 class TestLoad1000Agents:
     """Load tests for 1000+ concurrent agents."""
 
-    async def test_1000_agents_concurrent_crud(self, db_session, project_factory, item_factory) -> None:
+    async def test_1000_agents_concurrent_crud(self, db_session, project_factory, item_factory) -> None:  # noqa: ARG002
         """Test 1000 agents performing concurrent CRUD operations."""
         project = await project_factory()
         item_service = ItemService(db_session)

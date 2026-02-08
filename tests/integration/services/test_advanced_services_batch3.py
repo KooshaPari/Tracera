@@ -1282,7 +1282,7 @@ class TestQueryOptimizationService:
             assert "timestamp" in stat
 
     @pytest.mark.asyncio
-    async def test_performance_rating_excellent(self, db_session: AsyncSession, test_project: Project) -> None:
+    async def test_performance_rating_excellent(self, db_session: AsyncSession, test_project: Project) -> None:  # noqa: ARG002
         """Test excellent performance rating."""
         service = QueryOptimizationService(db_session)
 

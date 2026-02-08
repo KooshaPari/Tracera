@@ -76,7 +76,7 @@ class _FakeCycleService:
     def __init__(self, _db) -> None:
         pass
 
-    async def detect_cycles(self, project_id: str):
+    async def detect_cycles(self, project_id: str):  # noqa: ARG002
         return SimpleNamespace(has_cycles=True, total_cycles=1, severity="medium", affected_items={"n1", "n2"})
 
 
@@ -84,7 +84,7 @@ class _FakeShortestPathService:
     def __init__(self, _db) -> None:
         pass
 
-    async def find_shortest_path(self, project_id: str, source_id: str, target_id: str):
+    async def find_shortest_path(self, project_id: str, source_id: str, target_id: str):  # noqa: ARG002
         return SimpleNamespace(exists=True, distance=2, path=[source_id, "mid", target_id], link_types=["DEPENDS_ON"])
 
 
@@ -199,7 +199,7 @@ async def test_find_shortest_path(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_get_db_raises_when_missing_database_url(monkeypatch) -> None:
-    monkeypatch.setattr("tracertm.config.manager.ConfigManager.get", lambda self, key: None)
+    monkeypatch.setattr("tracertm.config.manager.ConfigManager.get", lambda self, key: None)  # noqa: ARG005
     with pytest.raises(HTTPException) as exc_info:
         await anext(main.get_db())
     exc = cast("HTTPException", exc_info.value)

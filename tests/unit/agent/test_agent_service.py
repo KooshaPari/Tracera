@@ -60,7 +60,7 @@ class TestAgentServiceGetOrCreateSandbox:
         assert created is True
 
     @pytest.mark.asyncio
-    async def test_get_or_create_publishes_event_when_created(self, store, base_dir) -> None:
+    async def test_get_or_create_publishes_event_when_created(self, store, base_dir) -> None:  # noqa: ARG002
         event_bus = AsyncMock()
         event_bus.publish = AsyncMock()
         agent_svc = AgentService(session_store=store, event_bus=event_bus)

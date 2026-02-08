@@ -289,14 +289,14 @@ class TestEventService:
         assert service.session is not None
         assert service.events is not None
 
-    def test_log_event_basic(self, db_session, sample_project, sample_items) -> None:
+    def test_log_event_basic(self, db_session, sample_project, sample_items) -> None:  # noqa: ARG002
         """Test basic event logging capability."""
         from tracertm.services.event_service import EventService
 
         service = EventService(db_session)
         assert service is not None
 
-    def test_get_item_history_empty(self, db_session, sample_items) -> None:
+    def test_get_item_history_empty(self, db_session, sample_items) -> None:  # noqa: ARG002
         """Test retrieving history for item with no events."""
         from tracertm.services.event_service import EventService
 
@@ -1026,7 +1026,7 @@ class TestCrossServiceInteractions:
 
         assert len(events) > 0
 
-    def test_auto_link_with_existing_link_detection(self, db_session, sample_project, sample_items, sample_links) -> None:
+    def test_auto_link_with_existing_link_detection(self, db_session, sample_project, sample_items, sample_links) -> None:  # noqa: ARG002
         """Test auto-linking with duplicate detection."""
         from tracertm.services.auto_link_service import AutoLinkService
 

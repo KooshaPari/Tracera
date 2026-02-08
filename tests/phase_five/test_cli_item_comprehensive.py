@@ -55,7 +55,7 @@ def temp_project_dir_with_db(temp_project_dir: Path, db_session: Session) -> Pat
 
 
 @pytest.fixture
-def storage_manager(temp_project_dir: Path, db_session: Session) -> LocalStorageManager:
+def storage_manager(temp_project_dir: Path, db_session: Session) -> LocalStorageManager:  # noqa: ARG001
     """Create storage manager for testing."""
     return LocalStorageManager(base_dir=temp_project_dir)
 
@@ -87,7 +87,7 @@ class TestBasicCRUDOperations:
                 assert "Test Item" in result.stdout
 
     def test_create_item_all_views(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test item creation with all valid views."""
         valid_views = ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
@@ -115,7 +115,7 @@ class TestBasicCRUDOperations:
                     assert f"Test {view}" in result.stdout
 
     def test_create_item_all_feature_types(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test item creation with all FEATURE view types."""
         feature_types = ["epic", "feature", "story", "task", "bug"]
@@ -143,7 +143,7 @@ class TestBasicCRUDOperations:
                     assert f"Test {item_type}" in result.stdout
 
     def test_create_item_all_code_types(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test item creation with all CODE view types."""
         code_types = ["file", "class", "function", "module"]
@@ -170,7 +170,7 @@ class TestBasicCRUDOperations:
                     assert result.exit_code == 0, f"Failed for type: {item_type}"
 
     def test_create_item_with_metadata(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test item creation with metadata."""
         metadata = {"priority": "high", "assignee": "user@example.com", "tags": ["urgent", "backend"]}
@@ -197,7 +197,7 @@ class TestBasicCRUDOperations:
                 assert "Test Item with Metadata" in result.stdout
 
     def test_create_item_invalid_view(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test item creation with invalid view."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -220,7 +220,7 @@ class TestBasicCRUDOperations:
                 assert "Invalid view" in result.stdout
 
     def test_create_item_invalid_type(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test item creation with invalid type for view."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -243,7 +243,7 @@ class TestBasicCRUDOperations:
                 assert "Invalid type" in result.stdout
 
     def test_create_item_missing_required_fields(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test item creation with missing required fields."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -436,7 +436,7 @@ class TestBasicCRUDOperations:
                 assert "high" in result.stdout
 
     def test_show_item_not_found(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test showing non-existent item."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -516,7 +516,7 @@ class TestBasicCRUDOperations:
                 assert "deleted" in result.stdout.lower()
 
     def test_delete_item_not_found(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test deleting non-existent item."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -550,7 +550,7 @@ class TestBasicCRUDOperations:
                 assert "restored" in result.stdout.lower()
 
     def test_bulk_create_items(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test bulk creation of items."""
         items_data = [
@@ -601,7 +601,7 @@ class TestBasicCRUDOperations:
                 assert "Updated Item" in result.stdout
 
     def test_shell_completion_item_ids(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test shell completion for item IDs."""
         # Create test items
@@ -900,7 +900,7 @@ class TestAdvancedWorkflowOperations:
                 assert result.stdout.strip().startswith("[") or result.stdout.strip().startswith("{")
 
     def test_item_import_operations(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test item import operations."""
         # Create import data
@@ -966,7 +966,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Total" in result.stdout
 
     def test_item_validation_rules(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,  # noqa: ARG002
     ) -> None:
         """Test item validation rules and constraints."""
         # Test creating item with invalid metadata
@@ -1034,7 +1034,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Project 1 Item" in result.stdout
                 assert "Project 2 Item" not in result.stdout
 
-    def test_item_templates(self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session) -> None:
+    def test_item_templates(self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session) -> None:  # noqa: ARG002
         """Test creating items from templates."""
         # Create template data
         template_data = {

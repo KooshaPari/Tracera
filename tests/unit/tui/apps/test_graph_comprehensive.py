@@ -299,7 +299,7 @@ class TestGraphAppRendering:
         mock_link_table = MagicMock()
         mock_stats = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#graph-canvas": mock_canvas,
                 "#link-table": mock_link_table,
@@ -352,7 +352,7 @@ class TestGraphAppRendering:
         mock_link_table = MagicMock()
         mock_stats = MagicMock()
 
-        def query_side_effect(selector, widget_type=None):
+        def query_side_effect(selector, widget_type=None):  # noqa: ARG001
             return {
                 "#graph-canvas": mock_canvas,
                 "#link-table": mock_link_table,
@@ -507,7 +507,7 @@ class TestGraphAppErrorHandling:
     """Test error handling scenarios."""
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_handles_missing_textual(self, mock_config_manager) -> None:
+    def test_handles_missing_textual(self, mock_config_manager) -> None:  # noqa: ARG002
         """Test graph app handles missing Textual dependency."""
         # This test validates the import guard works
         assert TEXTUAL_AVAILABLE is True  # In test environment

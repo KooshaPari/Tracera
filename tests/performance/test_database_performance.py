@@ -90,7 +90,7 @@ def seed_items_with_links(db_session: Session):
 # ============================================================
 
 
-def test_item_lookup_by_id_indexed(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_item_lookup_by_id_indexed(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark indexed primary key lookup."""
     from tracertm.models.item import Item
 
@@ -102,7 +102,7 @@ def test_item_lookup_by_id_indexed(benchmark, db_session: Session, seed_items_10
     assert result is True
 
 
-def test_item_lookup_by_project_indexed(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_item_lookup_by_project_indexed(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark indexed project_id lookup."""
     from tracertm.models.item import Item
 
@@ -114,7 +114,7 @@ def test_item_lookup_by_project_indexed(benchmark, db_session: Session, seed_ite
     assert result is True
 
 
-def test_item_lookup_by_status_indexed(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_item_lookup_by_status_indexed(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark status index lookup."""
     from tracertm.models.item import Item
 
@@ -131,7 +131,7 @@ def test_item_lookup_by_status_indexed(benchmark, db_session: Session, seed_item
 # ============================================================
 
 
-def test_query_all_items_1000(benchmark, db_session: Session, seed_items_1000, perf_tracker) -> None:
+def test_query_all_items_1000(benchmark, db_session: Session, seed_items_1000, perf_tracker) -> None:  # noqa: ARG001
     """Benchmark querying all 1000 items."""
     from tracertm.models.item import Item
 
@@ -142,7 +142,7 @@ def test_query_all_items_1000(benchmark, db_session: Session, seed_items_1000, p
     assert len(result) == 1000
 
 
-def test_query_items_with_filter_status_500(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_query_items_with_filter_status_500(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark filtering query returning ~333 items."""
     from tracertm.models.item import Item
 
@@ -153,7 +153,7 @@ def test_query_items_with_filter_status_500(benchmark, db_session: Session, seed
     assert len(result) == 334  # 1000 % 3 == 334 items with "todo" status
 
 
-def test_query_items_with_multiple_filters(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_query_items_with_multiple_filters(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark query with multiple filter conditions."""
     from tracertm.models.item import Item
 
@@ -169,7 +169,7 @@ def test_query_items_with_multiple_filters(benchmark, db_session: Session, seed_
     assert len(result) > 0
 
 
-def test_query_items_with_or_conditions(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_query_items_with_or_conditions(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark query with OR conditions."""
     from tracertm.models.item import Item
 
@@ -185,7 +185,7 @@ def test_query_items_with_or_conditions(benchmark, db_session: Session, seed_ite
 # ============================================================
 
 
-def test_query_items_pagination_first_page(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_query_items_pagination_first_page(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark paginated query - first page."""
     from tracertm.models.item import Item
 
@@ -196,7 +196,7 @@ def test_query_items_pagination_first_page(benchmark, db_session: Session, seed_
     assert len(result) == 20
 
 
-def test_query_items_pagination_middle_page(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_query_items_pagination_middle_page(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark paginated query - middle page."""
     from tracertm.models.item import Item
 
@@ -207,7 +207,7 @@ def test_query_items_pagination_middle_page(benchmark, db_session: Session, seed
     assert len(result) == 20
 
 
-def test_query_items_pagination_last_page(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_query_items_pagination_last_page(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark paginated query - last page."""
     from tracertm.models.item import Item
 
@@ -223,7 +223,7 @@ def test_query_items_pagination_last_page(benchmark, db_session: Session, seed_i
 # ============================================================
 
 
-def test_query_items_with_links_join(benchmark, db_session: Session, seed_items_with_links) -> None:
+def test_query_items_with_links_join(benchmark, db_session: Session, seed_items_with_links) -> None:  # noqa: ARG001
     """Benchmark query with join."""
     from tracertm.models.item import Item
     from tracertm.models.link import Link
@@ -240,7 +240,7 @@ def test_query_items_with_links_join(benchmark, db_session: Session, seed_items_
 # ============================================================
 
 
-def test_aggregation_count_items(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_aggregation_count_items(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark count aggregation."""
     from tracertm.models.item import Item
 
@@ -251,7 +251,7 @@ def test_aggregation_count_items(benchmark, db_session: Session, seed_items_1000
     assert result == 1000
 
 
-def test_aggregation_group_by_status(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_aggregation_group_by_status(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark group by aggregation."""
     from tracertm.models.item import Item
 
@@ -262,7 +262,7 @@ def test_aggregation_group_by_status(benchmark, db_session: Session, seed_items_
     assert len(result) == 3  # 3 different statuses
 
 
-def test_aggregation_multiple_grouping(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_aggregation_multiple_grouping(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark multi-column group by."""
     from tracertm.models.item import Item
 
@@ -333,7 +333,7 @@ def test_bulk_insert_batch_500_items(benchmark, db_session: Session) -> None:
 # ============================================================
 
 
-def test_single_item_update(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_single_item_update(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark single item update."""
     from tracertm.models.item import Item
 
@@ -378,7 +378,7 @@ def test_bulk_update_100_items(benchmark, db_session: Session) -> None:
 _delete_call_count = [0]
 
 
-def test_single_item_delete(benchmark, db_session: Session, seed_items_1000) -> None:
+def test_single_item_delete(benchmark, db_session: Session, seed_items_1000) -> None:  # noqa: ARG001
     """Benchmark single item delete."""
     from tracertm.models.item import Item
 

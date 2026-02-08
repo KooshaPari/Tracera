@@ -465,7 +465,7 @@ class TestConfiguration:
 class TestPerformance:
     """Test performance characteristics."""
 
-    def test_tool_registration_completes_quickly(self, mcp_server) -> None:
+    def test_tool_registration_completes_quickly(self, mcp_server) -> None:  # noqa: ARG002
         """Test that tool registration is fast (< 1 second)."""
         import time
 

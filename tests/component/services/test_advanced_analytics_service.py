@@ -26,7 +26,7 @@ async def test_project_metrics_counts_status_and_view(monkeypatch, async_session
 
     svc = AdvancedAnalyticsService(async_session)
 
-    async def fake_query(project_id, filters):
+    async def fake_query(project_id, filters):  # noqa: ARG001
         return items
 
     monkeypatch.setattr(svc.items, "query", fake_query)
@@ -48,7 +48,7 @@ async def test_team_analytics_counts_agents(monkeypatch, async_session) -> None:
     ]
     svc = AdvancedAnalyticsService(async_session)
 
-    async def fake_events(project_id):
+    async def fake_events(project_id):  # noqa: ARG001
         return events
 
     monkeypatch.setattr(svc.events, "get_by_project", fake_events)
@@ -69,12 +69,12 @@ async def test_trend_analysis_filters_by_days(monkeypatch, async_session) -> Non
     ]
     svc = AdvancedAnalyticsService(async_session)
 
-    async def fake_query(project_id, filters):
+    async def fake_query(project_id, filters):  # noqa: ARG001
         return []
 
     monkeypatch.setattr(svc.items, "query", fake_query)
 
-    async def fake_events(project_id):
+    async def fake_events(project_id):  # noqa: ARG001
         return events
 
     monkeypatch.setattr(svc.events, "get_by_project", fake_events)
@@ -92,7 +92,7 @@ async def test_dependency_metrics_handles_missing_links(monkeypatch, async_sessi
     ]
     svc = AdvancedAnalyticsService(async_session)
 
-    async def fake_query_items(project_id, filters):
+    async def fake_query_items(project_id, filters):  # noqa: ARG001
         return items
 
     monkeypatch.setattr(svc.items, "query", fake_query_items)
@@ -110,7 +110,7 @@ async def test_quality_metrics_counts_descriptions(monkeypatch, async_session) -
     ]
     svc = AdvancedAnalyticsService(async_session)
 
-    async def fake_query_items2(project_id, filters):
+    async def fake_query_items2(project_id, filters):  # noqa: ARG001
         return items
 
     monkeypatch.setattr(svc.items, "query", fake_query_items2)

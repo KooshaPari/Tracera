@@ -32,7 +32,7 @@ class _DummySession:
         self._last_model = getattr(model, "__name__", str(model))
         return self
 
-    def filter(self, *args, **kwargs):
+    def filter(self, *args, **kwargs):  # noqa: ARG002
         # capture view filter if passed
         for arg in args:
             if hasattr(arg, "right") and hasattr(arg, "left") and hasattr(arg.left, "name"):

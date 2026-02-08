@@ -218,7 +218,7 @@ class TestRouteValidation:
 
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
-    def test_auth_required_routes_reject_missing_token(self, mock_db, mock_auth) -> None:
+    def test_auth_required_routes_reject_missing_token(self, mock_db, mock_auth) -> None:  # noqa: ARG002
         """Test that auth-required routes reject requests without token."""
         # Setup mock to raise for missing auth
         mock_auth.side_effect = Exception("Missing authorization header")

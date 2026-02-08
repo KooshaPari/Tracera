@@ -429,7 +429,7 @@ class TestTimeoutAndRetryExhaustion:
             assert "timeout" in str(e).lower() or items is not None
 
     @pytest.mark.integration
-    def test_retry_exhaustion(self, sync_db_session, monkeypatch) -> None:
+    def test_retry_exhaustion(self, sync_db_session, monkeypatch) -> None:  # noqa: ARG002
         """Test retry exhaustion handling."""
         retry_count = [0]
         max_retries = 3

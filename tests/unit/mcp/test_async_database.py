@@ -195,7 +195,7 @@ async def test_concurrent_sessions_use_pool() -> None:
 
 
 @pytest.mark.asyncio
-async def test_fastapi_integration_shares_engine(mocker) -> None:
+async def test_fastapi_integration_shares_engine(mocker) -> None:  # noqa: ARG001
     """Test that FastAPI's get_db uses the same engine."""
     # Get MCP engine
     mcp_engine = await get_async_engine()

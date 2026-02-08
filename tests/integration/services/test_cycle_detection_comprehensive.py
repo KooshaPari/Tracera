@@ -453,7 +453,7 @@ class TestMissingDependenciesAndOrphans:
         assert result["has_orphans"] is True
         assert result["orphan_count"] == 3
 
-    def test_detect_orphans_all(self, db_session, sample_project, sample_items_basic) -> None:
+    def test_detect_orphans_all(self, db_session, sample_project, sample_items_basic) -> None:  # noqa: ARG002
         """Test when all items are orphaned (no links)."""
         service = CycleDetectionService(db_session)
         result = service.detect_orphans(sample_project.id)
@@ -837,7 +837,7 @@ class TestEdgeCasesErrorHandling:
         # Orphan count should not include deleted items
         assert result is not None
 
-    def test_cycle_detection_nonexistent_project(self, db_session, sample_project) -> None:
+    def test_cycle_detection_nonexistent_project(self, db_session, sample_project) -> None:  # noqa: ARG002
         """Test cycle detection with non-existent project."""
         service = CycleDetectionService(db_session)
 
@@ -971,7 +971,7 @@ class TestBuildGraphFunctions:
         assert sample_items_basic[1].id in graph[sample_items_basic[0].id]
         assert sample_items_basic[2].id in graph[sample_items_basic[1].id]
 
-    def test_can_reach_graph_traversal(self, db_session, sample_project, sample_items_basic) -> None:
+    def test_can_reach_graph_traversal(self, db_session, sample_project, sample_items_basic) -> None:  # noqa: ARG002
         """Test _can_reach correctly traverses graph."""
         # Create A -> B -> C
         graph = {
@@ -991,7 +991,7 @@ class TestBuildGraphFunctions:
         # C cannot reach A
         assert service._can_reach(graph, sample_items_basic[2].id, sample_items_basic[0].id) is False
 
-    def test_find_cycles_detection(self, db_session, sample_project, sample_items_basic) -> None:
+    def test_find_cycles_detection(self, db_session, sample_project, sample_items_basic) -> None:  # noqa: ARG002
         """Test _find_cycles correctly identifies all cycles."""
         # Create cycle: A -> B -> C -> A
         graph = {
@@ -1036,7 +1036,7 @@ class TestBuildGraphFunctions:
         # blocks link should not be in graph
         assert sample_items_basic[2].id not in graph.get(sample_items_basic[1].id, set())
 
-    def test_can_reach_with_multiple_paths(self, db_session, sample_project, sample_items_basic) -> None:
+    def test_can_reach_with_multiple_paths(self, db_session, sample_project, sample_items_basic) -> None:  # noqa: ARG002
         """Test _can_reach with multiple paths to target."""
         # Create diamond: A -> B -> D, A -> C -> D
         graph = {
@@ -1051,14 +1051,14 @@ class TestBuildGraphFunctions:
         # A can reach D via multiple paths
         assert service._can_reach(graph, sample_items_basic[0].id, sample_items_basic[3].id) is True
 
-    def test_find_cycles_empty_graph(self, db_session, sample_project) -> None:
+    def test_find_cycles_empty_graph(self, db_session, sample_project) -> None:  # noqa: ARG002
         """Test _find_cycles with empty graph."""
         service = CycleDetectionService(db_session)
         cycles = service._find_cycles({})
 
         assert cycles == []
 
-    def test_find_cycles_single_node(self, db_session, sample_project, sample_items_basic) -> None:
+    def test_find_cycles_single_node(self, db_session, sample_project, sample_items_basic) -> None:  # noqa: ARG002
         """Test _find_cycles with single isolated node."""
         graph = {
             sample_items_basic[0].id: set(),
@@ -1147,7 +1147,7 @@ class TestAdditionalCoverage:
         assert result.has_cycles is True
         assert result.total_cycles == result.cycle_count
 
-    def test_can_reach_start_equals_target(self, db_session, sample_project, sample_items_basic) -> None:
+    def test_can_reach_start_equals_target(self, db_session, sample_project, sample_items_basic) -> None:  # noqa: ARG002
         """Test _can_reach when start node equals target."""
         graph = {
             sample_items_basic[0].id: {sample_items_basic[1].id},
@@ -1159,7 +1159,7 @@ class TestAdditionalCoverage:
         # Node can reach itself
         assert service._can_reach(graph, sample_items_basic[0].id, sample_items_basic[0].id) is True
 
-    def test_can_reach_nonexistent_node(self, db_session, sample_project, sample_items_basic) -> None:
+    def test_can_reach_nonexistent_node(self, db_session, sample_project, sample_items_basic) -> None:  # noqa: ARG002
         """Test _can_reach with node not in graph."""
         graph = {
             sample_items_basic[0].id: {sample_items_basic[1].id},

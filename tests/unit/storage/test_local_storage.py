@@ -442,7 +442,7 @@ class TestLocalStorageItemOperations:
         assert result[3] == sample_item_data["external_id"]
 
     @pytest.mark.unit
-    def test_query_items_by_project(self, init_db, sample_project_data, sample_item_data) -> None:
+    def test_query_items_by_project(self, init_db, sample_project_data, sample_item_data) -> None:  # noqa: ARG002
         """TC-LS.2.2: Query Items by Project - Success.
 
         Given: Multiple items exist in project

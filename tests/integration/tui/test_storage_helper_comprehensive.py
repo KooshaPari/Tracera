@@ -280,7 +280,7 @@ class TestConcurrentAccess:
 
             manager = get_storage_manager()
 
-            def perform_operation(index) -> None:
+            def perform_operation(index) -> None:  # noqa: ARG001
                 try:
                     session = manager.get_session()
                     # Simulate some work
@@ -334,7 +334,7 @@ class TestConcurrentAccess:
             manager = get_storage_manager()
             queues = []
 
-            def get_queue(index) -> None:
+            def get_queue(index) -> None:  # noqa: ARG001
                 queue = manager.get_sync_queue(limit=100)
                 queues.append(queue)
 
@@ -458,13 +458,13 @@ class TestErrorHandling:
 
         assert my_storage_func.__name__ == "my_storage_func"
 
-    def test_trigger_sync_handles_missing_api_endpoint(self, tmp_path) -> None:
+    def test_trigger_sync_handles_missing_api_endpoint(self, tmp_path) -> None:  # noqa: ARG002
         """Test that _trigger_sync handles missing API endpoint gracefully."""
         reset_storage_manager()
 
         with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config_instance = MagicMock()
-            mock_config_instance.get.side_effect = lambda key: None
+            mock_config_instance.get.side_effect = lambda key: None  # noqa: ARG005
             mock_config.return_value = mock_config_instance
 
             with patch("tracertm.cli.storage_helper.get_storage_manager") as mock_storage:
@@ -742,7 +742,7 @@ class TestSyncManagement:
 
                 assert mock_print.called
 
-    def test_trigger_sync_with_queue_items(self, tmp_path) -> None:
+    def test_trigger_sync_with_queue_items(self, tmp_path) -> None:  # noqa: ARG002
         """Test _trigger_sync with queue items."""
         reset_storage_manager()
 

@@ -56,7 +56,7 @@ def temp_projects(runner, tmp_path, monkeypatch):
     return ["project-1", "project-2"]
 
 
-def test_multi_project_support(temp_projects, runner) -> None:
+def test_multi_project_support(temp_projects, runner) -> None:  # noqa: ARG001
     """Test managing multiple projects (FR46)."""
     # List projects
     result = runner.invoke(app, ["project", "list"])
@@ -65,7 +65,7 @@ def test_multi_project_support(temp_projects, runner) -> None:
     assert "project-2" in result.stdout
 
 
-def test_project_switching(temp_projects, runner) -> None:
+def test_project_switching(temp_projects, runner) -> None:  # noqa: ARG001
     """Test fast project switching (FR47)."""
     # Switch to project 1
     result1 = runner.invoke(app, ["project", "switch", "project-1"])
@@ -78,7 +78,7 @@ def test_project_switching(temp_projects, runner) -> None:
     assert "Switched to project 'project-2'" in result2.stdout
 
 
-def test_separate_state_per_project(temp_projects, runner) -> None:
+def test_separate_state_per_project(temp_projects, runner) -> None:  # noqa: ARG001
     """Test separate state for each project (FR48)."""
     # Switch to project 1 and create item
     runner.invoke(app, ["project", "switch", "project-1"])
@@ -120,7 +120,7 @@ def test_separate_state_per_project(temp_projects, runner) -> None:
     assert "Traceback" not in result3.stdout
 
 
-def test_cross_project_queries(temp_projects, runner) -> None:
+def test_cross_project_queries(temp_projects, runner) -> None:  # noqa: ARG001
     """Test cross-project queries (FR49)."""
     # Create items in both projects
     runner.invoke(app, ["project", "switch", "project-1"])
@@ -161,7 +161,7 @@ def test_cross_project_queries(temp_projects, runner) -> None:
     assert "Query Results" in result.stdout
 
 
-def test_multi_project_dashboard(temp_projects, runner) -> None:
+def test_multi_project_dashboard(temp_projects, runner) -> None:  # noqa: ARG001
     """Test multi-project dashboard (FR50)."""
     # Create items in projects
     runner.invoke(app, ["project", "switch", "project-1"])
@@ -184,7 +184,7 @@ def test_multi_project_dashboard(temp_projects, runner) -> None:
     assert "Traceback" not in result.stdout
 
 
-def test_project_export_import(temp_projects, runner, tmp_path) -> None:
+def test_project_export_import(temp_projects, runner, tmp_path) -> None:  # noqa: ARG001
     """Test project export and import (FR53)."""
     # Create item in project 1
     runner.invoke(app, ["project", "switch", "project-1"])

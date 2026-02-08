@@ -455,7 +455,7 @@ class TestBrowserAppIntegration:
         WHEN: BrowserApp attempts to start
         THEN: App exits with error message.
         """
-        mock_config_manager.get.side_effect = lambda key, default=None: None
+        mock_config_manager.get.side_effect = lambda key, default=None: None  # noqa: ARG005
 
         with patch("tracertm.tui.apps.browser.ConfigManager", return_value=mock_config_manager):
             app = cast("Any", BrowserApp())
@@ -1175,7 +1175,7 @@ class TestEnhancedDashboardAppIntegration:
         WHEN: EnhancedDashboardApp starts
         THEN: App exits with error message.
         """
-        mock_config_manager.get.side_effect = lambda key, default=None: None
+        mock_config_manager.get.side_effect = lambda key, default=None: None  # noqa: ARG005
 
         with patch(
             "tracertm.tui.apps.dashboard_compat.ConfigManager",

@@ -21,7 +21,7 @@ class TestStorageAdapterInitialization:
     """Test StorageAdapter initialization."""
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_init_with_defaults(self, mock_storage) -> None:
+    def test_init_with_defaults(self, mock_storage) -> None:  # noqa: ARG002
         """Test StorageAdapter initializes with default parameters."""
         adapter = StorageAdapter()
 
@@ -40,7 +40,7 @@ class TestStorageAdapterInitialization:
         mock_storage.assert_called_once_with(base_dir)
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_init_with_sync_engine(self, mock_storage) -> None:
+    def test_init_with_sync_engine(self, mock_storage) -> None:  # noqa: ARG002
         """Test StorageAdapter initializes with sync engine."""
         mock_sync_engine = MagicMock()
         adapter = StorageAdapter(sync_engine=mock_sync_engine)

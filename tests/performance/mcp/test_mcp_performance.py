@@ -123,7 +123,7 @@ def token_counter():
 class TestToolRegistrationPerformance:
     """Test tool registration optimization."""
 
-    def test_tool_registration_under_100ms(self, mcp_server_env, perf_tracker) -> None:
+    def test_tool_registration_under_100ms(self, mcp_server_env, perf_tracker) -> None:  # noqa: ARG002
         """Test that all tools can be registered in <100ms."""
         from tracertm.mcp.registry import get_registry, register_all_tools
 
@@ -139,7 +139,7 @@ class TestToolRegistrationPerformance:
         assert tool_count > 0, "No tools registered"
         assert timing["elapsed_ms"] < MCPPerformanceThresholds.TOOL_REGISTRATION_MS
 
-    def test_lazy_loading_no_immediate_imports(self, mcp_server_env) -> None:
+    def test_lazy_loading_no_immediate_imports(self, mcp_server_env) -> None:  # noqa: ARG002
         """Test that tool registration doesn't import modules immediately."""
         from tracertm.mcp.registry import ToolRegistry
 
@@ -168,7 +168,7 @@ class TestToolRegistrationPerformance:
 
         assert timing["elapsed_ms"] < MCPPerformanceThresholds.LAZY_LOAD_OVERHEAD_MS
 
-    def test_batch_registration_metadata_only(self, mcp_server_env) -> None:
+    def test_batch_registration_metadata_only(self, mcp_server_env) -> None:  # noqa: ARG002
         """Test that batch registration only stores metadata, not modules."""
         from tracertm.mcp.registry import get_registry
 
@@ -198,7 +198,7 @@ class TestToolRegistrationPerformance:
 class TestColdStartPerformance:
     """Test server cold start optimization."""
 
-    def test_cold_start_under_200ms(self, mcp_server_env, perf_tracker) -> None:
+    def test_cold_start_under_200ms(self, mcp_server_env, perf_tracker) -> None:  # noqa: ARG002
         """Test that server cold start is <200ms."""
         # Clear any cached imports
         import sys
@@ -248,7 +248,7 @@ class TestToolResponseTime:
     """Test tool execution performance."""
 
     @pytest.mark.asyncio
-    async def test_simple_tool_under_100ms(self, mcp_server_env, perf_tracker) -> None:
+    async def test_simple_tool_under_100ms(self, mcp_server_env, perf_tracker) -> None:  # noqa: ARG002
         """Test that simple tools respond in <100ms."""
         from tracertm.mcp.registry import get_registry
 
@@ -268,7 +268,7 @@ class TestToolResponseTime:
         assert timing["elapsed_ms"] < MCPPerformanceThresholds.SIMPLE_TOOL_MS
 
     @pytest.mark.asyncio
-    async def test_complex_tool_under_500ms(self, mcp_server_env, perf_tracker) -> None:
+    async def test_complex_tool_under_500ms(self, mcp_server_env, perf_tracker) -> None:  # noqa: ARG002
         """Test that complex analysis tools respond in <500ms."""
 
         # Mock a complex analysis tool
@@ -508,7 +508,7 @@ class TestEndToEndPerformance:
     """Test complete request-response cycle performance."""
 
     @pytest.mark.asyncio
-    async def test_complete_tool_call_performance(self, mcp_server_env, perf_tracker) -> None:
+    async def test_complete_tool_call_performance(self, mcp_server_env, perf_tracker) -> None:  # noqa: ARG002
         """Test complete tool call cycle (registration, execution, response)."""
         from tracertm.mcp.registry import get_registry
 
@@ -554,7 +554,7 @@ class TestEndToEndPerformance:
 # ============================================================
 
 
-def test_save_performance_baselines(tmp_path, perf_tracker) -> None:
+def test_save_performance_baselines(tmp_path, perf_tracker) -> None:  # noqa: ARG001
     """Save performance baselines for future comparison."""
     from tests.performance.conftest import PerformanceBaseline
 

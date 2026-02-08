@@ -335,7 +335,7 @@ class TestSyncOperations:
         assert len(callback_states) >= 1  # At least one callback
 
     @pytest.mark.asyncio
-    async def test_trigger_sync_without_sync_engine(self, mock_storage) -> None:
+    async def test_trigger_sync_without_sync_engine(self, mock_storage) -> None:  # noqa: ARG002
         """Test triggering sync without sync engine returns error."""
         with patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager"):
             adapter = StorageAdapter(sync_engine=None)
@@ -469,13 +469,13 @@ class TestReactiveCallbacks:
     def test_callback_error_handling(self, storage_adapter) -> None:
         """Test callbacks that raise exceptions don't break notification."""
 
-        def failing_callback(state) -> Never:
+        def failing_callback(state) -> Never:  # noqa: ARG001
             msg = "Callback error"
             raise Exception(msg)
 
         called: list[bool] = [False]
 
-        def working_callback(state) -> None:
+        def working_callback(state) -> None:  # noqa: ARG001
             called[0] = True
 
         storage_adapter.on_sync_status_change(failing_callback)

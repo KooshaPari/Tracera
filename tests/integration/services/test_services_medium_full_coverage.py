@@ -629,14 +629,14 @@ class TestItemServiceRead:
         retrieved = await service.get_item("project-2", "item-1")
         assert retrieved is None
 
-    async def test_list_items_by_project(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_list_items_by_project(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test listing items in a project."""
         service = ItemService(async_db_session)
 
         items = await service.list_items(async_project.id)
         assert len(items) == 4
 
-    async def test_list_items_with_view_filter(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_list_items_with_view_filter(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test listing items filtered by view."""
         service = ItemService(async_db_session)
 
@@ -644,7 +644,7 @@ class TestItemServiceRead:
         assert all(item.view == "FEATURE" for item in items)
         assert len(items) == 2
 
-    async def test_list_items_with_status_filter(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_list_items_with_status_filter(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test listing items filtered by status."""
         service = ItemService(async_db_session)
 
@@ -653,7 +653,7 @@ class TestItemServiceRead:
         assert len(items) >= 1
 
     async def test_list_items_with_view_and_status_filter(
-        self, async_db_session, async_project, async_items_with_links,
+        self, async_db_session, async_project, async_items_with_links,  # noqa: ARG002
     ) -> None:
         """Test listing items with both view and status filters."""
         service = ItemService(async_db_session)
@@ -697,7 +697,7 @@ class TestItemServiceRead:
         items = await service.list_items(async_project.id)
         assert len(items) == 0
 
-    async def test_get_item_with_links(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_get_item_with_links(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test retrieving item with all its links."""
         service = ItemService(async_db_session)
         items, links = async_items_with_links
@@ -1333,7 +1333,7 @@ class TestItemServiceRelationships:
 class TestBulkOperationService:
     """Test BulkOperationService."""
 
-    def test_bulk_update_preview_basic(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_bulk_update_preview_basic(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test bulk update preview generation."""
         service = BulkOperationService(sync_db_session)
 
@@ -1347,7 +1347,7 @@ class TestBulkOperationService:
         assert len(preview.get("sample_items", preview.get("samples", []))) > 0
         assert preview["estimated_duration_ms"] > 0
 
-    def test_bulk_update_preview_with_status_filter(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_bulk_update_preview_with_status_filter(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test bulk update preview with status filter."""
         service = BulkOperationService(sync_db_session)
 
@@ -1385,7 +1385,7 @@ class TestBulkOperationService:
 
         assert any("Large operation" in w for w in preview.get("warnings", []))
 
-    def test_bulk_update_preview_multiple_filters(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_bulk_update_preview_multiple_filters(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test bulk update preview with multiple filters."""
         service = BulkOperationService(sync_db_session)
 
@@ -1412,7 +1412,7 @@ class TestBulkOperationService:
         samples = preview.get("sample_items", preview.get("samples", []))
         assert len(samples) == 0
 
-    def test_bulk_update_preview_priority_filter(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_bulk_update_preview_priority_filter(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test bulk update preview with priority filter."""
         service = BulkOperationService(sync_db_session)
 
@@ -1425,7 +1425,7 @@ class TestBulkOperationService:
         assert "total_count" in preview
         assert preview["total_count"] >= 0
 
-    def test_bulk_update_preview_owner_filter(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_bulk_update_preview_owner_filter(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test bulk update preview with owner filter."""
         service = BulkOperationService(sync_db_session)
 
@@ -1446,7 +1446,7 @@ class TestBulkOperationService:
 class TestCycleDetectionService:
     """Test CycleDetectionService."""
 
-    def test_no_cycle_in_simple_graph(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_no_cycle_in_simple_graph(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test that simple acyclic graph has no cycles."""
         service = CycleDetectionService(sync_db_session)
 
@@ -1567,7 +1567,7 @@ class TestCycleDetectionService:
 class TestCycleDetectionServiceAsync:
     """Test async cycle detection."""
 
-    async def test_detect_cycles_async(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_detect_cycles_async(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test async cycle detection."""
         service = CycleDetectionService(async_db_session)
 
@@ -1586,7 +1586,7 @@ class TestCycleDetectionServiceAsync:
 class TestChaosModeService:
     """Test ChaosModeService."""
 
-    async def test_detect_zombies(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_detect_zombies(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test zombie detection."""
         service = ChaosModeService(async_db_session)
 
@@ -1597,7 +1597,7 @@ class TestChaosModeService:
         assert "total_items" in result
         assert "zombie_percentage" in result
 
-    async def test_analyze_impact(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_analyze_impact(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test impact analysis."""
         service = ChaosModeService(async_db_session)
 
@@ -1608,7 +1608,7 @@ class TestChaosModeService:
         assert "dependencies" in result
         assert "total_impact" in result
 
-    async def test_create_temporal_snapshot(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_create_temporal_snapshot(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test temporal snapshot creation."""
         service = ChaosModeService(async_db_session)
 
@@ -1623,7 +1623,7 @@ class TestChaosModeService:
         assert "link_count" in snapshot
         assert "timestamp" in snapshot
 
-    async def test_mass_update_items(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_mass_update_items(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test mass item updates."""
         service = ChaosModeService(async_db_session)
 
@@ -1638,7 +1638,7 @@ class TestChaosModeService:
         assert "error_count" in result
         assert result["updated_count"] >= 0
 
-    async def test_get_project_health(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_get_project_health(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test project health metrics."""
         service = ChaosModeService(async_db_session)
 
@@ -1667,7 +1667,7 @@ class TestChaosModeService:
 
         assert count > 0
 
-    async def test_track_scope_crash(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_track_scope_crash(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test scope crash tracking."""
         service = ChaosModeService(async_db_session)
 
@@ -1681,7 +1681,7 @@ class TestChaosModeService:
         assert "event_id" in result
         assert "items_affected" in result
 
-    async def test_cleanup_zombies(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_cleanup_zombies(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test zombie cleanup."""
         service = ChaosModeService(async_db_session)
 
@@ -1739,7 +1739,7 @@ class TestViewService:
 class TestProjectBackupService:
     """Test ProjectBackupService."""
 
-    def test_backup_project_basic(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_backup_project_basic(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test basic project backup."""
         service = ProjectBackupService(sync_db_session)
 
@@ -1750,7 +1750,7 @@ class TestProjectBackupService:
         assert len(backup["items"]) > 0
         assert len(backup["links"]) > 0
 
-    def test_backup_project_with_history(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_backup_project_with_history(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test backup with history included."""
         # Create an event
         event = Event(
@@ -1834,7 +1834,7 @@ class TestProjectBackupService:
         assert project is not None
         assert project.name == "Restored Project"
 
-    def test_clone_project(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_clone_project(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test project cloning."""
         service = ProjectBackupService(sync_db_session)
 
@@ -1927,7 +1927,7 @@ class TestProjectBackupService:
 class TestImpactAnalysisService:
     """Test ImpactAnalysisService."""
 
-    async def test_analyze_impact_single_item(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_analyze_impact_single_item(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test impact analysis for single item."""
         service = ImpactAnalysisService(async_db_session)
 
@@ -1973,7 +1973,7 @@ class TestImpactAnalysisService:
 
         assert result.max_depth_reached <= 2
 
-    async def test_analyze_reverse_impact(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_analyze_reverse_impact(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test reverse impact analysis."""
         service = ImpactAnalysisService(async_db_session)
 
@@ -2009,7 +2009,7 @@ class TestImpactAnalysisService:
 class TestAdvancedTraceabilityService:
     """Test AdvancedTraceabilityService."""
 
-    async def test_find_all_paths_direct(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_find_all_paths_direct(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test finding direct paths between items."""
         service = AdvancedTraceabilityService(async_db_session)
 
@@ -2041,7 +2041,7 @@ class TestAdvancedTraceabilityService:
 
         assert len(paths) == 0
 
-    async def test_find_all_paths_max_depth(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_find_all_paths_max_depth(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test path finding with max depth limit."""
         service = AdvancedTraceabilityService(async_db_session)
 
@@ -2128,7 +2128,7 @@ class TestCrossServiceIntegration:
 
         assert preview["total_count"] == 3
 
-    def test_backup_restore_roundtrip(self, sync_db_session, sync_project, sync_items_with_links) -> None:
+    def test_backup_restore_roundtrip(self, sync_db_session, sync_project, sync_items_with_links) -> None:  # noqa: ARG002
         """Test backup and restore roundtrip."""
         service = ProjectBackupService(sync_db_session)
 
@@ -2153,7 +2153,7 @@ class TestCrossServiceIntegration:
         assert restored is not None
 
     @pytest.mark.asyncio
-    async def test_chaos_mode_with_impact_analysis(self, async_db_session, async_project, async_items_with_links) -> None:
+    async def test_chaos_mode_with_impact_analysis(self, async_db_session, async_project, async_items_with_links) -> None:  # noqa: ARG002
         """Test ChaosModeService with ImpactAnalysisService."""
         chaos_service = ChaosModeService(async_db_session)
         impact_service = ImpactAnalysisService(async_db_session)
