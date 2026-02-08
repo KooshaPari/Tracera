@@ -29,6 +29,9 @@ from tracertm.services.github_project_service import GitHubProjectService
 if TYPE_CHECKING:
     from tracertm.models.github_app_installation import GitHubAppInstallation
 
+if TYPE_CHECKING:
+    from tracertm.models.github_app_installation import GitHubAppInstallation
+
 # ==================== HELPER FUNCTIONS ====================
 
 
@@ -269,7 +272,7 @@ async def list_github_repos(
     params: RepoListParams = Depends(),
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """List GitHub repositories accessible via GitHub App installation or OAuth credential."""
     enforce_rate_limit(request, claims)
 
@@ -310,7 +313,7 @@ async def create_github_repo(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Create a new GitHub repository."""
     enforce_rate_limit(request, claims)
 
@@ -352,7 +355,7 @@ async def list_github_issues(
     params: IssueListParams = Depends(),
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """List GitHub issues for a repository."""
     enforce_rate_limit(request, claims)
 
@@ -387,7 +390,7 @@ async def get_github_app_install_url(
     account_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Get GitHub App installation URL for an account."""
     user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
@@ -476,7 +479,7 @@ async def _handle_installation_suspended(
 async def github_app_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Handle GitHub App webhook events."""
     config = get_github_app_config()
 
@@ -510,7 +513,7 @@ async def list_github_app_installations(
     account_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """List GitHub App installations for an account."""
     user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
